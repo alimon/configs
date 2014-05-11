@@ -1,0 +1,135 @@
+# Job example 1
+
+- job:
+    name: job-name-1
+
+# Job example 2
+
+- job:
+    name: job-name-2
+    project-type: freestyle
+    defaults: global
+    disabled: false
+    display-name: 'Fancy job name'
+    concurrent: true
+    quiet-period: 5
+    workspace: /srv/build-area/job-name
+    block-downstream: false
+    block-upstream: false
+
+# Job template example 1
+
+- job-template:
+    name: '{name}-unit-tests'
+
+- project:
+    name: project-name-1
+    jobs:
+      - '{name}-unit-tests'
+
+# Job template example 2
+
+- job-template:
+    name: '{name}-bench-tests'
+    builders:
+        - shell: unittest
+    publishers:
+        - email:
+            recipients: '{mail-to}'
+
+- job-template:
+    name: '{name}-perf-tests'
+    builders:
+        - shell: perftest
+    publishers:
+        - email:
+            recipients: '{mail-to}'
+
+- project:
+    name: project-name-2
+    jobs:
+        - '{name}-bench-tests':
+            mail-to: developer@nowhere.net
+        - '{name}-perf-tests':
+            mail-to: projmanager@nowhere.net
+
+# Job template example 3
+
+- job-template:
+    name: '{name}-{pyver}'
+
+- project:
+    name: project-name-3
+    pyver:
+        - 26
+        - 27
+    jobs:
+        - '{name}-{pyver}'
+
+# Job group example
+
+- job-template:
+    name: '{name}-python-26'
+
+- job-template:
+    name: '{name}-python-27'
+
+- job-group:
+    name: python-jobs
+    jobs:
+      - '{name}-python-26'
+      - '{name}-python-27'
+
+- project:
+    name: foo
+    jobs:
+      - python-jobs
+
+# Macro example 1
+
+- builder:
+    name: make-test
+    builders:
+      - shell: 'make test'
+
+- job:
+    name: foo-test
+    builders:
+      - make-test
+
+# Macro example 2
+
+  # The 'add' macro takes a 'number' parameter and will creates a
+  # job which prints 'Adding ' followed by the 'number' parameter:
+- builder:
+    name: add
+    builders:
+     - shell: "echo Adding {number}"
+
+  # A specialized macro 'addtwo' reusing the 'add' macro but with
+  # a 'number' parameter hardcoded to 'two':
+- builder:
+    name: addtwo
+    builders:
+     - add:
+        number: "two"
+
+  # Glue to have Jenkins Job Builder to expand this YAML example:
+- job:
+    name: "testingjob"
+    builders:
+     # The specialized macro:
+     - addtwo
+     # Generic macro call with a parameter
+     - add:
+        number: "ZERO"
+
+# Defaults example
+
+- defaults:
+    name: global
+    description: |
+        <!-- This job is managed by Jenkins job builder and will be overwritten. -->
+        <!-- Do not edit this job through the web interface. -->
+        <!-- If you would like to make changes to this job, -->
+        <!-- please see: https://git.linaro.org/ci/job/configs.git -->
