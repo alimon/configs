@@ -1,0 +1,101 @@
+- job:
+    name: linux-next
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - file:
+            name: defconfig.properties
+        - password:
+            name: PUBLISH_KEY
+            default: foo
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'Linux Next (master)'
+    scm:
+        - git:
+            url: git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches: 
+                - origin/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: dynamic
+            name: defconfig
+            values:
+                - defconfig_list
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - gcc-linaro-arm-linux-gnueabihf-4.8-2014.04_linux.tar.xz
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+            }
+
+            export LANG=C
+            CCACHE_DIR="$HOME/ccache"
+            CCACHE_UNIFY=1
+            CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
+            export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS 
+            export use_ccache=true
+            export silent=true
+            export make_deb=false
+            export kernel_flavour="${defconfig}"
+            export kernel_config="${defconfig}_defconfig"
+            export toolchain_url="http://releases.linaro.org/14.04/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.8-2014.04_linux.tar.xz"
+
+            # XXX work around vexpress defconfig
+            #echo "CONFIG_DEVTMPFS=y" >> arch/arm/configs/vexpress_defconfig
+            #echo "CONFIG_DEVTMPFS_MOUNT=y" >> arch/arm/configs/vexpress_defconfig
+            #echo "CONFIG_REGULATOR=y" >> arch/arm/configs/vexpress_defconfig
+            #echo "CONFIG_REGULATOR_VEXPRESS=y" >> arch/arm/configs/vexpress_defconfig
+            #echo "CONFIG_EXT4_FS=y" >> arch/arm/configs/vexpress_defconfig
+
+            test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            bash lci-build-tools/jenkins_kernel_build_inst
+
+            mkdir -p out/dtb
+            cp -a builddir-*-${kernel_flavour}/build.log out/build_log_${defconfig}
+            cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${defconfig}
+            cp -a builddir-*-${kernel_flavour}/arch/arm/boot/zImage out/zImage_${defconfig}
+            cp -a builddir-*-${kernel_flavour}/arch/arm/boot/dts/*.dtb out/dtb/
+
+            # Publish to snapshots
+            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-next/${defconfig}/${BUILD_NUMBER}
+
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
