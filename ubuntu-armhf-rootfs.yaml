@@ -1,0 +1,99 @@
+- job:
+    name: ubuntu-armhf-rootfs
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'Linaro Ubuntu armhf rootfs'
+    scm:
+        - git:
+            url: git://git.linaro.org/ci/ubuntu-build-service.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches: 
+                - origin/master
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+        - axis:
+            type: user-defined
+            name: rootfs
+            values:
+                - developer
+                - gnome
+                - nano
+                - nano-lava
+                - server
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+        - timeout:
+            timeout: 120
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo umount builddir
+            }
+
+            dpkg -s qemu-user-static |grep '^Version'
+            dpkg -s live-build |grep '^Version'
+
+            rm -f linaro-trusty-${rootfs}-* *.txt
+
+            test -d builddir || mkdir builddir
+            sudo mount -t tmpfs -o size=6G tmpfs builddir
+            cp -a trusty-armhf-${rootfs} builddir/
+            cd builddir/trusty-armhf-${rootfs}
+            ./configure
+            make
+            sudo mv linaro-trusty-* ${WORKSPACE}
+
+            cat << EOF > ${WORKSPACE}/BUILD-INFO.txt
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: open
+            EOF
+    publishers:
+        - ssh:
+            site: 'snapshots.linaro.org'
+            target: '${JOB_NAME}/${BUILD_NUMBER}/ubuntu/images/${rootfs}-armhf/${BUILD_NUMBER}'
+            source: 'linaro-trusty-${rootfs}-*, *.txt'
+            timeout: 120000
+        - ssh:
+            site: 'snapshots.linaro.org file-move'
+            target: ''
+            source: ''
+            command: 'reshuffle-files --job-type prebuilt --job-name ${JOB_NAME} --build-num ${BUILD_NUMBER}'
+            timeout: 120000
+            always-publish-from-master: true
+        - archive:
+            artifacts: 'linaro-trusty-*.tar.gz'
+            latest-only: true
+        - email:
+            recipients: fathi.boudra@linaro.org
