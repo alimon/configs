@@ -1,0 +1,216 @@
+- job:
+    name: ubuntu-armhf-hwpacks
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    display-name: 'Linaro Ubuntu hardware packs (armhf)'
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - arndale
+                - arndale-be
+                - arndale-octa
+                - beaglebone
+                - lsk-arndale-be
+                - lsk-panda-be
+                - lsk-vexpress
+                - lsk-vexpress64
+                - lsk-vexpress64-be
+                - panda
+                - panda-be
+                - vexpress
+                - vexpress64
+                - vexpress64-be
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+    execution-strategy:
+        sequential: true
+        touchstone:
+            expr: 'hwpack=="arndale"'
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - copyartifact:
+            project: package-and-publish-linux-linaro
+            filter: 'out/*.deb'
+            target: artifacts
+            flatten: true
+            optional: true
+        - copyartifact:
+            project: package-and-publish-linux-linaro-stable
+            filter: 'out/*.deb'
+            target: artifacts
+            flatten: true
+            optional: true
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo umount builddir
+              rm -rf artifacts
+            }
+
+            dpkg -s linaro-image-tools |grep '^Version'
+
+            rm -f hwpack_linaro-*.tar.gz *.txt
+
+            test -d builddir || mkdir builddir
+            sudo mount -t tmpfs -o size=2G tmpfs builddir
+            cd builddir
+
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            case "${hwpack}" in
+              arndale|arndale-octa|beaglebone|highbank|lsk-vexpress|midway|origen|panda|snowball|vexpress)
+                git clone git://git.linaro.org/hwpack/${hwpack}.git
+                linaro-hwpack-create --debug ${hwpack}/hwpacks/linaro-${hwpack} ${VERSION}
+                mv hwpack_linaro-${hwpack}* ${WORKSPACE}
+                mv *.txt ${WORKSPACE}
+                ;;
+              lsk-vexpress64|lsk-vexpress64-be|vexpress64|vexpress64-be)
+                git clone git://git.linaro.org/hwpack/vexpress64-rtsm.git
+                linaro-hwpack-create --debug vexpress64-rtsm/hwpacks/linaro-vexpress64-rtsm ${VERSION}
+                mv hwpack_linaro-vexpress64-rtsm_${VERSION}_armhf_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-arm64_supported.manifest.txt
+                mv hwpack_linaro-vexpress64-rtsm_${VERSION}_armhf_supported.tar.gz ${WORKSPACE}/hwpack_linaro_arm64_supported.tar.gz
+                mv *.txt ${WORKSPACE}
+                ;;
+            esac
+
+            cd ${WORKSPACE}
+
+            echo "distribution=ubuntu" > remote_directory_parameters
+
+            case "${hwpack}" in
+              lsk-arndale-be|arndale-be)
+                find artifacts -type f -name "linux-*-linaro-${hwpack}_*.deb" -exec mv -t ${WORKSPACE} {} +
+
+                rm -f hwpack_linaro_armhf_supported.tar.gz
+                export HWPACK_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-hwpacks/hwpack=arndale,label=build/lastSuccessfulBuild/buildNumber`
+                export HWPACK_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-hwpacks/hwpack=arndale,label=build/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+                export HWPACK_BUILD_URL="http://snapshots.linaro.org/ubuntu/hwpacks/arndale/${HWPACK_BUILD_NUMBER}/hwpack_linaro-arndale_${HWPACK_BUILD_TIMESTAMP}-${HWPACK_BUILD_NUMBER}_armhf_supported.tar.gz"
+                wget --progress=dot -e dotbytes=2M ${HWPACK_BUILD_URL} -O hwpack_linaro_armhf_supported.tar.gz
+
+                linaro-hwpack-replace -t hwpack_linaro_armhf_supported.tar.gz -p `ls linux-image-*-linaro-${hwpack}_*.deb` -r linux-image -d -i
+                linaro-hwpack-replace -t hwpack_linaro_armhf_supported.tar.gz -p `ls linux-headers-*-linaro-${hwpack}_*.deb` -r linux-headers -d -i
+
+                mv hwpack_linaro_armhf_supported.tar.gz ${WORKSPACE}/hwpack_linaro-${hwpack}_${VERSION}_armhf_supported.tar.gz
+                mv hwpack_linaro_armhf_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-${hwpack}_${VERSION}_armhf_supported.manifest.txt
+
+                echo "distribution=openembedded" > remote_directory_parameters
+                cat << EOF > BUILD-INFO.txt
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: open
+            EOF
+                ;;
+              lsk-panda-be|panda-be)
+                [ "${hwpack}" = "panda-be" ] && omap=omap-be || true
+                [ "${hwpack}" = "lsk-panda-be" ] && omap=lsk-omap-be || true
+                find artifacts -type f -name "linux-*-linaro-${omap}_*.deb" -exec mv -t ${WORKSPACE} {} +
+
+                rm -f hwpack_linaro_armhf_supported.tar.gz
+                export HWPACK_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-hwpacks/hwpack=panda,label=build/lastSuccessfulBuild/buildNumber`
+                export HWPACK_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-hwpacks/hwpack=panda,label=build/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+                export HWPACK_BUILD_URL="http://snapshots.linaro.org/ubuntu/hwpacks/panda/${HWPACK_BUILD_NUMBER}/hwpack_linaro-panda_${HWPACK_BUILD_TIMESTAMP}-${HWPACK_BUILD_NUMBER}_armhf_supported.tar.gz"
+                wget --progress=dot -e dotbytes=2M ${HWPACK_BUILD_URL} -O hwpack_linaro_armhf_supported.tar.gz
+
+                linaro-hwpack-replace -t hwpack_linaro_armhf_supported.tar.gz -p `ls linux-image-*-linaro-${omap}_*.deb` -r linux-image -d -i
+                linaro-hwpack-replace -t hwpack_linaro_armhf_supported.tar.gz -p `ls linux-headers-*-linaro-${omap}_*.deb` -r linux-headers -d -i
+
+                mv hwpack_linaro_armhf_supported.tar.gz ${WORKSPACE}/hwpack_linaro-${hwpack}_${VERSION}_armhf_supported.tar.gz
+                mv hwpack_linaro_armhf_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-${hwpack}_${VERSION}_armhf_supported.manifest.txt
+
+                echo "distribution=openembedded" > remote_directory_parameters
+                cat << EOF > BUILD-INFO.txt
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: open
+            EOF
+                ;;
+              lsk-vexpress64|lsk-vexpress64-be|vexpress64|vexpress64-be)
+                find artifacts -type f -name "linux-*-linaro-${hwpack}_*.deb" -exec mv -t ${WORKSPACE} {} +
+
+                rm -f hwpack_linaro-${hwpack}-rtsm_*_arm64_supported.tar.gz
+
+                linaro-hwpack-replace -t hwpack_linaro_arm64_supported.tar.gz -p `ls linux-image-*-linaro-${hwpack}_*.deb` -r linux-image -d -i
+                linaro-hwpack-replace -t hwpack_linaro_arm64_supported.tar.gz -p `ls linux-headers-*-linaro-${hwpack}_*.deb` -r linux-headers -d -i
+
+                mv hwpack_linaro_arm64_supported.tar.gz ${WORKSPACE}/hwpack_linaro-${hwpack}-rtsm_${VERSION}_arm64_supported.tar.gz
+                mv hwpack_linaro_arm64_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-${hwpack}-rtsm_${VERSION}_arm64_supported.manifest.txt
+
+                echo "distribution=openembedded" > remote_directory_parameters
+                cat << EOF > BUILD-INFO.txt
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: open
+            EOF
+                ;;
+            esac
+
+            echo "HWPACK_JOB_NAME=${JOB_NAME}" > post_build_lava_parameters
+            echo "HWPACK_BUILD_NUMBER=${BUILD_NUMBER}" >> post_build_lava_parameters
+            echo "HWPACK_FILE_NAME=`ls hwpack_linaro-${hwpack}*.tar.gz`" >> post_build_lava_parameters
+
+            case "${hwpack}" in
+              arndale|highbank|panda)
+                echo "DEVICE_TYPE=${hwpack}" >> post_build_lava_parameters
+                ;;
+              snowball)
+                echo "DEVICE_TYPE=snowball_sd" >> post_build_lava_parameters
+                # XXX workaround until BUILD.INFO.txt is fixed
+                rm -f BUILD-INFO.txt
+                touch EULA.txt
+                ;;
+              lsk-vexpress|vexpress)
+                echo "DEVICE_TYPE=vexpress-a9" >> post_build_lava_parameters
+                ;;
+              arndale-be|arndale-octa|beaglebone|lsk-arndale-be|lsk-panda-be|lsk-vexpress64|midway|panda-be|vexpress64|vexpress64-be)
+                echo "Skip DEVICE_TYPE for ${hwpack}"
+                ;;
+            esac
+        - inject:
+            properties-file: remote_directory_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+    publishers:
+        - ssh:
+            site: 'snapshots.linaro.org'
+            target: '${JOB_NAME}/${BUILD_NUMBER}/${distribution}/hwpacks/${hwpack}/${BUILD_NUMBER}'
+            source: 'hwpack_linaro-${hwpack}*, *.txt'
+            timeout: 120000
+            always-publish-from-master: true
+        - ssh:
+            site: 'snapshots.linaro.org file-move'
+            target: ''
+            source: ''
+            command: 'reshuffle-files --job-type prebuilt --job-name ${JOB_NAME} --build-num ${BUILD_NUMBER}'
+            timeout: 120000
+            always-publish-from-master: true
+        - archive:
+            artifacts: 'hwpack_linaro-*.tar.gz'
+            latest-only: true
+        - email:
+            recipients: fathi.boudra@linaro.org
