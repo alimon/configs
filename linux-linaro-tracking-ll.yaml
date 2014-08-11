@@ -1,0 +1,83 @@
+- job:
+    name: linux-linaro-tracking-ll
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 90
+        numToKeep: 100
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'linux-linaro kernel'
+    scm:
+        - git:
+            url: git://git.linaro.org/kernel/linux-linaro-tracking.git
+            refspec: +refs/heads/linux-linaro:refs/remotes/origin/linux-linaro
+            name: origin
+            branches:
+                - */linux-linaro
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - arndale
+                - arndale-octa
+                - arndale-uprobes
+                - beaglebone
+                - beaglebone-uprobes
+                - ifc6410
+                - panda
+                - vexpress
+                - vexpress64
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+    execution-strategy:
+        sequential: true
+        touchstone:
+            expr: 'hwpack=="arndale"'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - gcc-linaro-arm-linux-gnueabihf-4.8-2014.04_linux.tar.xz
+                - gcc-linaro-aarch64-linux-gnu-4.8-2014.04_linux.tar.xz
+            relative-to: '$JENKINS_HOME/copyToSlave'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            rm -rf linux-linaro-tracking-ll
+            git clone --depth 1 -b master git://git.linaro.org/ci/job/linux-linaro-tracking-ll.git
+            bash linux-linaro-tracking-ll/ll-ci.sh
+        - trigger-builds:
+            project: 'post-build-lava'
+            property-file: post_build_lava_parameters
+    publishers:
+        - archive:
+            artifacts: 'post_build_lava_parameters,
+                custom_lava_job_definition.json, kernel_config_ifc6410,
+                zImage_ifc6410, *-linaro-ifc6410-*.deb'
+            latest-only: true
+        - email-ext:
+            recipients: 'andrey.konovalov@linaro.org, fathi.boudra@linaro.org'
+            attach-build-log: true
+            matrix-trigger: both
+        - trigger:
+            project: 'linux-linaro-tracking-ll-ifc6410-image'
+            threshold: SUCCESS
