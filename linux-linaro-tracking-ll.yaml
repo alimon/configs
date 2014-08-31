@@ -53,7 +53,6 @@
             includes:
                 - gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz
                 - gcc-linaro-aarch64-linux-gnu-4.9-2014.08_linux.tar.xz
-            relative-to: '$JENKINS_HOME/copyToSlave'
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
@@ -66,13 +65,11 @@
             git clone --depth 1 -b master git://git.linaro.org/ci/job/linux-linaro-tracking-ll.git
             bash linux-linaro-tracking-ll/ll-ci.sh
         - trigger-builds:
-            project: 'post-build-lava'
-            property-file: post_build_lava_parameters
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
     publishers:
         - archive:
-            artifacts: 'post_build_lava_parameters,
-                custom_lava_job_definition.json, kernel_config_ifc6410,
-                zImage_ifc6410, *-linaro-ifc6410-*.deb'
+            artifacts: 'post_build_lava_parameters, custom_lava_job_definition.json, kernel_config_ifc6410, zImage_ifc6410, *-linaro-ifc6410-*.deb'
             latest-only: true
         - email-ext:
             recipients: 'andrey.konovalov@linaro.org, fathi.boudra@linaro.org'
