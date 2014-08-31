@@ -10,6 +10,10 @@
             anonymous:
                 - job-read
                 - job-extended-read
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: foo
     disabled: false
     node: build
     child-workspace: .
@@ -45,8 +49,6 @@
                 - build
     execution-strategy:
         sequential: true
-        touchstone:
-            expr: 'hwpack=="arndale"'
     wrappers:
         - timestamps
         - copy-to-slave:
@@ -61,16 +63,15 @@
         - shell: |
             #!/bin/bash
 
-            rm -rf linux-linaro-tracking-ll
-            git clone --depth 1 -b master git://git.linaro.org/ci/job/linux-linaro-tracking-ll.git
-            bash linux-linaro-tracking-ll/ll-ci.sh
+            rm -rf linux-linaro-kernel-ci
+            git clone --depth 1 -b ll git://git.linaro.org/ci/linux-linaro-kernel-ci.git
+            bash linux-linaro-kernel-ci/ll-ci.sh</command>
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
     publishers:
         - archive:
             artifacts: 'post_build_lava_parameters, custom_lava_job_definition.json, kernel_config_ifc6410, zImage_ifc6410, *-linaro-ifc6410-*.deb'
-            latest-only: true
         - email-ext:
             recipients: 'andrey.konovalov@linaro.org, fathi.boudra@linaro.org'
             attach-build-log: true
