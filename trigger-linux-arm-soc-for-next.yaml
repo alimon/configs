@@ -1,0 +1,47 @@
+- job:
+    name: trigger-linux-arm-soc-for-next
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for Linux ARM SoC Kernel (for-next)'
+    scm:
+        - git:
+            url: git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git
+            refspec: +refs/heads/for-next:refs/remotes/origin/for-next
+            name: origin
+            branches: 
+                - origin/for-next
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              exit 0
+            }
+
+            wget https://git.kernel.org/cgit/linux/kernel/git/arm/arm-soc.git/tree/arch/arm/configs?h=for-next -O configs
+            echo -n "defconfig_list=" > defconfig.properties
+            cut -d'>' -f6 configs | cut -d'<' -f1 | grep defconfig | tr -s "\n" " " | sed 's/_defconfig//g' >> defconfig.properties
+        - trigger-builds:
+            - project: 'linux-arm-soc-for-next'
+              property-file: defconfig.properties
