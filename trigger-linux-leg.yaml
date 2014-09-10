@@ -1,0 +1,33 @@
+- job:
+    name: trigger-linux-leg
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for LEG Kernel'
+    scm:
+        - git:
+            url: git://git.linaro.org/leg/acpi/leg-kernel.git
+            refspec: +refs/heads/leg-kernel:refs/remotes/origin/leg-kernel
+            name: origin
+            branches: 
+                - origin/leg-kernel
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - trigger-builds:
+            - project: 'linux-stable'
