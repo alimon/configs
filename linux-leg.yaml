@@ -1,0 +1,160 @@
+- job:
+    name: linux-leg
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'LEG Kernel'
+    scm:
+        - git:
+            url: git://git.linaro.org/leg/acpi/leg-kernel.git
+            refspec: +refs/heads/leg-kernel:refs/remotes/origin/leg-kernel
+            name: origin
+            branches:
+                - origin/leg-kernel
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - vexpress
+                - vexpress64
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz
+                - gcc-linaro-aarch64-linux-gnu-4.9-2014.08_linux.tar.xz
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+            }
+
+            export use_config_fragment=1
+            export MAKE_DTBS=true
+            export toolchain_url="http://releases.linaro.org/14.08/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz"
+            export rootfs_arch="armv7a"
+            export rootfs_type="alip"
+
+            case "${hwpack}" in
+              vexpress)
+                export hwpack_type="vexpress"
+                export board_types="rtsm_ve-a15x1-a7x1"
+                export kernel_flavour="vexpress"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/vexpress.conf linaro/configs/distribution.conf linaro/configs/acpi.conf linaro/configs/efi.conf"
+                ;;
+              vexpress64)
+                export hwpack_type="vexpress64"
+                export board_types="rtsm_fvp_base-aemv8a"
+                export kernel_flavour="vexpress64"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/vexpress64.conf linaro/configs/distribution.conf linaro/configs/acpi.conf linaro/configs/efi.conf"
+                export ARCH="arm64"
+                export toolchain_url="https://releases.linaro.org/14.08/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.08_linux.tar.xz"
+                export rootfs_arch="armv8"
+                export rootfs_type="lamp"
+                ;;
+            esac
+
+            test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            bash lci-build-tools/jenkins_kernel_build_inst
+
+            # Get rootfs
+            rm -f linaro-image-${rootfs_type}-generic*.tar.gz
+            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-${rootfs_arch}-rootfs/gcc_version=4.9,label=build,rootfs=${rootfs_type}/lastSuccessfulBuild/buildNumber`
+            export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-${rootfs_arch}-rootfs/gcc_version=4.9,label=build,rootfs=${rootfs_type}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/${rootfs_type}-${rootfs_arch}-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-${rootfs_type}-generic${rootfs_arch}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+            wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+
+            # Create pre-built image(s)
+            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-size 2G --binary linaro-image-${rootfs_type}-generic${rootfs_arch}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz --hwpack hwpack_linaro-${hwpack_type}*.tar.gz --hwpack-force
+
+            # Compress image(s)
+            mv sd.img ${hwpack}-leg-sd.img
+            gzip -9 ${hwpack}-leg-sd.img
+
+            mkdir out
+            cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${hwpack}
+            case "${hwpack}" in
+              vexpress)
+                cp -a builddir-*-${kernel_flavour}/arch/arm/boot/zImage out/zImage_${hwpack}
+                ;;
+              vexpress64)
+                cp -a builddir-*-${kernel_flavour}/arch/arm64/boot/Image out/Image_${hwpack}
+                ;;
+            esac
+            mv hwpack_* out/
+            mv ${hwpack}-leg-sd.img.gz out/
+            mv *.bin out/
+
+            # Publish to snapshots
+            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}
+
+            # Create post-build-lava parameters
+            cat << EOF > post_build_lava_parameters
+            HWPACK_JOB_NAME=${JOB_NAME}
+            HWPACK_BUILD_NUMBER=${BUILD_NUMBER}
+            HWPACK_FILE_NAME=`ls hwpack_linaro-${hwpack_type}*.tar.gz`
+            IMAGE_URL=https://snapshots.linaro.org/kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}/${hwpack}-leg-sd.img.gz
+            BUNDLE_STREAM_NAME=/private/team/linaro/leg-kernel/
+            LAVA_TEST_PLAN=''
+            DEVICE_TYPE=${board_types}
+            DEPLOY_IMAGE_PARAMETERS_URL=${JOB_URL}/ws/deploy_image_parameters.json
+            BOOT_IMAGE_PARAMETERS_URL=${JOB_URL}/ws/boot_image_parameters.json
+            EOF
+
+            # Custom deploy_linaro_image parameters
+            cat << EOF > ${WORKSPACE}/deploy_image_parameters.json
+            {
+                "bootloadertype": "uefi"
+            }
+            EOF
+
+            # Custom boot_linaro_image parameters
+            cat << EOF > boot_image_parameters.json
+            {
+              "boot_cmds": ["sendline b"]
+            }
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+    publishers:
+        - email:
+            recipients: 'graeme.gregory@linaro.org fathi.boudra@linaro.org ilias.biris@linaro.org'
