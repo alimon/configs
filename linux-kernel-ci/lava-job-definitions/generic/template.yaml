@@ -1,0 +1,20 @@
+actions:
+    - command: deploy_linaro_kernel
+      parameters:
+          dtb: 'http://snapshots.linaro.org/kernel-hwpack/linux-next/${defconfig}/${BUILD_NUMBER}/dtb/${DTB_FILE_NAME}'
+          kernel: 'http://snapshots.linaro.org/kernel-hwpack/linux-next/${defconfig}/${BUILD_NUMBER}/${KERNEL_FILE_NAME}'
+          nfsrootfs: '${ROOTFS_BUILD_URL}'
+      metadata:
+          build id: '${BUILD_NUMBER}'
+          defconfig: '${kernel_config}'
+          git URL: '${GIT_URL}'
+          git branch: '${GIT_BRANCH}'
+          git commit: '${GIT_COMMIT}'
+    - command: boot_linaro_image
+    - command: submit_results
+      parameters:
+          server: 'http://${LAVA_SERVER}'
+          stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 3600
