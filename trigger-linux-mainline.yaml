@@ -39,8 +39,12 @@
               exit 0
             }
 
-            wget https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/configs -O configs
             echo -n "defconfig_list=" > defconfig.properties
+
+            wget https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm/configs -O configs
+            cut -d'>' -f6 configs | cut -d'<' -f1 | grep defconfig | tr -s "\n" " " | sed 's/_defconfig//g' >> defconfig.properties
+
+            wget https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/arm64/configs -O configs
             cut -d'>' -f6 configs | cut -d'<' -f1 | grep defconfig | tr -s "\n" " " | sed 's/_defconfig//g' >> defconfig.properties
         - trigger-builds:
             - project: 'linux-mainline'
