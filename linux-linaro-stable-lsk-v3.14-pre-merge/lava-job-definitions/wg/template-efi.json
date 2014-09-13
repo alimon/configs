@@ -1,0 +1,162 @@
+{
+  "actions": [
+    {
+      "command": "deploy_linaro_image",
+      "parameters": {
+        "bootloadertype": "uefi",
+        "customize": {
+          "${STARTUP_NSH}": ["boot:/EFI/BOOT/startup.nsh"]
+        },
+        "hwpack": "${HWPACK_BUILD_URL}",
+        "rootfs": "${ROOTFS_BUILD_URL}"
+      },
+      "metadata": {
+        "distribution": "openembedded",
+        "hwpack.build": "${BUILD_NUMBER}",
+        "hwpack.type": "${hwpack_type}",
+        "rootfs.build": "${ROOTFS_BUILD_NUMBER}",
+        "rootfs.type": "lamp-armv8-gcc-4.9",
+        "git URL": "${GIT_URL}",
+        "git branch": "${GIT_BRANCH}",
+        "git commit": "${GIT_COMMIT}"
+      }
+    },
+    {
+      "command": "boot_linaro_image",
+      "parameters": {
+        "boot_cmds": [
+          "sendline 3",
+          "expect Choice:",
+          "sendline 1",
+          "expect Select the Boot Device:",
+          "sendcontrol [",
+          "sendcontrol M",
+          "expect Choice:",
+          "sendline 5",
+          "expect Start:",
+          "sendline 2",
+          "expect or any other key to continue.",
+          "sendline "
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell", 
+      "parameters": {
+        "timeout": 800, 
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git", 
+            "testdef": "openembedded/busybox.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell", 
+      "parameters": {
+        "timeout": 800, 
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git", 
+            "testdef": "openembedded/device-tree.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell", 
+      "parameters": {
+        "timeout": 800, 
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git", 
+            "testdef": "openembedded/ethernet.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell", 
+      "parameters": {
+        "timeout": 800, 
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git", 
+            "testdef": "openembedded/kernel-version.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 10800,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "openembedded/ltp.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell", 
+      "parameters": {
+        "timeout": 800, 
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git", 
+            "testdef": "openembedded/perf.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell", 
+      "parameters": {
+        "timeout": 800, 
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git", 
+            "testdef": "openembedded/toolchain.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell", 
+      "parameters": {
+        "timeout": 18000, 
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git", 
+            "testdef": "openembedded/libhugetlbfs.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 800,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "openembedded/pointer-tagging-tests.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "submit_results",
+      "parameters": {
+        "stream": "${BUNDLE_STREAM_NAME}",
+        "server": "http://${LAVA_SERVER}"
+      }
+    }
+  ],
+  "device_type": "${DEVICE_TYPE}",
+  "job_name": "${BUILD_URL}",
+  "timeout": 172800
+}
