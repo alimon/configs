@@ -1,0 +1,59 @@
+- job:
+    name: qemu-docker
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            riku.voipio@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-build
+                 
+    disabled: false
+    node: docker
+    display-name: 'Qemu build'
+    triggers:
+        - timed: '@daily'
+    scm:
+        - git:
+            url: git://git.qemu.org/qemu.git
+            branches: 
+                - master
+            disable-submodules: true
+            skip-tag: true
+            basedir: qemu-linaro
+
+    builders:
+        - shell: |
+            #!/bin/sh
+            rm -rf qemu-ci
+            git clone http://git.linaro.org/git/ci/qemu.git qemu-ci
+            bash -x qemu-ci/qemu-pkg.sh
+
+    publishers:
+        - archive:
+            artifacts: '*.changes, *.dsc, *.gz, *.bz2, *.xz'
+            latest-only: true
+        - email:
+            recipients: riku.voipio@linaro.org
+        - trigger:
+            project: 'qemu-lava-ltp-tests, qemu-lava-risu'
+            condition: SUCCESS
+
+        - trigger-parameterized-builds:
+            - project: qemu-docker-builder
+              property-file: qemu-amd64-parameters
+              condition: SUCCESS
+            - project: qemu-docker-builder
+              property-file: qemu-arm64-parameters
+              condition: SUCCESS
+            - project: qemu-docker-builder
+              property-file: qemu-armhf-parameters
+              condition: SUCCESS
