@@ -10,40 +10,39 @@
             anonymous:
                 - job-read
                 - job-extended-read
-            riku.voipio@linaro.org:
+            linaro:
                 - job-read
                 - job-extended-read
-                - job-configure
                 - job-build
-                 
-    disabled: false
-    node: docker
-    display-name: 'Qemu package builds'
-
+                - job-cancel
     parameters:
         - string:
             name: source
-            description: 'The dsc source url or filename'
+            description: 'dsc source url or filename'
         - string:
             name: arch
-            description: 'architecture to build for - amd64, i386, armhf, arm64'
-            defaultvalue: armhf
-
+            description: 'architecture to build for: amd64, i386, armhf, arm64'
+    disabled: false
+    node: docker
+    display-name: 'QEMU package build'
+    wrappers:
+        - timestamps
     builders:
         - shell: |
-            #!/bin/sh
-            set -e
-            rm -rf ubuntu-packaging-tools
-            git clone http://git.linaro.org/ci/ubuntu-packaging-tools.git
-            ./ubuntu-packaging-tools/dockerbuild
+            #!/bin/bash
 
+            set -e
+
+            rm -rf ubuntu-packaging-tools
+            git clone --depth 1 http://git.linaro.org/ci/ubuntu-packaging-tools.git
+            ./ubuntu-packaging-tools/dockerbuild
     publishers:
         - copy-to-master:
-            includes: 
+            includes:
                 - '*.changes, *.dsc, *.gz, *.bz2, *.xz, *.deb, *.udeb'
-        - email:
-            recipients: riku.voipio@linaro.org
         - trigger-parameterized-builds:
             - project: post-build-repo
               property-file: post_build_ppa_parameters
               condition: SUCCESS
+        - email:
+            recipients: 'riku.voipio@linaro.org'

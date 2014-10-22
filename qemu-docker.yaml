@@ -10,43 +10,48 @@
             anonymous:
                 - job-read
                 - job-extended-read
-            riku.voipio@linaro.org:
+            linaro:
                 - job-read
                 - job-extended-read
-                - job-configure
                 - job-build
-                 
+                - job-cancel
     disabled: false
     node: docker
-    display-name: 'Qemu build'
-    triggers:
-        - timed: '@daily'
+    display-name: 'QEMU build'
     scm:
         - git:
             url: git://git.qemu.org/qemu.git
-            branches: 
-                - master
-            disable-submodules: true
-            skip-tag: true
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - origin/master
             basedir: qemu-linaro
-
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            disable-submodules: true
+            wipe-workspace: false
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell: |
-            #!/bin/sh
-            rm -rf qemu-ci
-            git clone http://git.linaro.org/git/ci/qemu.git qemu-ci
-            bash -x qemu-ci/qemu-pkg.sh
+            #!/bin/bash
 
+            set -e
+
+            rm -rf qemu-ci
+            git clone --depth 1 http://git.linaro.org/git/ci/qemu.git qemu-ci
+            bash -x qemu-ci/qemu-pkg.sh
     publishers:
         - archive:
             artifacts: '*.changes, *.dsc, *.gz, *.bz2, *.xz'
             latest-only: true
-        - email:
-            recipients: riku.voipio@linaro.org
         - trigger:
             project: 'qemu-lava-ltp-tests, qemu-lava-risu'
-            condition: SUCCESS
-
         - trigger-parameterized-builds:
             - project: qemu-docker-builder
               property-file: qemu-amd64-parameters
@@ -57,3 +62,5 @@
             - project: qemu-docker-builder
               property-file: qemu-armhf-parameters
               condition: SUCCESS
+        - email:
+            recipients: 'riku.voipio@linaro.org'
