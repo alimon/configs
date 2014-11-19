@@ -63,15 +63,15 @@
             dpkg -s qemu-user-static |grep '^Version'
             dpkg -s live-build |grep '^Version'
 
-            rm -f linaro-trusty-${rootfs}-* *.txt
+            rm -f linaro-utopic-${rootfs}-* *.txt
 
             test -d builddir || mkdir builddir
             sudo mount -t tmpfs -o size=6G tmpfs builddir
-            cp -a trusty-armhf-${rootfs} builddir/
-            cd builddir/trusty-armhf-${rootfs}
+            cp -a utopic-armhf-${rootfs} builddir/
+            cd builddir/utopic-armhf-${rootfs}
             ./configure
             make
-            sudo mv linaro-trusty-* ${WORKSPACE}
+            sudo mv linaro-utopic-* ${WORKSPACE}
 
             cat << EOF > ${WORKSPACE}/BUILD-INFO.txt
             Format-Version: 0.5
@@ -82,7 +82,7 @@
         - ssh:
             site: 'snapshots.linaro.org'
             target: '${JOB_NAME}/${BUILD_NUMBER}/ubuntu/images/${rootfs}-armhf/${BUILD_NUMBER}'
-            source: 'linaro-trusty-${rootfs}-*, *.txt'
+            source: 'linaro-utopic-${rootfs}-*, *.txt'
             timeout: 120000
             always-publish-from-master: true
         - ssh:
@@ -94,7 +94,7 @@
             always-publish-from-master: true
     publishers:
         - archive:
-            artifacts: 'linaro-trusty-*.tar.gz'
+            artifacts: 'linaro-utopic-*.tar.gz'
             latest-only: true
         - email:
             recipients: fathi.boudra@linaro.org
