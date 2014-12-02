@@ -8,7 +8,7 @@
         "system": "${SYSTEM_URL}",
         "target_type": "ubuntu"
       }
-    }, 
+    },
     {
       "command": "boot_linaro_image"
     },
@@ -30,10 +30,13 @@
         "testdef_repos": [
           {
             "git-repo": "http://git.linaro.org/qa/test-definitions.git",
-            "testdef": "ubuntu/perf.yaml"
+            "parameters": {
+              "PWR_TESTARG": "cpufreq"
+            },
+            "testdef": "ubuntu/pwrmgmt.yaml"
           }
         ],
-        "timeout": 800
+        "timeout": 1200
       }
     },
     {
@@ -42,6 +45,54 @@
         "testdef_repos": [
           {
             "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+              "PWR_TESTARG": "cpuidle"
+            },
+            "testdef": "ubuntu/pwrmgmt.yaml"
+          }
+        ],
+        "timeout": 1200
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+              "PWR_TESTARG": "cpuhotplug"
+            },
+            "testdef": "ubuntu/pwrmgmt.yaml"
+          }
+        ],
+        "timeout": 1200
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+              "PWR_TESTARG": "cputopology"
+            },
+            "testdef": "ubuntu/pwrmgmt.yaml"
+          }
+        ],
+        "timeout": 1200
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+              "PWR_TESTARG": "cpuidle"
+            },
             "testdef": "ubuntu/pwrmgmt.yaml"
           }
         ],
@@ -55,6 +106,18 @@
           {
             "git-repo": "http://git.linaro.org/qa/test-definitions.git",
             "testdef": "ubuntu/smoke-tests-basic.yaml"
+          }
+        ],
+        "timeout": 1200
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/usb-tests-basic.yaml"
           }
         ],
         "timeout": 1200
@@ -97,14 +160,14 @@
       }
     },
     {
-      "command": "submit_results", 
+      "command": "submit_results",
       "parameters": {
-        "stream": "${BUNDLE_STREAM_NAME}", 
+        "stream": "${BUNDLE_STREAM_NAME}",
         "server": "http://${LAVA_SERVER}"
       }
     }
   ],
   "device_type": "${DEVICE_TYPE}",
   "job_name": "${BUILD_URL}",
-  "timeout": 3600
+  "timeout": 18000
 }
