@@ -1,0 +1,373 @@
+- job:
+    name: lt-qcom-ubuntu-images
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+        - file:
+            name: lt-qcom-ubuntu-images_parameters
+        - string:
+            name: UBUNTU_FLAVOUR
+            default: 'utopic'
+        - string:
+            name: PLATFORM_NAME
+            default: 'qcom-snapdragon-tracking'
+        - string:
+            name: ROOTFS
+            default: 'developer'
+    disabled: false
+    node: precise_cloud
+    display-name: 'Qualcomm Ubuntu based images (tracking)'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - linaro-cp.py
+            relative-to: userContent
+    builders:
+        - copyartifact:
+            project: LT-QCOM-tracking-tree
+            flatten: true
+            optional: true
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+            # MOVED TEMPORARY
+            #  sudo rm -rf binary out qcom-firmware
+              rm -f linaro-${UBUNTU_FLAVOUR}-*.tar.gz *.dtb *.deb
+            }
+
+            sudo rm -rf binary out qcom-firmware initrd.img-*
+
+            # added KERNEL_FLAVOUR to filter out -dbg package when CONFIG_DEBUG_INFO is set
+            linux_image=`ls linux-image-*-linaro-${KERNEL_FLAVOUR}_*-linaro-${KERNEL_FLAVOUR}-*.deb`
+            version=`date +%Y%m%d`-${BUILD_NUMBER}
+
+            cat > README.txt << EOF
+            This build is using artifacts from the following builds:
+            Kernel build: ${KERNEL_BUILD_JENKINS}
+            EOF
+
+
+            for rootfs in ${ROOTFS}; do
+              # Remove artifacts from previous builds
+              sudo rm -f linaro-${UBUNTU_FLAVOUR}-${rootfs}*
+              sudo rm -rf binary
+
+              # Get rootfs
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              wget --progress=dot -e dotbytes=2M ${ROOTS_BUILD_URL} -O linaro-${UBUNTU_FLAVOUR}-${rootfs}.tar.gz
+
+              case "${rootfs}" in
+                developer)
+                  # Create initrd using the -developer rootfs
+                  # once initrd is finished, we clean up to avoid left-over from schroot
+                  sudo tar --numeric-owner -zxf linaro-${UBUNTU_FLAVOUR}-${rootfs}.tar.gz
+                  sudo cp -a ${linux_image} binary/
+
+                  schroot -c ifc6410-lt-tracking -d / -u root -- dpkg -i ${linux_image}
+                  cp -a binary/boot/initrd.img-* .
+                  sudo rm -rf binary
+                  ;;
+              esac
+
+              # now, we are ready to make the final rootfs
+              sudo tar --numeric-owner -zxf linaro-${UBUNTU_FLAVOUR}-${rootfs}.tar.gz
+
+              # for both -dev and -gnome, other in -gnome date is not correct at boot. probably an 
+              # issue to investigate with ntp/ntpdate/network-manager
+              cat << EOF | sudo tee -a binary/etc/network/interfaces
+
+            auto lo
+            iface lo inet loopback
+
+            auto eth0
+            iface eth0 inet dhcp
+            EOF
+
+              # Inject kernel modules
+              sudo dpkg-deb -x ${linux_image} binary/
+              sudo find binary/boot -type f -delete
+              sudo rm -f binary/linux-image-*.deb
+
+              sudo rm -rf binary/dev
+              sudo mkdir binary/dev
+              sudo mkdir -p binary/lib/firmware
+
+              cat << EOF | sudo tee -a binary/etc/fstab
+            LABEL=qcom-firmware /lib/firmware ext4 defaults 0 0
+            EOF
+
+              # Generate sparse image to reduce .img file size
+              sudo make_ext4fs -o -L rootfs -l 2G -s linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${version}.img binary/
+              gzip -9 linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${version}.img
+
+              cat >> README.txt << EOF
+            Linaro Ubuntu ${rootfs} build: http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}
+            EOF
+
+            done
+
+            # create the boot partition
+            cat > bootimg.cfg << EOF
+            bootsize = 0x900000
+            pagesize = 0x800
+            kerneladdr = 0x80208000
+            ramdiskaddr = 0x83000000
+            secondaddr = 0x81100000
+            tagsaddr = 0x80200100
+            name = linaro-${PLATFORM_NAME}
+            cmdline = console=tty0 console=${KERNEL_SERIAL_CONSOLE} root=/dev/mmcblk0p13 rootwait rw text
+            EOF
+
+            # create one boot image for each DTB we have around, since we need to append DTB to zImage
+            # fixup.bin used to fixup loader to boot mainline on Qualcomm platforms that needs adjustment of
+            # ATAG MEM.
+            for f in `find . -maxdepth 1 -name '*.dtb' -print` ; do
+              target=`basename $f .dtb`
+              if [ -f fixup-$target.bin ]; then
+                cat fixup-$target.bin zImage $f > zImage-dtb
+              else
+                  cat zImage $f > zImage-dtb
+              fi
+              abootimg --create boot-${target}-${PLATFORM_NAME}-${version}.img -f bootimg.cfg -k zImage-dtb -r initrd.img-*
+              gzip -9 boot-${target}-${PLATFORM_NAME}-${version}.img 
+            done
+
+            # create an empty partition, placeholder for proprietary firmware
+            # do no create sparse file, so that the file can be easily loop mounted
+            rm -rf qcom-firmware firmware-${PLATFORM_NAME}.img
+            fakeroot mkdir qcom-firmware
+            fakeroot make_ext4fs -L qcom-firmware -l 64M firmware-${PLATFORM_NAME}-${version}.img qcom-firmware/
+            gzip -9 firmware-${PLATFORM_NAME}-${version}.img 
+
+            # Publish to snapshots
+            mkdir out
+            sudo mv *.cfg *.img.gz *.deb zImage kernel_config README.txt `find . -maxdepth 1 -name 'fixup-*.bin' -print`  out/
+
+            # create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            #python ${WORKSPACE}/linaro-cp.py out ubuntu/pre-built/snapdragon/${BUILD_NUMBER}
+        - shell: |
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+
+            BOOT_URL=${BUILD_URL}/artifact/out/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img.gz
+            DATA_URL=${BUILD_URL}/artifact/out/linaro-${UBUNTU_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+            SYSTEM_URL=${BUILD_URL}/artifact/out/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
+
+            DEVICE_TYPE=ifc6410
+            BUNDLE_STREAM_NAME=/anonymous/fabo/
+            LAVA_SERVER=validation.linaro.org/RPC2/
+
+            cat << EOF > custom_lava_job_definition.json
+            {
+              "actions": [
+                {
+                  "command": "deploy_linaro_android_image",
+                  "parameters": {
+                    "boot": "${BOOT_URL}",
+                    "data": "${DATA_URL}",
+                    "system": "${SYSTEM_URL}",
+                    "target_type": "ubuntu"
+                  }
+                },
+                {
+                  "command": "boot_linaro_image"
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "testdef": "ubuntu/device-tree.yaml"
+                      }
+                    ],
+                    "timeout": 800
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "parameters": {
+                          "PWR_TESTARG": "cpufreq"
+                        },
+                        "testdef": "ubuntu/pwrmgmt.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "parameters": {
+                          "PWR_TESTARG": "cpuidle"
+                        },
+                        "testdef": "ubuntu/pwrmgmt.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "parameters": {
+                          "PWR_TESTARG": "cpuhotplug"
+                        },
+                        "testdef": "ubuntu/pwrmgmt.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "parameters": {
+                          "PWR_TESTARG": "cputopology"
+                        },
+                        "testdef": "ubuntu/pwrmgmt.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "parameters": {
+                          "PWR_TESTARG": "cpuidle"
+                        },
+                        "testdef": "ubuntu/pwrmgmt.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "testdef": "ubuntu/smoke-tests-basic.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "testdef": "ubuntu/usb-tests-basic.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "testdef": "ubuntu/network-tests-basic.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "testdef": "ubuntu/device_read_perf.yaml"
+                      }
+                    ],
+                    "timeout": 1200
+                  }
+                },
+                {
+                  "command": "lava_test_shell",
+                  "parameters": {
+                    "testdef_repos": [
+                      {
+                        "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+                        "testdef": "ubuntu/ltp.yaml"
+                      }
+                    ],
+                    "timeout": 10800
+                  }
+                },
+                {
+                  "command": "submit_results",
+                  "parameters": {
+                    "stream": "${BUNDLE_STREAM_NAME}",
+                    "server": "http://${LAVA_SERVER}"
+                  }
+                }
+              ],
+              "device_type": "${DEVICE_TYPE}",
+              "job_name": "${BUILD_URL}",
+              "timeout": 18000
+            }
+            EOF
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+    publishers:
+        - archive:
+            artifacts: 'out/*'
+            latest-only: true
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
