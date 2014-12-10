@@ -4,6 +4,9 @@
       "command": "deploy_linaro_image",
       "parameters": {
         "bootloadertype": "uefi",
+        "customize": {
+          "${STARTUP_NSH}": ["boot:/EFI/BOOT/startup.nsh"]
+        },
         "hwpack": "${HWPACK_BUILD_URL}",
         "rootfs": "${ROOTFS_BUILD_URL}"
       },
@@ -16,6 +19,25 @@
         "git URL": "${GIT_URL}",
         "git branch": "${GIT_BRANCH}",
         "git commit": "${GIT_COMMIT}"
+      }
+    },
+    {
+      "command": "boot_linaro_image",
+      "parameters": {
+        "boot_cmds": [
+          "sendline 3",
+          "expect Choice:",
+          "sendline 1",
+          "expect Select the Boot Device:",
+          "sendcontrol [",
+          "sendcontrol M",
+          "expect Choice:",
+          "sendline 5",
+          "expect Start:",
+          "sendline 2",
+          "expect or any other key to continue.",
+          "sendline "
+        ]
       }
     },
     {
