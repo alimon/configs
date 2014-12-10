@@ -1,0 +1,92 @@
+- job:
+    name: LT-HiSilicon-hix5hd2
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    node: build
+    display-name: 'HiSilicon LT - hix5hd2'
+    scm:
+        - git:
+            url: http://git.linaro.org/git/landing-teams/working/hisilicon/kernel.git
+            refspec: +refs/heads/hix5hd2:refs/remotes/origin/hix5hd2
+            name: origin
+            branches:
+                - origin/hix5hd2
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+              rm -rf configs
+            }
+
+            export LANG=C
+            CCACHE_DIR="$HOME/ccache"
+            CCACHE_UNIFY=1
+            CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
+            export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS
+            export use_ccache=true
+
+            export make_deb=false
+            export make_bootwrapper=false
+            export make_install=true
+            export kernel_flavour=hix5hd2
+            export kernel_config=hix5hd2_defconfig
+            export MAKE_DTBS=true
+            export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz"
+
+            test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            bash lci-build-tools/jenkins_kernel_build_inst
+
+            # XXX Append DTB
+            #cat out/zImage out/dtbs/hix5hd2-dkb.dtb > out/zImage-dtb
+
+            # Publish to snapshots
+            ${HOME}/bin/linaro-cp out kernel-hwpack/${JOB_NAME}/${BUILD_NUMBER}
+
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            # Start LAVA dance
+            test -d configs || git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            export BUNDLE_STREAM_NAME=/public/team/hisilicon/hix5hd2/
+            export LAVA_SERVER=validation.linaro.org/RPC2/
+            export KERNEL_URL=http://snapshots.linaro.org/kernel-hwpack/${JOB_NAME}/${BUILD_NUMBER}
+            export DTB_URL=${KERNEL_URL}/dtbs
+            export ROOTFS_BUILD_URL=http://releases.linaro.org/14.11/openembedded/images/minimal-initramfs-armv7a/linaro-image-minimal-initramfs-genericarmv7a-20141121-301.rootfs.cpio.gz.u-boot
+
+            # Hack to use submit LAVA jobs directly
+            python lci-build-tools/dtb-to-device.py
+    publishers:
+        - email:
+            recipients: 'guodong.xu@linaro.org fathi.boudra@linaro.org'
