@@ -10,6 +10,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
     parameters:
         - password:
             name: PUBLISH_KEY
@@ -46,6 +47,7 @@
               rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
+              rm -rf configs
             }
 
             export LANG=C
@@ -79,10 +81,32 @@
 
             # XXX
             mkdir -p out
-            cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
+            cp -a builddir-*-${kernel_flavour}/.config out/kernel.config
             mv hwpack_linaro-${hwpack_type}_*_armhf_supported.* out/
+
+            # Start LAVA dance
+            test -d configs || git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            export HWPACK_BUILD_URL=http://snapshots.linaro.org/kernel-hwpack/vexpress-coresight/${BUILD_NUMBER}/hwpack_linaro-${hwpack_type}_*_armhf_supported.tar.gz
+            export ROOTFS_BUILD_URL=http://releases.linaro.org/14.11/openembedded/images/minimal-armv7a/linaro-image-minimal-genericarmv7a-20141121-301.rootfs.tar.gz
+            export ROOTFS_BUILD_NUMBER=20141121-301
+            export DEVICE_TYPE=vexpress-tc2
+            export BUNDLE_STREAM_NAME=/public/team/linaro/coresight/
+            export LAVA_SERVER=validation.linaro.org/RPC2/
+
+            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/vexpress-tc2/template.yaml > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
 
             ${HOME}/bin/linaro-cp out kernel-hwpack/vexpress-coresight/${BUILD_NUMBER}
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
