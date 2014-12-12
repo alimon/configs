@@ -1,0 +1,82 @@
+- job:
+    name: linaro-edk2-capsule
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    node: build
+    display-name: 'Linaro EDK II - Capsule'
+    scm:
+        - git:
+            url: http://git.linaro.org/git/uefi/linaro-edk2.git
+            refspec: +refs/heads/linaro-topic-capsule:refs/remotes/origin/linaro-topic-capsule
+            name: origin
+            branches:
+                - origin/linaro-topic-capsule
+            basedir: linaro-edk2
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                -  gcc-linaro-aarch64-linux-gnu-4.8-2014.04_linux.tar.xz
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf arm64-tc
+              rm -rf uefi-tools
+              rm -rf out
+            }
+
+            # Install custom toolchain
+            mkdir arm64-tc
+            tar --strip-components=1 -C ${WORKSPACE}/arm64-tc -xf gcc-linaro-aarch64-linux-gnu-4.8-*_linux.tar.xz
+            export PATH="${WORKSPACE}/arm64-tc/bin:$PATH"
+
+            git clone git://git.linaro.org/uefi/uefi-tools.git
+
+            export AARCH64_TOOLCHAIN=GCC48
+            export EDK2_DIR=${WORKSPACE}/linaro-edk2
+            export UEFI_TOOLS_DIR=${WORKSPACE}/uefi-tools
+            export JENKINS_WORKSPACE=${WORKSPACE}
+            unset WORKSPACE
+
+            cd ${EDK2_DIR}
+            ${UEFI_TOOLS_DIR}/uefi-build.sh -b RELEASE fvp
+
+            unset WORKSPACE
+            export WORKSPACE=${JENKINS_WORKSPACE}
+
+            cd ${WORKSPACE}
+            mkdir out
+            cp -a ${EDK2_DIR}/Build/ArmVExpress-FVP-AArch64/RELEASE_GCC48/FV/*.fd out/
+            ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
