@@ -1,0 +1,229 @@
+actions:
+    - command: deploy_linaro_image
+      parameters:
+        boot: '${BOOT_URL}'
+        data: '${DATA_URL}'
+        system: '${SYSTEM_URL}'
+        target_type: 'ubuntu'
+    - command: boot_linaro_image
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/device-tree.yaml'
+        timeout: 800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/pwrmgmt.yaml'
+            parameters:
+              PWR_TESTARG: 'cpufreq'
+        timeout: 1200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/pwrmgmt.yaml'
+            parameters:
+              PWR_TESTARG: 'cpuidle'
+        timeout: 1200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/pwrmgmt.yaml'
+            parameters:
+              PWR_TESTARG: 'cpuhotplug'
+        timeout: 1200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/pwrmgmt.yaml'
+            parameters:
+              PWR_TESTARG: 'cputopology'
+        timeout: 1200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/smoke-tests-basic.yaml'
+        timeout: 1200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/usb-tests-basic.yaml'
+        timeout: 1200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/network-tests-basic.yaml'
+        timeout: 1200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/device_read_perf.yaml'
+        timeout: 1200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/sysbench.yaml'
+            parameters:
+              TEST: 'cpu'
+        timeout: 8000
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'math'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'timers'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'fcntl-locktests'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'ipc'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'fsx'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'fs'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'hugetlb'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'io'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'nptl'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'pty'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'containers'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'fs_bind'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'filecaps'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'admin_tools'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'connectors'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/ltp.yaml'
+            parameters:
+              TST_CMDFILES: 'mm'
+              SKIPFILE: './common/scripts/ltp/skipfile-lsk-juno'
+        timeout: 1800
+    - command: submit_results
+      parameters:
+          server: 'http://${LAVA_SERVER}'
+          stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 18000
