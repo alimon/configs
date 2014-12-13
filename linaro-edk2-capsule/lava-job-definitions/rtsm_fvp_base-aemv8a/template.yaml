@@ -1,0 +1,37 @@
+actions:
+  - command: deploy_linaro_image
+    parameters:
+      bootloadertype: 'uefi'
+      customize:
+        'boot:/fvp':
+        - 'delete'
+        'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/Image_leg_armv8_UpdateCapsule_test':
+        - 'boot:/Image'
+        'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/fvp-base-gicv2-psci.dtb_UpdateCapsule_test':
+        - 'boot:/fvp-base-gicv2-psci.dtb'
+        'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/fvp_bl1.bin':
+        - 'boot:/fvp_bl1.bin'
+        'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/fvp_fip.bin':
+        - 'boot:/fvp_fip.bin'
+        'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/uefi_update_capsule_example_v2.txt':
+        - 'rootfs:/uefi_update_capsule_example.txt'
+      image: '${IMAGE_URL}'
+  - command: boot_linaro_image
+    parameters:
+      boot_cmds:
+      - 'sendline 2'
+      - 'expect or any other key to continue.'
+      - 'sendline '
+  - command: lava_test_shell
+    parameters:
+      testdef_repos:
+      - parameters:
+          EXAMPLE_FILE_URL: '/uefi_update_capsule_example.txt'
+        url: 'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/uefi_update_capsule_temp.yaml'
+  - command: submit_results
+    parameters:
+      server: 'http://${LAVA_SERVER}'
+      stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 18000
