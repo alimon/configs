@@ -1,0 +1,78 @@
+{
+  "actions": [
+    {
+      "command": "deploy_linaro_image",
+      "parameters": {
+        "bootloadertype": "uefi",
+        "customize": {
+          "boot:/fvp": [
+            "delete"
+          ],
+          "${STARTUP_NSH}": [
+            "boot:/EFI/BOOT/startup.nsh"
+          ],
+          "${BL1_URL}": [
+            "boot:/fvp_bl1.bin"
+          ],
+          "${FIP_URL}": [
+            "boot:/fvp_fip.bin"
+          ]
+        },
+        "image": "${IMAGE_URL}"
+      },
+      "metadata": {
+        "build id": "${BUILD_NUMBER}",
+        "git URL": "${GIT_URL}",
+        "git branch": "${GIT_BRANCH}",
+        "git commit": "${GIT_COMMIT}",
+        "template": "acpi"
+      }
+    },
+    {
+      "command": "boot_linaro_image",
+      "parameters": {
+        "boot_cmds": [
+          "sendline 2",
+          "expect or any other key to continue.",
+          "sendline "
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/people/fu.wei/test-definitions.git",
+            "revision": "f700b9796643c675d2d52463e8cf068dfd5c393b",
+            "testdef": "openembedded/acpi-smoke-test.yaml"
+          }
+        ],
+        "timeout": 900
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/people/fu.wei/test-definitions.git",
+            "revision": "f700b9796643c675d2d52463e8cf068dfd5c393b",
+            "testdef": "openembedded/fwts.yaml"
+          }
+        ],
+        "timeout": 900
+      }
+    },
+    {
+      "command": "submit_results",
+      "parameters": {
+        "server": "http://${LAVA_SERVER}",
+        "stream": "${BUNDLE_STREAM_NAME}"
+      }
+    }
+  ],
+  "device_type": "${DEVICE_TYPE}",
+  "job_name": "${BUILD_URL}",
+  "timeout": 20000
+}

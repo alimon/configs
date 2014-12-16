@@ -1,0 +1,89 @@
+{
+  "actions": [
+    {
+      "command": "deploy_linaro_image",
+      "parameters": {
+        "bootloadertype": "uefi",
+        "customize": {
+          "boot:/fvp": [
+            "delete"
+          ],
+          "boot:/rtsm": [
+            "delete"
+          ],
+          "${INITRD_URL}": [
+            "boot:/Initrd"
+          ],
+          "${STARTUP_NSH}": [
+            "boot:/EFI/BOOT/startup.nsh"
+          ],
+          "${BL1_URL}": [
+            "boot:/fvp_bl1.bin"
+          ],
+          "${FIP_URL}": [
+            "boot:/fvp_fip.bin"
+          ]
+        },
+        "image": "${IMAGE_URL}"
+      },
+      "metadata": {
+        "build id": "${BUILD_NUMBER}",
+        "git URL": "${GIT_URL}",
+        "git branch": "${GIT_BRANCH}",
+        "git commit": "${GIT_COMMIT}",
+        "template": "grub-install"
+      }
+    },
+    {
+      "command": "boot_linaro_image",
+      "parameters": {
+        "boot_cmds": [
+          "sendline 2",
+          "expect or any other key to continue.",
+          "sendline "
+        ]
+      }
+    },
+    {
+      "command": "lava_command_run",
+      "parameters": {
+        "commands": [
+          "mkdir -p /boot/efi",
+          "mount /dev/vda1 /boot/efi",
+          "grub-install",
+          "umount /dev/vda1",
+          "sync"
+        ],
+        "timeout": 9600
+      }
+    },
+    {
+      "command": "boot_linaro_image",
+      "parameters": {
+        "boot_cmds": [
+          "sendline 1",
+          "expect grub>",
+          "sendline set root=(hd1,msdos1)",
+          "expect grub>",
+          "sendline set debug=linux",
+          "expect grub>",
+          "sendline linux /Image console=ttySBSA0 earlycon=pl011,0x1c090000 debug uefi_debug ignore_loglevel rootwait root=/dev/ram0 ro acpi=force",
+          "expect grub>",
+          "sendline initrd /Initrd",
+          "expect grub>",
+          "sendline boot"
+        ]
+      }
+    },
+    {
+      "command": "submit_results",
+      "parameters": {
+        "server": "http://${LAVA_SERVER}",
+        "stream": "${BUNDLE_STREAM_NAME}"
+      }
+    }
+  ],
+  "device_type": "${DEVICE_TYPE}",
+  "job_name": "${BUILD_URL}",
+  "timeout": 20000
+}

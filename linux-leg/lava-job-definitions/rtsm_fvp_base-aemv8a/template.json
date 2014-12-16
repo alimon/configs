@@ -1,0 +1,40 @@
+{
+  "actions": [
+    {
+      "command": "deploy_linaro_image",
+      "parameters": {
+        "bootloadertype": "uefi",
+        "image": "${IMAGE_URL}"
+      },
+      "metadata": {
+        "distribution": "openembedded",
+        "hwpack.build": "${BUILD_NUMBER}",
+        "hwpack.type": "vexpress64",
+        "git URL": "${GIT_URL}",
+        "git branch": "${GIT_BRANCH}",
+        "git commit": "${GIT_COMMIT}",
+        "template": "boot"
+      }
+    },
+    {
+      "command": "boot_linaro_image",
+      "parameters": {
+        "boot_cmds": [
+          "sendline 2",
+          "expect or any other key to continue.",
+          "sendline "
+        ]
+      }
+    },
+    {
+      "command": "submit_results",
+      "parameters": {
+        "server": "http://${LAVA_SERVER}",
+        "stream": "${BUNDLE_STREAM_NAME}"
+      }
+    }
+  ],
+  "device_type": "${DEVICE_TYPE}",
+  "job_name": "${BUILD_URL}",
+  "timeout": 20000
+}
