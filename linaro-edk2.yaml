@@ -1,0 +1,83 @@
+- job:
+    name: linaro-edk2
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            leif.lindholm@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    node: build
+    display-name: 'Linaro EDK II - UEFI Continuous Integration'
+    scm:
+        - git:
+            url: http://git.linaro.org/git/uefi/linaro-edk2.git
+            refspec: +refs/heads/release:refs/remotes/origin/release
+            name: origin
+            branches:
+                - origin/release
+            basedir: linaro-edk2
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - gcc-linaro-arm-linux-gnueabihf-4.8-2014.04_linux.tar.xz
+                - gcc-linaro-aarch64-linux-gnu-4.8-2014.04_linux.tar.xz
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf arm-tc
+              rm -rf arm64-tc
+              rm -rf uefi-ci uefi-tools
+              rm -rf ${JOB_NAME}-build
+              rm -rf out
+            }
+
+            # Install custom toolchain
+            mkdir arm-tc arm64-tc
+            tar --strip-components=1 -C ${WORKSPACE}/arm-tc -xf gcc-linaro-arm-linux-gnueabihf-4.8-*_linux.tar.xz
+            tar --strip-components=1 -C ${WORKSPACE}/arm64-tc -xf gcc-linaro-aarch64-linux-gnu-4.8-*_linux.tar.xz
+            export PATH="${WORKSPACE}/arm-tc/bin:${WORKSPACE}/arm64-tc/bin:$PATH"
+
+            git clone git://git.linaro.org/uefi/uefi-tools.git
+            git clone git://git.linaro.org/ci/uefi.git uefi-ci
+            bash -x uefi-ci/uefi.sh
+
+            builddir=${WORKSPACE}/${JOB_NAME}-build
+            outdir=${WORKSPACE}/out
+            mkdir -p ${outdir}
+            mv ${builddir}/* ${outdir}/
+
+            ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'leif.lindholm@linaro.org fathi.boudra@linaro.org'
