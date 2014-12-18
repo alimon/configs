@@ -15,8 +15,26 @@
         - password:
             name: PUBLISH_KEY
             default: ${PUBLISH_KEY}
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/private/team/linaro/leg-kernel/'
+        - string:
+            name: DEVICE_TYPE
+            default: 'rtsm_fvp_base-aemv8a'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: INITRD_URL
+            default: 'http://releases.linaro.org/14.11/openembedded/images/minimal-initramfs-armv8/linaro-image-minimal-initramfs-genericarmv8-20141122-721.rootfs.cpio.gz'
+        - string:
+            name: BL1_URL
+            default: 'http://releases.linaro.org/14.12/components/kernel/uefi-linaro/release/fvp_minimal/bl1.bin'
+        - string:
+            name: FIP_URL
+            default: 'http://releases.linaro.org/14.12/components/kernel/uefi-linaro/release/fvp_minimal/fip.bin'
     disabled: false
-    node: build
+    node: kernel_cloud
     child-workspace: .
     display-name: 'LEG Kernel'
     scm:
@@ -34,25 +52,23 @@
             type: user-defined
             name: hwpack
             values:
-                - vexpress
                 - vexpress64
         - axis:
             type: slave
             name: label
             values:
-                - build
+                - kernel_cloud
     execution-strategy:
         sequential: true
     wrappers:
         - timestamps
         - copy-to-slave:
             includes:
-                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz
-                - gcc-linaro-aarch64-linux-gnu-4.9-2014.08_linux.tar.xz
+                - gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
-            node: build
+            node: kernel_cloud
     builders:
         - shell: |
             #!/bin/bash
@@ -69,28 +85,21 @@
 
             export use_config_fragment=1
             export MAKE_DTBS=true
-            export toolchain_url="http://releases.linaro.org/14.08/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz"
-            export rootfs_arch="armv7a"
-            export rootfs_type="alip"
+            export hwpack_type=vexpress64
+            export board_types=${DEVICE_TYPE}
+            export kernel_flavour=vexpress64
+            export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/vexpress64.conf linaro/configs/distribution.conf linaro/configs/acpi.conf linaro/configs/efi.conf"
+            export ARCH=arm64
+            export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
+            export rootfs_arch=armv8
+            export rootfs_type=lamp
 
-            case "${hwpack}" in
-              vexpress)
-                export hwpack_type="vexpress"
-                export board_types="rtsm_ve-a15x1-a7x1"
-                export kernel_flavour="vexpress"
-                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/vexpress.conf linaro/configs/distribution.conf linaro/configs/acpi.conf linaro/configs/efi.conf"
-                ;;
-              vexpress64)
-                export hwpack_type="vexpress64"
-                export board_types="rtsm_fvp_base-aemv8a"
-                export kernel_flavour="vexpress64"
-                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/vexpress64.conf linaro/configs/distribution.conf linaro/configs/acpi.conf linaro/configs/efi.conf"
-                export ARCH="arm64"
-                export toolchain_url="https://releases.linaro.org/14.08/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.08_linux.tar.xz"
-                export rootfs_arch="armv8"
-                export rootfs_type="lamp"
-                ;;
-            esac
+            # for efi_runtime module
+            wget http://people.linaro.org/~fu.wei/LAVA/test/UEFI/ci/efi_runtime_Kconfig.patch -O efi_runtime_Kconfig.patch
+            patch -p1 < efi_runtime_Kconfig.patch
+            rm -rf fwts
+            git clone -b V14.11.00 --depth 1 git://kernel.ubuntu.com/hwe/fwts.git
+            cp -a fwts/efi_runtime/efi_runtime* drivers/test_rs/
 
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
             bash lci-build-tools/jenkins_kernel_build_inst
@@ -110,51 +119,109 @@
             gzip -9 ${hwpack}-leg-sd.img
 
             mkdir out
-            cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${hwpack}
-            case "${hwpack}" in
-              vexpress)
-                cp -a builddir-*-${kernel_flavour}/arch/arm/boot/zImage out/zImage_${hwpack}
-                ;;
-              vexpress64)
-                cp -a builddir-*-${kernel_flavour}/arch/arm64/boot/Image out/Image_${hwpack}
-                ;;
-            esac
+            cp -a builddir-*-${kernel_flavour}/.config out/kernel.config
+            cp -a builddir-*-${kernel_flavour}/arch/arm64/boot/Image out/
             mv hwpack_* out/
             mv ${hwpack}-leg-sd.img.gz out/
             mv *.bin out/
 
+            cat << EOF > out/startup.nsh
+            Image console=ttySBSA0 earlycon=pl011,0x1c090000 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel acpi=force
+            EOF
+
             # Publish to snapshots
             ${HOME}/bin/linaro-cp out kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}
 
-            # Create post-build-lava parameters
+            cat << EOF > lava_job_definition_parameters
+            IMAGE_URL=http://snapshots.linaro.org/kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}/${hwpack}-leg-sd.img.gz
+            STARTUP_NSH=http://snapshots.linaro.org/kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}/startup.nsh
+            EOF
+        - inject:
+            properties-file: lava_job_definition_parameters
+        - shell: |
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${BL1_URL}|${BL1_URL}|" \
+                -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${INITRD_URL}|${INITRD_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linux-leg/lava-job-definitions/${DEVICE_TYPE}/template.json \
+                > custom_lava_job_definition.json
+
             cat << EOF > post_build_lava_parameters
-            HWPACK_JOB_NAME=${JOB_NAME}
-            HWPACK_BUILD_NUMBER=${BUILD_NUMBER}
-            HWPACK_FILE_NAME=`ls hwpack_linaro-${hwpack_type}*.tar.gz`
-            IMAGE_URL=https://snapshots.linaro.org/kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}/${hwpack}-leg-sd.img.gz
-            BUNDLE_STREAM_NAME=/private/team/linaro/leg-kernel/
-            LAVA_TEST_PLAN=''
-            DEVICE_TYPE=${board_types}
-            DEPLOY_IMAGE_PARAMETERS_URL=${JOB_URL}/ws/deploy_image_parameters.json
-            BOOT_IMAGE_PARAMETERS_URL=${JOB_URL}/ws/boot_image_parameters.json
-            EOF
-
-            # Custom deploy_linaro_image parameters
-            cat << EOF > ${WORKSPACE}/deploy_image_parameters.json
-            {
-                "bootloadertype": "uefi"
-            }
-            EOF
-
-            # Custom boot_linaro_image parameters
-            cat << EOF > boot_image_parameters.json
-            {
-              "boot_cmds": ["sendline b"]
-            }
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
             EOF
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${BL1_URL}|${BL1_URL}|" \
+                -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${INITRD_URL}|${INITRD_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linux-leg/lava-job-definitions/${DEVICE_TYPE}/template-grub-install.json \
+                > custom_lava_job_definition_grub_install.json
+
+            cat << EOF > post_build_lava_parameters_grub_install
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition_grub_install.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_grub_install
+              block: true
+        - shell: |
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${BL1_URL}|${BL1_URL}|" \
+                -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${INITRD_URL}|${INITRD_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linux-leg/lava-job-definitions/${DEVICE_TYPE}/template-acpi.json \
+                > custom_lava_job_definition_acpi.json
+
+            cat << EOF > post_build_lava_parameters_acpi
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition_acpi.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_acpi
+              block: true
     publishers:
         - email:
             recipients: 'graeme.gregory@linaro.org fathi.boudra@linaro.org ilias.biris@linaro.org'
