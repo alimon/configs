@@ -116,11 +116,39 @@
     {
       "command": "lava_test_shell",
       "parameters": {
+        "timeout": 18000,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "openembedded/libhugetlbfs.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
         "timeout": 800,
         "testdef_repos": [
           {
             "git-repo": "git://git.linaro.org/qa/test-definitions.git",
             "testdef": "openembedded/pointer-tagging-tests.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 7200,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "TST_CMDFILES": "syscalls",
+                "SKIPFILE": "./common/scripts/ltp/skipfile-lsk-juno"
+            },
+            "testdef": "openembedded/ltp.yaml"
           }
         ]
       }
