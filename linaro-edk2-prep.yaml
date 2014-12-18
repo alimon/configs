@@ -90,15 +90,13 @@
             mkdir -p ${outdir}
             mv ${builddir}/* ${outdir}/
 
-            cat << EOF > ${outdir}/startup.nsh
-            Image console=ttySBSA0 earlycon=pl011,0x1c090000 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel acpi=force
-            EOF
-
             ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
             IMAGE_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/linux-leg/lastSuccessfulBuild/buildNumber`
-            IMAGE_URL="https://snapshots.linaro.org/kernel-hwpack/linux-leg-vexpress64/${IMAGE_BUILD_NUMBER}/vexpress64-leg-sd.img.gz"
-            env |grep IMAGE_URL > lava_job_definition_parameters
+            cat << EOF > lava_job_definition_parameters
+            IMAGE_URL=http://snapshots.linaro.org/kernel-hwpack/linux-leg-vexpress64/${IMAGE_BUILD_NUMBER}/vexpress64-leg-sd.img.gz
+            STARTUP_NSH=http://snapshots.linaro.org/kernel-hwpack/linux-leg-vexpress64/${IMAGE_BUILD_NUMBER}/startup.nsh
+            EOF
         - inject:
             properties-file: lava_job_definition_parameters
         - shell: |
@@ -137,7 +135,6 @@
         - shell: |
             BL1_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp_minimal/bl1.bin
             FIP_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp_minimal/fip.bin
-            STARTUP_NSH=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/startup.nsh
 
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
