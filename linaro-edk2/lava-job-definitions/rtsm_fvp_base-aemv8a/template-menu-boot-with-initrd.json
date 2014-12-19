@@ -1,0 +1,69 @@
+{
+  "actions": [
+    {
+      "command": "deploy_linaro_image",
+      "parameters": {
+        "bootloadertype": "uefi",
+        "customize": {
+          "boot:/fvp": [
+            "delete"
+          ],
+          "boot:/rtsm": [
+            "delete"
+          ],
+          "${INITRD_URL}": [
+            "boot:/Initrd"
+          ],
+          "${BL1_URL}": [
+            "boot:/fvp_bl1.bin"
+          ],
+          "${FIP_URL}": [
+            "boot:/fvp_fip.bin"
+          ]
+        },
+        "image": "${IMAGE_URL}"
+      },
+      "metadata": {
+        "build id": "${BUILD_NUMBER}",
+        "git URL": "${GIT_URL}",
+        "git branch": "${GIT_BRANCH}",
+        "git commit": "${GIT_COMMIT}",
+        "template": "menu-boot-with-initrd"
+      }
+    },
+    {
+      "command": "boot_linaro_image",
+      "parameters": {
+        "boot_cmds": [
+          "sendline 3",
+          "expect Choice:",
+          "sendline 1",
+          "expect Select the Boot Device:",
+          "sendline 2",
+          "expect File path of the EFI Application or the kernel:",
+          "sendline Image",
+          "expect Is your application an OS loader? [y/n]",
+          "sendline n",
+          "expect Arguments to pass to the EFI Application:",
+          "sendline initrd=Initrd console=ttySBSA0 earlycon=pl011,0x1c090000 debug uefi_debug ignore_loglevel rootwait root=/dev/ram0 ro acpi=force",
+          "expect Description for this new Entry:",
+          "sendline LAVA",
+          "expect Choice:",
+          "sendline 7",
+          "expect Start:",
+          "sendline 2"
+        ]
+      }
+    },
+    {
+      "command": "submit_results",
+      "parameters": {
+        "server": "http://${LAVA_SERVER}",
+        "stream": "${BUNDLE_STREAM_NAME}"
+      }
+    }
+  ],
+  "device_type": "${DEVICE_TYPE}",
+  "job_name": "${BUILD_URL}",
+  "timeout": 20000
+}
