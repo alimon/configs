@@ -10,12 +10,22 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
     parameters:
         - file:
             name: defconfig.properties
         - password:
             name: PUBLISH_KEY
             default: ${PUBLISH_KEY}
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/eas/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: ROOTFS_BUILD_URL
+            default: 'http://releases.linaro.org/14.12/openembedded/images/minimal-armv7a/linaro-image-minimal-genericarmv7a-20141212-311.rootfs.tar.gz'
     disabled: false
     node: build
     child-workspace: .
@@ -68,10 +78,8 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
-              rm -rf configs
             }
 
             export LANG=C
@@ -81,7 +89,7 @@
             export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS 
             export use_ccache=true
             export silent=true
-            export make_deb=false
+            export make_deb=true
             export make_bootwrapper=false
             export make_install=true
             export kernel_flavour="${defconfig}"
@@ -89,8 +97,23 @@
             export MAKE_DTBS=true
             export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz"
 
+            case "${defconfig}" in
+              omap2plus)
+                export hwpack_type="panda"
+                export kernel_flavour="omap"
+                export DEVICE_TYPE="panda-es"
+                ;;
+              vexpress)
+                export hwpack_type="vexpress"
+                export kernel_flavour="vexpress"
+                export DEVICE_TYPE="vexpress-tc2"
+                ;;
+            esac
+
             test -d lci-build-tools || git clone --depth 1 https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
             bash lci-build-tools/jenkins_kernel_build_inst
+
+            mv hwpack_linaro-${hwpack_type}* out/
 
             # Publish to snapshots
             ${HOME}/bin/linaro-cp out kernel-hwpack/linux-eas/${defconfig}/${BUILD_NUMBER}
@@ -98,14 +121,25 @@
             CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
-            # Start LAVA dance
-            test -d configs || git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            HWPACK_FILE_NAME=`ls out/hwpack_linaro-${hwpack_type}_*_armhf_supported.tar.gz |xargs basename`
+            HWPACK_BUILD_URL="http://snapshots.linaro.org/kernel-hwpack/linux-eas/${defconfig}/${BUILD_NUMBER}/${HWPACK_FILE_NAME}"
 
-            export BUNDLE_STREAM_NAME=/public/team/linaro/eas/
-            export LAVA_SERVER=validation.linaro.org/RPC2/
-            export KERNEL_URL=http://snapshots.linaro.org/kernel-hwpack/linux-eas/${defconfig}/${BUILD_NUMBER}
-            export DTB_URL=${KERNEL_URL}/dtbs
-            export ROOTFS_BUILD_URL=http://releases.linaro.org/14.11/openembedded/images/minimal-armv7a/linaro-image-minimal-genericarmv7a-20141121-301.rootfs.tar.gz
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
+            EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            ./lci-build-tools/yaml-to-json.py configs/linux-eas/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
 
-            # Hack to use submit LAVA jobs directly
-            python lci-build-tools/dtb-to-device.py
+            rm -rf lci-build-tools
+            rm -rf configs
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
