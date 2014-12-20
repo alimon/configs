@@ -9,13 +9,19 @@ actions:
         - 'boot:/Image'
         'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/fvp-base-gicv2-psci.dtb_UpdateCapsule_test':
         - 'boot:/fvp-base-gicv2-psci.dtb'
-        'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/fvp_bl1.bin':
+        '${BL1_URL}':
         - 'boot:/fvp_bl1.bin'
-        'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/fvp_fip.bin':
+        '${FIP_URL}':
         - 'boot:/fvp_fip.bin'
         'http://people.linaro.org/~fu.wei/LAVA/test/UEFI/uefi_update_capsule/uefi_update_capsule_example_v2.txt':
         - 'rootfs:/uefi_update_capsule_example.txt'
       image: '${IMAGE_URL}'
+      metadata:
+        build id: '${BUILD_NUMBER}'
+        git URL: '${GIT_URL}'
+        git branch: '${GIT_BRANCH}'
+        git commit: '${GIT_COMMIT}'
+        template: 'update-capsule'
   - command: boot_linaro_image
     parameters:
       boot_cmds:

@@ -10,10 +10,20 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
     parameters:
         - password:
             name: PUBLISH_KEY
             default: ${PUBLISH_KEY}
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/private/team/linaro/leg-edk2/'
+        - string:
+            name: DEVICE_TYPE
+            default: 'rtsm_fvp_base-aemv8a'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: build
     display-name: 'Linaro EDK II - Capsule'
@@ -82,6 +92,43 @@
             cp -a ${EDK2_DIR}/Build/ArmVExpress-FVP-AArch64/RELEASE_GCC48/FV/*.bin out/
             cp -a ${EDK2_DIR}/Build/ArmVExpress-FVP-AArch64/RELEASE_GCC48/FV/*.fd out/
             ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+
+            IMAGE_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/linux-leg/lastSuccessfulBuild/buildNumber`
+            cat << EOF > lava_job_definition_parameters
+            IMAGE_URL=http://snapshots.linaro.org/kernel-hwpack/linux-leg-vexpress64/${IMAGE_BUILD_NUMBER}/vexpress64-leg-sd.img.gz
+            EOF
+        - inject:
+            properties-file: lava_job_definition_parameters
+        - shell: |
+            BL1_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/fip.bin
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${BL1_URL}|${BL1_URL}|" \
+                -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linaro-edk2-capsule/lava-job-definitions/${DEVICE_TYPE}/template.json \
+                > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'
