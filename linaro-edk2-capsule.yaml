@@ -50,6 +50,7 @@
             {
               cd ${WORKSPACE}
               rm -rf arm64-tc
+              rm -rf arm-trusted-firmware
               rm -rf uefi-tools
               rm -rf out
             }
@@ -58,6 +59,9 @@
             mkdir arm64-tc
             tar --strip-components=1 -C ${WORKSPACE}/arm64-tc -xf gcc-linaro-aarch64-linux-gnu-4.8-*_linux.tar.xz
             export PATH="${WORKSPACE}/arm64-tc/bin:$PATH"
+
+            # Check out arm-trusted-firmware - at a locked-down known-good version
+            git clone -b v1.0 --depth 1 https://github.com/ARM-software/arm-trusted-firmware.git
 
             git clone git://git.linaro.org/uefi/uefi-tools.git
 
@@ -68,13 +72,14 @@
             unset WORKSPACE
 
             cd ${EDK2_DIR}
-            ${UEFI_TOOLS_DIR}/uefi-build.sh -b RELEASE fvp
+            ${UEFI_TOOLS_DIR}/uefi-build.sh -b RELEASE -a ../arm-trusted-firmware fvp
 
             unset WORKSPACE
             export WORKSPACE=${JENKINS_WORKSPACE}
 
             cd ${WORKSPACE}
             mkdir out
+            cp -a ${EDK2_DIR}/Build/ArmVExpress-FVP-AArch64/RELEASE_GCC48/FV/*.bin out/
             cp -a ${EDK2_DIR}/Build/ArmVExpress-FVP-AArch64/RELEASE_GCC48/FV/*.fd out/
             ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
     publishers:
