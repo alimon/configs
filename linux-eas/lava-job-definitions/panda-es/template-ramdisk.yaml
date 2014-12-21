@@ -1,0 +1,20 @@
+actions:
+- command: deploy_linaro_kernel
+  parameters:
+    dtb: '${DTB_URL}/omap4-panda-es.dtb'
+    kernel: '${KERNEL_URL}/uImage'
+    ramdisk: 'http://releases.linaro.org/14.12/openembedded/images/minimal-initramfs-armv7a/linaro-image-minimal-initramfs-genericarmv7a-20141212-311.rootfs.cpio.gz.u-boot'
+  metadata:
+    build id: '${BUILD_NUMBER}'
+    defconfig: '${defconfig}'
+    git URL: '${GIT_URL}'
+    git branch: '${GIT_BRANCH}'
+    git commit: '${GIT_COMMIT}'
+- command: boot_linaro_image
+- command: submit_results
+  parameters:
+    server: 'http://${LAVA_SERVER}'
+    stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 3600

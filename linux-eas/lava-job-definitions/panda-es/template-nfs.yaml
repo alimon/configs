@@ -1,0 +1,20 @@
+actions:
+- command: deploy_linaro_kernel
+  parameters:
+    dtb: '${DTB_URL}/omap4-panda-es.dtb'
+    kernel: '${KERNEL_URL}/uImage'
+    nfsrootfs: '${ROOTFS_BUILD_URL}'
+  metadata:
+    build id: '${BUILD_NUMBER}'
+    defconfig: '${defconfig}'
+    git URL: '${GIT_URL}'
+    git branch: '${GIT_BRANCH}'
+    git commit: '${GIT_COMMIT}'
+- command: boot_linaro_image
+- command: submit_results
+  parameters:
+    server: 'http://${LAVA_SERVER}'
+    stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 3600
