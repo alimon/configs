@@ -107,12 +107,25 @@
                 export hwpack_type="vexpress"
                 export kernel_flavour="vexpress"
                 export DEVICE_TYPE="vexpress-tc2"
+                unset kernel_config
+                export use_config_fragment=1
+                export conf_filenames="arch/arm/configs/vexpress_defconfig linaro/configs/workaround.conf"
+                # XXX workaround vexpress defconfig
+                mkdir -p linaro/configs
+                cat << EOF > linaro/configs/workaround.conf
+            CONFIG_DEVTMPFS=y
+            CONFIG_DEVTMPFS_MOUNT=y
+            CONFIG_REGULATOR=y
+            CONFIG_REGULATOR_VEXPRESS=y
+            CONFIG_EXT4_FS=y
+            EOF
                 ;;
             esac
 
             test -d lci-build-tools || git clone --depth 1 https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
             bash lci-build-tools/jenkins_kernel_build_inst
 
+            [ "${defconfig}" = "omap2plus" ] && mkimage -A arm -O linux -C none -T kernel -a 0x80008000 -e 0x80008000 -n Linux -d out/zImage out/uImage
             mv hwpack_linaro-${hwpack_type}* out/
 
             # Publish to snapshots
