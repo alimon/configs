@@ -102,6 +102,15 @@
                 export hwpack_type="panda"
                 export kernel_flavour="omap"
                 export DEVICE_TYPE="panda-es"
+                unset kernel_config
+                export use_config_fragment=1
+                export conf_filenames="arch/arm/configs/${defconfig}_defconfig linaro/configs/workaround.conf"
+                # XXX workaround omap2plus defconfig
+                mkdir -p linaro/configs
+                cat << EOF > linaro/configs/workaround.conf
+            CONFIG_USB_EHCI_HCD=y
+            CONFIG_USB_OHCI_HCD=y
+            EOF
                 ;;
               vexpress)
                 export hwpack_type="vexpress"
@@ -109,7 +118,7 @@
                 export DEVICE_TYPE="vexpress-tc2"
                 unset kernel_config
                 export use_config_fragment=1
-                export conf_filenames="arch/arm/configs/vexpress_defconfig linaro/configs/workaround.conf"
+                export conf_filenames="arch/arm/configs/${defconfig}_defconfig linaro/configs/workaround.conf"
                 # XXX workaround vexpress defconfig
                 mkdir -p linaro/configs
                 cat << EOF > linaro/configs/workaround.conf
@@ -134,14 +143,17 @@
             CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
-            HWPACK_FILE_NAME=`ls out/hwpack_linaro-${hwpack_type}_*_armhf_supported.tar.gz |xargs basename`
-            HWPACK_BUILD_URL="http://snapshots.linaro.org/kernel-hwpack/linux-eas/${defconfig}/${BUILD_NUMBER}/${HWPACK_FILE_NAME}"
+            KERNEL_URL=http://snapshots.linaro.org/kernel-hwpack/linux-eas/${defconfig}/${BUILD_NUMBER}
+            DTB_URL=${KERNEL_URL}/dtbs
+            HWPACK_BUILD_URL=${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}_*_armhf_supported.tar.gz |xargs basename`
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
             LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
+            DTB_URL=${DTB_URL}
             HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
             EOF
         - inject:
