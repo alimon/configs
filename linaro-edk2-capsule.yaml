@@ -96,6 +96,7 @@
             IMAGE_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/linux-leg/lastSuccessfulBuild/buildNumber`
             cat << EOF > lava_job_definition_parameters
             IMAGE_URL=http://snapshots.linaro.org/kernel-hwpack/linux-leg-vexpress64/${IMAGE_BUILD_NUMBER}/vexpress64-leg-sd.img.gz
+            STARTUP_NSH=http://snapshots.linaro.org/kernel-hwpack/linux-leg-vexpress64/${IMAGE_BUILD_NUMBER}/startup.nsh
             EOF
         - inject:
             properties-file: lava_job_definition_parameters
@@ -111,6 +112,7 @@
                 -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
                 -e "s|\${BL1_URL}|${BL1_URL}|" \
                 -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
                 -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
                 -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
                 -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
