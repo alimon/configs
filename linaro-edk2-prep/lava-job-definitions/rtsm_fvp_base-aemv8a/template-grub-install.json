@@ -14,6 +14,9 @@
           "${INITRD_URL}": [
             "boot:/Initrd"
           ],
+          "${STARTUP_NSH}": [
+            "boot:/EFI/BOOT/startup.nsh"
+          ],
           "${BL1_URL}": [
             "boot:/fvp_bl1.bin"
           ],
@@ -35,23 +38,9 @@
       "command": "boot_linaro_image",
       "parameters": {
         "boot_cmds": [
-          "sendline 3",
-          "expect Choice:",
-          "sendline 1",
-          "expect Select the Boot Device:",
           "sendline 2",
-          "expect File path of the EFI Application or the kernel:",
-          "sendline Image",
-          "expect Is your application an OS loader? [y/n]",
-          "sendline n",
-          "expect Arguments to pass to the EFI Application:",
-          "sendline console=ttySBSA0 earlycon=pl011,0x1c090000 debug uefi_debug ignore_loglevel rootwait root=/dev/vda2 rootfstype=ext4 rw acpi=force",
-          "expect Description for this new Entry:",
-          "sendline LAVA",
-          "expect Choice:",
-          "sendline 7",
-          "expect Start:",
-          "sendline 2"
+          "expect or any other key to continue.",
+          "sendline "
         ]
       }
     },
