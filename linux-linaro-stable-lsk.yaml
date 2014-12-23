@@ -1,0 +1,96 @@
+- job:
+    name: linux-linaro-stable-lsk
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'Linaro Stable Kernel (linux-linaro-lsk-v3.10)'
+    scm:
+        - git:
+            url: git://git.linaro.org/kernel/linux-linaro-stable.git
+            refspec: +refs/heads/linux-linaro-lsk:refs/remotes/origin/linux-linaro-lsk
+            name: origin
+            branches: 
+                - origin/linux-linaro-lsk
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - arndale
+                - panda
+                - panda-be
+                - vexpress
+                - vexpress-be
+                - vexpress64
+                - vexpress64-be
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz
+                - gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            rm -rf linux-linaro-stable-lsk
+            git clone --depth 1 git://git.linaro.org/ci/job/linux-linaro-stable-lsk.git
+            bash linux-linaro-stable-lsk/linux-linaro-stable-lsk.sh
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="hwpack"}'
+            condition-string2: 'vexpress64'
+            steps:
+                - shell: |
+                    mv rtsm_fvp_base-aemv8a.json custom_lava_job_definition.json
+                - trigger-builds:
+                    - project: 'post-build-lava'
+                      property-file: post_build_lava_parameters
+                      block: true
+                - shell: |
+                    mv juno-armv7a-rootfs.json custom_lava_job_definition.json
+                - trigger-builds:
+                    - project: 'post-build-lava'
+                      property-file: post_build_lava_parameters
+                      block: true
+    publishers:
+        - warnings:
+            console-log-parsers:
+              - 'GNU C Compiler 4 (gcc)'
+        - email-ext:
+            recipients: 'mark.brown@linaro.org, alex.shi@linaro.org, fathi.boudra@linaro.org'
+            attach-build-log: true
+            matrix-trigger: both
