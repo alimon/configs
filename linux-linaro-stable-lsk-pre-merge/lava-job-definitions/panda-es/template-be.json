@@ -3,43 +3,23 @@
     {
       "command": "deploy_linaro_image",
       "parameters": {
+        "dtb": "omap4-panda-es.dtb",
         "hwpack": "${HWPACK_BUILD_URL}",
         "rootfs": "${ROOTFS_BUILD_URL}"
       },
       "metadata": {
-        "distribution": "ubuntu",
+        "distribution": "openembedded",
         "hwpack.build": "${BUILD_NUMBER}",
         "hwpack.type": "${hwpack_type}",
         "rootfs.build": "${ROOTFS_BUILD_NUMBER}",
-        "rootfs.type": "developer",
+        "rootfs.type": "minimal-armv7ab-gcc-4.9",
         "git URL": "${GIT_URL}",
         "git branch": "${GIT_BRANCH}",
         "git commit": "${GIT_COMMIT}"
       }
     },
     {
-      "command": "lava_test_shell",
-      "parameters": {
-        "testdef_repos": [
-          {
-            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
-            "testdef": "ubuntu/pwrmgmt.yaml"
-          }
-        ],
-        "timeout": 1200
-      }
-    },
-    {
-      "command": "lava_test_shell",
-      "parameters": {
-        "testdef_repos": [
-          {
-            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
-            "testdef": "ubuntu/smoke-tests-basic.yaml"
-          }
-        ],
-        "timeout": 1200
-      }
+      "command": "boot_linaro_image"
     },
     {
       "command": "submit_results",
@@ -51,5 +31,5 @@
   ],
   "device_type": "${DEVICE_TYPE}",
   "job_name": "${BUILD_URL}",
-  "timeout": 172800
+  "timeout": 3600
 }
