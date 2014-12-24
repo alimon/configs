@@ -15,6 +15,12 @@
         - password:
             name: PUBLISH_KEY
             default: ${PUBLISH_KEY}
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/private/team/linaro/ci-linux-linaro-stable-lsk/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: build
     child-workspace: .
@@ -62,9 +68,6 @@
         - shell: |
             #!/bin/bash
 
-            rm -rf linux-linaro-stable-lsk
-            git clone --depth 1 git://git.linaro.org/ci/job/linux-linaro-stable-lsk.git
-
             set -ex
 
             trap cleanup_exit INT TERM EXIT
@@ -72,7 +75,6 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
               rm -f linux-*.deb
@@ -94,44 +96,54 @@
                 export board_types="arndale"
                 export kernel_flavour="arndale"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/arndale.conf"
+                export DEVICE_TYPE="arndale"
                 ;;
               arndale-be)
                 export hwpack_type="lsk-arndale-be"
                 export board_types="arndale"
                 export kernel_flavour="lsk-arndale-be"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/arndale.conf linaro/configs/bigendian.conf"
+                export DEVICE_TYPE="arndale"
                 ;;
               panda)
                 export hwpack_type="panda"
                 export board_types="panda-es"
                 export kernel_flavour="omap"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/omap4.conf"
+                export DEVICE_TYPE="panda-es"
                 ;;
               panda-be)
                 export hwpack_type="lsk-panda-be"
                 export board_types="panda-es"
                 export kernel_flavour="lsk-omap-be"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/omap4.conf linaro/configs/bigendian.conf"
+                export DEVICE_TYPE="panda-es"
                 ;;
               vexpress)
                 export hwpack_type="vexpress"
                 export board_types="vexpress-tc2"
                 export kernel_flavour="vexpress"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-MP.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress.conf"
+                export DEVICE_TYPE="vexpress-tc2"
                 ;;
               vexpress-be)
                 export hwpack_type="lsk-vexpress-be"
                 export board_types="vexpress-tc2"
                 export kernel_flavour="lsk-vexpress-be"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-MP.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress.conf linaro/configs/bigendian.conf"
+                export DEVICE_TYPE="vexpress-tc2"
                 ;;
               vexpress64)
                 export hwpack_type="vexpress64"
                 export board_types="rtsm_fvp_base-aemv8a"
                 export kernel_flavour="vexpress64"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-MP.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress64.conf"
+                export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
                 export ARCH="arm64"
                 export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
+                cat << EOF > startup.nsh
+            fs3:\Image dtb=juno\juno.dtb console=ttyAMA0,115200 earlyprintk=pl011,0x7ff80000 root=/dev/sda5 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
+            EOF
                 ;;
               vexpress64-be)
                 export hwpack_type="lsk-vexpress64-be"
@@ -152,241 +164,72 @@
                 ;;
             esac
 
-            test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
-            cat << EOF > post_build_lava_parameters
-            HWPACK_JOB_NAME=${JOB_NAME}
-            HWPACK_BUILD_NUMBER=${BUILD_NUMBER}
-            HWPACK_FILE_NAME=`ls hwpack_linaro-${hwpack_type}*.tar.gz`
-            ROOTFS_TYPE=developer
-            BUNDLE_STREAM_NAME=/private/team/linaro/ci-linux-linaro-stable-lsk/
-            EOF
-
-            case "${hwpack}" in
-              arndale)
-                echo "LAVA_TEST_PLAN=pwrmgmt smoke-tests-basic" >> post_build_lava_parameters
-                echo "DEVICE_TYPE=${hwpack}" >> post_build_lava_parameters
-                ;;
-              arndale-be|panda-be|vexpress-be)
-                DEVICE_TYPE=${board_types}
-                BUNDLE_STREAM_NAME=/private/team/linaro/ci-linux-linaro-stable-lsk/
-                LAVA_SERVER=validation.linaro.org/RPC2/
-                CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
-                HWPACK_BUILD_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-${hwpack}/${BUILD_NUMBER}/`ls hwpack_linaro-${hwpack_type}*.tar.gz`"
-
-                # Get rootfs URL
-                ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildNumber`
-                ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-                ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/minimal-armv7ab-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-minimal-genericarmv7ab-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
-
-                sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                    -e "s|\${HWPACK_BUILD_URL}|${HWPACK_BUILD_URL}|" \
-                    -e "s|\${ROOTFS_BUILD_URL}|${ROOTFS_BUILD_URL}|" \
-                    -e "s|\${hwpack_type}|${hwpack_type}|" \
-                    -e "s|\${ROOTFS_BUILD_NUMBER}|${ROOTFS_BUILD_NUMBER}|" \
-                    -e "s|\${GIT_URL}|${GIT_URL}|" \
-                    -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
-                    -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
-                    -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                    -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                    -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                    -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                    < linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template.json \
-                    > custom_lava_job_definition.json
-
-                # Create post-build-lava parameters
-                cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${CUSTOM_JSON_URL}
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-                ;;
-              panda)
-                echo "LAVA_TEST_PLAN=pwrmgmt smoke-tests-basic" >> post_build_lava_parameters
-                echo "DEVICE_TYPE=panda-es" >> post_build_lava_parameters
-                echo "DEPLOY_IMAGE_PARAMETERS_URL=${JOB_URL}/ws/deploy_image_parameters.json" >> post_build_lava_parameters
-                cat << EOF > deploy_image_parameters.json
-            {
-                "dtb": "omap4-panda-es.dtb"
-            }
-            EOF
-                ;;
-              vexpress)
-                echo "LAVA_TEST_PLAN=bootchart-install bootchart device-tree gatortests ltp pwrmgmt smoke-tests-basic network-tests-basic" >> post_build_lava_parameters
-                echo "DEVICE_TYPE=vexpress-tc2" >> post_build_lava_parameters
-                echo "BOOT_IMAGE_PARAMETERS_URL=${JOB_URL}/ws/boot_image_parameters.json" >> post_build_lava_parameters
-                cat << EOF > boot_image_parameters.json
-            {
-              "boot_cmds": [
-                "sendline a",
-                "expect Choice:",
-                "sendline 3",
-                "expect Delete entry:",
-                "sendline 1",
-                "expect Choice:",
-                "sendline 1",
-                "expect Select the Boot Device:",
-                "sendline 4",
-                "expect File path of the EFI Application or the kernel:",
-                "sendline uImage",
-                "expect Boot Type: [a] ATAGS, [g] Global FDT or [l] Local FDT? [a/g/l]",
-                "sendline l",
-                "expect Add an initrd: [y/n]",
-                "sendline y",
-                "expect File path of the initrd",
-                "sendline uInitrd",
-                "expect Arguments to pass to the binary:",
-                "sendline console=tty0 console=ttyAMA0,38400n8 root=/dev/sda1 rootwait ro",
-                "expect File path of the local FDT:",
-                "sendline v2p-ca15-tc2.dtb",
-                "expect Description for this new Entry:",
-                "sendline LAVA Test Image",
-                "expect Choice:",
-                "sendline 5",
-                "expect Start:",
-                "sendline 1"]
-            }
-            EOF
-                python linaro-image-tools/linaro-hwpack-append -t `ls hwpack_linaro-${hwpack_type}*.tar.gz` -p `ls linux-image-*-linaro-*-dbg_*.deb` -i -d
-                ;;
-              vexpress64)
-                #echo "LAVA_TEST_PLAN=device-tree gatortests ltp pwrmgmt smoke-tests-basic network-tests-basic" >> post_build_lava_parameters
-
-                DEVICE_TYPE=juno
-                BUNDLE_STREAM_NAME=/private/team/linaro/ci-linux-linaro-stable-lsk/
-                LAVA_SERVER=validation.linaro.org/RPC2/
-                CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
-                HWPACK_BUILD_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-${hwpack}/${BUILD_NUMBER}/`ls hwpack_linaro-${hwpack_type}*.tar.gz`"
-                STARTUP_NSH="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-${hwpack}/${BUILD_NUMBER}/startup.nsh"
-
-                # Get rootfs URL
-                ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv8-rootfs/gcc_version=4.9,label=build,rootfs=lamp/lastSuccessfulBuild/buildNumber`
-                ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv8-rootfs/gcc_version=4.9,label=build,rootfs=lamp/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-                ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lamp-armv8-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lamp-genericarmv8-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
-
-                if grep -Fxq 'CONFIG_EFI=y' builddir-*-${kernel_flavour}/.config; then
-                  sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                      -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
-                      -e "s|\${HWPACK_BUILD_URL}|${HWPACK_BUILD_URL}|" \
-                      -e "s|\${ROOTFS_BUILD_URL}|${ROOTFS_BUILD_URL}|" \
-                      -e "s|\${hwpack_type}|${hwpack_type}|" \
-                      -e "s|\${ROOTFS_BUILD_NUMBER}|${ROOTFS_BUILD_NUMBER}|" \
-                      -e "s|\${GIT_URL}|${GIT_URL}|" \
-                      -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
-                      -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
-                      -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                      -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                      -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                      -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                      < linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template-efi.json \
-                      > custom_lava_job_definition.json
-
-                      cat << EOF > startup.nsh
-            fs3:\Image dtb=juno\juno.dtb console=ttyAMA0,115200 earlyprintk=pl011,0x7ff80000 root=/dev/sda5 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
-            EOF
-                else
-                  sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                      -e "s|\${HWPACK_BUILD_URL}|${HWPACK_BUILD_URL}|" \
-                      -e "s|\${ROOTFS_BUILD_URL}|${ROOTFS_BUILD_URL}|" \
-                      -e "s|\${hwpack_type}|${hwpack_type}|" \
-                      -e "s|\${ROOTFS_BUILD_NUMBER}|${ROOTFS_BUILD_NUMBER}|" \
-                      -e "s|\${GIT_URL}|${GIT_URL}|" \
-                      -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
-                      -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
-                      -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                      -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                      -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                      -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                      < linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template.json \
-                      > custom_lava_job_definition.json
-                fi
-
-                DEVICE_TYPE=rtsm_fvp_base-aemv8a
-
-                sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                    -e "s|\${HWPACK_BUILD_URL}|${HWPACK_BUILD_URL}|" \
-                    -e "s|\${ROOTFS_BUILD_URL}|${ROOTFS_BUILD_URL}|" \
-                    -e "s|\${hwpack_type}|${hwpack_type}|" \
-                    -e "s|\${ROOTFS_BUILD_NUMBER}|${ROOTFS_BUILD_NUMBER}|" \
-                    -e "s|\${GIT_URL}|${GIT_URL}|" \
-                    -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
-                    -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
-                    -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                    -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                    -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                    -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                    < linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template.json \
-                    > ${DEVICE_TYPE}.json
-
-                DEVICE_TYPE=juno
-
-                # Get rootfs URL
-                ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/engineering-builds/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lamp/lastSuccessfulBuild/buildNumber`
-                ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/engineering-builds/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lamp/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-                ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lamp-armv7a-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lamp-genericarmv7a-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
-
-                if grep -Fxq 'CONFIG_EFI=y' builddir-*-${kernel_flavour}/.config; then
-                  sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                      -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
-                      -e "s|\${HWPACK_BUILD_URL}|${HWPACK_BUILD_URL}|" \
-                      -e "s|\${ROOTFS_BUILD_URL}|${ROOTFS_BUILD_URL}|" \
-                      -e "s|\${hwpack_type}|${hwpack_type}|" \
-                      -e "s|\${ROOTFS_BUILD_NUMBER}|${ROOTFS_BUILD_NUMBER}|" \
-                      -e "s|\${GIT_URL}|${GIT_URL}|" \
-                      -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
-                      -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
-                      -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                      -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                      -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                      -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                      < linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs-efi.json \
-                      > ${DEVICE_TYPE}-armv7a-rootfs.json
-
-                      cat << EOF > startup.nsh
-            fs3:\Image dtb=juno\juno.dtb console=ttyAMA0,115200 earlyprintk=pl011,0x7ff80000 root=/dev/sda5 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
-            EOF
-                else
-                  sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                      -e "s|\${HWPACK_BUILD_URL}|${HWPACK_BUILD_URL}|" \
-                      -e "s|\${ROOTFS_BUILD_URL}|${ROOTFS_BUILD_URL}|" \
-                      -e "s|\${hwpack_type}|${hwpack_type}|" \
-                      -e "s|\${ROOTFS_BUILD_NUMBER}|${ROOTFS_BUILD_NUMBER}|" \
-                      -e "s|\${GIT_URL}|${GIT_URL}|" \
-                      -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
-                      -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
-                      -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                      -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                      -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                      -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                      < linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs.json \
-                      > ${DEVICE_TYPE}-armv7a-rootfs.json
-                fi
-
-                # Create post-build-lava parameters
-                cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${CUSTOM_JSON_URL}
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-                ;;
-              vexpress64-be)
-                echo "LAVA_TEST_PLAN=device-tree" >> post_build_lava_parameters
-                echo "Skip"
-                ;;
-            esac
-
             mkdir -p out
+            [ "${hwpack}" = "vexpress" ] && python linaro-image-tools/linaro-hwpack-append -t `ls hwpack_linaro-${hwpack_type}*.tar.gz` -p `ls linux-image-*-linaro-*-dbg_*.deb` -i -d
+            [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
+            [ "${hwpack}" = "vexpress64" ] && cp -a builddir-*-${kernel_flavour}/.config kernel.config
             cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
-            mv hwpack_linaro-${hwpack_type}* out/
-            [ -f startup.nsh ] && mv startup.nsh out/
+            cp -a hwpack_linaro-${hwpack_type}* out/
 
             ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-stable-lsk-${hwpack}/${BUILD_NUMBER}
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-${hwpack}/${BUILD_NUMBER}"
+            HWPACK_BUILD_URL="${KERNEL_URL}/`ls hwpack_linaro-${hwpack_type}*.tar.gz`"
+            STARTUP_NSH="${KERNEL_URL}/startup.nsh"
+
+            # Create post-build-lava parameters
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
+            STARTUP_NSH=${STARTUP_NSH}
+            hwpack_type=${hwpack_type}
+            EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            case "${hwpack}" in
+              arndale|panda|vexpress)
+                # Get rootfs URL
+                ROOTFS_BUILD_NUMBER=693
+                ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/ubuntu/utopic-images/developer/linaro-utopic-developer-20141212-693.tar.gz"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ;;
+              arndale-be|panda-be|vexpress-be)
+                # Get rootfs URL
+                ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildNumber`
+                ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+                ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/minimal-armv7ab-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-minimal-genericarmv7ab-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > custom_lava_job_definition.json
+                ;;
+              vexpress64)
+                # Get rootfs URL
+                ROOTFS_BUILD_NUMBER=729
+                ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20141212-729.rootfs.tar.gz"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ;;
+              vexpress64-be)
+                echo "Skip"
+                cat << EOF > post_build_lava_parameters
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+                ;;
+            esac
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
@@ -397,13 +240,33 @@
             condition-string2: 'vexpress64'
             steps:
                 - shell: |
-                    mv rtsm_fvp_base-aemv8a.json custom_lava_job_definition.json
+                    DEVICE_TYPE=juno
+
+                    # Get rootfs URL
+                    ROOTFS_BUILD_NUMBER=729
+                    ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20141212-729.rootfs.tar.gz"
+
+                    if grep -Fxq 'CONFIG_EFI=y' kernel.config; then
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template-efi.yaml > custom_lava_job_definition.json
+                    else
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                    fi
                 - trigger-builds:
                     - project: 'post-build-lava'
                       property-file: post_build_lava_parameters
                       block: true
                 - shell: |
-                    mv juno-armv7a-rootfs.json custom_lava_job_definition.json
+                    DEVICE_TYPE=juno
+
+                    # Get rootfs URL
+                    ROOTFS_BUILD_NUMBER=311
+                    ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/openembedded/images/lamp-armv7a/linaro-image-lamp-genericarmv7a-20141212-311.rootfs.tar.gz"
+
+                    if grep -Fxq 'CONFIG_EFI=y' kernel.config; then
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs-efi.yaml > custom_lava_job_definition.json
+                    else
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs.yaml > custom_lava_job_definition.json
+                    fi
                 - trigger-builds:
                     - project: 'post-build-lava'
                       property-file: post_build_lava_parameters
