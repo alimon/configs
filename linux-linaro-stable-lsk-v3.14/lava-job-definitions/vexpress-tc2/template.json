@@ -7,11 +7,11 @@
         "rootfs": "${ROOTFS_BUILD_URL}"
       },
       "metadata": {
-        "distribution": "openembedded",
+        "distribution": "ubuntu",
         "hwpack.build": "${BUILD_NUMBER}",
         "hwpack.type": "${hwpack_type}",
         "rootfs.build": "${ROOTFS_BUILD_NUMBER}",
-        "rootfs.type": "minimal-armv7ab-gcc-4.9",
+        "rootfs.type": "developer",
         "git URL": "${GIT_URL}",
         "git branch": "${GIT_BRANCH}",
         "git commit": "${GIT_COMMIT}"
@@ -52,6 +52,102 @@
       }
     },
     {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/bootchart-install.yaml"
+          }
+        ],
+        "timeout": 18000
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/bootchart.yaml"
+          }
+        ],
+        "timeout": 800
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/device-tree.yaml"
+          }
+        ],
+        "timeout": 800
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/gatortests.yaml"
+          }
+        ],
+        "timeout": 1200
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/ltp.yaml"
+          }
+        ],
+        "timeout": 10800
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/pwrmgmt.yaml"
+          }
+        ],
+        "timeout": 1200
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/smoke-tests-basic.yaml"
+          }
+        ],
+        "timeout": 1200
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/network-tests-basic.yaml"
+          }
+        ],
+        "timeout": 1200
+      }
+    },
+    {
       "command": "submit_results",
       "parameters": {
         "stream": "${BUNDLE_STREAM_NAME}",
@@ -61,5 +157,5 @@
   ],
   "device_type": "${DEVICE_TYPE}",
   "job_name": "${BUILD_URL}",
-  "timeout": 3600
+  "timeout": 172800
 }
