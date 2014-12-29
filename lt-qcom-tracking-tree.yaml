@@ -52,9 +52,12 @@
               cd ${WORKSPACE}
               rm -rf lci-build-tools
               rm -rf builddir*
-              rm -rf out
               rm -f builddeb.patch
             }
+
+            # we cannot clean 'out' on exit but on entry instead, since its
+            # content is needed for triggers and publishers
+            rm -rf out
 
             export LANG=C
             CCACHE_DIR="$HOME/ccache"
