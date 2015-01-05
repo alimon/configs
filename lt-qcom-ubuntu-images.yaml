@@ -26,6 +26,9 @@
         - string:
             name: ROOTFS
             default: 'developer gnome'
+        - string:
+            name: DTBS
+            default: 'qcom-apq8064-ifc6410.dtb qcom-apq8064-cm-qs600.dtb'
     disabled: false
     node: precise_cloud
     display-name: 'Qualcomm Ubuntu based images'
@@ -140,10 +143,10 @@
             cmdline = console=tty0 console=${KERNEL_SERIAL_CONSOLE} root=/dev/mmcblk0p13 rootwait rw text
             EOF
 
-            # create one boot image for each DTB we have around, since we need to append DTB to zImage
+            # create one boot image for each platform we support, since we need to append DTB to zImage
             # fixup.bin used to fixup loader to boot mainline on Qualcomm platforms that needs adjustment of
             # ATAG MEM.
-            for f in `find . -maxdepth 1 -name '*.dtb' -print` ; do
+            for f in ${DTBS} ; do
               target=`basename $f .dtb`
               if [ -f fixup-$target.bin ]; then
                 cat fixup-$target.bin zImage $f > zImage-dtb
@@ -163,7 +166,7 @@
 
             # Publish to snapshots
             mkdir out
-            sudo mv *.cfg *.img.gz *.deb zImage kernel.config README.txt `find . -maxdepth 1 -name 'fixup-*.bin' -print`  out/
+            sudo mv *.cfg *.img.gz *.deb zImage kernel.config README.txt ${DTBS} `find . -maxdepth 1 -name 'fixup-*.bin' -print`  out/
 
             # create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
