@@ -10,7 +10,7 @@ actions:
     git branch: '${GIT_BRANCH}'
     git commit: '${GIT_COMMIT}'
 - command: boot_linaro_image
-  parameters: 
+  parameters:
     boot_cmds:
       - 'sendline a'
       - 'expect Choice:'
@@ -39,6 +39,18 @@ actions:
       - 'sendline 5'
       - 'expect Start:'
       - 'sendline 1'
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/pwrmgmt.yaml
+    timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/smoke-tests-basic.yaml
+    timeout: 1200
 - command: submit_results
   parameters:
     server: 'http://${LAVA_SERVER}'

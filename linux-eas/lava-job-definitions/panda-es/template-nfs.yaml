@@ -10,7 +10,24 @@ actions:
     git URL: '${GIT_URL}'
     git branch: '${GIT_BRANCH}'
     git commit: '${GIT_COMMIT}'
-- command: boot_linaro_image
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/pwrmgmt.yaml
+    timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/smoke-tests-basic.yaml
+    timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/pwrmgmt.yaml
+    timeout: 1200
 - command: submit_results
   parameters:
     server: 'http://${LAVA_SERVER}'
