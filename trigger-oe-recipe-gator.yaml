@@ -1,0 +1,53 @@
+- job:
+    name: trigger-oe-recipe-gator
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for GATOR recipe'
+    scm:
+        - git:
+            url: http://git.linaro.org/arm/ds5/gator.git
+            refspec: +refs/heads/linaro:refs/remotes/origin/linaro
+            name: origin
+            branches:
+                - origin/linaro
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf meta-linaro
+            }
+
+            git clone --depth 1 http://git.linaro.org/openembedded/meta-linaro.git
+            gator_recipe=`find meta-linaro -type f -name 'gator_git.bb'`
+            sed -i "s|^SRCREV = .*|SRCREV = \"${GIT_COMMIT}\"|" ${gator_recipe}
+            sed -i "s|^PV = .*|PV = \"`git describe --tags | cut -d'-' -f2`+git\${SRCPV}\"|" ${gator_recipe}
+
+            cd meta-linaro && git diff > ${WORKSPACE}/gator-recipe-update.patch
+    publishers:
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, koen.kooi@linaro.org'
+            attachments: '*.patch'
+            always: true
