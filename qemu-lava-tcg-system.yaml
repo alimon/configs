@@ -1,0 +1,45 @@
+- job:
+    name: qemu-lava-tcg-system
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'QEMU - build and run LAVA based TCG system tests'
+    axes:
+        - axis:
+            type: user-defined
+            name: TARGET
+            values:
+                - aarch64
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=kvm
+            CUSTOM_JSON_URL=https://git.linaro.org/people/alex.bennee/test-runners.git/blob_plain/HEAD:/qemu-master-${TARGET}-system-test.json
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
