@@ -190,7 +190,7 @@
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-tracking-ll/${hwpack}/${BUILD_NUMBER}"
-            HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
+            [ "${hwpack}" != "ifc6410" ] && HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
             # Create post-build-lava parameters
