@@ -10,14 +10,21 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
     parameters:
         - password:
             name: PUBLISH_KEY
             default: ${PUBLISH_KEY}
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/private/team/linaro/ci-linux-linaro-tracking-ll/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: build
     child-workspace: .
-    display-name: 'linux-linaro kernel'
+    display-name: 'Linux Linaro Kernel (tracking)'
     scm:
         - git:
             url: git://git.linaro.org/kernel/linux-linaro-tracking.git
@@ -53,8 +60,8 @@
         - timestamps
         - copy-to-slave:
             includes:
-                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz
-                - gcc-linaro-aarch64-linux-gnu-4.9-2014.08_linux.tar.xz
+                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz
+                - gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
@@ -63,19 +70,193 @@
         - shell: |
             #!/bin/bash
 
-            rm -rf linux-linaro-kernel-ci
-            git clone --depth 1 -b ll git://git.linaro.org/ci/linux-linaro-kernel-ci.git
-            bash linux-linaro-kernel-ci/ll-ci.sh</command>
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf builddir*
+              rm -rf out
+              rm -f linux-*.deb
+            }
+
+            export LANG=C
+            CCACHE_DIR="$HOME/ccache"
+            CCACHE_UNIFY=1
+            CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
+            export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS
+            export use_ccache=true
+            export use_config_fragment=1
+            export MAKE_DTBS=true
+            export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz"
+
+            case "${hwpack}" in
+              arndale)
+                export hwpack_type="arndale"
+                export board_types="arndale"
+                export kernel_flavour="arndale"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/kvm-host.conf linaro/configs/xen.conf linaro/configs/arndale.conf"
+                export DEVICE_TYPE="arndale"
+                ;;
+              arndale-octa)
+                export hwpack_type="arndale-octa"
+                export board_types="arndale-octa"
+                export kernel_flavour="arndale-octa"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/arndale_octa.conf"
+                export DEVICE_TYPE="arndale-octa"
+                ;;
+              arndale-uprobes)
+                export hwpack_type="arndale"
+                export board_types="arndale"
+                export kernel_flavour="arndale"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/kvm-host.conf linaro/configs/xen.conf linaro/configs/uprobes.conf linaro/configs/arndale.conf"
+                export DEVICE_TYPE="arndale"
+                ;;
+              beaglebone)
+                export hwpack_type="beaglebone"
+                export board_types="beaglebone-black"
+                export kernel_flavour="am335x"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/multi_v7.conf linaro/configs/beaglebone.conf"
+                export DEVICE_TYPE="beaglebone-black"
+                ;;
+              beaglebone-uprobes)
+                export hwpack_type="beaglebone"
+                export board_types="beaglebone-black"
+                export kernel_flavour="am335x"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/uprobes.conf linaro/configs/multi_v7.conf linaro/configs/beaglebone.conf"
+                export DEVICE_TYPE="beaglebone-black"
+                ;;
+              ifc6410)
+                export kernel_flavour="ifc6410"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/ifc6410.conf"
+                export DEVICE_TYPE="ifc6410"
+                ;;
+              panda)
+                export hwpack_type="panda"
+                export board_types="panda-es"
+                export kernel_flavour="omap"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/omap2plus.conf linaro/configs/panda.conf"
+                export DEVICE_TYPE="panda-es"
+                ;;
+              vexpress)
+                export hwpack_type="vexpress"
+                export board_types="vexpress-tc2"
+                export kernel_flavour="vexpress"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/kvm-guest.conf linaro/configs/xen.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress.conf"
+                export DEVICE_TYPE="vexpress-tc2"
+                ;;
+              vexpress64)
+                export hwpack_type="vexpress64"
+                export board_types="rtsm_fvp_base-aemv8a"
+                export kernel_flavour="vexpress64"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/linaro-base64.conf linaro/configs/distribution.conf linaro/configs/kvm-guest.conf linaro/configs/kvm-host.conf linaro/configs/vexpress64.conf linaro/configs/workaround.conf"
+                export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
+                export ARCH="arm64"
+                export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
+                cat << EOF > startup.nsh
+            fs3:\Image dtb=juno\juno.dtb console=ttyAMA0,115200 earlyprintk=pl011,0x7ff80000 root=/dev/sda5 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
+            EOF
+                cat << EOF > linaro/configs/workaround.conf
+            CONFIG_PREEMPT=y
+            # CONFIG_DEBUG_PREEMPT is not set
+            EOF
+                export boot_wrapper_repo="http://git.linaro.org/people/fathi.boudra/boot-wrapper-aarch64.git"
+                ;;
+            esac
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            bash -x lci-build-tools/jenkins_kernel_build_inst
+
+            mkdir -p out
+            [ "${hwpack}" = "arndale-uprobes" ] && python linaro-image-tools/linaro-hwpack-replace -t `ls hwpack_linaro-arndale_*_armhf_supported.tar.gz` -p `ls linux-headers-*-linaro-arndale_*.deb` -r linux-headers -d -i
+            [ "${hwpack}" = "beaglebone-uprobes" ] && python linaro-image-tools/linaro-hwpack-replace -t `ls hwpack_linaro-beaglebone_*_armhf_supported.tar.gz` -p `ls linux-headers-*-linaro-am335x_*.deb` -r linux-headers -d -i
+            [ "${hwpack}" = "ifc6410" ] && {
+              cp -a *.deb out/
+              cp -a fixup.bin out/fixup-qcom-apq8064-ifc6410.bin
+              cat fixup.bin builddir-*-${kernel_flavour}/arch/arm/boot/zImage builddir-*-${kernel_flavour}/arch/arm/boot/dts/qcom-apq8064-ifc6410.dtb > out/zImage
+            }
+            [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
+            [ "${hwpack}" = "vexpress64" ] && cp -a builddir-*-${kernel_flavour}/.config kernel.config
+            cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
+            [ "${hwpack}" != "ifc6410" ] && mv hwpack_linaro-${hwpack_type}* out/
+
+            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-tracking-ll/${hwpack}/${BUILD_NUMBER}
+
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-tracking-ll/${hwpack}/${BUILD_NUMBER}"
+            HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
+            STARTUP_NSH="${KERNEL_URL}/startup.nsh"
+
+            # Create post-build-lava parameters
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
+            STARTUP_NSH=${STARTUP_NSH}
+            hwpack_type=${hwpack_type}
+            EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            case "${hwpack}" in
+              arndale|beaglebone|panda|vexpress)
+                # Get rootfs URL
+                export ROOTFS_BUILD_NUMBER=693
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/ubuntu/utopic-images/developer/linaro-utopic-developer-20141212-693.tar.gz"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-tracking-ll/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ;;
+              vexpress64)
+                # Get rootfs URL
+                export ROOTFS_BUILD_NUMBER=729
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20141212-729.rootfs.tar.gz"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-tracking-ll/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ;;
+              arndale-octa|arndale-uprobes|beaglebone-uprobes|ifc6410)
+                echo "Skip"
+                cat << EOF > post_build_lava_parameters
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+                ;;
+            esac
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
+              block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="hwpack"}'
+            condition-string2: 'vexpress64'
+            steps:
+                - shell: |
+                    DEVICE_TYPE=juno
+
+                    # Get rootfs URL
+                    export ROOTFS_BUILD_NUMBER=729
+                    export ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20141212-729.rootfs.tar.gz"
+
+                    if grep -Fxq 'CONFIG_EFI=y' kernel.config; then
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-tracking-ll/lava-job-definitions/${DEVICE_TYPE}/template-efi.yaml > custom_lava_job_definition.json
+                    else
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-tracking-ll/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                    fi
+#                - trigger-builds:
+#                    - project: 'post-build-lava'
+#                      property-file: post_build_lava_parameters
+#                      block: true
     publishers:
-        - archive:
-            artifacts: 'post_build_lava_parameters, custom_lava_job_definition.json, kernel_config_ifc6410, zImage_ifc6410, *-linaro-ifc6410-*.deb'
         - email-ext:
             recipients: 'andrey.konovalov@linaro.org, fathi.boudra@linaro.org'
             attach-build-log: true
             matrix-trigger: both
-        - trigger:
-            project: 'linux-linaro-tracking-ll-ifc6410-image'
-            threshold: SUCCESS
