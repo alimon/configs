@@ -29,5 +29,34 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf meta-linaro
+            }
+
+            git clone --depth 1 http://git.linaro.org/openembedded/meta-linaro.git
+
+            VERSION=`grep "^VERSION =" Makefile | cut -d' ' -f3`.`grep "^PATCHLEVEL =" Makefile | cut -d' ' -f3`
+
+            ll_recipe=`find meta-linaro -type f -name 'linux-linaro-aarch64.bb'`
+            sed -i "s|^SRCREV_kernel=.*|SRCREV_kernel=\"${GIT_COMMIT}\"|" ${ll_recipe}
+            sed -i "s|^PV = .*|PV = \"${VERSION}+git\${SRCPV}\"|" ${ll_recipe}
+
+            ll_recipe=`find meta-linaro -type f -name 'linux-linaro-vexpress_git.bb'`
+            sed -i "s|^SRCREV_kernel=.*|SRCREV_kernel=\"${GIT_COMMIT}\"|" ${ll_recipe}
+            sed -i "s|^PV = .*|PV = \"${VERSION}+git\${SRCPV}\"|" ${ll_recipe}
+
+            cd meta-linaro && git diff > ${WORKSPACE}/linux-linaro-recipe-update.patch
         - trigger-builds:
             - project: 'linux-linaro-tracking-ll'
+    publishers:
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, koen.kooi@linaro.org'
+            attachments: '*.patch'
+            always: true
