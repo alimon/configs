@@ -35,10 +35,7 @@
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
-    builders:
-        - trigger-builds:
-            - project: 'linux-linaro-stable-lsk-rt-pre-merge'
-              block: true
+#    builders:
 #        - shell: |
 #            #!/bin/bash
 #
@@ -48,3 +45,6 @@
 #            job_name=`echo ${JOB_NAME} |cut -d'-' -f2-`
 #
 #            ${curl} --insecure ${ci_base_url}/${job_name}/buildWithParameters?token=${token}
+    publishers:
+        - trigger:
+            project: 'linux-linaro-stable-lsk-rt-pre-merge'
