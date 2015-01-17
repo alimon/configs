@@ -42,6 +42,7 @@
             values:
                 - arndale
                 - beaglebone
+                - mustang
                 - panda
                 - panda-be
                 - vexpress
@@ -113,6 +114,17 @@
                 export conf_filenames="arch/arm/configs/omap2plus_defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf"
                 export DEVICE_TYPE="beaglebone-black"
                 ;;
+              mustang)
+                unset use_config_fragment
+                export make_deb=false
+                export make_bootwrapper=false
+                export make_install=true
+                export kernel_flavour="mustang"
+                export kernel_config="defconfig"
+                export DEVICE_TYPE="mustang"
+                export ARCH="arm64"
+                export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
+                ;;
               panda)
                 export hwpack_type="panda"
                 export board_types="panda-es"
@@ -178,11 +190,12 @@
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
             mkdir -p out
+            [ "${hwpack}" = "mustang" ] && mkimage -A arm -O linux -C none -T kernel -a 0x00080000 -e 0x00080000 -n Linux -d out/Image out/uImage || true
             [ "${hwpack}" = "vexpress" ] && python linaro-image-tools/linaro-hwpack-append -t `ls hwpack_linaro-${hwpack_type}*.tar.gz` -p `ls linux-image-*-linaro-*-dbg_*.deb` -i -d
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [ "${hwpack}" = "vexpress64" ] && cp -a builddir-*-${kernel_flavour}/.config kernel.config
             cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
-            mv hwpack_linaro-${hwpack_type}* out/
+            [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack_type}* out/
 
             ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-stable-lsk-v3.14-pre-merge-${hwpack}/${BUILD_NUMBER}
 
@@ -190,7 +203,7 @@
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-v3.14-pre-merge-${hwpack}/${BUILD_NUMBER}"
-            HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
+            [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
             # Create post-build-lava parameters
@@ -229,7 +242,7 @@
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.14-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
-              vexpress64-be)
+              mustang|vexpress64-be)
                 echo "Skip"
                 cat << EOF > post_build_lava_parameters
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
