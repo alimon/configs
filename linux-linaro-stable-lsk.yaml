@@ -41,6 +41,7 @@
             name: hwpack
             values:
                 - arndale
+                - mustang
                 - panda
                 - panda-be
                 - vexpress
@@ -104,6 +105,17 @@
                 export kernel_flavour="lsk-arndale-be"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/arndale.conf linaro/configs/bigendian.conf"
                 export DEVICE_TYPE="arndale"
+                ;;
+              mustang)
+                unset use_config_fragment
+                export make_deb=false
+                export make_bootwrapper=false
+                export make_install=true
+                export kernel_flavour="mustang"
+                export kernel_config="defconfig"
+                export DEVICE_TYPE="mustang"
+                export ARCH="arm64"
+                export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
                 ;;
               panda)
                 export hwpack_type="panda"
@@ -170,11 +182,12 @@
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
             mkdir -p out
+            [ "${hwpack}" = "mustang" ] && mkimage -A arm -O linux -C none -T kernel -a 0x00080000 -e 0x00080000 -n Linux -d out/Image out/uImage || true
             [ "${hwpack}" = "vexpress" ] && python linaro-image-tools/linaro-hwpack-append -t `ls hwpack_linaro-${hwpack_type}*.tar.gz` -p `ls linux-image-*-linaro-*-dbg_*.deb` -i -d
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [ "${hwpack}" = "vexpress64" ] && cp -a builddir-*-${kernel_flavour}/.config kernel.config
             cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
-            mv hwpack_linaro-${hwpack_type}* out/
+            [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack_type}* out/
 
             ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-stable-lsk-${hwpack}/${BUILD_NUMBER}
 
@@ -182,7 +195,8 @@
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-${hwpack}/${BUILD_NUMBER}"
-            HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
+            DTB_URL=${KERNEL_URL}/dtbs
+            [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
             # Create post-build-lava parameters
@@ -191,6 +205,8 @@
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
             LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
+            DTB_URL=${DTB_URL}
             HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
             STARTUP_NSH=${STARTUP_NSH}
             hwpack_type=${hwpack_type}
@@ -213,6 +229,12 @@
                 export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/minimal-armv7ab-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-minimal-genericarmv7ab-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > custom_lava_job_definition.json
+                ;;
+              mustang)
+                export ROOTFS_BUILD_NUMBER=729
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/openembedded/images/minimal-initramfs-armv8/linaro-image-minimal-initramfs-genericarmv8-20141212-729.rootfs.cpio.gz.u-boot"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
               vexpress64)
                 # Get rootfs URL
