@@ -203,6 +203,7 @@
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-v3.14-pre-merge-${hwpack}/${BUILD_NUMBER}"
+            DTB_URL=${KERNEL_URL}/dtbs
             [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
@@ -212,6 +213,8 @@
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
             LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
+            DTB_URL=${DTB_URL}
             HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
             STARTUP_NSH=${STARTUP_NSH}
             hwpack_type=${hwpack_type}
@@ -235,6 +238,12 @@
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.14-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > custom_lava_job_definition.json
                 ;;
+              mustang)
+                export ROOTFS_BUILD_NUMBER=729
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/openembedded/images/minimal-initramfs-armv8/linaro-image-minimal-initramfs-genericarmv8-20141212-729.rootfs.cpio.gz.u-boot"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.14-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ;;
               vexpress64)
                 # Get rootfs URL
                 export ROOTFS_BUILD_NUMBER=729
@@ -242,7 +251,7 @@
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.14-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
-              mustang|vexpress64-be)
+              vexpress64-be)
                 echo "Skip"
                 cat << EOF > post_build_lava_parameters
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
