@@ -1,0 +1,83 @@
+- job:
+    name: debian-x86-rootfs
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'Linaro Debian x86_64 rootfs'
+    scm:
+        - git:
+            url: git://git.linaro.org/ci/ubuntu-build-service.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches: 
+                - origin/master
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+        - axis:
+            type: user-defined
+            name: rootfs
+            values:
+                - nano
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+        - timeout:
+            timeout: 120
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo umount builddir
+              sudo rm -rf out
+            }
+
+            dpkg -s qemu-user-static |grep '^Version'
+            dpkg -s live-build |grep '^Version'
+
+            rm -f linaro-jessie-${rootfs}-* *.txt
+
+            test -d builddir || mkdir builddir
+            sudo mount -t tmpfs -o size=6G tmpfs builddir
+            cp -a jessie-x86-${rootfs} builddir/
+            cd builddir/jessie-x86-${rootfs}
+            ./configure
+            make
+            mkdir -p ${WORKSPACE}/out
+            sudo mv linaro-jessie-* ${WORKSPACE}/out
+            ${HOME}/bin/linaro-cp ${WORKSPACE}/out debian/images/${rootfs}-x86/${BUILD_NUMBER}
+    publishers:
+        - archive:
+            artifacts: 'linaro-jessie-*.tar.gz'
+            latest-only: true
+        - email:
+            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
