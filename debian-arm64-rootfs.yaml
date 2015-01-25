@@ -58,13 +58,10 @@
             {
               cd ${WORKSPACE}
               sudo umount builddir
-              sudo rm -rf out
             }
 
             dpkg -s qemu-user-static |grep '^Version'
             dpkg -s live-build |grep '^Version'
-
-            rm -f linaro-jessie-${rootfs}-* *.txt
 
             test -d builddir || mkdir builddir
             sudo mount -t tmpfs -o size=6G tmpfs builddir
@@ -72,12 +69,14 @@
             cd builddir/jessie-arm64-${rootfs}
             ./configure
             make
-            mkdir -p ${WORKSPACE}/out
-            sudo mv linaro-jessie-* ${WORKSPACE}/out
-            ${HOME}/bin/linaro-cp ${WORKSPACE}/out debian/images/${rootfs}-arm64/${BUILD_NUMBER}
+
+            cd ${WORKSPACE}
+            sudo rm -rf out && mkdir out
+            sudo mv builddir/jessie-arm64-${rootfs}/linaro-jessie-* out
+            ${HOME}/bin/linaro-cp out debian/images/${rootfs}-arm64/${BUILD_NUMBER}
     publishers:
         - archive:
-            artifacts: 'linaro-jessie-*.tar.gz'
+            artifacts: 'out/*'
             latest-only: true
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
