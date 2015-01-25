@@ -92,17 +92,11 @@
                 mv hwpack_linaro-${hwpack}* ${WORKSPACE}
                 mv *.txt ${WORKSPACE}
                 ;;
-              lsk-vexpress64-be|vexpress64-be|lt-vexpress64|lsk-vexpress64)
+              lsk-vexpress64|lsk-vexpress64-be|vexpress64|vexpress64-be|lt-vexpress64)
                 git clone git://git.linaro.org/hwpack/vexpress64-rtsm.git
                 linaro-hwpack-create --debug vexpress64-rtsm/hwpacks/linaro-vexpress64-rtsm ${VERSION}
                 mv hwpack_linaro-vexpress64-rtsm_${VERSION}_arm64_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-arm64_supported.manifest.txt
                 mv hwpack_linaro-vexpress64-rtsm_${VERSION}_arm64_supported.tar.gz ${WORKSPACE}/hwpack_linaro_arm64_supported.tar.gz
-                mv *.txt ${WORKSPACE}
-                ;;
-              vexpress64)
-                git clone git://git.linaro.org/hwpack/vexpress64-rtsm.git
-                linaro-hwpack-create --debug vexpress64-rtsm/hwpacks/linaro-vexpress64-rtsm ${VERSION}
-                mv hwpack_linaro-${hwpack}* ${WORKSPACE}
                 mv *.txt ${WORKSPACE}
                 ;;
             esac
@@ -165,7 +159,7 @@
 
                 echo "distribution=openembedded" > remote_directory_parameters
                 ;;
-              lsk-vexpress64-be|vexpress64-be|lsk-vexpress64|lt-vexpress64)
+              lsk-vexpress64|lsk-vexpress64-be|vexpress64|vexpress64-be|lt-vexpress64)
                 find artifacts -type f -name "linux-*-linaro-${hwpack}_*.deb" -exec mv -t ${WORKSPACE} {} +
 
                 rm -f hwpack_linaro-${hwpack}-rtsm_*_arm64_supported.tar.gz
@@ -197,11 +191,7 @@
               lsk-vexpress|vexpress)
                 echo "DEVICE_TYPE=vexpress-a9" >> post_build_lava_parameters
                 ;;
-              vexpress64)
-                echo "ROOTFS_TYPE=nano-arm64" >> post_build_lava_parameters
-                echo "DEVICE_TYPE=rtsm_fvp_base-aemv8a" >> post_build_lava_parameters
-                ;;
-              arndale-be|arndale-octa|beaglebone|lsk-arndale-be|lsk-panda-be|lsk-vexpress-be|lsk-vexpress64-be|midway|panda-be|vexpress64-be|lsk-vexpress64|lt-vexpress64)
+              arndale-be|arndale-octa|beaglebone|lsk-arndale-be|lsk-panda-be|lsk-vexpress-be|lsk-vexpress64|lsk-vexpress64-be|midway|panda-be|vexpress64|vexpress64-be|lt-vexpress64)
                 echo "Skip DEVICE_TYPE for ${hwpack}"
                 ;;
             esac
