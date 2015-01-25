@@ -10,6 +10,10 @@
             anonymous:
                 - job-read
                 - job-extended-read
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
     disabled: false
     node: build
     display-name: 'Linaro Ubuntu hardware packs (armhf)'
@@ -25,8 +29,10 @@
                 - lsk-arndale-be
                 - lsk-panda-be
                 - lsk-vexpress
+                - lsk-vexpress-be
                 - lsk-vexpress64
                 - lsk-vexpress64-be
+                - lt-vexpress64
                 - panda
                 - panda-be
                 - vexpress
@@ -72,7 +78,7 @@
 
             dpkg -s linaro-image-tools |grep '^Version'
 
-            rm -f hwpack_linaro-*.tar.gz *.txt
+            rm -rf out *.txt
 
             test -d builddir || mkdir builddir
             sudo mount -t tmpfs -o size=2G tmpfs builddir
@@ -86,11 +92,17 @@
                 mv hwpack_linaro-${hwpack}* ${WORKSPACE}
                 mv *.txt ${WORKSPACE}
                 ;;
-              lsk-vexpress64|lsk-vexpress64-be|vexpress64|vexpress64-be)
+              lsk-vexpress64-be|vexpress64-be|lt-vexpress64|lsk-vexpress64)
                 git clone git://git.linaro.org/hwpack/vexpress64-rtsm.git
                 linaro-hwpack-create --debug vexpress64-rtsm/hwpacks/linaro-vexpress64-rtsm ${VERSION}
-                mv hwpack_linaro-vexpress64-rtsm_${VERSION}_armhf_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-arm64_supported.manifest.txt
-                mv hwpack_linaro-vexpress64-rtsm_${VERSION}_armhf_supported.tar.gz ${WORKSPACE}/hwpack_linaro_arm64_supported.tar.gz
+                mv hwpack_linaro-vexpress64-rtsm_${VERSION}_arm64_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-arm64_supported.manifest.txt
+                mv hwpack_linaro-vexpress64-rtsm_${VERSION}_arm64_supported.tar.gz ${WORKSPACE}/hwpack_linaro_arm64_supported.tar.gz
+                mv *.txt ${WORKSPACE}
+                ;;
+              vexpress64)
+                git clone git://git.linaro.org/hwpack/vexpress64-rtsm.git
+                linaro-hwpack-create --debug vexpress64-rtsm/hwpacks/linaro-vexpress64-rtsm ${VERSION}
+                mv hwpack_linaro-${hwpack}* ${WORKSPACE}
                 mv *.txt ${WORKSPACE}
                 ;;
             esac
@@ -116,12 +128,6 @@
                 mv hwpack_linaro_armhf_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-${hwpack}_${VERSION}_armhf_supported.manifest.txt
 
                 echo "distribution=openembedded" > remote_directory_parameters
-                cat << EOF > BUILD-INFO.txt
-            Format-Version: 0.5
-
-            Files-Pattern: *
-            License-Type: open
-            EOF
                 ;;
               lsk-panda-be|panda-be)
                 [ "${hwpack}" = "panda-be" ] && omap=omap-be || true
@@ -141,14 +147,25 @@
                 mv hwpack_linaro_armhf_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-${hwpack}_${VERSION}_armhf_supported.manifest.txt
 
                 echo "distribution=openembedded" > remote_directory_parameters
-                cat << EOF > BUILD-INFO.txt
-            Format-Version: 0.5
-
-            Files-Pattern: *
-            License-Type: open
-            EOF
                 ;;
-              lsk-vexpress64|lsk-vexpress64-be|vexpress64|vexpress64-be)
+              lsk-vexpress-be|vexpress-be)
+                find artifacts -type f -name "linux-*-linaro-${hwpack}_*.deb" -exec mv -t ${WORKSPACE} {} +
+
+                rm -f hwpack_linaro_armhf_supported.tar.gz
+                export HWPACK_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-hwpacks/hwpack=vexpress,label=build/lastSuccessfulBuild/buildNumber`
+                export HWPACK_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-hwpacks/hwpack=vexpress,label=build/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+                export HWPACK_BUILD_URL="http://snapshots.linaro.org/ubuntu/hwpacks/vexpress/${HWPACK_BUILD_NUMBER}/hwpack_linaro-vexpress_${HWPACK_BUILD_TIMESTAMP}-${HWPACK_BUILD_NUMBER}_armhf_supported.tar.gz"
+                wget --progress=dot -e dotbytes=2M ${HWPACK_BUILD_URL} -O hwpack_linaro_armhf_supported.tar.gz
+
+                linaro-hwpack-replace -t hwpack_linaro_armhf_supported.tar.gz -p `ls linux-image-*-linaro-${hwpack}_*.deb` -r linux-image -d -i
+                linaro-hwpack-replace -t hwpack_linaro_armhf_supported.tar.gz -p `ls linux-headers-*-linaro-${hwpack}_*.deb` -r linux-headers -d -i
+
+                mv hwpack_linaro_armhf_supported.tar.gz ${WORKSPACE}/hwpack_linaro-${hwpack}_${VERSION}_armhf_supported.tar.gz
+                mv hwpack_linaro_armhf_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-${hwpack}_${VERSION}_armhf_supported.manifest.txt
+
+                echo "distribution=openembedded" > remote_directory_parameters
+                ;;
+              lsk-vexpress64-be|vexpress64-be|lsk-vexpress64|lt-vexpress64)
                 find artifacts -type f -name "linux-*-linaro-${hwpack}_*.deb" -exec mv -t ${WORKSPACE} {} +
 
                 rm -f hwpack_linaro-${hwpack}-rtsm_*_arm64_supported.tar.gz
@@ -160,12 +177,6 @@
                 mv hwpack_linaro_arm64_supported.manifest.txt ${WORKSPACE}/hwpack_linaro-${hwpack}-rtsm_${VERSION}_arm64_supported.manifest.txt
 
                 echo "distribution=openembedded" > remote_directory_parameters
-                cat << EOF > BUILD-INFO.txt
-            Format-Version: 0.5
-
-            Files-Pattern: *
-            License-Type: open
-            EOF
                 ;;
             esac
 
@@ -186,31 +197,26 @@
               lsk-vexpress|vexpress)
                 echo "DEVICE_TYPE=vexpress-a9" >> post_build_lava_parameters
                 ;;
-              arndale-be|arndale-octa|beaglebone|lsk-arndale-be|lsk-panda-be|lsk-vexpress64|midway|panda-be|vexpress64|vexpress64-be)
+              vexpress64)
+                echo "ROOTFS_TYPE=nano-arm64" >> post_build_lava_parameters
+                echo "DEVICE_TYPE=rtsm_fvp_base-aemv8a" >> post_build_lava_parameters
+                ;;
+              arndale-be|arndale-octa|beaglebone|lsk-arndale-be|lsk-panda-be|lsk-vexpress-be|lsk-vexpress64-be|midway|panda-be|vexpress64-be|lsk-vexpress64|lt-vexpress64)
                 echo "Skip DEVICE_TYPE for ${hwpack}"
                 ;;
             esac
         - inject:
             properties-file: remote_directory_parameters
-        - ssh:
-            site: 'snapshots.linaro.org'
-            target: '${JOB_NAME}/${BUILD_NUMBER}/${distribution}/hwpacks/${hwpack}/${BUILD_NUMBER}'
-            source: 'hwpack_linaro-${hwpack}*, *.txt'
-            timeout: 120000
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org file-move'
-            target: ''
-            source: ''
-            command: 'reshuffle-files --job-type prebuilt --job-name ${JOB_NAME} --build-num ${BUILD_NUMBER}'
-            timeout: 120000
-            always-publish-from-master: true
+        - shell: |
+            mkdir out
+            mv hwpack_linaro-${hwpack}* out
+            ${HOME}/bin/linaro-cp out ${distribution}/hwpacks/${hwpack}/${BUILD_NUMBER}
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
     publishers:
         - archive:
-            artifacts: 'hwpack_linaro-*.tar.gz'
+            artifacts: 'out/*'
             latest-only: true
         - email:
-            recipients: fathi.boudra@linaro.org
+            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
