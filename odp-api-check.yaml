@@ -1,0 +1,58 @@
+- job:
+    name: odp-api-check
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'ODP API check'
+    triggers:
+        - timed: '@daily'
+    axes:
+        - axis:
+            type: user-defined
+            name: ARCH
+            values:
+                - arm
+                - armeb
+                - arm64
+                - arm64be
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - shell: |
+            #!/bin/bash
+            # Assume build-dependencies packages are installed
+            # build-essential git autoconf automake libtool doxygen libstdc++6:i386 zlib1g:i386
+            # optional: gcc-arm-linux-gnueabihf
+
+            set -ex
+
+            rm -rf check-odp
+            git clone --depth 1 git://git.linaro.org/people/anders.roxell/check-odp.git
+
+            schroot -c odp -d / -p --  ${WORKSPACE}/check-odp/cross-compile-test.sh
+    publishers:
+        - warnings:
+            console-log-parsers:
+              - 'GNU Make + GNU C Compiler (gcc)'
+        - email:
+            recipients: 'anders.roxell@linaro.org'
