@@ -1,0 +1,184 @@
+- job:
+    name: 96boards-hikey
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    node: docker-utopic
+    display-name: '96boards - HiKey'
+    scm:
+        - git:
+            url: https://github.com/96boards/linux.git
+            refspec: +refs/heads/hikey:refs/remotes/origin/hikey
+            name: origin
+            branches:
+                - origin/hikey
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+        #!/bin/bash
+
+        set -ex
+
+        trap cleanup_exit INT TERM EXIT
+
+        cleanup_exit()
+        {
+          cd ${WORKSPACE}
+          rm -rf lci-build-tools
+          rm -rf builddir*
+          rm -rf out
+        }
+
+        sudo apt-get install -y kpartx
+
+        export LANG=C
+        export make_bootwrapper=false
+        export make_install=true
+        export kernel_flavour=hikey
+        export kernel_config=defconfig
+        export MAKE_DTBS=true
+        export ARCH=arm64
+        export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+
+        test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+        bash -x lci-build-tools/jenkins_kernel_build_inst
+        rm -rf out/dtbs
+
+        # Create the hardware pack
+        cat << EOF > linaro-hikey
+        format: '3.0'
+        name: linaro-hikey
+        architectures:
+        - arm64
+        origin: Linaro
+        maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+        support: supported
+        serial_tty: ttyAMA0
+        kernel_addr: '0x60000000'
+        initrd_addr: '0x62000000'
+        load_addr: '0x60008000'
+        dtb_addr: '0x61000000'
+        partition_layout: bootfs16_rootfs
+        mmc_id: '0:1'
+        kernel_file: boot/Image-*-hikey
+        initrd_file: boot/initrd.img-*-hikey
+        dtb_file: lib/firmware/*-linaro-hikey/device-tree/hi6220-hikey.dtb
+        boot_script: boot.scr
+        boot_min_size: 65
+        extra_serial_options:
+        - console=tty0
+        - console=ttyAMA0,115200n8
+        - k3v2mem
+        - hisi_dma_print=0
+        - vmalloc=484M
+        - no_irq_affinity
+        - maxcpus=8
+        assume_installed:
+        - adduser
+        - apt
+        - apt-utils
+        - debconf-i18n
+        - debian-archive-keyring
+        - gcc-4.8
+        - gnupg
+        - ifupdown
+        - initramfs-tools
+        - iproute2
+        - irqbalance
+        - isc-dhcp-client
+        - kmod
+        - netbase
+        - udev
+        packages:
+        - linux-image-arm64
+        - linux-headers-arm64
+        - firmware-linux
+        - firmware-ti-connectivity
+        - ti-uim
+        sources:
+          debian: http://ftp.debian.org/debian/ jessie main contrib non-free
+          repo: http://repo.linaro.org/ubuntu/linaro-overlay jessie main
+        EOF
+
+        linaro-hwpack-create --debug linaro-hikey `date +%Y%m%d`-${BUILD_NUMBER}
+        linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-hikey_*.deb` -r linux-image -d -i
+        linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
+
+        # Get rootfs
+        export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=developer/lastSuccessfulBuild/buildNumber`
+        export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=developer/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+        export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/developer-arm64/${ROOTFS_BUILD_NUMBER}/linaro-jessie-developer-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+        wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+
+        # Create pre-built image(s)
+        linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.img --image-size 2G --binary linaro-jessie-developer-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-hikey_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+        # Create boot image(s)
+        echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/mmcblk0p7 rootwait rw" > cmdline.emmc
+        echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/mmcblk1p2 rootwait rw" > cmdline
+
+        mkdir boot-fat
+        dd if=/dev/zero of=out/boot-fat.img bs=512 count=131072
+        sudo mkfs.fat -n "BOOT IMG" out/boot-fat.img
+        sudo mount -o loop,rw,sync out/boot-fat.img boot-fat
+        sudo cp -a out/Image boot-fat/Image || true
+        sudo cp -a out/hi6220-hikey.dtb boot-fat/lcb.dtb || true
+        sudo cp -a out/initrd.img-* boot-fat/ramdisk.img || true
+        sudo mv cmdline boot-fat/cmdline || true
+        sudo umount boot-fat
+        sudo chmod 777 out/boot-fat.img
+        dd if=/dev/zero of=out/boot-fat.emmc.img bs=512 count=131072
+        sudo mkfs.fat -n "BOOT IMG" out/boot-fat.emmc.img
+        sudo mount -o loop,rw,sync out/boot-fat.emmc.img boot-fat
+        sudo cp -a out/Image boot-fat/Image || true
+        sudo cp -a out/hi6220-hikey.dtb boot-fat/lcb.dtb || true
+        sudo cp -a out/initrd.img-* boot-fat/ramdisk.img || true
+        sudo mv cmdline.emmc boot-fat/cmdline || true
+        sudo umount boot-fat
+        sudo chmod 777 out/boot-fat.emmc.img
+        rm -rf boot-fat
+
+        # Create eMMC rootfs image
+        mkdir binary
+        sudo kpartx -av out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.img
+        sudo mount -o loop /dev/mapper/loop0p2 binary
+        sudo rm -rf binary/dev
+        sudo mkdir binary/dev
+        sudo make_ext4fs -L rootfs -l 1500M -s out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.emmc.img binary/
+        sudo umount binary
+        sudo kpartx -dv out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.img
+        sudo rm -rf binary
+
+        # Compress image(s)
+        gzip -9 out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.emmc.img
+        gzip -9 out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.img
+        gzip -9 out/boot-fat.emmc.img
+        gzip -9 out/boot-fat.img
+
+        # Publish
+        ${HOME}/bin/linaro-cp out debian/pre-built/hikey/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
