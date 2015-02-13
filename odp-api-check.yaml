@@ -12,7 +12,7 @@
                 - job-extended-read
                 - job-workspace
     disabled: false
-    node: build
+    node: master
     child-workspace: .
     display-name: 'ODP API check'
     triggers:
@@ -30,26 +30,34 @@
             type: slave
             name: label
             values:
-                - build
+                - docker-utopic
+                - docker-utopic-arm64
     execution-strategy:
-        sequential: true
+        combination-filter: |
+            !(label=="docker-utopic-arm64" && (ARCH=="arm" || ARCH=="armeb" || ARCH=="arm64be"))
     wrappers:
         - timestamps
         - matrix-tie-parent:
-            node: build
+            node: master
     builders:
         - shell: |
             #!/bin/bash
             # Assume build-dependencies packages are installed
-            # build-essential git autoconf automake libtool doxygen libstdc++6:i386 zlib1g:i386
-            # optional: gcc-arm-linux-gnueabihf
+            # build-essential git autoconf automake libtool doxygen libssh-dev
 
             set -ex
 
             rm -rf check-odp
-            git clone --depth 1 git://git.linaro.org/people/anders.roxell/check-odp.git
+            git clone --depth 1 -b cleanup git://git.linaro.org/people/anders.roxell/check-odp.git
 
-            schroot -c odp -d / -p --  ${WORKSPACE}/check-odp/cross-compile-test.sh
+            case "${label}" in
+              docker-utopic-arm64)
+                unset ARCH
+                sudo apt-get install -y --no-install-recommends libssh-dev
+                ;;
+            esac
+
+            bash -x ${WORKSPACE}/check-odp/build.sh
     publishers:
         - warnings:
             console-log-parsers:
