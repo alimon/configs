@@ -97,16 +97,20 @@
               # now, we are ready to make the final rootfs
               sudo tar --numeric-owner -zxf linaro-${UBUNTU_FLAVOUR}-${rootfs}.tar.gz
 
-              # for both -dev and -gnome, other in -gnome date is not correct at boot. probably an 
-              # issue to investigate with ntp/ntpdate/network-manager
+              # for both -dev only
+              case "${rootfs}" in
+                developer)
+
               cat << EOF | sudo tee -a binary/etc/network/interfaces
 
-            auto lo
-            iface lo inet loopback
+              auto lo
+              iface lo inet loopback
 
-            auto eth0
-            iface eth0 inet dhcp
-            EOF
+              auto eth0
+              iface eth0 inet dhcp
+              EOF
+              ;;
+              esac
 
               # Inject kernel modules
               sudo dpkg-deb -x ${linux_image} binary/
