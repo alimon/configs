@@ -87,13 +87,14 @@
             KERNEL_FLAVOUR=${kernel_flavour}
             KERNEL_SERIAL_CONSOLE=ttyMSM0,115200n8
             EOF
-        - trigger-builds:
-            - project: 'lt-qcom-ubuntu-images'
-              property-file: out/lt-qcom-ubuntu-images_parameters
     publishers:
         - archive:
             artifacts: 'out/*, out/dtbs/qcom-apq*.dtb'
             latest-only: true
+        - trigger-parameterized-builds:
+            - project: 'lt-qcom-ubuntu-images'
+              property-file: out/lt-qcom-ubuntu-images_parameters
+              condition: SUCCESS
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
         - ircbot:
