@@ -158,6 +158,12 @@
             sudo mv cmdline.emmc boot-fat/cmdline || true
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.emmc.img
+            dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
+            sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
+            sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
+            sudo cp -a out/Image out/hi6220-hikey.dtb out/initrd.img-* boot-fat/ || true
+            sudo umount boot-fat
+            sudo chmod 777 out/boot-fat.uefi.img
             rm -rf boot-fat
 
             # Create eMMC rootfs image
@@ -175,6 +181,7 @@
             gzip -9 out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.emmc.img
             gzip -9 out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.img
             gzip -9 out/boot-fat.emmc.img
+            gzip -9 out/boot-fat.uefi.img
             gzip -9 out/boot-fat.img
 
             # Publish
