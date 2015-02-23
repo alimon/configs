@@ -1,0 +1,100 @@
+- job:
+    name: openembedded-armv7a-pre-built-images
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: precise_hwpack_cloud
+    child-workspace: .
+    display-name: 'OpenEmbedded pre-built images (ARMv7-A)'
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - beaglebone
+                - lsk-vexpress
+                - panda
+        - axis:
+            type: slave
+            name: label
+            values:
+                - precise_hwpack_cloud
+    execution-strategy:
+        sequential: true
+        touchstone:
+            expr: 'hwpack=="lsk-vexpress"'
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: precise_hwpack_cloud
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -x
+
+            rm -rf daily-prebuilt-images
+            git clone git://git.linaro.org/ci/daily-prebuilt-images.git
+
+            case "${hwpack}" in
+              beaglebone)
+                DELETEDIR=1 ./daily-prebuilt-images/build-images -w ${hwpack} -pw ubuntu -p openembedded -b alip-armv7a-gcc-4.9
+                ;;
+              lsk-vexpress)
+                DELETEDIR=1 ./daily-prebuilt-images/build-images -w ${hwpack} -pw ubuntu -p openembedded -b alip-armv7a-gcc-4.9
+                ;;
+              panda)
+                DELETEDIR=1 ./daily-prebuilt-images/build-images -w ${hwpack} -pw ubuntu -p openembedded -b alip-armv7a-gcc-4.9
+                ;;
+            esac
+        - ssh:
+            site: 'snapshots.linaro.org'
+            target: '${JOB_NAME}/${BUILD_NUMBER}/openembedded'
+            source: 'out/pre-built/**'
+            timeout: 120000
+            remove-prefix: 'out'
+            always-publish-from-master: true
+        - ssh:
+            site: 'snapshots.linaro.org file-move'
+            target: ''
+            source: ''
+            command: 'reshuffle-files -t prebuilt -j ${JOB_NAME} -n ${BUILD_NUMBER}'
+            timeout: 120000
+            always-publish-from-master: true
+        - shell: |
+            #!/bin/bash
+
+            set -x
+
+            case "${hwpack}" in
+              beaglebone)
+                export DEVICE_TYPE=beaglebone-black
+                ;;
+              lsk-vexpress)
+                export DEVICE_TYPE=vexpress-a9
+                export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-lsk-vexpress/"
+                ;;
+              panda)
+                export DEVICE_TYPE=panda-es
+                ;;
+            esac
+
+            export HWPACK_JOB_NAME=${JOB_NAME}
+            export ROOTFS_TYPE=alip-armv7a-gcc-4.9
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "${hwpack}*_alip-armv7a-gcc-4.9_*.img.gz" |xargs basename`
+            export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
+            export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
+            python daily-prebuilt-images/lava-submit.py
+    publishers:
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, koen.kooi@linaro.org, trevor.woerner@linaro.org'
+            attach-build-log: true
+            matrix-trigger: both

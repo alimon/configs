@@ -1,0 +1,84 @@
+- job:
+    name: openembedded-armv7ab-pre-built-images
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: precise_hwpack_cloud
+    child-workspace: .
+    display-name: 'OpenEmbedded pre-built images (ARMv7-A big-endian)'
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - arndale-be
+        - axis:
+            type: slave
+            name: label
+            values:
+                - precise_hwpack_cloud
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: precise_hwpack_cloud
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -x
+
+            rm -rf daily-prebuilt-images
+            git clone git://git.linaro.org/ci/daily-prebuilt-images.git
+
+            case "${hwpack}" in
+              arndale-be)
+                DELETEDIR=1 ./daily-prebuilt-images/build-images -w ${hwpack} -p openembedded -b minimal-armv7ab-gcc-4.9
+                ;;
+            esac
+        - ssh:
+            site: 'snapshots.linaro.org'
+            target: '${JOB_NAME}/${BUILD_NUMBER}/openembedded'
+            source: 'out/pre-built/**'
+            timeout: 120000
+            remove-prefix: 'out'
+            always-publish-from-master: true
+        - ssh:
+            site: 'snapshots.linaro.org file-move'
+            target: ''
+            source: ''
+            command: 'reshuffle-files -t prebuilt -j ${JOB_NAME} -n ${BUILD_NUMBER}'
+            timeout: 120000
+            always-publish-from-master: true
+        - shell: |
+            #!/bin/bash
+
+            set -x
+
+            case "${hwpack}" in
+              arndale-be)
+                export DEVICE_TYPE=arndale
+                export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-arndale-be/"
+                ;;
+            esac
+
+            export HWPACK_JOB_NAME=${JOB_NAME}
+            export ROOTFS_TYPE=minimal-armv7ab-gcc-4.9
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "${hwpack}*_minimal-armv7ab-gcc-4.9_*.img.gz" |xargs basename`
+            export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
+            export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
+            python daily-prebuilt-images/lava-submit.py
+    publishers:
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, koen.kooi@linaro.org, trevor.woerner@linaro.org'
+            attach-build-log: true
+            matrix-trigger: both
