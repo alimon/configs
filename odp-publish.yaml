@@ -1,0 +1,73 @@
+- job:
+    name: odp-publish
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'ODP publish'
+    triggers:
+        - timed: '@daily'
+    axes:
+        - axis:
+            type: user-defined
+            name: build_type
+            values:
+                - lcov
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - shell: |
+            #!/bin/bash
+            # Assume build-dependencies packages are installed
+            # build-essential git autoconf automake libtool doxygen libssl-dev
+
+            set -ex
+
+            rm -rf check-odp
+            git clone --depth 1 -b cleanup git://git.linaro.org/people/anders.roxell/check-odp.git
+
+            sudo apt-get install -y --no-install-recommends libssl-dev
+
+            case "${build_type}" in
+              lcov)
+                sudo apt-get install -y --no-install-recommends lcov
+                export LCOV=1
+                ;;
+            esac
+
+            bash -x ${WORKSPACE}/check-odp/build.sh
+        - ssh:
+            site: 'docs.opendataplane.org'
+            target: ''
+            source: 'check-odp/publishing/**'
+            timeout: 120000
+            remove-prefix: 'check-odp/publishing'
+            always-publish-from-master: true
+    publishers:
+        - warnings:
+            console-log-parsers:
+              - 'GNU Make + GNU C Compiler (gcc)'
+        - email:
+            recipients: 'anders.roxell@linaro.org'
