@@ -52,6 +52,9 @@
             }
 
             sudo apt-get install -y kpartx python-pycurl
+            wget https://launchpad.net/~linaro-maintainers/+archive/tools/+files/android-tools-fsutils_4.2.2+git20130218-3ubuntu23+linaro1_amd64.deb
+            sudo dpkg -i --force-all android-tools-fsutils_*.deb
+            rm -f android-tools-fsutils_*.deb
 
             export LANG=C
             export make_bootwrapper=false
@@ -172,7 +175,7 @@
             sudo mount -o loop /dev/mapper/loop0p2 binary
             sudo rm -rf binary/dev
             sudo mkdir binary/dev
-            sudo make_ext4fs -L rootfs -l 1500M -s out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.emmc.img binary/
+            sudo make_ext4fs -o -L rootfs -l 1500M -s out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.emmc.img binary/
             sudo umount binary
             sudo kpartx -dv out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.img
             sudo rm -rf binary
