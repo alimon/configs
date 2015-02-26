@@ -1,0 +1,65 @@
+- job:
+    name: openembedded-armv8-luvos
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+        - string:
+            name: MACHINE
+            default: 'genericarmv8'
+        - string:
+            name: DISTRO
+            default: 'luv'
+    disabled: false
+    node: build
+    display-name: 'Linux UEFI Validation Operating System (luvOS) for ARMv8'
+    scm:
+        - git:
+            url: https://git.linaro.org/people/naresh.bhat/luvOS/luv-yocto.git
+            refspec: +refs/heads/set4-upstream:refs/remotes/origin/set4-upstream
+            name: origin
+            branches:
+                - origin/set4-upstream
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf build/tmp/deploy/images/genericarmv8
+            }
+
+            # Build
+            source oe-init-build-env
+            echo "BBLAYERS += \" ${WORKSPACE}/meta-luv\"" >> conf/bblayers.conf
+            bitbake luv-live-image
+
+            # Publish
+            rm -f ${WORKSPACE}/build/tmp/deploy/images/genericarmv8/*.txt
+            find ${WORKSPACE}/build/tmp/deploy/images/genericarmv8 -type l -exec test ! -e {} \; -delete
+            ${HOME}/bin/linaro-cp ${WORKSPACE}/build/tmp/deploy/images/genericarmv8 openembedded/pre-built/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org trevor.woerner@linaro.org naresh.bhat@linaro.org'
