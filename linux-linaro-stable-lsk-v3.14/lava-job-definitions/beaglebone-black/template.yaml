@@ -36,10 +36,16 @@ actions:
     - git-repo: git://git.linaro.org/qa/test-definitions.git
       testdef: ubuntu/smoke-tests-basic.yaml
     timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/mmtests.yaml
+    timeout: 3600
 - command: submit_results
   parameters:
     server: 'http://${LAVA_SERVER}'
     stream: '${BUNDLE_STREAM_NAME}'
 device_type: '${DEVICE_TYPE}'
 job_name: '${BUILD_URL}'
-timeout: 3600
+timeout: 7200
