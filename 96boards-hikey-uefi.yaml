@@ -62,8 +62,8 @@
             tar --strip-components=1 -C ${WORKSPACE}/arm64-tc -xf gcc-linaro-aarch64-linux-gnu-4.8-*_linux.tar.xz
             export PATH="${WORKSPACE}/arm64-tc/bin:$PATH"
 
-            # Check out arm-trusted-firmware - at a locked-down version
-            git clone -b hikey-v0.2.2 --depth 1 https://github.com/96boards/arm-trusted-firmware.git
+            # Check out arm-trusted-firmware
+            git clone -b hikey --depth 1 https://github.com/96boards/arm-trusted-firmware.git
 
             git clone git://git.linaro.org/uefi/uefi-tools.git
 
@@ -87,14 +87,9 @@
             git clone -b hikey-v0.2.2 --depth 1 https://github.com/96boards/l-loader.git
             cd l-loader
             ln -s ${WORKSPACE}/out/bl1.bin
-            arm-linux-gnueabihf-gcc -c -o start.o start.S
-            arm-linux-gnueabihf-gcc -c -o debug.o debug.S
-            arm-linux-gnueabihf-ld -Bstatic -Tl-loader.lds -Ttext 0xf9800800 start.o debug.o -o loader
-            arm-linux-gnueabihf-objcopy -O binary loader temp
-            python gen_loader.py -o l-loader.bin --img_loader=temp --img_bl1=bl1.bin
             # XXX sgdisk usage requires sudo
-            sudo bash -x generate_ptable.sh
-            python gen_loader.py -o ptable.img --img_prm_ptable=prm_ptable.img --img_sec_ptable=sec_ptable.img
+            sed -i "s|^\tsh|\tsudo bash -x|" Makefile
+            make
             cp -a l-loader.bin ptable.img ${WORKSPACE}/out/
             cd ${WORKSPACE}
 
