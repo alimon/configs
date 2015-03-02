@@ -164,7 +164,8 @@
             dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
             sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
             sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
-            sudo cp -a out/Image out/hi6220-hikey.dtb out/initrd.img-* boot-fat/ || true
+            sudo cp -a out/Image out/hi6220-hikey.dtb boot-fat/ || true
+            sudo cp -a out/initrd.img-* boot-fat/initrd.img || true
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.uefi.img
             rm -rf boot-fat
