@@ -28,6 +28,8 @@
             name: build_type
             values:
                 - lcov
+                - dox_html
+                - clang
         - axis:
             type: slave
             name: label
@@ -55,6 +57,14 @@
                 sudo apt-get install -y --no-install-recommends lcov
                 export LCOV=1
                 ;;
+              dox_html)
+                sudo apt-get install -y --no-install-recommends graphviz doxygen
+                export DOXYGEN_HTML=1
+                ;;
+              clang)
+                sudo apt-get install -y --no-install-recommends clang
+                export CLANG=1
+                ;;
             esac
 
             bash -x ${WORKSPACE}/check-odp/build.sh
@@ -69,5 +79,7 @@
         - warnings:
             console-log-parsers:
               - 'GNU Make + GNU C Compiler (gcc)'
+              - 'Clang (LLVM based)'
+              - 'Doxygen'
         - email:
             recipients: 'anders.roxell@linaro.org'
