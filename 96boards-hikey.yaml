@@ -149,7 +149,7 @@
             sudo cp -a out/Image boot-fat/Image || true
             sudo cp -a out/hi6220-hikey.dtb boot-fat/lcb.dtb || true
             sudo cp -a out/initrd.img-* boot-fat/ramdisk.img || true
-            sudo mv cmdline boot-fat/cmdline || true
+            sudo cp -a cmdline boot-fat/cmdline || true
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.img
             dd if=/dev/zero of=out/boot-fat.emmc.img bs=512 count=131072
@@ -171,15 +171,37 @@
             rm -rf boot-fat
 
             # Create eMMC rootfs image
-            mkdir binary
+            mkdir boot rootfs
             sudo kpartx -av out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.img
-            sudo mount -o loop /dev/mapper/loop0p2 binary
-            sudo rm -rf binary/dev
-            sudo mkdir binary/dev
-            sudo make_ext4fs -o -L rootfs -l 1500M -s out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.emmc.img binary/
-            sudo umount binary
+            sudo mount -o loop /dev/mapper/loop0p1 boot
+            sudo mount -o loop /dev/mapper/loop0p2 rootfs
+
+            sudo cp -a boot/hi6220-hikey.dtb boot/lcb.dtb || true
+            sudo cp -a boot/initrd.img-* boot/ramdisk.img || true
+            sudo mv cmdline boot/cmdline || true
+
+            sudo ln -sf /etc/resolvconf/run/resolv.conf binary/etc/resolv.conf
+
+            cat << EOF | sudo tee rootfs/etc/network/interfaces.d/eth0
+            #auto eth0
+            #iface eth0 inet dhcp
+            EOF
+
+            cat << EOF | sudo tee rootfs/etc/network/interfaces.d/wlan0
+            #auto wlan0
+            #iface wlan0 inet dhcp
+            #    wpa-driver nl80211
+            #    wpa-ssid YOUR-SSID-HERE
+            #    wpa-psk YOUR-PASSWORD-HERE
+            EOF
+
+            sudo rm -rf rootfs/dev
+            sudo mkdir rootfs/dev
+
+            sudo make_ext4fs -o -L rootfs -l 1500M -s out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.emmc.img rootfs/
+            sudo umount boot rootfs
             sudo kpartx -dv out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.img
-            sudo rm -rf binary
+            sudo rm -rf boot rootfs
 
             # Compress image(s)
             gzip -9 out/hikey-jessie_developer_`date +%Y%m%d`-${BUILD_NUMBER}.emmc.img
