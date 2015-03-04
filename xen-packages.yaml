@@ -1,0 +1,82 @@
+- job:
+    name: xen-packages
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    display-name: 'Linaro Xen binary build'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic-arm64
+                - docker-utopic-armhf
+    triggers:
+        - timed: 'H(0-30) H(9-11) * * *'
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            sudo apt-get update
+            sudo apt-get -y install build-essential libncurses-dev uuid-dev libglib2.0-dev libssl-dev libaio-dev libyajl-dev gettext git python-dev libfdt-dev libpixman-1-dev wget fakeroot lsb-release e2fslibs-dev liblzma-dev pkg-config zlib1g-dev iasl python-pycurl u-boot-tools
+
+            rm -rf xen
+            git clone -b staging git://xenbits.xen.org/xen.git
+
+            arch=`dpkg-architecture -qDEB_HOST_ARCH`
+            case "${arch}" in
+              armhf)
+                personality=linux32
+                xenarch=arm32
+                ;;
+              arm64)
+                xenarch=arm64
+                ;;
+              amd64)
+                xenarch=x86_64
+                ;;
+            esac
+
+            cd xen
+            $personality ./configure --prefix=/usr --with-system-qemu
+            $personality make -j`getconf _NPROCESSORS_ONLN` debball dist-xen XEN_TARGET_ARCH=${xenarch}
+
+            mkdir ${WORKSPACE}/out
+            cp -L dist/xen*.deb ${WORKSPACE}/out/xen-${arch}.deb
+            cp -L dist/install/boot/xen ${WORKSPACE}/out/xen-${arch}
+            if [ ${arch} == arm64 ]
+            then
+                mkimage -A arm -C none -T kernel -a 0x0200000 -e 0x00200000 -n Xen -d ${WORKSPACE}/out/xen-arm64 ${WORKSPACE}/out/uXen-arm64
+            fi
+            cd ..
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            python ${HOME}/bin/linaro-cp.py out components/platform/xen/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'riku.voipio@linaro.org wookey@linaro.org Ian.Campbell@citrix.com julien.grall@linaro.org fathi.boudra@linaro.org'
