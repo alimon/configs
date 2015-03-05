@@ -1,13 +1,19 @@
 This repository contains the Jenkins job configurations used by Linaro CI.
 
-Jenkins job builder
+Jenkins Job Builder
 ===================
 
-Jenkins Job Builder takes simple descriptions of Jenkins jobs in YAML format,
-and uses them to configure Jenkins.
+Jenkins Job Builder (jjb) takes simple descriptions of Jenkins jobs in YAML
+format, and uses them to configure Jenkins.
 
-Configurations
-==============
+Homepage: http://ci.openstack.org/jjb.html
+
+Note that Linaro CI may use a modified Jenkins Job Builder and may include
+some patches which are not yet upstreamed. These changes are included in
+latest Debian/Ubuntu packages.
+
+Job Configurations
+==================
 
 In order to keep the jobs consistent, please follow this guideline:
  * Job name
@@ -16,8 +22,27 @@ In order to keep the jobs consistent, please follow this guideline:
  * YAML
    - file name matching the job name
 
+Workflow
+========
+
+Changes made to this repository are monitored and trigger an automatic
+deployment on the Jenkins master instance.
+
+Note: changes made through Jenkins web interface will be LOST.
+
+To manually force a Jenkins job update:
+1. Install jenkins-job-builder package
+2. Copy provided jenkins_jobs.ini-sample to jenkins_jobs.ini
+3. Edit jenkins_jobs.ini user/password settings as appropriate
+4. Run the job builder in test mode:
+
+    jenkins-jobs --conf=jenkins_jobs.ini test <job>.yaml
+
+4. Update the job on the Jenkins master:
+
+    jenkins-jobs --conf=jenkins_jobs.ini update <job>.yaml
+
 TODO
-====
+----
  * YAML header contains maintainer name
  * enable markdown formatter
-
