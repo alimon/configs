@@ -27,7 +27,7 @@ if proc.returncode != 0:
     raise ValueError("command has failed with code '%s'" % proc.returncode)
 
 for conf_filename in data.splitlines():
-    if conf_filename.endswith('.yaml'):
+    if conf_filename.endswith('.yaml') and '/' not in conf_filename:
         with open(conf_filename) as f:
             buffer = f.read()
             template = string.Template(buffer)
@@ -40,7 +40,7 @@ for conf_filename in data.splitlines():
         with open('template.yaml', 'w') as f:
             f.write(buffer)
         try:
-            arguments = [jjb_cmd, 'update', conf_filename]
+            arguments = [jjb_cmd, 'update', 'template.yaml']
             # arguments = [jjb_cmd, 'test', conf_filename, '-o', 'out']
             proc = subprocess.Popen(arguments,
                                     stdin=subprocess.PIPE,
