@@ -31,6 +31,12 @@
                 - dox_html
                 - clang
         - axis:
+            type: user-defined
+            name: platform_type
+            values:
+                - generic
+                - netmap
+        - axis:
             type: slave
             name: label
             values:
@@ -67,7 +73,7 @@
                 ;;
             esac
 
-            bash -x ${WORKSPACE}/check-odp/build.sh
+            bash -x ${WORKSPACE}/check-odp/build${platform}.sh
         - ssh:
             site: 'docs.opendataplane.org'
             target: ''
