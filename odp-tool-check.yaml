@@ -1,0 +1,68 @@
+- job:
+    name: odp-tool-check
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'ODP tool check'
+    triggers:
+        - timed: '@daily'
+    axes:
+        - axis:
+            type: user-defined
+            name: build_type
+            values:
+                - cpp_test
+                - m32_on_64
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - shell: |
+            #!/bin/bash
+            # Assume build-dependencies packages are installed
+            # build-essential git autoconf automake libtool doxygen libssl-dev
+
+            set -ex
+
+            rm -rf check-odp
+            git clone --depth 1 -b master git://git.linaro.org/lng/check-odp.git
+
+            sudo apt-get install -y --no-install-recommends libssl-dev
+
+            case "${build_type}" in
+              cpp_test)
+                export CPP_TEST=1
+                ;;
+              m32_on_64)
+                sudo apt-get update
+                sudo apt-get install -y --no-install-recommends libc6-dev:i386 gcc-multilib
+                export M32_ON_64=1
+                ;;
+            esac
+
+            bash -x ${WORKSPACE}/check-odp/build.sh
+    publishers:
+        - email:
+            recipients: 'anders.roxell@linaro.org'
