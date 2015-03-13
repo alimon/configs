@@ -10,7 +10,6 @@
             anonymous:
                 - job-read
                 - job-extended-read
-                - job-workspace
             linaro:
                 - job-read
                 - job-extended-read
@@ -47,8 +46,9 @@
             set -ex
 
             rm -rf check-odp
-            git clone --depth 1 -b master git://git.linaro.org/lng/check-odp.git
+            git clone --depth 1 git://git.linaro.org/lng/check-odp.git
 
+            sudo apt-get update
             sudo apt-get install -y --no-install-recommends libssl-dev
 
             case "${build_type}" in
@@ -56,7 +56,6 @@
                 export CPP_TEST=1
                 ;;
               m32_on_64)
-                sudo apt-get update
                 sudo apt-get install -y --no-install-recommends libc6-dev:i386 gcc-multilib
                 export M32_ON_64=1
                 ;;

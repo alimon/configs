@@ -10,7 +10,6 @@
             anonymous:
                 - job-read
                 - job-extended-read
-                - job-workspace
             linaro:
                 - job-read
                 - job-extended-read
@@ -53,12 +52,14 @@
             set -ex
 
             rm -rf check-odp
-            git clone --depth 1 -b master git://git.linaro.org/lng/check-odp.git
+            git clone --depth 1 git://git.linaro.org/lng/check-odp.git
+
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends libssl-dev
 
             case "${label}" in
               docker-utopic-arm64)
                 unset ARCH
-                sudo apt-get install -y --no-install-recommends libssl-dev
                 ;;
             esac
 
