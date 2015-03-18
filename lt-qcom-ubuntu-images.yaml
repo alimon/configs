@@ -39,16 +39,22 @@
         - string:
             name: DTBS
             default: 'qcom-apq8064-ifc6410.dtb qcom-apq8064-cm-qs600.dtb'
+        - string:
+            name: SERIAL_CONSOLE
+            default: 'ttyMSM0'
+        - string:
+            name: KERNEL_BRANCH
+            default: 'release/qcomlt-3.18'
     disabled: false
     node: docker-utopic
     display-name: 'Qualcomm Ubuntu based images'
     scm:
         - git:
             url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
-            refspec: +refs/heads/release/qcomlt-3.18:refs/remotes/origin/release/qcomlt-3.18
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
             name: origin
             branches:
-                - origin/release/qcomlt-3.18
+                - origin/${KERNEL_BRANCH}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -100,7 +106,7 @@
             origin: Linaro
             maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
             support: supported
-            serial_tty: ttyMSM0
+            serial_tty: ${SERIAL_CONSOLE}
             kernel_addr: '0x80208000'
             initrd_addr: '0x83000000'
             load_addr: '0x60008000'
@@ -117,7 +123,7 @@
             boot_min_size: 64
             extra_serial_options:
             - console=tty0
-            - console=ttyMSM0,115200n8
+            - console=${SERIAL_CONSOLE},115200n8
             assume_installed:
             - linaro-headless
             - linux-firmware
@@ -188,7 +194,7 @@
             secondaddr = 0x81100000
             tagsaddr = 0x80200100
             name = linaro-${PLATFORM_NAME}
-            cmdline = console=tty0 console=ttyMSM0,115200n8 root=/dev/mmcblk0p13 rootwait rw text
+            cmdline = console=tty0 console=${SERIAL_CONSOLE},115200n8 root=/dev/mmcblk0p13 rootwait rw text
             EOF
 
             # IFC6410 needs ATAG fixup to boot
