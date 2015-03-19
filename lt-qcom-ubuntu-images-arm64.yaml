@@ -1,0 +1,236 @@
+- job:
+    name: lt-qcom-ubuntu-images-arm64
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/lt-qualcomm/'
+        - string:
+            name: DEVICE_TYPE
+            default: 'dragonboard-410c'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: UBUNTU_FLAVOUR
+            default: 'utopic'
+        - string:
+            name: PLATFORM_NAME
+            default: 'qcom-snapdragon'
+        - string:
+            name: ROOTFS
+            default: 'developer'
+        - string:
+            name: DTBS
+            default: 'msm8916-mtp.dtb'
+        - string:
+            name: SERIAL_CONSOLE
+            default: 'ttyMSM0'
+        - string:
+            name: KERNEL_BRANCH
+            default: 'integration-linux-qcomlt'
+    disabled: false
+    node: docker-utopic
+    display-name: 'Qualcomm Ubuntu based images (arm64)'
+    scm:
+        - git:
+            url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - origin/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+              rm -rf qcom-firmware
+              git clean -fdx
+            }
+
+            sudo apt-get install -y kpartx python-pycurl
+            wget https://launchpad.net/~linaro-maintainers/+archive/tools/+files/android-tools-fsutils_4.2.2+git20130218-3ubuntu23+linaro1_amd64.deb
+            wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/d/dtbtool/dtbtool_3.0+git20150120+9ded23c-linaro1_amd64.deb
+            sudo dpkg -i --force-all android-tools-fsutils_*.deb dtbtool_*.deb
+
+            # install required tools needed to manage QCOM custom device tree table
+            wget https://launchpad.net/~ndec/+archive/ubuntu/ppa-ndec/+files/android-tools-mkbootimg_4.2.2%2Bgit20130218-3ubuntu23%2Blinaro2_amd64.deb
+            sudo dpkg -i --force-all android-tools-mkbootimg_*.deb
+
+            export LANG=C
+            export make_install=true
+            export kernel_flavour=lt-qcom-arm64
+            export kernel_config=defconfig
+            export MAKE_DTBS=true
+            export ARCH=arm64
+            export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+
+            test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            bash -x lci-build-tools/jenkins_kernel_build_inst
+
+            # Create the hardware pack
+            cat << EOF > linaro-lt-qcom
+            format: '3.0'
+            name: linaro-lt-qcom
+            architectures:
+            - arm64
+            origin: Linaro
+            maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+            support: supported
+            serial_tty: ${SERIAL_CONSOLE}
+            kernel_addr: '0x80208000'
+            initrd_addr: '0x83000000'
+            load_addr: '0x60008000'
+            dtb_addr: '0x61000000'
+            partition_layout: bootfs_rootfs
+            mmc_id: '0:1'
+            kernel_file: boot/vmlinuz-*-qcom
+            initrd_file: boot/initrd.img-*-qcom
+            dtb_file: lib/firmware/*-qcom/device-tree/msm8916-mtp.dtb
+            boot_script: boot.scr
+            boot_min_size: 64
+            extra_serial_options:
+            - console=tty0
+            - console=${SERIAL_CONSOLE},115200n8
+            assume_installed:
+            - linaro-headless
+            - linux-firmware
+            packages:
+            - linux-image-generic
+            - linux-headers-generic
+            sources:
+              repo: http://repo.linaro.org/ubuntu/linaro-overlay ${UBUNTU_FLAVOUR} main
+              ubuntu: http://ports.ubuntu.com/ubuntu-ports ${UBUNTU_FLAVOUR} main universe
+            EOF
+
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            linaro-hwpack-create --debug linaro-lt-qcom ${VERSION}
+            linaro-hwpack-replace -t `ls hwpack_linaro-lt-qcom_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-lt-qcom_*.deb` -r linux-image -d -i
+            linaro-hwpack-replace -t `ls hwpack_linaro-lt-qcom_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-lt-qcom_*.deb` -r linux-headers -d -i
+
+            cat > out/README.txt << EOF
+            This build is using artifacts from the following builds:
+            EOF
+
+            for rootfs in ${ROOTFS}; do
+              # Get rootfs
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+
+              # Create pre-built image(s)
+              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+              # Create eMMC rootfs image(s)
+              mkdir rootfs
+              sudo kpartx -av out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo mount -o loop /dev/mapper/loop0p2 rootfs
+
+              [ "${rootfs}" = "developer" ] && cat << EOF | sudo tee rootfs/etc/network/interfaces.d/eth0
+            auto eth0
+            iface eth0 inet dhcp
+            EOF
+
+              sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+              sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+
+              cat << EOF | sudo tee -a rootfs/etc/fstab
+            LABEL=qcom-firmware /lib/firmware ext4 defaults 0 0
+            EOF
+
+              sudo make_ext4fs -o -L rootfs -l 2G -s out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
+              sudo umount rootfs
+              sudo kpartx -dv out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo rm -rf rootfs out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+
+              # Compress image(s)
+              gzip -9 out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
+
+              cat >> out/README.txt << EOF
+            Linaro Ubuntu ${rootfs} build: http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}
+            EOF
+            done
+
+            # Move all relevant DTBs in out/
+            for f in ${DTBS} ; do
+              mv out/dtbs/${f} out/
+            done
+            rm -rf out/dtbs
+
+            # Create device tree table
+            dtbtool -o out/dt.img -p builddir-*-${kernel_flavour}/scripts/dtc/ -s 2048 out/
+
+            # Create boot image
+            mkbootimg \
+              --kernel out/Image \
+              --ramdisk out/initrd.img-* \
+              --output out/boot-msm8916-mtp-${PLATFORM_NAME}-${VERSION}.img \
+              --dt out/dt.img \
+              --tags_offset "0x1e00000" \
+              --ramdisk_offset "0x2000000" \
+              --pagesize "2048" \
+              --base "0x80000000" \
+              --cmdline "root=/dev/mmcblk0p28 rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8 text"
+            gzip -9 out/boot-msm8916-mtp-${PLATFORM_NAME}-${VERSION}.img
+
+            # Create an empty partition, placeholder for proprietary firmware
+            # do no create sparse file, so that the file can be easily loop mounted
+            mkdir qcom-firmware
+            sudo make_ext4fs -L qcom-firmware -l 64M out/firmware-${PLATFORM_NAME}-${VERSION}.img qcom-firmware/
+            rm -rf qcom-firmware
+            gzip -9 out/firmware-${PLATFORM_NAME}-${VERSION}.img
+
+            # Final preparation for publishing
+            cp -a linux-*.deb out/
+            rm -f out/vmlinuz
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            python ${HOME}/bin/linaro-cp.py out ubuntu/pre-built/snapdragon-arm64/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
+        - ircbot:
+            channels:
+                - name: '#linaro-lt-qcomm'
+                  password: ${LT_QCOM_KEY}
