@@ -198,21 +198,11 @@
             cmdline = console=tty0 console=${SERIAL_CONSOLE},115200n8 root=/dev/mmcblk0p13 rootwait rw text
             EOF
 
-            # IFC6410 needs ATAG fixup to boot
-            cp -a fixup.bin out/fixup-qcom-apq8064-ifc6410.bin
-            cp -a fixup.bin out/fixup-qcom-apq8064-cm-qs600.bin
-
             # Create one boot image for each platform supported, since we need to append DTB to zImage
-            # fixup.bin used to fixup loader to boot mainline on Qualcomm platforms that needs adjustment
-            # of ATAG MEM
             for f in ${DTBS} ; do
               mv out/dtbs/${f} out/
               target=`basename ${f} .dtb`
-              if [ -f "out/fixup-${target}.bin" ]; then
-                cat out/fixup-${target}.bin out/zImage out/${f} > zImage-dtb
-              else
-                cat out/zImage out/${f} > zImage-dtb
-              fi
+              cat out/zImage out/${f} > zImage-dtb
               abootimg --create out/boot-${target}-${PLATFORM_NAME}-${VERSION}.img -f out/bootimg.cfg -k zImage-dtb -r out/initrd.img-*
               gzip -9 out/boot-${target}-${PLATFORM_NAME}-${VERSION}.img
             done
