@@ -1,0 +1,108 @@
+- job:
+    name: kvm-guest-image
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+        - string:
+            name: ROOTFS_BUILD_SUITE
+            default: 'utopic'
+    disabled: false
+    display-name: 'Linaro KVM guest image build'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic-arm64
+                - docker-utopic-armhf
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+                sudo umount /mnt || true
+                sudo kpartx -dv kvm.raw || true
+            }
+
+            sudo apt-get update
+            sudo apt-get -y install kpartx parted pixz qemu-utils python-pycurl
+
+            arch=`dpkg-architecture -qDEB_HOST_ARCH`
+            case "${arch}" in
+              armhf)
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/15.02/ubuntu/utopic-images/nano/linaro-utopic-nano-20150220-698.tar.gz"
+                ;;
+              arm64)
+                export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-arm64-rootfs/label=build,rootfs=nano/lastSuccessfulBuild/buildNumber`
+                export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-arm64-rootfs/label=build,rootfs=nano/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+                export ROOTFS_BUILD_FILENAME="linaro-${ROOTFS_BUILD_SUITE}-nano-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar"
+                export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/nano-arm64/${ROOTFS_BUILD_NUMBER}/${ROOTFS_BUILD_FILENAME}.gz"
+                ;;
+            esac
+            wget -nc --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL} -O ${ROOTFS_BUILD_SUITE}-nano.tgz
+
+            dd if=/dev/zero of=kvm.raw bs=1024 seek=1M count=0
+            /sbin/parted --script kvm.raw mklabe gpt
+            /sbin/parted --script kvm.raw mkpart p fat32 1 50
+            /sbin/parted --script  -- kvm.raw mkpart p ext4 51 -0
+            /sbin/parted --script kvm.raw set 1 boot
+
+            for part in `sudo kpartx -av kvm.raw | awk '{print $3}'`; do
+              partnum=`echo ${part} | sed -e 's,.*p,,'`
+              case "${partnum}" in
+                1)
+                  sudo mkfs.vfat -F 32 /dev/mapper/${part}
+                  ;;
+                2)
+                  sudo mkfs.ext4 /dev/mapper/${part}
+                  sudo mount /dev/mapper/${part} /mnt/
+                  sudo tar xaf ${ROOTFS_BUILD_SUITE}-nano.tgz -C /mnt --strip-components=1
+                  cat << EOF | sudo tee /mnt/etc/network/interfaces.d/eth0
+            auto lo
+            iface lo inet loopback
+
+            auto eth0
+            iface eth0 inet dhcp
+            EOF
+                  sudo umount /mnt
+                  ;;
+              esac
+            done
+
+            sudo kpartx -dv kvm.raw
+            qemu-img convert -f raw -O qcow2 kvm.raw kvm.qcow2
+            time pixz kvm.qcow2
+
+            # Publish to snapshots
+            mkdir out; mv kvm.qcow2.xz out/kvm-${arch}.qcow2.xz
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            python ${HOME}/bin/linaro-cp.py out ubuntu/images/kvm-guest/${BUILD_NUMBER}/${arch}
+    publishers:
+        - email:
+            recipients: 'riku.voipio@linaro.org'
