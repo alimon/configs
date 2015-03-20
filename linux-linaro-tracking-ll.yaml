@@ -175,8 +175,7 @@
             [ "${hwpack}" = "beaglebone-uprobes" ] && python linaro-image-tools/linaro-hwpack-replace -t `ls hwpack_linaro-beaglebone_*_armhf_supported.tar.gz` -p `ls linux-headers-*-linaro-am335x_*.deb` -r linux-headers -d -i
             [ "${hwpack}" = "ifc6410" ] && {
               cp -a *.deb out/
-              cp -a fixup.bin out/fixup-qcom-apq8064-ifc6410.bin
-              cat fixup.bin builddir-*-${kernel_flavour}/arch/arm/boot/zImage builddir-*-${kernel_flavour}/arch/arm/boot/dts/qcom-apq8064-ifc6410.dtb > out/zImage
+              cat builddir-*-${kernel_flavour}/arch/arm/boot/zImage builddir-*-${kernel_flavour}/arch/arm/boot/dts/qcom-apq8064-ifc6410.dtb > out/zImage
             }
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [ "${hwpack}" = "vexpress64" ] && cp -a builddir-*-${kernel_flavour}/.config kernel.config
