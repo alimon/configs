@@ -44,7 +44,7 @@
             default: 'release/qcomlt-3.4'
     disabled: false
     node: docker-utopic
-    display-name: 'Qualcomm Ubuntu based images using 3.4 kernel'
+    display-name: 'Qualcomm Ubuntu based images (3.4 kernel)'
     scm:
         - git:
             url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
@@ -196,9 +196,8 @@
             cmdline = console=tty0 console=${SERIAL_CONSOLE},115200n8 root=/dev/mmcblk0p13 rootwait rw text
             EOF
 
-            export target=qcom-apq8064-ifc6410
-            abootimg --create out/boot-${target}-${PLATFORM_NAME}-${VERSION}.img -f out/bootimg.cfg -k out/zImage -r out/initrd.img-*
-            gzip -9 out/boot-${target}-${PLATFORM_NAME}-${VERSION}.img
+            abootimg --create out/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img -f out/bootimg.cfg -k out/zImage -r out/initrd.img-*
+            gzip -9 out/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img
 
             # Create an empty partition, placeholder for proprietary firmware
             # do no create sparse file, so that the file can be easily loop mounted
