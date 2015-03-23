@@ -62,7 +62,8 @@
 
             cd xen
             $personality ./configure --prefix=/usr --with-system-qemu
-            $personality make -j`getconf _NPROCESSORS_ONLN` debball dist-xen XEN_TARGET_ARCH=${xenarch}
+            $personality make -j`getconf _NPROCESSORS_ONLN` dist-xen XEN_TARGET_ARCH=${xenarch}
+            $personality make debball XEN_TARGET_ARCH=${xenarch}
 
             mkdir ${WORKSPACE}/out
             cp -L dist/xen*.deb ${WORKSPACE}/out/xen-${arch}.deb
