@@ -93,6 +93,7 @@
 
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
             bash -x lci-build-tools/jenkins_kernel_build_inst
+            cp -a builddir-*-${kernel_flavour}/arch/arm/boot/zImage out/
 
             # Create the hardware pack
             cat << EOF > linaro-lt-qcom
@@ -203,7 +204,7 @@
 
             # Final preparation for publishing
             cp -a linux-*.deb out/
-            rm -f out/vmlinuz
+            rm -f out/vmlinuz out/uImage
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
