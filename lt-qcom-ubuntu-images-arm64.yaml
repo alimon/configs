@@ -76,6 +76,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
+              sudo kpartx -dv out/linaro-${UBUNTU_FLAVOUR}-*-${PLATFORM_NAME}-${VERSION}.sd.img || true
               rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
@@ -156,8 +157,10 @@
 
               # Create eMMC rootfs image(s)
               mkdir rootfs
-              sudo kpartx -av out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
-              sudo mount -o loop /dev/mapper/loop0p2 rootfs
+              for device in $(sudo kpartx -av out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
+                partition=$(echo ${device} | cut -d'p' -f3)
+                [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
+              done
 
               [ "${rootfs}" = "developer" ] && cat << EOF | sudo tee rootfs/etc/network/interfaces.d/eth0
             auto eth0
