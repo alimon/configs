@@ -117,7 +117,7 @@
             dtb_addr: '0x61000000'
             partition_layout: bootfs_rootfs
             mmc_id: '0:1'
-            kernel_file: boot/vmlinuz-*-qcom
+            kernel_file: boot/Image-*-qcom
             initrd_file: boot/initrd.img-*-qcom
             dtb_file: lib/firmware/*-qcom/device-tree/msm8916-mtp.dtb
             boot_script: boot.scr
@@ -149,7 +149,7 @@
               # Get rootfs
               export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
               export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
               # Create pre-built image(s)
@@ -183,7 +183,7 @@
               gzip -9 out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
               cat >> out/README.txt << EOF
-            Linaro Ubuntu ${rootfs} build: http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}
+            Linaro Ubuntu ${rootfs} build: http://snapshots.linaro.org/ubuntu/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
             EOF
             done
 
@@ -218,7 +218,6 @@
 
             # Final preparation for publishing
             cp -a linux-*.deb out/
-            rm -f out/vmlinuz
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
