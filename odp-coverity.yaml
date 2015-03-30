@@ -1,0 +1,91 @@
+- job:
+    name: odp-coverity
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - password:
+            name: COVERITY_TOKEN_ODP
+            default: ${COVERITY_TOKEN_ODP}
+        - password:
+            name: COVERITY_TOKEN_ODP_NETMAP
+            default: ${COVERITY_TOKEN_ODP_NETMAP}
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'ODP Coverity'
+    triggers:
+        # Run twice a week due to license restrictions
+        - timed: '0 0 * * 1,3'
+    axes:
+        - axis:
+            type: user-defined
+            name: build_type
+            values:
+                - generic
+                - netmap
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - shell: |
+            #!/bin/bash
+            # Assume build-dependencies packages are installed
+            # build-essential git autoconf automake libtool doxygen libssl-dev
+
+            set -e
+
+            rm -rf check-odp
+            git clone --depth 1 git://git.linaro.org/lng/check-odp.git
+
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends libssl-dev
+
+            case "${build_type}" in
+              generic)
+                export token="${COVERITY_TOKEN_ODP}"
+                export project=ODP
+                ;;
+              netmap)
+                export token="${COVERITY_TOKEN_ODP_NETMAP}"
+                export project=ODP-Netmap
+                ;;
+            esac
+
+            wget https://scan.coverity.com/download/linux-64 --no-verbose --post-data "token=${token}&project=${project}" -O coverity_tool.tgz
+            tar -zxf coverity_tool.tgz
+            export COV_DIR=$(find ${WORKSPACE} -type d -name 'cov-analysis-linux64-*')/bin
+            bash -x ${WORKSPACE}/check-odp/build-${build_type}.sh
+            odp_version=$(cat check-odp/linux-${build_type}-git-describe)
+
+            curl \
+              --form token=${token} \
+              --form email=mike.holmes@linaro.org \
+              --form file=@check-odp/linux-${build_type}-cov-int.tgz \
+              --form version="${odp_version}" \
+              --form description="CI ${BUILD_TAG}" \
+              https://scan.coverity.com/builds?project=${project}
+    publishers:
+        - warnings:
+            console-log-parsers:
+              - 'GNU Make + GNU C Compiler (gcc)'
+        - email:
+            recipients: 'lng-ci@lists.linaro.org'
