@@ -72,15 +72,15 @@
             /sbin/parted --script  -- kvm.raw mkpart p ext4 51 -0
             /sbin/parted --script kvm.raw set 1 boot
 
-            for part in `sudo kpartx -av kvm.raw | awk '{print $3}'`; do
-              partnum=`echo ${part} | sed -e 's,.*p,,'`
-              case "${partnum}" in
+            for device in $(sudo kpartx -av kvm.raw | cut -d' ' -f3); do
+              partition=$(echo ${device} | cut -d'p' -f3)
+              case "${partition}" in
                 1)
-                  sudo mkfs.vfat -F 32 /dev/mapper/${part}
+                  sudo mkfs.vfat -F 32 /dev/mapper/${device}
                   ;;
                 2)
-                  sudo mkfs.ext4 /dev/mapper/${part}
-                  sudo mount /dev/mapper/${part} /mnt/
+                  sudo mkfs.ext4 /dev/mapper/${device}
+                  sudo mount /dev/mapper/${device} /mnt/
                   sudo tar xaf ${ROOTFS_BUILD_SUITE}-nano.tgz -C /mnt --strip-components=1
                   cat << EOF | sudo tee /mnt/etc/network/interfaces.d/eth0
             auto lo
