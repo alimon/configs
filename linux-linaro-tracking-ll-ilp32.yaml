@@ -151,13 +151,13 @@
             [ "${abi}" = "ilp32" ] && {
               rootfs="minimal"
               rootfs_ext="-ltp"
-              export rootfs_type="minimal-armv8-ilp32-gcc-4.9"
+              export rootfs_type="minimal-ltp-armv8-ilp32-gcc-4.9"
               img_abi="-ilp32"
             }
 
             export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv8${img_abi}-rootfs/gcc_version=4.9,label=build,rootfs=${rootfs}${rootfs_ext}/lastSuccessfulBuild/buildNumber`
             export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv8${img_abi}-rootfs/gcc_version=4.9,label=build,rootfs=${rootfs}${rootfs_ext}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/${rootfs_type}/${ROOTFS_BUILD_NUMBER}/linaro-image-${rootfs}-genericarmv8${img_abi}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/${rootfs_type}/${ROOTFS_BUILD_NUMBER}/linaro-image-${rootfs}${rootfs_ext}-genericarmv8${img_abi}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
 
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
