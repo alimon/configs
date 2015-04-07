@@ -79,5 +79,8 @@
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             python ${HOME}/bin/linaro-cp.py out components/platform/xen/${BUILD_NUMBER}/${arch}
     publishers:
+        - archive:
+            artifacts: 'out/*'
+            latest-only: true
         - email:
             recipients: 'riku.voipio@linaro.org wookey@linaro.org Ian.Campbell@citrix.com julien.grall@linaro.org fathi.boudra@linaro.org'
