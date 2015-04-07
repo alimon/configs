@@ -38,7 +38,7 @@
             default: 'developer'
         - string:
             name: DTBS
-            default: 'msm8916-mtp.dtb'
+            default: 'msm8916-mtp.dtb apq8016-sbc.dtb'
         - string:
             name: SERIAL_CONSOLE
             default: 'ttyMSM0'
@@ -201,14 +201,14 @@
             mkbootimg \
               --kernel out/Image \
               --ramdisk out/initrd.img-* \
-              --output out/boot-msm8916-mtp-${PLATFORM_NAME}-${VERSION}.img \
+              --output out/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
               --dt out/dt.img \
               --tags_offset "0x1e00000" \
               --ramdisk_offset "0x2000000" \
               --pagesize "2048" \
               --base "0x80000000" \
               --cmdline "root=/dev/mmcblk0p28 rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8 text"
-            gzip -9 out/boot-msm8916-mtp-${PLATFORM_NAME}-${VERSION}.img
+            gzip -9 out/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
 
             # Create an empty partition, placeholder for proprietary firmware
             # do no create sparse file, so that the file can be easily loop mounted
