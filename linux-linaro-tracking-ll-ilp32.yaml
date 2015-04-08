@@ -12,9 +12,6 @@
                 - job-extended-read
                 - job-workspace
     parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
         - string:
             name: BUNDLE_STREAM_NAME
             default: '/public/team/linaro/ilp32/'
@@ -62,6 +59,7 @@
         - matrix-tie-parent:
             node: build
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 

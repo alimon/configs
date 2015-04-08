@@ -12,9 +12,6 @@
                 - job-extended-read
                 - job-workspace
     parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
         - string:
             name: BUNDLE_STREAM_NAME
             default: '/private/team/linaro/ci-linux-linaro-stable-lsk-v3.14-rt-pre-merge/'
@@ -60,6 +57,7 @@
         - matrix-tie-parent:
             node: build
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 

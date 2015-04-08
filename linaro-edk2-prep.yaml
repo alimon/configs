@@ -17,9 +17,6 @@
                 - job-build
                 - job-cancel
     parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
         - string:
             name: BUNDLE_STREAM_NAME
             default: '/private/team/linaro/leg-edk2/'
@@ -58,6 +55,7 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 

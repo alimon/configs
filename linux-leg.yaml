@@ -12,9 +12,6 @@
                 - job-extended-read
                 - job-workspace
     parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
         - string:
             name: BUNDLE_STREAM_NAME
             default: '/private/team/linaro/leg-kernel/'
@@ -70,6 +67,7 @@
         - matrix-tie-parent:
             node: kernel_cloud
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 

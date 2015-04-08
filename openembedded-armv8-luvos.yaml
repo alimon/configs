@@ -11,9 +11,6 @@
                 - job-read
                 - job-extended-read
     parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
         - string:
             name: MACHINE
             default: 'genericarmv8'
@@ -38,6 +35,7 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 

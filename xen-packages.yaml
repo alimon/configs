@@ -15,10 +15,6 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-    parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
     disabled: false
     display-name: 'Linaro Xen binary build'
     axes:
@@ -35,6 +31,7 @@
         - matrix-tie-parent:
             node: master
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 

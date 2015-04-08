@@ -10,10 +10,6 @@
             anonymous:
                 - job-read
                 - job-extended-read
-    parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
     disabled: false
     node: build
     display-name: 'Linaro Ubuntu hardware packs (armhf)'
@@ -52,6 +48,7 @@
         - matrix-tie-parent:
             node: build
     builders:
+        - linaro-publish-token
         - copyartifact:
             project: package-and-publish-linux-linaro
             filter: 'out/*.deb'

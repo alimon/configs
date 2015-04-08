@@ -13,9 +13,6 @@
     parameters:
         - file:
             name: defconfig.properties
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
     disabled: false
     node: build
     child-workspace: .
@@ -62,6 +59,7 @@
         - matrix-tie-parent:
             node: build
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
