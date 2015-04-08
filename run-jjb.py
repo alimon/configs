@@ -34,6 +34,10 @@ for conf_filename in data.splitlines():
         buffer = template.safe_substitute(
             PUBLISH_KEY=os.environ.get('PUBLISH_KEY') or
                         sys.exit('Key is not defined.'),
+            COVERITY_TOKEN_ODP=os.environ.get('COVERITY_TOKEN_ODP'),
+            COVERITY_TOKEN_ODP_DPDK=os.environ.get('COVERITY_TOKEN_ODP_DPDK'),
+            COVERITY_TOKEN_ODP_KS2=os.environ.get('COVERITY_TOKEN_ODP_KS2'),
+            COVERITY_TOKEN_ODP_NETMAP=os.environ.get('COVERITY_TOKEN_ODP_NETMAP'),
             LT_QCOM_KEY=os.environ.get('LT_QCOM_KEY'),
             LAVA_USER=os.environ.get('LAVA_USER'),
             LAVA_TOKEN=os.environ.get('LAVA_TOKEN'))
