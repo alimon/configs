@@ -1,0 +1,48 @@
+- job:
+    name: trigger-openembedded-rootfs-external-toolchain
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for OpenEmbedded rootfs with external toolchain'
+    triggers:
+        - pollurl:
+            cron: '@daily'
+            polling-node: build
+            urls:
+              - url: 'http://abe.tcwglab.linaro.org/binaries/'
+                check-content:
+                  - simple: true
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -x
+
+            # FIXME: figure out the new toolchain URLs
+            toolchain_armv7a_url='http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz'
+            toolchain_armv8_url='http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz'
+
+            cat << EOF > toolchain_url_parameters
+            toolchain_armv7a_url=${toolchain_armv7a_url}
+            toolchain_armv8_url=${toolchain_armv8_url}
+            EOF
+        - inject:
+            properties-file: toolchain_url_parameters
+    publishers:
+        - trigger-parameterized-builds:
+            - project: openembedded-armv7a-rootfs-external-toolchain
+              predefined-parameters: toolchain_url=${toolchain_armv7a_url}
+              condition: SUCCESS
+            - project: openembedded-armv8-rootfs-external-toolchain
+              predefined-parameters: toolchain_url=${toolchain_armv8_url}
+              condition: SUCCESS
