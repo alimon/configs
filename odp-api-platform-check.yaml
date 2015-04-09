@@ -1,0 +1,70 @@
+- job:
+    name: odp-api-platform-check
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'ODP API platform check'
+    triggers:
+        - timed: '@daily'
+    axes:
+        - axis:
+            type: user-defined
+            name: platform_type
+            values:
+                - netmap
+                - dpdk
+                - ks2
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - shell: |
+            #!/bin/bash
+            # Assume build-dependencies packages are installed
+            # build-essential git autoconf automake libtool doxygen libssl-dev
+
+            set -ex
+
+            rm -rf check-odp
+            git clone --depth 1 git://git.linaro.org/lng/check-odp.git
+
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends libssl-dev
+
+            case "${platform_type}" in
+              dpdk)
+                sudo apt-get install -y linux-headers-generic
+                mkdir -p ${HOME}/bin
+                cp check-odp/helper/ci-uname ${HOME}/bin/uname
+                export PATH=${HOME}/bin:${PATH}
+                ;;
+            esac
+
+            bash -x ${WORKSPACE}/check-odp/build-${platform_type}.sh
+    publishers:
+        - warnings:
+            console-log-parsers:
+              - 'GNU Make + GNU C Compiler (gcc)'
+        - email:
+            recipients: 'lng-ci@lists.linaro.org'
