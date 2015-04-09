@@ -29,5 +29,17 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              exit 0
+            }
+
+            echo -n "defconfig_list=d01 vexpress" > defconfig.properties
         - trigger-builds:
             - project: 'coresight'
+              property-file: defconfig.properties

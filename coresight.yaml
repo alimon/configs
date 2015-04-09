@@ -1,6 +1,6 @@
 - job:
     name: coresight
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     logrotate:
         daysToKeep: 30
@@ -11,8 +11,22 @@
                 - job-read
                 - job-extended-read
                 - job-workspace
+    parameters:
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/coresight/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: ROOTFS_BUILD_URL
+            default: 'http://releases.linaro.org/15.03/openembedded/images/minimal-armv7a/linaro-image-minimal-genericarmv7a-20150323-328.rootfs.tar.gz'
+        - string:
+            name: ROOTFS_BUILD_NUMBER
+            default: '328'
     disabled: false
     node: build
+    child-workspace: .
     display-name: 'Coresight'
     scm:
         - git:
@@ -24,6 +38,19 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
+    axes:
+        - axis:
+            type: dynamic
+            name: defconfig
+            values:
+                - defconfig_list
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+    execution-strategy:
+        sequential: true
     wrappers:
         - timestamps
         - copy-to-slave:
@@ -31,6 +58,8 @@
                 - gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: build
     builders:
         - linaro-publish-token
         - shell: |
@@ -41,10 +70,8 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
-              rm -rf configs
             }
 
             export LANG=C
@@ -53,15 +80,27 @@
             CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
             export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS
             export use_ccache=true
-
-            export hwpack_type=vexpress
-            export kernel_flavour=vexpress
+            export make_install=true
+            export kernel_flavour="${defconfig}"
             export use_config_fragment=1
-            export conf_filenames="arch/arm/configs/vexpress_defconfig linaro/configs/coresight.conf"
+            export conf_filenames="arch/arm/configs/${defconfig}_defconfig linaro/configs/coresight.conf"
             export MAKE_DTBS=true
             export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz"
 
-            # XXX
+            case "${defconfig}" in
+              hisi)
+                export DEVICE_TYPE=d01
+                # for ethernet enablement
+                wget http://people.linaro.org/~fathi.boudra/coresight-d01/0001-hip04-dts-add-ethernet-resource-v2.patch -O 0001-hip04-dts-add-ethernet-resource-v2.patch
+                patch -p1 < 0001-hip04-dts-add-ethernet-resource-v2.patch
+                ;;
+              vexpress)
+                export hwpack_type=vexpress
+                export DEVICE_TYPE=vexpress-tc2
+                ;;
+            esac
+
+            # Create coresight config fragment
             mkdir -p linaro/configs
             cat << EOF > linaro/configs/coresight.conf
             CONFIG_CORESIGHT=y
@@ -76,37 +115,39 @@
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
             bash lci-build-tools/jenkins_kernel_build_inst
 
-            # Start LAVA dance
-            test -d configs || git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            # Publish to snapshots
+            mv hwpack_linaro-${hwpack_type}* out/
 
-            export HWPACK_BUILD_URL=http://snapshots.linaro.org/kernel-hwpack/vexpress-coresight/${BUILD_NUMBER}/`ls hwpack_linaro-${hwpack_type}_*_armhf_supported.tar.gz`
-            export ROOTFS_BUILD_URL=http://releases.linaro.org/14.11/openembedded/images/minimal-armv7a/linaro-image-minimal-genericarmv7a-20141121-301.rootfs.tar.gz
-            export ROOTFS_BUILD_NUMBER=301
-            export DEVICE_TYPE=vexpress-tc2
-            export BUNDLE_STREAM_NAME=/public/team/linaro/coresight/
-            export LAVA_SERVER=validation.linaro.org/RPC2/
+            ${HOME}/bin/linaro-cp out kernel-hwpack/coresight/${defconfig}/${BUILD_NUMBER}
 
-            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/vexpress-tc2/template.yaml > custom_lava_job_definition.json
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            KERNEL_URL=http://snapshots.linaro.org/kernel-hwpack/coresight/${defconfig}/${BUILD_NUMBER}
+            DTB_URL=${KERNEL_URL}/dtbs
+            HWPACK_BUILD_URL=${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}_*_armhf_supported.tar.gz |xargs basename`
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
             LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
+            DTB_URL=${DTB_URL}
+            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
             EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            ./lci-build-tools/yaml-to-json.py configs/coresight/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
 
-            # XXX
-            mkdir -p out
-            cp -a builddir-*-${kernel_flavour}/.config out/kernel.config
-            mv hwpack_linaro-${hwpack_type}_*_armhf_supported.* out/
-
-            ${HOME}/bin/linaro-cp out kernel-hwpack/vexpress-coresight/${BUILD_NUMBER}
-
-            CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
-            CCACHE_DIR=${CCACHE_DIR} ccache -s
+            rm -rf lci-build-tools
+            rm -rf configs
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
+              block: true
     publishers:
         - email:
             recipients: 'mathieu.poirier@linaro.org fathi.boudra@linaro.org'
