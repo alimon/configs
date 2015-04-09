@@ -249,6 +249,38 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters_qemu_iscsi_in_kvm
               block: true
+        - shell: |
+            DEVICE_TYPE=qemu-aarch64
+            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/qemu64/QEMU_EFI.fd
+            KERNEL_URL="$(dirname ${IMAGE_URL})/Image"
+
+            BUNDLE_STREAM_NAME=/anonymous/debug/
+            LAVA_SERVER=staging.validation.linaro.org/RPC2/
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${KERNEL_URL}|${KERNEL_URL}|" \
+                -e "s|\${QEMU_EFI_URL}|${QEMU_EFI_URL}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linaro-edk2-prep/lava-job-definitions/qemu-aarch64/template.json \
+                > custom_lava_job_definition_qemu_aarch64_uefi.json
+
+            cat << EOF > post_build_lava_parameters_qemu_aarch64_uefi
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_qemu_aarch64_uefi.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_qemu_aarch64_uefi
+              block: true
     publishers:
         - email:
             recipients: 'leif.lindholm@linaro.org fathi.boudra@linaro.org'
