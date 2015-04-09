@@ -116,7 +116,7 @@
             bash lci-build-tools/jenkins_kernel_build_inst
 
             # Publish to snapshots
-            mv hwpack_linaro-${hwpack_type}* out/
+            [ "${defconfig}" = "vexpress" ] && mv hwpack_linaro-${hwpack_type}* out/
 
             ${HOME}/bin/linaro-cp out kernel-hwpack/coresight/${defconfig}/${BUILD_NUMBER}
 
@@ -125,7 +125,7 @@
 
             KERNEL_URL=http://snapshots.linaro.org/kernel-hwpack/coresight/${defconfig}/${BUILD_NUMBER}
             DTB_URL=${KERNEL_URL}/dtbs
-            HWPACK_BUILD_URL=${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}_*_armhf_supported.tar.gz |xargs basename`
+            [ "${defconfig}" = "vexpress" ] && HWPACK_BUILD_URL=${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}_*_armhf_supported.tar.gz |xargs basename`
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
@@ -135,6 +135,7 @@
             KERNEL_URL=${KERNEL_URL}
             DTB_URL=${DTB_URL}
             HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
+            hwpack_type=${hwpack_type}
             EOF
         - inject:
             properties-file: post_build_lava_parameters
