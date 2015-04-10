@@ -65,13 +65,18 @@
         - shell: |
             #!/bin/bash
 
+            set -ex
+
             trap cleanup_exit INT TERM EXIT
 
             cleanup_exit()
             {
               cd ${WORKSPACE}
+              rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
+              git clean -fdx
+              git reset --hard
             }
 
             export LANG=C
@@ -140,11 +145,10 @@
         - inject:
             properties-file: post_build_lava_parameters
         - shell: |
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             ./lci-build-tools/yaml-to-json.py configs/coresight/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
-
-            rm -rf lci-build-tools
-            rm -rf configs
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
