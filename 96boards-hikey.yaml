@@ -33,9 +33,6 @@
             wipe-workspace: false
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                - gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
@@ -67,6 +64,7 @@
             export kernel_config=defconfig
             export MAKE_DTBS=true
             export ARCH=arm64
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-14.09/bin"
             export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
 
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
