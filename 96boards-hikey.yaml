@@ -222,6 +222,9 @@
             gzip -9 out/boot-fat.uefi.img
             gzip -9 out/boot-fat.img
 
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
