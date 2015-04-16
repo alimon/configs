@@ -187,6 +187,10 @@
             #    pre-up echo 0 > /sys/kernel/debug/ieee80211/phy0/wlcore/sleep_auth
             EOF
 
+              cat << EOF | sudo tee -a rootfs/etc/fstab
+            /dev/disk/by-partlabel/boot /boot vfat defaults 0 0
+            EOF
+
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
 
