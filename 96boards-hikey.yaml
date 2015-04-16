@@ -136,12 +136,24 @@
             echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/disk/by-partlabel/system rootwait rw" > cmdline.emmc
             echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/mmcblk1p2 rootwait rw" > cmdline
 
+            cat > out/README.txt << EOF
+            Build information:
+            * build: ${BUILD_URL}
+            * git URL: ${GIT_URL}
+            * git branch: ${GIT_BRANCH}
+            * git commit: ${GIT_COMMIT}
+            EOF
+
             for rootfs in ${ROOTFS}; do
               # Get rootfs
               export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
               export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
               export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+
+              cat >> out/README.txt << EOF
+            * rootfs (${rootfs}): http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
+            EOF
 
               # Create pre-built image(s)
               linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file hikey-jessie_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-hikey_*.tar.gz --hwpack-force-yes --bootloader uefi
