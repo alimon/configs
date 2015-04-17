@@ -133,6 +133,13 @@
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-hikey_*.deb` -r linux-image -d -i
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
 
+            if [ "${rootfs}" = "alip" ]; then
+              mali_pkg="xserver-xorg-video-fbdev-mali-450_0.0.1-1_all.deb"
+              wget http://builds.96boards.org/snapshots/hikey/binaries/20150407/${mali_pkg} -O ${mali_pkg}
+              linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${mali_pkg} -d -i
+              rm -f ${mali_pkg}
+            fi
+
             echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/disk/by-partlabel/system rootwait rw" > cmdline.emmc
             echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/mmcblk1p2 rootwait rw" > cmdline
 
@@ -265,7 +272,11 @@
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            python ${HOME}/bin/linaro-cp.py --server http://builds.96boards.org/ out snapshots/hikey/debian/${BUILD_NUMBER}
+            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/96boards-hikey/build-info/template.txt -O out/BUILD-INFO.txt
+            python ${HOME}/bin/linaro-cp.py \
+              --server http://builds.96boards.org/ \
+              --build-info out/BUILD-INFO.txt \
+              out snapshots/hikey/debian/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'
