@@ -166,6 +166,27 @@
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
 
+              if [ "${rootfs}" = "developer" ]; then
+                sed -e "s|^PULSEAUDIO_SYSTEM_START=0|PULSEAUDIO_SYSTEM_START=1|" \
+                    -e "s|^DISALLOW_MODULE_LOADING=1|DISALLOW_MODULE_LOADING=0|" \
+                    < rootfs/usr/share/doc/pulseaudio/examples/pulseaudio.default.example \
+                    | sudo tee rootfs/etc/default/pulseaudio
+                sudo install -D -p -m0755 \
+                  rootfs/usr/share/doc/pulseaudio/examples/pulseaudio.init.example \
+                  rootfs/etc/init.d/pulseaudio
+                cat << EOF | sudo tee -a /etc/pulse/system.pa
+
+            ### Automatically load driver modules for Bluetooth hardware
+            .ifexists module-bluetooth-policy.so
+            load-module module-bluetooth-policy
+            .endif
+
+            .ifexists module-bluetooth-discover.so
+            load-module module-bluetooth-discover
+            .endif
+            EOF
+              fi
+
               sudo cp -a boot/hi6220-hikey.dtb boot/lcb.dtb || true
               sudo cp -a boot/initrd.img-* boot/ramdisk.img || true
               sudo cp -a cmdline boot/cmdline || true
