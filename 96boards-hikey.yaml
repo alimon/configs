@@ -143,12 +143,16 @@
             echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/disk/by-partlabel/system rootwait rw" > cmdline.emmc
             echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/mmcblk1p2 rootwait rw" > cmdline
 
+            FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
+            FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
+
             cat > out/README.txt << EOF
             Build information:
             * build: ${BUILD_URL}
             * git URL: ${GIT_URL}
             * git branch: ${GIT_BRANCH}
             * git commit: ${GIT_COMMIT}
+            * uefi: http://builds.96boards.org/snapshots/hikey/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
             EOF
 
             for rootfs in ${ROOTFS}; do
@@ -257,6 +261,7 @@
             sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
             sudo cp -a out/Image out/hi6220-hikey.dtb boot-fat/ || true
             sudo cp -a out/initrd.img-* boot-fat/initrd.img || true
+            sudo wget --progress=dot ${FASTBOOT_EFI_URL} -O boot-fat/fastboot.efi || true
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.uefi.img
             rm -rf boot-fat
