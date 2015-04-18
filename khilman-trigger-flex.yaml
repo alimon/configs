@@ -1,0 +1,245 @@
+- job:
+    name: khilman-trigger-flex
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 7
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            kevin.hilman@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - throttle:
+            max-total: 1
+            option: project
+        - inject
+    disabled: false
+    node: x86_64-01
+    child-workspace: .
+    display-name: 'khilman - Trigger flex'
+    triggers:
+        - timed: 'H/60 * * * *'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - x86_64-01
+        - axis:
+            type: user-defined
+            name: ARCH
+            values:
+                - arm
+                - arm64
+                - x86
+        - axis:
+            type: user-defined
+            name: TREE_BRANCH
+            values:
+                - mainline#master
+                - next#master
+                - arm-soc#for-next
+                - arm-soc#to-build
+                - rmk#for-next
+                - omap#for-next
+                - stable#linux-3.19.y
+                - stable#linux-3.18.y
+                - stable#linux-3.17.y
+                - stable#linux-3.16.y
+                - stable#linux-3.15.y
+                - stable#linux-3.14.y
+                - stable#linux-3.13.y
+                - stable#linux-3.12.y
+                - stable#linux-3.11.y
+                - stable#linux-3.10.y
+                - lsk#linux-linaro-lsk-v3.10
+                - lsk#linux-linaro-lsk-v3.10-rt
+                - lsk#linux-linaro-lsk-v3.10-test
+                - lsk#linux-linaro-lsk-v3.14
+                - lsk#linux-linaro-lsk-v3.14-rt
+                - lsk#linux-linaro-lsk-v3.14-test
+                - khilman#to-build
+                - qcom-lt#integration-linux-qcomlt
+                - mturquette#eas-next
+                - samsung#for-next
+                - dlezcano#kevin-bot
+                - tbaker#to-build
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: x86_64-01
+        - timeout:
+            timeout: 30
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -x
+
+            REFERENCE=/srv/mirrors/linux.git
+
+            declare -A trees
+            trees=(
+                [mainline]="git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"
+                [next]="git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git"
+                [arm-soc]="git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc.git"
+                [rmk]="git://ftp.arm.linux.org.uk/pub/linux/arm/kernel/git-cur/linux-arm.git"
+                [stable]="git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
+                [omap]="git://git.kernel.org/pub/scm/linux/kernel/git/tmlind/linux-omap.git"
+                [linux-linaro]="git://git.linaro.org/kernel/linux-linaro-tracking.git"
+                [lsk]="git://git.linaro.org/kernel/linux-linaro-stable.git"
+                [khilman]="git://git.kernel.org/pub/scm/linux/kernel/git/khilman/linux.git"
+                [qcom-lt]="git://git.linaro.org/landing-teams/working/qualcomm/kernel.git"
+                [mturquette]="https://git.linaro.org/people/mike.turquette/linux.git"
+                [samsung]="git://git.kernel.org/pub/scm/linux/kernel/git/kgene/linux-samsung.git"
+                [dlezcano]="git://git.linaro.org/people/daniel.lezcano/linux.git"
+                [tbaker]="https://github.com/EmbeddedAndroid/linux.git"
+            )
+
+            OFS=${IFS}
+            IFS='#'
+            arr=($TREE_BRANCH)
+            IFS=${OFS}
+
+            tree_name=${arr[0]}
+            tree_url=${trees[$tree_name]}
+            branch=${arr[1]}
+            if [[ -z ${branch} ]]; then
+              branch="master"
+            fi
+
+            if [ ! -e $tree_name ]; then
+              git clone --reference $REFERENCE $tree_url $tree_name
+            else
+              (cd $tree_name; git remote update)
+            fi
+
+            rm -f *.properties
+            cd $tree_name
+            rm -f *.properties
+            git remote update
+            git checkout -f origin/$branch
+            if [ $? != 0 ]; then
+              echo "ERROR: branch $branch doesn't exist"
+              exit 1
+            fi
+
+            GIT_DESCRIBE=$(git describe)
+            COMMIT_ID=$(git log -n1 --format=%H)
+
+            echo "${tree_name}/${branch}-${GIT_DESCRIBE}"
+
+            THIS_COMMIT=$branch-this.commit
+            LAST_COMMIT=$branch-last.commit
+            if [ ${ARCH} != "arm" ]; then
+              THIS_COMMIT=$ARCH-$branch-this.commit
+              LAST_COMMIT=$ARCH-$branch-last.commit
+            fi
+
+            if [ ! -e $LAST_COMMIT ]; then
+              echo 0 > $LAST_COMMIT
+            fi
+
+            git log -n1 --format=%H > $THIS_COMMIT
+            diff $LAST_COMMIT $THIS_COMMIT
+            if [ $? == 0 ]; then
+              echo "Nothing new in $tree_name/$branch.  Skipping"
+              exit 0
+            fi
+            cp $THIS_COMMIT $LAST_COMMIT
+
+            ARCH_LIST=${ARCH}
+
+            # defconfigs
+            DEFCONFIG_LIST="allnoconfig "
+            DEFCONFIG_LIST+=`(cd arch/${ARCH}/configs; echo *defconfig)`
+            DEFCONFIG_LIST+=" "
+
+            # defconfigs + fragments
+            if [ ${ARCH} = "arm" ]; then
+              DEFCONFIG_LIST+="allmodconfig "
+              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_ARM_LPAE=y "
+              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_CPU_BIG_ENDIAN=y "
+              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_PROVE_LOCKING=y "
+              DEFCONFIG_LIST+="versatile_defconfig+CONFIG_OF_UNITTEST=y "
+              #DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_THUMB2_KERNEL=y "
+
+              # Platform specific
+              if [ -e arch/${ARCH}/configs/mvebu_v7_defconfig ]; then
+                DEFCONFIG_LIST+="mvebu_v7_defconfig+CONFIG_CPU_BIG_ENDIAN=y "
+              fi
+
+              # Fragments
+              FRAGS="kernel/configs/tiny.config"
+              for frag in ${FRAGS}; do
+                if [ -e $frag ]; then
+                  DEFCONFIG_LIST+="multi_v7_defconfig+$frag "
+                fi
+              done
+            fi
+
+            if [ ${ARCH} = "arm64" ]; then
+              DEFCONFIG_LIST+="defconfig+CONFIG_OF_UNITTEST=y "
+              DEFCONFIG_LIST+="allmodconfig "
+
+              # Fragments
+              FRAGS="kernel/configs/tiny.config"
+              for frag in ${FRAGS}; do
+                if [ -e $frag ]; then
+                  DEFCONFIG_LIST+="defconfig+$frag "
+                fi
+              done
+            fi
+
+            if [ ${ARCH} = "x86" ]; then
+              DEFCONFIG_LIST+="defconfig+CONFIG_OF_UNITTEST=y "
+              DEFCONFIG_LIST+="allmodconfig "
+
+              # Fragments
+              FRAGS="kernel/configs/tiny.config arch/x86/configs/kvm_guest.config"
+              for frag in ${FRAGS}; do
+                if [ -e $frag ]; then
+                  DEFCONFIG_LIST+="defconfig+$frag "
+                fi
+              done
+            fi
+
+            # Tree specific fragments: LSK + KVM fragments
+            if [ ${tree_name} = "lsk" ]; then
+              FRAGS="linaro/configs/kvm-host.conf linaro/configs/kvm-guest.conf"
+              base_defconfig="defconfig"
+              if [ ${arch} = "arm" ]; then
+                base_defconfig="multi_v7_defconfig"
+              fi
+              for frag in ${FRAGS}; do
+                if [ -e $frag ]; then
+                  DEFCONFIG_LIST+="$base_defconfig+$frag "
+                fi
+              done
+            fi
+
+            cat << EOF > ${WORKSPACE}/${TREE_BRANCH}-build.properties
+            ARCH_LIST=$ARCH_LIST
+            DEFCONFIG_LIST=$DEFCONFIG_LIST
+
+            TREE=$tree_url
+            TREE_NAME=$tree_name
+            BRANCH=$branch
+            COMMIT_ID=$COMMIT_ID
+            PUBLISH=true
+            EOF
+
+            cat ${WORKSPACE}/${TREE_BRANCH}-build.properties
+        - trigger-builds:
+            - project: 'khilman-kbuilder'
+              property-file: ${TREE_BRANCH}-build.properties
+        - shell: |
+            #!/bin/bash
+
+            rm -f ${TREE_BRANCH}-build.properties
