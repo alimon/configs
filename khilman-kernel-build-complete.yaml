@@ -1,0 +1,56 @@
+- job:
+    name: khilman-kernel-build-complete
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            kevin.hilman@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: TREE_NAME
+            default: ''
+        - string:
+            name: PUBLISH
+            default: ''
+        - string:
+            name: GIT_DESCRIBE
+            default: ''
+        - string:
+            name: ARCH_LIST
+            default: ''
+        - file:
+            name: env.properties
+        - text:
+            name: RESULTS
+            default: 'No Results'
+    disabled: false
+    node: x86_64-05
+    display-name: 'khilman - Kernel build complete'
+    scm:
+        - git:
+            url: http://git.linaro.org/people/kevin.hilman/build-scripts.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            basedir: local/build-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            bash -x ./local/build-scripts/build-complete.sh
