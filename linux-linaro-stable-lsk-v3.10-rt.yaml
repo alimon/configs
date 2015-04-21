@@ -1,5 +1,5 @@
 - job:
-    name: linux-linaro-stable-lsk-rt
+    name: linux-linaro-stable-lsk-v3.10-rt
     project-type: matrix
     defaults: global
     logrotate:
@@ -14,7 +14,7 @@
     parameters:
         - string:
             name: BUNDLE_STREAM_NAME
-            default: '/private/team/linaro/ci-linux-linaro-stable-lsk-rt/'
+            default: '/private/team/linaro/ci-linux-linaro-stable-lsk-v3.10-rt/'
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
@@ -25,10 +25,10 @@
     scm:
         - git:
             url: git://git.linaro.org/kernel/linux-linaro-stable.git
-            refspec: +refs/heads/linux-linaro-lsk-rt:refs/remotes/origin/linux-linaro-lsk-rt
+            refspec: +refs/heads/linux-linaro-lsk-v3.10-rt:refs/remotes/origin/linux-linaro-lsk-v3.10-rt
             name: origin
             branches: 
-                - refs/heads/linux-linaro-lsk-rt
+                - refs/heads/linux-linaro-lsk-v3.10-rt
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -108,12 +108,12 @@
             cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
             mv hwpack_linaro-${hwpack_type}* out/
 
-            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-stable-lsk-rt-${hwpack}/${BUILD_NUMBER}
+            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-stable-lsk-v3.10-rt-${hwpack}/${BUILD_NUMBER}
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
-            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-rt-${hwpack}/${BUILD_NUMBER}"
+            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-v3.10-rt-${hwpack}/${BUILD_NUMBER}"
             HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
 
             # Create post-build-lava parameters
@@ -134,7 +134,7 @@
                 export ROOTFS_BUILD_NUMBER=328
                 export ROOTFS_BUILD_URL="http://releases.linaro.org/15.03/openembedded/images/lamp-armv7a/linaro-image-lamp-genericarmv7a-20150323-328.rootfs.tar.gz"
 
-                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-rt/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-rt/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
             esac
         - trigger-builds:

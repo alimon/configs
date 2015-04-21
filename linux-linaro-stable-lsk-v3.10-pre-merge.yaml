@@ -1,5 +1,5 @@
 - job:
-    name: linux-linaro-stable-lsk-pre-merge
+    name: linux-linaro-stable-lsk-v3.10-pre-merge
     project-type: matrix
     defaults: global
     logrotate:
@@ -14,7 +14,7 @@
     parameters:
         - string:
             name: BUNDLE_STREAM_NAME
-            default: '/private/team/linaro/ci-linux-linaro-stable-lsk-pre-merge/'
+            default: '/private/team/linaro/ci-linux-linaro-stable-lsk-v3.10-pre-merge/'
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
@@ -25,10 +25,10 @@
     scm:
         - git:
             url: git://git.linaro.org/kernel/linux-linaro-stable.git
-            refspec: +refs/heads/linux-linaro-lsk-test:refs/remotes/origin/linux-linaro-lsk-test
+            refspec: +refs/heads/linux-linaro-lsk-v3.10-test:refs/remotes/origin/linux-linaro-lsk-v3.10-test
             name: origin
             branches: 
-                - refs/heads/linux-linaro-lsk-test
+                - refs/heads/linux-linaro-lsk-v3.10-test
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -187,12 +187,12 @@
             cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
             [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack_type}* out/
 
-            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-stable-lsk-pre-merge-${hwpack}/${BUILD_NUMBER}
+            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-stable-lsk-v3.10-pre-merge-${hwpack}/${BUILD_NUMBER}
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
-            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-pre-merge-${hwpack}/${BUILD_NUMBER}"
+            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-v3.10-pre-merge-${hwpack}/${BUILD_NUMBER}"
             DTB_URL=${KERNEL_URL}/dtbs
             [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
@@ -218,7 +218,7 @@
                 export ROOTFS_BUILD_NUMBER=693
                 export ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/ubuntu/utopic-images/developer/linaro-utopic-developer-20141212-693.tar.gz"
 
-                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
               arndale-be|panda-be|vexpress-be)
                 # Get rootfs URL
@@ -226,20 +226,20 @@
                 export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
                 export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/minimal-armv7ab-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-minimal-genericarmv7ab-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
 
-                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > custom_lava_job_definition.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > custom_lava_job_definition.json
                 ;;
               mustang)
                 export ROOTFS_BUILD_NUMBER=747
                 export ROOTFS_BUILD_URL="http://releases.linaro.org/15.03/openembedded/images/minimal-initramfs-armv8/linaro-image-minimal-initramfs-genericarmv8-20150323-747.rootfs.cpio.gz.u-boot"
 
-                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
               vexpress64)
                 # Get rootfs URL
                 export ROOTFS_BUILD_NUMBER=747
                 export ROOTFS_BUILD_URL="http://releases.linaro.org/15.03/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20150323-747.rootfs.tar.gz"
 
-                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
               vexpress64-be)
                 echo "Skip"
@@ -267,9 +267,9 @@
                     export ROOTFS_BUILD_URL="http://releases.linaro.org/15.03/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20150323-747.rootfs.tar.gz"
 
                     if grep -Fxq 'CONFIG_EFI=y' kernel.config; then
-                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-efi.yaml > custom_lava_job_definition.json
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-efi.yaml > custom_lava_job_definition.json
                     else
-                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                     fi
                 - trigger-builds:
                     - project: 'post-build-lava'
@@ -283,9 +283,9 @@
                     export ROOTFS_BUILD_URL="http://releases.linaro.org/15.03/openembedded/images/lamp-armv7a/linaro-image-lamp-genericarmv7a-20150323-328.rootfs.tar.gz"
 
                     if grep -Fxq 'CONFIG_EFI=y' kernel.config; then
-                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs-efi.yaml > custom_lava_job_definition.json
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs-efi.yaml > custom_lava_job_definition.json
                     else
-                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs.yaml > custom_lava_job_definition.json
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.10-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs.yaml > custom_lava_job_definition.json
                     fi
                 - trigger-builds:
                     - project: 'post-build-lava'

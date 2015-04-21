@@ -1,5 +1,5 @@
 - job:
-    name: trigger-linux-linaro-stable-lsk-rt-pre-merge
+    name: trigger-linux-linaro-stable-lsk-v3.10-pre-merge
     project-type: freestyle
     defaults: global
     logrotate:
@@ -18,14 +18,14 @@
 #            default: 'https://ci.linaro.org/job'
     disabled: false
     node: build
-    display-name: 'Trigger for Linaro Stable Kernel v3.10 RT (pre-merge)'
+    display-name: 'Trigger for Linaro Stable Kernel v3.10 (pre-merge)'
     scm:
         - git:
             url: git://git.linaro.org/kernel/linux-linaro-stable.git
-            refspec: +refs/heads/linux-linaro-lsk-rt-test:refs/remotes/origin/linux-linaro-lsk-rt-test
+            refspec: +refs/heads/linux-linaro-lsk-v3.10-test:refs/remotes/origin/linux-linaro-lsk-v3.10-test
             name: origin
             branches:
-                - refs/heads/linux-linaro-lsk-rt-test
+                - refs/heads/linux-linaro-lsk-v3.10-test
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -47,4 +47,4 @@
 #            ${curl} --insecure ${ci_base_url}/${job_name}/buildWithParameters?token=${token}
     publishers:
         - trigger:
-            project: 'linux-linaro-stable-lsk-rt-pre-merge'
+            project: 'linux-linaro-stable-lsk-v3.10-pre-merge'

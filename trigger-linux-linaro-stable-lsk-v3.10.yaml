@@ -1,5 +1,5 @@
 - job:
-    name: trigger-linux-linaro-stable-lsk
+    name: trigger-linux-linaro-stable-lsk-v3.10
     project-type: freestyle
     defaults: global
     logrotate:
@@ -22,10 +22,10 @@
     scm:
         - git:
             url: git://git.linaro.org/kernel/linux-linaro-stable.git
-            refspec: +refs/heads/linux-linaro-lsk:refs/remotes/origin/linux-linaro-lsk
+            refspec: +refs/heads/linux-linaro-lsk-v3.10:refs/remotes/origin/linux-linaro-lsk-v3.10
             name: origin
             branches:
-                - refs/heads/linux-linaro-lsk
+                - refs/heads/linux-linaro-lsk-v3.10
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -47,4 +47,4 @@
 #            ${curl} --insecure ${ci_base_url}/${job_name}/buildWithParameters?token=${token}
     publishers:
         - trigger:
-            project: 'linux-linaro-stable-lsk'
+            project: 'linux-linaro-stable-lsk-v3.10'
