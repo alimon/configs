@@ -1,0 +1,67 @@
+- job:
+    name: leg-openstack-tempest
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/openstack/mustang/ubuntu-deploy-test/'
+        - string:
+            name: DEVICE_TYPE
+            default: 'mustang'
+        - string:
+            name: LAVA_SERVER
+            default: 'openstack.validation.linaro.org/RPC2/'
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'LEG - Submit Tempest LAVA job'
+    axes:
+        - axis:
+            type: user-defined
+            name: TARGET
+            values:
+                - osmustang02
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+    triggers:
+        - timed: '@daily'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            ./lci-build-tools/yaml-to-json.py configs/leg-openstack-tempest/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
