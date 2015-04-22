@@ -103,9 +103,9 @@
             ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
         - shell: |
-            DEVICE_TYPE-mustang
+            DEVICE_TYPE=mustang
             XEN_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/AARCH64/RELEASE/XEN_EFI.fd
-            TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/xen/template.json
+            TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
 
             wget -O - -q --no-check-certificate $TEMPLATE | \
             sed -e "s|\${BUILD_URL}|${BUILD_URL}|" \
