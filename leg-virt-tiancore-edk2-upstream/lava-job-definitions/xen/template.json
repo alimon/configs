@@ -1,0 +1,77 @@
+{
+    "actions": [
+        {
+            "command": "deploy_linaro_kernel",
+            "parameters": {
+                "dtb": "https://snapshots.linaro.org/ubuntu/images/xen/latest/apm-mustang.dtb",
+                "kernel": "https://ci.linaro.org/job/xen-packages/label=docker-utopic-arm64/lastSuccessfulBuild/artifact/out/uXen-arm64",
+                "nfsrootfs": "https://snapshots.linaro.org/ubuntu/images/xen/latest/xenlava-mustang.tar.xz",
+                "ramdisk": "https://snapshots.linaro.org/ubuntu/images/xen/latest/Image-xen-mustang",
+                "target_type": "ubuntu"
+            },
+            "metadata": {
+                "testplan" : "xen",
+                "rootfs.type": "server",
+                "hwpack.type" : "xen-mustang",
+                "ubuntu.distribution": "ubuntu",
+                "ubuntu.name": "mustang"
+            }
+        },
+        {
+            "command": "boot_linaro_image",
+            "parameters": {
+                "boot_cmds": [
+                    "setenv autoload no",
+                    "setenv xen_addr_r 0x4000080000",
+                    "setenv kernel_addr_r    0x4002000000",
+                    "setenv kernel_addr_load 0x4001ffffC0",
+                    "setenv fdt_addr_r '{DTB_ADDR}'",
+                    "setenv xen_load 'tftp ${xen_addr_r} {KERNEL}'",
+                    "setenv xen_dtb 'tftp ${fdt_addr_r} {DTB} ;fdt addr ${fdt_addr_r};fdt resize;'",
+                    "setenv xen_dom0 'tftp ${kernel_addr_load} {RAMDISK}'",
+                    "setenv xen_run 'run xen_dom0 xen_load;fdt print /chosen;run xen_boot'",
+                    "setenv xen_boot 'setenv bootargs ${bootargs_xen};bootm ${xen_addr_r} - ${fdt_addr_r}'",
+                    "setenv bootargs_xen 'conswitch=x dom0_mem=1G dom0_max_vcpus=1 console=dtuart dtuart=/soc/serial@1c020000'",
+                    "setenv dom0_bootargs 'console=hvc0,115200 debug maxcpus=8 swiotlb=4096 root=/dev/nfs rw nfsroot={SERVER_IP}:{NFSROOTFS},tcp,hard,intr ip=dhcp'",
+                    "dhcp",
+                    "setenv serverip {SERVER_IP}",
+                    "run xen_dtb",
+                    "fdt addr $fdt_addr_r",
+                    "fdt resize",
+                    "fdt set /chosen '#address-cells' <2>",
+                    "fdt set /chosen '#size-cells' <1>",
+                    "fdt mknode /chosen module@0",
+                    "fdt set /chosen/module@0 compatible xen,linux-zimage xen,multiboot-module",
+                    "fdt set /chosen/module@0 reg <0x40 0x4002000000 0x00a00000>",
+                    "fdt set /chosen/module@0 bootargs \\\"${dom0_bootargs}\\\"",
+                    "run xen_run"
+                ]
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "testdef_repos": [{
+                    "git-repo": "git://git.linaro.org/ci/uefi.git",
+                    "parameters": {
+                        "EDK2_BIN": "${XEN_EFI_URL}"
+                    },
+                    "testdef": "lava/xentest.yaml"
+                }],
+                "timeout": 9600
+            }
+        },
+        {
+            "command": "submit_results",
+            "parameters": {
+                "server": "http://${LAVA_SERVER}",
+                "stream": "${BUNDLE_STREAM_NAME}"
+            }
+        }
+
+    ],
+    "device_type": "mustang",
+    "job_name": "${BUILD_URL}",
+    "log_level": "INFO",
+    "timeout": 30000
+}
