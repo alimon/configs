@@ -26,7 +26,7 @@
         - string:
             name: LAVA_SERVER
             default: 'openstack.validation.linaro.org/RPC2/'
-    disabled: true
+    disabled: false
     node: build
     display-name: 'LEG - Openstack Tempest'
     triggers:
@@ -39,6 +39,7 @@
 
             set -ex
 
+            # specify the exact device (required by the LAVA job template) to use
             case "${DEVICE_TYPE}" in
               mustang)
                 DEVICE_TARGET=osmustang02
