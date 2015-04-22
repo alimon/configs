@@ -1,6 +1,6 @@
 - job:
     name: leg-openstack-tempest
-    project-type: matrix
+    project-type: freestyle
     defaults: global
     logrotate:
         daysToKeep: 30
@@ -28,27 +28,22 @@
             default: 'openstack.validation.linaro.org/RPC2/'
     disabled: true
     node: build
-    child-workspace: .
     display-name: 'LEG - Openstack Tempest'
-    axes:
-        - axis:
-            type: user-defined
-            name: TARGET
-            values:
-                - osmustang02
-    execution-strategy:
-        sequential: true
-    wrappers:
-        - timestamps
-        - matrix-tie-parent:
-            node: build
     triggers:
         - timed: '@daily'
+    wrappers:
+        - timestamps
     builders:
         - shell: |
             #!/bin/bash
 
             set -ex
+
+            case "${DEVICE_TYPE}" in
+              mustang)
+                DEVICE_TARGET=osmustang02
+                ;;
+            esac
 
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
