@@ -89,11 +89,11 @@
                     do
                         mkdir -p ${OUTDIR}/${arch}/${type}
 
-                        build -a ${arch} -t GCC48 -b ${type} ArmVirtualizationPkg/ArmVirtualizationQemu.dsc -D INTEL_BDS
+                        build -a ${arch} -t GCC48 -b ${type} -p ArmVirtualizationPkg/ArmVirtualizationQemu.dsc -D INTEL_BDS
                         cp Build/ArmVirtualizationQemu-${arch}/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/${arch}/${type}
                     done
 
-                    build -a AARCH64 -t GCC48 -b ${type} ArmVirtualizationPkg/ArmVirtualizationXen.dsc
+                    build -a AARCH64 -t GCC48 -b ${type} -p ArmVirtualizationPkg/ArmVirtualizationXen.dsc
                     cp Build/ArmVirtualizationXen-AARCH64/${type}_GCC48/FV/XEN_EFI.fd ${OUTDIR}/AARCH64/${type}
                 done
             )
