@@ -70,17 +70,23 @@
             tar --strip-components=1 -C ${WORKSPACE}/arm-tc -xf gcc-linaro-arm-linux-gnueabihf-4.8-*_linux.tar.xz
             tar --strip-components=1 -C ${WORKSPACE}/arm64-tc -xf gcc-linaro-aarch64-linux-gnu-4.8-*_linux.tar.xz
             export PATH="${WORKSPACE}/arm-tc/bin:${WORKSPACE}/arm64-tc/bin:$PATH"
+            outdir=${WORKSPACE}/out
+
+            #
+            # Fix WORKSPACE environment variable conflict with Jenkins
+            # (Store Jenkins value before first edk2/SCT build step.)
+            #
+            JENKINS_WORKSPACE=${WORKSPACE}
+            unset WORKSPACE
 
             # Initialise the build environment
             pushd edk2
-            source edksetup.sh
             make -C BaseTools
             
+            source edksetup.sh
             export GCC48_AARCH64_PREFIX=aarch64-linux-gnu-
             export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
 
-            outdir=${WORKSPACE}/out
-            
             for type in DEBUG RELEASE
             do
                 mkdir -p ${outdir}/${type}
@@ -92,6 +98,13 @@
                 cp Build/ArmVirtualizationXen-AARCH64/${type}_GCC48/FV/XEN_EFI.fd ${outdir}/${type}
             done
             popd
+
+            #
+            # Fix WORKSPACE environment variable conflict with Jenkins
+            # (Restore Jenkins value after last edk2/SCT build step.)
+            #
+            unset WORKSPACE
+            export WORKSPACE=${JENKINS_WORKSPACE}
 
             ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
     publishers:
