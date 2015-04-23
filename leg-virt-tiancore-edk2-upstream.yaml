@@ -90,9 +90,13 @@
                     for arch in AARCH64 ARM
                     do
                         mkdir -p ${OUTDIR}/${arch}/${type}
+                        mkdir -p ${OUTDIR}/${arch}/${type}-ARMBDS
 
                         build -a ${arch} -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc -D INTEL_BDS
                         cp Build/ArmVirtualizationQemu-${arch}/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/${arch}/${type}
+
+                        build -a ${arch} -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc
+                        cp Build/ArmVirtualizationQemu-${arch}/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/${arch}/${type}-ARMBDS
                     done
 
                     build -a AARCH64 -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationXen.dsc
