@@ -3,7 +3,7 @@
     {
       "command": "deploy_linaro_image",
       "parameters": {
-        "image": "http://people.linaro.org/~roy.franz/lava/production/iscsi/roy-wheezy-4g.img.gz"
+        "image": "https://ci.linaro.org/userContent/roy-wheezy-4g.img.gz"
       },
       "metadata": {
         "build id": "${BUILD_NUMBER}",
@@ -17,14 +17,13 @@
       "command": "lava_test_shell",
       "parameters": {
         "testdef_repos": [{
-          "git-repo": "http://git.linaro.org/people/roy.franz/test-definitions.git",
+          "git-repo": "http://git.linaro.org/qa/test-definitions.git",
           "parameters": {
             "EDK2_BIN": "${QEMU_EFI_URL}",
             "QEMU_ARGS": "-machine virt -cpu cortex-a57 -machine type=virt -pflash /home/flash0.img -pflash /home/flash1.img -drive file=/root/iscsi-disk-image.bin,if=none,id=blk -device virtio-blk-device,drive=blk -nographic -smp 1 -m 256",
             "TEST_NAME": "local-disk"
           },
-          "revision": "iscsi-production",
-          "testdef": "ubuntu/qemu-system-test.yaml"
+          "testdef": "ubuntu/qemu-edk2-boot.yaml"
         }],
         "timeout": 18000
       }
@@ -33,12 +32,11 @@
       "command": "lava_test_shell",
       "parameters": {
         "testdef_repos": [{
-          "git-repo": "http://git.linaro.org/people/roy.franz/test-definitions.git",
+          "git-repo": "http://git.linaro.org/qa/test-definitions.git",
           "parameters": {
             "EDK2_BIN": "${QEMU_EFI_URL}"
           },
-          "revision": "iscsi-production",
-          "testdef": "ubuntu/qemu-system-test.yaml"
+          "testdef": "ubuntu/qemu-edk2-boot.yaml"
         }],
         "timeout": 18000
       }
