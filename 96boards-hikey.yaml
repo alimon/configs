@@ -224,7 +224,10 @@
             EOF
 
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
-              sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+              sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists rootfs/home/linaro/bin
+
+              sudo wget https://raw.githubusercontent.com/96boards/usb_speed_switch/master/usb_speed -O rootfs/home/linaro/bin/usb_speed
+              sudo chmod a+x rootfs/home/linaro/bin/usb_speed
 
               sudo make_ext4fs -o -L rootfs -l 1500M -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
               sudo umount boot rootfs
