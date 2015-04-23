@@ -19,7 +19,7 @@
     parameters:
         - string:
             name: BUNDLE_STREAM_NAME
-            default: '/public/team/openstack/mustang/ubuntu-deploy-test/'
+            default: '/public/team/openstack/mustang/devstack-tip/'
         - string:
             name: DEVICE_TYPE
             default: 'mustang'
@@ -49,7 +49,7 @@
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            ./lci-build-tools/yaml-to-json.py configs/leg-openstack-tempest/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+            ./lci-build-tools/yaml-to-json.py configs/leg-openstack-tempest/lava-job-definitions/${DEVICE_TYPE}/tempest.yaml > custom_lava_job_definition.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
