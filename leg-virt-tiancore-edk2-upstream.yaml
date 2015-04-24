@@ -76,6 +76,17 @@
                 export GCC48_AARCH64_PREFIX=aarch64-linux-gnu-
                 export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
 
+                # download and unpack the OpenSSL tarball
+                cd ${WORKSPACE}/CryptoPkg/Library/OpensslLib
+
+                # capture OpenSSL version number from the HOWTO
+                VERSION=$(grep 'Current supported OpenSSL version' Patch-HOWTO.txt |sed 's/^[^0-9]\+\([0-9]\(\.[0-9]\)\+[a-z]*\).*\r\?$/\1/')
+
+                wget -O - -q "http://www.openssl.org/source/openssl-${VERSION}.tar.gz" | tar xzf -
+                ( cd openssl-${VERSION}; patch --binary -p0 -i ../EDKII_openssl-${VERSION}.patch )
+                ./Install.sh
+
+                cd ${WORKSPACE}
                 for type in DEBUG RELEASE
                 do
                     for arch in AARCH64 ARM
