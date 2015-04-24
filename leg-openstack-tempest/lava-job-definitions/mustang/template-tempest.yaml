@@ -13,6 +13,9 @@ actions:
     login_commands: ['sudo su -l']
   metadata:
     build id: '${BUILD_NUMBER}'
+    devstack-branch: '${DEVSTACK_BRANCH}'
+    os-distro: '${OS_DISTRO}'
+    os-version: '${OS_VERSION}'
 - command: boot_linaro_image
   parameters:
     boot_cmds:
@@ -29,7 +32,7 @@ actions:
     testdef_repos:
       - git-repo: 'http://git.linaro.org/leg/openstack/lava-deploy-cloudimg.git'
         parameters:
-          LAVA_CLOUD_IMG_URL: 'http://cloud-images.ubuntu.com/trusty/current/trusty-server-cloudimg-arm64-disk1.img'
+          LAVA_CLOUD_IMG_URL: '${LAVA_CLOUD_IMG_URL}'
     timeout: 900
 - command: deploy_linaro_kernel
   parameters:
@@ -59,7 +62,7 @@ actions:
           LAVA_SLEEP_FOR_ACCESS: 'no'
           LAVA_SLEEP_DURATION: 36000
           LAVA_ADD_RALLY: 'yes'
-          LAVA_DEVSTACK_BRANCH: 'master'
+          LAVA_DEVSTACK_BRANCH: '${DEVSTACK_BRANCH}'
       - git-repo: 'http://git.linaro.org/leg/openstack/lava-openstack.git'
         testdef: 'tempest/tempest-run.yaml'
         parameters:

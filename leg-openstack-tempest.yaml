@@ -1,6 +1,6 @@
 - job:
     name: leg-openstack-tempest
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     logrotate:
         daysToKeep: 30
@@ -19,27 +19,55 @@
     parameters:
         - string:
             name: BUNDLE_STREAM_NAME
-            default: '/public/team/openstack/mustang/devstack-tip/'
-        - string:
-            name: DEVICE_TYPE
-            default: 'mustang'
+            default: '/public/team/openstack/tempest-ci/'
         - string:
             name: LAVA_SERVER
             default: 'openstack.validation.linaro.org/RPC2/'
+        - string:
+            name: LAVA_JOB_DEFINITION
+            default: 'configs/leg-openstack-tempest/lava-job-definitions/${DEVICE_TYPE}/template-tempest.yaml'
     disabled: false
     node: build
+    child-workspace: .
     display-name: 'LEG - Openstack Tempest'
+    axes:
+        - axis:
+            type: user-defined
+            name: DEVICE_TYPE
+            values:
+              - mustang
+        - axis:
+            type: user-defined
+            name: OS_DISTRO
+            values:
+              - ubuntu
+        - axis:
+            type: user-defined
+            name: OS_VERSION
+            values:
+              - trusty
+              - vivid
+        - axis:
+            type: user-defined
+            name: DEVSTACK_BRANCH
+            values:
+              - master
+    execution-strategy:
+        sequential: true
     triggers:
         - timed: '@daily'
     wrappers:
         - timestamps
+        - matrix-tie-parent:
+            node: build
     builders:
         - shell: |
             #!/bin/bash
 
             set -ex
 
-            # specify the exact device (required by the LAVA job template) to use
+            # IMPORTANT: specify the exact target device (required by the LAVA job
+            # template) to use for the specified device type
             case "${DEVICE_TYPE}" in
               mustang)
                 export DEVICE_TARGET=osmustang02
@@ -49,7 +77,25 @@
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            ./lci-build-tools/yaml-to-json.py configs/leg-openstack-tempest/lava-job-definitions/${DEVICE_TYPE}/template-tempest.yaml > custom_lava_job_definition.json
+
+            # Update the template based on the specified os distro
+            case "${OS_DISTRO}" in
+              ubuntu)
+                # The template needs to be updated to specify the correct cloud image to
+                # pull. This must be done BEFORE calling yaml-to-json.py!
+                LAVA_CLOUD_IMG_URL="http://cloud-images.ubuntu.com/${OS_VERSION}/current/${OS_VERSION}-server-cloudimg-arm64-disk1.img"
+                sed -i "s|\${LAVA_CLOUD_IMG_URL}|${LAVA_CLOUD_IMG_URL}|" ${LAVA_JOB_DEFINITION}
+                ;;
+            esac
+
+            # Update the metadata fields in the template
+            sed -e "s|\${DEVSTACK_BRANCH}|${DEVSTACK_BRANCH}|" \
+                -e "s|\${OS_DISTRO}|${OS_DISTRO}|" \
+                -e "s|\${OS_VERSION}|${OS_VERSION}|" \
+                < ${LAVA_JOB_DEFINITION}
+                > ${LAVA_JOB_DEFINITION}.new
+
+            ./lci-build-tools/yaml-to-json.py ${LAVA_JOB_DEFINITION}.new > custom_lava_job_definition.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
