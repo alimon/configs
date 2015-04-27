@@ -1,0 +1,52 @@
+- job:
+    name: tcwg-update-snapshots_ref
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: tcwg-x86_64-01
+    display-name: 'Update reference ABE snapshots on TCWG machines'
+    scm:
+        - git:
+            url: https://git.linaro.org/toolchain/abe.git
+            refspec: +refs/heads/maxim:refs/remotes/origin/maxim
+            name: origin
+            branches:
+                - refs/heads/maxim
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    wrappers:
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - ssh-agent-credentials:
+            user: tcwg-buildslave
+        - timeout:
+            timeout: 60
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+            }
+
+            ./scripts/update-snapshots-ref.sh -r -v $(for i in `seq 2 9`; do echo tcwg-ex40-0$i; done) r1-a7.aus-colo r1-a8.aus-colo
+    publishers:
+        - email:
+            recipients: 'maxim.kuvyrkov@linaro.org'
