@@ -57,6 +57,15 @@
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends libssl-dev
 
+            case "${ARCH}" in
+              arm|armeb)
+                export tcbindir="${HOME}/srv/toolchain/arm-tc-14.09/bin"
+                ;;
+              arm64|arm64be)
+                export tcbindir="${HOME}/srv/toolchain/arm64-tc-14.09/bin"
+                ;;
+            esac
+
             case "${label}" in
               docker-utopic-arm64)
                 unset ARCH
