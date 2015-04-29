@@ -1,0 +1,82 @@
+- job:
+    name: tcwg-backport
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: gcc_branch
+            default: 'latest'
+            description: 'GCC revision to build'
+        - string:
+            name: excludecheck
+            default: 'gdb'
+            description: 'Do not run "make check" on this component'
+    disabled: false
+    node: tcwg-x86_64
+    concurrent: true
+    display-name: 'TCWG BuildFarm'
+    scm:
+        - git:
+            url: https://git.linaro.org/toolchain/abe.git
+            refspec: +refs/heads/maxim:refs/remotes/origin/maxim
+            name: origin
+            branches:
+                - refs/heads/maxim
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64
+        - axis:
+            type: user-defined
+            name: target
+            values:
+                - aarch64-linux-gnu
+                - aarch64-none-elf
+                - aarch64_be-none-elf
+                - arm-linux-gnueabi
+                - arm-linux-gnueabihf
+                - armeb-linux-gnueabihf
+                - native
+                - schroot-i386-native
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            user: 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: tcwg-x86_64-01
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+            }
+
+            bash -x ${WORKSPACE}/scripts/Backport.job
