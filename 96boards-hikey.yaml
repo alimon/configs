@@ -244,6 +244,12 @@
               gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.img
             done
 
+            # Create an empty userdata partition
+            mkdir userdata
+            sudo make_ext4fs -o -L userdata -l 1500M -s out/hikey-jessie_userdata_${VERSION}.emmc.img userdata/
+            rm -rf userdata
+            gzip -9 out/hikey-jessie_userdata_${VERSION}.emmc.img
+
             # Create boot image(s)
             mkdir boot-fat
             dd if=/dev/zero of=out/boot-fat.img bs=512 count=131072
