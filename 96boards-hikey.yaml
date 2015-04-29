@@ -224,6 +224,10 @@
             /dev/disk/by-partlabel/boot /boot vfat defaults 0 0
             EOF
 
+              cat << EOF | sudo tee -a rootfs/home/linaro/.profile
+            [ -f "$HOME/.config/xmms2/xmms2.conf" ] || xmms2 server config output.plugin pulse
+            EOF
+
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists rootfs/home/linaro/bin
 
