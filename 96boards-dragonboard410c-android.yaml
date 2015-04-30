@@ -1,0 +1,107 @@
+- job:
+    name: 96boards-dragonboard410c-android
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 90
+        numToKeep: 90
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    parameters:
+        - string:
+            name: PUB_SERVER
+            default: 'https://builds.96boards.org/'
+        - password:
+            name: PUBLISH_KEY
+            default: ${PUBLISH_KEY}
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: '96boards - DragonBoard 410c (Android)'
+    concurrent: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            java -version
+            sudo apt-get update
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage
+
+            mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
+
+            sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+            sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            cd /home/buildslave/srv/${JOB_NAME}
+
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+
+            # Runs as ubuntu
+            repo init -u git://codeaurora.org/platform/manifest.git -b release -m LA.BR.1.1.2-01420-8x16.0.xml --repo-url=git://codeaurora.org/tools/repo.git
+            repo sync -j16
+            mkdir -p out
+            cp .repo/manifest.xml out/source-manifest.xml
+            repo manifest -r -o out/pinned-manifest.xml
+
+            wget --progress=dot -e dotbytes=2M http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150427/proprietary_HY22.tar.gz -O proprietary_HY22.tar.gz
+            tar -zxf proprietary_HY22.tar.gz
+
+            wget --progress=dot -e dotbytes=2M http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150427/96880_LA.BR.1.1.2-02210-8x16.0_410c_DragonBoard_patches.tar.bz2 -O 96880_LA.BR.1.1.2-02210-8x16.0_410c_DragonBoard_patches.tar.bz2
+            tar -jxf 96880_LA.BR.1.1.2-02210-8x16.0_410c_DragonBoard_patches.tar.bz2
+            cd 96880_LA.BR.1.1.2-02210-8x16.0_410c_DragonBoard_patches
+            pw=${PWD}
+            export patches=$(find . -iname *.patch | sort)
+            for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project}; git am ${pw}/${patch}; cd -; done
+
+            cd ..
+            source build/envsetup.sh
+            lunch msm8916_64-userdebug
+            make -j8
+
+            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/target/product/msm8916_64/
+            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
+
+            # Publish
+            PUB_DEST=/snapshots/dragonboard410c/android/${BUILD_NUMBER}
+
+            cat > out/target/product/msm8916_64/BUILD-INFO.txt << EOF
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: protected
+            Auth-Groups: employees
+            EOF
+
+            time linaro-cp.py \
+              --manifest \
+              --no-build-info \
+              --split-job-owner \
+              --server $PUB_SERVER \
+              out/target/product/msm8916_64/ \
+              $PUB_DEST \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+              --include "^[BHi][^/]+txt$" \
+              --include "^(MANIFEST|MD5SUMS)$"
+
+            echo "Build finished"
+    publishers:
+        - archive:
+            artifacts: '*.xml'
+            latest-only: true
+        - logparser:
+            parse-rules: 'Android Build'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org vishal.bhoj@linaro.org fathi.boudra@linaro.org'
