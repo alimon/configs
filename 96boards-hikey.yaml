@@ -33,6 +33,9 @@
             wipe-workspace: false
     wrappers:
         - timestamps
+        - copy-to-slave:
+            includes:
+                - wifi.r8.5.tar.gz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
@@ -67,9 +70,56 @@
             export tcbindir="${HOME}/srv/toolchain/arm64-tc-14.09/bin"
             export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
 
+            # Disable wireless configuration API
+            # TI wl18xx R8.5 is using a backported CFG80211 and MAC80211
+            tar zxf wifi.r8.5.tar.gz
+            patch -p1 < ${WORKSPACE}/wifi.r8.5/kernel.patch/0001-defconfig-hikey-discard-CFG80211-and-MAC80211.patch
+            echo "CONFIG_LOCALVERSION=\"-linaro-hikey\"" >> arch/arm64/configs/defconfig
+            touch .scmversion
+
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
             bash -x lci-build-tools/jenkins_kernel_build_inst
             rm -rf out/dtbs
+
+            # ******** TI wl18xx R8.5 - out of tree modules ********
+            git clone --depth 1 git://git.ti.com/wilink8-wlan/build-utilites.git
+            KERNEL_PATH=$(find ${WORKSPACE} -maxdepth 1 -type d -name 'builddir-*-linaro-hikey')
+            make O=${KERNEL_PATH} INSTALL_MOD_PATH=${WORKSPACE}/build-utilites/fs modules_install
+            cp -a build-utilites/setup-env.sample build-utilites/setup-env
+            sed -e "s|^export TOOLCHAIN_PATH=.*|export TOOLCHAIN_PATH=${HOME}/srv/toolchain/arm64-tc-14.09/bin|" \
+                -e "s|^export KERNEL_PATH=.*|export KERNEL_PATH=${KERNEL_PATH}|" \
+                -e "s|^export CROSS_COMPILE=.*|export CROSS_COMPILE=aarch64-linux-gnu-|" \
+                -e "s|^export ARCH=.*|export ARCH=arm64|" \
+                -i build-utilites/setup-env
+
+            git clone -b master-2015-04-06 --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/sforshee/wireless-regdb.git build-utilites/src/wireless_regdb
+            git clone -b v3.15             --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/jberg/iw.git                build-utilites/src/iw
+            git clone -b R8.5              --depth 1 git://git.ti.com/wilink8-wlan/crda.git                                    build-utilites/src/crda
+            git clone -b R8.5              --depth 1 git://git.ti.com/wilink8-wlan/wl18xx.git                                  build-utilites/src/driver
+            git clone -b R8.5              --depth 1 git://git.ti.com/wilink8-wlan/hostap.git                                  build-utilites/src/hostap
+            git clone -b R8.5              --depth 1 git://git.ti.com/wilink8-wlan/18xx-ti-utils.git                           build-utilites/src/ti_utils
+            git clone -b R8.5              --depth 1 git://git.ti.com/wilink8-wlan/wl18xx_fw.git                               build-utilites/src/fw_download
+            git clone -b R8.5              --depth 1 git://git.ti.com/wilink8-wlan/wl18xx-target-scripts.git                   build-utilites/src/scripts_download
+            git clone -b R8.5              --depth 1 git://git.ti.com/wilink8-wlan/backports.git                               build-utilites/src/backports
+
+            # Apply patches
+            cd ${WORKSPACE}/build-utilites/src/driver
+            patch -p1 < ${WORKSPACE}/wifi.r8.5/driver.patches/0001-net-mac80211-set-name_assign_type-in-alloc_netdev_mq.patch
+            patch -p1 < ${WORKSPACE}/wifi.r8.5/driver.patches/0002-wlcore-Deprecated-smp_mb__after_clear_bit-has-been-r.patch
+            patch -p1 < ${WORKSPACE}/wifi.r8.5/driver.patches/0003-wlcore-remove-__TIMESTAMP__-macro.patch
+            patch -p1 < ${WORKSPACE}/wifi.r8.5/driver.patches/0004-wlcore-change-u32-to-unsigned-long-in-struct-wl1271.patch
+            patch -p1 < ${WORKSPACE}/wifi.r8.5/driver.patches/0005-wlcore-wl18xx-set-default-.sta_sleep_auth-to-WL1271_.patch
+            cd ${WORKSPACE}/build-utilites/src/backports
+            patch -p1 < ${WORKSPACE}/wifi.r8.5/backports.patch/0001-backports-remove-unused-macros-from-if.h.-Later-kern.patch
+
+            # XXX FIXME local hack to avoid setlocalversion to pick up and add a plus sign
+            touch ${WORKSPACE}/build-utilites/src/driver/.scmversion
+
+            cd ${WORKSPACE}/build-utilites
+            ./build_wl18xx.sh modules
+            ./build_wl18xx.sh firmware
+            cd ${WORKSPACE}
+            # ******** TI wl18xx R8.5 - out of tree modules ********
 
             # Create the hardware pack
             cat << EOF > linaro-hikey
@@ -227,11 +277,19 @@
             [ ! -f "\$HOME/.config/xmms2/xmms2.conf" ] && xmms2 server config output.plugin pulse
             EOF
 
-              sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+              sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists rootfs/lib/modules/*-linaro-hikey
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists rootfs/home/linaro/bin
 
               sudo wget https://raw.githubusercontent.com/96boards/usb_speed_switch/master/usb_speed -O rootfs/home/linaro/bin/usb_speed
               sudo chmod a+x rootfs/home/linaro/bin/usb_speed
+
+              # ******** TI wl18xx R8.5 - out of tree modules ********
+              sudo rm -f rootfs/lib/firmware/ti-connectivity/wl18xx-conf.bin
+              sudo install -D -p -m0644 \
+                ${WORKSPACE}/build-utilites/fs/lib/firmware/ti-connectivity/wl18xx-fw-4.bin \
+                rootfs/lib/firmware/ti-connectivity/wl18xx-fw-4.bin
+              sudo cp -a ${WORKSPACE}/build-utilites/fs/lib/modules/*-linaro-hikey rootfs/lib/modules/
+              # ******** TI wl18xx R8.5 - out of tree modules ********
 
               sudo make_ext4fs -o -L rootfs -l 1500M -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
               sudo umount boot rootfs
