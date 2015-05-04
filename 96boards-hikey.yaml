@@ -111,6 +111,7 @@
             patch -p1 < ${WORKSPACE}/wifi.r8.5/driver.patches/0005-wlcore-wl18xx-set-default-.sta_sleep_auth-to-WL1271_.patch
             cd ${WORKSPACE}/build-utilites/src/backports
             patch -p1 < ${WORKSPACE}/wifi.r8.5/backports.patch/0001-backports-remove-unused-macros-from-if.h.-Later-kern.patch
+            echo "CPTCFG_MAC80211_LEDS=y" >> backport/defconfigs/wl18xx
 
             # XXX FIXME local hack to avoid setlocalversion to pick up and add a plus sign
             touch ${WORKSPACE}/build-utilites/src/driver/.scmversion
