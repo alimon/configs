@@ -215,13 +215,6 @@
                 wget http://builds.96boards.org/snapshots/hikey/binaries/20150407/${mali_pkg} -O ${mali_pkg}
                 linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${mali_pkg} -d -i
                 rm -f ${mali_pkg}
-
-                sudo install -D -p -m0644 \
-                  rootfs/etc/xdg/lxsession/LXDE/autostart \
-                  rootfs/home/linaro/.config/lxsession/LXDE/autostart
-                cat << EOF | sudo tee -a rootfs/home/linaro/.config/lxsession/LXDE/autostart
-            @bash -c /home/linaro/bin/xmms2-output-plugin-pulse
-            EOF
               fi
 
               # Create pre-built image(s)
@@ -253,6 +246,13 @@
             .ifexists module-bluetooth-discover.so
             load-module module-bluetooth-discover
             .endif
+            EOF
+              else
+                sudo install -D -p -m0644 \
+                  rootfs/etc/xdg/lxsession/LXDE/autostart \
+                  rootfs/home/linaro/.config/lxsession/LXDE/autostart
+                cat << EOF | sudo tee -a rootfs/home/linaro/.config/lxsession/LXDE/autostart
+            @bash -c /home/linaro/bin/xmms2-output-plugin-pulse
             EOF
               fi
 
