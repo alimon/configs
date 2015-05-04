@@ -215,6 +215,13 @@
                 wget http://builds.96boards.org/snapshots/hikey/binaries/20150407/${mali_pkg} -O ${mali_pkg}
                 linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${mali_pkg} -d -i
                 rm -f ${mali_pkg}
+
+                sudo install -D -p -m0644 \
+                  rootfs/etc/xdg/lxsession/LXDE/autostart \
+                  rootfs/home/linaro/.config/lxsession/LXDE/autostart
+                cat << EOF | sudo tee -a rootfs/home/linaro/.config/lxsession/LXDE/autostart
+            @bash -c /home/linaro/bin/xmms2-output-plugin-pulse
+            EOF
               fi
 
               # Create pre-built image(s)
@@ -274,15 +281,24 @@
             /dev/disk/by-partlabel/boot /boot vfat defaults 0 0
             EOF
 
-              cat << EOF | sudo tee -a rootfs/home/linaro/.profile
-            [ ! -f "\$HOME/.config/xmms2/xmms2.conf" ] && xmms2 server config output.plugin pulse
-            EOF
-
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists rootfs/lib/modules/*-linaro-hikey
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists rootfs/home/linaro/bin
 
               sudo wget https://raw.githubusercontent.com/96boards/usb_speed_switch/master/usb_speed -O rootfs/home/linaro/bin/usb_speed
-              sudo chmod a+x rootfs/home/linaro/bin/usb_speed
+              cat << EOF | sudo tee -a rootfs/home/linaro/bin/xmms2-output-plugin-pulse
+            #!/bin/sh
+
+            [ ! -f "\$HOME/.config/xmms2/xmms2.conf" ] && xmms2 server config output.plugin pulse
+            EOF
+              cat << EOF | sudo tee -a rootfs/home/linaro/.profile
+
+            /home/linaro/bin/xmms2-output-plugin-pulse
+            EOF
+              sudo chmod a+x rootfs/home/linaro/bin/*
+              sudo chown -R 1000:1000 \
+                rootfs/home/linaro/.config \
+                rootfs/home/linaro/.profile \
+                rootfs/home/linaro/bin
 
               # ******** TI wl18xx R8.5 - out of tree modules ********
               sudo rm -f rootfs/lib/firmware/ti-connectivity/wl18xx-conf.bin
