@@ -306,7 +306,7 @@
               sudo cp -a ${WORKSPACE}/build-utilites/fs/lib/modules/*-linaro-hikey rootfs/lib/modules/
               # ******** TI wl18xx R8.5 - out of tree modules ********
 
-              sudo make_ext4fs -o -L rootfs -l 1500M -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 3096M -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
               sudo umount boot rootfs
               sudo kpartx -dv out/hikey-jessie_${rootfs}_${VERSION}.img
               sudo rm -rf boot rootfs
@@ -315,12 +315,6 @@
               gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.emmc.img
               gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.img
             done
-
-            # Create an empty userdata partition
-            mkdir userdata
-            sudo make_ext4fs -o -L userdata -l 1500M -s out/hikey-jessie_userdata_${VERSION}.emmc.img userdata/
-            rm -rf userdata
-            gzip -9 out/hikey-jessie_userdata_${VERSION}.emmc.img
 
             # Create boot image(s)
             mkdir boot-fat
