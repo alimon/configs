@@ -1,0 +1,85 @@
+- job:
+    name: post-build-repo
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-configure
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - file:
+            name: post_build_ppa_parameters
+            description: "where to find changes file"
+
+
+    disabled: false
+    node: master
+    display-name: 'Upload to repo.linaro.org'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo "Package job name: ${pkg_job_name}"
+            echo "Debsign key ID: ${key_id}"
+            echo "Package changes file: ${pkg_changes}"
+            echo "Host repo: ${host_ppa}"
+            echo "Source URL: ${pkg_url}"
+
+            job_path=/var/lib/jenkins/jobs/${pkg_job_name}/workspace/
+            job_path_axis=`echo $job_path|sed -e 's,/label=,/configurations/axis-label/,'`
+            temp=`echo ${pkg_job_name}|sed -e 's,/,/workspace/,' -e 's,=,/,'`
+            job_path_matrix=/var/lib/jenkins/jobs/${temp}/
+
+            for path in $job_path $job_path_axis $job_path_matrix
+            do
+                if [ -r ${path}/${pkg_changes} ]
+                then
+                    cd ${path}
+                    break
+                fi
+            done
+
+            if [ ! -r ${pkg_changes} ]
+            then
+                # workaround race where post-build-repo gets called too early
+                timeout=5
+                set +e
+                while [ true ]; do
+                    wget --no-check-certificate --progress=dot -e dotbytes=1M ${pkg_url}/${pkg_changes}
+                    [ -r ${pkg_changes} ] && break
+                    sleep 60
+                    timeout=$((timeout - 1))
+                    [ $timeout -eq 0 ] && break
+                done
+                set -e
+
+                for file in `dcmd ${pkg_changes}`
+                do
+                    wget --no-check-certificate --progress=dot -e dotbytes=1M ${pkg_url}/${file}
+                done
+            fi
+
+            ls -l .
+            if [ ! -r ${pkg_changes} ]
+            then
+                echo "${pkg_changes} missing"
+                exit 1
+            fi
+            debsign -k${key_id} ${pkg_changes}
+            dput ${host_ppa} ${pkg_changes}
+            rm -f *
+
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org wookey@linaro.org riku.voipio@linaro.org'
