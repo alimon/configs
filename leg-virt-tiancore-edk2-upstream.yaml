@@ -76,6 +76,11 @@
                 export GCC48_AARCH64_PREFIX=aarch64-linux-gnu-
                 export GCC48_ARM_PREFIX=arm-linux-gnueabihf-
 
+                # retrieve FVP model DTBs from ARM trusted firmware repo
+                wget -O - -q --no-check-certificate https://github.com/ARM-software/arm-trusted-firmware/archive/master.tar.gz | \
+                    tar xz --strip-components=1 arm-trusted-firmware-master/fdts
+                export DTBDIR=${PWD}/fdts
+
                 # download and unpack the OpenSSL tarball
                 cd ${WORKSPACE}/CryptoPkg/Library/OpensslLib
 
@@ -101,8 +106,18 @@
                         cp Build/ArmVirtualizationQemu-${arch}/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/${arch}/${type}-ARMBDS
                     done
 
+                    # below builds are only supported for AArch64
+
                     build -a AARCH64 -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationXen.dsc
                     cp Build/ArmVirtualizationXen-AARCH64/${type}_GCC48/FV/XEN_EFI.fd ${OUTDIR}/AARCH64/${type}
+
+                    mkdir -p ${OUTDIR}/AARCH64/${type}-SECURE
+                    build -a AARCH64 -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc -D INTEL_BDS -D SECURE_BOOT_ENABLE
+                    cp Build/ArmVirtualizationQemu-AARCH64/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/AARCH64/${type}-SECURE
+
+                    # Foundation model platform supports ARM BDS only
+                    build -a AARCH64 -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc -D ARM_FOUNDATION_FVP -D DTB_DIR=${DTBDIR}
+                    cp Build/ArmVExpress-FVP-AArch64/${type}_GCC48/FV/FVP_AARCH64_EFI.fd ${OUTDIR}/AARCH64/${type}-ARMBDS
                 done
             )
 
