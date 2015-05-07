@@ -52,14 +52,8 @@
         - trigger:
             project: 'qemu-lava-ltp-tests, qemu-lava-risu, qemu-lava-tcg-system'
         - trigger-parameterized-builds:
-            - project: qemu-docker-builder
-              property-file: qemu-amd64-parameters
-              condition: SUCCESS
-            - project: qemu-docker-builder
-              property-file: qemu-arm64-parameters
-              condition: SUCCESS
-            - project: qemu-docker-builder
-              property-file: qemu-armhf-parameters
+            - project: generic-package-builder
+              property-file: qemu-params
               condition: SUCCESS
         - email:
             recipients: 'riku.voipio@linaro.org'
