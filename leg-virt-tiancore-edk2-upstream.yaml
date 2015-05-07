@@ -96,28 +96,28 @@
                 do
                     for arch in AARCH64 ARM
                     do
-                        mkdir -p ${OUTDIR}/${arch}/${type}
-                        mkdir -p ${OUTDIR}/${arch}/${type}-ARMBDS
-
+                        mkdir -p ${OUTDIR}/QEMU-${arch}/${type}
                         build -a ${arch} -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc -D INTEL_BDS
-                        cp Build/ArmVirtualizationQemu-${arch}/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/${arch}/${type}
+                        cp Build/ArmVirtualizationQemu-${arch}/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}
 
+                        mkdir -p ${OUTDIR}/QEMU-${arch}/${type}-ARMBDS
                         build -a ${arch} -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc
-                        cp Build/ArmVirtualizationQemu-${arch}/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/${arch}/${type}-ARMBDS
+                        cp Build/ArmVirtualizationQemu-${arch}/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}-ARMBDS
                     done
 
                     # below builds are only supported for AArch64
 
+                    mkdir -p ${OUTDIR}/XEN-AARCH64/${type}
                     build -a AARCH64 -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationXen.dsc
-                    cp Build/ArmVirtualizationXen-AARCH64/${type}_GCC48/FV/XEN_EFI.fd ${OUTDIR}/AARCH64/${type}
+                    cp Build/ArmVirtualizationXen-AARCH64/${type}_GCC48/FV/XEN_EFI.fd ${OUTDIR}/XEN-AARCH64/${type}
 
-                    mkdir -p ${OUTDIR}/AARCH64/${type}-SECURE
+                    mkdir -p ${OUTDIR}/QEMU-AARCH64/${type}-SECURE
                     build -a AARCH64 -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc -D INTEL_BDS -D SECURE_BOOT_ENABLE
-                    cp Build/ArmVirtualizationQemu-AARCH64/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/AARCH64/${type}-SECURE
+                    cp Build/ArmVirtualizationQemu-AARCH64/${type}_GCC48/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}-SECURE
 
-                    # Foundation model platform supports ARM BDS only
+                    mkdir -p ${OUTDIR}/FVP-AARCH64/${type}
                     build -a AARCH64 -t GCC48 -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc -D ARM_FOUNDATION_FVP -D DTB_DIR=${DTBDIR}
-                    cp Build/ArmVExpress-FVP-AArch64/${type}_GCC48/FV/FVP_AARCH64_EFI.fd ${OUTDIR}/AARCH64/${type}-ARMBDS
+                    cp Build/ArmVExpress-FVP-AArch64/${type}_GCC48/FV/FVP_AARCH64_EFI.fd ${OUTDIR}/FVP-AARCH64/${type}
                 done
             )
 
@@ -126,7 +126,7 @@
 
         - shell: |
             DEVICE_TYPE=mustang
-            XEN_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/AARCH64/RELEASE/XEN_EFI.fd
+            XEN_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/XEN-AARCH64/RELEASE/XEN_EFI.fd
             TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
 
             wget -O - -q --no-check-certificate $TEMPLATE | \
