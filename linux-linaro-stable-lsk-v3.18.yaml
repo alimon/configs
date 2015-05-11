@@ -19,7 +19,7 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
     disabled: false
-    node: build
+    node: linaro-kernel-ci
     child-workspace: .
     display-name: 'Linaro Stable Kernel (linux-linaro-lsk-v3.18)'
     scm:
@@ -50,19 +50,15 @@
             type: slave
             name: label
             values:
-                - build
+                - linaro-kernel-ci
     execution-strategy:
         sequential: true
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz
-                - gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
-            node: build
+            node: linaro-kernel-ci
     builders:
         - linaro-publish-token
         - shell: |
@@ -88,7 +84,8 @@
             export use_ccache=true
             export use_config_fragment=1
             export MAKE_DTBS=true
-            export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz"
+            export tcbindir="${HOME}/srv/toolchain/arm-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz"
 
             case "${hwpack}" in
               arndale)
@@ -121,7 +118,8 @@
                 export kernel_config="defconfig"
                 export DEVICE_TYPE="mustang"
                 export ARCH="arm64"
-                export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
+                export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
+                export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
                 ;;
               panda)
                 export hwpack_type="panda"
@@ -158,7 +156,8 @@
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress64.conf"
                 export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
                 export ARCH="arm64"
-                export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
+                export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
+                export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
                 cat << EOF > startup.nsh
             fs3:\Image dtb=juno\juno.dtb console=ttyAMA0,115200 earlyprintk=pl011,0x7ff80000 root=/dev/sda5 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
             EOF
@@ -169,7 +168,7 @@
                 export kernel_flavour="lsk-vexpress64-be"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress64.conf linaro/configs/bigendian.conf"
                 export ARCH="arm64"
-                export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
+                export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
                 cat << EOF > linaro/configs/bigendian.conf
             CONFIG_CPU_BIG_ENDIAN=y
             CONFIG_CPU_ENDIAN_BE8=y

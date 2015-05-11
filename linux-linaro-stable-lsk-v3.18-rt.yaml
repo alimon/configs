@@ -19,7 +19,7 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
     disabled: false
-    node: build
+    node: linaro-kernel-ci
     child-workspace: .
     display-name: 'Linaro Stable Kernel (linux-linaro-lsk-v3.18-rt)'
     scm:
@@ -44,18 +44,15 @@
             type: slave
             name: label
             values:
-                - build
+                - linaro-kernel-ci
     execution-strategy:
         sequential: true
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
-            node: build
+            node: linaro-kernel-ci
     builders:
         - linaro-publish-token
         - shell: |
@@ -81,7 +78,8 @@
             export use_ccache=true
             export use_config_fragment=1
             export MAKE_DTBS=true
-            export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz"
+            export tcbindir="${HOME}/srv/toolchain/arm-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz"
 
             case "${hwpack}" in
               arndale)
