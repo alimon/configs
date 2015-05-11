@@ -1,0 +1,115 @@
+actions:
+- command: deploy_linaro_image
+  parameters:
+    hwpack: '${HWPACK_BUILD_URL}'
+    rootfs: '${ROOTFS_BUILD_URL}'
+  metadata:
+    distribution: 'openembedded'
+    hwpack.build: '${BUILD_NUMBER}'
+    hwpack.type: '${hwpack_type}'
+    rootfs.build: '${ROOTFS_BUILD_NUMBER}'
+    rootfs.type: 'lamp-armv7a-gcc-4.9'
+    git URL: '${GIT_URL}'
+    git branch: '${GIT_BRANCH}'
+    git commit: '${GIT_COMMIT}'
+- command: lava_test_shell
+  parameters:
+    timeout: 10800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        BRANCH: linux-linaro-stable-3.14
+      testdef: openembedded/kselftest-cpu-hotplug.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 10800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        BRANCH: linux-linaro-stable-3.14
+      testdef: openembedded/kselftest-efivarfs.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 10800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        BRANCH: linux-linaro-stable-3.14
+      testdef: openembedded/kselftest-memory-hotplug.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 10800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        BRANCH: linux-linaro-stable-3.14
+      testdef: openembedded/kselftest-net.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 10800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        BRANCH: linux-linaro-stable-3.14
+      testdef: openembedded/kselftest-ptrace.yaml
+- command: lava_test_shell
+  parameters:
+    skip_install: deps
+    timeout: 3600
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/cyclictest-basic.yaml
+- command: lava_test_shell
+  parameters:
+    skip_install: deps
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/pi-stress-test.yaml
+- command: lava_test_shell
+  parameters:
+    skip_install: deps
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/rt-migrate-test.yaml
+- command: lava_test_shell
+  parameters:
+    skip_install: deps
+    timeout: 3600
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/sendme.yaml
+- command: lava_test_shell
+  parameters:
+    skip_install: deps
+    timeout: 3600
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/signaltest.yaml
+- command: lava_test_shell
+  parameters:
+    skip_install: deps
+    timeout: 3600
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/sysbench.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 7200
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/ltp-realtime.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 18000
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/ltp.yaml
+- command: submit_results
+  parameters:
+    server: 'http://${LAVA_SERVER}'
+    stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 3600

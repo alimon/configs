@@ -1,0 +1,25 @@
+actions:
+- command: deploy_linaro_kernel
+  parameters:
+    dtb: '${DTB_URL}/apm-mustang.dtb'
+    kernel: '${KERNEL_URL}/uImage'
+    nfsrootfs: '${ROOTFS_BUILD_URL}'
+    target_type: 'ubuntu'
+  metadata:
+    build id: '${BUILD_NUMBER}'
+    defconfig: 'defconfig'
+    distribution: 'ubuntu'
+    rootfs.build: '${ROOTFS_BUILD_NUMBER}'
+    rootfs.type: 'developer'
+    git URL: '${GIT_URL}'
+    git branch: '${GIT_BRANCH}'
+    git commit: '${GIT_COMMIT}'
+- command: boot_linaro_image
+- command: submit_results
+  parameters:
+    server: 'http://${LAVA_SERVER}'
+    stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 3600
+

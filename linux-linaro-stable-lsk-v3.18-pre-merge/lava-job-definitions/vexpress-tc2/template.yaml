@@ -1,0 +1,251 @@
+actions:
+- command: deploy_linaro_image
+  parameters:
+    hwpack: '${HWPACK_BUILD_URL}'
+    rootfs: '${ROOTFS_BUILD_URL}'
+  metadata:
+    distribution: 'ubuntu'
+    hwpack.build: '${BUILD_NUMBER}'
+    hwpack.type: '${hwpack_type}'
+    rootfs.build: '${ROOTFS_BUILD_NUMBER}'
+    rootfs.type: 'developer'
+    git URL: '${GIT_URL}'
+    git branch: '${GIT_BRANCH}'
+    git commit: '${GIT_COMMIT}'
+- command: boot_linaro_image
+  parameters:
+    boot_cmds:
+    - 'sendline a'
+    - 'expect Choice:'
+    - 'sendline 3'
+    - 'expect Delete entry:'
+    - 'sendline 1'
+    - 'expect Choice:'
+    - 'sendline 1'
+    - 'expect Select the Boot Device:'
+    - 'sendline 4'
+    - 'expect File path of the EFI Application or the kernel:'
+    - 'sendline uImage'
+    - 'expect Boot Type: [a] ATAGS, [g] Global FDT or [l] Local FDT? [a/g/l]'
+    - 'sendline l'
+    - 'expect Add an initrd: [y/n]'
+    - 'sendline y'
+    - 'expect File path of the initrd'
+    - 'sendline uInitrd'
+    - 'expect Arguments to pass to the binary:'
+    - 'sendline console=tty0 console=ttyAMA0,38400n8 root=/dev/sda1 rootwait ro'
+    - 'expect File path of the local FDT:'
+    - 'sendline v2p-ca15-tc2.dtb'
+    - 'expect Description for this new Entry:'
+    - 'sendline LAVA Test Image'
+    - 'expect Choice:'
+    - 'sendline 5'
+    - 'expect Start:'
+    - 'sendline 1'
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/alldebug-kernel.yaml
+    timeout: 1800
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/bootchart-install.yaml
+    timeout: 18000
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/bootchart.yaml
+    timeout: 800
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/device-tree.yaml
+    timeout: 800
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/sd-mmc-ubuntu.yaml
+    timeout: 800
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/gator-data-streaming-ubuntu.yaml
+    timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/rcutorture.yaml
+    timeout: 800
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/pwrmgmt.yaml
+    timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/smoke-tests-basic.yaml
+    timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/usb-test-basic.yaml
+    timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/network-tests-basic.yaml
+    timeout: 1200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: ubuntu/mmtests.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: syscalls
+      testdef: ubuntu/ltp.yaml
+    timeout: 10800
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: mm
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: math
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: timers
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: fcntl-locktests
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: ipc
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: fsx
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: fs
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: hugetlb
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: io
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: nptl
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: pty
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: containers
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: filecaps
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: admin_tools
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: connectors
+      testdef: ubuntu/ltp.yaml
+    timeout: 7200
+- command: submit_results
+  parameters:
+    server: 'http://${LAVA_SERVER}'
+    stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 172800

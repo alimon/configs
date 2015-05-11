@@ -1,0 +1,223 @@
+actions:
+- command: deploy_linaro_image
+  parameters:
+    bootloadertype: 'uefi'
+    hwpack: '${HWPACK_BUILD_URL}'
+    rootfs: '${ROOTFS_BUILD_URL}'
+  metadata:
+    distribution: 'openembedded'
+    hwpack.build: '${BUILD_NUMBER}'
+    hwpack.type: '${hwpack_type}'
+    rootfs.build: '${ROOTFS_BUILD_NUMBER}'
+    rootfs.type: 'lamp-armv8-gcc-4.9'
+    git URL: '${GIT_URL}'
+    git branch: '${GIT_BRANCH}'
+    git commit: '${GIT_COMMIT}'
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/busybox.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/device-tree.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/ethernet.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/kernel-version.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/perf.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/toolchain.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 7200
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/libhugetlbfs.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/pointer-tagging-tests.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 7200
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: syscalls
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: math
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: timers
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: fcntl-locktests
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: ipc
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: fsx
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: fs
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: hugetlb
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: io
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: nptl
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: pty
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: containers
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: fs_bind
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: filecaps
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: admin_tools
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: connectors
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        TST_CMDFILES: mm
+        SKIPFILE: skipfile-lsk-juno
+      testdef: openembedded/ltp.yaml
+- command: submit_results
+  parameters:
+    server: 'http://${LAVA_SERVER}'
+    stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 18000

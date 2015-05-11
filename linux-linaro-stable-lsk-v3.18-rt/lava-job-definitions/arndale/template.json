@@ -1,0 +1,418 @@
+{
+  "actions": [
+    {
+      "command": "deploy_linaro_image",
+      "parameters": {
+        "hwpack": "${HWPACK_BUILD_URL}",
+        "rootfs": "${ROOTFS_BUILD_URL}"
+      },
+      "metadata": {
+        "distribution": "openembedded",
+        "hwpack.build": "${BUILD_NUMBER}",
+        "hwpack.type": "${hwpack_type}",
+        "rootfs.build": "${ROOTFS_BUILD_NUMBER}",
+        "rootfs.type": "lamp-armv7a-gcc-4.9",
+        "git URL": "${GIT_URL}",
+        "git branch": "${GIT_BRANCH}",
+        "git commit": "${GIT_COMMIT}"
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 10800,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "BRANCH": "linux-linaro-stable-3.14"
+            },
+            "testdef": "openembedded/kselftest-efivarfs.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 10800,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "BRANCH": "linux-linaro-stable-3.14"
+            },
+            "testdef": "openembedded/kselftest-memory-hotplug.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 10800,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "BRANCH": "linux-linaro-stable-3.14"
+            },
+            "testdef": "openembedded/kselftest-net.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 10800,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "BRANCH": "linux-linaro-stable-3.14"
+            },
+            "testdef": "openembedded/kselftest-ptrace.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters":
+      {
+        "skip_install": "deps",
+        "testdef_repos": [
+        {
+          "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+          "testdef": "ubuntu/cyclictest-basic.yaml"
+        }],
+        "timeout": 3600
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters":
+      {
+        "skip_install": "deps",
+        "testdef_repos": [
+        {
+          "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+          "testdef": "ubuntu/pi-stress-test.yaml"
+        }],
+        "timeout": 1800
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters":
+      {
+        "skip_install": "deps",
+        "testdef_repos": [
+        {
+          "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+          "testdef": "ubuntu/rt-migrate-test.yaml"
+        }],
+        "timeout": 1800
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters":
+      {
+        "skip_install": "deps",
+        "testdef_repos": [
+        {
+          "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+          "testdef": "ubuntu/sendme.yaml"
+        }],
+        "timeout": 3600
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters":
+      {
+        "skip_install": "deps",
+        "testdef_repos": [
+        {
+          "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+          "testdef": "ubuntu/signaltest.yaml"
+        }],
+        "timeout": 3600
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters":
+      {
+        "skip_install": "deps",
+        "testdef_repos": [
+        {
+          "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+          "testdef": "openembedded/sysbench.yaml"
+        }],
+        "timeout": 3600
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "async_handler"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "gtod_latency"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "hrtimer-prio"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "matrix_mult"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "measurement"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "periodic_cpu_load"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "pi_perf"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "prio-preempt"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "prio-wake"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "pthread_kill_latency"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "rt-migrate"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "sched_football"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "sched_jitter"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "sched_latency"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 3600,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "parameters": {
+                "LTP_REALTIME_TESTS_TO_RUN": "thread_clock"
+            },
+            "testdef": "openembedded/ltp-realtime.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 10800,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "openembedded/ltp.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "timeout": 2400,
+        "testdef_repos": [
+          {
+            "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+            "testdef": "ubuntu/openssl.yaml"
+          }
+        ]
+      }
+    },
+    {
+      "command": "submit_results",
+      "parameters": {
+        "stream": "${BUNDLE_STREAM_NAME}",
+        "server": "http://${LAVA_SERVER}"
+      }
+    }
+  ],
+  "device_type": "${DEVICE_TYPE}",
+  "job_name": "${BUILD_URL}",
+  "timeout": 3600
+}
