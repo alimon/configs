@@ -9,13 +9,6 @@
         - authorization:
             anonymous:
                 - job-read
-    parameters:
-        - string:
-            name: PUB_SERVER
-            default: 'https://builds.96boards.org/'
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
     disabled: false
     node: docker-utopic-aosp
     display-name: '96boards - DragonBoard 410c (Android)'
@@ -25,6 +18,8 @@
         - timeout:
             timeout: 500
     builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -85,7 +80,7 @@
               --manifest \
               --no-build-info \
               --split-job-owner \
-              --server $PUB_SERVER \
+              --server http://${PUBLISH_SERVER}/ \
               out/target/product/msm8916_64/ \
               $PUB_DEST \
               --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \

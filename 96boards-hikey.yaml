@@ -12,9 +12,6 @@
                 - job-extended-read
                 - job-workspace
     parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
         - string:
             name: ROOTFS
             default: 'alip developer'
@@ -39,6 +36,8 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -346,7 +345,7 @@
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/96boards-hikey/build-info/template.txt -O out/BUILD-INFO.txt
             python ${HOME}/bin/linaro-cp.py \
-              --server http://builds.96boards.org/ \
+              --server http://${PUBLISH_SERVER}/ \
               --build-info out/BUILD-INFO.txt \
               out snapshots/hikey/debian/${BUILD_NUMBER}
     publishers:

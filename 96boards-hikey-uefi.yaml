@@ -11,10 +11,6 @@
                 - job-read
                 - job-extended-read
                 - job-workspace
-    parameters:
-        - password:
-            name: PUBLISH_KEY
-            default: ${PUBLISH_KEY}
     disabled: false
     node: docker-utopic
     display-name: '96boards - HiKey UEFI'
@@ -38,6 +34,8 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -97,7 +95,9 @@
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            python ${HOME}/bin/linaro-cp.py --server http://builds.96boards.org/ out snapshots/hikey/uefi/${BUILD_NUMBER}
+            python ${HOME}/bin/linaro-cp.py \
+              --server http://${PUBLISH_SERVER}/ \
+              out snapshots/hikey/uefi/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'
