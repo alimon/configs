@@ -58,14 +58,16 @@
 
                 def lavaLab = new XMLRPCServerProxy("https://${lavaServer}")
                 lavaLab.setBasicAuth(lavaUser, lavaToken)
-                response = lavaLab.invokeMethod("scheduler.job_status", [lavaJobId])
+                def response = lavaLab.invokeMethod("scheduler.job_status", [lavaJobId])
                 log response
                 switch (response.job_status) {
                     case ["Complete", "Incomplete", "Canceled"]:
                         lavaJobIdPoolClone.remove(it)
                         log "LAVA job removed: " + lavaJobId
                         // update build job information (badge, shortText, description)
-                        log build.getDescription()
+                        description = build.getDescription()
+                        description = description.replaceAll(">${lavaJobId}<", ">${lavaJobId} - ${response.job_status}<")
+                        build.setDescription(description)
                         break
                 }
             }
@@ -74,4 +76,4 @@
             parameter.setDefaultValue(lavaJobIdPool)
             job.save()
 #            classpath:
-#                - "file:///usr/share/groovy/lib/groovy-xmlrpc-0.8.jar"
+#                - "/usr/share/groovy/lib/groovy-xmlrpc-0.8.jar"
