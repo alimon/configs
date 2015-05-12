@@ -223,7 +223,16 @@
             fi
 
             # Tree specific fragments: LSK + KVM fragments
+            if [ ${tree_name} = "stable" ]; then
+              # Don't do allmodconfig builds
+              DEFCONFIG_LIST=${DEFCONFIG_LIST/allmodconfig/}
+            fi
+
+            # Tree specific fragments: LSK + KVM fragments
             if [ ${tree_name} = "lsk" ]; then
+              # Don't do allmodconfig builds
+              DEFCONFIG_LIST=${DEFCONFIG_LIST/allmodconfig/}
+
               FRAGS="linaro/configs/kvm-host.conf linaro/configs/kvm-guest.conf"
               base_defconfig="defconfig"
               if [ ${arch} = "arm" ]; then
