@@ -1,0 +1,76 @@
+{
+    "timeout": 3600,
+    "job_name": "${BUILD_URL}",
+    "logging_level": "INFO",
+    "vm_group": {
+        "host": {
+            "device_type": "mustang",
+            "role": "host"
+        },
+        "auto_start_vms": false,
+        "vms": [{
+            "device_type": "kvm-aarch64",
+            "role": "guest"
+        }]
+    },
+    "actions": [
+        {
+            "command": "deploy_linaro_kernel",
+            "parameters": {
+                "dtb": "http://storage.kernelci.org/mainline/v4.0/arm64-defconfig/dtbs/apm/apm-mustang.dtb",
+                "kernel": "http://storage.kernelci.org/mainline/v4.0/arm64-defconfig/Image",
+                "overlays": ["http://storage.kernelci.org/mainline/v4.0/arm64-defconfig/modules.tar.xz"],
+                "nfsrootfs": "http://releases.linaro.org/15.03/ubuntu/utopic-images/nano-arm64/linaro-utopic-nano-20150309-90.tar.gz",
+                "target_type": "ubuntu",
+                "role": "host"
+            }
+        },
+        {
+            "command": "deploy_linaro_kernel",
+            "parameters": {
+                "kernel": "http://people.linaro.org/~ard.biesheuvel/lava-uefi/Image",
+                "ramdisk": "http://storage.kernelci.org/images/rootfs/buildroot/arm64/rootfs.cpio.gz",
+                "firmware": "${QEMU_EFI_URL}",
+                "role": "guest"
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "testdef_repos": [
+                {
+                    "url": "https://git.linaro.org/ci/uefi.git/blob_plain/HEAD:/lava/kvm-install-qemu-host.yaml"
+                }],
+                "timeout": 1800,
+                "role": "host"
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "testdef_repos": [
+                {
+                    "url": "https://git.linaro.org/ci/uefi.git/blob_plain/HEAD:/lava/kvm-host.yaml"
+                }],
+                "role": "host"
+            }
+        },
+        {
+            "command": "lava_command_run",
+            "parameters": {
+                "commands": [
+                    "dmesg|grep 'rtc-efi rtc-efi: setting system clock to'"
+                ],
+                "timeout": 900,
+                "role": "guest"
+            }
+        },
+        {
+            "command": "submit_results",
+            "parameters": {
+                "server": "http://${LAVA_SERVER}",
+                "stream": "${BUNDLE_STREAM_NAME}"
+            }
+        }
+    ]
+}

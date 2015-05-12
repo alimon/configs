@@ -146,6 +146,29 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters_xen_aarch64_uefi
               block: true
+
+        - shell: |
+            DEVICE_TYPE=kvm-aarch64
+            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/QEMU-AARCH64/RELEASE-SECURE/QEMU_EFI.img.gz
+            TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
+
+            wget -O - -q --no-check-certificate $TEMPLATE | \
+            sed -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${QEMU_EFI_URL}|${QEMU_EFI_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                > custom_lava_job_definition_qemu_aarch64_uefi.json
+
+            cat << EOF > post_build_lava_parameters_qemu_aarch64_uefi
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_qemu_aarch64_uefi.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_qemu_aarch64_uefi
+              block: true
     publishers:
         - email:
             recipients: 'ard.biesheuvel@linaro.org'
