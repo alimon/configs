@@ -148,6 +148,7 @@
               block: true
 
         - shell: |
+            KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-mainline/ARCH=arm64,defconfig=defconfig,label=build/lastSuccessfulBuild/buildNumber)
             DEVICE_TYPE=kvm-aarch64
             QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/QEMU-AARCH64/RELEASE-SECURE/QEMU_EFI.img.gz
             TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
@@ -157,6 +158,7 @@
                 -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
                 -e "s|\${QEMU_EFI_URL}|${QEMU_EFI_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                -e "s|\${KERNEL_BUILD_NUM}|${KERNEL_BUILD_NUM}|" \
                 > custom_lava_job_definition_qemu_aarch64_uefi.json
 
             cat << EOF > post_build_lava_parameters_qemu_aarch64_uefi
