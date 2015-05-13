@@ -30,6 +30,10 @@
         - string:
             name: source
             description: 'dsc source url or filename'
+        - string:
+            name: repo
+            description: 'repository to upload to'
+            default: 'linaro-overlay'
     disabled: false
     display-name: 'Generic package builder'
     wrappers:
@@ -55,7 +59,7 @@
             echo "arch: $arch"
             echo "dist: $dist"
             echo "source: $source"
-
+            echo "repo: $repo"
             sudo rm -f *.changes repo work /etc/apt/sources.list.d/local.list
             (
             # build a source repo for apt-get build-dep
@@ -92,7 +96,7 @@
             pkg_job_name=${JOB_NAME}
             key_id=B86C70FE
             pkg_changes=${change}
-            host_ppa=linaro-overlay
+            host_ppa=${repo}
             EOF
     publishers:
         - copy-to-master:
