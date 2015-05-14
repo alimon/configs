@@ -1,5 +1,5 @@
 {
-    "timeout": 3600,
+    "timeout": 900,
     "job_name": "${BUILD_URL}",
     "logging_level": "INFO",
     "vm_group": {
@@ -10,7 +10,13 @@
         "auto_start_vms": false,
         "vms": [{
             "device_type": "kvm-aarch64",
-            "role": "guest"
+            "role": "guest-nonsecure"
+        },{
+            "device_type": "kvm-aarch64",
+            "role": "guest-secure"
+        },{
+            "device_type": "kvm-aarch64",
+            "role": "guest-grub-secure"
         }]
     },
     "actions": [
@@ -31,7 +37,25 @@
                 "kernel": "http://snapshots.linaro.org/kernel-hwpack/linux-mainline/defconfig/${KERNEL_BUILD_NUM}/Image",
                 "ramdisk": "http://storage.kernelci.org/images/rootfs/buildroot/arm64/rootfs.cpio.gz",
                 "firmware": "${QEMU_EFI_URL}",
-                "role": "guest"
+                "role": "guest-nonsecure"
+            }
+        },
+        {
+            "command": "deploy_linaro_kernel",
+            "parameters": {
+                "kernel": "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/Image",
+                "ramdisk": "http://storage.kernelci.org/images/rootfs/buildroot/arm64/rootfs.cpio.gz",
+                "qemu_pflash": ["${QEMU_EFI_URL}", "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/vars.bin.gz"],
+                "role": "guest-secure"
+            }
+        },
+        {
+            "command": "deploy_linaro_kernel",
+            "parameters": {
+                "kernel": "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/grubaa64.efi",
+                "rootfs": "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/vexpress64-openembedded_minimal-armv8.img.gz",
+                "qemu_pflash": ["${QEMU_EFI_URL}", "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/grub-vars.bin.gz"],
+                "role": "guest-grub-secure"
             }
         },
         {
@@ -61,8 +85,28 @@
                 "commands": [
                     "dmesg|grep 'rtc-efi rtc-efi: setting system clock to'"
                 ],
-                "timeout": 900,
-                "role": "guest"
+                "timeout": 300,
+                "role": "guest-nonsecure"
+            }
+        },
+        {
+            "command": "lava_command_run",
+            "parameters": {
+                "commands": [
+                    "dmesg|grep 'rtc-efi rtc-efi: setting system clock to'"
+                ],
+                "timeout": 300,
+                "role": "guest-secure"
+            }
+        },
+        {
+            "command": "lava_command_run",
+            "parameters": {
+                "commands": [
+                    "grep BOOT_IMAGE /proc/cmdline"
+                ],
+                "timeout": 300,
+                "role": "guest-grub-secure"
             }
         },
         {
