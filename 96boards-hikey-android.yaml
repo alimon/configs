@@ -37,8 +37,10 @@
             chmod a+x ${HOME}/bin/*
             export PATH=${HOME}/bin:${PATH}
 
-            sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
-            sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
+                sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+                sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            fi
             cd /home/buildslave/srv/${JOB_NAME}
 
             git config --global user.email "ci_notify@linaro.org"
