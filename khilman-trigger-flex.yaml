@@ -222,7 +222,7 @@
               # Don't do allmodconfig builds
               DEFCONFIG_LIST=${DEFCONFIG_LIST/allmodconfig/}
 
-              FRAGS="linaro/configs/kvm-host.conf linaro/configs/kvm-guest.conf"
+              FRAGS="linaro/configs/kvm-guest.conf"
               base_defconfig="defconfig"
               if [ ${ARCH} = "arm" ]; then
                 base_defconfig="multi_v7_defconfig"
@@ -240,6 +240,15 @@
                   DEFCONFIG_LIST+="$base_defconfig+$frag "
                 fi
               done
+
+              # KVM host: only enable for LPAE-enabled kernels
+              KVM_HOST_FRAG=linaro/configs/kvm-host.conf
+              if [ -e $KVM_HOST_FRAG ]; then
+                lpae_base="multi_v7_defconfig+CONFIG_ARM_LPAE=y"
+                if [[ $DEFCONFIG_LIST == *"${lpae_base}"* ]]; then
+                    DEFCONFIG_LIST+="${lpae_base}+$KVM_HOST_FRAG"
+                fi
+              fi
             fi
 
             cat << EOF > ${WORKSPACE}/${TREE_BRANCH}-build.properties
