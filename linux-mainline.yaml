@@ -20,7 +20,7 @@
             name: LAVA_TOKEN
             default: ${LAVA_TOKEN}
     disabled: false
-    node: build
+    node: linaro-kernel-ci
     child-workspace: .
     display-name: 'Linux Mainline Kernel (master)'
     scm:
@@ -49,21 +49,17 @@
             type: slave
             name: label
             values:
-                - build
+                - linaro-kernel-ci
     execution-strategy:
         combination-filter: |
             (ARCH=="arm" && defconfig!="defconfig") || (ARCH=="arm64" && defconfig=="defconfig")
         sequential: true
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz
-                - gcc-linaro-aarch64-linux-gnu-4.9-2014.08_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
-            node: build
+            node: linaro-kernel-ci
     builders:
         - linaro-publish-token
         - shell: |
@@ -81,7 +77,7 @@
             }
 
             export LANG=C
-            CCACHE_DIR="$HOME/ccache"
+            CCACHE_DIR="${HOME}/srv/ccache"
             CCACHE_UNIFY=1
             CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
             export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS 
@@ -93,10 +89,14 @@
             export kernel_flavour="${defconfig}"
             export kernel_config="${defconfig}_defconfig"
             export MAKE_DTBS=true
-            export toolchain_url="http://releases.linaro.org/14.08/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.08_linux.tar.xz"
+            export tcbindir="${HOME}/srv/toolchain/arm-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz"
 
             [ "${ARCH}" = "arm64" ] && export kernel_config="${defconfig}"
-            [ "${ARCH}" = "arm64" ] && export toolchain_url="http://releases.linaro.org/14.08/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.08_linux.tar.xz"
+            [ "${ARCH}" = "arm64" ] && {
+              export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
+              export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
+            }
 
             # XXX work around vexpress defconfig
             #echo "CONFIG_DEVTMPFS=y" >> arch/arm/configs/vexpress_defconfig
@@ -116,7 +116,7 @@
             # Publish to snapshots
             ${HOME}/bin/linaro-cp out kernel-hwpack/linux-mainline/${defconfig}/${BUILD_NUMBER}
 
-            CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
             # Start LAVA dance
