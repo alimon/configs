@@ -61,17 +61,22 @@
             echo "source: $source"
             echo "repo: $repo"
             sudo rm -f *.changes repo work /etc/apt/sources.list.d/local.list
-            (
             # build a source repo for apt-get build-dep
             mkdir repo && cd repo
             dget --insecure -d -u $source
             dpkg-scansources . /dev/null > Sources.gz
             echo "deb-src file:$(pwd) /" > local.list
+            echo "deb http://repo.linaro.org/ubuntu/linaro-overlay ${dist} main" >> local.list
+            if [ "${repo}" != "linaro-overlay" ]; then
+                echo "deb http://repo.linaro.org/ubuntu/${repo} ${dist} main" >> local.list
+            fi
             sudo cp local.list /etc/apt/sources.list.d/
-            )
+            cd ..
             localdsc=`echo $source|sed -e "s,.*/,$(pwd)/repo/,"`
             sourcename=`basename ${localdsc}|sed -e 's,_,=,' -e 's,.dsc$,,'`
 
+            wget -O - http://repo.linaro.org/ubuntu/linarorepo.key|sudo apt-key add -
+            export DEBIAN_FRONTEND=noninteractive
             sudo apt-get update
             sudo apt-get install --no-install-recommends -y build-essential fakeroot
             sudo apt-get build-dep --no-install-recommends -y ${sourcename}
@@ -105,15 +110,15 @@
         - trigger-parameterized-builds:
             - project: post-build-repo
               property-file: "label/docker-utopic-arm64/repo.parameters"
-              condition: SUCCESS
+              fail-on-missing: true
             - project: post-build-repo
               property-file: "label/docker-utopic-armhf/repo.parameters"
-              condition: SUCCESS
+              fail-on-missing: true
             - project: post-build-repo
               property-file: "label/docker-utopic/repo.parameters"
-              condition: SUCCESS
+              fail-on-missing: true
             - project: post-build-repo
               property-file: "label/docker-jessie-arm64/repo.parameters"
-              condition: SUCCESS
+              fail-on-missing: true
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
