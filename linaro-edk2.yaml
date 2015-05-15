@@ -48,10 +48,6 @@
         - pollscm: 'H/5 * * * *'
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                - gcc-linaro-arm-linux-gnueabihf-4.8-2014.04_linux.tar.xz
-                - gcc-linaro-aarch64-linux-gnu-4.8-2014.04_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
@@ -66,18 +62,13 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf arm-tc
-              rm -rf arm64-tc
               rm -rf uefi-ci uefi-tools
               rm -rf ${JOB_NAME}-build
               rm -rf out
             }
 
-            # Install custom toolchain
-            mkdir arm-tc arm64-tc
-            tar --strip-components=1 -C ${WORKSPACE}/arm-tc -xf gcc-linaro-arm-linux-gnueabihf-4.8-*_linux.tar.xz
-            tar --strip-components=1 -C ${WORKSPACE}/arm64-tc -xf gcc-linaro-aarch64-linux-gnu-4.8-*_linux.tar.xz
-            export PATH="${WORKSPACE}/arm-tc/bin:${WORKSPACE}/arm64-tc/bin:$PATH"
+            # Use pre-installed linaro toolchain
+            export PATH="${HOME}/srv/toolchain/arm-tc-14.04/bin:${HOME}/srv/toolchain/arm64-tc-14.04/bin:$PATH"
 
             git clone git://git.linaro.org/uefi/uefi-tools.git
             git clone git://git.linaro.org/ci/uefi.git uefi-ci
