@@ -9,13 +9,16 @@
         - authorization:
             anonymous:
                 - job-read
+            linaro:
+                - job-build
+                - job-cancel
     parameters:
         - string:
             name: BUILD_CONFIG_FILENAME
             default: 'armv8-android-hikey-3.18'
     disabled: false
     node: docker-utopic-aosp
-    display-name: '96boards - Hikey (Android)'
+    display-name: '96boards - HiKey (Android)'
     concurrent: true
     wrappers:
         - timestamps
@@ -38,8 +41,8 @@
             export PATH=${HOME}/bin:${PATH}
 
             if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
-                sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
-                sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+              sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+              sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
             fi
             cd /home/buildslave/srv/${JOB_NAME}
 
@@ -78,12 +81,12 @@
             build-tools/node/lava-submit "${CONFIG}"
 
             for f in $(ls -1 build/out/lava-job-info* 2>/dev/null); do
-                 time linaro-cp.py \
-                   --no-build-info \
-                   --split-job-owner \
-                   --server ${PUBLISH_SERVER} \
-                   ${f} \
-                   ${PUB_DEST}
+              time linaro-cp.py \
+                --no-build-info \
+                --split-job-owner \
+                --server ${PUBLISH_SERVER} \
+                ${f} \
+                ${PUB_DEST}
             done
 
             echo "Build finished"
