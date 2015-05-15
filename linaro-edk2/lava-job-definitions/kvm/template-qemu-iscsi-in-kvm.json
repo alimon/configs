@@ -1,0 +1,55 @@
+{
+  "actions": [
+    {
+      "command": "deploy_linaro_image",
+      "parameters": {
+        "image": "https://ci.linaro.org/userContent/roy-wheezy-4g.img.gz"
+      },
+      "metadata": {
+        "build id": "${BUILD_NUMBER}",
+        "git URL": "${GIT_URL}",
+        "git branch": "${GIT_BRANCH}",
+        "git commit": "${GIT_COMMIT}",
+        "template": "qemu-iscsi-in-kvm"
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [{
+          "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+          "parameters": {
+            "EDK2_BIN": "${QEMU_EFI_URL}",
+            "QEMU_ARGS": "-machine virt -cpu cortex-a57 -machine type=virt -pflash /home/flash0.img -pflash /home/flash1.img -drive file=/root/iscsi-disk-image.bin,if=none,id=blk -device virtio-blk-device,drive=blk -nographic -smp 1 -m 256",
+            "TEST_NAME": "local-disk"
+          },
+          "testdef": "ubuntu/qemu-edk2-boot.yaml"
+        }],
+        "timeout": 18000
+      }
+    },
+    {
+      "command": "lava_test_shell",
+      "parameters": {
+        "testdef_repos": [{
+          "git-repo": "http://git.linaro.org/qa/test-definitions.git",
+          "parameters": {
+            "EDK2_BIN": "${QEMU_EFI_URL}"
+          },
+          "testdef": "ubuntu/qemu-edk2-boot.yaml"
+        }],
+        "timeout": 18000
+      }
+    },
+    {
+      "command": "submit_results",
+      "parameters": {
+        "server": "http://${LAVA_SERVER}",
+        "stream": "${BUNDLE_STREAM_NAME}"
+      }
+    }
+  ],
+  "device_type": "${DEVICE_TYPE}",
+  "job_name": "${BUILD_URL}",
+  "timeout": 1800
+}
