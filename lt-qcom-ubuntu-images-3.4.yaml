@@ -54,9 +54,6 @@
             wipe-workspace: false
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                - gcc-linaro-arm-linux-gnueabihf-4.8-2014.04_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
@@ -88,6 +85,7 @@
             export kernel_flavour=lt-qcom
             export kernel_config=ifc6410_defconfig
             export MAKE_DTBS=false
+            export tcbindir="${HOME}/srv/toolchain/arm-tc-14.04/bin"
             export toolchain_url=http://releases.linaro.org/14.04/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.8-2014.04_linux.tar.xz
 
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
