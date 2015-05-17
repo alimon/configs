@@ -1,12 +1,19 @@
 {
   "actions": [
     {
-      "command": "deploy_linaro_kernel",
+      "command": "deploy_linaro_image",
       "parameters": {
         "bootloadertype": "uefi",
-        "firmware": "${QEMU_EFI_URL}",
-        "kernel": "${KERNEL_URL}",
-        "rootfs": "${IMAGE_URL}"
+        "customize": {
+          "${STARTUP_NSH}": [
+            "boot:/EFI/BOOT/startup.nsh"
+          ]
+        },
+        "image": "${IMAGE_URL}",
+        "qemu_pflash": [
+          "${QEMU_EFI_URL}",
+          "${QEMU_PFLASH_URL}"
+        ]
       },
       "metadata": {
         "build id": "${BUILD_NUMBER}",
@@ -17,30 +24,7 @@
       }
     },
     {
-      "command": "boot_linaro_image",
-      "parameters": {
-        "boot_cmds": [
-          "sendline 3",
-          "expect Choice:",
-          "sendline 1",
-          "expect Select the Boot Device:",
-          "sendline 1",
-          "expect File path of the EFI Application or the kernel:",
-          "sendline Image",
-          "expect Is an EFI Application? [y/n]",
-          "sendline y",
-          "expect Is your application an OS loader? [y/n]",
-          "sendline n",
-          "expect Arguments to pass to the EFI Application:",
-          "sendline debug uefi_debug ignore_loglevel rootwait root=/dev/vda2 rootfstype=ext4 rw console=ttyAMA0 earlycon uefi_debug acpi=force",
-          "expect Description for this new Entry:",
-          "sendline LAVA",
-          "expect Choice:",
-          "sendline 7",
-          "expect Start:",
-          "sendline 2"
-        ]
-      }
+      "command": "boot_linaro_image"
     },
     {
       "command": "lava_command_run",
