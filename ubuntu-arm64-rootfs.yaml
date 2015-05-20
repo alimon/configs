@@ -50,6 +50,7 @@
         - timeout:
             timeout: 120
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -59,43 +60,31 @@
             {
               cd ${WORKSPACE}
               sudo umount builddir
+              rm -rf out
             }
 
             dpkg -s qemu-user-static |grep '^Version'
             dpkg -s live-build |grep '^Version'
 
-            rm -f linaro-utopic-${rootfs}-* *.txt
+            rm -f linaro-vivid-${rootfs}-* *.txt
 
             test -d builddir || mkdir builddir
             sudo mount -t tmpfs -o size=6G tmpfs builddir
-            cp -a utopic-arm64-${rootfs} builddir/
-            cd builddir/utopic-arm64-${rootfs}
+            cp -a vivid-arm64-${rootfs} builddir/
+            cd builddir/vivid-arm64-${rootfs}
             ./configure
             make
-            sudo mv linaro-utopic-* ${WORKSPACE}
 
-            cat << EOF > ${WORKSPACE}/BUILD-INFO.txt
-            Format-Version: 0.5
+            cd ${WORKSPACE}
+            mkdir out
+            cp -a builddir/vivid-arm64-${rootfs}/linaro-vivid-* out
+            sudo mv builddir/vivid-arm64-${rootfs}/linaro-vivid-* ${WORKSPACE}
 
-            Files-Pattern: *
-            License-Type: open
-            EOF
-        - ssh:
-            site: 'snapshots.linaro.org'
-            target: '${JOB_NAME}/${BUILD_NUMBER}/ubuntu/images/${rootfs}-arm64/${BUILD_NUMBER}'
-            source: 'linaro-utopic-${rootfs}-*, *.txt'
-            timeout: 120000
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org file-move'
-            target: ''
-            source: ''
-            command: 'reshuffle-files --job-type prebuilt --job-name ${JOB_NAME} --build-num ${BUILD_NUMBER}'
-            timeout: 120000
-            always-publish-from-master: true
+            # Publish
+            time python ${HOME}/bin/linaro-cp.py out ubuntu/images/${rootfs}-arm64/${BUILD_NUMBER}
     publishers:
         - archive:
-            artifacts: 'linaro-utopic-*.tar.gz'
+            artifacts: 'linaro-vivid-*.tar.gz'
             latest-only: true
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
