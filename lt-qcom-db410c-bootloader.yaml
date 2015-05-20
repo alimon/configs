@@ -1,0 +1,111 @@
+- job:
+    name: lt-qcom-db410c-bootloader
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-build
+                - job-cancel
+    parameters:
+        - password:
+            name: PRIVATE_KEY
+            default: ${LT_QUALCOMM_PRIVATE_KEY}
+    disabled: false
+    node: docker-utopic
+    display-name: 'Qualcomm bootloader for DragonBoard 410c'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              kill -9 ${SSH_AGENT_PID}
+              rm -rf out*
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl
+
+            TMPKEYDIR=$(mktemp -d /tmp/qcom.XXXXXX)
+            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
+            #!/usr/bin/python
+
+            import os
+            import sys
+
+            def main():
+                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
+                if private_key == "Undefined":
+                    sys.exit("PRIVATE_KEY is not defined.")
+
+                buffer = private_key.replace(' ','\n')
+                with open('linaro-private-key', 'w') as f:
+                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
+                    f.write(buffer)
+                    f.write('\n-----END RSA PRIVATE KEY-----\n')
+
+            if __name__ == "__main__":
+                    main()
+            EOF
+            python ${TMPKEYDIR}/private-key-wrapper.py
+            chmod 0600 ${WORKSPACE}/linaro-private-key
+
+            eval `ssh-agent` >/dev/null 2>/dev/null
+            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
+            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
+
+            mkdir ~/.ssh
+            ssh-keyscan dev-private-git.linaro.org >> ~/.ssh/known_hosts
+            cat << EOF >> ~/.ssh/config
+            Host dev-private-git.linaro.org
+                User git
+            EOF
+            chmod 0600 ~/.ssh/*
+
+            git clone --depth 1 ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git ${WORKSPACE}
+            ./build
+
+            # Final preparation for publishing
+            mkdir out-pub
+            cp -a out/*.zip out-pub/
+
+            # Create MD5SUMS file
+            (cd out-pub && md5sum * > MD5SUMS.txt)
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-db410c-bootloader/build-info/template.txt -O out-pub/BUILD-INFO.txt
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info out-pub/BUILD-INFO.txt \
+              out-pub snapshots/dragonboard410c/bootloader/${BUILD_NUMBER}
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            # Cleanup any sensitive files
+            git clean -fdx
+            rm -rf ${WORKSPACE}/* ${WORKSPACE}/.git*
+    publishers:
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
+        - ircbot:
+            channels:
+                - name: '#linaro-lt-qcomm'
+                  password: ${LT_QCOM_KEY}
