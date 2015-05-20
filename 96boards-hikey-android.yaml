@@ -67,6 +67,11 @@
             # Publish
             PUB_DEST=snapshots/hikey/aosp/${BUILD_NUMBER}
 
+            cd build/out
+            mkdir -p images; cp *.img images/;
+            tar -Jcf images.tar.xz images/
+            cd -
+
             time linaro-cp.py \
               --manifest \
               --no-build-info \
