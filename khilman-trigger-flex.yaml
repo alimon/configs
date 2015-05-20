@@ -257,6 +257,20 @@
                     DEFCONFIG_LIST+="${lpae_base}+$KVM_HOST_FRAG"
                 fi
               fi
+
+              # Android/AOSP fragments: combined together
+              if [ -e android/configs ]; then
+                FRAG_A=""
+                FRAGS="android/configs/android-base.cfg android/configs/android-recommended.cfg"
+                for frag in ${FRAGS}; do
+                  if [ -e $frag ]; then
+                    FRAG_A+="+$frag"
+                  fi
+                done
+                if [ -n "$FRAG_A" ]; then
+                  DEFCONFIG_LIST="$base_defconfig$FRAG_A "
+                fi
+              fi
             fi
 
             cat << EOF > ${WORKSPACE}/${TREE_BRANCH}-build.properties
