@@ -1,5 +1,5 @@
 - job:
-    name: generic-package-builder
+    name: build-package
     project-type: matrix
     defaults: global
     logrotate:
@@ -15,21 +15,11 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-    axes:
-        - axis:
-            type: slave
-            name: label
-            values:
-                - docker-utopic
-                - docker-utopic-arm64
-                - docker-utopic-armhf
-                - docker-vivid
-                - docker-vivid-arm64
-                - docker-vivid-armhf
-                - docker-jessie-arm64
-    execution-strategy:
-        sequential: false
     parameters:
+        - string:
+            name: codename
+            default: 'vivid'
+            description: 'distribution codename targeted: vivid, utopic or jessie'
         - string:
             name: source
             description: 'dsc source url or filename'
@@ -37,8 +27,18 @@
             name: repo
             description: 'repository to upload to'
             default: 'linaro-overlay'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-${codename}
+                - docker-${codename}-arm64
+                - docker-${codename}-armhf
+    execution-strategy:
+        sequential: false
     disabled: false
-    display-name: 'Generic package builder'
+    display-name: 'Build package'
     wrappers:
         - timestamps
         - matrix-tie-parent:
@@ -51,8 +51,8 @@
 
             arch=`dpkg-architecture -qDEB_HOST_ARCH`
             dist=`lsb_release -sc`
-            # arm64 + utopic is the must build target with source uploads
-            if [ $arch = arm64 ] && [ $dist = utopic ]
+            # arm64 + ${codename} is the must build target with source uploads
+            if [ $arch = arm64 ] && [ $dist = ${codename} ]
             then
                 buildpackage_params="-sa"
             else
@@ -76,7 +76,7 @@
             sudo cp local.list /etc/apt/sources.list.d/
             cd ..
             localdsc=`echo $source|sed -e "s,.*/,$(pwd)/repo/,"`
-            sourcename=`basename ${localdsc}|sed -e 's,_,=,' -e 's,.dsc$,,'`
+            sourcename=`basename ${localdsc}|sed -e 's,_.*,,'`
 
             wget -O - http://repo.linaro.org/ubuntu/linarorepo.key|sudo apt-key add -
             export DEBIAN_FRONTEND=noninteractive
@@ -112,25 +112,13 @@
                 - '*.changes, *.dsc, *.gz, *.bz2, *.xz, *.deb, *.udeb, repo.parameters'
         - trigger-parameterized-builds:
             - project: post-build-repo
-              property-file: "label/docker-utopic-arm64/repo.parameters"
+              property-file: "label/docker-${codename}-arm64/repo.parameters"
               fail-on-missing: true
             - project: post-build-repo
-              property-file: "label/docker-utopic-armhf/repo.parameters"
+              property-file: "label/docker-${codename}-armhf/repo.parameters"
               fail-on-missing: true
             - project: post-build-repo
-              property-file: "label/docker-utopic/repo.parameters"
-              fail-on-missing: true
-            - project: post-build-repo
-              property-file: "label/docker-vivid-arm64/repo.parameters"
-              fail-on-missing: true
-            - project: post-build-repo
-              property-file: "label/docker-vivid-armhf/repo.parameters"
-              fail-on-missing: true
-            - project: post-build-repo
-              property-file: "label/docker-vivid/repo.parameters"
-              fail-on-missing: true
-            - project: post-build-repo
-              property-file: "label/docker-jessie-arm64/repo.parameters"
+              property-file: "label/docker-${codename}/repo.parameters"
               fail-on-missing: true
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
