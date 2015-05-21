@@ -69,8 +69,10 @@
 
             cd build/out
             rm -rf boot.img ramdisk.img
-            mkdir -p images; cp *.img images/;
-            tar -Jcf images.tar.xz images/
+            for image in "boot_fat.img" "system.img" "userdata.img" "cache.img"
+            do
+                echo "Compressing $image";tar -Jcf ${image}.tar.xz ${image};
+            done
             cd -
 
             time linaro-cp.py \
