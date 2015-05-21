@@ -68,10 +68,11 @@
             PUB_DEST=snapshots/hikey/aosp/${BUILD_NUMBER}
 
             cd build/out
-            rm -rf boot.img ramdisk.img
-            for image in "boot_fat.img" "system.img" "userdata.img" "cache.img"
-            do
-                echo "Compressing $image";tar -Jcf ${image}.tar.xz ${image};
+            rm -f boot.img ramdisk.img
+            for image in "boot_fat.img" "system.img" "userdata.img" "cache.img"; do
+              echo "Compressing ${image}"
+              tar -Jcf ${image}.tar.xz ${image}
+              rm -f ${image}
             done
             cd -
 
