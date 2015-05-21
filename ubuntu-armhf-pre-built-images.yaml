@@ -75,11 +75,7 @@
             export TMPDIR="${WORKSPACE}/out"
 
             case "${hwpack}" in
-              arndale|arndale-octa|highbank|midway)
-                export ROOTFS_TYPE="server developer nano"
-                python pre-built-images.py ${hwpack} -b server -b developer -b nano
-                ;;
-              lsk-vexpress|panda|snowball|vexpress)
+              arndale|arndale-octa|highbank|midway|lsk-vexpress|panda|snowball|vexpress)
                 export ROOTFS_TYPE="developer nano"
                 python pre-built-images.py ${hwpack} -b developer -b nano
                 ;;
@@ -107,12 +103,6 @@
             case "${hwpack}" in
               arndale|arndale-octa|highbank|midway)
                 export DEVICE_TYPE=${hwpack}
-
-                export ROOTFS_TYPE=server
-                export HWPACK_FILE_NAME=`find out -type f -name '*_server_*.img.gz' |xargs basename`
-                export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
-                export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
-                python lava-submit.py
                 ;;
               panda)
                 export DEVICE_TYPE=panda-es
