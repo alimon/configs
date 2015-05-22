@@ -80,6 +80,11 @@
             mv ${builddir}/* ${outdir}/
             find ${outdir}/ -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
+            cat << EOF > out/startup-qemu-aarch64.nsh
+            echo "The default boot selection will start in"
+            Image console=ttyAMA0 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
+            EOF
+
             ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
             IMAGE_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/linux-leg/lastSuccessfulBuild/buildNumber`
@@ -272,8 +277,9 @@
               block: true
         - shell: |
             DEVICE_TYPE=qemu-aarch64
-            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/qemu64-intelbds/QEMU_EFI.fd
-            KERNEL_URL="$(dirname ${IMAGE_URL})/Image"
+            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/qemu64/QEMU_EFI.img.gz
+            QEMU_PFLASH_URL=http://people.linaro.org/~fu.wei/LAVA/test/QEMU/flash1.uefishell.qemu.gz
+            STARTUP_NSH=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/startup-qemu-aarch64.nsh
 
             BUNDLE_STREAM_NAME=/anonymous/debug/
             LAVA_SERVER=staging.validation.linaro.org/RPC2/
@@ -281,8 +287,9 @@
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
                 -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                -e "s|\${KERNEL_URL}|${KERNEL_URL}|" \
                 -e "s|\${QEMU_EFI_URL}|${QEMU_EFI_URL}|" \
+                -e "s|\${QEMU_PFLASH_URL}|${QEMU_PFLASH_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
                 -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
                 -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
                 -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
