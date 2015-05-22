@@ -1,0 +1,33 @@
+- job:
+    name: trigger-u-boot-upstream
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for U-Boot upstream (mainline)'
+    scm:
+        - git:
+            url: git://git.denx.de/u-boot.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - trigger-builds:
+            - project: 'u-boot-upstream'
