@@ -84,9 +84,9 @@
                 set -x
                 ./configure --with-fileserver=148.251.136.42 --with-remote-snapshots=snapshots-ref
                 echo "=== Unit testsuite ==="
-                (bash -x ./testsuite/test.sh; ret_unit=$?) || true
+                ret_unit=0; bash -x ./testsuite/test.sh || ret_unit=1
                 echo "=== API testsuite ==="
-                (bash -x ./test.sh; ret_api=$?) || true
+                ret_api=0; bash -x ./test.sh || ret_api=1
                 if [ x"$ret_unit" = x"0" -a x"$ret_api" = x"0" ]; then
                   exit 0
                 else
