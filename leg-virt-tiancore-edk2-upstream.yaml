@@ -130,6 +130,7 @@
             ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
         - shell: |
+            KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-xen/hwpack=mustang,label=docker-utopic/lastSuccessfulBuild/buildNumber)
             DEVICE_TYPE=mustang
             XEN_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/XEN-AARCH64/RELEASE_GCC49/XEN_EFI.fd
             TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
@@ -139,6 +140,7 @@
                 -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
                 -e "s|\${XEN_EFI_URL}|${XEN_EFI_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                -e "s|\${KERNEL_BUILD_NUM}|${KERNEL_BUILD_NUM}|" \
                 > custom_lava_job_definition_xen_aarch64_uefi.json
 
             cat << EOF > post_build_lava_parameters_xen_aarch64_uefi
