@@ -12,12 +12,12 @@
                 - job-build
                 - job-cancel
     parameters:
-        - string:
-            name: BRANCH
-            default: 'master'
         - password:
             name: PRIVATE_KEY
             default: ${LT_QUALCOMM_PRIVATE_KEY}
+        - string:
+            name: BRANCH
+            default: 'master'
     disabled: false
     node: docker-utopic
     display-name: 'Qualcomm bootloader for DragonBoard 410c'
@@ -79,7 +79,7 @@
             EOF
             chmod 0600 ~/.ssh/*
 
-            git clone --depth 1 ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git -b ${BRANCH} ${WORKSPACE}
+            git clone --depth 1 -b ${BRANCH} ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git ${WORKSPACE}
             # record commit info in build log
             git log
             ./build
