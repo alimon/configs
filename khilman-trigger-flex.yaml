@@ -159,11 +159,16 @@
 
             echo "${tree_name}/${branch}-${GIT_DESCRIBE}"
 
-            THIS_COMMIT=$branch-this.commit
-            LAST_COMMIT=$branch-last.commit
+            # Drop "-test" suffix from branch name, as it tends to be a test
+            # merge/push of the normal branch.  This avoids triggering
+            # duplicate build when the "normal" branch arrives
+            __branch=${branch#-test}
+
+            THIS_COMMIT=$__branch-this.commit
+            LAST_COMMIT=$__branch-last.commit
             if [ ${ARCH} != "arm" ]; then
-              THIS_COMMIT=$ARCH-$branch-this.commit
-              LAST_COMMIT=$ARCH-$branch-last.commit
+              THIS_COMMIT=$ARCH-$__branch-this.commit
+              LAST_COMMIT=$ARCH-$__branch-last.commit
             fi
 
             if [ ! -e $LAST_COMMIT ]; then
