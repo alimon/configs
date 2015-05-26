@@ -1,0 +1,156 @@
+- job:
+    name: lt-socionext-m8m
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+    parameters:
+        - password:
+            name: PRIVATE_KEY
+            default: ${LT_SOCIONEXT_PRIVATE_KEY}
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/private/team/socionext/m8m/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+    disabled: false
+    node: docker-utopic
+    display-name: 'LT Socionext - M8M'
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out
+              kill -9 ${SSH_AGENT_PID}
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl qemu-utils
+
+            TMPKEYDIR=$(mktemp -d /tmp/m8m.XXXXXX)
+            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
+            #!/usr/bin/python
+
+            import os
+            import sys
+
+            def main():
+                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
+                if private_key == "Undefined":
+                    sys.exit("PRIVATE_KEY is not defined.")
+
+                buffer = private_key.replace(' ','\n')
+                with open('linaro-private-key', 'w') as f:
+                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
+                    f.write(buffer)
+                    f.write('\n-----END RSA PRIVATE KEY-----\n')
+
+            if __name__ == "__main__":
+                    main()
+            EOF
+            python ${TMPKEYDIR}/private-key-wrapper.py
+            chmod 0600 ${WORKSPACE}/linaro-private-key
+
+            eval `ssh-agent` >/dev/null 2>/dev/null
+            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
+            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
+
+            mkdir ~/.ssh
+            ssh-keyscan socionext.git.linaro.org >> ~/.ssh/known_hosts
+            cat << EOF >> ~/.ssh/config
+            Host socionext.git.linaro.org
+                User linaro-landing-team-socionext-bot
+            EOF
+            chmod 0600 ~/.ssh/*
+
+            git clone -b mainline-basis --depth 1 ssh://socionext.git.linaro.org/srv/landing-teams.git.linaro.org/socionext/linux.git ${WORKSPACE}
+
+            export make_deb=false
+            export make_install=true
+            export kernel_flavour=lt-m8m
+            export kernel_config=m8m_defconfig
+            export MAKE_DTBS=true
+            export tcbindir="${HOME}/srv/toolchain/arm-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz"
+
+            git clone --depth 1 https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            bash lci-build-tools/jenkins_kernel_build_inst
+
+            curl http://snapshots.linaro.org/openembedded/images/m8m/latest/core-image-base-m8m-*.rootfs.tar.bz2 -o core-image-base-m8m.tar.bz2
+            TARGZFILE=core-image-base-m8m.tar.bz2
+            IMGFILE=core-image-base-m8m.img
+
+            qemu-img create -f raw ${IMGFILE} 1G
+            DEVICE=$(sudo losetup --find --show ${IMGFILE})
+
+            echo "I: Create filesystem"
+            sudo mkfs.ext4 -L m8m -O ^has_journal ${DEVICE}
+
+            echo "I: Tune filesystem"
+            sudo tune2fs -c 0 -i 0 ${DEVICE}
+
+            echo "I: Mount device on local filesystem"
+            MOUNTDIR=$(mktemp -d /tmp/m8m.XXXXXX)
+            sudo mount ${DEVICE} ${MOUNTDIR}
+
+            sudo tar -jxf ${TARGZFILE} -C ${MOUNTDIR} --numeric-owner
+
+            sudo mount -t proc proc ${MOUNTDIR}/proc
+
+            KERNEL_PATH=$(find ${WORKSPACE} -maxdepth 1 -type d -name 'builddir-*-linaro-lt-m8m')
+            sudo make O=${KERNEL_PATH} INSTALL_MOD_PATH=${MOUNTDIR}/lib/modules modules_install
+            sudo cp -a out/zImage out/dtbs/mb86s27eb.dtb ${MOUNTDIR}/boot/
+            sudo find ${MOUNTDIR}/lib/modules -type l -delete
+
+            sudo umount -l ${MOUNTDIR}/proc || true
+            sudo umount ${DEVICE}
+            rm -rf ${MOUNTDIR}
+            sudo losetup --detach ${DEVICE}
+
+            gzip -9 ${IMGFILE}
+            mv ${IMGFILE}.gz out/
+
+            # Publish
+            cat > out/BUILD-INFO.txt << EOF
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: protected
+            Auth-Groups: linaro-landing-team-socionext-git
+            EOF
+
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --build-info out/BUILD-INFO.txt \
+              out openembedded/pre-built/lt-socionext/m8m/${BUILD_NUMBER}
+            python ${HOME}/bin/linaro-cp.py --make-link openembedded/pre-built/lt-socionext/m8m/${BUILD_NUMBER}
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            # Cleanup any sensitive files
+            git clean -fdx
+            rm -rf ${WORKSPACE}/* ${WORKSPACE}/.git*
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
