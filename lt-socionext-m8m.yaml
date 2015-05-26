@@ -117,7 +117,8 @@
 
             KERNEL_PATH=$(find ${WORKSPACE} -maxdepth 1 -type d -name 'builddir-*-linaro-lt-m8m')
             sudo make O=${KERNEL_PATH} INSTALL_MOD_PATH=${MOUNTDIR}/lib/modules modules_install
-            sudo cp -a out/zImage out/dtbs/mb86s27eb.dtb ${MOUNTDIR}/boot/
+            sudo cp -a out/zImage ${MOUNTDIR}/boot/Image-nolpae
+            sudo cp -a out/dtbs/mb86s27eb.dtb ${MOUNTDIR}/boot/
             sudo find ${MOUNTDIR}/lib/modules -type l -delete
 
             sudo umount -l ${MOUNTDIR}/proc || true
