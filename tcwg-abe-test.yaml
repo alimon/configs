@@ -15,8 +15,8 @@
                 - job-cancel
     parameters:
         - string:
-            name: GERRIT_REFSPEC
-            default: 'refs/heads/master'
+            name: GERRIT_PATCHSET_REVISION
+            default: 'origin/master'
             description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64
@@ -27,6 +27,8 @@
             url: https://git.linaro.org/toolchain/abe.git
             refspec: ${GERRIT_REFSPEC}
             name: origin
+            branches:
+                - ${GERRIT_PATCHSET_REVISION}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
