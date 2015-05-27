@@ -44,12 +44,12 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf build
+              rm -rf build out
               git clean -fdx
             }
 
             sudo apt-get update
-            sudo apt-get install -y python-pycurl libssl-dev
+            sudo apt-get install -y libssl-dev python-pycurl rsync
 
             # Use pre-installed linaro toolchain
             export PATH="${HOME}/srv/toolchain/arm-tc-15.02/bin:${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
@@ -57,6 +57,10 @@
 
             # Hack to avoid to clean the build as we want to publish build artifacts
             sed -i "s|\t\t\${MAKE} -s clean||" MAKEALL
+
+            # FIXME kill_children doesn't kill only the children, it kills also the shell parents
+            # java -jar slave.jar -> /bin/bash /tmp/hudsonXXX.sh -> MAKEALL
+            sed -i "s|\t\tkill_children|\t\tkill -- -\$$|" MAKEALL
 
             for CPU in armv7 armv8; do
               [ "${CPU}" = "armv8" ] && export CROSS_COMPILE="aarch64-linux-gnu-"
