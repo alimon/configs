@@ -20,10 +20,10 @@
     scm:
         - git:
             url: https://git.linaro.org/toolchain/abe.git
-            refspec: ${GERRIT_REFSPEC}
-            name: ''
+            refspec: ${GERRIT_REFSPEC:-+refs/heads/master:refs/remotes/origin/master}
+            name: origin
             branches:
-                - ${GERRIT_PATCHSET_REVISION}
+                - ${GERRIT_PATCHSET_REVISION:-refs/heads/master}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
