@@ -44,22 +44,42 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf build*
+              rm -rf build
               git clean -fdx
             }
 
             sudo apt-get update
-            sudo apt-get install -y libssl-dev
+            sudo apt-get install -y python-pycurl libssl-dev
 
             # Use pre-installed linaro toolchain
             export PATH="${HOME}/srv/toolchain/arm-tc-15.02/bin:${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
             export CROSS_COMPILE="arm-linux-gnueabihf-"
 
+            # Hack to avoid to clean the build as we want to publish build artifacts
+            sed -i "s|\t\t\${MAKE} -s clean||" MAKEALL
+
             for CPU in armv7 armv8; do
               [ "${CPU}" = "armv8" ] && export CROSS_COMPILE="aarch64-linux-gnu-"
-              export BUILD_DIR="${WORKSPACE}/build-${CPU}"
+              export BUILD_DIR="${WORKSPACE}/build/${CPU}"
+              export BUILD_NBUILDS=2
               ./MAKEALL --cpu ${CPU}
             done
+
+            # Publish
+            find build -type f -name '.config' -exec rename 's/.config/u-boot.config/' {} +
+            rsync -avm \
+              --include=u-boot \
+              --include=u-boot-spl \
+              --include=u-boot.config \
+              --include='*/' \
+              --exclude='*' \
+              build/ out/
+
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              out components/kernel/u-boot/${BUILD_NUMBER}
+            python ${HOME}/bin/linaro-cp.py --make-link components/kernel/u-boot/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'andrey.konovalov@linaro.org fathi.boudra@linaro.org'
