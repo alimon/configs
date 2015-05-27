@@ -1,6 +1,6 @@
 - job:
     name: lt-socionext-m8m
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     logrotate:
         daysToKeep: 30
@@ -20,12 +20,29 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
     disabled: false
-    node: docker-utopic
+    node: master
+    child-workspace: .
     display-name: 'LT Socionext - M8M'
     triggers:
         - timed: '@daily'
+    axes:
+        - axis:
+            type: user-defined
+            name: GIT_BRANCH
+            values:
+                - mainline-basis
+                - snlt-v3.18
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic
+    execution-strategy:
+        sequential: true
     wrappers:
         - timestamps
+        - matrix-tie-parent:
+            node: master
     builders:
         - linaro-publish-token
         - shell: |
@@ -81,7 +98,7 @@
             EOF
             chmod 0600 ~/.ssh/*
 
-            git clone -b mainline-basis --depth 1 ssh://socionext.git.linaro.org/srv/landing-teams.git.linaro.org/socionext/linux.git ${WORKSPACE}
+            git clone -b ${GIT_BRANCH} --depth 1 ssh://socionext.git.linaro.org/srv/landing-teams.git.linaro.org/socionext/linux.git ${WORKSPACE}
 
             export make_deb=false
             export make_install=true
@@ -130,6 +147,9 @@
             mv ${IMGFILE}.gz out/
 
             # Publish
+            PUB_DEST=openembedded/pre-built/lt-socionext/m8m/mainline/${BUILD_NUMBER}
+            [ "${GIT_BRANCH}" = "snlt-v3.18" ] && PUB_DEST=openembedded/pre-built/lt-socionext/m8m/v3.18/${BUILD_NUMBER}
+
             cat > out/BUILD-INFO.txt << EOF
             Format-Version: 0.5
 
@@ -142,8 +162,8 @@
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --build-info out/BUILD-INFO.txt \
-              out openembedded/pre-built/lt-socionext/m8m/${BUILD_NUMBER}
-            python ${HOME}/bin/linaro-cp.py --make-link openembedded/pre-built/lt-socionext/m8m/${BUILD_NUMBER}
+              out ${PUB_DEST}
+            python ${HOME}/bin/linaro-cp.py --make-link ${PUB_DEST}
         - shell: |
             #!/bin/bash
 
