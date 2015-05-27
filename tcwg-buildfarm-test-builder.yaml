@@ -98,14 +98,21 @@
         - shell: |
             #!/bin/bash
 
-            trap cleanup_exit INT TERM EXIT
+            set -e
+            set -x
 
-            cleanup_exit()
-            {
-              cd ${WORKSPACE}
-            }
+            case ${target} in
+              schroot-*)
+                schroot_arch=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\1/")
+                target=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\2/")
+                BUILD_SHELL="schroot -c tcwg-build-${schroot_arch}-trusty --preserve-environment -- bash"
+                ;;
+              *)
+                BUILD_SHELL="bash"
+                ;;
+            esac
 
-            bash -x ${WORKSPACE}/scripts/BuildFarm.job
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} ${try_bootstrap:+ --bootstrap} --runtests ${excludecheck:+ --excludecheck ${excludecheck}}
     publishers:
         - email-ext:
             recipients: 'christophe.lyon@linaro.org'

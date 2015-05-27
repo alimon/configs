@@ -79,14 +79,25 @@
         - shell: |
             #!/bin/bash
 
-            trap cleanup_exit INT TERM EXIT
+            set -e
+            set -x
 
-            cleanup_exit()
-            {
-              cd ${WORKSPACE}
-            }
+            case ${target} in
+              schroot-*)
+                schroot_arch=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\1/")
+                target=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\2/")
+                ;;
+              *)
+                case $(uname -m) in
+                  x86_64) schroot_arch="amd64" ;;
+                  aarch64) schroot_arch="arm64" ;;
+                  *) echo "Unexpected architecture $(uname -m)"; exit 1 ;;
+                esac
+                ;;
+            esac
+            BUILD_SHELL="schroot -c tcwg-build-${schroot_arch}-trusty --preserve-environment -- bash"
 
-            bash -x ${WORKSPACE}/scripts/BuildFarm.job
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} ${try_bootstrap:+ --bootstrap} --runtests ${excludecheck:+ --excludecheck ${excludecheck}}
     publishers:
         - email:
             recipients: 'christophe.lyon@linaro.org'
