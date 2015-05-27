@@ -101,23 +101,23 @@
                         for arch in AARCH64 ARM
                         do
                             mkdir -p ${OUTDIR}/QEMU-${arch}/${type}_${tc}
-                            build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc -D INTEL_BDS
-                            cp Build/ArmVirtualizationQemu-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}_${tc}
+                            build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D INTEL_BDS
+                            cp Build/ArmVirtQemu-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}_${tc}
 
                             mkdir -p ${OUTDIR}/QEMU-${arch}/${type}_${tc}-ARMBDS
-                            build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc
-                            cp Build/ArmVirtualizationQemu-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}_${tc}-ARMBDS
+                            build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc
+                            cp Build/ArmVirtQemu-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}_${tc}-ARMBDS
                         done
 
                         # below builds are only supported for AArch64
 
                         mkdir -p ${OUTDIR}/XEN-AARCH64/${type}_${tc}
-                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationXen.dsc
-                        cp Build/ArmVirtualizationXen-AARCH64/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-AARCH64/${type}_${tc}
+                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
+                        cp Build/ArmVirtXen-AARCH64/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-AARCH64/${type}_${tc}
 
                         mkdir -p ${OUTDIR}/QEMU-AARCH64/${type}_${tc}-SECURE
-                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVirtualizationPkg/ArmVirtualizationQemu.dsc -D INTEL_BDS -D SECURE_BOOT_ENABLE
-                        cp Build/ArmVirtualizationQemu-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}_${tc}-SECURE
+                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D INTEL_BDS -D SECURE_BOOT_ENABLE
+                        cp Build/ArmVirtQemu-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}_${tc}-SECURE
 
                         mkdir -p ${OUTDIR}/FVP-AARCH64/${type}_${tc}
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc -D ARM_FOUNDATION_FVP -D DTB_DIR=${DTBDIR}
