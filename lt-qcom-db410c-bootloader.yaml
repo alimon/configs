@@ -82,6 +82,26 @@
             git clone --depth 1 -b ${BRANCH} ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git ${WORKSPACE}
             # record commit info in build log
             git log
+
+            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/96boards-dragonboard410c-android/lastSuccessfulBuild/buildNumber`
+            export ROOTFS_BUILD_URL="http://builds.96boards.org/snapshots/dragonboard410c/android/${ROOTFS_BUILD_NUMBER}"
+
+            cd emmc_android
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/boot.img.tar.xz"
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/recovery.img.tar.xz"
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/system.img.tar.xz"
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/userdata.img.tar.xz"
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/persist.img.tar.xz"
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/cache.img.tar.xz"
+            for f in *.img.tar.xz; do tar xf $f; done
+            cd ../emmc_linux
+            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-ubuntu-images-arm64/lastSuccessfulBuild/buildNumber`
+            export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-ubuntu-images-arm64/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/pre-built/snapdragon-arm64/${ROOTFS_BUILD_NUMBER}/"
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/boot-linaro-vivid-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O boot.img.gz
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/linaro-vivid-gnome-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O rootfs.img.gz
+            gunzip *.img.gz
+            cd ..
             ./build
 
             # Final preparation for publishing
