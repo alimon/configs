@@ -34,6 +34,10 @@
             name: excludecheck
             default: 'gdb'
             description: 'Do not run "make check" on this component'
+        - string:
+            name: GERRIT_REFSPEC
+            default: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/remotes/gerrit/changes/*
+            description: 'Git magic, do not touch'
     disabled: false
     node: tcwg-x86_64
     concurrent: true
@@ -41,6 +45,7 @@
     scm:
         - git:
             url: https://git.linaro.org/toolchain/abe.git
+            refspec: ${GERRIT_REFSPEC}
             branches:
                 - ${GERRIT_PATCHSET_REVISION}
             skip-tag: true
