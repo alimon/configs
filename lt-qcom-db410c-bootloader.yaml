@@ -111,19 +111,21 @@
             mv out/*.zip out-bootloader/
 
             # Create MD5SUMS file
-            (cd out-pub && md5sum * > MD5SUMS.txt)
+            (cd out-pre-built && md5sum * > MD5SUMS.txt)
+            (cd out-bootloader && md5sum * > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-db410c-bootloader/build-info/template.txt -O out-pub/BUILD-INFO.txt
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-db410c-bootloader/build-info/template.txt -O out-bootloader/BUILD-INFO.txt
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-db410c-bootloader/build-info/template.txt -O out-pre-built/BUILD-INFO.txt
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --build-info out-pub/BUILD-INFO.txt \
+              --build-info out-bootloader/BUILD-INFO.txt \
               out-bootloader snapshots/dragonboard410c/bootloader/${BUILD_NUMBER}
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --build-info out-pub/BUILD-INFO.txt \
+              --build-info out-pre-built/BUILD-INFO.txt \
               out-pre-built snapshots/dragonboard410c/pre-built/${BUILD_NUMBER}
         - shell: |
             #!/bin/bash
