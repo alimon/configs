@@ -65,7 +65,7 @@
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
 
             # Publish
-            PUB_DEST=snapshots/hikey/aosp/${BUILD_NUMBER}
+            PUB_DEST=snapshots/hikey/linaro/aosp/${BUILD_NUMBER}
 
             cd build/out
             rm -f boot.img ramdisk.img
@@ -79,6 +79,7 @@
             time linaro-cp.py \
               --manifest \
               --no-build-info \
+              --link-latest \
               --split-job-owner \
               --server ${PUBLISH_SERVER} \
               build/out \
