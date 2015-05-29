@@ -95,9 +95,12 @@
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              out snapshots/hikey/linaro/uefi/${BUILD_NUMBER}
             python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              out snapshots/hikey/uefi/${BUILD_NUMBER}
+              --make-link snapshots/hikey/linaro/uefi/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'

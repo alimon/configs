@@ -344,10 +344,13 @@
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/96boards-hikey/build-info/template.txt -O out/BUILD-INFO.txt
-            python ${HOME}/bin/linaro-cp.py \
+            time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --build-info out/BUILD-INFO.txt \
-              out snapshots/hikey/debian/${BUILD_NUMBER}
+              out snapshots/hikey/linaro/debian/${BUILD_NUMBER}
+            python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --make-link snapshots/hikey/linaro/debian/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'
