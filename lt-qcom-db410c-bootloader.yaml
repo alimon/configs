@@ -105,8 +105,10 @@
             ./build
 
             # Final preparation for publishing
-            mkdir out-pub
-            cp -a out/*.zip out-pub/
+            mkdir out-bootloader out-pre-built
+            # export SD images separately from bootloaders
+            mv out/*sd-card-install*.zip out-pre-built/
+            mv out/*.zip out-bootloader/
 
             # Create MD5SUMS file
             (cd out-pub && md5sum * > MD5SUMS.txt)
@@ -118,7 +120,11 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --build-info out-pub/BUILD-INFO.txt \
-              out-pub snapshots/dragonboard410c/bootloader/${BUILD_NUMBER}
+              out-bootloader snapshots/dragonboard410c/bootloader/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info out-pub/BUILD-INFO.txt \
+              out-pre-built snapshots/dragonboard410c/pre-built/${BUILD_NUMBER}
         - shell: |
             #!/bin/bash
 
