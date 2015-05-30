@@ -15,13 +15,9 @@
                 - job-cancel
     parameters:
         - string:
-            name: GERRIT_PATCHSET_REVISION
+            name: GERRIT_REFSPEC
             default: refs/heads/master
             description: 'ABE revision to test'
-        - string:
-            name: GERRIT_REFSPEC
-            default: +refs/changes/*:refs/remotes/gerrit/changes/*
-            description: 'Git magic, do not touch'
     disabled: false
     node: tcwg-x86_64
     concurrent: true
@@ -30,8 +26,6 @@
         - git:
             url: https://git.linaro.org/toolchain/abe.git
             refspec: ${GERRIT_REFSPEC}
-            branches:
-                - ${GERRIT_PATCHSET_REVISION}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
