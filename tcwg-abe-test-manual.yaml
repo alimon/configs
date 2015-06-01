@@ -62,12 +62,12 @@
             #!/bin/bash
 
             case "$test" in
-              cross_build) bash -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb ;;
-              native_build) bash -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb ;;
+              cross_build) bash -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref ;;
+              native_build) bash -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref ;;
               testsuite)
                 set -e
                 set -x
-                ./configure
+                ./configure --with-fileserver=ex40-01.tcwglab.linaro.org/snapshots-ref
                 echo "=== Unit testsuite ==="
                 ret_unit=0; bash -x ./testsuite/test.sh || ret_unit=1
                 echo "=== API testsuite ==="
