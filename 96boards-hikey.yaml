@@ -173,7 +173,7 @@
             echo "console=tty0 console=ttyAMA0,115200n8 root=/dev/mmcblk1p2 rootwait rw" > cmdline
 
             FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
-            FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
+            FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
 
             cat > out/README.txt << EOF
             Build information:
@@ -181,7 +181,7 @@
             * git URL: ${GIT_URL}
             * git branch: ${GIT_BRANCH}
             * git commit: ${GIT_COMMIT}
-            * uefi: http://builds.96boards.org/snapshots/hikey/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
+            * uefi: http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
             EOF
 
             for rootfs in ${ROOTFS}; do
@@ -197,7 +197,7 @@
 
               if [ "${rootfs}" = "alip" ]; then
                 mali_pkg="xserver-xorg-video-fbdev-mali-450_0.0.1-1_all.deb"
-                wget http://builds.96boards.org/snapshots/hikey/binaries/20150407/${mali_pkg} -O ${mali_pkg}
+                wget http://builds.96boards.org/snapshots/hikey/linaro/binaries/20150407/${mali_pkg} -O ${mali_pkg}
                 linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${mali_pkg} -d -i
                 rm -f ${mali_pkg}
               fi
