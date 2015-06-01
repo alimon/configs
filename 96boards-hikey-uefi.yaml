@@ -28,9 +28,6 @@
             wipe-workspace: false
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                -  gcc-linaro-aarch64-linux-gnu-4.8-2014.04_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
@@ -55,17 +52,15 @@
 
             sudo apt-get install -y python-pycurl
 
-            # Install custom toolchain
-            mkdir arm64-tc
-            tar --strip-components=1 -C ${WORKSPACE}/arm64-tc -xf gcc-linaro-aarch64-linux-gnu-4.8-*_linux.tar.xz
-            export PATH="${WORKSPACE}/arm64-tc/bin:$PATH"
+            # Use pre-installed linaro toolchain
+            export PATH="${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
 
             # Check out arm-trusted-firmware
             git clone -b hikey --depth 1 https://github.com/96boards/arm-trusted-firmware.git
 
             git clone git://git.linaro.org/uefi/uefi-tools.git
 
-            export AARCH64_TOOLCHAIN=GCC48
+            export AARCH64_TOOLCHAIN=GCC49
             export EDK2_DIR=${WORKSPACE}/linaro-edk2
             export UEFI_TOOLS_DIR=${WORKSPACE}/uefi-tools
             export JENKINS_WORKSPACE=${WORKSPACE}
@@ -79,9 +74,9 @@
 
             cd ${WORKSPACE}
             mkdir out
-            cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC48/FV/*.bin out/
-            cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC48/FV/*.fd out/
-            cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC48/AARCH64/AndroidFastbootApp.efi out/
+            cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/FV/*.bin out/
+            cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/FV/*.fd out/
+            cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/AARCH64/AndroidFastbootApp.efi out/
 
             git clone -b hikey-v0.2.2 --depth 1 https://github.com/96boards/l-loader.git
             cd l-loader
