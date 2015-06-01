@@ -68,14 +68,6 @@
                 set -e
                 set -x
                 ./configure --with-fileserver=ex40-01.tcwglab.linaro.org/snapshots-ref
-                echo "=== Unit testsuite ==="
-                ret_unit=0; bash -x ./testsuite/test.sh || ret_unit=1
-                echo "=== API testsuite ==="
-                ret_api=0; bash -x ./test.sh || ret_api=1
-                if [ x"$ret_unit" = x"0" -a x"$ret_api" = x"0" ]; then
-                  exit 0
-                else
-                  exit 1
-                fi
+                make check
                 ;;
             esac
