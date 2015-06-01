@@ -78,11 +78,9 @@
             cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/FV/*.fd out/
             cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/AARCH64/AndroidFastbootApp.efi out/
 
-            git clone -b hikey-v0.2.2 --depth 1 https://github.com/96boards/l-loader.git
+            git clone --depth 1 https://github.com/96boards/l-loader.git
             cd l-loader
             ln -s ${WORKSPACE}/out/bl1.bin
-            # XXX sgdisk usage requires sudo
-            sed -i "s|^\tsh|\tsudo bash -x|" Makefile
             make
             cp -a l-loader.bin ptable.img ${WORKSPACE}/out/
             cd ${WORKSPACE}
