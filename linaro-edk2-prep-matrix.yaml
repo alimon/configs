@@ -79,7 +79,7 @@
         - shell: |
             #!/bin/bash
 
-            export JOB_NAME=linaro-edk2-prep
+            export JOB_NAME=linaro-edk2-prep-matrix
             echo "MX_B: ${MX_B}"
             echo "MX_TYPE: ${MX_TYPE}"
             echo "BUILD_NUMBER: ${BUILD_NUMBER}"
@@ -118,6 +118,4 @@
             mv ${builddir}/* ${outdir}/
             find ${outdir}/ -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
-            OUT_DIR=${WORKSPACE}/output/mx-build-${BUILD_NUMBER}-gcc${MX_TC}
-            mkdir -p ${OUT_DIR}
-            cp -r out/* ${OUT_DIR}/
+            ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
