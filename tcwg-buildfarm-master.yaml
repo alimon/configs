@@ -30,6 +30,14 @@
             name: excludecheck
             default: 'gdb'
             description: 'Do not run "make check" on this component'
+        - bool:
+            name: rebuild
+            default: true
+            description: 'Rebuild the toolchain even if results are already on logserver'
+        - string:
+            name: logname
+            default: ''
+            description: 'Logname directory on logserver; leave empty for default'
         - string:
             name: abe_branch
             default: refs/heads/master
@@ -100,7 +108,23 @@
             esac
             BUILD_SHELL="schroot -c tcwg-build-${schroot_arch}-trusty --preserve-environment -- bash"
 
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} ${try_bootstrap:+ --bootstrap} --runtests ${excludecheck:+ --excludecheck ${excludecheck}} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master
+            if $try_bootstrap; then
+              bootstrap="--bootstrap"
+            else
+              bootstrap=""
+            fi
+
+            if [ x"$logname" != x"" ]; then
+              logname_opt="--logname $logname"
+            fi
+
+            if $rebuild; then
+              norebuild=""
+            else
+              norebuild="--norebuild"
+            fi
+
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap --runtests --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master $logname_opt $norebuild
     publishers:
         - email:
             recipients: 'christophe.lyon@linaro.org'
