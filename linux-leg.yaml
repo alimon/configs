@@ -68,6 +68,8 @@
         - shell: |
             #!/bin/bash
 
+            set -ex
+
             trap cleanup_exit INT TERM EXIT
 
             cleanup_exit()
@@ -79,7 +81,7 @@
             }
 
             sudo apt-get update
-            sudo apt-get install -y python-pycurl
+            sudo apt-get install -y python-pycurl python-beautifulsoup python-html2text
 
             export LANG=C
             export make_install=true
