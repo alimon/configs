@@ -15,19 +15,19 @@
                 - job-cancel
     parameters:
         - string:
-            name: GERRIT_BRANCH
+            name: abe_branch
             default: refs/heads/master
             description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64
     concurrent: true
-    display-name: 'TCWG ABE Test -- Manual'
+    display-name: 'TCWG ABE Test'
     scm:
         - git:
             url: https://git.linaro.org/toolchain/abe.git
             refspec: +refs/changes/*:refs/remotes/gerrit/changes/*
             branches:
-                - ${GERRIT_BRANCH}
+                - ${abe_branch}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
