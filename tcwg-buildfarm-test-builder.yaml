@@ -30,38 +30,23 @@
             name: excludecheck
             default: 'gdb'
             description: 'Do not run "make check" on this component'
+        - string:
+            name: GERRIT_BRANCH
+            default: refs/heads/master
+            description: 'ABE revision to use'
     disabled: false
     node: tcwg-x86_64
     concurrent: true
-    display-name: 'TCWG BuildFarm on tcwg-test builders -- Gerrit'
+    display-name: 'TCWG BuildFarm on tcwg-test builders'
     scm:
         - git:
             url: https://git.linaro.org/toolchain/abe.git
-            refspec: ${GERRIT_REFSPEC}
+            refspec: +refs/changes/*:refs/remotes/gerrit/changes/*
             branches:
                 - ${GERRIT_BRANCH}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
-            choosing-strategy: gerrit
-    triggers:
-        - gerrit:
-            server-name: 'review.linaro.org'
-            override-votes: true
-            gerrit-build-successful-verified-value: 1
-            gerrit-build-failed-verified-value: -1
-            gerrit-build-successful-codereview-value: 1
-            gerrit-build-failed-codereview-value: -1
-            readable-message: true
-            successful-message: 'Sanity check OK'
-            failure-message: '[OUTPUT]:'
-            trigger-for-unreviewed-patches: true
-            projects:
-                - project-compare-type: 'ANT'
-                  project-pattern: 'toolchain/abe'
-                  branches:
-                    - branch-compare-type: 'ANT'
-                      branch-pattern: 'master'
     axes:
         - axis:
             type: slave

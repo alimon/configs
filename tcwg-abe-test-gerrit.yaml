@@ -1,5 +1,5 @@
 - job:
-    name: tcwg-abe-test-manual
+    name: tcwg-abe-test-gerrit
     project-type: matrix
     defaults: global
     logrotate:
@@ -13,24 +13,38 @@
             linaro:
                 - job-build
                 - job-cancel
-    parameters:
-        - string:
-            name: GERRIT_BRANCH
-            default: refs/heads/master
-            description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64
     concurrent: true
-    display-name: 'TCWG ABE Test -- Manual'
+    display-name: 'TCWG ABE Test -- Gerrit'
     scm:
         - git:
             url: https://git.linaro.org/toolchain/abe.git
-            refspec: +refs/changes/*:refs/remotes/gerrit/changes/*
+            refspec: ${GERRIT_REFSPEC}
             branches:
                 - ${GERRIT_BRANCH}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
+            choosing-strategy: gerrit
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            gerrit-build-successful-codereview-value: 1
+            gerrit-build-failed-codereview-value: -1
+            readable-message: true
+            successful-message: 'Sanity check OK'
+            failure-message: '[OUTPUT]:'
+            trigger-for-unreviewed-patches: true
+            projects:
+                - project-compare-type: 'ANT'
+                  project-pattern: 'toolchain/abe'
+                  branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: 'master'
     axes:
         - axis:
             type: slave
