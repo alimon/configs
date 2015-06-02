@@ -16,7 +16,7 @@
     parameters:
         - string:
             name: gcc_patch
-            default: refs/heads/linaro-local/gcc-4_9-branch
+            default: refs/remotes/origin/linaro/gcc-5-branch
             description: 'Patched GCC revision'
         - string:
             name: gcc_orig
@@ -29,6 +29,14 @@
     disabled: false
     node: tcwg-x86_64-01
     display-name: 'TCWG Backport master'
+    scm:
+        - git:
+            url: https://git.linaro.org/toolchain/gcc.git
+            refspec: +refs/changes/*:refs/remotes/gerrit/changes/*
+            branches:
+                - $gcc_patch
+            skip-tag: true
+            reference-repo: $HOME/snapshots-ref/gcc.git
     wrappers:
         - timeout:
             timeout: 300
@@ -45,13 +53,11 @@
             set -e
             set -x
 
-            git clone --reference=$HOME/snapshots-ref/gcc.git https://git.linaro.org/toolchain/gcc.git gcc.git
-            (cd gcc.git; git fetch https://git.linaro.org/toolchain/gcc.git '+refs/changes/*:refs/remotes/gerrit/changes/*')
-            gcc_patch_rev=$(cd gcc.git; git rev-parse $gcc_patch)
+            gcc_patch_rev=$(git rev-parse $gcc_patch)
             if [ x"$gcc_orig" = x"gcc_patch_prev" ]; then
               gcc_orig="$gcc_patch_rev^"
             fi
-            gcc_orig_rev=$(cd gcc.git; git rev-parse $gcc_orig)
+            gcc_orig_rev=$(git rev-parse $gcc_orig)
 
             echo "gcc_branch=$gcc_orig_rev" > gcc_orig_parameters
             echo "gcc_branch=$gcc_patch_rev" > gcc_patch_parameters
