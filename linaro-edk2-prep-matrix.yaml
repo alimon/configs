@@ -17,7 +17,7 @@
                 - job-cancel
     disabled: false
     node: build
-#    child-workspace: .
+    child-workspace: .
     display-name: 'Linaro EDK II - UEFI Continuous Integration (pre-release) - Matrix'
 #    scm:
 #        - git:
@@ -40,14 +40,14 @@
             values:
                 - qemu64
                 - qemu
-                - juno-armbds
-                - juno
-                - fvp-base-armbds
-                - mustang
-                - fvp-foundation-armbds
-                - rtsm_a15mpcore-armbds
-                - tc2-armbds
-                - beagle-armbds
+#                - juno-armbds
+#                - juno
+#                - fvp-base-armbds
+#                - mustang
+#                - fvp-foundation-armbds
+#                - rtsm_a15mpcore-armbds
+#                - tc2-armbds
+#                - beagle-armbds
         - axis:
             type: user-defined
             name: MX_TYPE
@@ -58,7 +58,7 @@
             type: user-defined
             name: MX_TC
             values:
-#                - 47
+
                 - 48
                 - 49
         - axis:
@@ -99,21 +99,11 @@
             fi
             echo "FIRST_BUILD: ${FIRST_BUILD}"
 
-            # Find the base of the multi-config workspace so we can cache copies
-            # of the git repos there.
-            pushd .
-            while : ; do
-              TT=$(pwd)
-              WS_BASE=$(pwd)
-              TT=$(basename ${TT})
-              [[ "${TT}" != "workspace" ]] || break
-              [[ "${TT}" == "/" ]] && exit 1
-              cd ..
-            done
-            popd
-
+            WS_BASE=$(pwd)
             echo "WS_BASE is: ${WS_BASE}"
             export WS_BASE
+
+            exit;
 
             trap cleanup_exit INT TERM EXIT
 
