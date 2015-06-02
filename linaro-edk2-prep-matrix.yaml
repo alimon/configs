@@ -67,9 +67,7 @@
             values:
                 - docker-utopic
     execution-strategy:
-        combination-filter: |
-            MX_B=="qemu64" && MX_TYPE=="RELEASE" && MX_TC=="48"
-#        sequential: true
+        sequential: true
     wrappers:
         - timestamps
 #        - build-name:
@@ -89,21 +87,10 @@
 
             set -ex
 
-            # Here we check if we are the 'touchstone build. There _MUST_ be only 1 of these, as this is used
-            # to do some per-build setup (initialize reference repository, etc)
-            # This configuration will build first, and by itself. After this is successful, then
-            # other builds can go in parallel.
-            export FIRST_BUILD=0
-            if [ ${MX_B} == "qemu64" && ${MX_TYPE} == "RELEASE" && ${MX_TC} == "48" ]; then
-              export FIRST_BUILD=1
-            fi
-            echo "FIRST_BUILD: ${FIRST_BUILD}"
-
             WS_BASE=$(pwd)
             echo "WS_BASE is: ${WS_BASE}"
-            export WS_BASE
+            ls -al
 
-            exit;
 
             trap cleanup_exit INT TERM EXIT
 
