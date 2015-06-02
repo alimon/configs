@@ -31,7 +31,7 @@
             name: FIP_URL
             default: 'http://releases.linaro.org/15.05/components/kernel/uefi-linaro/release/fvp-base-armbds/fip.bin'
     disabled: false
-    node: kernel_cloud
+    node: build
     child-workspace: .
     display-name: 'LEG Kernel'
     scm:
@@ -54,18 +54,15 @@
             type: slave
             name: label
             values:
-                - kernel_cloud
+                - docker-utopic
     execution-strategy:
         sequential: true
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                - gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
-            node: kernel_cloud
+            node: build
     builders:
         - linaro-publish-token
         - shell: |
@@ -81,14 +78,20 @@
               rm -rf out
             }
 
-            export use_config_fragment=1
-            export MAKE_DTBS=true
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl
+
+            export LANG=C
+            export make_install=true
             export hwpack_type=vexpress64
             export board_types=${DEVICE_TYPE}
             export kernel_flavour=vexpress64
+            export use_config_fragment=1
             export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/vexpress64.conf linaro/configs/distribution.conf linaro/configs/acpi.conf linaro/configs/efi.conf"
+            export MAKE_DTBS=true
             export ARCH=arm64
-            export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz"
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz"
             export rootfs_arch=armv8
             export rootfs_type=lamp
 
@@ -116,9 +119,6 @@
             mv sd.img ${hwpack}-leg-sd.img
             gzip -9 ${hwpack}-leg-sd.img
 
-            mkdir out
-            cp -a builddir-*-${kernel_flavour}/.config out/kernel.config
-            cp -a builddir-*-${kernel_flavour}/arch/arm64/boot/Image out/
             mv hwpack_* out/
             mv ${hwpack}-leg-sd.img.gz out/
             mv *.bin out/
@@ -128,7 +128,10 @@
             EOF
 
             # Publish to snapshots
-            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py out kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}
+            python ${HOME}/bin/linaro-cp.py --make-link kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}
 
             cat << EOF > lava_job_definition_parameters
             IMAGE_URL=http://snapshots.linaro.org/kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}/${hwpack}-leg-sd.img.gz
@@ -222,4 +225,4 @@
               block: true
     publishers:
         - email:
-            recipients: 'graeme.gregory@linaro.org fathi.boudra@linaro.org ilias.biris@linaro.org'
+            recipients: 'graeme.gregory@linaro.org fathi.boudra@linaro.org'
