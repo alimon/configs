@@ -30,10 +30,18 @@
             name: excludecheck
             default: 'gdb'
             description: 'Do not run "make check" on this component'
+        - bool:
+            name: rebuild
+            default: true
+            description: 'Rebuild the toolchain even if results are already on logserver'
         - string:
-            name: GERRIT_BRANCH
+            name: logname
+            default: ''
+            description: 'Logname directory on logserver; leave empty for default'
+        - string:
+            name: abe_branch
             default: refs/heads/master
-            description: 'ABE revision to use'
+            description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64
     concurrent: true
@@ -43,7 +51,7 @@
             url: https://git.linaro.org/toolchain/abe.git
             refspec: +refs/changes/*:refs/remotes/gerrit/changes/*
             branches:
-                - ${GERRIT_BRANCH}
+                - ${abe_branch}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
@@ -52,7 +60,7 @@
             type: slave
             name: label
             values:
-                - tcwg-test
+                - tcwg-x86_64-build
         - axis:
             type: user-defined
             name: target
@@ -89,17 +97,31 @@
               schroot-*)
                 schroot_arch=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\1/")
                 target=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\2/")
-                BUILD_SHELL="schroot -c tcwg-build-${schroot_arch}-trusty --preserve-environment -- bash"
                 ;;
               *)
-                BUILD_SHELL="bash"
+                case $(uname -m) in
+                  x86_64) schroot_arch="amd64" ;;
+                  aarch64) schroot_arch="arm64" ;;
+                  *) echo "Unexpected architecture $(uname -m)"; exit 1 ;;
+                esac
                 ;;
             esac
+            BUILD_SHELL="schroot -c tcwg-build-${schroot_arch}-trusty --preserve-environment -- bash"
 
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} ${try_bootstrap:+ --bootstrap} --runtests ${excludecheck:+ --excludecheck ${excludecheck}} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-test-builder
-    publishers:
-        - email-ext:
-            recipients: 'christophe.lyon@linaro.org'
-            attach-build-log: false
-            matrix-trigger: both
-            always: true
+            if $try_bootstrap; then
+              bootstrap="--bootstrap"
+            else
+              bootstrap=""
+            fi
+
+            if [ x"$logname" != x"" ]; then
+              logname_opt="--logname $logname"
+            fi
+
+            if $rebuild; then
+              norebuild=""
+            else
+              norebuild="--norebuild"
+            fi
+
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap --runtests --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master $logname_opt $norebuild
