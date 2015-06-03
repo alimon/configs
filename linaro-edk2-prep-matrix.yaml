@@ -68,6 +68,9 @@
                 - docker-utopic
     execution-strategy:
         sequential: true
+# Touchstone is used to build "most interesting" board first, and to also
+# key actions that should only be done once per build (such as creating
+# source tarball.
         touchstone:
             expr: 'MX_B=="qemu64" && MX_TYPE=="RELEASE" && MX_TC=="48"'
 
@@ -83,19 +86,10 @@
             #!/bin/bash
 
             export JOB_NAME=linaro-edk2-prep-matrix
-            echo "MX_B: ${MX_B}"
-            echo "MX_TYPE: ${MX_TYPE}"
-            echo "BUILD_NUMBER: ${BUILD_NUMBER}"
-            echo "WORKSPACE: ${WORKSPACE}"
 
             set -ex
             sudo apt-get update
             sudo apt-get install -y python-pycurl zip
-
-            WS_BASE=$(pwd)
-            echo "WS_BASE is: ${WS_BASE}"
-            ls -al
-
 
             trap cleanup_exit INT TERM EXIT
 
