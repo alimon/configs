@@ -120,7 +120,8 @@
             mv ${builddir}/* ${outdir}/gcc-${MX_TC}
             find ${outdir}/ -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
+            find ${outdir}
             # Publish to snapshots
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O linaro-cp.py
-            python ./linaro-cp.py out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+            python ./linaro-cp.py --verbose out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
