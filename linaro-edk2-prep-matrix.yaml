@@ -100,8 +100,8 @@
             {
               cd ${WORKSPACE}
               rm -rf uefi-ci uefi-tools
-            #  rm -rf ${JOB_NAME}-build
-            #  rm -rf out
+              rm -rf ${JOB_NAME}-build
+              rm -rf out
             }
 
             # Use pre-installed linaro toolchain
@@ -116,8 +116,8 @@
             outdir=${WORKSPACE}/out
 
             rm -rf ${outdir}
-            mkdir -p ${outdir}
-            mv ${builddir}/* ${outdir}/
+            mkdir -p ${outdir}/gcc-${MX_TC}
+            mv ${builddir}/* ${outdir}/gcc-${MX_TC}
             find ${outdir}/ -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
             # Publish to snapshots
