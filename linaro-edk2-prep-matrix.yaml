@@ -120,6 +120,17 @@
 
             rm -rf ${outdir}
             mkdir -p ${outdir}/gcc-${MX_TC}
+
+            # move any *orig.tar.bz2 files separately to non-gcc based dir
+            for f in ${builddir}/*orig.tar.bz2; do
+                ## Check if the glob gets expanded to existing files.
+                ## If not, f here will be exactly the pattern above
+                ## and the exists test will evaluate to false.
+                [ -e "$f" ]  || break  # No files exist, $f is glob pattern
+
+                mv ${builddir}/*orig.tar.bz2 ${outdir}/
+                break
+            done
             mv ${builddir}/* ${outdir}/gcc-${MX_TC}
             find ${outdir}/ -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
