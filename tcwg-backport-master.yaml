@@ -76,7 +76,9 @@
             echo "this_number=$gcc_patch_rev" >> compare_results_parameters
         - trigger-builds:
             - project: tcwg-buildfarm-master
-              property-file: gcc_orig_parameters, gcc_patch_parameters
+              parameter-factories:
+                - factory: filebuild
+                  file-pattern: gcc_*_parameters
               block: true
         - trigger-builds:
             - project: tcwg-compare-results
