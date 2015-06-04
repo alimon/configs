@@ -133,10 +133,8 @@
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O linaro-cp.py
             python ./linaro-cp.py --verbose --no-build-info out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters_menu_boot_with_initrd
-              block: true
+        - inject:
+            properties-file: lava_job_definition_parameters
         - shell: |
             #!/bin/bash
 
@@ -168,3 +166,7 @@
             CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_qemu_iscsi_in_kvm.json
             LAVA_SERVER=${LAVA_SERVER}
             EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_qemu_iscsi_in_kvm
+              block: true
