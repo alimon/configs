@@ -1,0 +1,36 @@
+- job:
+    name: trigger-linux-lng-v3.14
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for Linaro Networking Group Kernel v3.14'
+    scm:
+        - git:
+            url: git://git.linaro.org/kernel/linux-linaro-lng.git
+            refspec: +refs/heads/linux-linaro-lng-v3.14:refs/remotes/origin/linux-linaro-lng-v3.14
+            name: origin
+            branches:
+                - refs/heads/linux-linaro-lng-v3.14
+            basedir: '${HOME}/srv/mirror/linux-linaro-lng'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - timed: '@weekly'
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    publishers:
+        - trigger:
+            project: 'linux-lng-v3.14'
