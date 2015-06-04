@@ -86,6 +86,10 @@
             #!/bin/bash
 
             export JOB_NAME=linaro-edk2-prep-matrix
+            pwd
+            echo "JOB_URL: ${JOB_URL}"
+            echo "BUILD_URL: ${BUILD_URL}"
+            echo "WORKSPACE: ${WORKSPACE}"
 
             set -ex
             sudo apt-get update
@@ -168,6 +172,8 @@
             DEVICE_TYPE=${DEVICE_TYPE}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_qemu_iscsi_in_kvm.json
+            CUSTOM_JSON_URL=https://ci.linaro.org/jenkins/job/linaro-edk2-prep-matrix/ws/custom_lava_job_definition_qemu_iscsi_in_kvm.json
+
             LAVA_SERVER=${LAVA_SERVER}
             EOF
         - trigger-builds:
