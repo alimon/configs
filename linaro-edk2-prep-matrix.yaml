@@ -143,6 +143,9 @@
             [ "${MX_B}" == "qemu64" ] || exit 0
             BUILD_TYPE=${MX_TYPE}|tr '[:upper:]' '[:lower:]'
 
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
             DEVICE_TYPE=kvm
             QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/qemu64/QEMU_EFI.fd
 
