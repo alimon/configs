@@ -139,8 +139,9 @@
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [ "${hwpack}" = "vexpress64" ] && cp -a builddir-*-${kernel_flavour}/.config kernel.config
             cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
+            mv hwpack_linaro-${hwpack_type}* out/
 
-            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-tracking-ll/${hwpack}/${BUILD_NUMBER}
+            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-tracking-llct/${hwpack}/${BUILD_NUMBER}
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
