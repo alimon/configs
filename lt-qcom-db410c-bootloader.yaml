@@ -94,6 +94,17 @@
             wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/persist.img.tar.xz"
             wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/cache.img.tar.xz"
             for f in *.img.tar.xz; do tar xf $f; done
+
+            cat << EOF >> os.json
+            {
+            "name": "Android for Dragonboard 410c",
+            "url": "http://builds.96boards.org/releases/dragonboard410c",
+            "version": "15.05",
+            "release_date": "2015-06-04",
+            "description": "Android release for Dragonboard 410c",
+            }
+            EOF
+
             cd ../emmc_linux
             export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-ubuntu-images-arm64/lastSuccessfulBuild/buildNumber`
             export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-ubuntu-images-arm64/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
@@ -101,6 +112,20 @@
             wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/boot-linaro-vivid-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O boot.img.gz
             wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/linaro-vivid-gnome-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O rootfs.img.gz
             gunzip *.img.gz
+
+            cat << EOF >> os.json
+            {
+            "name": "Linaro Linux for Dragonboard 410c",
+            "url": "http://builds.96boards.org/releases/dragonboard410c",
+            "version": "15.05",
+            "release_date": "2015-06-04",
+            "description": "Linaro Linux based on Ubuntu 15.04 for Dragonboard 410c",
+            }
+            EOF
+
+            cd ../sd_install
+            # quick hack for now, need to create the proper job that builds the initrd
+            wget --progress=dot -e dotbytes=2M http://people.linaro.org/~nicolas.dechesne/boot-burn.img
             cd ..
             ./build
 
