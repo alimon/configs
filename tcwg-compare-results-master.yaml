@@ -1,0 +1,97 @@
+- job:
+    name: tcwg-compare-results-master
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+                - job-workspace
+    parameters:
+        - string:
+            name: ref_logs
+            default: buildfarm/gcc-linaro-5-branch
+            description: 'Reference log directory on $logserver'
+        - string:
+            name: new_logs
+            default: buildfarm/gcc-linaro-5-branch
+            description: 'Log directory on $logserver'
+        - string:
+            name: logserver
+            default: ex40-01.tcwglab.linaro.org:logs-master
+            description: 'Logserver'
+        - string:
+            name: abe_branch
+            default: refs/heads/master
+            description: 'ABE revision to test'
+    disabled: false
+    node: tcwg-x86_64-01
+    display-name: 'Compare results -- Master'
+    scm:
+        - git:
+            url: https://git.linaro.org/toolchain/abe.git
+            refspec: +refs/changes/*:refs/remotes/gerrit/changes/*
+            branches:
+                - ${abe_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    wrappers:
+        - timeout:
+            timeout: 60
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            user: 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="ref_logs"}-${ENV,var="new_logs"}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            trap "ssh ${logserver} rm -rf ${dest}" 0 1 2 3 5 9 13 15
+
+            basedir="${logserver#*:}"
+            logserver="${logserver%:*}"
+
+            status=0
+
+            dest=/tmp/CompareResults.$$
+
+            LOGSDIR=${WORKSPACE}/artifacts/logs
+
+            mkdir -p ${LOGSDIR}
+
+            ssh ${logserver} mkdir -p ${dest}
+            scp ./scripts/compare_jobs.sh \
+                ./scripts/compare_tests \
+                ./scripts/compare_dg_tests.pl \
+                ./scripts/unstable-tests.txt ${logserver}:${dest} || status=1
+            ssh ${logserver} bash ${dest}/compare_jobs.sh \
+                $basedir/$ref_logs $basedir/$new_logs || status=1
+
+            # Copy the generated reports
+            scp ${logserver}:${dest}/diff-*.txt ${LOGSDIR}
+            scp ${logserver}:${dest}/*.xml ${LOGSDIR}
+            sed -i ${LOGSDIR}/report0.xml -e "s|BUILD_URL|${BUILD_URL}|"
+
+            # Print results in console, in case Jenkins doesn't have the XML
+            # report plugin.
+            cat ${LOGSDIR}/*.txt
+
+            ssh ${logserver} rm -rf ${dest}
+
+            exit $status
+    publishers:
+        - archive:
+            artifacts: 'artifacts/logs/*.xml,artifacts/logs/*.txt'
+            latest-only: true
