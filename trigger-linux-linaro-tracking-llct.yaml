@@ -1,0 +1,33 @@
+- job:
+    name: trigger-linux-linaro-tracking-llct
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for Linux Linaro Kernel (llct)'
+    scm:
+        - git:
+            url: git://git.linaro.org/kernel/linux-linaro-tracking.git
+            refspec: +refs/heads/linux-linaro-core-tracking:refs/remotes/origin/linux-linaro-core-tracking
+            name: origin
+            branches:
+                - refs/heads/linux-linaro-core-tracking
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - trigger-builds:
+            - project: 'linux-linaro-tracking-llct'
