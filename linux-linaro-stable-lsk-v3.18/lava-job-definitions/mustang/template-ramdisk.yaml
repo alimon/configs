@@ -14,6 +14,14 @@ actions:
     git branch: '${GIT_BRANCH}'
     git commit: '${GIT_COMMIT}'
 - command: boot_linaro_image
+- command: lava_test_shell
+  parameters:
+    timeout: 2700
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      parameters:
+        DeviceID: /dev/sda
+      testdef: ubuntu/fio-test.yaml
 - command: submit_results
   parameters:
     server: 'http://${LAVA_SERVER}'
