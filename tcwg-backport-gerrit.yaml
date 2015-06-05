@@ -62,7 +62,7 @@
 
             gcc_patch=$GERRIT_PATCHSET_REVISION
             gcc_orig=gcc_patch_prev
-            abe_branch=2936857a99b4dbad5d7d241ccf8e171ec909b4a9
+            abe_branch=269ce56a8ebb390d0df81f795043d18556e8eb4d
 
             gcc_patch_rev=$(git rev-parse $gcc_patch)
             if [ x"$gcc_orig" = x"gcc_patch_prev" ]; then
@@ -71,19 +71,18 @@
             gcc_orig_rev=$(git rev-parse $gcc_orig)
 
             echo "gcc_branch=gcc.git@$gcc_orig_rev" > gcc_orig_parameters
-            echo "logname=gcc-$gcc_orig_rev" >> gcc_orig_parameters
+            echo "log_name=gcc-$gcc_orig_rev" >> gcc_orig_parameters
             echo "rebuild=false" >> gcc_orig_parameters
             echo "abe_branch=$abe_branch" >> gcc_orig_parameters
 
             echo "gcc_branch=gcc.git@$gcc_patch_rev" > gcc_patch_parameters
-            echo "logname=gcc-$gcc_patch_rev" >> gcc_patch_parameters
+            echo "log_name=gcc-$gcc_patch_rev" >> gcc_patch_parameters
             echo "rebuild=false" >> gcc_patch_parameters
             echo "abe_branch=$abe_branch" >> gcc_patch_parameters
 
-            echo "reference_job_name=tcwg-buildfarm-master" > compare_results_parameters
-            echo "reference_number=$gcc_orig_rev" >> compare_results_parameters
-            echo "this_job_name=tcwg-buildfarm-master" >> compare_results_parameters
-            echo "this_number=$gcc_patch_rev" >> compare_results_parameters
+            echo "ref_logs=gcc-$gcc_orig_rev" > compare_results_parameters
+            echo "new_logs=gcc-$gcc_patch_rev" >> compare_results_parameters
+            echo "abe_branch=$abe_branch" >> compare_results_parameters
         - trigger-builds:
             - project: tcwg-buildfarm-test-builder
               parameter-factories:
@@ -91,6 +90,6 @@
                   file-pattern: gcc_*_parameters
               block: true
         - trigger-builds:
-            - project: tcwg-compare-results
+            - project: tcwg-compare-results-master
               property-file: compare_results_parameters
               block: true
