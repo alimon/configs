@@ -70,10 +70,9 @@
             echo "rebuild=false" >> gcc_patch_parameters
             echo "abe_branch=$abe_branch" >> gcc_patch_parameters
 
-            echo "reference_job_name=tcwg-buildfarm-master" > compare_results_parameters
-            echo "reference_number=$gcc_orig_rev" >> compare_results_parameters
-            echo "this_job_name=tcwg-buildfarm-master" >> compare_results_parameters
-            echo "this_number=$gcc_patch_rev" >> compare_results_parameters
+            echo "ref_logs=gcc-$gcc_orig_rev" > compare_results_parameters
+            echo "new_logs=gcc-$gcc_patch_rev" >> compare_results_parameters
+            echo "abe_branch=$abe_branch" >> compare_results_parameters
         - trigger-builds:
             - project: tcwg-buildfarm-master
               parameter-factories:
@@ -81,6 +80,6 @@
                   file-pattern: gcc_*_parameters
               block: true
         - trigger-builds:
-            - project: tcwg-compare-results
+            - project: tcwg-compare-results-master
               property-file: compare_results_parameters
               block: true
