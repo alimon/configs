@@ -10,6 +10,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
             linaro:
                 - job-read
                 - job-extended-read
@@ -73,7 +74,6 @@
 # source tarball.
         touchstone:
             expr: 'MX_B=="qemu64" && MX_TYPE=="RELEASE" && MX_TC=="48"'
-
     wrappers:
         - timestamps
 #        - build-name:
@@ -92,8 +92,12 @@
             echo "WORKSPACE: ${WORKSPACE}"
 
             set -ex
+
             sudo apt-get update
-            sudo apt-get install -y python-pycurl zip
+            sudo apt-get install -y acpica-tools python-pycurl zip
+            wget --progress=dot -e dotbytes=2M http://ftp.de.debian.org/debian/pool/main/a/acpica-unix/acpica-tools_20150515-2_amd64.deb -O acpica-tools_20150515-2_amd64.deb
+            sudo dpkg -i --force-all acpica-tools_*.deb
+            rm -f acpica-tools_*.deb
 
             trap cleanup_exit INT TERM EXIT
 
