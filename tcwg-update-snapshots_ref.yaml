@@ -1,6 +1,6 @@
 - job:
     name: tcwg-update-snapshots_ref
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     logrotate:
         daysToKeep: 30
@@ -13,6 +13,11 @@
             linaro:
                 - job-build
                 - job-cancel
+    parameters:
+        - bool:
+            name: regenerate
+            default: false
+            description: 'Regenerate snapshots from scratch'
     disabled: false
     node: tcwg-x86_64-01
     display-name: 'Update reference ABE snapshots on TCWG machines'
@@ -21,13 +26,21 @@
     scm:
         - git:
             url: https://git.linaro.org/toolchain/abe.git
-            refspec: +refs/heads/maxim:refs/remotes/origin/maxim
-            name: origin
+            refspec: +refs/changes/*:refs/remotes/gerrit/changes/*
             branches:
                 - refs/heads/maxim
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-01
+                - tcwg-x86_64-build-01
+    execution-strategy:
+        sequential: false
     wrappers:
         - timeout:
             timeout: 60
@@ -37,18 +50,25 @@
             user: 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: tcwg-x86_64-01
     builders:
         - shell: |
             #!/bin/bash
 
-            trap cleanup_exit INT TERM EXIT
+            if $regenerate; then
+              opts=""
+            else
+              opts="-r"
+            fi
 
-            cleanup_exit()
-            {
-              cd ${WORKSPACE}
-            }
+            case "$slave" in
+              tcwg-x86_64-01)
+                machines="$(for i in 2 4 5 6 7 8 9; do echo tcwg-ex40-0$i; done) r1-a7.aus-colo r1-a8.aus-colo"
+                ;;
+              tcwg-x86_64-build-01)
+                machines="$(for i in 1 6; do echo build-0$i.tcwglab; done) $(for i in 1 3; do echo aarch64-0$i.tcwglab; done)"
+                ;;
+            esac
 
-            ./scripts/update-snapshots-ref.sh -r -v $(for i in `seq 2 9`; do echo tcwg-ex40-0$i; done) r1-a7.aus-colo r1-a8.aus-colo
-    publishers:
-        - email:
-            recipients: 'maxim.kuvyrkov@linaro.org'
+            ./scripts/update-snapshots-ref.sh -v $opts $machines
