@@ -43,7 +43,7 @@
             default: refs/heads/master
             description: 'ABE revision to test'
     disabled: false
-    node: tcwg-x86_64
+    node: tcwg-x86_64-01
     concurrent: true
     display-name: 'TCWG BuildFarm master'
     scm:
@@ -125,6 +125,3 @@
             fi
 
             ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap --runtests --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master $logname_opt $norebuild
-    publishers:
-        - email:
-            recipients: 'christophe.lyon@linaro.org'
