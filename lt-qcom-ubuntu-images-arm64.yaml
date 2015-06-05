@@ -61,6 +61,7 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - linaro-publish-token
+            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -187,6 +188,12 @@
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
 
+              # add license file in the generated rootfs
+              wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt  -O rootfs/etc/license.txt
+
+              # add Adreno firmware
+              wget -qO- http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150507/a300_fw.tar.gz | tar xv -C rootfs/lib/firmware
+
               sudo make_ext4fs -o -L rootfs -l 6800M -s out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
               sudo umount rootfs
               sudo kpartx -dv out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
@@ -229,7 +236,11 @@
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            python ${HOME}/bin/linaro-cp.py out ubuntu/pre-built/snapdragon-arm64/${BUILD_NUMBER}
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-ubuntu-images-arm64/build-info/template.txt -O out/BUILD-INFO.txt
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info out/BUILD-INFO.txt \
+              out snapshots/dragonboard410c/ubuntu/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
