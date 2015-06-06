@@ -97,6 +97,7 @@
             echo "JOB_URL: ${JOB_URL}"
             echo "BUILD_URL: ${BUILD_URL}"
             echo "WORKSPACE: ${WORKSPACE}"
+            echo "BUILD_NUMBER: ${BUILD_NUMBER}"
 
             set -ex
 
@@ -154,9 +155,12 @@
         - shell: |
             #!/bin/bash
 
+            echo "BUILD_NUMBER: ${BUILD_NUMBER}"
+
             # Test only valid for qemu64
             [ "${MX_B}" == "qemu64" ] || exit 0
-            BUILD_TYPE=${MX_TYPE}|tr '[:upper:]' '[:lower:]'
+            # Convert MX_TYPE to lower case for use in path
+            BUILD_TYPE="${MX_TYPE,,}"
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
