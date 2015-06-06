@@ -310,5 +310,14 @@
               property-file: post_build_lava_parameters_qemu_aarch64_uefi
               block: true
     publishers:
+        - groovy-postbuild: |
+            def matcher = manager.getLogMatcher("^fail\t.*")
+            if (matcher.matches()) {
+              resultFailCount = matcher.group(0).split("\t")[1].toInteger()
+              log resultFailCount
+              if (resultFailCount > 0) {
+                manager.buildUnstable()
+              }
+            }
         - email:
             recipients: 'leif.lindholm@linaro.org fathi.boudra@linaro.org'
