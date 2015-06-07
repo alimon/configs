@@ -1,6 +1,6 @@
 - job:
     name: linaro-edk2-prep
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     logrotate:
         daysToKeep: 30
@@ -29,8 +29,12 @@
         - string:
             name: INITRD_URL
             default: 'http://releases.linaro.org/14.12/openembedded/images/minimal-initramfs-armv8/linaro-image-minimal-initramfs-genericarmv8-20141212-729.rootfs.cpio.gz'
+        - string:
+            name: PUB_DEST
+            default: 'components/kernel/linaro-edk2-prep/${AARCH64_TOOLCHAIN}/${BUILD_NUMBER}'
     disabled: false
     node: build
+    child-workspace: .
     display-name: 'Linaro EDK II - UEFI Continuous Integration (pre-release)'
     scm:
         - git:
@@ -46,10 +50,26 @@
             wipe-workspace: false
     triggers:
         - pollscm: 'H/5 * * * *'
+    axes:
+        - axis:
+            type: user-defined
+            name: AARCH64_TOOLCHAIN
+            values:
+                - GCC48
+                - GCC49
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+    execution-strategy:
+        sequential: true
     wrappers:
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: build
     builders:
         - linaro-publish-token
         - shell: |
@@ -63,18 +83,20 @@
             {
               cd ${WORKSPACE}
               rm -rf uefi-ci uefi-tools
-              rm -rf ${JOB_NAME}-build
+              rm -rf linaro-edk2-prep-build
               rm -rf out
             }
 
             # Use pre-installed linaro toolchain
-            export PATH="${HOME}/srv/toolchain/arm-tc-14.04/bin:${HOME}/srv/toolchain/arm64-tc-14.04/bin:$PATH"
+            [ ${AARCH64_TOOLCHAIN} == "GCC48" ] && export PATH="${HOME}/srv/toolchain/arm-tc-14.04/bin:${HOME}/srv/toolchain/arm64-tc-14.04/bin:$PATH"
+            [ ${AARCH64_TOOLCHAIN} == "GCC49" ] && export PATH="${HOME}/srv/toolchain/arm-tc-15.02/bin:${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
+            export AARCH32_TOOLCHAIN=${AARCH64_TOOLCHAIN}
 
             git clone git://git.linaro.org/uefi/uefi-tools.git
             git clone git://git.linaro.org/ci/uefi.git uefi-ci
-            bash -x uefi-ci/uefi.sh
+            JOB_NAME=linaro-edk2-prep bash -x uefi-ci/uefi.sh
 
-            builddir=${WORKSPACE}/${JOB_NAME}-build
+            builddir=${WORKSPACE}/linaro-edk2-prep-build
             outdir=${WORKSPACE}/out
             mkdir -p ${outdir}
             mv ${builddir}/* ${outdir}/
@@ -85,7 +107,8 @@
             Image console=ttyAMA0 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
             EOF
 
-            ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py out ${PUB_DEST}
+            python ${HOME}/bin/linaro-cp.py --make-link ${PUB_DEST}
 
             IMAGE_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/linux-leg/lastSuccessfulBuild/buildNumber`
             cat << EOF > lava_job_definition_parameters
@@ -95,8 +118,8 @@
         - inject:
             properties-file: lava_job_definition_parameters
         - shell: |
-            BL1_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp-base-armbds/bl1.bin
-            FIP_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp-base-armbds/fip.bin
+            BL1_URL=https://snapshots.linaro.org/${PUB_DEST}/release/fvp-base-armbds/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/${PUB_DEST}/release/fvp-base-armbds/fip.bin
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
@@ -128,8 +151,8 @@
               property-file: post_build_lava_parameters_grub_install
               block: true
         - shell: |
-            BL1_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp-base-armbds/bl1.bin
-            FIP_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp-base-armbds/fip.bin
+            BL1_URL=https://snapshots.linaro.org/${PUB_DEST}/release/fvp-base-armbds/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/${PUB_DEST}/release/fvp-base-armbds/fip.bin
 
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
@@ -158,8 +181,8 @@
               property-file: post_build_lava_parameters_startup_boot
               block: true
         - shell: |
-            BL1_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp-base-armbds/bl1.bin
-            FIP_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp-base-armbds/fip.bin
+            BL1_URL=https://snapshots.linaro.org/${PUB_DEST}/release/fvp-base-armbds/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/${PUB_DEST}/release/fvp-base-armbds/fip.bin
 
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
@@ -188,8 +211,8 @@
               property-file: post_build_lava_parameters_menu_boot
               block: true
         - shell: |
-            BL1_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp-base-armbds/bl1.bin
-            FIP_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/fvp-base-armbds/fip.bin
+            BL1_URL=https://snapshots.linaro.org/${PUB_DEST}/release/fvp-base-armbds/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/${PUB_DEST}/release/fvp-base-armbds/fip.bin
 
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
@@ -219,7 +242,7 @@
               block: true
         - shell: |
             DEVICE_TYPE=kvm
-            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/qemu64/QEMU_EFI.fd
+            QEMU_EFI_URL=https://snapshots.linaro.org/${PUB_DEST}/release/qemu64/QEMU_EFI.fd
 
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
@@ -248,7 +271,7 @@
               block: true
         - shell: |
             DEVICE_TYPE=kvm
-            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/debug/qemu64/debug-QEMU_EFI.fd
+            QEMU_EFI_URL=https://snapshots.linaro.org/${PUB_DEST}/debug/qemu64/debug-QEMU_EFI.fd
 
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
@@ -277,9 +300,9 @@
               block: true
         - shell: |
             DEVICE_TYPE=qemu-aarch64
-            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/release/qemu64/QEMU_EFI.img.gz
+            QEMU_EFI_URL=https://snapshots.linaro.org/${PUB_DEST}/release/qemu64/QEMU_EFI.img.gz
             QEMU_PFLASH_URL=http://people.linaro.org/~fu.wei/LAVA/test/QEMU/flash1.uefishell.qemu.gz
-            STARTUP_NSH=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/startup-qemu-aarch64.nsh
+            STARTUP_NSH=https://snapshots.linaro.org/${PUB_DEST}/startup-qemu-aarch64.nsh
 
             BUNDLE_STREAM_NAME=/anonymous/debug/
             LAVA_SERVER=staging.validation.linaro.org/RPC2/
@@ -312,7 +335,7 @@
     publishers:
         - groovy-postbuild: |
             def matcher = manager.getLogMatcher("^fail\t.*")
-            if (matcher.matches()) {
+            if (matcher?.matches()) {
               resultFailCount = matcher.group(0).split("\t")[1].toInteger()
               if (resultFailCount > 0) {
                 manager.buildUnstable()
