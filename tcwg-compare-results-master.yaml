@@ -18,15 +18,15 @@
         - string:
             name: ref_logs
             default: buildfarm/gcc-linaro-5-branch
-            description: 'Reference log directory on $logserver'
+            description: 'Reference log directory on $log_server'
         - string:
             name: new_logs
             default: buildfarm/gcc-linaro-5-branch
-            description: 'Log directory on $logserver'
+            description: 'Log directory on $log_server'
         - string:
-            name: logserver
+            name: log_server
             default: ex40-01.tcwglab.linaro.org:logs-master
-            description: 'Logserver'
+            description: 'Log_Server'
         - string:
             name: abe_branch
             default: refs/heads/master
@@ -59,10 +59,10 @@
             set -e
             set -x
 
-            trap "ssh ${logserver} rm -rf ${dest}" 0 1 2 3 5 9 13 15
+            trap "ssh ${log_server} rm -rf ${dest}" 0 1 2 3 5 9 13 15
 
-            basedir="${logserver#*:}"
-            logserver="${logserver%:*}"
+            basedir="${log_server#*:}"
+            log_server="${log_server%:*}"
 
             status=0
 
@@ -72,24 +72,24 @@
 
             mkdir -p ${LOGSDIR}
 
-            ssh ${logserver} mkdir -p ${dest}
+            ssh ${log_server} mkdir -p ${dest}
             scp ./scripts/compare_jobs.sh \
                 ./scripts/compare_tests \
                 ./scripts/compare_dg_tests.pl \
-                ./scripts/unstable-tests.txt ${logserver}:${dest} || status=1
-            ssh ${logserver} bash ${dest}/compare_jobs.sh \
+                ./scripts/unstable-tests.txt ${log_server}:${dest} || status=1
+            ssh ${log_server} bash ${dest}/compare_jobs.sh \
                 $basedir/$ref_logs $basedir/$new_logs || status=1
 
             # Copy the generated reports
-            scp ${logserver}:${dest}/diff-*.txt ${LOGSDIR}
-            scp ${logserver}:${dest}/*.xml ${LOGSDIR}
+            scp ${log_server}:${dest}/diff-*.txt ${LOGSDIR}
+            scp ${log_server}:${dest}/*.xml ${LOGSDIR}
             sed -i ${LOGSDIR}/report0.xml -e "s|BUILD_URL|${BUILD_URL}|"
 
             # Print results in console, in case Jenkins doesn't have the XML
             # report plugin.
             cat ${LOGSDIR}/*.txt
 
-            ssh ${logserver} rm -rf ${dest}
+            ssh ${log_server} rm -rf ${dest}
 
             exit $status
     publishers:
