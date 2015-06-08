@@ -139,6 +139,7 @@
                 [ -e "$f" ]  || break  # No files exist, $f is glob pattern
 
                 mv ${builddir}/*orig.tar.bz2 ${outdir}/
+                echo -e 'Format-Version: 0.5\n\nFiles-Pattern: *\nLicense-Type: open\n' > ${outdir}/BUILD-INFO.txt
                 break
             done
             mv ${builddir}/* ${outdir}/gcc-${MX_TC}
@@ -147,7 +148,7 @@
             touch lava_job_definition_parameters
             # Publish to snapshots
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O linaro-cp.py
-            python ./linaro-cp.py --verbose out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+            python ./linaro-cp.py --verbose --no-build-info out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
         - inject:
             properties-file: lava_job_definition_parameters
