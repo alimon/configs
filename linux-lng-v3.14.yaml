@@ -141,8 +141,28 @@
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
+            mkdir -p out/lava
+
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack_type}* out/
+
+            # Generate LAVA job definitions
+            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14/${hwpack}/${BUILD_NUMBER}"
+            DTB_URL=${KERNEL_URL}/dtbs
+            [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename)"
+            STARTUP_NSH="${KERNEL_URL}/startup.nsh"
+
+            export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
+            export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-armv7a-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-genericarmv7a-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+
+            ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template.yaml > out/lava/template.json
+
+            export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
+            export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-armv7ab-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-genericarmv7ab-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+
+            ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > out/lava/template-be.json
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
