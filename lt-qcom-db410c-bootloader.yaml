@@ -83,8 +83,8 @@
             # record commit info in build log
             git log
 
-            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/96boards-dragonboard410c-android/lastSuccessfulBuild/buildNumber`
-            export ROOTFS_BUILD_URL="http://builds.96boards.org/snapshots/dragonboard410c/android/${ROOTFS_BUILD_NUMBER}"
+            export ANDROID_ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/96boards-dragonboard410c-android/lastSuccessfulBuild/buildNumber`
+            export ROOTFS_BUILD_URL="http://builds.96boards.org/snapshots/dragonboard410c/android/${ANDROID_ROOTFS_BUILD_NUMBER}"
 
             cd emmc_android
             wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/boot.img.tar.xz"
@@ -97,7 +97,7 @@
 
             cat << EOF >> os.json
             {
-            "name": "Android for Dragonboard 410c",
+            "name": "Android for Dragonboard 410c - Build #${ANDROID_ROOTFS_BUILD_NUMBER}",
             "url": "http://builds.96boards.org/releases/dragonboard410c",
             "version": "15.05",
             "release_date": "2015-06-04",
@@ -115,11 +115,11 @@
 
             cat << EOF >> os.json
             {
-            "name": "Linaro Linux for Dragonboard 410c",
+            "name": "Linaro Linux Desktop for Dragonboard 410c - Build #${ROOTFS_BUILD_NUMBER}",
             "url": "http://builds.96boards.org/releases/dragonboard410c",
             "version": "15.05",
             "release_date": "2015-06-04",
-            "description": "Linaro Linux based on Ubuntu 15.04 for Dragonboard 410c"
+            "description": "Linaro Linux with Gnome desktop based on Ubuntu 15.04 for Dragonboard 410c"
             }
             EOF
 
@@ -129,11 +129,19 @@
             cd ..
             ./build
 
-            # Final preparation for publishing
+            # add license.txt file
+            wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
+            for d in sd_card_install_ubuntu sd_card_install_android sd_card_rescue bootloader_emmc_linux bootloader_emmc_android; do
+              cp license.txt out/dragonboard410c_$d
+            done
+
+            # Final preparation of archives for publishing
             mkdir out-bootloader out-pre-built
-            # export SD images separately from bootloaders
-            mv out/*sd_card_install*.zip out-pre-built/
-            mv out/*.zip out-bootloader/
+            zip -rj out-pre-built/dragonboard410c_sd_card_install_ubuntu-${BUILD_NUMBER}-${ROOTFS_BUILD_NUMBER}.zip out/dragonboard410c_sd_card_install_ubuntu
+            zip -rj out-pre-built/dragonboard410c_sd_card_install_android-${BUILD_NUMBER}-${ANDROID_ROOTFS_BUILD_NUMBER}.zip out/dragonboard410c_sd_card_install_android
+            zip -rj out-pre-built/dragonboard410c_sd_card_rescue-${BUILD_NUMBER}.zip out/dragonboard410c_sd_card_rescue
+            zip -rj out-bootloader/dragonboard410c_bootloader_emmc_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_linux
+            zip -rj out-bootloader/dragonboard410c_bootloader_emmc_android-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_android
 
             # Create MD5SUMS file
             (cd out-pre-built && md5sum * > MD5SUMS.txt)
