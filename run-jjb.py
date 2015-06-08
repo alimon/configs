@@ -11,8 +11,9 @@ from distutils.spawn import find_executable
 jjb_cmd = find_executable('jenkins-jobs') or sys.exit('jenkins-jobs is not found.')
 
 try:
-    arguments = ['git', 'diff-tree', '--no-commit-id', '--name-only',
-                 '--diff-filter=AM', '-r', os.environ.get('GIT_COMMIT')]
+    arguments = ['git', 'diff', '--name-only',
+                 os.environ.get('GIT_PREVIOUS_COMMIT'),
+                 os.environ.get('GIT_COMMIT')]
     proc = subprocess.Popen(arguments,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
