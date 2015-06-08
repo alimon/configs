@@ -69,7 +69,6 @@
             {
               cd ${WORKSPACE}
               rm -rf builddir*
-              rm -rf out
               rm -f hwpack_linaro-* *.deb
             }
 
@@ -142,16 +141,44 @@
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
             mkdir -p out/lava
-
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack_type}* out/
 
-            # Generate LAVA job definitions
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14/${hwpack}/${BUILD_NUMBER}"
             DTB_URL=${KERNEL_URL}/dtbs
             [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename)"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            # Create post-build-lava parameters
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
+            DTB_URL=${DTB_URL}
+            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
+            STARTUP_NSH=${STARTUP_NSH}
+            hwpack_type=${hwpack_type}
+            EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out
+            }
+
+            # Generate LAVA job definitions
             export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
             export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-armv7a-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-genericarmv7a-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
@@ -169,9 +196,6 @@
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py out kernel-hwpack/linux-linaro-lng-v3.14/${hwpack}/${BUILD_NUMBER}
             python ${HOME}/bin/linaro-cp.py --make-link kernel-hwpack/linux-linaro-lng-v3.14/${hwpack}/${BUILD_NUMBER}
-
-            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
-            CCACHE_DIR=${CCACHE_DIR} ccache -s
     publishers:
         - warnings:
             console-log-parsers:
