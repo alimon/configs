@@ -41,7 +41,6 @@
                 - beaglebone
                 - mustang
                 - panda
-                - panda-be
                 - vexpress
                 - vexpress-be
                 - vexpress64
@@ -98,13 +97,6 @@
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/arndale.conf"
                 export DEVICE_TYPE="arndale"
                 ;;
-              arndale-be)
-                export hwpack_type="lsk-arndale-be"
-                export board_types="arndale"
-                export kernel_flavour="lsk-arndale-be"
-                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/arndale.conf linaro/configs/bigendian.conf"
-                export DEVICE_TYPE="arndale"
-                ;;
               beaglebone)
                 export hwpack_type="beaglebone"
                 export board_types="beaglebone-black"
@@ -128,13 +120,6 @@
                 export board_types="panda-es"
                 export kernel_flavour="omap"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/omap4.conf"
-                export DEVICE_TYPE="panda-es"
-                ;;
-              panda-be)
-                export hwpack_type="lsk-panda-be"
-                export board_types="panda-es"
-                export kernel_flavour="lsk-omap-be"
-                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/omap4.conf linaro/configs/bigendian.conf"
                 export DEVICE_TYPE="panda-es"
                 ;;
               vexpress)
@@ -228,7 +213,7 @@
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.14-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
-              arndale-be|panda-be|vexpress-be)
+              vexpress-be)
                 # Get rootfs URL
                 export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildNumber`
                 export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
