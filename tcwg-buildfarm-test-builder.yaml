@@ -38,6 +38,10 @@
             name: log_name
             default: ''
             description: 'Logname directory on logserver; leave empty for default'
+        - bool:
+            name: dont_fail
+            default: false
+            description: 'Do not fail the build'
         - string:
             name: abe_branch
             default: refs/heads/master
@@ -124,4 +128,10 @@
               norebuild="--norebuild"
             fi
 
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap --runtests --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master $logname_opt $norebuild
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap --runtests --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master $logname_opt $norebuild || result="$?"
+
+            echo "Result of jenkins.sh: $result"
+            if $dont_fail; then
+              result="0"
+            fi
+            exit $result
