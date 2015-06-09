@@ -176,7 +176,10 @@
             echo "BUILD_NUMBER: ${BUILD_NUMBER}"
 
             # Test only valid for qemu64
-            [ "${MX_B}" == "qemu64" ] || exit 0
+            if [ "${MX_B}" != "qemu64" ]; then
+               touch post_build_lava_parameters_qemu_iscsi_in_kvm
+               exit 0
+            fi
             # Convert MX_TYPE to lower case for use in path
             BUILD_TYPE="${MX_TYPE,,}"
 
@@ -247,7 +250,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-grub-install.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/rtsm_fvp_base-aemv8a/template-grub-install.json \
                 > custom_lava_job_definition_grub_install.json
 
             cat << EOF > post_build_lava_parameters_grub_install
@@ -286,7 +289,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-startup-boot.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/rtsm_fvp_base-aemv8a/template-startup-boot.json \
                 > custom_lava_job_definition_startup_boot.json
 
             cat << EOF > post_build_lava_parameters_startup_boot
@@ -325,7 +328,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-menu-boot.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/rtsm_fvp_base-aemv8a/template-menu-boot.json \
                 > custom_lava_job_definition_menu_boot.json
 
             cat << EOF > post_build_lava_parameters_menu_boot
@@ -364,7 +367,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-menu-boot-with-initrd.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/rtsm_fvp_base-aemv8a/template-menu-boot-with-initrd.json \
                 > custom_lava_job_definition_menu_boot_with_initrd.json
 
             cat << EOF > post_build_lava_parameters_menu_boot_with_initrd
