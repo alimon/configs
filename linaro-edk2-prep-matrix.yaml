@@ -145,14 +145,17 @@
             mv ${builddir}/* ${outdir}/gcc-${MX_TC}
             find ${outdir}/ -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
-            if [ ${MX_B} == "qemu64" ]; then
-               cat << EOF > out/startup-qemu-aarch64.nsh
-               echo "The default boot selection will start in"
-               Image console=ttyAMA0 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
-               EOF
+            if [ "${MX_B}" == "qemu64" ]; then
+               echo "The default boot selection will start in" > out/startup-qemu-aarch64.nsh
+               echo "Image console=ttyAMA0 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel" >> out/startup-qemu-aarch64.nsh
             fi
 
-            touch lava_job_definition_parameters
+            IMAGE_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/linux-leg/lastSuccessfulBuild/buildNumber`
+            cat << EOF > lava_job_definition_parameters
+            IMAGE_URL=http://snapshots.linaro.org/kernel-hwpack/linux-leg-vexpress64/${IMAGE_BUILD_NUMBER}/vexpress64-leg-sd.img.gz
+            STARTUP_NSH=http://snapshots.linaro.org/kernel-hwpack/linux-leg-vexpress64/${IMAGE_BUILD_NUMBER}/startup.nsh
+            EOF
+
             # Publish to snapshots
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O linaro-cp.py
             python ./linaro-cp.py --verbose --no-build-info out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
