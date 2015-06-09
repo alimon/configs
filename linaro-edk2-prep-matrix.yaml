@@ -47,15 +47,15 @@
             name: MX_B
             values:
                 - qemu64
-                - qemu
-                - fvp-foundation-armbds
-                - juno-armbds
                 - fvp-base-armbds
-                - mustang
-                - rtsm_a15mpcore-armbds
-                - tc2-armbds
-                - beagle-armbds
-                - xen64
+#                - qemu
+#                - fvp-foundation-armbds
+#                - juno-armbds
+#                - mustang
+#                - rtsm_a15mpcore-armbds
+#                - tc2-armbds
+#                - beagle-armbds
+#                - xen64
         - axis:
             type: user-defined
             name: MX_TYPE
@@ -98,6 +98,9 @@
             echo "BUILD_URL: ${BUILD_URL}"
             echo "WORKSPACE: ${WORKSPACE}"
             echo "BUILD_NUMBER: ${BUILD_NUMBER}"
+
+            # Create lower case debug/release string for use in paths
+            BUILD_TYPE="${MX_TYPE,,}"
 
             set -ex
 
@@ -146,7 +149,7 @@
             find ${outdir}/ -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
             if [ "${MX_B}" == "qemu64" ]; then
-               echo "The default boot selection will start in" > out/startup-qemu-aarch64.nsh
+               echo "The default boot selection will start in" > out/gcc-${MX_TC}/${BUILD_TYPE}/qemu64/startup-qemu-aarch64.nsh
                echo "Image console=ttyAMA0 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel" >> out/startup-qemu-aarch64.nsh
             fi
 
@@ -382,8 +385,6 @@
             DEVICE_TYPE=qemu-aarch64
             QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/qemu64/${PREFIX}QEMU_EFI.img.gz
             STARTUP_NSH=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/qemu64/startup-qemu-aarch64.nsh
-
-            # TODO - not sure where startup-qemu-aarch64.nsh is supposed to come from.
 
             QEMU_PFLASH_URL=http://people.linaro.org/~fu.wei/LAVA/test/QEMU/flash1.uefishell.qemu.gz
 
