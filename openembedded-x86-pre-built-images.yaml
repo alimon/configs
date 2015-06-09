@@ -5,6 +5,16 @@
     logrotate:
         daysToKeep: 30
         numToKeep: 30
+    parameters:
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/ci-linux-lng/'
+        - string:
+            name: DEVICE_TYPE
+            default: 'lng-x86'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
     properties:
         - authorization:
             anonymous:
@@ -38,6 +48,7 @@
         - matrix-tie-parent:
             node: build
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -59,47 +70,42 @@
             # Capture what we're building in the build output.
             repo manifest -r
 
-            cat << EOF > out/BUILD-INFO.txt
-            Format-Version: 0.5
+            KERNEL_URL="http://snapshots.linaro.org/openembedded/pre-built/${MACHINE}/${BUILD_NUMBER}/$(ls out/bzImage*.bin |xargs basename)"
 
-            Files-Pattern: *
-            License-Type: open
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
             EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
+            export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-x86-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-qemux86-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.cpio.gz"
 
-            cat << EOF > downloads/BUILD-INFO.txt
-            Format-Version: 0.5
+            # Parse recipe and get GIT_URL/GIT_BRANCH/GIT_COMMIT
+            export GIT_URL=$(grep "^SRC_URI =" meta-linaro/meta-linaro/recipes-kernel/linux/linaro-${MACHINE}_git.bb | cut -d'"' -f2 | cut -d';' -f1)
+            export GIT_BRANCH=$(grep "^SRC_URI =" meta-linaro/meta-linaro/recipes-kernel/linux/linaro-${MACHINE}_git.bb |cut -d'"' -f2 | cut -d'=' -f2)
+            (cd /mnt/ci_build/workspace/downloads/git2/git.linaro.org.kernel.linux-linaro-lng.git && export GIT_COMMIT=$(git rev-parse ${GIT_BRANCH}))
 
-            Files-Pattern: *
-            License-Type: open
-            EOF
-        - ssh:
-            site: 'snapshots.linaro.org'
-            target: '${JOB_NAME}/${BUILD_NUMBER}/openembedded/pre-built/${MACHINE}/${BUILD_NUMBER}'
-            source: 'out/**'
-            timeout: 120000
-            remove-prefix: 'out'
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org file-move'
-            target: ''
-            source: ''
-            command: 'reshuffle-files --job-type prebuilt --job-name ${JOB_NAME} --build-num ${BUILD_NUMBER}'
-            timeout: 120000
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org'
-            target: '/openembedded/sources'
-            source: 'downloads/**'
-            timeout: 120000
-            remove-prefix: 'downloads'
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org file-move'
-            target: ''
-            source: ''
-            command: 'reshuffle-files --job-type openembedded --job-name sources --build-num 1'
-            timeout: 120000
-            always-publish-from-master: true
+            mkdir -p out/lava
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            ./lci-build-tools/yaml-to-json.py configs/openembedded-x86-pre-built-images/lava-job-definitions/${DEVICE_TYPE}/template.yaml > out/lava/template.json
+            ./lci-build-tools/yaml-to-json.py configs/openembedded-x86-pre-built-images/lava-job-definitions/${DEVICE_TYPE}/template-base.yaml > out/lava/template-base.json
+            ./lci-build-tools/yaml-to-json.py configs/openembedded-x86-pre-built-images/lava-job-definitions/${DEVICE_TYPE}/template-benchmark.yaml > out/lava/template-benchmark.json
+            ./lci-build-tools/yaml-to-json.py configs/openembedded-x86-pre-built-images/lava-job-definitions/${DEVICE_TYPE}/template-cyclic.yaml > out/lava/template-cyclic.json
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py out openembedded/pre-built/${MACHINE}/${BUILD_NUMBER}
+            #time python ${HOME}/bin/linaro-cp.py downloads openembedded/sources
+            python ${HOME}/bin/linaro-cp.py --make-link openembedded/pre-built/${MACHINE}/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'anders.roxell@linaro.org fathi.boudra@linaro.org koen.kooi@linaro.org riku.voipio@linaro.org'
