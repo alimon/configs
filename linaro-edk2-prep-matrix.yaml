@@ -145,6 +145,13 @@
             mv ${builddir}/* ${outdir}/gcc-${MX_TC}
             find ${outdir}/ -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
+            if [ ${MX_B} == "qemu64" ]; then
+               cat << EOF > out/startup-qemu-aarch64.nsh
+               echo "The default boot selection will start in"
+               Image console=ttyAMA0 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
+               EOF
+            fi
+
             touch lava_job_definition_parameters
             # Publish to snapshots
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O linaro-cp.py
@@ -152,6 +159,11 @@
 
         - inject:
             properties-file: lava_job_definition_parameters
+
+
+###############################################################################
+# qemu64 iSCSI boot
+###############################################################################
         - shell: |
             #!/bin/bash
 
@@ -200,3 +212,204 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters_qemu_iscsi_in_kvm
               block: true
+
+###############################################################################
+# FVP base GRUB install
+###############################################################################
+        - shell: |
+
+            # Test only valid for fvp-base-armbds
+            [ "${MX_B}" == "fvp-base-armbds" ] || exit 0
+
+            BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${BL1_URL}|${BL1_URL}|" \
+                -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${INITRD_URL}|${INITRD_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-grub-install.json \
+                > custom_lava_job_definition_grub_install.json
+
+            cat << EOF > post_build_lava_parameters_grub_install
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_grub_install.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_grub_install
+              block: true
+
+
+###############################################################################
+# FVP base startup_boot
+###############################################################################
+        - shell: |
+            # Test only valid for fvp-base-armbds
+            [ "${MX_B}" == "fvp-base-armbds" ] || exit 0
+
+            BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${BL1_URL}|${BL1_URL}|" \
+                -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${INITRD_URL}|${INITRD_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-startup-boot.json \
+                > custom_lava_job_definition_startup_boot.json
+
+            cat << EOF > post_build_lava_parameters_startup_boot
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_startup_boot.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_startup_boot
+              block: true
+
+###############################################################################
+# FVP base menu boot
+###############################################################################
+
+        - shell: |
+            # Test only valid for fvp-base-armbds
+            [ "${MX_B}" == "fvp-base-armbds" ] || exit 0
+
+            BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${BL1_URL}|${BL1_URL}|" \
+                -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${INITRD_URL}|${INITRD_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-menu-boot.json \
+                > custom_lava_job_definition_menu_boot.json
+
+            cat << EOF > post_build_lava_parameters_menu_boot
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_menu_boot.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_menu_boot
+              block: true
+
+###############################################################################
+# FVP base menu boot w/initrd
+###############################################################################
+
+        - shell: |
+            # Test only valid for fvp-base-armbds
+            [ "${MX_B}" == "fvp-base-armbds" ] || exit 0
+
+            BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
+            FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${BL1_URL}|${BL1_URL}|" \
+                -e "s|\${FIP_URL}|${FIP_URL}|" \
+                -e "s|\${INITRD_URL}|${INITRD_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-menu-boot-with-initrd.json \
+                > custom_lava_job_definition_menu_boot_with_initrd.json
+
+            cat << EOF > post_build_lava_parameters_menu_boot_with_initrd
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_menu_boot_with_initrd.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_menu_boot_with_initrd
+              block: true
+
+###############################################################################
+# qemu64 parameters
+###############################################################################
+
+        - shell: |
+            # Test only valid for qemu64
+            [ "${MX_B}" == "qemu64" ] || exit 0
+
+            DEVICE_TYPE=qemu-aarch64
+            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/qemu64/${PREFIX}QEMU_EFI.img.gz
+            STARTUP_NSH=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/qemu64/startup-qemu-aarch64.nsh
+
+            # TODO - not sure where startup-qemu-aarch64.nsh is supposed to come from.
+
+            QEMU_PFLASH_URL=http://people.linaro.org/~fu.wei/LAVA/test/QEMU/flash1.uefishell.qemu.gz
+
+            BUNDLE_STREAM_NAME=/anonymous/debug/
+            LAVA_SERVER=staging.validation.linaro.org/RPC2/
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${QEMU_EFI_URL}|${QEMU_EFI_URL}|" \
+                -e "s|\${QEMU_PFLASH_URL}|${QEMU_PFLASH_URL}|" \
+                -e "s|\${STARTUP_NSH}|${STARTUP_NSH}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                < configs/linaro-edk2-prep/lava-job-definitions/qemu-aarch64/template.json \
+                > custom_lava_job_definition_qemu_aarch64_uefi.json
+
+            cat << EOF > post_build_lava_parameters_qemu_aarch64_uefi
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_qemu_aarch64_uefi.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters_qemu_aarch64_uefi
+              block: true
+
