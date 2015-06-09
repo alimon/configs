@@ -59,14 +59,14 @@
             set -e
             set -x
 
-            trap "ssh ${log_server} rm -rf ${dest}" 0 1 2 3 5 9 13 15
-
             basedir="${log_server#*:}"
             log_server="${log_server%:*}"
 
             status=0
 
             dest="/tmp/CompareResults.$$"
+
+            trap "ssh ${log_server} rm -rf ${dest}" 0 1 2 3 5 9 13 15
 
             LOGSDIR=${WORKSPACE}/artifacts/logs
 
@@ -88,8 +88,6 @@
             # Print results in console, in case Jenkins doesn't have the XML
             # report plugin.
             cat ${LOGSDIR}/*.txt
-
-            ssh ${log_server} rm -rf ${dest}
 
             exit $status
     publishers:
