@@ -187,8 +187,8 @@
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template.yaml > out/lava/template.json
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-base.yaml > out/lava/template-base.json
-                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-benchmark-.yaml > out/lava/template-benchmark.json
-                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-cyclic-.yaml > out/lava/template-cyclic.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-benchmark.yaml > out/lava/template-benchmark.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-cyclic.yaml > out/lava/template-cyclic.json
                 ;;
               arndale-be)
                 export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
@@ -197,8 +197,8 @@
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > out/lava/template-be.json
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-be-base.yaml > out/lava/template-be-base.json
-                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-be-benchmark-.yaml > out/lava/template-be-benchmark.json
-                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-be-cyclic-.yaml > out/lava/template-be-cyclic.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-be-benchmark.yaml > out/lava/template-be-benchmark.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14/lava-job-definitions/${DEVICE_TYPE}/template-be-cyclic.yaml > out/lava/template-be-cyclic.json
                 ;;
             esac
 
@@ -211,6 +211,7 @@
         - warnings:
             console-log-parsers:
               - 'GNU C Compiler 4 (gcc)'
-    publishers:
+        - trigger:
+            project: 'linux-lng-v3.14-test-definitions'
         - email:
             recipients: 'lng-ci@lists.linaro.org'
