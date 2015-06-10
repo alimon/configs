@@ -251,7 +251,10 @@
               fi
 
               # For -rt kernels, build with RT fragment
-              RT_FRAG=linaro/configs/preempt-rt.conf
+              RT_FRAG=kernel/configs/preempt-rt.config
+              if [ ! -f ${RT_FRAG} ]; then
+                RT_FRAG=linaro/configs/preempt-rt.conf
+              fi
 
               grep -q "config PREEMPT_RT_FULL" kernel/Kconfig.preempt
               if [ $? = 0 ]; then
