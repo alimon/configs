@@ -81,8 +81,8 @@
                 $basedir/$ref_logs $basedir/$new_logs || status=1
 
             # Copy the generated reports
-            scp '${log_server}:${dest}/diff-*.txt' ${LOGSDIR}
-            scp '${log_server}:${dest}/*.xml' ${LOGSDIR}
+            scp ${log_server}:${dest}/diff-\*.txt ${LOGSDIR}
+            scp ${log_server}:${dest}/\*.xml ${LOGSDIR}
             sed -i ${LOGSDIR}/report0.xml -e "s|BUILD_URL|${BUILD_URL}|"
 
             # Print results in console, in case Jenkins doesn't have the XML
