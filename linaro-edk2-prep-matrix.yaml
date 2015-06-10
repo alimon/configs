@@ -175,7 +175,7 @@
 
             # Test only valid for qemu64
             if [ "${MX_B}" != "qemu64" ]; then
-               touch post_build_lava_parameters_qemu_iscsi_in_kvm
+               echo "Missing post_build_lava_parameters_qemu_iscsi_in_kvm file is expected"
                exit 0
             fi
             DEVICE_TYPE=kvm
@@ -205,7 +205,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/kvm/template-qemu-iscsi-in-kvm.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-qemu-iscsi-in-kvm.json \
                 > custom_lava_job_definition_qemu_iscsi_in_kvm.json
 
             cat << EOF > post_build_lava_parameters_qemu_iscsi_in_kvm
@@ -228,7 +228,7 @@
 
             # Test only valid for fvp-base-armbds
             if [ "${MX_B}" != "fvp-base-armbds" ]; then
-               touch post_build_lava_parameters_grub_install
+               echo "Missing post_build_lava_parameters_grub_install file is expected"
                exit 0
             fi
             DEVICE_TYPE=rtsm_fvp_base-aemv8a
@@ -237,6 +237,7 @@
 
             BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
             FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
+            INITRD_URL=http://releases.linaro.org/14.12/openembedded/images/minimal-initramfs-armv8/linaro-image-minimal-initramfs-genericarmv8-20141212-729.rootfs.cpio.gz
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
@@ -276,7 +277,7 @@
             #!/bin/bash
             # Test only valid for fvp-base-armbds
             if [ "${MX_B}" != "fvp-base-armbds" ]; then
-               touch post_build_lava_parameters_startup_boot
+               echo "Missing post_build_lava_parameters_startup_boot file is expected"
                exit 0
             fi
             DEVICE_TYPE=rtsm_fvp_base-aemv8a
@@ -321,7 +322,7 @@
             #!/bin/bash
             # Test only valid for fvp-base-armbds
             if [ "${MX_B}" != "fvp-base-armbds" ]; then
-               touch post_build_lava_parameters_menu_boot
+               echo "Missing post_build_lava_parameters_menu_boot file is expected"
                exit 0
             fi
             DEVICE_TYPE=rtsm_fvp_base-aemv8a
@@ -366,7 +367,7 @@
             #!/bin/bash
             # Test only valid for fvp-base-armbds
             if [ "${MX_B}" != "fvp-base-armbds" ]; then
-               touch post_build_lava_parameters_menu_boot_with_initrd
+               echo "Missing post_build_lava_parameters_menu_boot_with_initrd file is expected"
                exit 0
             fi
             DEVICE_TYPE=rtsm_fvp_base-aemv8a
@@ -412,7 +413,7 @@
             #!/bin/bash
             # Test only valid for qemu64
             if [ "${MX_B}" != "qemu64" ]; then
-               touch post_build_lava_parameters_qemu_aarch64_uefi
+               echo "Missing post_build_lava_parameters_qemu_aarch64_uefi file is expected"
                exit 0
             fi
             DEVICE_TYPE=qemu-aarch64
@@ -440,7 +441,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/qemu-aarch64/template.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template.json \
                 > custom_lava_job_definition_qemu_aarch64_uefi.json
 
             cat << EOF > post_build_lava_parameters_qemu_aarch64_uefi
