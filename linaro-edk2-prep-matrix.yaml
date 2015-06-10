@@ -173,13 +173,13 @@
         - shell: |
             #!/bin/bash
 
-            echo "BUILD_NUMBER: ${BUILD_NUMBER}"
-
             # Test only valid for qemu64
             if [ "${MX_B}" != "qemu64" ]; then
                touch post_build_lava_parameters_qemu_iscsi_in_kvm
                exit 0
             fi
+            DEVICE_TYPE=kvm
+
             # Convert MX_TYPE to lower case for use in path
             BUILD_TYPE="${MX_TYPE,,}"
 
@@ -192,7 +192,6 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            DEVICE_TYPE=kvm
             QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/qemu64/${PREFIX}QEMU_EFI.fd
 
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
@@ -229,7 +228,11 @@
             #!/bin/bash
 
             # Test only valid for fvp-base-armbds
-            [ "${MX_B}" == "fvp-base-armbds" ] || exit 0
+            if [ "${MX_B}" != "fvp-base-armbds" ]; then
+               touch post_build_lava_parameters_grub_install
+               exit 0
+            fi
+            DEVICE_TYPE=rtsm_fvp_base-aemv8a
 
             BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
             FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
@@ -250,7 +253,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/rtsm_fvp_base-aemv8a/template-grub-install.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-grub-install.json \
                 > custom_lava_job_definition_grub_install.json
 
             cat << EOF > post_build_lava_parameters_grub_install
@@ -271,7 +274,11 @@
         - shell: |
             #!/bin/bash
             # Test only valid for fvp-base-armbds
-            [ "${MX_B}" == "fvp-base-armbds" ] || exit 0
+            if [ "${MX_B}" != "fvp-base-armbds" ]; then
+               touch post_build_lava_parameters_startup_boot
+               exit 0
+            fi
+            DEVICE_TYPE=rtsm_fvp_base-aemv8a
 
             BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
             FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
@@ -289,7 +296,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/rtsm_fvp_base-aemv8a/template-startup-boot.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-startup-boot.json \
                 > custom_lava_job_definition_startup_boot.json
 
             cat << EOF > post_build_lava_parameters_startup_boot
@@ -310,7 +317,11 @@
         - shell: |
             #!/bin/bash
             # Test only valid for fvp-base-armbds
-            [ "${MX_B}" == "fvp-base-armbds" ] || exit 0
+            if [ "${MX_B}" != "fvp-base-armbds" ]; then
+               touch post_build_lava_parameters_menu_boot
+               exit 0
+            fi
+            DEVICE_TYPE=rtsm_fvp_base-aemv8a
 
             BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
             FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
@@ -328,7 +339,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/rtsm_fvp_base-aemv8a/template-menu-boot.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-menu-boot.json \
                 > custom_lava_job_definition_menu_boot.json
 
             cat << EOF > post_build_lava_parameters_menu_boot
@@ -349,7 +360,11 @@
         - shell: |
             #!/bin/bash
             # Test only valid for fvp-base-armbds
-            [ "${MX_B}" == "fvp-base-armbds" ] || exit 0
+            if [ "${MX_B}" != "fvp-base-armbds" ]; then
+               touch post_build_lava_parameters_menu_boot_with_initrd
+               exit 0
+            fi
+            DEVICE_TYPE=rtsm_fvp_base-aemv8a
 
             BL1_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/bl1.bin
             FIP_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/fvp-base-armbds/fip.bin
@@ -367,7 +382,7 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                < configs/linaro-edk2-prep/lava-job-definitions/rtsm_fvp_base-aemv8a/template-menu-boot-with-initrd.json \
+                < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-menu-boot-with-initrd.json \
                 > custom_lava_job_definition_menu_boot_with_initrd.json
 
             cat << EOF > post_build_lava_parameters_menu_boot_with_initrd
@@ -388,7 +403,10 @@
         - shell: |
             #!/bin/bash
             # Test only valid for qemu64
-            [ "${MX_B}" == "qemu64" ] || exit 0
+            if [ "${MX_B}" != "qemu64" ]; then
+               touch post_build_lava_parameters_qemu_aarch64_uefi
+               exit 0
+            fi
 
             DEVICE_TYPE=qemu-aarch64
             QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/linaro-edk2-prep-matrix/${BUILD_NUMBER}/gcc-${MX_TC}/${BUILD_TYPE}/qemu64/${PREFIX}QEMU_EFI.img.gz
