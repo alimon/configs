@@ -69,7 +69,6 @@
             {
               cd ${WORKSPACE}
               rm -rf builddir*
-              rm -rf out
               rm -f hwpack_linaro-* *.deb
             }
 
@@ -93,15 +92,15 @@
                 export hwpack_type="arndale"
                 export board_types="lng-arndale"
                 export kernel_flavour="arndale"
-                export conf_filenames="arch/arm/configs/multi_v7_defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/preempt-rt.conf linaro/configs/arndale.conf"
-                export DEVICE_TYPE="arndale"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/preempt-rt.conf linaro/configs/arndale.conf"
+                export DEVICE_TYPE="lng-arndale"
                 ;;
               arndale-be)
                 export hwpack_type="arndale-be"
                 export board_types="lng-arndale"
                 export kernel_flavour="arndale-be"
-                export conf_filenames="arch/arm/configs/multi_v7_defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/preempt-rt.conf linaro/configs/arndale.conf linaro/configs/bigendian.conf"
-                export DEVICE_TYPE="arndale"
+                export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/preempt-rt.conf linaro/configs/arndale.conf linaro/configs/bigendian.conf"
+                export DEVICE_TYPE="lng-arndale"
                 ;;
               vexpress64)
                 export hwpack_type="vexpress64"
@@ -141,21 +140,78 @@
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
+            mkdir -p out/lava
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack_type}* out/
+
+            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14-rt/${hwpack}/${BUILD_NUMBER}"
+            DTB_URL=${KERNEL_URL}/dtbs
+            [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename)"
+            STARTUP_NSH="${KERNEL_URL}/startup.nsh"
+
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            # Create post-build-lava parameters
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
+            DTB_URL=${DTB_URL}
+            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
+            STARTUP_NSH=${STARTUP_NSH}
+            hwpack_type=${hwpack_type}
+            EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out
+            }
+
+            # Generate LAVA job definitions
+            case "${hwpack}" in
+              arndale)
+                export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
+                export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
+                export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-armv7a-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-genericarmv7a-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+
+                # For now we have the same test plan as linux-lng-v3.14 so we use that to generate the json files.
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template.yaml > out/lava/template.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template-base.yaml > out/lava/template-base.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template-benchmark.yaml > out/lava/template-benchmark.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template-cyclic.yaml > out/lava/template-cyclic.json
+                ;;
+              arndale-be)
+                export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
+                export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
+                export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-armv7ab-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-genericarmv7ab-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+
+                # For now we have the same test plan as linux-lng-v3.14 so we use that to generate the json files.
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > out/lava/template-be.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template-be-base.yaml > out/lava/template-be-base.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template-be-benchmark.yaml > out/lava/template-be-benchmark.json
+                ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template-be-cyclic.yaml > out/lava/template-be-cyclic.json
+                ;;
+            esac
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py out kernel-hwpack/linux-linaro-lng-v3.14-rt/${hwpack}/${BUILD_NUMBER}
             python ${HOME}/bin/linaro-cp.py --make-link kernel-hwpack/linux-linaro-lng-v3.14-rt/${hwpack}/${BUILD_NUMBER}
-
-            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
-            CCACHE_DIR=${CCACHE_DIR} ccache -s
     publishers:
         - warnings:
             console-log-parsers:
               - 'GNU C Compiler 4 (gcc)'
-    publishers:
         - email:
             recipients: 'lng-ci@lists.linaro.org'
