@@ -205,6 +205,8 @@
                 -e "s|\${GIT_URL}|${GIT_URL}|" \
                 -e "s|\${IMAGE_URL}|${IMAGE_URL}|" \
                 -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                -e "s|\"metadata\": {|\"metadata\": {\n        \"edk2-job\" : \"edk2-prep-matrix\",|"  \
+                -e "s|\"metadata\": {|\"metadata\": {\n        \"edk2-matrix-type\" : \"${MX_TC},${MX_B},${MX_TYPE}\",|"  \
                 < configs/linaro-edk2-prep/lava-job-definitions/${DEVICE_TYPE}/template-qemu-iscsi-in-kvm.json \
                 > custom_lava_job_definition_qemu_iscsi_in_kvm.json
 
