@@ -110,7 +110,7 @@
             export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-ubuntu-images-arm64/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
             export ROOTFS_BUILD_URL="http://builds.96boards.org/snapshots/dragonboard410c/ubuntu/${ROOTFS_BUILD_NUMBER}/"
             wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/boot-linaro-vivid-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O boot.img.gz
-            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/linaro-vivid-gnome-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O rootfs.img.gz
+            wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/linaro-vivid-alip-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O rootfs.img.gz
             gunzip *.img.gz
 
             cat << EOF >> os.json
@@ -119,7 +119,7 @@
             "url": "http://builds.96boards.org/releases/dragonboard410c",
             "version": "15.05",
             "release_date": "2015-06-04",
-            "description": "Linaro Linux with Gnome desktop based on Ubuntu 15.04 for Dragonboard 410c"
+            "description": "Linaro Linux with LXDE desktop based on Ubuntu 15.04 for Dragonboard 410c"
             }
             EOF
 
