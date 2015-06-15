@@ -57,6 +57,10 @@
             git config --global user.email "ci_notify@linaro.org"
             git config --global user.name "Linaro CI"
 
+            # Clean any artifacts related to previous build
+            rm -rf vendor/qcom/proprietary
+            rm -rf out/target/product/msm8916_64/system/ out/target/product/msm8916_64/data/
+
             # Runs as ubuntu
             repo init -u git://codeaurora.org/platform/manifest.git -b release -m ${MANIFEST_FILENAME} --repo-url=git://codeaurora.org/tools/repo.git
             repo sync -j16
@@ -76,6 +80,7 @@
             export patches=$(find . -iname *.patch | sort)
             for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project}; git am ${pw}/${patch}; cd -; done
             cd ..
+            rm -rf ${pw}
 
             source build/envsetup.sh
             lunch msm8916_64-userdebug
