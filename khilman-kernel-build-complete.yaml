@@ -54,3 +54,10 @@
             #!/bin/bash
 
             bash -x ./local/build-scripts/build-complete.sh
+    publishers:
+        - trigger-parameterized-builds:
+            - project: tbaker-kboot-bot
+              condition: ALWAYS
+              predefined-parameters: |
+                  URL=http://storage.kernelci.org/${TREE_NAME}/${GIT_DESCRIBE}/
+                  ARCH=${ARCH_LIST}
