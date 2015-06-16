@@ -71,8 +71,11 @@
               bash -x periodic-cleanup.sh hard
             fi
 
+            # setup some init-and-build flags based on image type
+            init_flags=
+            [ "${rootfs}" = "lng" ] && init_flags="-p"
             # do a build
-            bash -x init-and-build.sh -a armv8 -g ${gcc_version} linaro-image-${rootfs}
+            bash -x init-and-build.sh -a armv8 -g ${gcc_version} ${init_flags} linaro-image-${rootfs}
 
             cd ${WORKSPACE}
 

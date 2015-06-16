@@ -66,13 +66,13 @@
             # we clean build and populate it from cache
             bash -x pre-build-do-cleanup.sh
 
+            # set init-and-build flags based on image type
+            init_flags=
+            [ "${rootfs}" = "lng" ] && init_flags="-p"
+            build_image="linaro-image-${rootfs}"
+            [ "${rootfs}" = "alip" ] && build_image="${build_image} linaro-sysroot-alip"
             # do a build
-            if [ "${rootfs}" = "alip" ]
-            then
-              bash -x init-and-build.sh -a armv7a -g ${gcc_version} linaro-image-${rootfs} linaro-sysroot-alip
-            else
-              bash -x init-and-build.sh -a armv7a -g ${gcc_version} linaro-image-${rootfs}
-            fi
+            bash -x init-and-build.sh -a armv7a -g ${gcc_version} ${init_flags} ${build_image}
 
             cd ${WORKSPACE}
 

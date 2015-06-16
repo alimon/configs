@@ -62,8 +62,11 @@
             # we clean build and populate it from cache
             bash -x pre-build-do-cleanup.sh
 
+            # set init-and-build flags based on image type
+            init_flags=
+            [ "${rootfs}" = "lng" ] && init_flags="-p"
             # do a build
-            bash -x init-and-build.sh -a armv7ab -g ${gcc_version} linaro-image-${rootfs}
+            bash -x init-and-build.sh -a armv7ab -g ${gcc_version} ${init_flags} linaro-image-${rootfs}
 
             cd ${WORKSPACE}
 
