@@ -190,13 +190,16 @@
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
 
+              # clean up fstab
+              sudo sed -i '/UUID/d' rootfs/etc/fstab
+
               # add license file in the generated rootfs
               rm -f license.txt
               wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
               sudo cp -f license.txt rootfs/etc/license.txt
 
-              # add Adreno firmware
-              wget -qO- http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150507/a300_fw.tar.gz | sudo tar xzv -C rootfs/lib/firmware
+              # add firmware (adreno, venus and WCN)
+              wget -qO- https://builds.96boards.org/snapshots/dragonboard410c/binaries/20150616/firmware.tar.gz | sudo tar xzv -C rootfs/lib/firmware
 
               sudo make_ext4fs -o -L rootfs -l 6800M -s out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
               sudo umount rootfs
