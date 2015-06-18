@@ -148,6 +148,8 @@
             - libxatracker2
             - xserver-xorg-video-freedreno
             - mesa-utils
+            - cpufrequtils
+            - htop
             sources:
               qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${UBUNTU_FLAVOUR} main
               repo: http://repo.linaro.org/ubuntu/linaro-overlay ${UBUNTU_FLAVOUR} main
@@ -200,6 +202,8 @@
 
               # add firmware (adreno, venus and WCN)
               wget -qO- https://builds.96boards.org/snapshots/dragonboard410c/binaries/20150616/firmware.tar.gz | sudo tar xzv -C rootfs/lib/firmware
+
+              sudo rm -f rootfs/lib/firmware/wlan/macaddr0
 
               sudo make_ext4fs -o -L rootfs -l 6800M -s out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
               sudo umount rootfs
