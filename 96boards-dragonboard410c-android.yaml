@@ -106,19 +106,19 @@
             cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml ${WORKSPACE}/
 
             # Publish
-            PUB_DEST=/snapshots/dragonboard410c/android/${BUILD_NUMBER}
+            PUB_DEST=/snapshots/dragonboard410c/qualcomm/android/${BUILD_NUMBER}
 
             cat > out/target/product/msm8916_64/BUILD-INFO.txt << EOF
             Format-Version: 0.5
 
             Files-Pattern: *
-            License-Type: protected
-            Auth-Groups: employees, qualcomm-lcb, qualcomm-96boards-ea
+            License-Type: open
             EOF
 
             time linaro-cp.py \
               --manifest \
               --no-build-info \
+              --link-latest \
               --split-job-owner \
               --server ${PUBLISH_SERVER} \
               out/target/product/msm8916_64/ \

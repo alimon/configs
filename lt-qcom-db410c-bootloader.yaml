@@ -108,7 +108,7 @@
             cd ../emmc_linux
             export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-ubuntu-images-arm64/lastSuccessfulBuild/buildNumber`
             export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-ubuntu-images-arm64/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-            export ROOTFS_BUILD_URL="http://builds.96boards.org/snapshots/dragonboard410c/ubuntu/${ROOTFS_BUILD_NUMBER}/"
+            export ROOTFS_BUILD_URL="http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${ROOTFS_BUILD_NUMBER}/"
             wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/boot-linaro-vivid-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O boot.img.gz
             wget --progress=dot -e dotbytes=2M "${ROOTFS_BUILD_URL}/linaro-vivid-alip-qcom-snapdragon-arm64-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.img.gz" -O rootfs.img.gz
             gunzip *.img.gz
@@ -131,35 +131,28 @@
 
             # add license.txt file
             wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
-            for d in sd_card_install_ubuntu sd_card_install_android sd_card_rescue bootloader_emmc_linux bootloader_emmc_android; do
+            for d in sdcard_install_ubuntu sdcard_install_android sdcard_rescue bootloader_emmc_linux bootloader_emmc_android; do
               cp license.txt out/dragonboard410c_$d
             done
 
             # Final preparation of archives for publishing
-            mkdir out-bootloader out-pre-built
-            zip -rj out-pre-built/dragonboard410c_sd_card_install_ubuntu-${BUILD_NUMBER}-${ROOTFS_BUILD_NUMBER}.zip out/dragonboard410c_sd_card_install_ubuntu
-            zip -rj out-pre-built/dragonboard410c_sd_card_install_android-${BUILD_NUMBER}-${ANDROID_ROOTFS_BUILD_NUMBER}.zip out/dragonboard410c_sd_card_install_android
-            zip -rj out-pre-built/dragonboard410c_sd_card_rescue-${BUILD_NUMBER}.zip out/dragonboard410c_sd_card_rescue
-            zip -rj out-bootloader/dragonboard410c_bootloader_emmc_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_linux
-            zip -rj out-bootloader/dragonboard410c_bootloader_emmc_android-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_android
+            mkdir out-rescue
+            zip -rj out-rescue/dragonboard410c_sdcard_install_ubuntu-${BUILD_NUMBER}-${ROOTFS_BUILD_NUMBER}.zip out/dragonboard410c_sdcard_install_ubuntu
+            zip -rj out-rescue/dragonboard410c_sdcard_install_android-${BUILD_NUMBER}-${ANDROID_ROOTFS_BUILD_NUMBER}.zip out/dragonboard410c_sdcard_install_android
+            zip -rj out-rescue/dragonboard410c_sdcard_rescue-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_rescue
+            zip -rj out-rescue/dragonboard410c_bootloader_emmc_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_linux
+            zip -rj out-rescue/dragonboard410c_bootloader_emmc_android-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_android
 
             # Create MD5SUMS file
-            (cd out-pre-built && md5sum * > MD5SUMS.txt)
-            (cd out-bootloader && md5sum * > MD5SUMS.txt)
+            (cd out-rescue && md5sum * > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-db410c-bootloader/build-info/template.txt -O out-bootloader/BUILD-INFO.txt
-            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-db410c-bootloader/build-info/template.txt -O out-pre-built/BUILD-INFO.txt
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --build-info out-bootloader/BUILD-INFO.txt \
-              out-bootloader snapshots/dragonboard410c/bootloader/${BUILD_NUMBER}
-            time python ${HOME}/bin/linaro-cp.py \
-              --server ${PUBLISH_SERVER} \
-              --build-info out-pre-built/BUILD-INFO.txt \
-              out-pre-built snapshots/dragonboard410c/pre-built/${BUILD_NUMBER}
+              --link-latest \
+              out-rescue snapshots/dragonboard410c/linaro/rescue/${BUILD_NUMBER}
         - shell: |
             #!/bin/bash
 
