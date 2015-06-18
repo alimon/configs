@@ -1,0 +1,52 @@
+- job:
+    name: openembedded-lng-x86-pre-built-test-definitions
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/ci-linux-lng/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: PUB_DEST
+            default: 'http://snapshots.linaro.org/openembedded/pre-built/lng-x86-64/'
+    disabled: false
+    node: master
+    display-name: 'LNG Kernel (x86) - Submit LAVA test definitions  (linux-linaro-lng-v3.14)'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-pre-built-images/MACHINE=lng-x86-64,gcc_version=4.9,label=build/lastSuccessfulBuild/buildNumber)
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=lng-x86
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${PUB_DEST}/${BUILD_NUMBER}/lava/template.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-pre-built-images/MACHINE=lng-x86-64,gcc_version=4.9,label=build/lastSuccessfulBuild/buildNumber)
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=lng-x86
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${PUB_DEST}/${BUILD_NUMBER}/lava/template-base.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
