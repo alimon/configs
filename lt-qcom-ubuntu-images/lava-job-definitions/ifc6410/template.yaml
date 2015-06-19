@@ -1,9 +1,13 @@
 actions:
     - command: deploy_linaro_android_image
       parameters:
-        boot: '${BOOT_URL}'
-        data: '${DATA_URL}'
-        system: '${SYSTEM_URL}'
+        images:
+        - partition: 'boot'
+          url: '${BOOT_URL}'
+        - partition: 'userdata'
+          url: '${DATA_URL}'
+        - partition: 'system'
+          url: '${SYSTEM_URL}'
         target_type: 'ubuntu'
     - command: boot_linaro_image
     - command: lava_test_shell
