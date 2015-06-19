@@ -162,6 +162,8 @@
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
 
+              sudo ln -sf /run/resolvconf/resolv.conf rootfs/etc/resolv.conf
+
               [ "${rootfs}" = "developer" ] && cat << EOF | sudo tee rootfs/etc/network/interfaces.d/eth0
             #auto eth0
             #iface eth0 inet dhcp
@@ -169,6 +171,9 @@
 
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+
+              # clean up fstab
+              sudo sed -i '/UUID/d' rootfs/etc/fstab
 
               sudo make_ext4fs -o -L rootfs -l 6800M -s out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
               sudo umount rootfs
