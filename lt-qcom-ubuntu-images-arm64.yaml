@@ -128,9 +128,19 @@
             assume_installed:
             - linaro-headless
             - linux-firmware
+            sources:
+              qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${UBUNTU_FLAVOUR} main
+              repo: http://repo.linaro.org/ubuntu/linaro-overlay ${UBUNTU_FLAVOUR} main
+              ubuntu: http://ports.ubuntu.com/ubuntu-ports ${UBUNTU_FLAVOUR} main universe
             packages:
             - linux-image-generic
             - linux-headers-generic
+            - libasound2
+            EOF
+
+            # additional packages in desktop images
+            [ "${rootfs}" != "developer" ] && cat << EOF >> linaro-lt-qcom
+            packages:
             - libdrm2
             - libdrm-freedreno1
             - libdrm-nouveau2
@@ -148,12 +158,6 @@
             - libxatracker2
             - xserver-xorg-video-freedreno
             - mesa-utils
-            - cpufrequtils
-            - htop
-            sources:
-              qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${UBUNTU_FLAVOUR} main
-              repo: http://repo.linaro.org/ubuntu/linaro-overlay ${UBUNTU_FLAVOUR} main
-              ubuntu: http://ports.ubuntu.com/ubuntu-ports ${UBUNTU_FLAVOUR} main universe
             EOF
 
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
