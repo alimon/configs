@@ -1,0 +1,69 @@
+- job:
+    name: trigger-linux-lng-v3.14-test-definitions-scheduled
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: docker-utopic
+    display-name: 'Trigger for Linaro Networking Group Kernel v3.14 - Submit scheduled LAVA test definitions'
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - arndale
+                - arndale-be
+                - lng-x86-64
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            case "${hwpack}" in
+              arndale|arndale-be)
+                PUB_DEST='http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14/'
+                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v3.14/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
+                ;;
+              lng-x86-64)
+                PUB_DEST='http://snapshots.linaro.org/openembedded/pre-built/'
+                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-pre-built-images/MACHINE=lng-x86-64,gcc_version=4.9,label=build/lastSuccessfulBuild/buildNumber)
+                ;;
+            esac
+
+            case "$(date +%A)" in
+              Tuesday|Thursday)
+                test_plan=${PUB_DEST}/${hwpack}/${BUILD_NUMBER}/lava/template-benchmark.json
+                [ "${hwpack}" = "arndale-be" ] && test_plan=${PUB_DEST}/${hwpack}/${BUILD_NUMBER}/lava/template-be-benchmark.json
+                ;;
+              Wednesday|Saturday)
+                test_plan=${PUB_DEST}/${hwpack}/${BUILD_NUMBER}/lava/template-cyclic.json
+                [ "${hwpack}" = "arndale-be" ] && test_plan=${PUB_DEST}/${hwpack}/${BUILD_NUMBER}/lava/template-be-cyclic.json
+                ;;
+              Monday|Friday|Sunday)
+                test_plan=${PUB_DEST}/${hwpack}/${BUILD_NUMBER}/lava/template-base.json
+                [ "${hwpack}" = "arndale-be" ] && test_plan=${PUB_DEST}/${hwpack}/${BUILD_NUMBER}/lava/template-be-base.json
+                ;;
+             esac
+
+             cat << EOF > post_build_lava_parameters
+             DEVICE_TYPE=lng-dummy
+             BUNDLE_STREAM_NAME=/public/team/linaro/ci-linux-lng/
+             CUSTOM_JSON_URL=${test_plan}
+             LAVA_SERVER=validation.linaro.org/RPC2/
+             EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
