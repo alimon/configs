@@ -182,11 +182,14 @@
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
 
-              sudo ln -sf /run/resolvconf/resolv.conf rootfs/etc/resolv.conf
+              sudo ln -sf /run/systemd/resolve/resolv.conf rootfs/etc/resolv.conf
 
-              [ "${rootfs}" = "developer" ] && cat << EOF | sudo tee rootfs/etc/network/interfaces.d/eth0
-            auto eth0
-            iface eth0 inet dhcp
+              cat << EOF | sudo tee rootfs/etc/systemd/network/80-dhcp.network
+            [Match]
+            Name=eth*
+
+            [Network]
+            DHCP=yes
             EOF
 
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
@@ -221,7 +224,7 @@
             secondaddr = 0x81100000
             tagsaddr = 0x80200100
             name = linaro-${PLATFORM_NAME}
-            cmdline = console=tty0 console=${SERIAL_CONSOLE},115200n8 root=/dev/disk/by-partlabel/userdata rootwait rw text
+            cmdline = console=tty0 console=${SERIAL_CONSOLE},115200n8 root=/dev/disk/by-partlabel/userdata rootwait rw systemd.unit=multi-user.target
             EOF
 
             # Create one boot image for each platform supported, since we need to append DTB to zImage
