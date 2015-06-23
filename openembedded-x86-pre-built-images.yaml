@@ -70,11 +70,8 @@
             # Capture what we're building in the build output.
             repo manifest -r
 
+            [ ${MACHINE} = "lng-rt-x86-64" ] && BUNDLE_STREAM_NAME="/public/team/linaro/ci-linux-lng-preempt-rt/"
             KERNEL_URL="http://snapshots.linaro.org/openembedded/pre-built/${MACHINE}/${BUILD_NUMBER}/$(ls out/bzImage*.bin |xargs basename)"
-
-            if [ ${MACHINE} = "lng-rt-x86-64" ]; then
-                BUNDLE_STREAM_NAME='/public/team/linaro/ci-linux-lng-preempt-rt/'
-            fi
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
