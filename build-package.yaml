@@ -32,9 +32,13 @@
             type: slave
             name: label
             values:
-                - docker-${codename}
-                - docker-${codename}-arm64
-                - docker-${codename}-armhf
+                - docker-vivid
+                - docker-vivid-arm64
+                - docker-vivid-armhf
+                - docker-utopic
+                - docker-utopic-arm64
+                - docker-utopic-armhf
+                - docker-jessie-arm64
     execution-strategy:
         sequential: false
     disabled: false
@@ -51,8 +55,13 @@
 
             arch=`dpkg-architecture -qDEB_HOST_ARCH`
             dist=`lsb_release -sc`
-            # arm64 + ${codename} is the must build target with source uploads
-            if [ $arch = arm64 ] && [ $dist = ${codename} ]
+            if [ "$dist" != "$codename" ]
+            then
+                echo "$codename requested while we are $dist, skip"
+                exit 0
+            fi
+            # arm64 is the must build target with source uploads for all dists
+            if [ $arch = arm64 ]
             then
                 buildpackage_params="-sa"
             else
