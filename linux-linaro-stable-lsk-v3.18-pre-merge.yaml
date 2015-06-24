@@ -137,6 +137,7 @@
                 export board_types="rtsm_fvp_base-aemv8a"
                 export kernel_flavour="lsk-vexpress64-be"
                 export conf_filenames="arch/arm64/configs/defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress64.conf linaro/configs/bigendian.conf"
+                export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
                 export ARCH="arm64"
                 export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
                 cat << EOF > linaro/configs/bigendian.conf
@@ -219,7 +220,11 @@
                 ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.18-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
               vexpress64-be)
-                echo "Skip"
+                # Get rootfs URL
+                export ROOTFS_BUILD_NUMBER=201
+                export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/minimal-initramfs-armv8b-gcc-4.9/201/linaro-image-minimal-initramfs-genericarmv8b-20150618-201.rootfs.cpio.gz"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.18/lava-job-definitions/${DEVICE_TYPE}/template-be-ramdisk.yaml > custom_lava_job_definition.json
                 cat << EOF > post_build_lava_parameters
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
@@ -264,6 +269,18 @@
                     else
                       ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.18-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs.yaml > custom_lava_job_definition.json
                     fi
+                - trigger-builds:
+                    - project: 'post-build-lava'
+                      property-file: post_build_lava_parameters
+                      block: true
+                - shell: |
+                    DEVICE_TYPE=juno
+
+                    # Get rootfs URL
+                    export ROOTFS_BUILD_NUMBER=201
+                    export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/minimal-initramfs-armv8b-gcc-4.9/201/linaro-image-minimal-initramfs-genericarmv8b-20150618-201.rootfs.cpio.gz"
+
+                    ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.18/lava-job-definitions/${DEVICE_TYPE}/template-be-ramdisk.yaml > custom_lava_job_definition.json
                 - trigger-builds:
                     - project: 'post-build-lava'
                       property-file: post_build_lava_parameters
