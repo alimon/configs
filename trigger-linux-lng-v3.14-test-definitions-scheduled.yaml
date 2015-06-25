@@ -11,8 +11,10 @@
                 - job-read
                 - job-extended-read
     disabled: false
-    node: docker-utopic
+    node: build
     display-name: 'Trigger for Linaro Networking Group Kernel v3.14 - Submit scheduled LAVA test definitions'
+    triggers:
+        - timed: '@daily'
     axes:
         - axis:
             type: user-defined
@@ -21,10 +23,17 @@
                 - arndale
                 - arndale-be
                 - lng-x86-64
-    triggers:
-        - timed: '@daily'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic
+    execution-strategy:
+        sequential: true
     wrappers:
         - timestamps
+        - matrix-tie-parent:
+            node: build
     builders:
         - shell: |
             #!/bin/bash
