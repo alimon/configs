@@ -110,7 +110,7 @@
                 esac
                 ;;
             esac
-            BUILD_SHELL="schroot -c tcwg-build-${schroot_arch}-trusty --preserve-environment -- bash"
+            schroot_image="tcwg-build-${schroot_arch}-trusty"
 
             if $try_bootstrap; then
               bootstrap="--bootstrap"
@@ -128,7 +128,15 @@
               norebuild="--norebuild"
             fi
 
+            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
+            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+            $BUILD_SHELL -c "echo Build session is up"
+
             ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap --runtests --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master $logname_opt $norebuild || result="$?"
+
+            # Sometimes /dev/pts can't get unmounted on the first try.
+            # Workaround by retrying.
+            schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id
 
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
