@@ -1,0 +1,45 @@
+format: '3.0'
+name: linaro-helium
+architectures:
+- arm64
+origin: Linaro
+maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+support: supported
+serial_tty: ttyS0
+kernel_addr: '0x0127f800'
+initrd_addr: '0x04000000'
+load_addr: '0x0b000000'
+dtb_addr: '0x03000000'
+partition_layout: bootfs_rootfs
+mmc_id: '0:1'
+kernel_file: boot/Image-*-helium
+initrd_file: boot/initrd.img-*-helium
+dtb_file: usr/lib/linux-image-*-linaro-helium/marvell/pxa1928-helium.dtb
+boot_script: boot.scr
+boot_min_size: 65
+extra_serial_options:
+- console=tty0
+- console=ttyS0,115200n8
+assume_installed:
+- adduser
+- apt
+- apt-utils
+- debconf-i18n
+- debian-archive-keyring
+- gcc-4.8
+- gnupg
+- ifupdown
+- initramfs-tools
+- iproute2
+- irqbalance
+- isc-dhcp-client
+- kmod
+- netbase
+- udev
+packages:
+- linux-image-arm64
+- linux-headers-arm64
+- firmware-linux
+sources:
+  debian: http://ftp.debian.org/debian/ jessie main contrib non-free
+  repo: http://repo.linaro.org/ubuntu/linaro-overlay jessie main
