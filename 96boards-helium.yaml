@@ -104,6 +104,9 @@
 
               # Create pre-built image(s)
               linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file helium-jessie_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-helium_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+              # Compress image(s)
+              gzip -9 out/helium-jessie_${rootfs}_${VERSION}.img
             done
 
             # Create MD5SUMS file
