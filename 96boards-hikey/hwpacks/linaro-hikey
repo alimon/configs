@@ -1,0 +1,53 @@
+format: '3.0'
+name: linaro-hikey
+architectures:
+- arm64
+origin: Linaro
+maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+support: supported
+serial_tty: ttyAMA0
+kernel_addr: '0x60000000'
+initrd_addr: '0x62000000'
+load_addr: '0x60008000'
+dtb_addr: '0x61000000'
+partition_layout: bootfs16_rootfs
+mmc_id: '0:1'
+kernel_file: boot/Image-*-hikey
+initrd_file: boot/initrd.img-*-hikey
+dtb_file: lib/firmware/*-linaro-hikey/device-tree/hi6220-hikey.dtb
+boot_script: boot.scr
+boot_min_size: 65
+extra_serial_options:
+- console=tty0
+- console=ttyAMA0,115200n8
+- k3v2mem
+- hisi_dma_print=0
+- vmalloc=484M
+- no_irq_affinity
+- maxcpus=8
+assume_installed:
+- adduser
+- apt
+- apt-utils
+- debconf-i18n
+- debian-archive-keyring
+- gcc-4.8
+- gnupg
+- ifupdown
+- initramfs-tools
+- iproute2
+- irqbalance
+- isc-dhcp-client
+- kmod
+- netbase
+- udev
+packages:
+- linux-image-arm64
+- linux-headers-arm64
+- firmware-linux
+- firmware-ti-connectivity
+- ti-uim
+- ti-calibrator
+sources:
+  debian: http://ftp.debian.org/debian/ jessie main contrib non-free
+  repo: http://repo.linaro.org/ubuntu/linaro-overlay jessie main
