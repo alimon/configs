@@ -17,7 +17,7 @@
             default: 'developer'
     disabled: false
     node: docker-utopic
-    display-name: '96boards - Helium (Marvell PXA1928)'
+    display-name: '96boards - Marvell PXA1928 Helium'
     scm:
         - git:
             url: https://git.linaro.org/people/rob.herring/linux.git
@@ -67,7 +67,7 @@
             export MAKE_DTBS=true
             export ARCH=arm64
             export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
-            export toolchain_url=http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz
+            export toolchain_url=http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz
 
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
@@ -130,7 +130,7 @@
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
 
-              sudo make_ext4fs -o -L rootfs -l 5120M -s out/helium-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 5400M -s out/helium-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
               sudo umount boot rootfs
               sudo kpartx -dv out/helium-jessie_${rootfs}_${VERSION}.img
               sudo rm -rf boot rootfs
