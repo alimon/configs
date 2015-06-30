@@ -125,7 +125,6 @@
 
               cat << EOF | sudo tee rootfs/etc/fstab
             /dev/disk/by-partlabel/userdata /     ext4 errors=remount-ro 0 1
-            #/dev/disk/by-partlabel/boot     /boot vfat defaults          0 0
             EOF
 
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
@@ -142,26 +141,25 @@
             done
 
             # Create boot image(s)
-            mkdir boot-fat
-            dd if=/dev/zero of=out/boot-fat.emmc.img bs=512 count=32768
-            sudo mkfs.fat -n "boot" out/boot-fat.emmc.img
-            sudo mount -o loop,rw,sync out/boot-fat.emmc.img boot-fat
-            sudo cp -a out/Image boot-fat/Image || true
-            sudo cp -a out/pxa1928-helium.dtb boot-fat/ || true
-            sudo cp -a out/initrd.img-* boot-fat/initrd.img || true
-            sudo umount boot-fat
-            sudo chmod 777 out/boot-fat.emmc.img
-            rm -rf boot-fat
+            wget -q https://android.googlesource.com/platform/system/core.git/+/master/mkbootimg/mkbootimg?format=text -O mkbootimg.txt
+            cat mkbootimg.txt | base64 -d > mkbootimg
+            python mkbootimg \
+              --kernel out/Image \
+              --ramdisk out/initrd.img-* \
+              --cmdline "console=tty0 console=ttyS0,115200n8 root=/dev/disk/by-partlabel/userdata rootwait rw" \
+              --base "0x01200000" \
+              --kernel_offset "0x00080000" \
+              --output out/boot.emmc.img
 
             # Compress boot partition image(s)
-            gzip -9 out/boot-fat.emmc.img
+            gzip -9 out/boot.emmc.img
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
