@@ -105,9 +105,56 @@
               # Create pre-built image(s)
               linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file helium-jessie_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-helium_*.tar.gz --hwpack-force-yes --bootloader uefi
 
+              # Create eMMC rootfs image(s)
+              mkdir boot rootfs
+              for device in $(sudo kpartx -av out/helium-jessie_${rootfs}_${VERSION}.img | cut -d' ' -f3); do
+                partition=$(echo ${device} | cut -d'p' -f3)
+                [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
+                [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
+              done
+
+              sudo ln -sf /run/systemd/resolve/resolv.conf rootfs/etc/resolv.conf
+
+              cat << EOF | sudo tee rootfs/etc/systemd/network/80-dhcp.network
+            [Match]
+            Name=eth*
+
+            [Network]
+            DHCP=yes
+            EOF
+
+              cat << EOF | sudo tee rootfs/etc/fstab
+            /dev/disk/by-partlabel/userdata /     ext4 errors=remount-ro 0 1
+            #/dev/disk/by-partlabel/boot     /boot vfat defaults          0 0
+            EOF
+
+              sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+              sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+
+              sudo make_ext4fs -o -L rootfs -l 5632M -s out/helium-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
+              sudo umount boot rootfs
+              sudo kpartx -dv out/helium-jessie_${rootfs}_${VERSION}.img
+              sudo rm -rf boot rootfs
+
               # Compress image(s)
+              gzip -9 out/helium-jessie_${rootfs}_${VERSION}.emmc.img
               gzip -9 out/helium-jessie_${rootfs}_${VERSION}.img
             done
+
+            # Create boot image(s)
+            mkdir boot-fat
+            dd if=/dev/zero of=out/boot-fat.emmc.img bs=512 count=32768
+            sudo mkfs.fat -n "boot" out/boot-fat.emmc.img
+            sudo mount -o loop,rw,sync out/boot-fat.emmc.img boot-fat
+            sudo cp -a out/Image boot-fat/Image || true
+            sudo cp -a out/pxa1928-helium.dtb boot-fat/ || true
+            sudo cp -a out/initrd.img-* boot-fat/initrd.img || true
+            sudo umount boot-fat
+            sudo chmod 777 out/boot-fat.emmc.img
+            rm -rf boot-fat
+
+            # Compress boot partition image(s)
+            gzip -9 out/boot-fat.emmc.img
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
