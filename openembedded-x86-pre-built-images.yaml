@@ -7,14 +7,20 @@
         numToKeep: 30
     parameters:
         - string:
-            name: BUNDLE_STREAM_NAME
-            default: '/public/team/linaro/ci-linux-lng/'
-        - string:
             name: DEVICE_TYPE
             default: 'lng-x86'
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: MACHINE
+            default: 'lng-x86-64'
+        - string:
+            name: linux_kernel
+            default: 'linaro-lng-x86-64'
+        - string:
+            name: linux_kernel_version
+            default: '3.14'
     properties:
         - authorization:
             anonymous:
@@ -35,12 +41,6 @@
             name: gcc_version
             values:
                 - 4.9
-        - axis:
-            type: user-defined
-            name: MACHINE
-            values:
-                - lng-x86-64
-                - lng-rt-x86-64
     execution-strategy:
         sequential: true
     wrappers:
@@ -59,9 +59,6 @@
             # we clean build and populate it from cache
             bash -x pre-build-do-cleanup.sh
 
-            # set kernel to build
-            export linux_kernel=linaro-${MACHINE}
-
             # do a build
             bash -x init-and-build.sh -a x86 -g ${gcc_version} virtual/kernel
 
@@ -73,8 +70,16 @@
             # Capture what we're building in the build output.
             repo manifest -r
 
-            [ ${MACHINE} = "lng-rt-x86-64" ] && BUNDLE_STREAM_NAME="/public/team/linaro/ci-linux-lng-preempt-rt/"
-            KERNEL_URL="http://snapshots.linaro.org/openembedded/pre-built/${MACHINE}/${BUILD_NUMBER}/$(ls out/bzImage*.bin |xargs basename)"
+            case "${linux_kernel}" in
+              linaro-lng-x86-64|linux-lng-test-x86-64)
+                BUNDLE_STREAM_NAME="/public/team/linaro/ci-linux-lng-preempt-rt-${linux_kernel_version}/"
+                ;;
+              linaro-lng-rt-x86-64|linux-lng-rt-test-x86-64)
+                BUNDLE_STREAM_NAME="/public/team/linaro/ci-linux-lng-${linux_kernel_version}/"
+                ;;
+            esac
+
+            KERNEL_URL="http://snapshots.linaro.org/openembedded/pre-built/${linux_kernel}-${linux_kernel_version}/${BUILD_NUMBER}/$(ls out/bzImage*.bin |xargs basename)"
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
@@ -90,8 +95,8 @@
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-x86-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-qemux86-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.cpio.gz"
 
             # Parse recipe and get GIT_URL/GIT_BRANCH/GIT_COMMIT
-            export GIT_URL=$(grep "^SRC_URI =" meta-linaro/meta-linaro/recipes-kernel/linux/linaro-${MACHINE}_git.bb | cut -d'"' -f2 | cut -d';' -f1)
-            export GIT_BRANCH=$(grep "^SRC_URI =" meta-linaro/meta-linaro/recipes-kernel/linux/linaro-${MACHINE}_git.bb |cut -d'"' -f2 | cut -d'=' -f2)
+            export GIT_URL=$(grep "^SRC_URI =" meta-linaro/meta-linaro/recipes-kernel/linux/${linux_kernel}_${linux_kernel_version}.bb | cut -d'"' -f2 | cut -d';' -f1)
+            export GIT_BRANCH=$(grep "^SRC_URI =" meta-linaro/meta-linaro/recipes-kernel/linux/${linux_kernel}_${linux_kernel_version}.bb |cut -d'"' -f2 | cut -d'=' -f2)
             (cd /mnt/ci_build/workspace/downloads/git2/git.linaro.org.kernel.linux-linaro-lng.git && export GIT_COMMIT=$(git rev-parse ${GIT_BRANCH}))
 
             mkdir -p out/lava
@@ -107,9 +112,9 @@
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py out openembedded/pre-built/${MACHINE}/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py out openembedded/pre-built/${linux_kernel}-${linux_kernel_version}/${BUILD_NUMBER}
             #time python ${HOME}/bin/linaro-cp.py downloads openembedded/sources
-            python ${HOME}/bin/linaro-cp.py --make-link openembedded/pre-built/${MACHINE}/${BUILD_NUMBER}
+            python ${HOME}/bin/linaro-cp.py --make-link openembedded/pre-built/${linux_kernel}-${linux_kernel_version}/${BUILD_NUMBER}
     publishers:
         - trigger:
             project: 'openembedded-lng-x86-pre-built-test-definitions, openembedded-lng-rt-x86-pre-built-test-definitions'
