@@ -195,12 +195,9 @@
 
               sudo ln -sf /etc/resolvconf/run/resolv.conf rootfs/etc/resolv.conf
 
-              cat << EOF | sudo tee rootfs/etc/systemd/network/80-dhcp.network
-            [Match]
-            Name=eth*
-
-            [Network]
-            DHCP=yes
+              cat << EOF | sudo tee rootfs/etc/network/interfaces.d/eth0
+            #auto eth0
+            #iface eth0 inet dhcp
             EOF
 
               cat << EOF | sudo tee rootfs/etc/network/interfaces.d/wlan0
