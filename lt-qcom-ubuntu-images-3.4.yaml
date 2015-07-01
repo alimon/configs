@@ -93,7 +93,7 @@
             cp -a builddir-*-${kernel_flavour}/arch/arm/boot/zImage out/
 
             # Create the hardware pack
-            cat << EOF > linaro-lt-qcom
+            cat << EOF > linaro-lt-qcom.default
             format: '3.0'
             name: linaro-lt-qcom
             architectures:
@@ -128,8 +128,16 @@
             - libasound2
             EOF
 
-            # additional packages in desktop images
-            [ "${rootfs}" != "developer" ] && cat << EOF >> linaro-lt-qcom
+            cat > out/README.txt << EOF
+            This build is using artifacts from the following builds:
+            EOF
+
+            for rootfs in ${ROOTFS}; do
+
+              cat linaro-lt-qcom.default > linaro-lt-qcom
+
+              # additional packages in desktop images
+              [ "${rootfs}" != "developer" ] && cat << EOF >> linaro-lt-qcom
             - libdrm2
             - libdrm-freedreno1
             - libdrm-nouveau2
@@ -149,16 +157,12 @@
             - mesa-utils
             EOF
 
-            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-            linaro-hwpack-create --debug linaro-lt-qcom ${VERSION}
-            linaro-hwpack-replace -t `ls hwpack_linaro-lt-qcom_*_armhf_supported.tar.gz` -p `ls linux-image-*-linaro-lt-qcom_*.deb` -r linux-image -d -i
-            linaro-hwpack-replace -t `ls hwpack_linaro-lt-qcom_*_armhf_supported.tar.gz` -p `ls linux-headers-*-linaro-lt-qcom_*.deb` -r linux-headers -d -i
+              rm -f `ls hwpack_linaro-lt-qcom_*_armhf_supported.tar.gz`
+              VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+              linaro-hwpack-create --debug linaro-lt-qcom ${VERSION}
+              linaro-hwpack-replace -t `ls hwpack_linaro-lt-qcom_*_armhf_supported.tar.gz` -p `ls linux-image-*-linaro-lt-qcom_*.deb` -r linux-image -d -i
+              linaro-hwpack-replace -t `ls hwpack_linaro-lt-qcom_*_armhf_supported.tar.gz` -p `ls linux-headers-*-linaro-lt-qcom_*.deb` -r linux-headers -d -i
 
-            cat > out/README.txt << EOF
-            This build is using artifacts from the following builds:
-            EOF
-
-            for rootfs in ${ROOTFS}; do
               # Get rootfs
               export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
               export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
