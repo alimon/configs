@@ -31,6 +31,17 @@
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            cat << EOF > oe_pre-built_parameters
+            linux_kernel=linaro-lng-rt-test-x86-64
+            linux_kernel_version=3.14
+            EOF
+        - trigger-builds:
+            project: 'openembedded-x86-pre-built-images'
+            property-file: oe_pre-built_parameters
     publishers:
         - trigger:
             project: 'linux-lng-v3.14-rt-pre-merge'
