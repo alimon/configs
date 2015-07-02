@@ -56,7 +56,7 @@
     execution-strategy:
         sequential: true
     triggers:
-        - timed: '@daily'
+        - timed: '0 22 * * *'
     wrappers:
         - timestamps
         - matrix-tie-parent:
@@ -66,14 +66,6 @@
             #!/bin/bash
 
             set -ex
-
-            # IMPORTANT: specify the exact target device (required by the LAVA job
-            # template) to use for the specified device type
-            case "${DEVICE_TYPE}" in
-              mustang)
-                export DEVICE_TARGET=osmustang03
-                ;;
-            esac
 
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
