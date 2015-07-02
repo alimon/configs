@@ -139,7 +139,9 @@
                 export board_types="rtsm_fvp_base-aemv8a"
                 export kernel_flavour="lsk-vexpress64-be"
                 export conf_filenames="arch/arm64/configs/defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress64.conf linaro/configs/bigendian.conf"
-                export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
+                # Per Kevin's request - skip LAVA job submission to FVP model
+                # https://bugs.linaro.org/show_bug.cgi?id=1622
+                #export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
                 export ARCH="arm64"
                 export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
                 cat << EOF > linaro/configs/bigendian.conf
@@ -228,7 +230,9 @@
                 export ROOTFS_BUILD_NUMBER=201
                 export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/minimal-initramfs-armv8b/linaro-image-minimal-initramfs-genericarmv8b-20150618-201.rootfs.cpio.gz"
 
-                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.18/lava-job-definitions/${DEVICE_TYPE}/template-be-ramdisk.yaml > custom_lava_job_definition.json
+                # Per Kevin's request - skip LAVA job submission to FVP model
+                # https://bugs.linaro.org/show_bug.cgi?id=1622
+                #./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.18/lava-job-definitions/${DEVICE_TYPE}/template-be-ramdisk.yaml > custom_lava_job_definition.json
                 cat << EOF > post_build_lava_parameters
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
