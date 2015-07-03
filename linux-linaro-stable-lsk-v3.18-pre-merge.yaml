@@ -124,7 +124,9 @@
                 export board_types="rtsm_fvp_base-aemv8a"
                 export kernel_flavour="vexpress64"
                 export conf_filenames="arch/arm64/configs/defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress64.conf"
-                export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
+                # Per Kevin's request - skip LAVA job submission to FVP model
+                # https://bugs.linaro.org/show_bug.cgi?id=1622
+                #export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
                 export ARCH="arm64"
                 export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
                 export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
@@ -217,7 +219,9 @@
                 export ROOTFS_BUILD_NUMBER=754
                 export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20150618-754.rootfs.tar.gz"
 
-                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.18-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                # Per Kevin's request - skip LAVA job submission to FVP model
+                # https://bugs.linaro.org/show_bug.cgi?id=1622
+                #./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v3.18-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
                 ;;
               vexpress64-be)
                 # Get rootfs URL
