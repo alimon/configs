@@ -53,9 +53,6 @@
         sequential: true
     wrappers:
         - timestamps
-        - copy-to-slave:
-            includes:
-                - gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
@@ -90,7 +87,8 @@
             export use_config_fragment=1
             export conf_filenames="arch/arm/configs/${defconfig}_defconfig linaro/configs/coresight.conf"
             export MAKE_DTBS=true
-            export toolchain_url="http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-arm-linux-gnueabihf-4.9-2014.09_linux.tar.xz"
+            export tcbindir="${HOME}/srv/toolchain/arm-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz"
 
             case "${defconfig}" in
               hisi)
@@ -122,7 +120,7 @@
 
             ${HOME}/bin/linaro-cp out kernel-hwpack/coresight/${defconfig}/${BUILD_NUMBER}
 
-            CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 50G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
             KERNEL_URL=http://snapshots.linaro.org/kernel-hwpack/coresight/${defconfig}/${BUILD_NUMBER}
