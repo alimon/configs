@@ -193,21 +193,23 @@
               sudo cp -a boot/initrd.img-* boot/ramdisk.img || true
               sudo cp -a cmdline boot/cmdline || true
 
-              sudo ln -sf /etc/resolvconf/run/resolv.conf rootfs/etc/resolv.conf
+              sudo ln -sf /run/systemd/resolve/resolv.conf rootfs/etc/resolv.conf
 
-              cat << EOF | sudo tee rootfs/etc/network/interfaces.d/eth0
-            #auto eth0
-            #iface eth0 inet dhcp
+              cat << EOF | sudo tee rootfs/etc/systemd/network/80-dhcp.network
+            [Match]
+            Name=eth*
+
+            [Network]
+            DHCP=yes
             EOF
 
-              cat << EOF | sudo tee rootfs/etc/network/interfaces.d/wlan0
-            #auto wlan0
-            #iface wlan0 inet dhcp
-            #    wpa-driver nl80211
-            #    wpa-ssid YOUR-SSID-HERE
-            #    wpa-psk YOUR-PASSWORD-HERE
-            #    pre-up /sbin/iw wlan0 set power_save off
-            #    pre-up echo 0 > /sys/kernel/debug/ieee80211/phy0/wlcore/sleep_auth
+              cat << EOF | sudo tee rootfs/etc/NetworkManager/dispatcher.d/99hikey
+            #!/bin/sh
+
+            if [ "$1" = "wlan0" -a "$2" = "pre-up" ]; then
+              /sbin/iw wlan0 set power_save off
+              echo 0 > /sys/kernel/debug/ieee80211/phy0/wlcore/sleep_auth
+            fi
             EOF
 
               cat << EOF | sudo tee rootfs/etc/fstab
@@ -228,7 +230,8 @@
 
             /home/linaro/bin/xmms2-output-plugin-pulse
             EOF
-              sudo chmod a+x rootfs/home/linaro/bin/*
+              sudo chmod a+x rootfs/home/linaro/bin/* \
+                             rootfs/etc/NetworkManager/dispatcher.d/99hikey
               sudo chown -R 1000:1000 rootfs/home/linaro
 
               # ******** TI wl18xx R8.5 - out of tree modules ********
