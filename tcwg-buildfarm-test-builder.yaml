@@ -19,9 +19,13 @@
             default: 'latest'
             description: 'GCC revision to build'
         - string:
-            name: languages
+            name: host_x86_64_languages
             default: 'default'
-            description: 'Languages to build, e.g., "c,c++" or "all" or "default"'
+            description: 'Languages to build for x86_64-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: host_aarchXX_languages
+            default: 'c,c++'
+            description: 'Languages to build for AArchXX-hosted toolchains, e.g., "c,c++" or "all" or "default"'
         - bool:
             name: try_bootstrap
             default: 'true'
@@ -115,6 +119,11 @@
                 ;;
             esac
             schroot_image="tcwg-build-${schroot_arch}-trusty"
+
+            case $(uname -m) in
+              x86_64) languages="$host_x86_64_languages" ;;
+              *) languages="$host_aarchXX_languages" ;;
+            esac
 
             if $try_bootstrap; then
               bootstrap="--bootstrap"
