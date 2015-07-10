@@ -1,0 +1,70 @@
+- job:
+    name: 96boards-grub-efi-arm64
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    disabled: false
+    node: docker-jessie-arm64
+    display-name: '96boards - GRUB EFI'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends grub-efi-arm64-bin python-pycurl
+
+            mkdir out
+
+            cat << EOF > out/grub.cfg
+            set default="0"
+            set timeout=2
+
+            menuentry 'Debian GNU/Linux' {
+                linux /Image console=ttyAMA0,115200 earlycon=pl011,0xf8015000 root=/dev/disk/by-partlabel/system rw rootwait initrd=initrd.img efi=noruntime
+                initrd /initrd.img
+                devicetree /hi6220-hikey.dtb
+            }
+            EOF
+
+            echo 'configfile (hd0,gpt6)/grub/grub.cfg' > out/grub.configfile
+
+            grub-mkimage \
+              --verbose \
+              --config=out/grub.configfile \
+              --output=out/grubaa64.efi \
+              --format=arm64-efi \
+              --prefix='(hd0,gpt6)/grub' \
+              boot chain configfile efinet ext2 fat gettext help linux loadenv lsefi normal part_gpt part_msdos read search search_fs_file search_fs_uuid search_label terminal terminfo tftp time
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/hikey/linaro/grub/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
