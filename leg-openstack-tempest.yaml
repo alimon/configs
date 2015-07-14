@@ -47,6 +47,7 @@
             values:
               - trusty
               - vivid
+              - wily
         - axis:
             type: user-defined
             name: DEVSTACK_BRANCH
@@ -55,7 +56,7 @@
               - stable/kilo
     execution-strategy:
         combination-filter: |
-          !(OS_VERSION=="vivid" && DEVSTACK_BRANCH=="stable/kilo")
+          !((OS_VERSION=="vivid" || OS_VERSION=="wily") && DEVSTACK_BRANCH=="stable/kilo")
         sequential: true
     triggers:
         - timed: '0 22 * * *'
