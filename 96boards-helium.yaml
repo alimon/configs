@@ -69,6 +69,18 @@
             export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
             export toolchain_url=http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz
 
+            # FIXME - enable wl18xx driver
+            sed -i "/^CONFIG_RFKILL/d" arch/arm64/configs/pxa1928_defconfig
+            cat << EOF >> arch/arm64/configs/pxa1928_defconfig
+            CONFIG_CFG80211=m
+            CONFIG_MAC80211=m
+            CONFIG_RFKILL=m
+            CONFIG_RFKILL_REGULATOR=m
+            CONFIG_RFKILL_GPIO=m
+            CONFIG_WL18XX=m
+            CONFIG_WLCORE_SDIO=m
+            EOF
+
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
