@@ -122,7 +122,11 @@
 
             FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
             FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
+            wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
+
             GRUB_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/grub/latest"
+            wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O grubaa64.efi
+            wget --progress=dot ${GRUB_EFI_URL}/grub.cfg -O grub/grub.cfg
 
             cat > out/README.txt << EOF
             Build information:
@@ -252,41 +256,38 @@
 
             # Create boot image(s)
             mkdir boot-fat
-            #dd if=/dev/zero of=out/boot-fat.img bs=512 count=131072
-            #sudo mkfs.fat -n "BOOT IMG" out/boot-fat.img
-            #sudo mount -o loop,rw,sync out/boot-fat.img boot-fat
-            #sudo cp -a out/Image boot-fat/Image || true
-            #sudo cp -a out/hi6220-hikey.dtb boot-fat/lcb.dtb || true
-            #sudo cp -a out/initrd.img-* boot-fat/ramdisk.img || true
-            #sudo cp -a cmdline boot-fat/cmdline || true
-            #sudo umount boot-fat
-            #sudo chmod 777 out/boot-fat.img
+
             dd if=/dev/zero of=out/boot-fat.emmc.img bs=512 count=131072
             sudo mkfs.fat -n "BOOT IMG" out/boot-fat.emmc.img
             sudo mount -o loop,rw,sync out/boot-fat.emmc.img boot-fat
+            sudo mkdir boot-fat/grub
             sudo cp -a out/Image boot-fat/Image || true
             sudo cp -a out/hi6220-hikey.dtb boot-fat/lcb.dtb || true
             sudo cp -a out/initrd.img-* boot-fat/ramdisk.img || true
             sudo cp -a cmdline.emmc boot-fat/cmdline || true
+            sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
+            sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
+            sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.emmc.img
+
             dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
             sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
             sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
+            sudo mkdir boot-fat/grub
             sudo cp -a out/Image out/hi6220-hikey.dtb boot-fat/ || true
             sudo cp -a out/initrd.img-* boot-fat/initrd.img || true
-            sudo wget --progress=dot ${FASTBOOT_EFI_URL} -O boot-fat/fastboot.efi || true
-            sudo mkdir boot-fat/grub || true
-            sudo wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O boot-fat/grubaa64.efi || true
-            sudo wget --progress=dot ${GRUB_EFI_URL}/grub.cfg -O boot-fat/grub/grub.cfg || true
+            sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
+            sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
+            sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.uefi.img
+
             rm -rf boot-fat
 
             # Compress boot partition image(s)
             gzip -9 out/boot-fat.emmc.img
             gzip -9 out/boot-fat.uefi.img
-            #gzip -9 out/boot-fat.img
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
