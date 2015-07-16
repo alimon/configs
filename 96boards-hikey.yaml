@@ -289,6 +289,9 @@
             gzip -9 out/boot-fat.emmc.img
             gzip -9 out/boot-fat.uefi.img
 
+            # FIXME - ship legacy dtb during transition to UEFI and PSCI
+            wget -q http://builds.96boards.org/releases/hikey/linaro/debian/15.06/hi6220-hikey.dtb -O out/hi6220-hikey-spin-table.dtb
+
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
 
