@@ -26,6 +26,10 @@
             name: host_aarchXX_languages
             default: 'c,c++'
             description: 'Languages to build for AArchXX-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: runtests
+            default: 'x86_64-host'
+            description: 'Run toolchain testsuites: "yes", "no", "x86_64-host"'
         - bool:
             name: try_bootstrap
             default: 'true'
@@ -125,6 +129,12 @@
               *) languages="$host_aarchXX_languages" ;;
             esac
 
+            case "$runtests-$(uname -m)" in
+              "yes"-*) runtests_opt="--runtests" ;;
+              "x86_64-host"-x86_64) runtests_opt="--runtests" ;;
+              *) runtests_opt="" ;;
+            esac
+
             if $try_bootstrap; then
               bootstrap="--bootstrap"
             else
@@ -145,7 +155,7 @@
             BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
             $BUILD_SHELL -c "echo Build session is up"
 
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap --runtests --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-test-builder $logname_opt $norebuild || result="$?"
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-test-builder $logname_opt $norebuild || result="$?"
 
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
