@@ -194,9 +194,13 @@
             EOF
               fi
 
+              sudo mkdir boot/grub
               sudo cp -a boot/hi6220-hikey.dtb boot/lcb.dtb || true
               sudo cp -a boot/initrd.img-* boot/ramdisk.img || true
               sudo cp -a cmdline boot/cmdline || true
+              sudo cp -a fastboot.efi boot/fastboot.efi || true
+              sudo cp -a grubaa64.efi boot/grubaa64.efi || true
+              sudo cp -a grub.cfg boot/grub/grub.cfg || true
 
               sudo ln -sf /run/systemd/resolve/resolv.conf rootfs/etc/resolv.conf
 
