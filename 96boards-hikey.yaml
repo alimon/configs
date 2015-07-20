@@ -117,8 +117,8 @@
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-hikey_*.deb` -r linux-image -d -i
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
 
-            echo "console=tty0 console=ttyAMA3,115200n8 root=/dev/disk/by-partlabel/system rootwait rw" > cmdline.emmc
-            echo "console=tty0 console=ttyAMA3,115200n8 root=/dev/mmcblk1p2 rootwait rw" > cmdline
+            echo "console=tty0 console=ttyAMA3,115200n8 root=/dev/disk/by-partlabel/system rootwait ro quiet" > cmdline.emmc
+            echo "console=tty0 console=ttyAMA3,115200n8 root=/dev/mmcblk1p2 rootwait ro quiet" > cmdline
 
             FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
             FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
