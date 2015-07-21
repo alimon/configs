@@ -19,9 +19,17 @@
             default: 'latest'
             description: 'GCC revision to build'
         - string:
-            name: languages
+            name: host_x86_64_languages
             default: 'default'
-            description: 'Languages to build, e.g., "c,c++" or "all" or "default"'
+            description: 'Languages to build for x86_64-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: host_aarchXX_languages
+            default: 'c,c++'
+            description: 'Languages to build for AArchXX-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: runtests
+            default: 'x86_64-host'
+            description: 'Run toolchain testsuites: "yes", "no", "x86_64-host"'
         - bool:
             name: try_bootstrap
             default: 'true'
@@ -64,7 +72,8 @@
             type: slave
             name: label
             values:
-                - tcwg-x86_64
+                - tcwg-x86_64-build
+                - tcwg-aarch64-build
         - axis:
             type: user-defined
             name: target
@@ -77,11 +86,14 @@
                 - armeb-linux-gnueabihf
                 - native
                 - schroot-i386-native
+                - schroot-armhf-native
     execution-strategy:
+        combination-filter: |
+            (label=="tcwg-x86_64-build" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
         sequential: false
     wrappers:
         - timeout:
-            timeout: 300
+            timeout: 600
         - timestamps
         - ssh-agent-credentials:
             # tcwg-buildslave user id
@@ -112,6 +124,17 @@
             esac
             schroot_image="tcwg-build-${schroot_arch}-trusty"
 
+            case $(uname -m) in
+              x86_64) languages="$host_x86_64_languages" ;;
+              *) languages="$host_aarchXX_languages" ;;
+            esac
+
+            case "$runtests-$(uname -m)" in
+              "yes"-*) runtests_opt="--runtests" ;;
+              "x86_64-host"-x86_64) runtests_opt="--runtests" ;;
+              *) runtests_opt="" ;;
+            esac
+
             if $try_bootstrap; then
               bootstrap="--bootstrap"
             else
@@ -132,11 +155,11 @@
             BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
             $BUILD_SHELL -c "echo Build session is up"
 
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap --runtests --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master $logname_opt $norebuild || result="$?"
-
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
-            schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id
+            trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
+
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver ex40-01.tcwglab.linaro.org:logs-master $logname_opt $norebuild || result="$?"
 
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
