@@ -96,9 +96,7 @@
         - inject:
             properties-file: post_build_lava_parameters
         - shell: |
-            export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
-            export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
-            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-x86-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-qemux86-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.cpio.gz"
+            export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lng-x86/linaro-image-lng-qemux86-20150618-121.rootfs.cpio.gz"
 
             # Parse recipe and get GIT_URL/GIT_BRANCH/GIT_COMMIT
             export GIT_URL=$(grep "^SRC_URI =" meta-linaro/meta-linaro/recipes-kernel/linux/${linux_kernel}_${linux_kernel_version}.bb | cut -d'"' -f2 | cut -d';' -f1)

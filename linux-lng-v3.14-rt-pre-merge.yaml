@@ -181,9 +181,7 @@
             # Generate LAVA job definitions
             case "${hwpack}" in
               arndale)
-                export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
-                export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7a-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
-                export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-armv7a-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-genericarmv7a-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lng-armv7a/linaro-image-lng-genericarmv7a-20150618-335.rootfs.tar.gz"
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > out/lava/template.json
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-base.yaml > out/lava/template-base.json
@@ -191,9 +189,7 @@
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-cyclic.yaml > out/lava/template-cyclic.json
                 ;;
               arndale-be)
-                export ROOTFS_BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildNumber)
-                export ROOTFS_BUILD_TIMESTAMP=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=lng/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
-                export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/lng-armv7ab-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-lng-genericarmv7ab-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lng-armv7ab/linaro-image-lng-genericarmv7ab-20150618-291.rootfs.tar.gz"
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > out/lava/template-be.json
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-be-base.yaml > out/lava/template-be-base.json
