@@ -28,6 +28,9 @@
             name: UBUNTU_FLAVOUR
             default: 'vivid'
         - string:
+            name: UBUNTU_VERSION
+            default: '15.04'
+        - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon-arm64'
         - string:
@@ -42,6 +45,9 @@
         - string:
             name: KERNEL_BRANCH
             default: 'release/qcomlt-4.0'
+        - password:
+            name: PRIVATE_KEY
+            default: ${LT_QUALCOMM_PRIVATE_KEY}
     disabled: false
     node: docker-utopic
     display-name: 'Qualcomm Ubuntu based images (arm64)'
@@ -244,6 +250,81 @@
 
             # Final preparation for publishing
             cp -a linux-*.deb out/
+
+            #######################################
+            # let's create the SD install image now
+            #######################################
+
+            TMPKEYDIR=$(mktemp -d /tmp/qcom.XXXXXX)
+            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
+            #!/usr/bin/python
+
+            import os
+            import sys
+
+            def main():
+                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
+                if private_key == "Undefined":
+                    sys.exit("PRIVATE_KEY is not defined.")
+
+                buffer = private_key.replace(' ','\n')
+                with open('linaro-private-key', 'w') as f:
+                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
+                    f.write(buffer)
+                    f.write('\n-----END RSA PRIVATE KEY-----\n')
+
+            if __name__ == "__main__":
+                    main()
+            EOF
+            python ${TMPKEYDIR}/private-key-wrapper.py
+            chmod 0600 ${WORKSPACE}/linaro-private-key
+
+            eval `ssh-agent` >/dev/null 2>/dev/null
+            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
+            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
+
+            mkdir ~/.ssh
+            ssh-keyscan dev-private-git.linaro.org >> ~/.ssh/known_hosts
+            cat << EOF >> ~/.ssh/config
+            Host dev-private-git.linaro.org
+                User git
+            EOF
+            chmod 0600 ~/.ssh/*
+
+            git clone --depth 1 ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git
+            # record commit info in build log
+            cd db410c_bootloader
+            git log -1
+
+            cd emmc_linux
+            cp ../../out/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz boot.img.gz
+            cp ../../out/linaro-${UBUNTU_FLAVOUR}-alip-${PLATFORM_NAME}-${VERSION}.img.gz rootfs.img.gz
+            gunzip *.img.gz
+
+            cat << EOF >> os.json
+            {
+            "name": "Linaro Linux Desktop for DragonBoard 410c - Build #${BUILD_NUMBER}",
+            "url": "http://builds.96boards.org/releases/dragonboard410c",
+            "version": "${VERSION}",
+            "release_date": "`date +%Y-%m-%d`",
+            "description": "Linaro Linux with LXDE desktop based on Ubuntu ${UBUNTU_VERSION} for DragonBoard 410c"
+            }
+            EOF
+
+            cd ../sd_install
+            # quick hack for now, need to create the proper job that builds the initrd
+            wget --progress=dot -e dotbytes=2M http://people.linaro.org/~nicolas.dechesne/boot-burn.img
+            cd ..
+            ./build sdcard_install_ubuntu
+
+            # add license.txt file
+            rm -f license.txt
+            wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
+            cp license.txt out/dragonboard410c_sdcard_install_ubuntu
+
+            # create archive for publishing
+            zip -rj ../out/dragonboard410c_sdcard_install_ubuntu-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_install_ubuntu
+            cd ..
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
