@@ -25,6 +25,9 @@
         - string:
             name: MANIFEST_FILENAME
             default: LA.BR.1.2.4-00310-8x16.0.xml
+        - password:
+            name: PRIVATE_KEY
+            default: ${LT_QUALCOMM_PRIVATE_KEY}
     disabled: false
     node: docker-utopic-aosp
     display-name: '96boards - DragonBoard 410c (Android)'
@@ -98,12 +101,91 @@
             for image in "boot.img" "system.img" "userdata.img" "cache.img" "persist.img" "recovery.img"; do
                 echo "Compressing $image"
                 tar -Jcf ${image}.tar.xz ${image}
-                rm -f ${image}
             done
             cd -
 
             cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/
             cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml ${WORKSPACE}/
+
+            #######################################
+            # let's create the SD install image now
+            #######################################
+
+            TMPKEYDIR=$(mktemp -d /tmp/qcom.XXXXXX)
+            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
+            #!/usr/bin/python
+
+            import os
+            import sys
+
+            def main():
+                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
+                if private_key == "Undefined":
+                    sys.exit("PRIVATE_KEY is not defined.")
+
+                buffer = private_key.replace(' ','\n')
+                with open('linaro-private-key', 'w') as f:
+                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
+                    f.write(buffer)
+                    f.write('\n-----END RSA PRIVATE KEY-----\n')
+
+            if __name__ == "__main__":
+                    main()
+            EOF
+            python ${TMPKEYDIR}/private-key-wrapper.py
+            chmod 0600 ${WORKSPACE}/linaro-private-key
+
+            eval `ssh-agent` >/dev/null 2>/dev/null
+            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
+            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
+
+            mkdir ~/.ssh
+            ssh-keyscan dev-private-git.linaro.org >> ~/.ssh/known_hosts
+            cat << EOF >> ~/.ssh/config
+            Host dev-private-git.linaro.org
+                User git
+            EOF
+            chmod 0600 ~/.ssh/*
+
+            git clone --depth 1 ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git
+            # record commit info in build log
+            cd db410c_bootloader
+            git log -1
+
+            cd emmc_android
+            # we didn't remove the file in out folder when we compressed earlier, so we
+            # move them here now
+            mv out/target/product/msm8916_64/boot.img .
+            mv out/target/product/msm8916_64/recovery.img .
+            mv out/target/product/msm8916_64/system.img .
+            mv out/target/product/msm8916_64/userdata.img .
+            mv out/target/product/msm8916_64/persist.img .
+            mv out/target/product/msm8916_64/cache.img .
+
+            cat << EOF >> os.json
+            {
+            "name": "Android for DragonBoard 410c - Build #${BUILD_NUMBER}",
+            "url": "http://builds.96boards.org/releases/dragonboard410c",
+            "version": "`date +%Y%m%d`-${BUILD_NUMBER}",
+            "release_date": "`date +%Y-%m-%d`",
+            "description": "Android release for DragonBoard 410c"
+            }
+            EOF
+
+            cd ../sd_install
+            # quick hack for now, need to create the proper job that builds the initrd
+            wget --progress=dot -e dotbytes=2M http://people.linaro.org/~nicolas.dechesne/boot-burn.img
+            cd ..
+            ./build sdcard_install_android
+
+            # add license.txt file
+            rm -f license.txt
+            wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
+            cp license.txt out/dragonboard410c_sdcard_install_android
+
+            # create archive for publishing
+            zip -rj ../out/target/product/msm8916_64/dragonboard410c_sdcard_install_android-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_install_android
+            cd ..
 
             # Publish
             PUB_DEST=/snapshots/dragonboard410c/qualcomm/android/${BUILD_NUMBER}
@@ -123,7 +205,7 @@
               --server ${PUBLISH_SERVER} \
               out/target/product/msm8916_64/ \
               $PUB_DEST \
-              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config|zip)$" \
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
 
