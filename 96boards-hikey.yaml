@@ -202,15 +202,7 @@
               sudo cp -a grubaa64.efi boot/grubaa64.efi || true
               sudo cp -a grub.cfg boot/grub/grub.cfg || true
 
-              sudo ln -sf /run/systemd/resolve/resolv.conf rootfs/etc/resolv.conf
-
-              cat << EOF | sudo tee rootfs/etc/systemd/network/80-dhcp.network
-            [Match]
-            Name=eth*
-
-            [Network]
-            DHCP=yes
-            EOF
+              sudo ln -sf /etc/resolvconf/run/resolv.conf rootfs/etc/resolv.conf
 
               cat << EOF | sudo tee rootfs/etc/NetworkManager/dispatcher.d/99hikey
             #!/bin/sh
