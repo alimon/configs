@@ -74,6 +74,9 @@
 
             sudo apt-get update
             sudo apt-get install -y ccache python-beautifulsoup python-html2text python-pycurl
+            # FIXME - temporary workaround
+            sudo wget https://git.linaro.org/ci/linaro-image-tools.git/blob_plain/HEAD:/linaro-hwpack-install -O /usr/bin/linaro-hwpack-install
+            sudo chmod +x /usr/bin/linaro-hwpack-install
 
             export LANG=C
             CCACHE_DIR="${HOME}/srv/ccache"
@@ -89,21 +92,18 @@
 
             case "${hwpack}" in
               arndale)
-                export hwpack_type="arndale"
                 export board_types="lng-arndale"
                 export kernel_flavour="arndale"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/arndale.conf"
                 export DEVICE_TYPE="arndale"
                 ;;
               arndale-be)
-                export hwpack_type="arndale-be"
                 export board_types="lng-arndale"
                 export kernel_flavour="arndale-be"
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/arndale.conf linaro/configs/bigendian.conf"
                 export DEVICE_TYPE="arndale"
                 ;;
               vexpress64)
-                export hwpack_type="vexpress64"
                 export board_types="lng-juno"
                 export kernel_flavour="vexpress64"
                 export conf_filenames="arch/arm64/configs/defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/vexpress64.conf"
@@ -116,7 +116,6 @@
             EOF
                 ;;
               vexpress64-be)
-                export hwpack_type="vexpress64-be"
                 export board_types="rtsm_fvp_base-aemv8a"
                 export kernel_flavour="vexpress64-be"
                 export conf_filenames="arch/arm64/configs/defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/vexpress64.conf linaro/configs/bigendian.conf"
@@ -140,13 +139,25 @@
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
+            cp -a configs/linux-lng/hwpacks/linaro-* .
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+
+            # Create the hardware pack
+            case "${hwpack}" in
+              arndale|arndale-be)
+                linaro-hwpack-create --debug linaro-${hwpack} ${VERSION}
+                linaro-hwpack-replace -t `ls hwpack_linaro-*_supported.tar.gz` -p `ls linux-image-*-linaro-*.deb|head -1` -r linux-image -d -i
+                linaro-hwpack-replace -t `ls hwpack_linaro-*_supported.tar.gz` -p `ls linux-headers-*-linaro-*.deb` -r linux-headers -d -i
+                ;;
+            esac
+
             mkdir -p out/lava
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
-            [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack_type}* out/
+            [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack}* out/
 
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v4.1/${hwpack}/${BUILD_NUMBER}"
             DTB_URL=${KERNEL_URL}/dtbs
-            [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename)"
+            [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack}*.tar.gz |xargs basename)"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
@@ -161,7 +172,7 @@
             DTB_URL=${DTB_URL}
             HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
             STARTUP_NSH=${STARTUP_NSH}
-            hwpack_type=${hwpack_type}
+            hwpack_type=${hwpack}
             EOF
         - inject:
             properties-file: post_build_lava_parameters
