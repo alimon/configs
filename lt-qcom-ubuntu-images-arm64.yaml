@@ -189,15 +189,7 @@
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
 
-              sudo ln -sf /run/systemd/resolve/resolv.conf rootfs/etc/resolv.conf
-
-              cat << EOF | sudo tee rootfs/etc/systemd/network/80-dhcp.network
-            [Match]
-            Name=eth*
-
-            [Network]
-            DHCP=yes
-            EOF
+              sudo ln -sf /run/resolvconf/resolv.conf rootfs/etc/resolv.conf
 
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
