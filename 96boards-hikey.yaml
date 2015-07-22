@@ -128,6 +128,9 @@
             wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O grubaa64.efi
             wget --progress=dot ${GRUB_EFI_URL}/grub.cfg -O grub.cfg
 
+            # FIXME - ship legacy dtb during transition to UEFI and PSCI
+            wget -q http://builds.96boards.org/releases/hikey/linaro/debian/15.06/hi6220-hikey.dtb -O out/hi6220-hikey-spin-table.dtb
+
             cat > out/README.txt << EOF
             Build information:
             * build: ${BUILD_URL}
@@ -258,7 +261,7 @@
             sudo mount -o loop,rw,sync out/boot-fat.emmc.img boot-fat
             sudo mkdir boot-fat/grub
             sudo cp -a out/Image boot-fat/Image || true
-            sudo cp -a out/hi6220-hikey.dtb boot-fat/lcb.dtb || true
+            sudo cp -a out/hi6220-hikey-spin-table.dtb boot-fat/lcb.dtb || true
             sudo cp -a out/initrd.img-* boot-fat/ramdisk.img || true
             sudo cp -a cmdline.emmc boot-fat/cmdline || true
             sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
@@ -284,9 +287,6 @@
             # Compress boot partition image(s)
             gzip -9 out/boot-fat.emmc.img
             gzip -9 out/boot-fat.uefi.img
-
-            # FIXME - ship legacy dtb during transition to UEFI and PSCI
-            wget -q http://builds.96boards.org/releases/hikey/linaro/debian/15.06/hi6220-hikey.dtb -O out/hi6220-hikey-spin-table.dtb
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
