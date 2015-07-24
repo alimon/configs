@@ -23,6 +23,10 @@
             default: gcc_patch_prev
             description: 'Original GCC revision'
         - string:
+            name: log_server
+            default: ex40-01.tcwglab.linaro.org:logs-master
+            description: 'Log_Server'
+        - string:
             name: abe_branch
             default: refs/heads/master
             description: 'ABE revision to use'
@@ -64,16 +68,19 @@
             echo "log_name=tcwg-backport-$gcc_orig_rev/\$(uname -m).\$target" >> gcc_orig_parameters
             echo "rebuild=false" >> gcc_orig_parameters
             echo "dont_fail=true" >> gcc_orig_parameters
+            echo "log_server=$log_server" >> gcc_orig_parameters
             echo "abe_branch=$abe_branch" >> gcc_orig_parameters
 
             echo "gcc_branch=gcc.git@$gcc_patch_rev" > gcc_patch_parameters
             echo "log_name=tcwg-backport-$gcc_patch_rev/\$(uname -m).\$target" >> gcc_patch_parameters
             echo "rebuild=false" >> gcc_patch_parameters
             echo "dont_fail=true" >> gcc_patch_parameters
+            echo "log_server=$log_server" >> gcc_patch_parameters
             echo "abe_branch=$abe_branch" >> gcc_patch_parameters
 
             echo "ref_logs=tcwg-backport-$gcc_orig_rev" > compare_results_parameters
             echo "new_logs=tcwg-backport-$gcc_patch_rev" >> compare_results_parameters
+            echo "log_server=$log_server" >> compare_results_parameters
             echo "abe_branch=$abe_branch" >> compare_results_parameters
         - trigger-builds:
             - project: tcwg-buildfarm-master
