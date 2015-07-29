@@ -31,8 +31,9 @@
             #!/bin/bash
 
             java -version
+            sudo add-apt-repository ppa:linaro-maintainers/tools
             sudo apt-get update
-            sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch
+            sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch linaro-image-tools
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
@@ -80,18 +81,29 @@
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
 
-            build-tools/node/lava-submit "${CONFIG}"
+            #build-tools/node/lava-submit "${CONFIG}"
+            #
+            #for f in $(ls -1 build/out/lava-job-info* 2>/dev/null); do
+            #  time linaro-cp.py \
+            #    --no-build-info \
+            #    --split-job-owner \
+            #    --server ${PUBLISH_SERVER} \
+            #    ${f} \
+            #    ${PUB_DEST}
+            #done
 
-            for f in $(ls -1 build/out/lava-job-info* 2>/dev/null); do
-              time linaro-cp.py \
-                --no-build-info \
-                --split-job-owner \
-                --server ${PUBLISH_SERVER} \
-                ${f} \
-                ${PUB_DEST}
-            done
+            export DEVICE_TYPE=vexpress-tc2
+            export BUNDLE_STREAM_NAME="/private/team/wg/wg-private/"
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            EOF
 
             echo "Build finished"
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - archive:
             artifacts: '*.xml'
