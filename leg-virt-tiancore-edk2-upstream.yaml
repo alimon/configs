@@ -56,7 +56,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf out
+              rm -rf out edk2/Build
             }
 
             # use the GCC 4.[89] toolchains that are already available on the build host
@@ -74,6 +74,7 @@
 
                 # Initialise the build environment
                 cd edk2
+                git clean -dxf BaseTools/
                 make -C BaseTools
 
                 source edksetup.sh
