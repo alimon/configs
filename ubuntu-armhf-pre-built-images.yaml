@@ -14,8 +14,8 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: precise_hwpack_cloud
     display-name: 'Linaro Ubuntu pre-built images (armhf)'
+    concurrent: true
     scm:
         - git:
             url: git://git.linaro.org/ci/pre-built-images.git
@@ -39,13 +39,13 @@
             type: slave
             name: label
             values:
-                - precise_hwpack_cloud
+                - docker-utopic
     execution-strategy:
-        sequential: true
+        sequential: false
     wrappers:
         - timestamps
         - matrix-tie-parent:
-            node: precise_hwpack_cloud
+            node: master
     builders:
         - copyartifact:
             project: ubuntu-armhf-rootfs
@@ -167,4 +167,4 @@
             always-publish-from-master: true
     publishers:
         - email:
-            recipients: fathi.boudra@linaro.org
+            recipients: riku.voipio@linaro.org fathi.boudra@linaro.org
