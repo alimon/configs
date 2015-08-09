@@ -75,6 +75,7 @@
               schroot-armhf-native
             )
 
+            # Disable shell wild-card expansion to handle $log_names with wildcards.
             set -f
             dirs=""
             for host in "${hosts[@]}"; do
@@ -85,5 +86,5 @@
 
             dirs="$(echo "$dirs" | sort -u)"
 
-            ssh $log_server bash -c "rm -rf $dirs"
+            ssh $log_server "rm -rf $dirs"
             set +f
