@@ -65,6 +65,10 @@
             export GCC49_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
             export GCC49_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
 
+            # reuse the binutils that ship with GCC 4.9 for the CLANG35 builds
+            export CLANG35_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
+            sudo apt-get install -y --no-install-recommends clang
+
             export OUTDIR=${WORKSPACE}/out
 
             (
@@ -95,18 +99,20 @@
                 ./Install.sh
 
                 cd ${WORKSPACE}
-                for tc in GCC48 GCC49
+                for type in DEBUG RELEASE
                 do
-                    for type in DEBUG RELEASE
+                    for tc in GCC48 GCC49
                     do
-                        for arch in AARCH64 ARM
-                        do
-                            mkdir -p ${OUTDIR}/QEMU-${arch}/${type}_${tc}
-                            build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc
-                            cp Build/ArmVirtQemu-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}_${tc}
-                        done
+                        mkdir -p ${OUTDIR}/QEMU-ARM/${type}_${tc}
+                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc
+                        cp Build/ArmVirtQemu-ARM/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-ARM/${type}_${tc}
+                    done
 
-                        # below builds are only supported for AArch64
+                    for tc in GCC48 GCC49 CLANG35
+                    do
+                        mkdir -p ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
+                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc
+                        cp Build/ArmVirtQemu-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
 
                         mkdir -p ${OUTDIR}/XEN-AARCH64/${type}_${tc}
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
