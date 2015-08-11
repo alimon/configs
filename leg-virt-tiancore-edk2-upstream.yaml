@@ -67,7 +67,10 @@
 
             # reuse the binutils that ship with GCC 4.9 for the CLANG35 builds
             export CLANG35_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
-            sudo apt-get install -y --no-install-recommends clang
+
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends clang python-pycurl zip
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O linaro-cp.py
 
             export OUTDIR=${WORKSPACE}/out
 
@@ -130,7 +133,7 @@
             )
 
             find out -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
-            ${HOME}/bin/linaro-cp out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+            python ./linaro-cp.py --no-build-info out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
         - shell: |
             KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-xen/hwpack=mustang,label=docker-utopic/lastSuccessfulBuild/buildNumber)
