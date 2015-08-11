@@ -70,16 +70,14 @@
             export CLEANUP=0
 
             bash -x ${WORKSPACE}/check-odp/build-${platform_type}.sh
-
+        - shell: |
             # Move log files
             mkdir -p out/log && find check-odp/build/odp-${platform_type}/testdir/ -type f -name '*.log' -exec cp {} out/log \;
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py out components/lng/odp/odp-api-platform-check/${platform_type}/${BUILD_NUMBER}
-            python ${HOME}/bin/linaro-cp.py --make-link components/lng/odp/odp-api-platform-check/${platform_type}/${BUILD_NUMBER}
-
+            time python ${HOME}/bin/linaro-cp.py --link-latest out components/lng/odp/odp-api-platform-check/${platform_type}/${BUILD_NUMBER}
     publishers:
         - warnings:
             console-log-parsers:
