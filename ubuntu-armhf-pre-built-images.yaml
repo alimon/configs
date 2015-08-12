@@ -14,8 +14,8 @@
                 - job-build
                 - job-cancel
     disabled: false
+    node: build
     display-name: 'Linaro Ubuntu pre-built images (armhf)'
-    concurrent: true
     scm:
         - git:
             url: git://git.linaro.org/ci/pre-built-images.git
@@ -41,11 +41,11 @@
             values:
                 - docker-utopic
     execution-strategy:
-        sequential: false
+        sequential: true
     wrappers:
         - timestamps
         - matrix-tie-parent:
-            node: master
+            node: build
     builders:
         - copyartifact:
             project: ubuntu-armhf-rootfs
@@ -167,4 +167,4 @@
             always-publish-from-master: true
     publishers:
         - email:
-            recipients: riku.voipio@linaro.org fathi.boudra@linaro.org
+            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
