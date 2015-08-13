@@ -66,7 +66,9 @@
 
             # Runs as ubuntu
             repo init -u git://codeaurora.org/platform/manifest.git -b release -m ${MANIFEST_FILENAME} --repo-url=git://codeaurora.org/tools/repo.git
-            repo sync -j16 -c
+            repo sync -j16
+            repo forall -c "repo start master ."
+            repo forall -c "repo start labr124_01810 ."
             mkdir -p out
             cp .repo/manifest.xml out/source-manifest.xml
             repo manifest -r -o out/pinned-manifest.xml
