@@ -65,10 +65,12 @@
             rm -rf out/target/product/msm8916_64/system/ out/target/product/msm8916_64/data/
 
             # Runs as ubuntu
+            set -ex
             repo init -u git://codeaurora.org/platform/manifest.git -b release -m ${MANIFEST_FILENAME} --repo-url=git://codeaurora.org/tools/repo.git
             repo sync -j16
             repo forall -c "repo start master ."
             repo forall -c "repo start labr124_01810 ."
+            set +ex
             mkdir -p out
             cp .repo/manifest.xml out/source-manifest.xml
             repo manifest -r -o out/pinned-manifest.xml
