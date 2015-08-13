@@ -68,8 +68,6 @@
             set -ex
             repo init -u git://codeaurora.org/platform/manifest.git -b release -m ${MANIFEST_FILENAME} --repo-url=git://codeaurora.org/tools/repo.git
             repo sync -j16
-            repo forall -c "repo start master ."
-            repo forall -c "repo start labr124_01810 ."
             set +ex
             mkdir -p out
             cp .repo/manifest.xml out/source-manifest.xml
@@ -85,7 +83,7 @@
             cd $(basename "${PATCHSET}" .tar.gz)
             pw=${PWD}
             export patches=$(find . -iname *.patch | sort)
-            for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project}; git am ${pw}/${patch}; cd -; done
+            for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project};rm -rf .git/rebase-apply; git am ${pw}/${patch}; cd -; done
             cd ..
             rm -rf ${pw}
 
