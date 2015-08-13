@@ -135,11 +135,11 @@
                     main()
             EOF
             python ${TMPKEYDIR}/private-key-wrapper.py
-            chmod 0600 ${WORKSPACE}/linaro-private-key
+            chmod 0600 linaro-private-key
 
             eval `ssh-agent` >/dev/null 2>/dev/null
-            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
-            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
+            ssh-add linaro-private-key >/dev/null 2>/dev/null
+            rm -rf linaro-private-key ${TMPKEYDIR}
 
             mkdir ~/.ssh
             ssh-keyscan dev-private-git.linaro.org >> ~/.ssh/known_hosts
@@ -157,12 +157,12 @@
             cd emmc_android
             # we didn't remove the file in out folder when we compressed earlier, so we
             # move them here now
-            mv out/target/product/msm8916_64/boot.img .
-            mv out/target/product/msm8916_64/recovery.img .
-            mv out/target/product/msm8916_64/system.img .
-            mv out/target/product/msm8916_64/userdata.img .
-            mv out/target/product/msm8916_64/persist.img .
-            mv out/target/product/msm8916_64/cache.img .
+            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/boot.img .
+            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/recovery.img .
+            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/system.img .
+            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/userdata.img .
+            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/persist.img .
+            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/cache.img .
 
             cat << EOF >> os.json
             {
