@@ -73,11 +73,11 @@
 
             OVERLAY=$(basename ${OVERLAY_URL})
             wget --progress=dot -e dotbytes=2M ${OVERLAY_URL} -O ${OVERLAY}
-            tar -jxf ${OVERLAY} -C vendor/qcom/
+            tar -jxvf ${OVERLAY} -C vendor/qcom/
 
             PATCHSET=$(basename ${PATCHSET_URL})
             wget --progress=dot -e dotbytes=2M ${PATCHSET_URL} -O ${PATCHSET}
-            tar -jxf ${PATCHSET}
+            tar -zxvf ${PATCHSET}
             cd $(basename "${PATCHSET}" .tar.bz2)
             pw=${PWD}
             export patches=$(find . -iname *.patch | sort)
