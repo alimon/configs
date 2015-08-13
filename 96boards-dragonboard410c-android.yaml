@@ -82,6 +82,7 @@
             tar -zxvf ${PATCHSET}
             cd $(basename "${PATCHSET}" .tar.gz)
             pw=${PWD}
+            cp device/qcom/msm8916_64/bootanimation.zip ../device/qcom/msm8916_64/
             export patches=$(find . -iname *.patch | sort)
             for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project};rm -rf .git/rebase-apply; git am ${pw}/${patch}; cd -; done
             cd ..
