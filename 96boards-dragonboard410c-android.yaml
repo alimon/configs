@@ -15,13 +15,13 @@
     parameters:
         - string:
             name: OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150427/proprietary_HY22.tar.bz2
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150813/proprietary_LA.BR.1.2.4_01810_8x16_1.tgz 
         - string:
             name: PATCHSET_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150427/LA.BR.1.2.4-00310-8x16.0_410c_DragonBoard_patches.tar.bz2
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150813/LA.BR.1.2.4-01810-8x16.0_410C_Aug.tar.gz
         - string:
             name: SYSTEM_OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150427/system_overlay.tar.bz2
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150813/system_overlay.tar.bz2
         - string:
             name: MANIFEST_FILENAME
             default: LA.BR.1.2.4-00310-8x16.0.xml
@@ -78,7 +78,7 @@
             PATCHSET=$(basename ${PATCHSET_URL})
             wget --progress=dot -e dotbytes=2M ${PATCHSET_URL} -O ${PATCHSET}
             tar -zxvf ${PATCHSET}
-            cd $(basename "${PATCHSET}" .tar.bz2)
+            cd $(basename "${PATCHSET}" .tgz)
             pw=${PWD}
             export patches=$(find . -iname *.patch | sort)
             for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project}; git am ${pw}/${patch}; cd -; done
