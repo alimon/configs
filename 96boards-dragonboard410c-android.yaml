@@ -78,7 +78,7 @@
             PATCHSET=$(basename ${PATCHSET_URL})
             wget --progress=dot -e dotbytes=2M ${PATCHSET_URL} -O ${PATCHSET}
             tar -zxvf ${PATCHSET}
-            cd $(basename "${PATCHSET}" .tgz)
+            cd $(basename "${PATCHSET}" .tar.gz)
             pw=${PWD}
             export patches=$(find . -iname *.patch | sort)
             for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project}; git am ${pw}/${patch}; cd -; done
