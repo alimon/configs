@@ -68,10 +68,10 @@
             export CLANG35_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
 
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends clang gcc-4.4 gcc-4.5 gcc-4.6 gcc-4.7 gcc-4.8 gcc-4.9 gcc-mingw-w64-i686 gcc-mingw-w64-x86_64
+            sudo apt-get install -y --no-install-recommends clang gcc-4.4 gcc-4.6 gcc-4.7 gcc-4.8 gcc-4.9 gcc-mingw-w64-i686 gcc-mingw-w64-x86_64
 
             # set up the paths for the various GCC versions
-            for i in $(seq 4 9)
+            for i in 4 6 7 8 9
             do
                 for a in IA32 X64
                 do
@@ -122,11 +122,11 @@
                 build -n $NUM_THREADS -b DEBUG -b RELEASE -a AARCH46 -t GCC48 -t GCC49 -t CLANG35 -p ArmPlatformPkg/ArmJunoPkg/ArmJuno.dsc
                 build -n $NUM_THREADS -b DEBUG -b RELEASE -a ARM     -t GCC48 -t GCC49            -p ArmVirtPkg/ArmVirtQemu.dsc
 
-                build -n $NUM_THREADS -b DEBUG -a IA32 -t GCC44 -t GCC45 -t GCC46 -t GCC47 -t GCC48 -t GCC49 -t UNIXGCC -p OvmfPkg/OvmfPkgIa32.dsc -D SECURE_BOOT_ENABLE
-                build -n $NUM_THREADS -b DEBUG -a X64  -t GCC44 -t GCC45 -t GCC46 -t GCC47 -t GCC48 -t GCC49 -t UNIXGCC -p OvmfPkg/OvmfPkgX64.dsc  -D SECURE_BOOT_ENABLE
+                build -n $NUM_THREADS -b DEBUG -a IA32 -t GCC44 -t GCC46 -t GCC47 -t GCC48 -t GCC49 -t UNIXGCC -p OvmfPkg/OvmfPkgIa32.dsc -D SECURE_BOOT_ENABLE
+                build -n $NUM_THREADS -b DEBUG -a X64  -t GCC44 -t GCC46 -t GCC47 -t GCC48 -t GCC49 -t UNIXGCC -p OvmfPkg/OvmfPkgX64.dsc  -D SECURE_BOOT_ENABLE
 
-                build -n $NUM_THREADS -b RELEASE -a IA32 -t GCC44 -t GCC45 -t GCC46 -t GCC47 -t GCC48 -t GCC49 -p OvmfPkg/OvmfPkgIa32.dsc
-                build -n $NUM_THREADS -b RELEASE -a X64  -t GCC44 -t GCC45 -t GCC46 -t GCC47 -t GCC48 -t GCC49 -p OvmfPkg/OvmfPkgX64.dsc
+                build -n $NUM_THREADS -b RELEASE -a IA32 -t GCC44 -t GCC46 -t GCC47 -t GCC48 -t GCC49 -p OvmfPkg/OvmfPkgIa32.dsc
+                build -n $NUM_THREADS -b RELEASE -a X64  -t GCC44 -t GCC46 -t GCC47 -t GCC48 -t GCC49 -p OvmfPkg/OvmfPkgX64.dsc
 
             )
 
