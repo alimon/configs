@@ -19,6 +19,10 @@
             default: 'latest'
             description: 'GCC revision to build'
         - string:
+            name: target
+            default: 'aarch64-none-elf'
+            description: 'target to build'
+        - string:
             name: host_x86_64_languages
             default: 'default'
             description: 'Languages to build for x86_64-hosted toolchains, e.g., "c,c++" or "all" or "default"'
@@ -77,23 +81,6 @@
             name: label
             values:
                 - tcwg-x86_64-02
-        - axis:
-            type: user-defined
-            name: target
-            values:
-                - aarch64-linux-gnu
-                - aarch64-none-elf
-                - aarch64_be-none-elf
-                - arm-linux-gnueabi
-                - arm-linux-gnueabihf
-                - armeb-linux-gnueabihf
-                - native
-                - schroot-i386-native
-                - schroot-armhf-native
-    execution-strategy:
-        combination-filter: |
-            (label=="tcwg-x86_64-02" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
-        sequential: false
     wrappers:
         - timeout:
             timeout: 600
