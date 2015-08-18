@@ -19,7 +19,7 @@
     parameters:
         - string:
             name: GIT_REPO
-            default: 'http://git.linaro.org/git-ro/people/ard.biesheuvel/uefi-next.git'
+            default: 'https://git.linaro.org/people/ard.biesheuvel/uefi-next.git'
         - string:
             name: GIT_BRANCH
             default: 'unify-gcc-v2'
@@ -29,10 +29,10 @@
     scm:
         - git:
             url: ${GIT_REPO}
-            refspec: +refs/heads/current:refs/remotes/origin/${GIT_BRANCH}
+            refspec: +refs/heads/${GIT_BRANCH}:refs/remotes/origin/${GIT_BRANCH}
             name: origin
             branches:
-                - refs/heads/current
+                - refs/heads/${GIT_BRANCH}
             basedir: edk2
             skip-tag: true
             shallow-clone: true
