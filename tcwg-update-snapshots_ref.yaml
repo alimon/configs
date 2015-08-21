@@ -19,7 +19,7 @@
             default: false
             description: 'Regenerate snapshots'
     disabled: false
-    node: tcwg-x86_64-ex40-build-01
+    node: tcwg-x86_64-ex40build-01
     display-name: 'Update reference ABE snapshots on TCWG machines'
     triggers:
         - timed: '@weekly'
@@ -37,7 +37,7 @@
             type: slave
             name: label
             values:
-                - tcwg-x86_64-ex40-build-01
+                - tcwg-x86_64-ex40build-01
                 - tcwg-x86_64-build-01
     execution-strategy:
         sequential: false
@@ -51,7 +51,7 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
-            node: tcwg-x86_64-ex40-build-01
+            node: tcwg-x86_64-ex40build-01
     builders:
         - shell: |
             #!/bin/bash
@@ -63,7 +63,7 @@
             fi
 
             case "$label" in
-              tcwg-x86_64-ex40-build-01)
+              tcwg-x86_64-ex40build-01)
                 machines="$(for i in 1 2 4 6 7 8 9; do echo tcwg-ex40-0$i; done) r1-a7.aus-colo r1-a8.aus-colo"
                 ;;
               tcwg-x86_64-build-01)
