@@ -126,8 +126,38 @@
             time python ${HOME}/bin/linaro-cp.py out openembedded/pre-built/${linux_kernel}-${linux_kernel_version}/${BUILD_NUMBER}
             #time python ${HOME}/bin/linaro-cp.py downloads openembedded/sources
             python ${HOME}/bin/linaro-cp.py --make-link openembedded/pre-built/${linux_kernel}-${linux_kernel_version}/${BUILD_NUMBER}
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="linux_kernel"}'
+            condition-string2: 'linaro-lng-x86-64'
+            steps:
+                - trigger-builds:
+                    - project: 'openembedded-lng-x86-pre-built-test-definitions'
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="linux_kernel"}'
+            condition-string2: 'linaro-lng-rt-x86-64'
+            steps:
+                - trigger-builds:
+                    - project: 'openembedded-lng-rt-x86-pre-built-test-definitions'
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="linux_kernel"}'
+            condition-string2: 'linaro-lng-test-x86-64'
+            steps:
+                - trigger-builds:
+                    - project: 'openembedded-lng-x86-pre-built-pre-merge-test-definitions'
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="linux_kernel"}'
+            condition-string2: 'linaro-lng-rt-test-x86-64'
+            steps:
+                - trigger-builds:
+                    - project: 'openembedded-lng-rt-x86-pre-built-pre-merge-test-definitions'
+                      block: true
     publishers:
-        - trigger:
-            project: 'openembedded-lng-x86-pre-built-test-definitions, openembedded-lng-rt-x86-pre-built-test-definitions'
         - email:
             recipients: 'anders.roxell@linaro.org fathi.boudra@linaro.org koen.kooi@linaro.org riku.voipio@linaro.org'
