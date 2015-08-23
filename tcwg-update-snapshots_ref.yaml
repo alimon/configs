@@ -18,6 +18,10 @@
             name: regenerate
             default: false
             description: 'Regenerate snapshots'
+        - string:
+            name: abe_branch
+            default: refs/remotes/changes/33/7533/1
+            description: 'ABE revision to use'
     disabled: false
     node: tcwg-x86_64-ex40build-01
     display-name: 'Update reference ABE snapshots on TCWG machines'
@@ -28,7 +32,7 @@
             url: https://git.linaro.org/toolchain/abe.git
             refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
-                - 40a1b0acc026c77ffe367520972f2d3abcbdbcd0
+                - ${abe_branch}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
