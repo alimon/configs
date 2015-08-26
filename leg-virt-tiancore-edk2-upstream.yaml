@@ -70,7 +70,6 @@
 
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends clang python-pycurl zip
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O linaro-cp.py
 
             export OUTDIR=${WORKSPACE}/out
 
@@ -133,8 +132,13 @@
             )
 
             find out -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
-            python ./linaro-cp.py --no-build-info out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
 
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
         - shell: |
             KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-xen/hwpack=mustang,label=docker-utopic/lastSuccessfulBuild/buildNumber)
             DEVICE_TYPE=mustang
@@ -159,7 +163,6 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters_xen_aarch64_uefi
               block: true
-
         - shell: |
             KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-mainline/ARCH=arm64,defconfig=defconfig,label=linaro-kernel-ci/lastSuccessfulBuild/buildNumber)
             DEVICE_TYPE=kvm-aarch64
