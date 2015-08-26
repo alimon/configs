@@ -152,6 +152,8 @@
               norebuild="--norebuild"
             fi
 
+            ulimit -u 5000
+
             session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
             BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"

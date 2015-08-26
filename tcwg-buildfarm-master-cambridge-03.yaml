@@ -139,13 +139,7 @@
               norebuild="--norebuild"
             fi
 
-            # Calculate session's RAM size to be used in ulimit.
-            # This limit is per-process, so, effectively, they have 2-4GB.
-            session_ram="$(free | grep "Mem:" | sed -e "s/Mem: *\([0-9]*\).*/\1/")"
-            session_ram="$(($session_ram / 8))"
             ulimit -u 5000
-            ulimit -d $session_ram
-            ulimit -v $session_ram
 
             session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
             BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
