@@ -54,6 +54,11 @@
             make pxa1928_helium_defconfig
             make -j$(getconf _NPROCESSORS_ONLN)
 
+            # Generate padded binary to clear the existing environment variables
+            dd if=/dev/zero of=u-boot.padded.bin bs=1024 count=1024
+            dd if=u-boot.bin of=u-boot.padded.bin conv=notrunc
+            mv u-boot.padded.bin u-boot.bin
+
             # Publish
             mkdir out
 
