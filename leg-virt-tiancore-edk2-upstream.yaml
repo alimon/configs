@@ -113,19 +113,15 @@
                     for tc in GCC48 GCC49 CLANG35
                     do
                         mkdir -p ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
-                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc
+                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
                         cp Build/ArmVirtQemu-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
 
                         mkdir -p ${OUTDIR}/XEN-AARCH64/${type}_${tc}
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
                         cp Build/ArmVirtXen-AARCH64/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-AARCH64/${type}_${tc}
 
-                        mkdir -p ${OUTDIR}/QEMU-AARCH64/${type}_${tc}-SECURE
-                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
-                        cp Build/ArmVirtQemu-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}_${tc}-SECURE
-
                         mkdir -p ${OUTDIR}/FVP-AARCH64/${type}_${tc}
-                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc -D DTB_DIR=${DTBDIR}
+                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmPlatformPkg/ArmVExpressPkg/ArmVExpress-FVP-AArch64.dsc -D DTB_DIR=${DTBDIR} -D SECURE_BOOT_ENABLE
                         cp Build/ArmVExpress-FVP-AArch64/${type}_${tc}/FV/FVP_AARCH64_EFI.fd ${OUTDIR}/FVP-AARCH64/${type}_${tc}
                     done
                 done
@@ -166,7 +162,7 @@
         - shell: |
             KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-mainline/ARCH=arm64,defconfig=defconfig,label=linaro-kernel-ci/lastSuccessfulBuild/buildNumber)
             DEVICE_TYPE=kvm-aarch64
-            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/QEMU-AARCH64/RELEASE_GCC49-SECURE/QEMU_EFI.img.gz
+            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/QEMU-AARCH64/RELEASE_GCC49/QEMU_EFI.img.gz
             TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
 
             wget -O - -q --no-check-certificate $TEMPLATE | \
