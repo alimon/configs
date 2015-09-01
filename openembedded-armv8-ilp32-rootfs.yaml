@@ -53,6 +53,7 @@
         - matrix-tie-parent:
             node: build
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -98,20 +99,14 @@
             Files-Pattern: *
             License-Type: open
             EOF
-        - ssh:
-            site: 'snapshots.linaro.org'
-            target: '${JOB_NAME}/${BUILD_NUMBER}/openembedded/images/${rootfs}-armv8-ilp32-gcc-${gcc_version}/${BUILD_NUMBER}'
-            source: 'out/**'
-            timeout: 120000
-            remove-prefix: 'out'
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org file-move'
-            target: ''
-            source: ''
-            command: 'reshuffle-files --job-type prebuilt --job-name ${JOB_NAME} --build-num ${BUILD_NUMBER}'
-            timeout: 120000
-            always-publish-from-master: true
+
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              --build-info out/BUILD-INFO.txt \
+              out/ openembedded/${rootfs}-armv8-ilp32-gcc-${gcc_version}/${BUILD_NUMBER}
+
         - ssh:
             site: 'snapshots.linaro.org'
             target: '/openembedded/sources'
