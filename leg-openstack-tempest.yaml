@@ -75,9 +75,22 @@
             # Update the template based on the specified os distro
             case "${OS_DISTRO}" in
               ubuntu)
+                case "${OS_VERSION}" in
+                  trusty)
+                    echo "using older image"
+                    LAVA_CLOUD_IMG_URL="http://cloud-images.ubuntu.com/releases/trusty/release-20150305/ubuntu-14.04-server-cloudimg-arm64-disk1.img"
+                    ;;
+                  vivid)
+                    echo "using older image"
+                    LAVA_CLOUD_IMG_URL="http://cloud-images.ubuntu.com/releases/vivid/release-20150707/ubuntu-15.04-server-cloudimg-arm64-disk1.img"
+                    ;;
+                  *)
+                    LAVA_CLOUD_IMG_URL="http://cloud-images.ubuntu.com/${OS_VERSION}/current/${OS_VERSION}-server-cloudimg-arm64-disk1.img"
+                    ;;
+                esac
+                echo "cloud image for ${OS_VERSION}: ${LAVA_CLOUD_IMG_URL}"
                 # The template needs to be updated to specify the correct cloud image to
                 # pull. This must be done BEFORE calling yaml-to-json.py!
-                LAVA_CLOUD_IMG_URL="http://cloud-images.ubuntu.com/${OS_VERSION}/current/${OS_VERSION}-server-cloudimg-arm64-disk1.img"
                 sed -i "s|\${LAVA_CLOUD_IMG_URL}|${LAVA_CLOUD_IMG_URL}|" ${LAVA_JOB_DEFINITION}
                 ;;
             esac
