@@ -299,8 +299,13 @@
               if [ -e $KVM_HOST_FRAG ]; then
                 lpae_base="multi_v7_defconfig+CONFIG_ARM_LPAE=y"
                 if [[ $DEFCONFIG_LIST == *"${lpae_base}"* ]]; then
-                    DEFCONFIG_LIST+="${lpae_base}+$KVM_HOST_FRAG"
+                    DEFCONFIG_LIST+="${lpae_base}+$KVM_HOST_FRAG "
                 fi
+              fi
+
+              # Linaro base + distro frags
+              if [ -e linaro/configs/linaro-base.conf -a -e linaro/configs/distribution.conf ]; then
+                  DEFCONFIG_LIST+="$base_defconfig+linaro/configs/linaro-base.conf+linaro/configs/distribution.conf "
               fi
 
               # Android/AOSP fragments: combined together
