@@ -67,6 +67,7 @@
             else
                 buildpackage_params="-B"
             fi
+            [ $arch = armhf ] && personality = linux32
 
             echo "arch: $arch"
             echo "dist: $dist"
@@ -97,7 +98,7 @@
             dpkg-source -x ${localdsc} work/
             # Changelog header tampering
             sed -i -e '1 s,).*;,.'linaro$dist.1') '$dist';,' work/debian/changelog
-            cd work/ && dpkg-buildpackage -rfakeroot -j`getconf _NPROCESSORS_ONLN` $buildpackage_params
+            cd work/ && $personality dpkg-buildpackage -rfakeroot -j`getconf _NPROCESSORS_ONLN` $buildpackage_params
             cd ..
 
             ls -l .
