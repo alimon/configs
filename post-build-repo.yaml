@@ -27,7 +27,6 @@
     builders:
         - shell: |
             #!/bin/bash
-
             set -e
 
             echo "Package job name: ${pkg_job_name}"
@@ -68,6 +67,8 @@
                     wget --no-check-certificate --progress=dot -e dotbytes=1M ${pkg_url}/${file}
                 done
             fi
+            chmod 0700 ~/.ssh/
+            chmod 0600 ~/.ssh/*
 
             ls -l .
             if [ ! -r "${pkg_changes}" ]; then
