@@ -1,0 +1,188 @@
+- job:
+    name: openembedded-odp-rootfs
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'lng.validation.linaro.org/RPC2/'
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/lng/odp/'
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: build
+    display-name: 'OpenEmbedded build for ODP'
+    scm:
+        - git:
+            url: http://git.linaro.org/lng/odp.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+        - axis:
+            type: user-defined
+            name: gcc_version
+            values:
+                - 4.9
+        - axis:
+            type: user-defined
+            name: arch
+            values:
+                - armv7a
+                - armv7ab
+                - x86-64
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -x
+
+            export PATH="$HOME/bin:$PATH"
+
+            git clone https://git.linaro.org/openembedded/jenkins-setup.git
+
+            JENKINS_WORKSPACE=${WORKSPACE}/jenkins-setup
+            # the post-build-* tools need to have the workspace pointing to jenkins-setup
+            WORKSPACE=${JENKINS_WORKSPACE}
+            cd ${WORKSPACE}
+
+            # we clean build and populate it from cache
+            bash -x pre-build-do-cleanup.sh
+
+            # do a build
+            bash -x init-and-build.sh -a ${arch} -g ${gcc_version} -p virtual/libc
+
+            ./srcrev-check.py -d meta-linaro/meta-linaro/recipes-extra/odp -u
+
+            source ./openembedded-core/oe-init-build-env build
+            bitbake linaro-image-lng
+
+            cd ${WORKSPACE}
+
+            bash -x post-build-create-image-manifest.sh
+
+            # Capture what we're building in the build output.
+            repo manifest -r
+
+            WORKSPACE=$(dirname ${WORKSPACE})
+            cd ${WORKSPACE}
+
+            case "${arch}" in
+              armv7a)
+                hwpack="arndale"
+                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v3.14/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
+                DEVICE_TYPE="arndale"
+                template_file="template-base.yaml"
+                ;;
+              armv7ab)
+                hwpack="arndale-be"
+                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v3.14/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
+                DEVICE_TYPE="arndale"
+                template_file="template-be-base.yaml"
+                ;;
+              x86-64)
+                DEVICE_TYPE="x86"
+                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-lng-x86-pre-built-test-definitions/lastSuccessfulBuild/buildNumber)
+                template_file="template-base.yaml"
+                ;;
+            esac
+
+            if [ "${arch}" = "x86-64" ]; then
+              # Grab variable from jenkins via api/json
+              test -d ${HOME}/bin || mkdir ${HOME}/bin
+              wget https://git.linaro.org/ci/lci-build-tools.git/blob_plain/HEAD:/get_jenkins_variable.py -O ${HOME}/bin/get_jenkins_variable.py
+              upstream_build_number=$(${HOEM}/bin/get_jenkins_variable.py openembedded-lng-x86-pre-built-test-definitions --input_variable UPSTREAM_BUILD_NUMBER)
+              KERNEL_URL=$(curl -s http://snapshots.linaro.org/openembedded/pre-built/linaro-lng-x86-64-3.14/${upstream_build_number}/lava/template.json |grep 'kernel":'  | cut -d'"' -f4 | cut -d';' -f1)
+            else
+              KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14/${hwpack}/${BUILD_NUMBER}"
+            fi
+            DTB_URL=${KERNEL_URL}/dtbs
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}/$(ls ${JENKINS_WORKSPACE}/out/linaro-image-lng-*.tar.gz |xargs basename)"
+            [ "${hwpack}" != "mustang" ] || [ "${hwpack}" != "x86-64" ] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename)"
+            STARTUP_NSH="${KERNEL_URL}/startup.nsh"
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
+            DTB_URL=${DTB_URL}
+            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
+            STARTUP_NSH=${STARTUP_NSH}
+            hwpack_type=${hwpack_type}
+            EOF
+
+            # Parse recipe and get GIT_URL/GIT_BRANCH/GIT_COMMIT
+            export GIT_URL=$(grep "^SRC_URI =" jenkins-setup/meta-linaro/meta-linaro/recipes-extra/odp/odp_v1.0.3.bb | cut -d'"' -f2 | cut -d';' -f1)
+            export GIT_COMMIT=$(grep "^SRCREV_odp =" meta-linaro/meta-linaro/recipes-extra/odp/odp_v1.0.3.bb |cut -d'"' -f2 | cut -d'=' -f2)
+
+            mkdir -p ${JENKINS_WORKSPACE}/out/lava
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            ./lci-build-tools/yaml-to-json.py configs/odp/lava-job-definitions/${DEVICE_TYPE}/${template_file} > ${JENKINS_WORKSPACE}/out/lava/${template_file}
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py --link-latest ${JENKINS_WORKSPACE}/out openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}
+        - inject:
+            properties-file: post_build_lava_parameters
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="arch"}'
+            condition-string2: 'armv7a'
+            steps:
+                - trigger-builds:
+                    - project: 'odp-armv7a-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="arch"}'
+            condition-string2: 'armv7ab'
+            steps:
+                - trigger-builds:
+                    - project: 'odp-armv7ab-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="arch"}'
+            condition-string2: 'x86-64'
+            steps:
+                - trigger-builds:
+                    - project: 'odp-x86-64-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      block: true
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org anders.roxell@linaro.org
