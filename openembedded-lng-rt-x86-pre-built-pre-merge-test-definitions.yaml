@@ -20,6 +20,9 @@
         - string:
             name: PUB_DEST
             default: 'http://snapshots.linaro.org/openembedded/pre-built/linaro-lng-rt-test-x86-64-3.14/'
+        - string:
+            name: UPSTREAM_BUILD_NUMBER
+            default: '1'
     disabled: false
     node: master
     display-name: 'LNG Kernel (x86) - Submit LAVA test definitions  (linux-linaro-lng-v3.14-rt-test)'
@@ -27,11 +30,10 @@
         - timestamps
     builders:
         - shell: |
-            BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-pre-built-images/gcc_version=4.9,label=build/lastSuccessfulBuild/buildNumber)
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=x86
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${PUB_DEST}/${BUILD_NUMBER}/lava/template.json
+            CUSTOM_JSON_URL=${PUB_DEST}/${UPSTREAM_BUILD_NUMBER}/lava/template.json
             LAVA_SERVER=${LAVA_SERVER}
             EOF
         - trigger-builds:
@@ -39,11 +41,10 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/openembedded-x86-pre-built-images/gcc_version=4.9,label=build/lastSuccessfulBuild/buildNumber)
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=x86
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${PUB_DEST}/${BUILD_NUMBER}/lava/template-base.json
+            CUSTOM_JSON_URL=${PUB_DEST}/${UPSTREAM_BUILD_NUMBER}/lava/template-base.json
             LAVA_SERVER=${LAVA_SERVER}
             EOF
         - trigger-builds:
