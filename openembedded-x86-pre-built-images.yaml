@@ -133,6 +133,7 @@
             steps:
                 - trigger-builds:
                     - project: 'openembedded-lng-x86-pre-built-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
                       block: true
         - conditional-step:
             condition-kind: strings-match
@@ -141,6 +142,7 @@
             steps:
                 - trigger-builds:
                     - project: 'openembedded-lng-rt-x86-pre-built-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
                       block: true
         - conditional-step:
             condition-kind: strings-match
@@ -149,6 +151,7 @@
             steps:
                 - trigger-builds:
                     - project: 'openembedded-lng-x86-pre-built-pre-merge-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
                       block: true
         - conditional-step:
             condition-kind: strings-match
@@ -157,6 +160,7 @@
             steps:
                 - trigger-builds:
                     - project: 'openembedded-lng-rt-x86-pre-built-pre-merge-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
                       block: true
     publishers:
         - email:
