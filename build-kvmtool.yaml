@@ -1,0 +1,54 @@
+- job:
+    name: build-kvmtool
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+    node: docker-utopic
+    display-name: 'KVMtool CI loop'
+    scm:
+        - git:
+            url: git://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git 
+            skip-tag: true
+            clean: true
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -e
+            export upstream_repo=git://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git
+            export upstream_source=kvmtool
+            export packaging_repo=git://anonscm.debian.org/collab-maint/kvmtool.git
+            export packaging_dir=kvmtool-debian
+            wget https://git.linaro.org/ci/ubuntu-packaging-tools.git/blob_plain/HEAD:/jenkins-makesources
+            bash -x ./jenkins-makesources
+            cat > kvmtool-params <<EOF
+            source=$BUILD_URL/artifact/`cat kvmtool.dsc`
+            EOF
+    publishers:
+        - archive:
+            artifacts: '*.changes, *.dsc, *.gz, *.xz'
+            latest-only: true
+        - trigger-parameterized-builds:
+            - project: build-all-packages
+              property-file: kvmtool-params
+              condition: SUCCESS
+        - email:
+            recipients: 'riku.voipio@linaro.org'
