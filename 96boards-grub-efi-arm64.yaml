@@ -52,6 +52,10 @@
                 initrd /initrd.img
                 devicetree /hi6220-hikey.dtb
             }
+
+            menuentry 'Fastboot' {
+                chainloader (hd0,gpt6)/fastboot.efi
+            }
             EOF
 
             echo 'configfile (hd0,gpt6)/grub/grub.cfg' > out/grub.configfile
