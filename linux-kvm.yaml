@@ -1,0 +1,52 @@
+- job:
+    name: linux-kvm
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-utopic
+    display-name: 'Linaro KVM image builds'
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - arndale
+                - juno
+                - mustang
+    triggers:
+        - timed: 'H(0-30) H(9-11) * * *'
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash -e
+            rm -rf kvm-ci
+            git clone git://git.linaro.org/ci/kvm-ci.git kvm-ci
+
+            bash -x kvm-ci/jenkins-run
+            # Publish
+            mkdir -p out/
+            mv *.gz uImage* Image* zImage* *.dtb *.deb out/||true
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            python ${HOME}/bin/linaro-cp.py -a 2 out ubuntu/images/kvm/${BUILD_NUMBER}/
+            python ${HOME}/bin/linaro-cp.py -a 2 --make-link ubuntu/images/kvm/${BUILD_NUMBER}/||true
+    publishers:
+        - email:
+            recipients: 'riku.voipio@linaro.org'
