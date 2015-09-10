@@ -129,8 +129,8 @@
             #time python ${HOME}/bin/linaro-cp.py downloads openembedded/sources
         - conditional-step:
             condition-kind: strings-match
-            condition-string1: '${ENV,var="linux_kernel"}'
-            condition-string2: 'linaro-lng-x86-64'
+            condition-string1: '${ENV,var="linux_kernel"} ${ENV,var="linux_kernel_version"}'
+            condition-string2: 'linaro-lng-x86-64 3.14'
             steps:
                 - trigger-builds:
                     - project: 'openembedded-lng-v3.14-x86-pre-built-test-definitions'
@@ -138,8 +138,8 @@
                       block: true
         - conditional-step:
             condition-kind: strings-match
-            condition-string1: '${ENV,var="linux_kernel"}'
-            condition-string2: 'linaro-lng-rt-x86-64'
+            condition-string1: '${ENV,var="linux_kernel"} ${ENV,var="linux_kernel_version"}'
+            condition-string2: 'linaro-lng-rt-x86-64 3.14'
             steps:
                 - trigger-builds:
                     - project: 'openembedded-lng-v3.14-rt-x86-pre-built-test-definitions'
@@ -147,8 +147,8 @@
                       block: true
         - conditional-step:
             condition-kind: strings-match
-            condition-string1: '${ENV,var="linux_kernel"}'
-            condition-string2: 'linaro-lng-test-x86-64'
+            condition-string1: '${ENV,var="linux_kernel"} ${ENV,var="linux_kernel_version"}'
+            condition-string2: 'linaro-lng-test-x86-64 3.14'
             steps:
                 - trigger-builds:
                     - project: 'openembedded-lng-v3.14-x86-pre-built-pre-merge-test-definitions'
@@ -156,11 +156,47 @@
                       block: true
         - conditional-step:
             condition-kind: strings-match
-            condition-string1: '${ENV,var="linux_kernel"}'
-            condition-string2: 'linaro-lng-rt-test-x86-64'
+            condition-string1: '${ENV,var="linux_kernel"} ${ENV,var="linux_kernel_version"}'
+            condition-string2: 'linaro-lng-rt-test-x86-64 3.14'
             steps:
                 - trigger-builds:
                     - project: 'openembedded-lng-v3.14-rt-x86-pre-built-pre-merge-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="linux_kernel"} ${ENV,var="linux_kernel_version"}'
+            condition-string2: 'linaro-lng-x86-64 4.1'
+            steps:
+                - trigger-builds:
+                    - project: 'openembedded-lng-v4.1-x86-pre-built-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="linux_kernel"} ${ENV,var="linux_kernel_version"}'
+            condition-string2: 'linaro-lng-rt-x86-64 4.1'
+            steps:
+                - trigger-builds:
+                    - project: 'openembedded-lng-v4.1-rt-x86-pre-built-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="linux_kernel"} ${ENV,var="linux_kernel_version"}'
+            condition-string2: 'linaro-lng-test-x86-64 4.1'
+            steps:
+                - trigger-builds:
+                    - project: 'openembedded-lng-v4.1-x86-pre-built-pre-merge-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="linux_kernel"} ${ENV,var="linux_kernel_version"}'
+            condition-string2: 'linaro-lng-rt-test-x86-64 4.1'
+            steps:
+                - trigger-builds:
+                    - project: 'openembedded-lng-v4.1-rt-x86-pre-built-pre-merge-test-definitions'
                       predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
                       block: true
     publishers:
