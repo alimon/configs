@@ -72,26 +72,12 @@
             git log --format="%H %s" -1
             $HOME/bin/repo forall -p -c 'git log --format="%H %s" -1'
 
-            cat << EOF > out/BUILD-INFO.txt
-            Format-Version: 0.5
-
-            Files-Pattern: *
-            License-Type: open
-            EOF
-        - ssh:
-            site: 'snapshots.linaro.org'
-            target: '${JOB_NAME}/${BUILD_NUMBER}/openembedded/images/${rootfs}-armv7a-external-toolchain/${BUILD_NUMBER}'
-            source: 'out/**'
-            timeout: 120000
-            remove-prefix: 'out'
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org file-move'
-            target: ''
-            source: ''
-            command: 'reshuffle-files --job-type prebuilt --job-name ${JOB_NAME} --build-num ${BUILD_NUMBER}'
-            timeout: 120000
-            always-publish-from-master: true
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              out/ openembedded/images/${rootfs}-armv7a-external-toolchain/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org'
