@@ -42,7 +42,7 @@
             name: label
             values:
                 - tcwg-x86_64-ex40build-01
-                - tcwg-x86_64-build-01
+                - tcwg-x86_64-dev-01
     execution-strategy:
         sequential: false
     wrappers:
@@ -69,8 +69,8 @@
               tcwg-x86_64-ex40build-01)
                 machines="$(for i in 1 2 4 6 7 8 9; do echo tcwg-ex40-0$i; done) r1-a7.aus-colo r1-a8.aus-colo"
                 ;;
-              tcwg-x86_64-build-01)
-                machines="$(for i in `seq 1 6`; do echo build-0$i.tcwglab; done) $(for i in `seq 1 3`; do echo apm-0$i.tcwglab; done)"
+              tcwg-x86_64-dev-01)
+                machines="dev-01.tcwglab $(for i in `seq 1 6`; do echo build-0$i.tcwglab; done) $(for i in `seq 1 3`; do echo apm-0$i.tcwglab; done)"
                 ;;
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
