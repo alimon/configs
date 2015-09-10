@@ -83,41 +83,13 @@
             # Capture what we're building in the build output.
             repo manifest -r
 
-            cat << EOF > out/BUILD-INFO.txt
-            Format-Version: 0.5
-
-            Files-Pattern: *
-            License-Type: open
-            EOF
-
-            cat << EOF > downloads/BUILD-INFO.txt
-            Format-Version: 0.5
-
-            Files-Pattern: *
-            License-Type: open
-            EOF
-
+            # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --link-latest \
               --build-info out/BUILD-INFO.txt \
               out/ openembedded/${rootfs}-armv7a-gcc-${gcc_version}/${BUILD_NUMBER}
-
-        - ssh:
-            site: 'snapshots.linaro.org'
-            target: '/openembedded/sources'
-            source: 'downloads/**'
-            timeout: 120000
-            remove-prefix: 'downloads'
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org file-move'
-            target: ''
-            source: ''
-            command: 'reshuffle-files --job-type openembedded --job-name sources --build-num 1'
-            timeout: 120000
-            always-publish-from-master: true
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org riku.voipio@linaro.org'
