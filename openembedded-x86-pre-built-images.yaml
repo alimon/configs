@@ -66,11 +66,11 @@
             bash -x pre-build-do-cleanup.sh
 
             # do a build
-            bash -x init-and-build.sh -a x86 -g ${gcc_version} virtual/kernel
+            bash -x init-and-build.sh -a x86 -g ${gcc_version} virtual/kernel linux-libc-headers
 
             cd ${WORKSPACE}
 
-            bash -x post-build-create-image-manifest.sh
+            bash -x post-build-create-image-manifest.sh -p linux-libc-headers-dev
             bash -x post-build-sort-out-downloads.sh
 
             # Capture what we're building in the build output.
