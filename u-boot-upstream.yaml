@@ -82,8 +82,8 @@
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
               out components/kernel/u-boot/${BUILD_NUMBER}
-            python ${HOME}/bin/linaro-cp.py --make-link components/kernel/u-boot/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'andrey.konovalov@linaro.org fathi.boudra@linaro.org'

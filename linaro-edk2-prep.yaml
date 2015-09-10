@@ -147,8 +147,9 @@
             Image console=ttyAMA0 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
             EOF
 
-            time python ${HOME}/bin/linaro-cp.py out ${PUB_DEST}
-            python ${HOME}/bin/linaro-cp.py --make-link ${PUB_DEST}
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              out ${PUB_DEST}
 
             IMAGE_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/linux-leg/lastSuccessfulBuild/buildNumber`
             cat << EOF > lava_job_definition_parameters

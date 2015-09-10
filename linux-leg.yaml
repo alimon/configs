@@ -132,8 +132,9 @@
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py out kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}
-            python ${HOME}/bin/linaro-cp.py --make-link kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              out kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}
 
             cat << EOF > lava_job_definition_parameters
             IMAGE_URL=http://snapshots.linaro.org/kernel-hwpack/linux-leg-${hwpack}/${BUILD_NUMBER}/${hwpack}-leg-sd.img.gz
