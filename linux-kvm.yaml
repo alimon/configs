@@ -16,7 +16,6 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-utopic
     display-name: 'Linaro KVM image builds'
     axes:
         - axis:
@@ -26,6 +25,11 @@
                 - arndale
                 - juno
                 - mustang
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic
     triggers:
         - timed: 'H(0-30) H(9-11) * * *'
     wrappers:
