@@ -20,7 +20,7 @@
             default: '/public/team/linaro/lt-qualcomm-tracking/'
         - string:
             name: DEVICE_TYPE
-            default: 'dragonboard-410c'
+            default: 'apq8016-sbc'
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
@@ -217,6 +217,45 @@
                    --link-latest \
                    out \
                    ubuntu/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}
+        - shell: |
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+
+            export BOOT_URL=http://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
+            export ROOTFS_URL=http://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+
+            export BOOT_URL=http://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
+            export ROOTFS_URL=http://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+
+            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition_ltp.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
