@@ -58,9 +58,10 @@
             esac
 
             cd xen
+            git log --oneline -n1
             $personality ./configure --prefix=/usr --with-system-qemu
-            $personality make -j`getconf _NPROCESSORS_ONLN` dist-xen XEN_TARGET_ARCH=${xenarch}
-            $personality make debball XEN_TARGET_ARCH=${xenarch}
+            $personality make -j`getconf _NPROCESSORS_ONLN` debug=y dist-xen tools XEN_TARGET_ARCH=${xenarch}
+            $personality make debball debug=y XEN_TARGET_ARCH=${xenarch}
 
             mkdir ${WORKSPACE}/out
             cp -L dist/xen*.deb ${WORKSPACE}/out/xen-${arch}.deb
