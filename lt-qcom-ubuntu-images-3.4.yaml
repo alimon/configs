@@ -241,7 +241,10 @@
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            python ${HOME}/bin/linaro-cp.py out ubuntu/pre-built/snapdragon-3.4/${BUILD_NUMBER}
+            python ${HOME}/bin/linaro-cp.py \
+                   --link-latest \
+                   out \
+                   ubuntu/pre-built/snapdragon-3.4/${BUILD_NUMBER}
         - shell: |
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
 

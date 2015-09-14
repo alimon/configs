@@ -213,7 +213,10 @@
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            python ${HOME}/bin/linaro-cp.py out ubuntu/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}
+            python ${HOME}/bin/linaro-cp.py \
+                   --link-latest \
+                   out \
+                   ubuntu/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
