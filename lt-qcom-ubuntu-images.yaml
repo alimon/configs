@@ -292,25 +292,6 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
-        - shell: |
-            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-
-            export BOOT_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon/${BUILD_NUMBER}/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img.gz
-            export DATA_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon/${BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
-            export SYSTEM_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon/${BUILD_NUMBER}/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
-
-            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-ubuntu-images/lava-job-definitions/${DEVICE_TYPE}/template-sata.yaml > custom_lava_job_definition_sata.json
-
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition_sata.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
