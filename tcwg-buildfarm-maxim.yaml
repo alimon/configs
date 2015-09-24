@@ -76,7 +76,7 @@
             type: slave
             name: label
             values:
-                - tcwg-x86_64-cam
+                - tcwg-x86_64-ex40 || tcwg-x86_64-cam
                 - tcwg-aarch64-build
         - axis:
             type: user-defined
@@ -87,7 +87,7 @@
                 - arm-linux-gnueabihf
     execution-strategy:
         combination-filter: |
-            (label=="tcwg-x86_64-ex40" && target!="schroot-armhf-native") || (label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
+            (label=="tcwg-x86_64-ex40 || tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
         sequential: false
     wrappers:
         - timeout:
