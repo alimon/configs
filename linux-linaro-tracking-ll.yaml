@@ -179,7 +179,7 @@
             [ "${hwpack}" = "beaglebone-uprobes" ] && python linaro-image-tools/linaro-hwpack-replace -t `ls hwpack_linaro-beaglebone_*_armhf_supported.tar.gz` -p `ls linux-headers-*-linaro-am335x_*.deb` -r linux-headers -d -i
             [ "${hwpack}" = "ifc6410" ] && {
               cp -a *.deb out/
-              cat builddir-*-${kernel_flavour}/arch/arm/boot/zImage builddir-*-${kernel_flavour}/arch/arm/boot/dts/qcom-apq8064-ifc6410.dtb > out/zImage
+              cat builddir-*-${kernel_flavour}/arch/arm/boot/zImage builddir-*-${kernel_flavour}/arch/arm/boot/dts/qcom-apq8064-ifc6410.dtb > out/zImage_ifc6410
             }
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [ "${hwpack}" = "vexpress64" ] && cp -a builddir-*-${kernel_flavour}/.config kernel.config
@@ -258,6 +258,9 @@
                       property-file: post_build_lava_parameters
                       block: true
     publishers:
+        - archive:
+            artifacts: 'zImage_ifc6410, *-linaro-ifc6410-*.deb'
+            allow-empty: true
         - email-ext:
             recipients: 'andrey.konovalov@linaro.org, fathi.boudra@linaro.org'
             attach-build-log: true
