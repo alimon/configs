@@ -1,0 +1,85 @@
+- job:
+    name: odp-diff-api-publish
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'ODP diff API publish'
+    triggers:
+        - timed: '@daily'
+    axes:
+        - axis:
+            type: user-defined
+            name: platform_type
+            values:
+                - generic
+                - dpdk
+        - axis:
+            type: user-defined
+            name: GIT_BRANCH
+            values:
+                - master
+                - api-next
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic
+    execution-strategy:
+        combination-filter: |
+            !(GIT_BRANCH=="api-next" && platform_type=="dpdk")
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - shell: |
+            #!/bin/bash
+            # Assume build-dependencies packages are installed
+            # build-essential git autoconf automake libtool doxygen libssl-dev
+
+            set -ex
+
+            rm -rf check-odp
+            git clone --depth 1 git://git.linaro.org/lng/check-odp.git
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends libssl-dev libipc-system-simple-perl
+
+            case "${platform_type}" in
+              dpdk)
+                sudo apt-get install -y linux-headers-generic libpcap-dev
+                mkdir -p ${HOME}/bin
+                cp check-odp/helper/ci-uname ${HOME}/bin/uname
+                export PATH=${HOME}/bin:${PATH}
+                export COMPARE_REPO=git://git.linaro.org/lng/odp-dpdk.git
+                export COMPARE_BRANCH=master
+                ;;
+            esac
+
+            bash -x ${WORKSPACE}/check-odp/diff-api.sh |tee
+        - ssh:
+            site: 'docs.opendataplane.org'
+            target: ''
+            source: 'check-odp/publishing/**'
+            timeout: 120000
+            remove-prefix: 'check-odp/publishing'
+            always-publish-from-master: true
+    publishers:
+        - email:
+            recipients: 'lng-ci@lists.linaro.org'
