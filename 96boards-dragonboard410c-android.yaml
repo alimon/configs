@@ -192,6 +192,11 @@
             zip -rj ../out/target/product/msm8916_64/dragonboard410c_sdcard_install_android-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_install_android
             cd ..
 
+            # Create MD5SUM
+            cd out/target/product/msm8916_64/
+            md5sum *.txt *.xz *.zip *.mbn *.xml *.img > MD5SUMS.txt
+            cd -
+
             # Publish
             PUB_DEST=/snapshots/dragonboard410c/qualcomm/android/${BUILD_NUMBER}
 
