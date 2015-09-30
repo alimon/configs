@@ -1,0 +1,54 @@
+- job:
+    name: infrastructure-patchwork-tools
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-utopic
+    display-name: 'Infrastructure - Unit Test CI for the patchwork-tools repository'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            trigger-for-unreviewed-patches: true
+            readable-message: false
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'infrastructure/patchwork-tools'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            rm -rf $WORKSPACE/*
+            sudo apt-get install -y python-dev python-virtualenv git python-flake8
+
+            git config --global user.email "unittest@example.com"
+            git config --global user.name "unit test"
+
+            git clone https://git.linaro.org/$GERRIT_PROJECT -b $GERRIT_BRANCH
+            cd *
+            git log -n1
+            git fetch https://review.linaro.org/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
+            ./unit-test.sh
