@@ -75,9 +75,20 @@
         - shell: |
             #!/bin/bash
 
+            schroot_arch=amd64
+            schroot_image="tcwg-build-${schroot_arch}-trusty"
+
+            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
+            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+
+            # Sometimes /dev/pts can't get unmounted on the first try.
+            # Workaround by retrying.
+            trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
+
             case "$test" in
-              cross_build) bash -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref ;;
-              native_build) bash -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref ;;
+              cross_build) ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref ;;
+              native_build) ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref ;;
               testsuite)
                 set -e
                 set -x
