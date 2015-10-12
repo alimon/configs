@@ -1,1 +1,52 @@
-linaro-arndale
+format: '3.0'
+name: linaro-arndale-be
+architectures:
+- armhf
+origin: Linaro
+maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+support: supported
+bootloaders:
+  u_boot:
+    dd: 49
+    env_dd: true
+    file: usr/lib/u-boot/arndale5250/u-boot.bin
+    in_boot_part: false
+    package: u-boot-linaro-arndale5250
+    spl_dd: 17
+    spl_file: usr/lib/u-boot/arndale5250/smdk5250-spl.bin
+    spl_in_boot_part: false
+    spl_package: u-boot-linaro-arndale5250
+serial_tty: ttySAC2
+kernel_addr: '0x40007000'
+initrd_addr: '0x42000000'
+load_addr: '0x40008000'
+dtb_addr: '0x41f00000'
+partition_layout: reserved_bootfs_rootfs
+mmc_id: '0:2'
+kernel_file: boot/vmlinuz-*-arndale*
+initrd_file: boot/initrd.img-*-arndale*
+dtb_file: lib/firmware/*-arndale*/device-tree/exynos5250-arndale.dtb
+boot_script: boot.scr
+extra_serial_options:
+- console=tty0
+- console=ttySAC2,115200n8
+- drm_kms_helper.edid_firmware=edid-1920x1080.fw
+samsung_bl1_start: 17
+samsung_bl1_len: 32
+samsung_bl2_start: 49
+samsung_bl2_len: 1024
+samsung_env_start: 1073
+samsung_env_len: 32
+assume_installed:
+- linaro-headless
+packages:
+- linux-image-linaro-arndale
+- linux-headers-linaro-arndale
+- arndale-pre-boot
+- u-boot-tools
+wired_interfaces:
+- eth0
+sources:
+  linaro: http://ppa.launchpad.net/linaro-maintainers/overlay/ubuntu vivid main
+  repo: http://repo.linaro.org/ubuntu/linaro-overlay vivid main
+  ubuntu: http://ports.ubuntu.com/ubuntu-ports vivid main universe
