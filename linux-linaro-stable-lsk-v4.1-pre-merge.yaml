@@ -1,0 +1,303 @@
+- job:
+    name: linux-linaro-stable-lsk-v4.1-pre-merge
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    parameters:
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/private/team/linaro/ci-linux-linaro-stable-lsk-v4.1-pre-merge/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+    disabled: false
+    node: linaro-kernel-ci
+    retry-count: 3
+    child-workspace: .
+    display-name: 'Linaro Stable Kernel - pre-merge (linux-linaro-lsk-v4.1-test)'
+    scm:
+        - git:
+            url: git://git.linaro.org/kernel/linux-linaro-stable.git
+            refspec: +refs/heads/linux-linaro-lsk-v4.1-test:refs/remotes/origin/linux-linaro-lsk-v4.1-test
+            name: origin
+            branches: 
+                - refs/heads/linux-linaro-lsk-v4.1-test
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: user-defined
+            name: hwpack
+            values:
+                - arndale
+                - beaglebone
+                - mustang
+                - panda
+                - vexpress64
+                - vexpress64-be
+        - axis:
+            type: slave
+            name: label
+            values:
+                - linaro-kernel-ci
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: linaro-kernel-ci
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf builddir*
+              rm -rf out
+              rm -f hwpack_linaro-* linux-*.deb
+            }
+
+            export LANG=C
+            CCACHE_DIR="${HOME}/srv/ccache"
+            CCACHE_UNIFY=1
+            CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
+            export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS
+            export use_ccache=true
+            export use_config_fragment=1
+            export MAKE_DTBS=true
+            export tcbindir="${HOME}/srv/toolchain/arm-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz"
+
+            case "${hwpack}" in
+              arndale)
+                export hwpack_type="arndale"
+                export board_types="arndale"
+                export kernel_flavour="arndale"
+                export conf_filenames="arch/arm/configs/multi_v7_defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/arndale.conf"
+                export DEVICE_TYPE="arndale"
+                ;;
+              beaglebone)
+                export hwpack_type="beaglebone"
+                export board_types="beaglebone-black"
+                export kernel_flavour="am335x"
+                export conf_filenames="arch/arm/configs/multi_v7_defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf"
+                export DEVICE_TYPE="beaglebone-black"
+                ;;
+              mustang)
+                unset use_config_fragment
+                export make_deb=false
+                export make_bootwrapper=false
+                export make_install=true
+                export kernel_flavour="mustang"
+                export kernel_config="defconfig"
+                export DEVICE_TYPE="mustang"
+                export ARCH="arm64"
+                export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
+                export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
+                ;;
+              panda)
+                export hwpack_type="panda"
+                export board_types="panda-es"
+                export kernel_flavour="omap"
+                export conf_filenames="arch/arm/configs/multi_v7_defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/omap4.conf"
+                export DEVICE_TYPE="panda-es"
+                ;;
+              vexpress64)
+                export hwpack_type="vexpress64"
+                export board_types="rtsm_fvp_base-aemv8a"
+                export kernel_flavour="vexpress64"
+                export conf_filenames="arch/arm64/configs/defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress64.conf"
+                # Per Kevin's request - skip LAVA job submission to FVP model
+                # https://bugs.linaro.org/show_bug.cgi?id=1622
+                #export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
+                export ARCH="arm64"
+                export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
+                export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
+                cat << EOF > startup.nsh
+            fs3:\Image dtb=juno\juno.dtb console=ttyAMA0,115200 earlyprintk=pl011,0x7ff80000 root=/dev/sda5 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
+            EOF
+                ;;
+              vexpress64-be)
+                export hwpack_type="lsk-vexpress64-be"
+                export board_types="rtsm_fvp_base-aemv8a"
+                export kernel_flavour="lsk-vexpress64-be"
+                export conf_filenames="arch/arm64/configs/defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/big-LITTLE-IKS.conf linaro/configs/vexpress64.conf linaro/configs/bigendian.conf"
+                # Per Kevin's request - skip LAVA job submission to FVP model
+                # https://bugs.linaro.org/show_bug.cgi?id=1622
+                #export DEVICE_TYPE="rtsm_fvp_base-aemv8a"
+                export ARCH="arm64"
+                export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
+                cat << EOF > linaro/configs/bigendian.conf
+            CONFIG_CPU_BIG_ENDIAN=y
+            CONFIG_CPU_ENDIAN_BE8=y
+            # CONFIG_VIRTUALIZATION is not set
+            # CONFIG_MMC_DW_IDMAC is not set
+            # CONFIG_VIRTIO is not set
+            # CONFIG_VIRTIO_BLK is not set
+            # CONFIG_VIRTIO_MMIO is not set
+            EOF
+                ;;
+            esac
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            bash -x lci-build-tools/jenkins_kernel_build_inst
+
+            mkdir -p out
+            [ "${hwpack}" = "mustang" ] && mkimage -A arm -O linux -C none -T kernel -a 0x00080000 -e 0x00080000 -n Linux -d out/Image out/uImage || true
+            [ "${hwpack}" = "vexpress" ] && python linaro-image-tools/linaro-hwpack-append -t `ls hwpack_linaro-${hwpack_type}*.tar.gz` -p `ls linux-image-*-linaro-*-dbg_*.deb` -i -d
+            [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
+            [ "${hwpack}" = "vexpress64" ] && cp -a builddir-*-${kernel_flavour}/.config kernel.config
+            cp -a builddir-*-${kernel_flavour}/.config out/kernel_config_${kernel_flavour}
+            [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack_type}* out/
+
+            ${HOME}/bin/linaro-cp out kernel-hwpack/linux-linaro-stable-lsk-v4.1-pre-merge-${hwpack}/${BUILD_NUMBER}
+
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 20G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-stable-lsk-v4.1-pre-merge-${hwpack}/${BUILD_NUMBER}"
+            DTB_URL=${KERNEL_URL}/dtbs
+            [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/`ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename`"
+            STARTUP_NSH="${KERNEL_URL}/startup.nsh"
+
+            # Create post-build-lava parameters
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            KERNEL_URL=${KERNEL_URL}
+            DTB_URL=${DTB_URL}
+            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
+            STARTUP_NSH=${STARTUP_NSH}
+            hwpack_type=${hwpack_type}
+            EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            case "${hwpack}" in
+              arndale|beaglebone|panda|vexpress)
+                # Get rootfs URL
+                export ROOTFS_BUILD_NUMBER=693
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/14.12/ubuntu/utopic-images/developer/linaro-utopic-developer-20141212-693.tar.gz"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ;;
+              vexpress-be)
+                # Get rootfs URL
+                export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildNumber`
+                export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-armv7ab-rootfs/gcc_version=4.9,label=build,rootfs=minimal/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+                export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/minimal-armv7ab-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-minimal-genericarmv7ab-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-be.yaml > custom_lava_job_definition.json
+                ;;
+              mustang)
+                export ROOTFS_BUILD_NUMBER=754
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/minimal-initramfs-armv8/linaro-image-minimal-initramfs-genericarmv8-20150618-754.rootfs.cpio.gz.u-boot"
+
+                ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ;;
+              vexpress64)
+                # Get rootfs URL
+                export ROOTFS_BUILD_NUMBER=754
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20150618-754.rootfs.tar.gz"
+
+                # Per Kevin's request - skip LAVA job submission to FVP model
+                # https://bugs.linaro.org/show_bug.cgi?id=1622
+                #./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ;;
+              vexpress64-be)
+                # Get rootfs URL
+                export ROOTFS_BUILD_NUMBER=201
+                export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/minimal-initramfs-armv8b/linaro-image-minimal-initramfs-genericarmv8b-20150618-201.rootfs.cpio.gz"
+
+                # Per Kevin's request - skip LAVA job submission to FVP model
+                # https://bugs.linaro.org/show_bug.cgi?id=1622
+                #./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1/lava-job-definitions/${DEVICE_TYPE}/template-be-ramdisk.yaml > custom_lava_job_definition.json
+                cat << EOF > post_build_lava_parameters
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+                ;;
+            esac
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="hwpack"}'
+            condition-string2: 'vexpress64'
+            steps:
+                - shell: |
+                    DEVICE_TYPE=juno
+
+                    # Get rootfs URL
+                    export ROOTFS_BUILD_NUMBER=754
+                    export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lamp-armv8/linaro-image-lamp-genericarmv8-20150618-754.rootfs.tar.gz"
+
+                    if grep -Fxq 'CONFIG_EFI=y' kernel.config; then
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-efi.yaml > custom_lava_job_definition.json
+                    else
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                    fi
+                - trigger-builds:
+                    - project: 'post-build-lava'
+                      property-file: post_build_lava_parameters
+                      block: true
+                - shell: |
+                    DEVICE_TYPE=juno
+
+                    # Get rootfs URL
+                    export ROOTFS_BUILD_NUMBER=335
+                    export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lamp-armv7a/linaro-image-lamp-genericarmv7a-20150618-335.rootfs.tar.gz"
+
+                    if grep -Fxq 'CONFIG_EFI=y' kernel.config; then
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs-efi.yaml > custom_lava_job_definition.json
+                    else
+                      ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-armv7a-rootfs.yaml > custom_lava_job_definition.json
+                    fi
+                - trigger-builds:
+                    - project: 'post-build-lava'
+                      property-file: post_build_lava_parameters
+                      block: true
+                - shell: |
+                    DEVICE_TYPE=juno
+
+                    # Get rootfs URL
+                    export ROOTFS_BUILD_NUMBER=201
+                    export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/minimal-initramfs-armv8b/linaro-image-minimal-initramfs-genericarmv8b-20150618-201.rootfs.cpio.gz"
+
+                    ./lci-build-tools/yaml-to-json.py configs/linux-linaro-stable-lsk-v4.1/lava-job-definitions/${DEVICE_TYPE}/template-be-ramdisk.yaml > custom_lava_job_definition.json
+                - trigger-builds:
+                    - project: 'post-build-lava'
+                      property-file: post_build_lava_parameters
+                      block: true
+    publishers:
+        - warnings:
+            console-log-parsers:
+              - 'GNU C Compiler 4 (gcc)'
+        - email-ext:
+            recipients: 'kevin.hilman@linaro.org, alex.shi@linaro.org, fathi.boudra@linaro.org'
+            attach-build-log: true
+            matrix-trigger: both
