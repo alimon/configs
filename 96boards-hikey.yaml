@@ -54,6 +54,8 @@
               rm -rf out
             }
 
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
             sudo apt-get install -y kpartx python-pycurl
             wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb
             sudo dpkg -i --force-all android-tools-fsutils_*.deb
