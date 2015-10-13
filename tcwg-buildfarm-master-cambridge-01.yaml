@@ -149,8 +149,8 @@
 
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
-	    # Do not terminate the schroot session upon SIGEXIT: we
-	    # need to keep alive until testing is done.
+            # Do not terminate the schroot session upon SIGEXIT: we
+            # need to keep alive until testing is done.
             trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 1 2 3 5 9 13 15
 
             result=0
