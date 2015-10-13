@@ -149,7 +149,9 @@
 
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
-            trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
+	    # Do not terminate the schroot session upon SIGEXIT: we
+	    # need to keep alive until testing is done.
+            trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 1 2 3 5 9 13 15
 
             result=0
             case $target in
@@ -167,6 +169,8 @@
                 echo "echo Tester: \$1" >> cross_check_script_$target
                 echo "echo set_board_info hostname \$1 >> config/boards/infra-tcwglab-armv8.exp" >> cross_check_script_$target
                 echo "cat config/boards/infra-tcwglab-armv8.exp" >> cross_check_script_$target
+                # Make sure the schroot session is removed upon SIGEXIT
+                echo trap '"schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15' >> cross_check_script_$target
                 # Command to execute the tests; it should not need to
                 # rebuild anything.
                 # FIXME: Do nothing for the moment
