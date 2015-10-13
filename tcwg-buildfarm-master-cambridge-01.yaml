@@ -163,9 +163,9 @@
               if [ $result -eq 0 -a "x$runtests_opt" != "x" ]; then
                 echo "#!/bin/sh" > cross_check_script_$target
                 echo "cd `pwd`" >> cross_check_script_$target
-                echo "echo Running on: ; hostname" >> cross_check_script_$target
+                echo "echo Running on: ; hostname -f" >> cross_check_script_$target
                 echo "echo Tester: \$1" >> cross_check_script_$target
-                echo "echo 'set_board_info hostname \$1.tcwglab' >> config/boards/infra-tcwglab-armv8.exp" >> cross_check_script_$target
+                echo "echo 'set_board_info hostname \$1' >> config/boards/infra-tcwglab-armv8.exp" >> cross_check_script_$target
                 echo "cat config/boards/infra-tcwglab-armv8.exp" >> cross_check_script_$target
                 # Command to execute the tests; it should not need to
                 # rebuild anything.
@@ -173,7 +173,7 @@
                 echo echo ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild >> cross_check_script_$target
                 cat cross_check_script_$target
                 echo "cross_check_script_path=`pwd`/cross_check_script_$target" >> cross_check_parameters_$target
-                echo "builder=`hostname` " >> cross_check_parameters_$target
+                echo "builder=`hostname -f` " >> cross_check_parameters_$target
                 cat cross_check_parameters_$target
               fi
               ;;
