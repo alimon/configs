@@ -149,9 +149,7 @@
 
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
-            # Do not terminate the schroot session upon SIGEXIT: we
-            # need to keep alive until testing is done.
-            trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 1 2 3 5 9 13 15
+            trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
 
             result=0
             case $target in
@@ -169,12 +167,13 @@
                 echo "echo Tester: \$1" >> cross_check_script_$target
                 echo "echo set_board_info hostname \$1 >> config/boards/infra-tcwglab-armv8.exp" >> cross_check_script_$target
                 echo "cat config/boards/infra-tcwglab-armv8.exp" >> cross_check_script_$target
-                # Make sure the schroot session is removed upon SIGEXIT
-                echo trap '"schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15' >> cross_check_script_$target
                 # Command to execute the tests; it should not need to
                 # rebuild anything.
-                # FIXME: Do nothing for the moment
-                echo ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild >> cross_check_script_$target
+                echo "ulimit -u 5000" >> cross_check_script_$target
+                echo "session_id=\$(schroot -b -c chroot:$schroot_image --preserve-environment)" >> cross_check_script_$target
+                echo BUILD_SHELL=\"schroot -r -c session:\$session_id --preserve-environment -- bash\" >> cross_check_script_$target
+                echo '${BUILD_SHELL} -c "echo \"Build session is up; ulimit config:\"; ulimit -a"' >> cross_check_script_$target
+                echo '${BUILD_SHELL}' -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild >> cross_check_script_$target
                 cat cross_check_script_$target
                 echo "cross_check_script_path=`pwd`/cross_check_script_$target" >> cross_check_parameters_$target
                 echo "builder=`hostname -f` " >> cross_check_parameters_$target
