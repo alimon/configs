@@ -52,8 +52,12 @@
             description: 'Do not fail the build'
         - string:
             name: log_server
-            default: ex40-01.tcwglab.linaro.org:logs-master
+            default: dev-01.tcwglab:logs-maxim
             description: 'Log_Server'
+        - string:
+            name: targets
+            default: 'cross_main cross_aux native_x86 native_armv8'
+            description: 'Which target toolchains to build'
         - string:
             name: abe_branch
             default: refs/heads/master
@@ -87,6 +91,12 @@
                 - aarch64-linux-gnu
                 - arm-linux-gnueabi
                 - arm-linux-gnueabihf
+                - armeb-linux-gnueabihf
+                - aarch64-none-elf
+                - aarch64_be-none-elf
+                - native
+                - schroot-i386-native
+                - schroot-armhf-native
     execution-strategy:
         combination-filter: |
             (label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
@@ -107,6 +117,19 @@
 
             set -e
             set -x
+
+            case "$target--$(uname)" in
+              native--aarch64|schroot-armhf-native--*) target_kind=native_armv8 ;;
+              native--x86_64|schroot-i386-native--*) target_kind=native_x86 ;;
+              armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
+              *-linux-gnu*--*) target_kind=cross_main ;;
+              *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
+            esac
+
+            if ! echo "$targets" | grep -q "$target_kind"; then
+              echo "NOTE: Skipping target $target because $target_kind is not in list: $targets"
+              exit 0
+            fi
 
             case ${target} in
               schroot-*)
@@ -160,6 +183,7 @@
             # Workaround by retrying.
             trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
 
+            result="0"
             ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result="$?"
 
             echo "Result of jenkins.sh: $result"
