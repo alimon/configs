@@ -74,7 +74,7 @@
             cd ${WORKSPACE}
             sudo rm -rf out && mkdir out
             sudo mv builddir/jessie-armhf-${rootfs}/linaro-jessie-* out
-            ${HOME}/bin/linaro-cp out debian/images/${rootfs}-armhf/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp --link-latest out debian/images/${rootfs}-armhf/${BUILD_NUMBER}
     publishers:
         - archive:
             artifacts: 'out/*'
