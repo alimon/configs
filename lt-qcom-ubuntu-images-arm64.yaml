@@ -25,7 +25,7 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
         - string:
-            name: UBUNTU_FLAVOUR
+            name: OS_FLAVOUR
             default: 'vivid'
         - string:
             name: UBUNTU_VERSION
@@ -78,7 +78,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              sudo kpartx -dv out/linaro-${UBUNTU_FLAVOUR}-*.sd.img || true
+              sudo kpartx -dv out/linaro-${OS_FLAVOUR}-*.sd.img || true
               rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
@@ -137,9 +137,9 @@
             - linaro-headless
             - linux-firmware
             sources:
-              qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${UBUNTU_FLAVOUR} main
-              repo: http://repo.linaro.org/ubuntu/linaro-overlay ${UBUNTU_FLAVOUR} main
-              ubuntu: http://ports.ubuntu.com/ubuntu-ports ${UBUNTU_FLAVOUR} main universe
+              qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${OS_FLAVOUR} main
+              repo: http://repo.linaro.org/ubuntu/linaro-overlay ${OS_FLAVOUR} main
+              ubuntu: http://ports.ubuntu.com/ubuntu-ports ${OS_FLAVOUR} main universe
             packages:
             - linux-image-generic
             - linux-headers-generic
@@ -187,15 +187,15 @@
               # Get rootfs
               export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
               export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
               # Create pre-built image(s)
-              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
+              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
 
               # Create eMMC rootfs image(s)
               mkdir rootfs
-              for device in $(sudo kpartx -av out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
+              for device in $(sudo kpartx -av out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
                 partition=$(echo ${device} | cut -d'p' -f3)
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
@@ -218,13 +218,13 @@
 
               sudo rm -f rootfs/lib/firmware/wlan/macaddr0
 
-              sudo make_ext4fs -o -L rootfs -l 6800M -s out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 6800M -s out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
               sudo umount rootfs
-              sudo kpartx -dv out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
-              sudo rm -rf rootfs out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo kpartx -dv out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo rm -rf rootfs out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
 
               # Compress image(s)
-              gzip -9 out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
+              gzip -9 out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
               cat >> out/README.txt << EOF
             Linaro Ubuntu ${rootfs} build: http://snapshots.linaro.org/ubuntu/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
@@ -244,12 +244,12 @@
             mkbootimg \
               --kernel out/Image \
               --ramdisk out/initrd.img-* \
-              --output out/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
+              --output out/boot-linaro-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
               --dt out/dt.img \
               --pagesize "2048" \
               --base "0x80000000" \
               --cmdline "root=/dev/disk/by-partlabel/rootfs rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
-            gzip -9 out/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
+            gzip -9 out/boot-linaro-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
 
             # Final preparation for publishing
             cp -a linux-*.deb out/
@@ -300,8 +300,8 @@
             git log -1
 
             cd emmc_linux
-            cp ../../out/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz boot.img.gz
-            cp ../../out/linaro-${UBUNTU_FLAVOUR}-alip-${PLATFORM_NAME}-${VERSION}.img.gz rootfs.img.gz
+            cp ../../out/boot-linaro-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz boot.img.gz
+            cp ../../out/linaro-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${VERSION}.img.gz rootfs.img.gz
             gunzip *.img.gz
 
             cat << EOF >> os.json
@@ -342,8 +342,8 @@
         - shell: |
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
 
-            export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${BUILD_NUMBER}/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
-            export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+            export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${BUILD_NUMBER}/boot-linaro-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
+            export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${BUILD_NUMBER}/linaro-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
 
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
@@ -363,8 +363,8 @@
         - shell: |
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
 
-            export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${BUILD_NUMBER}/boot-linaro-${UBUNTU_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
-            export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+            export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${BUILD_NUMBER}/boot-linaro-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
+            export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/linaro/ubuntu/${BUILD_NUMBER}/linaro-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
 
             ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
 

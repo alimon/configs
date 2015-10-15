@@ -25,7 +25,7 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
         - string:
-            name: UBUNTU_FLAVOUR
+            name: OS_FLAVOUR
             default: 'vivid'
         - string:
             name: PLATFORM_NAME
@@ -71,7 +71,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              sudo kpartx -dv out/linaro-${UBUNTU_FLAVOUR}-*.sd.img || true
+              sudo kpartx -dv out/linaro-${OS_FLAVOUR}-*.sd.img || true
               rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
@@ -127,9 +127,9 @@
             - linaro-headless
             - linux-firmware
             sources:
-              qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${UBUNTU_FLAVOUR} main
-              repo: http://repo.linaro.org/ubuntu/linaro-overlay ${UBUNTU_FLAVOUR} main
-              ubuntu: http://ports.ubuntu.com/ubuntu-ports ${UBUNTU_FLAVOUR} main universe
+              qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${OS_FLAVOUR} main
+              repo: http://repo.linaro.org/ubuntu/linaro-overlay ${OS_FLAVOUR} main
+              ubuntu: http://ports.ubuntu.com/ubuntu-ports ${OS_FLAVOUR} main universe
             packages:
             - linux-image-generic
             - linux-headers-generic
@@ -149,15 +149,15 @@
               # Get rootfs
               export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
               export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/ubuntu-armhf-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
               # Create pre-built image(s)
-              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${UBUNTU_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
+              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
 
               # Create eMMC rootfs image(s)
               mkdir rootfs
-              for device in $(sudo kpartx -av out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
+              for device in $(sudo kpartx -av out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
                 partition=$(echo ${device} | cut -d'p' -f3)
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
@@ -174,13 +174,13 @@
             LABEL=qcom-firmware /lib/firmware ext4 defaults 0 0
             EOF
 
-              sudo make_ext4fs -o -L rootfs -l 2G -s out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 2G -s out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
               sudo umount rootfs
-              sudo kpartx -dv out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
-              sudo rm -rf rootfs out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo kpartx -dv out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo rm -rf rootfs out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
 
               # Compress image(s)
-              gzip -9 out/linaro-${UBUNTU_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
+              gzip -9 out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
               cat >> out/README.txt << EOF
             Linaro Ubuntu ${rootfs} build: http://snapshots.linaro.org/ubuntu/images/${rootfs}/${ROOTFS_BUILD_NUMBER}
@@ -234,13 +234,13 @@
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
 
             export BOOT_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking/${BUILD_NUMBER}/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img.gz
-            export DATA_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking/${BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+            export DATA_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking/${BUILD_NUMBER}/linaro-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
             export SYSTEM_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking/${BUILD_NUMBER}/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
 
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-ubuntu-images-tracking/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
@@ -256,10 +256,10 @@
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
 
             export BOOT_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking/${BUILD_NUMBER}/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img.gz
-            export DATA_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking/${BUILD_NUMBER}/linaro-${UBUNTU_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+            export DATA_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking/${BUILD_NUMBER}/linaro-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
             export SYSTEM_URL=https://snapshots.linaro.org/ubuntu/pre-built/snapdragon-tracking/${BUILD_NUMBER}/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
 
-            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-ubuntu-images-tracking/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
+            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
