@@ -1,0 +1,47 @@
+- job:
+    name: tcwg-publish-snapshot
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameter:
+        - string:
+                name: snapshot_version
+                default: ''
+                description: 'Snapshot revision to deploy (like: 5.2-2015.10)'
+    disabled: false
+    node: tcwg-ex40-01
+    display-name: 'TCWG - Snapshot source tarball publishing'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out
+            }
+
+            mkdir -p out
+            cp /work/space/sources/gcc-linaro-snapshot-${snapshot_version}.tar.* out/
+            # publish release notes
+            wget https://git.linaro.org/toolchain/release-notes.git/blob_plain/refs/heads/toolchain-snapshots:/components/toolchain/gcc-linaro/5/README.textile -O out/README.textile
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              out components/toolchain/gcc-linaro/${snapshot_version}/
