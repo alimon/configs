@@ -41,6 +41,7 @@
             values:
                 - arndale
                 - arndale-be
+                - x86_64
 #                - vexpress64
 #                - vexpress64-be
         - axis:
@@ -104,6 +105,20 @@
                 export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/preempt-rt.conf linaro/configs/arndale.conf linaro/configs/bigendian.conf"
                 export DEVICE_TYPE="arndale"
                 ;;
+              x86_64)
+                export board_types="lng-x86"
+                export kernel_flavour="x86-64"
+                export conf_filenames="arch/x86/configs/x86_64_defconfig linaro/configs/hugepage.conf linaro/configs/preempt-rt.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/no_hz_full.conf linaro/configs/x86.conf"
+                export MAKE_DTBS=false
+                export ARCH="x86"
+                export DEVICE_TYPE="x86"
+                cat << EOF > linaro/configs/x86.conf
+            CONFIG_DEVTMPFS=y
+            CONFIG_DEVTMPFS_MOUNT=y
+            CONFIG_E1000E=y
+            CONFIG_IXGBE=y
+            EOF
+                ;;
               vexpress64)
                 export board_types="lng-juno"
                 export kernel_flavour="vexpress64"
@@ -139,6 +154,11 @@
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
+            if [ "${hwpack}" = "x86_64" ]; then
+              mkdir -p out
+              cp linux-*.deb out/
+              cp builddir-*-linaro-${kernel_flavour}/arch/${hwpack}/boot/bzImage out/bzImage-${kernel_flavour}
+            fi
 
             cp -a configs/linux-lng/hwpacks/linaro-* .
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
@@ -154,11 +174,11 @@
 
             mkdir -p out/lava
             [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
-            [ "${hwpack}" != "mustang" ] && mv hwpack_linaro-${hwpack}* out/
+            [[ "${hwpack}" != "mustang" && "${hwpack}" != "x86_64" ]] && mv hwpack_linaro-${hwpack}* out/
 
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14-rt/${hwpack}/${BUILD_NUMBER}"
             DTB_URL=${KERNEL_URL}/dtbs
-            [ "${hwpack}" != "mustang" ] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack}*.tar.gz |xargs basename)"
+            [[ "${hwpack}" != "mustang" && "${hwpack}" != "x86_64" ]] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack}*.tar.gz |xargs basename)"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
@@ -192,9 +212,17 @@
 
             # Generate LAVA job definitions
             case "${hwpack}" in
-              arndale)
-                export ROOTFS_BUILD_NUMBER=335
-                export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lng-armv7a/linaro-image-lng-genericarmv7a-20150618-335.rootfs.tar.gz"
+              arndale|x86_64)
+                case "${hwpack}" in
+                  arndale)
+                    export ROOTFS_BUILD_NUMBER=335
+                    export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lng-armv7a/linaro-image-lng-genericarmv7a-20150618-335.rootfs.tar.gz"
+                    ;;
+                  x86_64)
+                    export ROOTFS_BUILD_NUMBER=121
+                    export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lng-x86/linaro-image-lng-qemux86-20150618-121.rootfs.cpio.gz"
+                    ;;
+                esac
 
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template.yaml > out/lava/template.json
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v3.14-rt/lava-job-definitions/${DEVICE_TYPE}/template-base.yaml > out/lava/template-base.json
