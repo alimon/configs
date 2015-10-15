@@ -22,7 +22,7 @@
             values:
                 - arndale
                 - arndale-be
-                - lng-rt-x86-64
+                - x86_64
         - axis:
             type: slave
             name: label
@@ -40,21 +40,8 @@
 
             set -ex
 
-            case "${hwpack}" in
-              arndale|arndale-be)
-                PUB_DEST='http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14-rt/'
-                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v3.14-rt/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
-                ;;
-              lng-rt-x86-64)
-                PUB_DEST='http://snapshots.linaro.org/openembedded/pre-built/'
-                # Grab variable from jenkins via api/json
-                test -d ${HOME}/bin || mkdir ${HOME}/bin
-                wget https://git.linaro.org/ci/lci-build-tools.git/blob_plain/HEAD:/get_jenkins_variable.py -O ${HOME}/bin/get_jenkins_variable.py
-                upstream_build_number=$(${HOEM}/bin/get_jenkins_variable.py openembedded-lng-rt-x86-pre-built-test-definitions --input_variable UPSTREAM_BUILD_NUMBER)
-                BUILD_NUMBER=${upstream_build_number}
-                hwpack="linaro-${hwpack}-3.14"
-                ;;
-            esac
+            PUB_DEST='http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14-rt/'
+            BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v3.14-rt/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
 
             case "$(date +%A)" in
               Tuesday|Thursday)
