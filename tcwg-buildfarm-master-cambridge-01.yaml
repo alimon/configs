@@ -170,6 +170,7 @@
               echo "export node_selector=$node_selector" >> cross_check_script_$target
               echo "export JOB_NAME=$JOB_NAME" >> cross_check_script_$target
               echo "export NODE_NAME=$NODE_NAME" >> cross_check_script_$target
+              echo "export BUILD_NUMBER=$BUILD_NUMBER" >> cross_check_script_$target
               echo "session_id=\$(schroot -b -c chroot:$schroot_image --preserve-environment)" >> cross_check_script_$target
               echo BUILD_SHELL=\"schroot -r -c session:\$session_id --preserve-environment -- bash\" >> cross_check_script_$target
               echo '${BUILD_SHELL} -c "echo \"Build session is up; ulimit config:\"; ulimit -a"' >> cross_check_script_$target
