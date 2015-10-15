@@ -29,7 +29,7 @@
             type: slave
             name: label
             values:
-                - docker-utopic-amd64
+                - docker-vivid-amd64
     triggers:
         - timed: 'H(0-30) H(9-11) * * *'
     wrappers:
@@ -43,7 +43,7 @@
             rm -rf kvm-ci
             git clone git://git.linaro.org/ci/kvm-ci.git kvm-ci
 
-            bash -x kvm-ci/jenkins-run
+            bash ./kvm-ci/jenkins-run
             # Publish
             mkdir -p out/
             mv *.gz uImage* Image* zImage* *.dtb *.deb out/ ||true

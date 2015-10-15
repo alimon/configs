@@ -28,7 +28,7 @@
             type: slave
             name: label
             values:
-                - docker-utopic-amd64
+                - docker-vivid-amd64
     triggers:
         - timed: 'H(0-30) H(12) * * *'
     wrappers:
@@ -42,7 +42,7 @@
             rm -rf xen-ci
             git clone git://git.linaro.org/ci/xen-ci.git xen-ci
 
-            bash -x xen-ci/jenkins/xen-image
+            bash ./xen-ci/jenkins/xen-image
             # Publish
             mkdir -p out/
             mv xenlava-${hwpack}.img.xz xenlava-${hwpack}.tar.xz *.dtb Image* uXen* out/||true
