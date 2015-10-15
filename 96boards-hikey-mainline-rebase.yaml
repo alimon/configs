@@ -1,0 +1,272 @@
+- job:
+    name: 96boards-hikey-mainline-rebase
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    parameters:
+        - string:
+            name: ROOTFS
+            default: 'developer'
+    disabled: false
+    node: docker-utopic-amd64
+    display-name: '96boards - HiKey (hikey-mainline-rebase)'
+    scm:
+        - git:
+            url: https://github.com/96boards/linux.git
+            refspec: +refs/heads/hikey-mainline-rebase:refs/remotes/origin/hikey-mainline-rebase
+            name: origin
+            branches:
+                - refs/heads/hikey-mainline-rebase
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo kpartx -dv out/hikey-jessie_*.img || true
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+            }
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y kpartx python-pycurl
+            wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb
+            sudo dpkg -i --force-all android-tools-fsutils_*.deb
+            rm -f android-tools-fsutils_*.deb
+            # FIXME - temporary workaround
+            sudo wget https://git.linaro.org/ci/linaro-image-tools.git/blob_plain/HEAD:/linaro-hwpack-install -O /usr/bin/linaro-hwpack-install
+            sudo chmod +x /usr/bin/linaro-hwpack-install
+
+            export LANG=C
+            export make_bootwrapper=false
+            export make_install=true
+            export kernel_flavour=hikey
+            export kernel_config=defconfig
+            export MAKE_DTBS=true
+            export ARCH=arm64
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-14.09/bin"
+            export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            bash -x lci-build-tools/jenkins_kernel_build_inst
+            rm -rf out/dtbs
+
+            # Create the hardware pack
+            cp -a configs/96boards-hikey/hwpacks/linaro-hikey .
+
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            linaro-hwpack-create --debug linaro-hikey ${VERSION}
+            linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-hikey_*.deb` -r linux-image -d -i
+            linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
+
+            echo "console=tty0 console=ttyAMA3,115200n8 root=/dev/disk/by-partlabel/system rootwait rw quiet" > cmdline.emmc
+            echo "console=tty0 console=ttyAMA3,115200n8 root=/dev/mmcblk1p2 rootwait rw quiet" > cmdline
+
+            FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
+            FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
+            wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
+
+            GRUB_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/grub/latest"
+            wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O grubaa64.efi
+            wget --progress=dot ${GRUB_EFI_URL}/grub.cfg -O grub.cfg
+
+            # FIXME - ship legacy dtb during transition to UEFI and PSCI
+            wget -q http://builds.96boards.org/releases/hikey/linaro/debian/15.06/hi6220-hikey.dtb -O out/hi6220-hikey-spin-table.dtb
+
+            cat > out/README.txt << EOF
+            Build information:
+            * build: ${BUILD_URL}
+            * git URL: ${GIT_URL}
+            * git branch: ${GIT_BRANCH}
+            * git commit: ${GIT_COMMIT}
+            * uefi: http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
+            EOF
+
+            for rootfs in ${ROOTFS}; do
+              # Get rootfs
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+
+              cat >> out/README.txt << EOF
+            * rootfs (${rootfs}): http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
+            EOF
+
+              if [ "${rootfs}" = "alip" ]; then
+                mali_pkg="xserver-xorg-video-fbdev-mali-450_0.0.1-1_all.deb"
+                wget http://builds.96boards.org/snapshots/hikey/linaro/binaries/20150407/${mali_pkg} -O ${mali_pkg}
+                linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${mali_pkg} -d -i
+                rm -f ${mali_pkg}
+                armsoc_pkg="xserver-xorg-video-armsoc_1.3.0-0linaro1_arm64.deb"
+                wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/x/xf86-video-armsoc/${armsoc_pkg} -O ${armsoc_pkg}
+                linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${armsoc_pkg} -d -i
+                rm -f ${armsoc_pkg}
+              fi
+
+              # Create pre-built image(s)
+              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file hikey-jessie_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-hikey_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+              # Create eMMC rootfs image(s)
+              mkdir boot rootfs
+              for device in $(sudo kpartx -av out/hikey-jessie_${rootfs}_${VERSION}.img | cut -d' ' -f3); do
+                partition=$(echo ${device} | cut -d'p' -f3)
+                [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
+                [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
+              done
+
+              if [ "${rootfs}" = "developer" ]; then
+                sed -e "s|^PULSEAUDIO_SYSTEM_START=0|PULSEAUDIO_SYSTEM_START=1|" \
+                    -e "s|^DISALLOW_MODULE_LOADING=1|DISALLOW_MODULE_LOADING=0|" \
+                    < rootfs/usr/share/doc/pulseaudio/examples/pulseaudio.default.example \
+                    | sudo tee rootfs/etc/default/pulseaudio
+                sudo install -D -p -m0755 \
+                  rootfs/usr/share/doc/pulseaudio/examples/pulseaudio.init.example \
+                  rootfs/etc/init.d/pulseaudio
+                cat << EOF | sudo tee -a rootfs/etc/pulse/system.pa
+
+            ### Automatically load driver modules for Bluetooth hardware
+            .ifexists module-bluetooth-policy.so
+            load-module module-bluetooth-policy
+            .endif
+
+            .ifexists module-bluetooth-discover.so
+            load-module module-bluetooth-discover
+            .endif
+            EOF
+              else
+                sudo install -D -p -m0644 \
+                  rootfs/etc/xdg/lxsession/LXDE/autostart \
+                  rootfs/home/linaro/.config/lxsession/LXDE/autostart
+                cat << EOF | sudo tee -a rootfs/home/linaro/.config/lxsession/LXDE/autostart
+            @bash -c /home/linaro/bin/xmms2-output-plugin-pulse
+            EOF
+              fi
+
+              sudo mkdir boot/grub
+              sudo cp -a boot/hi6220-hikey.dtb boot/lcb.dtb || true
+              sudo cp -a boot/initrd.img-* boot/ramdisk.img || true
+              sudo cp -a cmdline boot/cmdline || true
+              sudo cp -a fastboot.efi boot/fastboot.efi || true
+              sudo cp -a grubaa64.efi boot/grubaa64.efi || true
+              sudo cp -a grub.cfg boot/grub/grub.cfg || true
+
+              sudo ln -sf /etc/resolvconf/run/resolv.conf rootfs/etc/resolv.conf
+
+              cat << EOF | sudo tee rootfs/etc/NetworkManager/dispatcher.d/99hikey
+            #!/bin/sh
+
+            if [ "$1" = "wlan0" -a "$2" = "pre-up" ]; then
+              /sbin/iw wlan0 set power_save off
+              echo 0 > /sys/kernel/debug/ieee80211/phy0/wlcore/sleep_auth
+            fi
+            EOF
+
+              cat << EOF | sudo tee rootfs/etc/fstab
+            /dev/disk/by-partlabel/system /     ext4 errors=remount-ro 0 1
+            /dev/disk/by-partlabel/boot   /boot vfat defaults          0 0
+            EOF
+
+              sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+              sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists rootfs/home/linaro/bin
+
+              sudo wget https://raw.githubusercontent.com/96boards/usb_speed_switch/master/usb_speed -O rootfs/home/linaro/bin/usb_speed
+              cat << EOF | sudo tee -a rootfs/home/linaro/bin/xmms2-output-plugin-pulse
+            #!/bin/sh
+
+            [ ! -f "\$HOME/.config/xmms2/xmms2.conf" ] && xmms2 server config output.plugin pulse
+            EOF
+              cat << EOF | sudo tee -a rootfs/home/linaro/.profile
+
+            /home/linaro/bin/xmms2-output-plugin-pulse
+            EOF
+              sudo chmod a+x rootfs/home/linaro/bin/* \
+                             rootfs/etc/NetworkManager/dispatcher.d/99hikey
+              sudo chown -R 1000:1000 rootfs/home/linaro
+
+              sudo make_ext4fs -o -L rootfs -l 3056M -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
+              sudo umount boot rootfs
+              sudo kpartx -dv out/hikey-jessie_${rootfs}_${VERSION}.img
+              sudo rm -rf boot rootfs
+
+              # Compress image(s)
+              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.emmc.img
+              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.img
+            done
+
+            # Create boot image(s)
+            mkdir boot-fat
+
+            dd if=/dev/zero of=out/boot-fat.emmc.img bs=512 count=131072
+            sudo mkfs.fat -n "BOOT IMG" out/boot-fat.emmc.img
+            sudo mount -o loop,rw,sync out/boot-fat.emmc.img boot-fat
+            sudo mkdir boot-fat/grub
+            sudo cp -a out/Image boot-fat/Image || true
+            sudo cp -a out/hi6220-hikey-spin-table.dtb boot-fat/lcb.dtb || true
+            sudo cp -a out/initrd.img-* boot-fat/ramdisk.img || true
+            sudo cp -a cmdline.emmc boot-fat/cmdline || true
+            sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
+            sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
+            sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
+            sudo umount boot-fat
+            sudo chmod 777 out/boot-fat.emmc.img
+
+            dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
+            sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
+            sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
+            sudo mkdir boot-fat/grub
+            sudo cp -a out/Image out/hi6220-hikey.dtb boot-fat/ || true
+            sudo cp -a out/initrd.img-* boot-fat/initrd.img || true
+            sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
+            sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
+            sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
+            sudo umount boot-fat
+            sudo chmod 777 out/boot-fat.uefi.img
+
+            rm -rf boot-fat
+
+            # Compress boot partition image(s)
+            gzip -9 out/boot-fat.emmc.img
+            gzip -9 out/boot-fat.uefi.img
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/96boards-hikey/build-info/template.txt -O out/BUILD-INFO.txt
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info out/BUILD-INFO.txt \
+              --link-latest \
+              out snapshots/hikey/community/hikey-mainline-rebase/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
