@@ -1,0 +1,83 @@
+- job:
+    name: debian-armhf-rootfs
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'Linaro Debian armhf rootfs'
+    scm:
+        - git:
+            url: git://git.linaro.org/ci/ubuntu-build-service.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches: 
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+        - axis:
+            type: user-defined
+            name: rootfs
+            values:
+                - alip
+                - developer
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+        - timeout:
+            timeout: 120
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo umount builddir
+            }
+
+            dpkg -s qemu-user-static |grep '^Version'
+            dpkg -s live-build |grep '^Version'
+
+            test -d builddir || mkdir builddir
+            sudo mount -t tmpfs -o size=6G tmpfs builddir
+            cp -a jessie-armhf-${rootfs} builddir/
+            cd builddir/jessie-armhf-${rootfs}
+            ./configure
+            make
+
+            cd ${WORKSPACE}
+            sudo rm -rf out && mkdir out
+            sudo mv builddir/jessie-armhf-${rootfs}/linaro-jessie-* out
+            ${HOME}/bin/linaro-cp out debian/images/${rootfs}-armhf/${BUILD_NUMBER}
+    publishers:
+        - archive:
+            artifacts: 'out/*'
+            latest-only: true
+        - email:
+            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
