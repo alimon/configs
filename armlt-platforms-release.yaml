@@ -1,0 +1,53 @@
+- job:
+    name: armlt-platforms-release
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-utopic-amd64
+    display-name: 'ARM LT - Platforms Release Builds for Versatile Express TC2, FVP AEMv8 and Foundation models and Juno ARM Development Platforms'
+    scm:
+        - git:
+            url: https://git.linaro.org/landing-teams/working/arm/build-scripts.git
+            refspec: +refs/heads/ci:refs/remotes/origin/ci
+            name: origin
+            branches:
+                - refs/heads/ci
+            basedir: build-scripts
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            bash build-scripts/platforms-ci.sh $(date +%y`.`date +%m)
+
+            mkdir out
+            mv *.zip out/
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              out member-builds/armlt-platforms-release/${BUILD_NUMBER}/
+    publishers:
+        - email:
+            recipients: 'ryan.harkin@linaro.org'
