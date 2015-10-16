@@ -1,0 +1,48 @@
+- job:
+    name: lava-dispatcher
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: lavabot
+    display-name: 'PEP8 and Unit Test CI Job for lava-dispatcher'
+    triggers:
+        - gerrit:
+            dispatcher-name: 'review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-codereview-value: 1
+            gerrit-build-failed-codereview-value: -1
+            trigger-for-unreviewed-patches: true
+            readable-message: false
+            successful-message: 'PEP8 and Units Tests Successful'
+            start-message: 'PEP8 and Units Tests Started'
+            failure-message: 'PEP8 and Units Tests Failed'
+            custom-url: '${BUILD_URL}/console'
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'lava/lava-dispatcher'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION,length=8}'
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            rm -rf ${WORKSPACE}/*
+            git clone https://git.linaro.org/${GERRIT_PROJECT} -b ${GERRIT_BRANCH}
+            cd *
+            git log -n3
+            git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
+            ./ci-run
