@@ -39,6 +39,7 @@
                 - docker-utopic-arm64
                 - docker-utopic-armhf
                 - docker-jessie-arm64
+                - docker-jessie-armhf
     execution-strategy:
         sequential: false
     disabled: false
@@ -73,6 +74,11 @@
             echo "dist: $dist"
             echo "source: $source"
             echo "repo: $repo"
+
+            if [ "$dist" == "utopic" ]
+            then
+                 sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            fi
             sudo rm -f *.changes repo work /etc/apt/sources.list.d/local.list
             # build a source repo for apt-get build-dep
             mkdir repo && cd repo
