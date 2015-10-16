@@ -18,6 +18,14 @@
                 name: snapshot_version
                 default: ''
                 description: 'Snapshot revision to deploy (like: 5.2-2015.10)'
+        - string:
+                name: notes_branch
+                default: 'refs/heads/toolchain-snapshots'
+                description: 'Release notes branch name or sha1'
+        - bool:
+               name: notes_only
+               default: false
+               description: 'Publish release notes only'
     disabled: false
     node: tcwg-x86_64-ex40build-01
     display-name: 'TCWG - Snapshot source tarball publishing'
@@ -38,10 +46,20 @@
               rm -rf out
             }
 
+            # Extract GCC version
+            # Since GCC 5 our branch name only contains GCC major number.
+            gcc_version=${snapshot_version%%-*}
+            gcc_major=${gcc_version%%.*}
+            [ $gcc_major -ge "5" ] && gcc_version=$gcc_major
+
+            # Release notes
+            notes_url=https://git.linaro.org/toolchain/release-notes.git/blob_plain/${notes_branch}
+
             mkdir -p out
-            cp /work/space/sources/gcc-linaro-snapshot-${snapshot_version}.tar.* out/
-            # publish release notes
-            wget https://git.linaro.org/toolchain/release-notes.git/blob_plain/refs/heads/toolchain-snapshots:/components/toolchain/gcc-linaro/5/README.textile -O out/README.textile
+            wget $notes_url:/components/toolchain/gcc-linaro/${gcc_version}/README.textile -O out/README.textile
+            if ! ${notes_only}; then
+              cp /work/space/sources/gcc-linaro-snapshot-${snapshot_version}.tar.* out/
+            fi
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
