@@ -1,0 +1,149 @@
+- job:
+    name: 96boards-reference-uefi
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: '96boards - Reference Component - UEFI'
+    scm:
+        - git:
+            url: https://github.com/96boards/edk2.git
+            refspec: +refs/heads/reference:refs/remotes/origin/reference
+            name: origin
+            branches:
+                - refs/heads/reference
+            basedir: edk2
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    axes:
+        - axis:
+            type: user-defined
+            name: MX_PLATFORM
+            values:
+                - hikey
+        - axis:
+            type: user-defined
+            name: MX_TYPE
+            values:
+                - RELEASE
+                - DEBUG
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic-amd64
+    execution-strategy:
+        sequential: true
+        touchstone:
+            expr: 'MX_PLATFORM=="hikey" && MX_TYPE=="RELEASE"'
+    wrapper:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            export JOB_NAME=96boards-reference-uefi
+            echo "JOB_URL: ${JOB_URL}"
+            echo "BUILD_URL: ${BUILD_URL}"
+            echo "WORKSPACE: ${WORKSPACE}"
+            echo "BUILD_NUMBER: ${BUILD_NUMBER}"
+
+            # Create lower case debug/release string for use in paths
+            BUILD_TYPE="${MX_TYPE,,}"
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl zip
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf arm-trusted-firmware
+              rm -rf uefi-tools
+              rm -rf l-loader
+              rm -rf out edk2/Build
+            }
+
+            # Use pre-installed linaro toolchain (GCC 4.9)
+            export PATH="${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
+
+            # Check out common tools and repositories
+            git clone git://git.linaro.org/uefi/uefi-tools.git
+
+            # Check out arm-trusted-firmware (not upstream yet, so also from github)
+            git clone -b reference --depth 1 https://github.com/96boards/arm-trusted-firmware.git
+
+            export AARCH64_TOOLCHAIN=GCC49
+            export EDK2_DIR=${WORKSPACE}/edk2
+            export UEFI_TOOLS_DIR=${WORKSPACE}/uefi-tools
+            export JENKINS_WORKSPACE=${WORKSPACE}
+            # WORKSPACE is used by uefi-build.sh
+            unset WORKSPACE
+
+            # Build UEFI for the desired platform, with the specified build type
+            cd ${EDK2_DIR}
+            bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a ../arm-trusted-firmware ${MX_PLATFORM}
+
+            unset WORKSPACE
+            export WORKSPACE=${JENKINS_WORKSPACE}
+
+            # Find out the artifacts and image dir so we can publish the correct output files
+            IMAGES=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} images`
+            IMAGE_DIR=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o UEFI_IMAGE_DIR get`
+
+            cd ${WORKSPACE}
+            mkdir -p out/${BUILD_TYPE}
+            for image in ${IMAGES}; do
+                cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${image} out/${BUILD_TYPE}/
+            done
+
+            if [ "${MX_PLATFORM}" == "hikey" ]; then
+                # Additional components for hikey, such as fastboot and l-loader
+                cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
+                git clone --depth 1 https://github.com/96boards/l-loader.git
+                cd l-loader
+                ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
+                make
+                cp -a l-loader.bin ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
+                cd ${WORKSPACE}
+            fi
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/reference-platform/${MX_PLATFORM}/uefi/${BUILD_NUMBER}/
+    publishers:
+        - email:
+            recipients: 'ricardo.salveti@linaro.org'
