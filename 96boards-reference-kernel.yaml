@@ -1,0 +1,95 @@
+- job:
+    name: 96boards-reference-kernel
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: KERNEL_BRANCH
+            default: 'release/qcomlt-4.2'
+        - string:
+            name: KERNEL_CONFIG
+            default: 'defconfig distro.config'
+    disabled: false
+    node: docker-utopic-amd64
+    display-name: '96boards - Reference Component - Linux Kernel'
+    scm:
+        - git:
+            url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl device-tree-compiler zip
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+            }
+
+            export LANG=C
+            export make_bootwrapper=false
+            export make_install=true
+            export make_deb=true
+            export make_perf=true
+            export kernel_flavour=reference
+            export kernel_config="${KERNEL_CONFIG}"
+            export MAKE_DTBS=true
+            export ARCH=arm64
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
+
+            # Build the kernel
+            test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            bash -x lci-build-tools/jenkins_kernel_build_inst
+
+            # Final preparation for publishing
+            cp -a *.deb out/
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/reference-platform/linux/${BUILD_NUMBER}/
+    publishers:
+        - email:
+            recipients: 'ricardo.salveti@linaro.org'
