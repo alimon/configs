@@ -79,12 +79,14 @@
             set -e
 
             # Move log files
-            mkdir -p out/log && find check-odp/build/odp/testdir/ -type f -name '*.log' -exec cp {} out/log \;
+            if [ -d check-odp/build/odp/testdir/ ];
+                mkdir -p out/log && find check-odp/build/odp/testdir/ -type f -name '*.log' -exec cp {} out/log \;
+            fi
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py --link-latest out components/lng/odp/odp-api-check/${GIT_BRANCH}/${label}/${BUILD_NUMBER}
+            [ -d out ] && time python ${HOME}/bin/linaro-cp.py --link-latest out components/lng/odp/odp-api-check/${GIT_BRANCH}/${label}/${BUILD_NUMBER}
 
             if [ ${retcode} -ne 0 ]; then
               exit 1
