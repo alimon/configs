@@ -77,7 +77,7 @@
             fi
             debsign -k${key_id} ${pkg_changes}
             dput ${host_ppa} ${pkg_changes}
-            rm -f *
+            find . -mtime +3 -exec rm -f {} \;
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org wookey@linaro.org riku.voipio@linaro.org'
