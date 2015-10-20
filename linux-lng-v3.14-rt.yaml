@@ -154,8 +154,11 @@
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
+
+            mkdir -p out
+            cp linux*orig.tar.gz out/
+
             if [ "${hwpack}" = "x86_64" ]; then
-              mkdir -p out
               cp linux-*.deb out/
               cp builddir-*-linaro-${kernel_flavour}/arch/${hwpack}/boot/bzImage out/bzImage-${kernel_flavour}
             fi
