@@ -42,7 +42,7 @@
                 - arndale
                 - arndale-be
                 - x86_64
-#                - vexpress64
+                - vexpress64
 #                - vexpress64-be
         - axis:
             type: slave
@@ -120,7 +120,7 @@
             EOF
                 ;;
               vexpress64)
-                export board_types="lng-juno"
+                export board_types="juno"
                 export kernel_flavour="vexpress64"
                 export conf_filenames="arch/arm64/configs/defconfig linaro/configs/linaro-base.conf linaro/configs/distribution.conf linaro/configs/hugepage.conf linaro/configs/preemption.conf linaro/configs/ovs.conf linaro/configs/kvm-host.conf linaro/configs/kvm-guest.conf linaro/configs/no_hz_full.conf linaro/configs/vexpress64.conf"
                 export DEVICE_TYPE="juno"
@@ -168,7 +168,7 @@
 
             # Create the hardware pack
             case "${hwpack}" in
-              arndale|arndale-be)
+              arndale|arndale-be|vexpress64)
                 linaro-hwpack-create --debug linaro-${hwpack} ${VERSION}
                 linaro-hwpack-replace -t `ls hwpack_linaro-*_supported.tar.gz` -p `ls linux-image-*-linaro-*.deb|head -1` -r linux-image -d -i
                 linaro-hwpack-replace -t `ls hwpack_linaro-*_supported.tar.gz` -p `ls linux-headers-*-linaro-*.deb` -r linux-headers -d -i
@@ -215,7 +215,7 @@
 
             # Generate LAVA job definitions
             case "${hwpack}" in
-              arndale|x86_64)
+              arndale|x86_64|vexpress64)
                 case "${hwpack}" in
                   arndale)
                     export ROOTFS_BUILD_NUMBER=335
@@ -224,6 +224,10 @@
                   x86_64)
                     export ROOTFS_BUILD_NUMBER=121
                     export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lng-x86/linaro-image-lng-qemux86-20150618-121.rootfs.cpio.gz"
+                    ;;
+                  vexpress64)
+                    export ROOTFS_BUILD_NUMBER=754
+                    export ROOTFS_BUILD_URL="http://releases.linaro.org/15.06/openembedded/images/lng-armv8/linaro-image-lng-genericarmv8-20150618-754.rootfs.tar.gz"
                     ;;
                 esac
 
