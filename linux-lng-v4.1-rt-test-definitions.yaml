@@ -98,3 +98,27 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
+        - shell: |
+            BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1-rt/hwpack=vexpress64,label=docker-utopic/lastSuccessfulBuild/buildNumber)
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=juno
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${PUB_DEST}/vexpress64/${BUILD_NUMBER}/lava/template.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1-rt/hwpack=vexpress64,label=docker-utopic/lastSuccessfulBuild/buildNumber)
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=juno
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${PUB_DEST}/vexpress64/${BUILD_NUMBER}/lava/template-base.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
