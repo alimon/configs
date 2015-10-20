@@ -1,0 +1,37 @@
+- job:
+    name: trigger-qemu-upstream
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-extended-read
+                - job-configure
+                - job-delete
+    disabled: false
+    node: build
+    display-name: 'Trigger for Qemu upstream'
+    scm:
+        - git:
+            url: git://git.qemu.org/qemu.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - trigger-builds:
+            - project: 'qemu-docker'
