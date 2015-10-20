@@ -19,7 +19,7 @@
             name: IMAGES
             default: 'core-image-minimal'
     disabled: false
-    node: docker-utopic-amd64
+    node: build
     display-name: 'OpenEmbedded/Yocto Project based images for Qualcomm Snapdragon'
     axes:
         - axis:
@@ -33,10 +33,17 @@
             name: MACHINE
             values:
                 - dragonboard-410c
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic-amd64
     execution-strategy:
         sequential: true
     wrappers:
         - timestamps
+        - matrix-tie-parent:
+            node: build
     builders:
         - linaro-publish-token:
             host: builds.96boards.org
