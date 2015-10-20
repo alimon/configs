@@ -81,6 +81,7 @@
 
             repo sync
             repo manifest -r
+            MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
             # the setup-environment will create local.conf, make sure we get rid
             # of old config. Let's remove the previous TMPDIR as well. We want
@@ -96,7 +97,7 @@
             # Archive buildhistory
             cd buildhistory
             repo manifest -r > MSG
-            git tag -F MSG ${JOB_NAME}-${BUILD_NUMBER}
+            git tag -F MSG ${MANIFEST_BRANCH}-${BUILD_NUMBER}-git${MANIFEST_COMMIT}
             # TODO: push buildhistory
             cd -
 
