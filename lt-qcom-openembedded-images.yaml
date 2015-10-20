@@ -56,6 +56,11 @@
             sudo apt-get update
             sudo apt-get install -y python-pycurl chrpath gawk texinfo libsdl1.2-dev
 
+            mkdir -p ${HOME}/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            chmod a+x ${HOME}/bin/repo
+            export PATH=${HOME}/bin:${PATH}
+
             # initialize repo if not done already
             if [ ! -e ".repo/manifest.xml" ]; then
                repo init -u https://github.com/ndechesne/qcom-oe-manifest.git -b ${MANIFEST_BRANCH}
@@ -95,7 +100,6 @@
             # Publish to snapshots
             # fixup machine names, no 'dash' on publish location
             MACHINE=$(echo ${MACHINE} | sed 's/-//g')
-            test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
