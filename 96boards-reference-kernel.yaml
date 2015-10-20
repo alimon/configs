@@ -36,8 +36,6 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
-    triggers:
-        - pollscm: 'H/5 * * * *'
     wrappers:
         - timestamps
         - build-name:
@@ -50,7 +48,7 @@
 
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y python-pycurl device-tree-compiler zip
+            sudo apt-get install -y python-pycurl
 
             set -ex
 
@@ -67,8 +65,6 @@
             export LANG=C
             export make_bootwrapper=false
             export make_install=true
-            export make_deb=true
-            export make_perf=false
             export kernel_flavour=reference
             export kernel_config="${KERNEL_CONFIG}"
             export MAKE_DTBS=true
@@ -77,7 +73,8 @@
             export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
 
             # Build the kernel
-            test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            rm -rf lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
             # Final preparation for publishing
@@ -85,7 +82,7 @@
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
