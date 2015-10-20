@@ -63,6 +63,11 @@
             }
 
             export LANG=C
+            CCACHE_DIR="${HOME}/srv/ccache"
+            CCACHE_UNIFY=1
+            CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
+            export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS
+            export use_ccache=true
             export make_bootwrapper=false
             export make_install=true
             export kernel_flavour=reference
@@ -87,6 +92,9 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               out snapshots/reference-platform/linux/${BUILD_NUMBER}/
+
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
     publishers:
         - email:
             recipients: 'ricardo.salveti@linaro.org'
