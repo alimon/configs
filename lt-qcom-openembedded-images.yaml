@@ -30,7 +30,7 @@
                 - jethro
         - axis:
             type: user-defined
-            name: MACHINE
+            name: OE_MACHINE
             values:
                 - dragonboard-410c
         - axis:
@@ -56,7 +56,7 @@
 
             cleanup_exit()
             {
-                echo "Something wrong happened, Good bye"
+                echo "Running cleanup_exit..."
             }
 
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
@@ -86,7 +86,7 @@
             # of old config. Let's remove the previous TMPDIR as well. We want
             # to preserve build/buildhistory though.
             rm -rf build/conf build/tmp-glibc/
-            QCOM_EULA=1 source setup-environment build
+            QCOM_EULA=1 MACHINE=${OE_MACHINE} source setup-environment build
 
             # Add job BUILD_NUMBER to image file names
             echo "IMAGE_NAME_append = \"-${BUILD_NUMBER}\"" >> conf/local.conf
@@ -101,18 +101,18 @@
             cd -
 
             # Prepare files to publish
-            rm -f tmp-glibc/deploy/images/${MACHINE}/*.txt
-            find tmp-glibc/deploy/images/${MACHINE} -type l -delete
+            rm -f tmp-glibc/deploy/images/${OE_MACHINE}/*.txt
+            find tmp-glibc/deploy/images/${OE_MACHINE} -type l -delete
 
             # Publish to snapshots
             # fixup machine names, no 'dash' on publish location
-            MACHINE=$(echo ${MACHINE} | sed 's/-//g')
+            OE_MACHINE=$(echo ${OE_MACHINE} | sed 's/-//g')
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              tmp-glibc/deploy/images/${MACHINE} \
-              snapshots/${MACHINE}/linaro/openembedded/${BUILD_NUMBER}
+              tmp-glibc/deploy/images/${OE_MACHINE} \
+              snapshots/${OE_MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER}
 
     publishers:
         - email:
