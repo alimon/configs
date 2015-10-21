@@ -54,7 +54,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              sudo kpartx -dv out/${BOARD}-jessie_*.img || true
+              sudo kpartx -dv ${BOARD}-jessie_*.img || true
               rm -rf configs out
             }
 
@@ -92,11 +92,11 @@
             wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
             # Create pre-built image(s)
-            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file ${BOARD}-jessie_alip_${VERSION}.img --image-size 2G --binary linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi
+            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-jessie_alip_${VERSION}.img --image-size 2G --binary linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi --part-table gpt
 
             # Create eMMC rootfs image(s)
             mkdir boot rootfs
-            for device in $(sudo kpartx -av out/${BOARD}-jessie_alip_${VERSION}.img | cut -d' ' -f3); do
+            for device in $(sudo kpartx -av ${BOARD}-jessie_alip_${VERSION}.img | cut -d' ' -f3); do
               partition=$(echo ${device} | cut -d'p' -f3)
               [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
               [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
@@ -110,7 +110,8 @@
             /dev/disk/by-partlabel/boot   /boot vfat defaults          0 0
             EOF
 
-            cat > out/README.txt << EOF
+            mkdir out/${BOARD}
+            cat > out/${BOARD}/README.txt << EOF
             Build information:
             * build: ${BUILD_URL}
             * kernel: ${KERNEL_BUILD_BASE_URL}
@@ -119,51 +120,49 @@
 
             # Create boot image
             if [ "${BOARD}" == "hikey" ]; then
-                FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
-                FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
+                FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-uefi/MX_PLATFORM=hikey,MX_TYPE=RELEASE,label=docker-utopic-amd64/lastStableBuild/buildNumber`
+                FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/reference-platform/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey/AndroidFastbootApp.efi"
                 wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
-
                 GRUB_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/grub/latest"
                 wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O grubaa64.efi
                 wget --progress=dot ${GRUB_EFI_URL}/grub.cfg -O grub.cfg
 
                 mkdir boot-fat
-                dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
-                sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
-                sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
+                dd if=/dev/zero of=out/${BOARD}/boot-fat.uefi.img bs=512 count=131072
+                sudo mkfs.fat -n "BOOT IMG" out/${BOARD}/boot-fat.uefi.img
+                sudo mount -o loop,rw,sync out/${BOARD}/boot-fat.uefi.img boot-fat
                 sudo mkdir boot-fat/grub
-                sudo cp -a boot/Image boot/hi6220-hikey.dtb boot-fat/ || true
+                sudo cp -a boot/Image boot/*.dtb boot-fat/ || true
                 sudo cp -a boot/initrd.img-* boot-fat/initrd.img || true
                 sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
                 sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
                 sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
                 sudo umount boot-fat
-                sudo chmod 777 out/boot-fat.uefi.img
+                sudo chmod 777 out/${BOARD}/boot-fat.uefi.img
                 rm -rf boot-fat
 
-                # Compress boot partition image(s)
-                gzip -9 out/boot-fat.uefi.img
+                # Compress boot partition image
+                gzip -9 out/${BOARD}/boot-fat.uefi.img
 
-                cat >> out/README.txt << EOF
-            * uefi: http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
+                cat >> out/${BOARD}/README.txt << EOF
+            * uefi: http://builds.96boards.org/snapshots/reference-platform/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
             EOF
             fi
 
             # Create the ext4fs (fastboot compatible)
-            sudo make_ext4fs -o -L rootfs -l 3056M -s out/${BOARD}-jessie_alip_${VERSION}.emmc.img rootfs/
+            sudo make_ext4fs -o -L rootfs -l 3056M -s out/${BOARD}/${BOARD}-jessie_alip_${VERSION}.emmc.img rootfs/
             sudo umount boot rootfs
-            sudo kpartx -dv out/${BOARD}-jessie_alip_${VERSION}.img
+            sudo kpartx -dv ${BOARD}-jessie_alip_${VERSION}.img
             sudo rm -rf boot rootfs
 
-            # Compress image(s)
-            gzip -9 out/${BOARD}-jessie_alip_${VERSION}.emmc.img
-            gzip -9 out/${BOARD}-jessie_alip_${VERSION}.img
+            # Compress image
+            gzip -9 out/${BOARD}/${BOARD}-jessie_alip_${VERSION}.emmc.img
 
             # Publish remaining files
-            cp *.deb hwpack* linaro-${BOARD} out
+            cp hwpack* out/${BOARD}
 
             # Create MD5SUMS file
-            (cd out && md5sum * > MD5SUMS.txt)
+            (cd out/${BOARD} && md5sum * > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -171,7 +170,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out/ snapshots/reference-platform/debian/${BUILD_NUMBER}/${BOARD}/
+              out/${BOARD} snapshots/reference-platform/debian/${BUILD_NUMBER}/
     publishers:
         - email:
             recipients: 'ricardo.salveti@linaro.org'
