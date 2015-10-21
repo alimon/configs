@@ -55,7 +55,7 @@
             {
               cd ${WORKSPACE}
               sudo kpartx -dv out/${BOARD}-jessie_*.img || true
-              rm -rf out
+              rm -rf configs out
             }
 
             # Builder setup
@@ -68,14 +68,15 @@
             # FIXME - temporary workaround
             sudo wget https://git.linaro.org/ci/linaro-image-tools.git/blob_plain/HEAD:/linaro-hwpack-install -O /usr/bin/linaro-hwpack-install
             sudo chmod +x /usr/bin/linaro-hwpack-install
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
             # Get the reference kernel packages
             ## FIXME - find a better way to find out the kernel version used
             KERNEL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel/lastSuccessfulBuild/buildNumber`
             KERNEL_BUILD_VERSION="4.3.0-rc5"
             KERNEL_BUILD_BASE_URL="https://builds.96boards.org/snapshots/reference-platform/linux/${KERNEL_BUILD_NUMBER}"
-            wget --progress=dot ${KERNEL_BUILD_BASE_URL}/linux-image-${KERNEL_BUILD_VERSION}-linaro-reference_${KERNEL_BUILD_VERSION}-linaro-reference-2_arm64.deb
-            wget --progress=dot ${KERNEL_BUILD_BASE_URL}/linux-headers-${KERNEL_BUILD_VERSION}-linaro-reference_${KERNEL_BUILD_VERSION}-linaro-reference-2_arm64.deb
+            wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-image-${KERNEL_BUILD_VERSION}-linaro-reference_${KERNEL_BUILD_VERSION}-linaro-reference-2_arm64.deb
+            wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-headers-${KERNEL_BUILD_VERSION}-linaro-reference_${KERNEL_BUILD_VERSION}-linaro-reference-2_arm64.deb
 
             # Create the hardware pack
             cp -a configs/96boards-reference-platform-debian/hwpacks/linaro-${BOARD} .
