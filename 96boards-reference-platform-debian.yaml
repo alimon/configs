@@ -1,0 +1,176 @@
+- job:
+    name: 96boards-reference-platform-debian
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: '96boards - Reference Platform - Debian'
+    axes:
+        - axis:
+            type: user-defined
+            name: BOARD
+            values:
+                - hikey
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic-amd64
+    execution-strategy:
+        sequential: true
+        touchstone:
+            expr: 'BOARD=="hikey"'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo kpartx -dv out/${BOARD}-jessie_*.img || true
+              rm -rf out
+            }
+
+            # Builder setup
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y kpartx python-pycurl
+            wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb
+            sudo dpkg -i --force-all android-tools-fsutils_*.deb
+            rm -f android-tools-fsutils_*.deb
+            # FIXME - temporary workaround
+            sudo wget https://git.linaro.org/ci/linaro-image-tools.git/blob_plain/HEAD:/linaro-hwpack-install -O /usr/bin/linaro-hwpack-install
+            sudo chmod +x /usr/bin/linaro-hwpack-install
+
+            # Get the reference kernel packages
+            ## FIXME - find a better way to find out the kernel version used
+            KERNEL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel/lastSuccessfulBuild/buildNumber`
+            KERNEL_BUILD_VERSION="4.3.0-rc5"
+            KERNEL_BUILD_BASE_URL="https://builds.96boards.org/snapshots/reference-platform/linux/${KERNEL_BUILD_NUMBER}"
+            wget --progress=dot ${KERNEL_BUILD_BASE_URL}/linux-image-${KERNEL_BUILD_VERSION}-linaro-reference_${KERNEL_BUILD_VERSION}-linaro-reference-2_arm64.deb
+            wget --progress=dot ${KERNEL_BUILD_BASE_URL}/linux-headers-${KERNEL_BUILD_VERSION}-linaro-reference_${KERNEL_BUILD_VERSION}-linaro-reference-2_arm64.deb
+
+            # Create the hardware pack
+            cp -a configs/96boards-reference-platform-debian/hwpacks/linaro-${BOARD} .
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            linaro-hwpack-create --debug linaro-${BOARD} ${VERSION}
+            linaro-hwpack-replace -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-image-*.deb` -r linux-image -d -i
+            linaro-hwpack-replace -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-headers-*.deb` -r linux-headers -d -i
+
+            # Get rootfs
+            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=alip/lastSuccessfulBuild/buildNumber`
+            export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=alip/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/alip-arm64/${ROOTFS_BUILD_NUMBER}/linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+            wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+
+            # Create pre-built image(s)
+            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file ${BOARD}-jessie_alip_${VERSION}.img --image-size 2G --binary linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+            # Create eMMC rootfs image(s)
+            mkdir boot rootfs
+            for device in $(sudo kpartx -av out/${BOARD}-jessie_alip_${VERSION}.img | cut -d' ' -f3); do
+              partition=$(echo ${device} | cut -d'p' -f3)
+              [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
+              [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
+            done
+
+            # Rootfs customizations (to be moved as part of the original debian image)
+            sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+            sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+            cat << EOF | sudo tee rootfs/etc/fstab
+            /dev/disk/by-partlabel/system /     ext4 errors=remount-ro 0 1
+            /dev/disk/by-partlabel/boot   /boot vfat defaults          0 0
+            EOF
+
+            cat > out/README.txt << EOF
+            Build information:
+            * build: ${BUILD_URL}
+            * kernel: ${KERNEL_BUILD_BASE_URL}
+            * rootfs: http://snapshots.linaro.org/debian/images/alip-arm64/${ROOTFS_BUILD_NUMBER}
+            EOF
+
+            # Create boot image
+            if [ "${BOARD}" == "hikey" ]; then
+                FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
+                FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
+                wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
+
+                GRUB_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/grub/latest"
+                wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O grubaa64.efi
+                wget --progress=dot ${GRUB_EFI_URL}/grub.cfg -O grub.cfg
+
+                mkdir boot-fat
+                dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
+                sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
+                sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
+                sudo mkdir boot-fat/grub
+                sudo cp -a boot/Image boot/hi6220-hikey.dtb boot-fat/ || true
+                sudo cp -a boot/initrd.img-* boot-fat/initrd.img || true
+                sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
+                sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
+                sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
+                sudo umount boot-fat
+                sudo chmod 777 out/boot-fat.uefi.img
+                rm -rf boot-fat
+
+                # Compress boot partition image(s)
+                gzip -9 out/boot-fat.uefi.img
+
+                cat >> out/README.txt << EOF
+            * uefi: http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
+            EOF
+            fi
+
+            # Create the ext4fs (fastboot compatible)
+            sudo make_ext4fs -o -L rootfs -l 3056M -s out/${BOARD}-jessie_alip_${VERSION}.emmc.img rootfs/
+            sudo umount boot rootfs
+            sudo kpartx -dv out/${BOARD}-jessie_alip_${VERSION}.img
+            sudo rm -rf boot rootfs
+
+            # Compress image(s)
+            gzip -9 out/${BOARD}-jessie_alip_${VERSION}.emmc.img
+            gzip -9 out/${BOARD}-jessie_alip_${VERSION}.img
+
+            # Publish remaining files
+            cp *.deb hwpack* linaro-${BOARD} out
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out/ snapshots/reference-platform/debian/${BUILD_NUMBER}/${BOARD}/
+    publishers:
+        - email:
+            recipients: 'ricardo.salveti@linaro.org'
