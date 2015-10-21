@@ -77,13 +77,20 @@
             export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
             export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
 
+            # Export the kernel packaging version
+            cd kernel
+            kernel_version=`make kernelversion`
+            kernel_release=${kernel_version}-linaro-${kernel_flavour}
+            export KDEB_PKGVERSION="${kernel_release}-${BUILD_NUMBER}"
+            cd ${WORKSPACE}
+
             # Build the kernel
             rm -rf lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
             # Final preparation for publishing
-            cp -a *.deb out/
+            cp -a *.dsc *.changes *.deb out/
             cp linux*orig.tar.gz out/
 
             # Publish
@@ -96,6 +103,15 @@
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            # Create post-build parameters (useful for other jobs)
+            cat << EOF >> post_build_parameters
+            KERNEL_VERSION=${kernel_version}
+            KERNEL_RELEASE=${kernel_release}
+            KDEB_PKGVERSION=${KDEB_PKGVERSION}
+            EOF
+        - inject:
+            properties-file: post_build_parameters
     publishers:
         - email:
             recipients: 'ricardo.salveti@linaro.org amit.kucheria@linaro.org'
