@@ -142,8 +142,10 @@
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --link-latest \
               out/${BUILD_TYPE} snapshots/reference-platform/uefi/${BUILD_NUMBER}/${BUILD_TYPE}/${MX_PLATFORM}/
+            python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --make-link snapshots/reference-platform/uefi/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'ricardo.salveti@linaro.org'
