@@ -1,0 +1,76 @@
+name: linaro-vexpress64
+origin: Linaro
+format: '3.0'
+boot_script: boot.scr
+boot_min_size: 72
+kernel_addr: '0x60000000'
+kernel_file: boot/Image*
+initrd_addr: '0x62000000'
+initrd_file: boot/initrd.img-*-linaro-vexpress
+load_addr: '0x60008000'
+maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+serial_tty: ttyAMA0
+support: supported
+partition_layout: bootfs16_rootfs
+mmc_id: '0:1'
+architectures:
+- arm64
+assume_installed:
+- linaro-headless
+extra_serial_options:
+- console=ttyAMA0,38400n8
+packages:
+- linux-image-linaro-vexpress64
+- linux-headers-linaro-vexpress64
+- ubuntu-vexpress-extras-config
+- fvp-pre-boot
+- juno-pre-boot
+- uefi-image-juno
+- uefi-image-startup-nsh
+wired_interfaces:
+- eth0
+sources:
+  repo: http://repo.linaro.org/ubuntu/linaro-overlay vivid main
+  ubuntu: http://ports.ubuntu.com/ubuntu-ports vivid main universe
+bootloaders:
+  uefi:
+    extra_boot_options:
+    - mem=1024M
+    - ip=dhcp
+    - clcd=xvga
+    - mmci.fmax=4000000
+    package: uefi-image-vexpress
+    file: usr/lib/uefi/vexpress/uefi_fvp-base.bin
+    in_boot_part: false
+dtb_files:
+- EFI/BOOT/startup.nsh: EFI/BOOT/startup.nsh
+- fvp/fvp_bl1.bin: lib/firmware/fvp-pre-boot/fvp_bl1.bin
+- fvp/fvp_fip.bin: lib/firmware/fvp-pre-boot/fvp_fip.bin
+- fvp/fvp-base-gicv2-psci.dtb: lib/firmware/*-linaro-*vexpress64/device-tree/fvp-base-gicv2-psci.dtb
+- fvp/fvp-base-gicv2legacy-psci.dtb: lib/firmware/*-linaro-*vexpress64/device-tree/fvp-base-gicv2legacy-psci.dtb
+- fvp/fvp-base-gicv3-psci.dtb: lib/firmware/*-linaro-*vexpress64/device-tree/fvp-base-gicv3-psci.dtb
+- fvp/fvp-foundation-gicv2-psci.dtb: lib/firmware/*-linaro-*vexpress64/device-tree/fvp-foundation-gicv2-psci.dtb
+- fvp/fvp-foundation-gicv3-psci.dtb: lib/firmware/*-linaro-*vexpress64/device-tree/fvp-foundation-gicv3-psci.dtb
+- fvp/fvp-foundation-gicv2legacy-psci.dtb: lib/firmware/*-linaro-*vexpress64/device-tree/fvp-foundation-gicv2legacy-psci.dtb
+- juno/juno_bl1.bin: lib/firmware/juno-pre-boot/juno_bl1.bin
+- juno/juno_fip.bin: lib/firmware/juno-pre-boot/juno_fip.bin
+- juno/juno.dtb: lib/firmware/*-linaro-*vexpress64/device-tree/juno.dtb
+- juno/uefi_juno.bin: usr/lib/uefi/juno/uefi_juno.bin
+- rtsm/linux-system-semi.axf: boot/img.axf
+- rtsm/rtsm_ve-ca15x1-ca7x1.dtb: lib/firmware/*-linaro-*vexpress/device-tree/rtsm_ve-v2p-ca15x1-ca7x1.dtb
+- rtsm/rtsm_ve-ca15x1.dtb: lib/firmware/*-linaro-*vexpress/device-tree/rtsm_ve-cortex_a15x1.dtb
+- rtsm/rtsm_ve-ca15x2.dtb: lib/firmware/*-linaro-*vexpress/device-tree/rtsm_ve-cortex_a15x2.dtb
+- rtsm/rtsm_ve-ca15x4-ca7x4.dtb: lib/firmware/*-linaro-*vexpress/device-tree/rtsm_ve-v2p-ca15x4-ca7x4.dtb
+- rtsm/rtsm_ve-ca15x4.dtb: lib/firmware/*-linaro-*vexpress/device-tree/rtsm_ve-cortex_a15x4.dtb
+- rtsm/rtsm_ve-ca9x2.dtb: lib/firmware/*-linaro-*vexpress/device-tree/rtsm_ve-cortex_a9x2.dtb
+- rtsm/rtsm_ve-ca9x4.dtb: lib/firmware/*-linaro-*vexpress/device-tree/rtsm_ve-cortex_a9x4.dtb
+- rtsm/uefi_rtsm_ve-ca15.bin: usr/lib/uefi/vexpress/uefi_rtsm_ve-ca15.bin
+- rtsm/uefi_rtsm_ve-ca9x4.bin: usr/lib/uefi/vexpress/uefi_rtsm_ve-ca9x4.bin
+- uefi_v2p-ca15-tc1.bin: usr/lib/uefi/vexpress/uefi_v2p-ca15-tc1.bin
+- uefi_v2p-ca15-tc2.bin: usr/lib/uefi/vexpress/uefi_v2p-ca15-tc2.bin
+- uefi_v2p-ca5s.bin: usr/lib/uefi/vexpress/uefi_v2p-ca5s.bin
+- uefi_v2p-ca9.bin: usr/lib/uefi/vexpress/uefi_v2p-ca9.bin
+- v2p-ca15-tc1.dtb: lib/firmware/*-linaro-*vexpress/device-tree/vexpress-v2p-ca15-tc1.dtb
+- v2p-ca15-tc2.dtb: lib/firmware/*-linaro-*vexpress/device-tree/vexpress-v2p-ca15_a7.dtb
+- v2p-ca5s.dtb: lib/firmware/*-linaro-*vexpress/device-tree/vexpress-v2p-ca5s.dtb
+- v2p-ca9.dtb: lib/firmware/*-linaro-*vexpress/device-tree/vexpress-v2p-ca9.dtb
