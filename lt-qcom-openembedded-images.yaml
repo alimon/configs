@@ -102,19 +102,17 @@
             cd -
 
             # Prepare files to publish
-            rm -f tmp-glibc/deploy/images/${OE_MACHINE}/*.txt
-            find tmp-glibc/deploy/images/${OE_MACHINE} -type l -delete
+            rm -f ${WORKSPACE}/build/tmp-glibc/deploy/images/${OE_MACHINE}/*.txt
+            find ${WORKSPACE}/build/tmp-glibc/deploy/images/${OE_MACHINE} -type l -delete
 
-            # Publish to snapshots
+            # Publish
             # fixup machine names, no 'dash' on publish location
-            OE_MACHINE=$(echo ${OE_MACHINE} | sed 's/-//g')
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              tmp-glibc/deploy/images/${OE_MACHINE} \
-              snapshots/${OE_MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER}
-
+              ${WORKSPACE}/build/tmp-glibc/deploy/images/${OE_MACHINE} \
+              snapshots/${OE_MACHINE//-}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
