@@ -1,0 +1,80 @@
+- job:
+    name: rsalveti-debian-arm64-rootfs
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'Linaro Debian arm64 rootfs (for rsalveti)'
+    scm:
+        - git:
+            url: https://github.com/rsalveti/ubuntu-build-service.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-arm64
+        - axis:
+            type: user-defined
+            name: rootfs
+            values:
+                - alip
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+        - timeout:
+            timeout: 120
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo umount builddir
+            }
+
+            sudo dpkg -i packages/live-build_3.0.5-1linaro1_all.deb
+
+            test -d builddir || mkdir builddir
+            sudo mount -t tmpfs -o size=4G tmpfs builddir
+            cp -a jessie-arm64-${rootfs} builddir/
+            cd builddir/jessie-arm64-${rootfs}
+            ./configure
+            make
+
+            cd ${WORKSPACE}
+            sudo rm -rf out && mkdir out
+            sudo mv builddir/jessie-arm64-${rootfs}/linaro-jessie-* out
+    publishers:
+        - archive:
+            artifacts: 'out/*'
+            latest-only: true
+        - email:
+            recipients: 'ricardo.salveti@linaro.org'
