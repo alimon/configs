@@ -36,6 +36,10 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - copyartifact:
+            project: 96boards-hikey-developer
+            filter: '*.deb'
+            target: artifacts
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
@@ -152,6 +156,13 @@
               cat >> out/README.txt << EOF
             * rootfs (${rootfs}): http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
             EOF
+
+              if [ "${rootfs}" = "developer" ]; then
+                rm -f linux-image-*-linaro-hikey_*.deb linux-headers-*-linaro-hikey_*.deb
+                mv artifacts/* .
+                linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-hikey_*.deb` -r linux-image -d -i
+                linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
+              fi
 
               if [ "${rootfs}" = "alip" ]; then
                 mali_pkg="xserver-xorg-video-fbdev-mali-450_0.0.1-1_all.deb"
