@@ -71,12 +71,11 @@
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
             # Get the reference kernel packages
-            ## FIXME - find a better way to find out the kernel version used
             KERNEL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel/lastSuccessfulBuild/buildNumber`
-            KERNEL_BUILD_VERSION="4.3.0-rc5"
+            KERNEL_RELEASE=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel/${KERNEL_BUILD_NUMBER}/injectedEnvVars/export | grep KERNEL_RELEASE | cut -d'=' -f2-`
             KERNEL_BUILD_BASE_URL="https://builds.96boards.org/snapshots/reference-platform/linux/${KERNEL_BUILD_NUMBER}"
-            wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-image-${KERNEL_BUILD_VERSION}-linaro-reference_${KERNEL_BUILD_VERSION}-linaro-reference-2_arm64.deb
-            wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-headers-${KERNEL_BUILD_VERSION}-linaro-reference_${KERNEL_BUILD_VERSION}-linaro-reference-2_arm64.deb
+            wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-image-${KERNEL_RELEASE}_${KERNEL_RELEASE}-${KERNEL_BUILD_NUMBER}_arm64.deb
+            wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-headers-${KERNEL_RELEASE}_${KERNEL_RELEASE}-${KERNEL_BUILD_NUMBER}_arm64.deb
 
             # Create the hardware pack
             cp -a configs/96boards-reference-platform-debian/hwpacks/linaro-${BOARD} .
@@ -169,8 +168,10 @@
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --link-latest \
-              out/${BOARD} snapshots/reference-platform/debian/${BUILD_NUMBER}/
+              out/${BOARD} snapshots/reference-platform/debian/${BUILD_NUMBER}/${BOARD}
+            python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --make-link snapshots/reference-platform/debian/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'ricardo.salveti@linaro.org'
