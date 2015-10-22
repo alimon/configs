@@ -78,11 +78,9 @@
             export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
 
             # Export the kernel packaging version
-            cd ${JOB_NAME}
             kernel_version=`make kernelversion`
             kernel_release=${kernel_version}-linaro-${kernel_flavour}
             export KDEB_PKGVERSION="${kernel_release}-${BUILD_NUMBER}"
-            cd ${WORKSPACE}
 
             # Build the kernel
             rm -rf lci-build-tools
