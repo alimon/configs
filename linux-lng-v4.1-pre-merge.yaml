@@ -169,8 +169,9 @@
             # Create the hardware pack
             case "${hwpack}" in
               arndale|arndale-be|vexpress64)
+                rm -f linux-image-*-linaro-*-dbg_*.deb
                 linaro-hwpack-create --debug linaro-${hwpack} ${VERSION}
-                linaro-hwpack-replace -t `ls hwpack_linaro-*_supported.tar.gz` -p `ls linux-image-*-linaro-*.deb|head -1` -r linux-image -d -i
+                linaro-hwpack-replace -t `ls hwpack_linaro-*_supported.tar.gz` -p `ls linux-image-*-linaro-*.deb` -r linux-image -d -i
                 linaro-hwpack-replace -t `ls hwpack_linaro-*_supported.tar.gz` -p `ls linux-headers-*-linaro-*.deb` -r linux-headers -d -i
                 ;;
             esac
