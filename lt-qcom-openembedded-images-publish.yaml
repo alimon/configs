@@ -1,0 +1,87 @@
+- job:
+    name: lt-qcom-openembedded-images-publish
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: build
+    display-name: 'Publish OpenEmbedded/Yocto builds for 96boards.org Qualcomm boards'
+    axes:
+        - axis:
+            type: user-defined
+            name: MANIFEST_BRANCH
+            values:
+                - master
+                - jethro
+        - axis:
+            type: user-defined
+            name: OE_MACHINE
+            values:
+                - dragonboard-410c
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic-amd64
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - copyartifact:
+            project: lt-qcom-openembedded-images/MANIFEST_BRANCH=${MANIFEST_BRANCH},OE_MACHINE=${OE_MACHINE},label=docker-utopic-amd64
+            filter: 'build/tmp-glibc/deploy/images/${OE_MACHINE}/*'
+            target: artifacts
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+                echo "Running cleanup_exit..."
+            }
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl
+
+            # Get the build_number for the artifacts
+            BUILD_NUMBER_ORIG=$(ls artifacts/core-image-minimal-*.rootfs.manifest)
+            BUILD_NUMBER_ORIG=${BUILD_NUMBER_ORIG##*-}
+            BUILD_NUMBER_ORIG=${BUILD_NUMBER_ORIG%.rootfs.manifest}
+
+            # Publish
+            # fixup machine names, no 'dash' on publish location
+            mkdir -p ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              ${WORKSPACE}/artifacts \
+              snapshots/${OE_MACHINE//-}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER_ORIG}
+    publishers:
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
+        - ircbot:
+            channels:
+                - name: '#linaro-lt-qcomm'
+                  password: ${LT_QCOM_KEY}
