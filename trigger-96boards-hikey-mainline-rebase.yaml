@@ -1,0 +1,33 @@
+- job:
+    name: trigger-96boards-hikey-mainline-rebase
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for 96boards - HiKey (hikey-mainline-rebase)'
+    scm:
+        - git:
+            url: https://github.com/96boards/linux.git
+            refspec: +refs/heads/hikey-mainline-rebase:refs/remotes/origin/hikey-mainline-rebase
+            name: origin
+            branches:
+                - refs/heads/hikey-mainline-rebase
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:            
+        - trigger-builds:
+            - project: '96boards-hikey-mainline-rebase'
