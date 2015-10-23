@@ -42,6 +42,11 @@
         - matrix-tie-parent:
             node: build
     builders:
+        - copyartifact:
+            project: rsalveti-debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=alip
+            filter: 'out/linaro-jessie-alip-*.tar.gz'
+            target: artifacts
+            parameter-filters: 'label=docker-jessie-arm64,rootfs=alip'
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
@@ -89,9 +94,11 @@
             export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=alip/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/alip-arm64/${ROOTFS_BUILD_NUMBER}/linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
             wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+            #ROOTFS_BUILD_TAR=linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz
+            ROOTFS_BUILD_TAR=artifacts/linaro-jessie-alip-*.tar.gz
 
             # Create pre-built image(s)
-            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-jessie_alip_${VERSION}.img --image-size 2G --binary linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi --part-table gpt
+            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-jessie_alip_${VERSION}.img --image-size 2G --binary ${ROOTFS_BUILD_TAR} --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi --part-table gpt
 
             # Create eMMC rootfs image(s)
             mkdir boot rootfs
