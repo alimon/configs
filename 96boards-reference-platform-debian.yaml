@@ -96,6 +96,9 @@
             wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
             #ROOTFS_BUILD_TAR=linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz
             ROOTFS_BUILD_TAR=`ls artifacts/linaro-jessie-alip-*.tar.gz`
+            # debug
+            pwd
+            find ${WORKSPACE}
 
             # Create pre-built image(s)
             linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-jessie_alip_${VERSION}.img --image-size 2G --binary ${ROOTFS_BUILD_TAR} --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi --part-table gpt
