@@ -27,47 +27,47 @@
             name: 'Build j2sdk images'
             condition: SUCCESSFUL
             projects:
-                - name: jdk8-build-image
-                    current-parameters: true
-                    kill-phase-on: FAILURE
+              - name: jdk8-build-image
+                current-parameters: true
+                kill-phase-on: FAILURE
         - multijob:
             name: 'SPECjbb2013 benchmark'
             condition: SUCCESSFUL
             projects:
-                - name: jdk8-specjbb2013-benchmark
-                    current-parameters: true
-                    restrict-matrix-project: 'JVM_VARIANT == "server"'
-                    kill-phase-on: FAILURE
+              - name: jdk8-specjbb2013-benchmark
+                current-parameters: true
+                restrict-matrix-project: 'JVM_VARIANT == "server"'
+                kill-phase-on: FAILURE
         - multijob:
             name: '1GB Terasort benchmark'
             condition: SUCCESSFUL
             projects:
-                - name: jdk8-terasort-benchmark
-                    current-parameters: true
-                    kill-phase-on: NEVER
+              - name: jdk8-terasort-benchmark
+                current-parameters: true
+                kill-phase-on: NEVER
         - multijob:
             name: 'JTREG tests'
             condition: SUCCESSFUL
             projects:
-                - name: jdk8-jtreg-test
-                    current-parameters: true
-                    predefined-parameters: 'XJTREG_SUBCATEGORIES=tools/javap/typeAnnotations'
-                    kill-phase-on: NEVER
+              - name: jdk8-jtreg-test
+                current-parameters: true
+                predefined-parameters: 'XJTREG_SUBCATEGORIES=tools/javap/typeAnnotations'
+                kill-phase-on: NEVER
         - multijob:
             name: 'jcstress'
             condition: COMPLETED
             projects:
-                - name: jdk8-jcstress-test
-                    current-parameters: true
-                    restrict-matrix-project: 'JVM_VARIANT == "server"'
-                    kill-phase-on: FAILURE
+              - name: jdk8-jcstress-test
+                current-parameters: true
+                restrict-matrix-project: 'JVM_VARIANT == "server"'
+                kill-phase-on: FAILURE
         - multijob:
             name: 'Publish results to openjdk.linaro.org'
             condition: SUCCESSFUL
             projects:
-                - name: jdk8-publish-and-report
-                    current-parameters: true
-                    kill-phase-on: FAILURE
+              - name: jdk8-publish-and-report
+                current-parameters: true
+                kill-phase-on: FAILURE
         - copyartifact:
             project: jdk8-update-src-tree
             filter: 'out/*'
