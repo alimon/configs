@@ -1,0 +1,53 @@
+- job:
+    name: jcstress-build
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Polls upstream for changes and builds jcstress.jar.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: true
+    node: aarch64-06
+    display-name: 'OpenJDK - Build jcstress jar'
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/code-tools/jcstress/
+            clean: true
+            browser: hgweb
+            browser-url: http://hg.openjdk.java.net/code-tools/jcstress/
+    triggers:
+        - pollscm: 'H 20 * * *'
+    wrappers:
+        - timestamps
+    builders:
+        - copyartifact:
+            project: jdk8-build-image
+            filter: 'out/**/*'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            rm -rf jdk8*
+            tar xf incoming/BUILD_TYPE=release,JVM_VARIANT=server/jdk8-server-release.tar.gz
+
+            # This will only build with a very recent version of openjdk8-server.
+            # /usr/bin/java (jdk7) does not work.
+            export JAVA_HOME=${WORKSPACE}/jdk8-server-release
+            export PATH=${JAVA_HOME}/bin:${PATH}
+            which java
+            java -version
+            mvn clean install -pl tests-all,tests-custom -am
+    publishers:
+        - archive:
+            artifacts: 'tests-*/target/jcstress.jar'
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
