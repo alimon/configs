@@ -1,0 +1,95 @@
+- job:
+    name: jdk8-jtreg-test-persist-results
+    project-type: matrix
+    defaults: global
+    description: |
+        * Writes the results to /work/openjdk-testing/openjdk8-jtreg-nightly-tests.
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK - Write jtreg tests results'
+    axes:
+        - axis:
+            type: user-defined
+            name: JVM_VARIANT
+            values:
+                - server
+                - client
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+        - axis:
+            type: user-defined
+            name: JTREG_CATEGORY
+            values:
+                - hotspot
+                - langtools
+                - jdk
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: aarch64-06
+    builders:
+        - copyartifact:
+            project: jdk8-jtreg-test
+            filter: 'out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
+            target: incoming
+            flatten: true
+        - copyartifact:
+            project: jdk8-build-image
+            filter: 'out/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            tree -f .
+
+            result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JTREG_CATEGORY=${JTREG_CATEGORY},JVM_VARIANT=${JVM_VARIANT}/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+
+            image_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+
+            : ${YEAR:=$(date +%Y)}
+            : ${DAY_OF_YEAR:=$(date +%j)}
+
+            basedir=~openjdk-testing/openjdk8-jtreg-nightly-tests
+            src_dir=${basedir}/src/${YEAR}/${DAY_OF_YEAR}
+            work_dir=${basedir}/builds/${JVM_VARIANT}-${BUILD_TYPE}/${YEAR}/${DAY_OF_YEAR}/JTwork-${JTREG_CATEGORY}
+            report_dir=${basedir}/reports/${JVM_VARIANT}-${BUILD_TYPE}/${JTREG_CATEGORY}/$(uname -m)/${YEAR}/${DAY_OF_YEAR}/JTreport
+            image_dir=${basedir}/builds/${JVM_VARIANT}-${BUILD_TYPE}/${YEAR}/${DAY_OF_YEAR}/images/j2sdk-image
+
+            mkdir -p ${image_dir}
+
+            tar -C ${basedir} \
+              --transform="s/YYY__DAY_OF_YEAR__YYY/$DAY_OF_YEAR/;s/XXX__YEAR__XXX/$YEAR/" \
+              --show-transformed-names \
+              -xvf ${result_tarball}
+
+            tar -C ${image_dir} \
+              --strip-components=1 \
+              --show-transformed-names \
+              -xvf ${image_tarball}
+
+            # Change location.
+            # Match the exact output of the cron-based scripts.
+            sed_expr1=$(echo s!XXX__YEAR__XXX!$YEAR!g)
+            sed_expr2=$(echo s!YYY__DAY_OF_YEAR__YYY!$DAY_OF_YEAR!g)
+
+            find ${work_dir} -type f -exec perl -p -i -e "$sed_expr1" {} \;
+            find ${work_dir} -type f -exec perl -p -i -e "$sed_expr2" {} \;
+
+            find ${report_dir} -type f -exec perl -p -i -e "$sed_expr1" {} \;
+            find ${report_dir} -type f -exec perl -p -i -e "$sed_expr2" {} \;
