@@ -1,0 +1,34 @@
+- job:
+    name: jdk8-persist-all-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job persist all results.
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    display-name: 'OpenJDK - Persist all results'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: jdk8-jtreg-test-persist-results
+              block: true
+        - trigger-builds:
+            - project: jdk8-specjbb2013-benchmark-persist-results
+              block: true
+        - trigger-builds:
+            - project: jdk8-terasort-benchmark-persist-results
+              block: true
+        - trigger-builds:
+            - project: jdk8-jcstress-test-persist-results
+              block: true
+        - trigger-builds:
+            - project: jdk8-update-src-tree-persist
+              block: true
