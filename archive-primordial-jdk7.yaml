@@ -1,0 +1,35 @@
+- job:
+    name: archive-primordial-jdk7
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job archives (via a saved artifact) openjdk-7-jdk.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK - Archive primordial OpenJDK 7'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+            
+            new_name=primordial-jdk7
+            orig_name=java-7-openjdk-arm64-2.4.6
+
+            rm -rf ${WORKSPACE}/*
+            mkdir out
+            cp -a ~jenkins/JVMs/${orig_name} .
+            chmod ug+r .
+            mv ${orig_name} ${new_name}
+            tar -cvf out/${new_name}.tar.gz ${new_name}/jre ${new_name}/lib ${new_name}/bin
+    publishers:
+        - archive:
+            artifacts: 'out/*.tar.gz'
