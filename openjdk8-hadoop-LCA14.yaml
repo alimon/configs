@@ -1,0 +1,41 @@
+- job:
+    name: openjdk8-hadoop-LCA14
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job assembles the hadoop demo that was put together for LCA14.<br>
+        * This job should (eventually) go away and we should build hadoop from source.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    display-name: 'OpenJDK - Assemble Hadoop demo'
+    scm:
+        - git:
+            url: https://git.linaro.org/people/andrew.mcdermott/openjdk8-hadoop-LCA14.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            basedir: openjdk8-hadoop-LCA14
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            rm -rf out
+            mkdir out
+            tar -cvf out/openjdk8-hadoop-LCA14.tar.gz --exclude=x86_64 openjdk8-hadoop-LCA14
+    publishers:
+        - archive:
+            artifacts: 'out/*.tar.gz'
