@@ -1,0 +1,64 @@
+- job:
+    name: jdk7u-update-src-tree
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Polls the upstream jdk7 source tree(s) and archives the source tree.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: true
+    node: aarch64-06
+    display-name: 'OpenJDK - Archive jdk7 source tree'
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u
+            clean: true
+            subdir: jdk7u
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/corba
+            clean: true
+            subdir: jdk7u/corba
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/hotspot
+            clean: true
+            subdir: jdk7u/hotspot
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jaxp
+            clean: true
+            subdir: jdk7u/jaxp
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jaxws
+            clean: true
+            subdir: jdk7u/jaxws
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jdk
+            clean: true
+            subdir: jdk7u/jdk
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/langtools
+            clean: true
+            subdir: jdk7u/langtools
+    triggers:
+        - pollscm: 'H 10 * * *'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            rm -rf out
+            mkdir out
+            tar --exclude=.hg -acf out/jdk7u.tar.gz jdk7u
+    publishers:
+        - archive:
+            artifacts: 'out/jdk7u.tar.gz'
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
