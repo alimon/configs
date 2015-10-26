@@ -1,0 +1,171 @@
+- job:
+    name: jdk8-jtreg-test
+    project-type: matrix
+    defaults: global
+    description: |
+        * Runs the jtreg tests.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK - Run jtreg tests'
+    axes:
+        - axis:
+            type: user-defined
+            name: JVM_VARIANT
+            values:
+                - server
+                - client
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+        - axis:
+            type: user-defined
+            name: JTREG_CATEGORY
+            values:
+                - hotspot
+                - langtools
+                - jdk
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - xvfb:
+            auto-display-name: true
+            additional-options: '-p unix'
+            debug: true
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: aarch64-06
+    builders:
+        - copyartifact:
+            project: jtreg-build
+            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
+            target: incoming
+            flatten: true
+        - copyartifact:
+            project: jdk8-build-image
+            filter: 'out/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
+            target: incoming
+            flatten: true
+        - copyartifact:
+            project: jdk8-update-src-tree
+            filter: 'out/jdk8.tar.gz, out/build-date.sh'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            echo "DISPLAY=${DISPLAY}"
+
+            set -exu
+
+            source incoming/build-date.sh
+
+            IMAGE_DIR=${WORKSPACE}/jdk8-${JVM_VARIANT}-${BUILD_TYPE}
+
+            # Only set =1 for debugging.
+            use_subcategories=0
+
+            if [ ${use_subcategories} -eq 1 ]; then 
+              case ${JTREG_CATEGORY} in
+                langtools)
+                    JTREG_SUBCATEGORIES=tools/javap/typeAnnotations
+                    ;;
+                jdk)
+                    JTREG_SUBCATEGORIES=jdk/net/Sockets
+                    ;; 
+                hotspot)
+                    JTREG_SUBCATEGORIES=runtime/CommandLine
+                    ;; 
+              esac
+            fi
+
+            : ${JTREG_SUBCATEGORIES:=.}
+
+            tar xf incoming/jdk8.tar.gz
+            tar xf incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
+
+            # All the output directories and general frobbing
+            # output is to match the existing layout as expected
+            # by the cron-based publish and reporting scripts.
+            # XXX There's probably a better way.
+
+            YEAR=XXX__YEAR__XXX
+            DAY_OF_YEAR=YYY__DAY_OF_YEAR__YYY
+
+            basedir=cron_output
+            mkdir -p ${basedir}/{src,builds,reports}
+
+            src_dir=${basedir}/src/${YEAR}/${DAY_OF_YEAR}
+            work_dir=${basedir}/builds/${JVM_VARIANT}-${BUILD_TYPE}/${YEAR}/${DAY_OF_YEAR}/JTwork-${JTREG_CATEGORY}
+            report_dir=${basedir}/reports/${JVM_VARIANT}-${BUILD_TYPE}/${JTREG_CATEGORY}/$(uname -m)/${YEAR}/${DAY_OF_YEAR}/JTreport
+
+            mkdir -p out ${src_dir} ${work_dir} ${report_dir}
+
+            mv jdk8/* ${src_dir}
+
+            blacklist=${WORKSPACE}/excludes.txt
+            jdk_problem_list=${src_dir}/${JTREG_CATEGORY}/test/ProblemList.txt
+
+            if [ -e $jdk_problem_list ]; then
+                cat $jdk_problem_list > ${blacklist}
+            fi
+
+            aarch64_exclude_file=${src_dir}/test/exclude_aarch64.txt
+
+            if [ -e ${aarch64_exclude_file} ]; then
+                cat ${aarch64_exclude_file} >> ${blacklist}
+            fi
+
+            touch ${blacklist}
+
+            echo "Blacklist"
+            echo "========="
+            cat ${blacklist}
+            echo "---------"
+
+            #JAVA_HOME=${WORKSPACE}/jdk8-${JVM_VARIANT}-${BUILD_TYPE}
+            #PATH=$JAVA_HOME/bin:${PATH}
+
+            PATH=${WORKSPACE}/jtreg/linux/bin:${PATH}
+            which java
+            java -version
+
+            # Ignore error in jtreg final result.
+            set +e
+
+            java -jar jtreg/lib/jtreg.jar \
+              -dir:${src_dir}/${JTREG_CATEGORY}/test \
+              -testjdk:${IMAGE_DIR} \
+              -exclude:${blacklist} \
+              -conc:auto \
+              -r:${report_dir} \
+              -w:${work_dir} \
+              -a -agentvm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
+
+            set -e
+
+            # We don't care for the .class files.
+            find ${work_dir} -name \*.class -exec rm {} \;
+
+            # Match the exact output of the cron-based scripts.
+            dest=~openjdk-testing/openjdk8-jtreg-nightly-tests
+            sed_expr=$(echo s!${WORKSPACE}/${basedir}!$dest!g)
+            find ${work_dir} -type f -exec perl -p -i -e "$sed_expr" {} \;
+            find ${report_dir} -type f -exec perl -p -i -e "$sed_expr" {} \;
+
+            mkdir -p out
+            tar -C ${basedir} --show-transformed-names -acvf out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz builds reports
+    publishers:
+        - archive:
+            artifacts: 'out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
