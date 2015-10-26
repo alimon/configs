@@ -1,0 +1,106 @@
+- job:
+    name: jtreg-build
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Build JDK Regression Test Harness (jtreg).
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    display-name: 'OpenJDK - Build JDK Regression Test Harness (jtreg)'
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/code-tools/jtreg/
+            clean: true
+            browser: hgweb
+            browser-url: http://hg.openjdk.java.net/code-tools/jtreg/
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -eu
+
+            if [ ! -d jh2.0 ]; then
+              # no longer available from http://download.java.net/javadesktop/javahelp/javahelp2_0_05.zip
+              # 7bd68b82a1d5d8714856f661bd4d71a3 https://github.com/glub/secureftp/raw/master/contrib/javahelp2_0_05.zip
+              wget http://ftp.internat.freebsd.org/pub/FreeBSD/distfiles/javahelp2_0_05.zip
+              unzip -o javahelp2_0_05.zip
+            fi
+
+            if [ ! -d jtharness ]; then
+              wget http://download.java.net/jtharness/4.4.1/Rel/jtharness-4_4_1-MR1-bin-b13-20_dec_2011.zip
+              mkdir jtharness
+              cd jtharness
+              unzip -o ../jtharness-4_4_1-MR1-bin-b13-20_dec_2011.zip
+              cd ..
+            fi
+
+            if [ ! -d junit ]; then
+              mkdir junit
+              cd junit
+              wget http://repo1.maven.org/maven2/junit/junit/4.8.2/junit-4.8.2.jar
+              mv junit-4.8.2.jar junit.jar
+              cd ..
+            fi
+
+            if [ ! -d testng ]; then
+              wget http://testng.org/testng-6.8.zip
+              unzip -o testng-6.8.zip
+              mv testng-6.8 testng
+              mv testng/testng-6.8.jar testng/testng.jar
+            fi
+
+            if [ ! -d jcommander ]; then
+              mkdir jcommander
+              cd  jcommander
+              wget http://repo1.maven.org/maven2/com/beust/jcommander/1.7/jcommander-1.7.jar
+              mv jcommander-1.7.jar jcommander.jar
+              cd ..
+            fi
+
+            ls -lash
+
+            rm -fr build
+            rm -fr dist
+
+            ant -v -f make/build.xml -Djunit.jar=./junit/junit.jar \
+                -Dtestng.jar=./testng/testng.jar -Djavatest.home=./jh2.0 \
+                -Djavatest.home=./jtharness -Djavatest.jar=./jtharness/lib/javatest.jar \
+                -Djavahelp.home=./jh2.0 -Djhall.jar=./jh2.0/javahelp/lib/jhall.jar \
+                -Djh.jar=./jh2.0/javahelp/lib/jh.jar
+
+            rm -f *.zip
+            rm -f *.tar.gz
+
+            cp -r ./dist/jtreg .
+            cp jcommander/jcommander.jar ./dist/jtreg/lib
+            chmod u+x ./dist/jtreg/bin/*
+
+            ls -lash
+
+            : ${MAJOR:=4}
+            : ${MINOR:=2}
+            : ${MICRO:=0}
+            : ${VERSION_SUFFIX:=SNAPSHOT}
+            : ${JOB_NAME:=jtreg}
+            : ${ZIP_TYPE:=xz}
+
+            artifact=${JOB_NAME}-${MAJOR}.${MINOR}.${MICRO}-${VERSION_SUFFIX}
+
+            cd ./dist
+            tar afcv $artifact.tar.${ZIP_TYPE} jtreg
+            mv $artifact.tar.${ZIP_TYPE} ..
+            cd ..
+            rm -fr ${artifact}
+    publishers:
+        - archive:
+            artifacts: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
