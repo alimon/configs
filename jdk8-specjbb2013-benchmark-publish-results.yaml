@@ -1,0 +1,41 @@
+- job:
+    name: jdk8-specjbb2013-benchmark-publish-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Reports are published to http://openjdk.linaro.org/SPECjbb2013-1.00-results/
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - string:
+            name: ZERO_BASELINE
+            default: '14115'
+        - string:
+            name: SERVER_MAX_JOPS_BASELINE
+            default: '3275'
+        - string:
+            name: SERVER_CRITICAL_JOPS_BASELINE
+            default: '854'
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK - Publish SPECjbb2013 benchmark results'
+    wrappers:
+        - timestamps
+# Replaced by parameters
+#        - inject:
+#            properties-file: '${HOME}/performance-baseline.properties'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            ~openjdk-testing/specjbb-test-scripts/specjbb-publish /home/openjdk-testing
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
