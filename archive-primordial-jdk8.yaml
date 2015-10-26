@@ -1,0 +1,35 @@
+- job:
+    name: archive-primordial-jdk8
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job is no longer necessary.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK - Archive primordial OpenJDK 8'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+            
+            new_name=primordial-jdk8
+            orig_name=java-8-openjdk-arm64
+
+            rm -rf ${WORKSPACE}/*
+            mkdir out
+            cp -a ~jenkins/JVMs/${orig_name} .
+            chmod ug+r .
+            mv ${orig_name} ${new_name}
+            tar -cvf out/${new_name}.tar.gz ${new_name}/jre ${new_name}/lib ${new_name}/bin
+    publishers:
+        - archive:
+            artifacts: 'out/*.tar.gz'
