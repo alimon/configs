@@ -1,0 +1,43 @@
+- job:
+    name: archive-specjbb2013-product-tarball
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job creates an archive of the SPECjbb2013 product.<br>
+          It can be copied as a *copy artifact* by other jobs.<br>
+        * <b>Note:</b> SPECjbb2013 should <b>not</b> be shared publically as there are licensing restrictions.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'OpenJDK - Archive SPECjbb2013 product'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - SPECjbb2013-1.00.tar.gz
+            relative-to: 'somewhereElse'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            rm -rf out
+            mkdir out
+
+            # Use copy-to-slave instead of the file under /work/openjdk-testing/
+            #tar -xf /work/openjdk-testing/SPECjbb2013-1.00.tar.gz
+            tar -xf SPECjbb2013-1.00.tar.gz
+
+            chmod -R ug+rw SPECjbb2013-1.00
+            tar -acf out/SPECjbb2013-1.00.tar.gz SPECjbb2013-1.00
+            rm -rf SPECjbb2013-1.00 SPECjbb2013-1.00.tar.gz
+    publishers:
+        - archive:
+            artifacts: 'out/SPECjbb2013-1.00.tar.gz'
