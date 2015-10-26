@@ -1,0 +1,34 @@
+- job:
+    name: jdk8-publish-all-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Convenience job to invoke all the scripts that sync the results to openjdk.linaro.org.
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    display-name: 'OpenJDK - Invoke all the scripts to sync results to openjdk.linaro.org'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: jdk8-jtreg-test-publish-results
+              block: true
+        - trigger-builds:
+            - project: jdk8-specjbb2013-benchmark-publish-results
+              block: true
+        - trigger-builds:
+            - project: jdk8-terasort-benchmark-publish-results
+              block: true
+        - trigger-builds:
+            - project: jdk8-jcstress-test-publish-results
+              block: true
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
