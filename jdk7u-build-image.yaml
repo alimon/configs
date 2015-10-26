@@ -1,0 +1,55 @@
+- job:
+    name: jdk7u-build-image
+    project-type: matrix
+    defaults: global
+    description: |
+        * Builds the jdk7 images.
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK - Build OpenJDK 7 images'
+    axes:
+        - axis:
+            type: user-defined
+            name: JVM_VARIANT
+            values:
+                - client
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: aarch64-06
+    builders:
+        - copyartifact:
+            project: jdk7u-update-src-tree
+            filter: 'out/jdk7u.tar.gz'
+            target: incoming
+            flatten: true
+        - copyartifact:
+            project: archive-primordial-jdk7
+            filter: 'out/primordial-jdk7.tar.gz'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            rm -rf jdk7u primordial-jdk7
+            tar xf incoming/jdk7u.tar.gz
+            tar xf incoming/primordial-jdk7.tar.gz
+            cd jdk7u
+            export LANG=C
+            make ALT_BOOTDIR=${WORKSPACE}/primordial-jdk7 BUILD_NUMBER=b${BUILD_NUMBER}
