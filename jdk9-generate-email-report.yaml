@@ -1,0 +1,67 @@
+- job:
+    name: jdk9-generate-email-report
+    project-type: freestyle
+    defaults: global
+    description: |
+        This job aggregates the results from various jobs:<br>
+        <br>
+            * jcstress<br>
+            * jtreg<br>
+            * terasort<br>
+            * specjbb<br>
+        <br>
+        in text form suitable for the aarch64-port-dev mailing list.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - string:
+            name: ZERO_BASELINE
+            default: '14115'
+        - string:
+            name: SERVER_MAX_JOPS_BASELINE
+            default: '3275'
+        - string:
+            name: SERVER_CRITICAL_JOPS_BASELINE
+            default: '854'
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Generate e-mail report'
+    wrappers:
+        - timestamps
+# Replaced by parameters
+#        - inject:
+#            properties-file: '${HOME}/performance-baseline.properties'
+    builders:
+        - copyartifact:
+            project: jtreg-build
+            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
+            PATH=${WORKSPACE}/jtreg/linux/bin:${PATH}
+            which jtdiff
+
+            TOP_DIR=${HOME}/openjdk9-jtreg-nightly-tests ${HOME}/openjdk-test-scripts/openjdk-test-summary release > ${WORKSPACE}/report.txt
+            echo "" >> ${WORKSPACE}/report.txt
+
+            ${HOME}/specjbb-test-scripts/specjbb-report >> ${WORKSPACE}/report.txt
+            echo "" >> ${WORKSPACE}/report.txt
+
+            ${HOME}/hadoop-test-scripts/benchmark-terasort-report >> ${WORKSPACE}/report.txt
+            echo "" >> ${WORKSPACE}/report.txt
+
+            TOP_DIR=${HOME} ${HOME}/jcstress-test-scripts/jcstress-report --url http://openjdk.linaro.org/ >> ${WORKSPACE}/report.txt
+    publishers:
+        - archive:
+            artifacts: 'report.txt'
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
