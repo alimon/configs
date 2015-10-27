@@ -1,0 +1,103 @@
+- job:
+    name: jdk9-update-src-tree
+    project-type: freestyle
+    defaults: global
+    description: |
+        This job polls upstream Mercurial servers for changes and,<br>
+        if there are any, triggers "jdk9-build-and-test".<br>
+        Note: this job archives the src which is later required by the jtreg<br>
+        report and publish job. The build-date.sh artefact contains shell<br>
+        variables for the day and day-of-year the source was archived.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: true
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Update jdk9 source tree'
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev
+            clean: true
+            subdir: jdk9
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/corba
+            clean: true
+            subdir: jdk9/corba
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/hotspot
+            clean: true
+            subdir: jdk9/hotspot
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/jaxp
+            clean: true
+            subdir: jdk9/jaxp
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/jaxws
+            clean: true
+            subdir: jdk9/jaxws
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/jdk
+            clean: true
+            subdir: jdk9/jdk
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/langtools
+            clean: true
+            subdir: jdk9/langtools
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/nashorn
+            clean: true
+            subdir: jdk9/nashorn
+    triggers:
+# FIXME - Spread load evenly by using ‘H 00 * * *’ 
+        - pollscm: '03 00 * * *'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -eu
+
+            rm -rf out
+            mkdir out
+
+            pushd jdk9
+            find . -name BOM -exec rm {} \;
+            commit_id=$(hg identify | awk '{print $1}')
+            echo "jdk9-${commit_id}" | tee -a BOM
+
+            for i in corba jaxp jaxws langtools jdk hotspot nashorn; do
+              pushd $i
+              commit_id=$(hg identify | awk '{print $1}')
+              dir=$(basename $PWD)
+              echo "${dir}-${commit_id}" | tee -a ../BOM
+              popd
+            done
+
+            popd
+
+            : ${YEAR:=$(date +%Y)}
+            : ${DAY_OF_YEAR:=$(date +%j)}
+
+            : ${YEAR_YESTERDAY:=$YEAR}
+            : ${DAY_OF_YEAR_YESTERDAY:=$((10#$DAY_OF_YEAR - 1))}
+
+            echo "export YEAR=${YEAR}" > out/build-date.sh
+            echo "export DAY_OF_YEAR=${DAY_OF_YEAR}" >> out/build-date.sh
+
+            tar --exclude=.hg -acf out/jdk9.tar.gz jdk9
+    publishers:
+        - archive:
+            artifacts: 'out/jdk9.tar.gz, out/build-date.sh'
+        - fingerprint:
+            files: 'out/*'
+            record-artifacts: true
+        - trigger-parameterized-builds:
+            - project: jdk9-build-and-test
+              condition: SUCCESS
+              trigger-with-no-params: true
