@@ -1,0 +1,112 @@
+- job:
+    name: jdk9-build-image
+    project-type: matrix
+    defaults: global
+    description: |
+        * Configures and builds jdk9 (ie, bin/java, bin/javac, et al) for various configurations.<br>
+        * The source tarball is copied from the jdk9-update-src-tree job.<br>
+        * <b>Note:</b> we are no longer building -fastdebug variants as there is not enough time to test the images.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Configure and build OpenJDK 9'
+    axes:
+        - axis:
+            type: user-defined
+            name: JVM_VARIANT
+            values:
+                - server
+                - client
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+    execution-strategy:
+        combination-filter: |
+            JVM_VARIANT=="server"
+        sequential: true
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: aarch64-06
+    builders:
+        - copyartifact:
+            project: jdk9-update-src-tree
+            filter: 'out/jdk9.tar.gz'
+            target: incoming
+            flatten: true
+        - copyartifact:
+            project: archive-primordial-jdk8
+            filter: 'out/primordial-jdk8.tar.gz'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            #export CCACHE_DIR=~/.ccache-${JVM_VARIANT}-${BUILD_TYPE}
+            #ccache -M 1G
+            #ccache -s
+
+            ccache_build_opts=--disable-ccache
+
+            # Extract sources from upstream job
+            rm -rf jdk9
+            tar xf incoming/jdk9.tar.gz
+
+            shopt -s nullglob
+
+            for i in ${WORKSPACE}/patches/*.patch; do
+              echo "Applying patch: $i"
+              (cd jdk9; patch -p1 < $i)
+            done
+
+            # Extract boot jdk
+            rm -rf primordial-jdk8
+            tar xf incoming/primordial-jdk8.tar.gz
+
+            # Configure and build.
+            rm -rf build*
+            mkdir -p build-stage1 build-stage2
+
+            two_stage_build=0
+
+            which java
+            java -version
+
+            if [ $two_stage_build = 1 ]; then
+              pushd build-stage1
+              sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk8 ${ccache_build_opts}
+              make images
+              popd
+
+              pushd build-stage2
+              sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image ${ccache_build_opts}
+              make images
+              popd
+            else
+              pushd build-stage2
+              sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
+              make images
+              popd
+            fi
+
+            # Archive the result
+            rm -rf out
+            mkdir out
+            artifact_name=jdk9-${JVM_VARIANT}-${BUILD_TYPE}
+            tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
+    publishers:
+        - archive:
+            artifacts: 'out/*.tar.gz'
