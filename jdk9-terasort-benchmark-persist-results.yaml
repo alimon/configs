@@ -1,0 +1,57 @@
+- job:
+    name: jdk9-terasort-benchmark-persist-results
+    project-type: matrix
+    defaults: global
+    description: |
+        * Writes results to /work/openjdk-testing/hadoop-terasort-benchmark-results.
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Write terasort results'
+    axes:
+        - axis:
+            type: user-defined
+            name: JVM_VARIANT
+            values:
+                - server
+                - client
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: aarch64-06
+    builders:
+        - copyartifact:
+            project: jdk9-terasort-benchmark
+            filter: 'out/terasort-results-${JVM_VARIANT}-${BUILD_TYPE}.csv'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            new_results=incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/*.csv
+            prev_results=~openjdk-testing/hadoop-terasort-benchmark-results/results.csv
+
+            echo "Previous Results"
+            echo "----------------"
+            cat ${prev_results}
+            echo
+
+            cat ${new_results} >> ${prev_results}
+
+            ~openjdk-testing/hadoop-test-scripts/update-results-db
