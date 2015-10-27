@@ -1,0 +1,40 @@
+- job:
+    name: jdk9-update-src-tree-persist
+    project-type: freestyle
+    defaults: global
+    description: |
+        This jobs writes the current jdk9 src tree to /work/openjdk-testing/openjdk9-jtreg-nightly-tests/...<br>
+        It is used to report failure/errors against the jtreg results.
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Write jdk9 source tree'
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+    builders:
+        - copyartifact:
+            project: jdk9-update-src-tree
+            filter: 'out/*'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            : ${YEAR:=$(date +%Y)}
+            : ${DAY_OF_YEAR:=$(date +%j)}
+
+            TOP_DIR=$HOME/openjdk9-jtreg-nightly-tests
+            src_dir=$TOP_DIR/src/$YEAR/$DAY_OF_YEAR
+            mkdir -p $src_dir
+            echo "Extracting tarball to $src_dir"
+            tar -C $src_dir --strip-components=1 -xf $WORKSPACE/incoming/jdk9.tar.gz
