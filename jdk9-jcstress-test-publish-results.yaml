@@ -1,0 +1,27 @@
+- job:
+    name: jdk9-jcstress-test-publish-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Reports are published to http://openjdk.linaro.org/jcstress-nightly-runs/
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Publish jcstress report'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            export TOP_DIR=${HOME}
+            ${HOME}/jcstress-test-scripts/jcstress-publish /home/openjdk-testing
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
