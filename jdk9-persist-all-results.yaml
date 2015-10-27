@@ -1,0 +1,34 @@
+- job:
+    name: jdk9-persist-all-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job persist all results.
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    display-name: 'OpenJDK9 - Persist all results'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: jdk9-jtreg-test-persist-results
+              block: true
+        - trigger-builds:
+            - project: jdk9-specjbb2013-benchmark-persist-results
+              block: true
+        - trigger-builds:
+            - project: jdk9-terasort-benchmark-persist-results
+              block: true
+        - trigger-builds:
+            - project: jdk9-jcstress-test-persist-results
+              block: true
+        - trigger-builds:
+            - project: jdk9-update-src-tree-persist
+              block: true
