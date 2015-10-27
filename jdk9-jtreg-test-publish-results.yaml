@@ -1,0 +1,35 @@
+- job:
+    name: jdk9-jtreg-test-publish-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Results are published to http://openjdk.linaro.org/openjdk9-jtreg-nightly-tests/
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Publish jtreg results'
+    wrappers:
+        - timestamps
+    builders:
+        - copyartifact:
+            project: jtreg-build
+            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            tar xf jtreg-build-4.2.0-SNAPSHOT.tar.xz
+            export PATH=${WORKSPACE}/jtreg/linux/bin:$PATH
+            which jtdiff
+            TOP_DIR=~openjdk-testing/openjdk9-jtreg-nightly-tests bash -x ~openjdk-testing/openjdk-test-scripts/publish /home/openjdk-testing
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
