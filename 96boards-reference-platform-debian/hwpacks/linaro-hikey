@@ -12,9 +12,9 @@ load_addr: '0x60008000'
 dtb_addr: '0x61000000'
 partition_layout: bootfs16_rootfs
 mmc_id: '0:1'
-kernel_file: boot/Image-*-linaro-reference
-initrd_file: boot/initrd.img-*-linaro-reference
-dtb_file: lib/firmware/*-linaro-reference/device-tree/hi6220-hikey.dtb
+kernel_file: boot/Image-*
+initrd_file: boot/initrd.img-*
+dtb_file: lib/firmware/*/device-tree/hi6220-hikey.dtb
 boot_script: boot.scr
 boot_min_size: 65
 extra_serial_options:
@@ -36,13 +36,13 @@ assume_installed:
 - kmod
 - netbase
 - udev
+- libnl-3-200
+- libnl-genl-3-200
 packages:
-- linux-image-arm64
-- linux-headers-arm64
 - firmware-linux
 - firmware-ti-connectivity
 - ti-uim
 - ti-calibrator
 sources:
-  debian: http://ftp.debian.org/debian/ jessie main contrib non-free
+  debian: http://http.debian.net/debian/ jessie main contrib non-free
   repo: http://repo.linaro.org/ubuntu/linaro-overlay jessie main

@@ -71,8 +71,9 @@
             wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb
             sudo dpkg -i --force-all android-tools-fsutils_*.deb
             rm -f android-tools-fsutils_*.deb
-            # FIXME - temporary workaround
+            # FIXME - temporary workarounds
             sudo wget https://git.linaro.org/ci/linaro-image-tools.git/blob_plain/HEAD:/linaro-hwpack-install -O /usr/bin/linaro-hwpack-install
+            sudo wget https://raw.githubusercontent.com/rsalveti/linaro-image-tools/master/linaro_image_tools/media_create/chroot_utils.py -O /usr/lib/pymodules/python2.7/linaro_image_tools/media_create/chroot_utils.py
             sudo chmod +x /usr/bin/linaro-hwpack-install
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
@@ -87,8 +88,8 @@
             cp -a configs/96boards-reference-platform-debian/hwpacks/linaro-${BOARD} .
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
             linaro-hwpack-create --debug linaro-${BOARD} ${VERSION}
-            linaro-hwpack-replace -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-image-*.deb` -r linux-image -d -i
-            linaro-hwpack-replace -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-headers-*.deb` -r linux-headers -d -i
+            linaro-hwpack-append -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-image-*.deb` -d -i
+            linaro-hwpack-append -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-headers-*.deb` -d -i
 
             # Get rootfs
             export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=alip/lastSuccessfulBuild/buildNumber`
@@ -109,13 +110,16 @@
               [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
             done
 
-            # Rootfs customizations (to be moved as part of the original debian image)
-            sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
-            sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+            # Needed for make_ext4fs, as it can't handle device files
+            sudo rm -rf rootfs/dev
+            sudo mkdir rootfs/dev
             cat << EOF | sudo tee rootfs/etc/fstab
             /dev/disk/by-partlabel/system /     ext4 errors=remount-ro 0 1
-            /dev/disk/by-partlabel/boot   /boot vfat defaults          0 0
             EOF
+
+            # Make sure rootfs/boot also got the right dtb
+            sudo mkdir -p rootfs/boot/dtbs/
+            sudo cp *.dtb rootfs/boot/dtbs/
 
             mkdir -p out/${BOARD}
             cat > out/${BOARD}/README.txt << EOF
@@ -153,6 +157,12 @@
 
                 cat >> out/${BOARD}/README.txt << EOF
             * uefi: http://builds.96boards.org/snapshots/reference-platform/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey
+            EOF
+
+                # Since it uses uefi, create the boot efi fstab entry
+                sudo mkdir -p rootfs/boot/efi
+                cat << EOF | sudo tee -a rootfs/etc/fstab
+            /dev/disk/by-partlabel/boot   /boot/efi vfat defaults          0 0
             EOF
             fi
 
