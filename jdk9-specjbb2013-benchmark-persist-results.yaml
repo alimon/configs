@@ -1,0 +1,61 @@
+- job:
+    name: jdk9-specjbb2013-benchmark-persist-results
+    project-type: matrix
+    defaults: global
+    description: |
+        * Writes the results to /work/openjdk-testing/SPECjbb2013-1.00-nightly-runs.<br>
+        * This job has the client axis <b>disabled</b> until there is enough build/test time available.<br>
+          * If the client axis is enabled the heap size for the VM will need to be adjusted using -Xmxm
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Write SPECjbb2013 results'
+    axes:
+        - axis:
+            type: user-defined
+            name: JVM_VARIANT
+            values:
+                - server
+#                - client
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+    execution-strategy:
+#        combination-filter: |
+#            JVM_VARIANT=="server"
+        sequential: true
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: aarch64-06
+    builders:
+        - copyartifact:
+            project: jdk9-specjbb2013-benchmark
+            filter: 'out/specjbb*.gz'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            tree -f .
+
+            source ~openjdk-testing/specjbb-test-scripts/common.sh
+            echo "Previous Results"
+            cat ${RESULTS_CSV}
+            set -eux
+            result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/specjbb-result-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            [ -e $result_tarball ] || exit 1
+            tar -C ${SPECJBB_EXPANDED_RESULTS_DIR} -xf $result_tarball
+            cp incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/*.data.gz ${SPECJBB_EXPANDED_RESULTS_DIR}
+            pushd ${SPECJBB_EXPANDED_RESULTS_DIR}
+            echo "Updating ${RESULTS_CSV}"
+            ~openjdk-testing/specjbb-test-scripts/update-results-csv -- --verbose --output=${RESULTS_CSV}
