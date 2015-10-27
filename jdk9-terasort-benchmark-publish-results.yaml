@@ -1,0 +1,41 @@
+- job:
+    name: jdk9-terasort-benchmark-publish-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Results are published to http://openjdk.linaro.org/hadoop-terasort-benchmark-results/
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - string:
+            name: ZERO_BASELINE
+            default: '14115'
+        - string:
+            name: SERVER_MAX_JOPS_BASELINE
+            default: '3275'
+        - string:
+            name: SERVER_CRITICAL_JOPS_BASELINE
+            default: '854'
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK9 - Publish terasort benchmark results'
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+# Replaced by parameters
+#        - inject:
+#            properties-file: '${HOME}/performance-baseline.properties'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            ${HOME}/hadoop-test-scripts/benchmark-terasort-publish /home/openjdk-testing
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
