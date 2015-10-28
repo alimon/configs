@@ -77,7 +77,12 @@
             fi
             debsign -k${key_id} ${pkg_changes}
             dput ${host_ppa} ${pkg_changes}
-            find . -mtime +3 -exec rm -f {} \;
+            for file in $(dcmd ${pkg_changes})
+            do
+                 rm -f $file
+            done
+            rm -f ${pkg_changes}
+            find . -mtime +1 -exec rm -f {} \;
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org wookey@linaro.org riku.voipio@linaro.org'
