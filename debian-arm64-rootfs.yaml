@@ -62,7 +62,7 @@
             }
 
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends cpio debootstrap live-build
+            sudo apt-get install -y --no-install-recommends cpio debootstrap live-build python-pycurl
             sudo dpkg -i --force-all packages/live-build_3.0.5-1linaro1_all.deb
 
             dpkg -s qemu-user-static |grep '^Version'
@@ -78,7 +78,11 @@
             cd ${WORKSPACE}
             sudo rm -rf out && mkdir out
             sudo mv builddir/jessie-arm64-${rootfs}/linaro-jessie-* out
-            time python ${HOME}/bin/linaro-cp --link-latest out debian/images/${rootfs}-arm64/${BUILD_NUMBER}
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py --link-latest out debian/images/${rootfs}-arm64/${BUILD_NUMBER}
     publishers:
         - archive:
             artifacts: 'out/linaro-jessie-${rootfs}-*'
