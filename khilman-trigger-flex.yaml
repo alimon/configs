@@ -242,7 +242,6 @@
               DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_PROVE_LOCKING=y "
               DEFCONFIG_LIST+="versatile_defconfig+CONFIG_OF_UNITTEST=y "
               DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_THUMB2_KERNEL=y "
-              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_EFI=y "
 
               # Platform specific
               if [ -e arch/${ARCH}/configs/mvebu_v7_defconfig ]; then
@@ -274,6 +273,11 @@
             if [ ${tree_name} = "stable" ]; then
               # Don't do allmodconfig builds
               DEFCONFIG_LIST=${DEFCONFIG_LIST/allmodconfig/}
+            fi
+
+            # Tree specific fragments: Ard's EFI 
+            if [ ${tree_name} = "ardb" ]; then
+              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_EFI=y "
             fi
 
             # Tree specific fragments: LSK + KVM fragments
