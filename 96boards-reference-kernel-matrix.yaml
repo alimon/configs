@@ -69,7 +69,7 @@
             export use_ccache=true
             export make_bootwrapper=false
             export make_install=true
-            export kernel_flavour=reference
+            export kernel_flavour=reference-${MX_PLATFORM}
             export kernel_config="defconfig"
             export MAKE_DTBS=true
             export ARCH=arm64
@@ -100,7 +100,8 @@
 
             # Final preparation for publishing
             cd ${WORKSPACE}
-            cp -a linux/*.dsc linux/*.changes *.deb out/
+            mkdir -p out
+            cp -a linux/*.dsc linux/*.changes linux/*.deb out/
             cp linux/linux*orig.tar.gz out/
 
             # Publish
