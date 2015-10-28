@@ -83,6 +83,8 @@
 
             git clone -b ${KERNEL_BRANCH} --depth 1 ${KERNEL_URL} linux
             cd linux
+            export JENKINS_WORKSPACE=${WORKSPACE}
+            unset ${WORKSPACE}
 
             # Export the kernel packaging version
             kernel_version=`make kernelversion`
@@ -93,6 +95,8 @@
             rm -rf lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
+            unset ${WORKSPACE}
+            export WORKSPACE=${JENKINS_WORKSPACE}
 
             # Final preparation for publishing
             cd ${WORKSPACE}
