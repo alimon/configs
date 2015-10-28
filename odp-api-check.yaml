@@ -26,6 +26,7 @@
             type: user-defined
             name: ARCH
             values:
+                - x86-64
                 - arm
                 - armeb
                 - arm64
@@ -44,7 +45,7 @@
                 - docker-utopic-arm64
     execution-strategy:
         combination-filter: |
-            !(label=="docker-utopic-arm64" && (ARCH=="arm" || ARCH=="armeb" || ARCH=="arm64be"))
+            !(label=="docker-utopic-arm64" && (ARCH=="x86-64" || ARCH=="arm" || ARCH=="armeb" || ARCH=="arm64be"))
     wrappers:
         - timestamps
         - matrix-tie-parent:
@@ -66,6 +67,12 @@
             sudo apt-get install -y --no-install-recommends libssl-dev python-pycurl
 
             export tcbindir="${HOME}/srv/toolchain/${ARCH}-tc-14.09/bin"
+
+            case "${ARCH}" in
+            x86-64)
+                unset ARCH
+                ;;
+            esac
 
             case "${label}" in
               docker-utopic-arm64)
