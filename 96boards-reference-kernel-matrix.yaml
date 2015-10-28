@@ -95,14 +95,14 @@
             rm -rf lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             bash -x lci-build-tools/jenkins_kernel_build_inst
-            unset WORKSPACE
-            export WORKSPACE=${JENKINS_WORKSPACE}
 
             # Final preparation for publishing
+            cp -a *.dsc *.changes *.deb out/
+            cp linux*orig.tar.gz out/
+
+            unset WORKSPACE
+            export WORKSPACE=${JENKINS_WORKSPACE}
             cd ${WORKSPACE}
-            mkdir -p out
-            cp -a linux/*.dsc linux/*.changes linux/*.deb out/
-            cp linux/linux*orig.tar.gz out/
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -110,7 +110,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out snapshots/reference-platform/linux/${MX_PLATFORM}/${BUILD_NUMBER}/
+              linux/out snapshots/reference-platform/linux/${MX_PLATFORM}/${BUILD_NUMBER}/
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
