@@ -68,7 +68,7 @@
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
 
             # Publish
-            PUB_DEST=snapshots/reference-platform/aosp/${BUILD_NUMBER}/hikey
+            PUB_DEST=snapshots/reference-platform/aosp/hikey/${BUILD_NUMBER}
 
             cd build/out
             rm -f boot.img ramdisk.img
@@ -82,6 +82,7 @@
             time linaro-cp.py \
               --manifest \
               --no-build-info \
+              --link-latest \
               --split-job-owner \
               --server ${PUBLISH_SERVER} \
               build/out \
@@ -89,10 +90,6 @@
               --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
-
-            linaro-cp.py \
-              --server ${PUBLISH_SERVER} \
-              --make-link snapshots/reference-platform/aosp/${BUILD_NUMBER}
 
             build-tools/node/lava-submit "${CONFIG}"
 
