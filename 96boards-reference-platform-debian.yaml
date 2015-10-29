@@ -43,11 +43,6 @@
         - matrix-tie-parent:
             node: build
     builders:
-        - copyartifact:
-            project: rsalveti-debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=alip
-            filter: 'out/linaro-jessie-alip-*.tar.gz'
-            target: artifacts
-            parameter-filters: 'label=docker-jessie-arm64,rootfs=alip'
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
@@ -73,14 +68,13 @@
             rm -f android-tools-fsutils_*.deb
             # FIXME - temporary workarounds
             sudo wget https://git.linaro.org/ci/linaro-image-tools.git/blob_plain/HEAD:/linaro-hwpack-install -O /usr/bin/linaro-hwpack-install
-            sudo wget https://raw.githubusercontent.com/rsalveti/linaro-image-tools/master/linaro_image_tools/media_create/chroot_utils.py -O /usr/lib/pymodules/python2.7/linaro_image_tools/media_create/chroot_utils.py
             sudo chmod +x /usr/bin/linaro-hwpack-install
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
             # Get the reference kernel packages
-            KERNEL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel/lastSuccessfulBuild/buildNumber`
-            KERNEL_RELEASE=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel/${KERNEL_BUILD_NUMBER}/injectedEnvVars/export | grep KERNEL_RELEASE | cut -d'=' -f2-`
-            KERNEL_BUILD_BASE_URL="https://builds.96boards.org/snapshots/reference-platform/linux/${KERNEL_BUILD_NUMBER}"
+            KERNEL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel-matrix/MX_PLATFORM=${BOARD},label=docker-utopic-amd64/lastSuccessfulBuild/buildNumber`
+            KERNEL_RELEASE=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel-matrix/MX_PLATFORM=${BOARD},label=docker-utopic-amd64/${KERNEL_BUILD_NUMBER}/injectedEnvVars/export | grep KERNEL_RELEASE | cut -d'=' -f2-`
+            KERNEL_BUILD_BASE_URL="https://builds.96boards.org/snapshots/reference-platform/linux/${BOARD}/${KERNEL_BUILD_NUMBER}"
             wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-image-${KERNEL_RELEASE}_${KERNEL_RELEASE}-${KERNEL_BUILD_NUMBER}_arm64.deb
             wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-headers-${KERNEL_RELEASE}_${KERNEL_RELEASE}-${KERNEL_BUILD_NUMBER}_arm64.deb
 
@@ -96,8 +90,7 @@
             export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=alip/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/alip-arm64/${ROOTFS_BUILD_NUMBER}/linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
             wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
-            #ROOTFS_BUILD_TAR=linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz
-            ROOTFS_BUILD_TAR=`ls artifacts/out/linaro-jessie-alip-*.tar.gz`
+            ROOTFS_BUILD_TAR=linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz
 
             # Create pre-built image(s)
             linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-jessie_alip_${VERSION}.img --image-size 2G --binary ${ROOTFS_BUILD_TAR} --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi --part-table gpt
@@ -113,13 +106,18 @@
             # Needed for make_ext4fs, as it can't handle device files
             sudo rm -rf rootfs/dev
             sudo mkdir rootfs/dev
+
+            sudo ln -sf /etc/resolvconf/run/resolv.conf rootfs/etc/resolv.conf
+
             cat << EOF | sudo tee rootfs/etc/fstab
             /dev/disk/by-partlabel/system /     ext4 errors=remount-ro 0 1
             EOF
 
-            # Make sure rootfs/boot also got the right dtb
+            # Make sure rootfs/boot also got the right dtb and links
             sudo mkdir -p rootfs/boot/dtbs/
             sudo cp *.dtb rootfs/boot/dtbs/
+            sudo ln -s Image-${KERNEL_RELEASE} rootfs/boot/Image
+            sudo ln -s initrd.img-${KERNEL_RELEASE} rootfs/boot/initrd.img
 
             mkdir -p out/${BOARD}
             cat > out/${BOARD}/README.txt << EOF
@@ -134,20 +132,17 @@
                 FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-uefi/MX_PLATFORM=hikey,MX_TYPE=RELEASE,label=docker-utopic-amd64/lastStableBuild/buildNumber`
                 FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/reference-platform/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey/AndroidFastbootApp.efi"
                 wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
-                GRUB_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/grub/latest"
-                wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O grubaa64.efi
-                wget --progress=dot ${GRUB_EFI_URL}/grub.cfg -O grub.cfg
+                GRUB_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-grub-efi-arm64/lastStableBuild/buildNumber`
+                GRUB_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64.efi"
+                wget --progress=dot ${GRUB_EFI_URL} -O grubaa64.efi
 
                 mkdir boot-fat
                 dd if=/dev/zero of=out/${BOARD}/boot-fat.uefi.img bs=512 count=131072
                 sudo mkfs.fat -n "BOOT IMG" out/${BOARD}/boot-fat.uefi.img
                 sudo mount -o loop,rw,sync out/${BOARD}/boot-fat.uefi.img boot-fat
-                sudo mkdir boot-fat/grub
-                sudo cp -a boot/Image boot/*.dtb boot-fat/ || true
-                sudo cp -a boot/initrd.img-* boot-fat/initrd.img || true
-                sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
-                sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
-                sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
+                sudo cp hi6220-hikey.dtb boot-fat/hi6220-hikey.dtb || true
+                sudo cp fastboot.efi boot-fat/fastboot.efi || true
+                sudo cp grubaa64.efi boot-fat/grubaa64.efi || true
                 sudo umount boot-fat
                 sudo chmod 777 out/${BOARD}/boot-fat.uefi.img
                 rm -rf boot-fat
@@ -156,14 +151,27 @@
                 gzip -9 out/${BOARD}/boot-fat.uefi.img
 
                 cat >> out/${BOARD}/README.txt << EOF
+            * grub: http://builds.96boards.org/snapshots/reference-platform/grub/${GRUB_EFI_BUILD_NUMBER}
             * uefi: http://builds.96boards.org/snapshots/reference-platform/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey
             EOF
+                # Grub config to be set as part of the rootfs
+                sudo mkdir rootfs/boot/grub
+                ## FIXME: Make this generic
+                sed -e 's/CONSOLE_UART/ttyAMA3,115200/' -e 's/DEVICE_TREE/hi6220-hikey.dtb/' configs/96boards-reference-platform-debian/grub/grub.cfg.in > grub.cfg
+                sudo cp grub.cfg rootfs/boot/grub
 
                 # Since it uses uefi, create the boot efi fstab entry
-                sudo mkdir -p rootfs/boot/efi
+                sudo mkdir rootfs/boot/efi
                 cat << EOF | sudo tee -a rootfs/etc/fstab
             /dev/disk/by-partlabel/boot   /boot/efi vfat defaults          0 0
             EOF
+
+                ## FIXME: Get this in a proper package
+                # ******** TI wl18xx R8.6 - out of tree firmware ********
+                git clone -b R8.6 --depth 1 git://git.ti.com/wilink8-wlan/wl18xx_fw.git
+                sudo cp -a ./wl18xx_fw/wl18xx-fw-4.bin rootfs/lib/firmware/ti-connectivity/
+                rm -rf wl18xx_fw
+                # ******** TI wl18xx R8.6 - out of tree firmware ********
             fi
 
             # Create the ext4fs (fastboot compatible)

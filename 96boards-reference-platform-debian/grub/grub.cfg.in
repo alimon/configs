@@ -1,0 +1,14 @@
+set default=0
+set timeout=1
+set console_uart="CONSOLE_UART"
+
+menuentry 'Debian GNU/Linux' {
+    linux /boot/Image console=tty0 console=${console_uart} root=/dev/disk/by-partlabel/system rootwait quiet rw efi=noruntime
+    initrd /boot/initrd.img
+    devicetree /boot/dtbs/DEVICE_TREE
+}
+
+menuentry 'Fastboot' {
+    search.fs_label BOOT\ IMG boot_part
+    chainloader ($boot_part)/fastboot.efi
+}
