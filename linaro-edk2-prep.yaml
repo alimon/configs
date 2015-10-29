@@ -150,7 +150,19 @@
             Image console=ttyAMA0 root=/dev/vda2 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
             EOF
 
+            cat > out/BUILD-INFO.txt << EOF
+            Format-Version: 0.5
+
+            Files-Pattern: *.bin, *.fd, *.nsh, *.txt, QEMU_EFI.img.gz, edk2-*.tar.bz2
+            License-Type: open
+
+            Files-Pattern: SctPackage*
+            License-Type: protected
+            Auth-Groups: uefi-maintainers
+            EOF
+
             time python ${HOME}/bin/linaro-cp.py \
+              --build-info out/BUILD-INFO.txt \
               --link-latest \
               out ${PUB_DEST}
 
