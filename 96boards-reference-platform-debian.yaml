@@ -86,8 +86,8 @@
             linaro-hwpack-append -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-headers-*.deb` -d -i
 
             # Get rootfs
-            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=alip/lastSuccessfulBuild/buildNumber`
-            export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=build,rootfs=alip/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=alip/lastSuccessfulBuild/buildNumber`
+            export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=alip/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/alip-arm64/${ROOTFS_BUILD_NUMBER}/linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
             wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
             ROOTFS_BUILD_TAR=linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz
