@@ -37,9 +37,10 @@
               rm -rf out
             }
 
+            GRUB_EFI_BIN_PKG=grub-efi-arm64-bin
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends grub-efi-arm64-bin python-pycurl
+            sudo apt-get install -y --no-install-recommends $GRUB_EFI_BIN_PKG python-pycurl
 
             mkdir out
 
@@ -49,12 +50,42 @@
             configfile \$prefix/grub.cfg
             EOF
 
+            GRUB_MODULES="boot chain configfile efinet ext2 fat gettext help linux loadenv lsefi normal part_gpt part_msdos read search search_fs_file search_fs_uuid search_label terminal terminfo tftp time"
             grub-mkimage \
               --verbose \
               --config=out/grub.configfile \
               --output=out/grubaa64.efi \
               --format=arm64-efi \
-              boot chain configfile efinet ext2 fat gettext help linux loadenv lsefi normal part_gpt part_msdos read search search_fs_file search_fs_uuid search_label terminal terminfo tftp time
+              $GRUB_MODULES
+
+            # Build information
+            cat > out/README.textile << EOF
+
+            h4. 96Boards - Reference Component - GRUB UEFI
+
+            GRUB UEFI build consumed by the 96Boards Reference Platform Builds
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Grub modules used:
+
+            EOF
+            echo -n "bc. " >> out/README.textile
+            echo $GRUB_MODULES >> out/README.textile
+            cat >> out/README.textile << EOF
+
+            * Grub config used:
+
+            EOF
+            echo -n "bc. " >> out/README.textile
+            cat out/grub.configfile >> out/README.textile
+            cat >> out/README.textile << EOF
+
+            * $GRUB_EFI_BIN_PKG package:
+
+            EOF
+            echo -n "bc. " >> out/README.textile
+            apt-cache show $GRUB_EFI_BIN_PKG >> out/README.textile
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
