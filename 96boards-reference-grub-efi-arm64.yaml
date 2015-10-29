@@ -87,6 +87,9 @@
             echo -n "bc. " >> out/README.textile
             apt-cache show $GRUB_EFI_BIN_PKG >> out/README.textile
 
+            # Create MD5SUMS file
+            (cd out && md5sum g* > MD5SUMS.txt)
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
