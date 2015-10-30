@@ -114,6 +114,7 @@
 
             # Build UEFI for the desired platform, with the specified build type
             cd ${EDK2_DIR}
+            EDK2_GIT_HEAD=`git log --format="%H" -1`
             bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a ../arm-trusted-firmware ${MX_PLATFORM}
 
             unset WORKSPACE
@@ -142,7 +143,6 @@
             fi
 
             # Build information
-            EDK2_GIT_HEAD=`git log --format="%H" -1`
             cat > out/README.textile << EOF
 
             h4. 96Boards - Reference Component - UEFI
