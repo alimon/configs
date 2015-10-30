@@ -101,6 +101,9 @@
 
             # Check out arm-trusted-firmware (not upstream yet, so also from github)
             git clone -b reference --depth 1 https://github.com/96boards/arm-trusted-firmware.git
+            cd arm-trusted-firmware
+            ATF_GIT_HEAD=`git log --format="%H" -1`
+            cd ..
 
             export AARCH64_TOOLCHAIN=GCC49
             export EDK2_DIR=${WORKSPACE}/edk2
@@ -134,8 +137,28 @@
                 ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
                 make
                 cp -a l-loader.bin ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
+                wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
                 cd ${WORKSPACE}
             fi
+
+            # Build information
+            EDK2_GIT_HEAD=`git log --format="%H" -1`
+            cat > out/README.textile << EOF
+
+            h4. 96Boards - Reference Component - UEFI
+
+            Tianocore EDK2 UEFI build consumed by the 96Boards Reference Platform Builds
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * EDK2: "https://github.com/96boards/edk2/tree/reference":https://github.com/96boards/edk2/tree/reference
+            * EDK2 head: "$EDK2_GIT_HEAD":https://github.com/96boards/edk2/commit/$EDK2_GIT_HEAD
+            * ARM Trusted Firmware: "https://github.com/96boards/arm-trusted-firmware/tree/reference":https://github.com/96boards/arm-trusted-firmware/tree/reference
+            * ARM Trusted Firmware head: "$ATF_GIT_HEAD":https://github.com/96boards/arm-trusted-firmware/commit/$ATF_GIT_HEAD
+            EOF
+
+            # Create MD5SUMS file
+            (cd out && md5sum *.bin *.img *.efi *.py > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
