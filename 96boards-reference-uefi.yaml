@@ -143,7 +143,7 @@
             fi
 
             # Build information
-            cat > out/README.textile << EOF
+            cat > out/${BUILD_TYPE} README.textile << EOF
 
             h4. 96Boards - Reference Component - UEFI
 
@@ -158,7 +158,7 @@
             EOF
 
             # Create MD5SUMS file
-            (cd out && md5sum *.bin *.img *.efi *.py > MD5SUMS.txt)
+            (cd out/${BUILD_TYPE} && md5sum *.bin *.img *.efi > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
