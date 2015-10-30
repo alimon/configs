@@ -98,9 +98,8 @@
             export DEBIAN_FRONTEND=noninteractive
             sudo apt-get update -q||true
             sudo apt-get install -q --no-install-recommends -y build-essential fakeroot
-            sudo apt-get build-dep -q -no-install-recommends -y ${sourcename}
+            sudo apt-get build-dep -q --no-install-recommends -y ${sourcename}
 
-            rm -rf work/
             dpkg-source -x ${localdsc} work/
             # Changelog header tampering
             sed -i -e '1 s,).*;,.'linaro$dist.1') '$dist';,' work/debian/changelog
