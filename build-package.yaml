@@ -79,10 +79,10 @@
             then
                  sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             fi
-            sudo rm -f *.changes repo work /etc/apt/sources.list.d/local.list
+            sudo rm -f *.changes repo.parameters repo work /etc/apt/sources.list.d/local.list
             # build a source repo for apt-get build-dep
             mkdir repo && cd repo
-            dget --insecure -d -u $source
+            dget --insecure -q -d -u $source
             dpkg-scansources . /dev/null > Sources.gz
             echo "deb-src file:$(pwd) /" > local.list
             echo "deb http://repo.linaro.org/ubuntu/linaro-overlay ${dist} main" >> local.list
@@ -96,9 +96,9 @@
 
             wget -O - http://repo.linaro.org/ubuntu/linarorepo.key|sudo apt-key add -
             export DEBIAN_FRONTEND=noninteractive
-            sudo apt-get update||true
-            sudo apt-get install --no-install-recommends -y build-essential fakeroot
-            sudo apt-get build-dep --no-install-recommends -y ${sourcename}
+            sudo apt-get update -q||true
+            sudo apt-get install -q --no-install-recommends -y build-essential fakeroot
+            sudo apt-get build-dep -q -no-install-recommends -y ${sourcename}
 
             rm -rf work/
             dpkg-source -x ${localdsc} work/
