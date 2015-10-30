@@ -120,11 +120,16 @@
             sudo ln -s initrd.img-${KERNEL_RELEASE} rootfs/boot/initrd.img
 
             mkdir -p out/${BOARD}
-            cat > out/${BOARD}/README.txt << EOF
-            Build information:
-            * build: ${BUILD_URL}
-            * kernel: ${KERNEL_BUILD_BASE_URL}
-            * rootfs: http://snapshots.linaro.org/debian/images/alip-arm64/${ROOTFS_BUILD_NUMBER}
+
+            # Build information
+            cat > out/${BOARD}/README.textile << EOF
+
+            h4. 96Boards - Reference Platform Build - Debian
+
+            Build description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Kernel packages: "$KERNEL_BUILD_BASE_URL":$KERNEL_BUILD_BASE_URL
+            * ALIP Rootfs: "http://snapshots.linaro.org/debian/images/alip-arm64/$ROOTFS_BUILD_NUMBER":http://snapshots.linaro.org/debian/images/alip-arm64/$ROOTFS_BUILD_NUMBER
             EOF
 
             # Create boot image
@@ -150,9 +155,9 @@
                 # Compress boot partition image
                 gzip -9 out/${BOARD}/boot-fat.uefi.img
 
-                cat >> out/${BOARD}/README.txt << EOF
-            * grub: http://builds.96boards.org/snapshots/reference-platform/grub/${GRUB_EFI_BUILD_NUMBER}
-            * uefi: http://builds.96boards.org/snapshots/reference-platform/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey
+                cat >> out/${BOARD}/README.textile << EOF
+            * Grub UEFI: "http://builds.96boards.org/snapshots/reference-platform/grub/$GRUB_EFI_BUILD_NUMBER":http://builds.96boards.org/snapshots/reference-platform/grub/$GRUB_EFI_BUILD_NUMBER
+            * ARM TF / EDK2 UEFI: "http://builds.96boards.org/snapshots/reference-platform/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://builds.96boards.org/snapshots/reference-platform/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
             EOF
                 # Grub config to be set as part of the rootfs
                 sudo mkdir rootfs/boot/grub
