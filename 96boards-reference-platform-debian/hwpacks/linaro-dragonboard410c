@@ -1,0 +1,45 @@
+format: '3.0'
+name: linaro-dragonboard410c
+architectures:
+- arm64
+origin: Linaro
+maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+support: supported
+serial_tty: ttyMSM0
+kernel_addr: '0x80208000'
+initrd_addr: '0x83000000'
+load_addr: '0x60008000'
+dtb_addr: '0x61000000'
+partition_layout: bootfs16_rootfs
+mmc_id: '0:1'
+kernel_file: boot/Image-*
+initrd_file: boot/initrd.img-*
+dtb_files:
+- msm8916-mtp.dtb: lib/firmware/*/device-tree/msm8916-mtp.dtb
+- apq8016-sbc.dtb: lib/firmware/*/device-tree/apq8016-sbc.dtb
+boot_script: boot.scr
+boot_min_size: 64
+extra_serial_options:
+- console=tty0
+- console=ttyMSM0,115200n8
+assume_installed:
+- adduser
+- apt
+- apt-utils
+- debconf-i18n
+- debian-archive-keyring
+- gcc-4.8
+- gnupg
+- ifupdown
+- initramfs-tools
+- iproute2
+- irqbalance
+- isc-dhcp-client
+- kmod
+- netbase
+- udev
+- libnl-3-200
+- libnl-genl-3-200
+sources:
+  debian: http://http.debian.net/debian/ jessie main contrib non-free
+  repo: http://repo.linaro.org/ubuntu/linaro-overlay jessie main

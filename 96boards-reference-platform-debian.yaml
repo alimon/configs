@@ -27,6 +27,7 @@
             name: BOARD
             values:
                 - hikey
+                - dragonboard410c
         - axis:
             type: slave
             name: label
@@ -178,6 +179,38 @@
                 sudo cp -a ./wl18xx_fw/wl18xx-fw-4.bin rootfs/lib/firmware/ti-connectivity/
                 rm -rf wl18xx_fw
                 # ******** TI wl18xx R8.6 - out of tree firmware ********
+
+            elif [ "${BOARD}" == "dragonboard410c" ]; then
+                # Boot image tools
+                git clone git://codeaurora.org/quic/kernel/skales
+                (cd skales && git log -1)
+                export PATH=`pwd`/skales:$PATH
+
+                ## FIXME: See if we can find a better way to package this
+                # Firmware (adreno, venus and WCN)
+                wget --progress=dot -e dotbytes=1M https://developer.qualcomm.com/download/db410c/firmware-410c-1.1.0.bin
+                yes | sh firmware-410c-1.1.0.bin > /dev/null
+                sudo cp -rf linux-ubuntu-board-support-package-v1.1/proprietary-ubuntu/* rootfs/lib/firmware/
+
+                # add license file in the generated rootfs
+                wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
+                sudo cp -f license.txt rootfs/etc/license.txt
+
+                # Create device tree table
+                mkdir -p dtbs
+                sudo cp rootfs/lib/firmware/*/device-tree/msm8916-mtp.dtb rootfs/lib/firmware/*/device-tree/apq8016-sbc.dtb dtbs/
+                dtbTool -o dt.img -s 2048 dtbs
+
+                # Create boot image
+                mkbootimg \
+                  --kernel rootfs/boot/Image \
+                  --ramdisk rootfs/boot/initrd.img \
+                  --output out/${BOARD}/${BOARD}-boot-linux-${VERSION}.img \
+                  --dt dt.img \
+                  --pagesize "2048" \
+                  --base "0x80000000" \
+                  --cmdline "root=/dev/disk/by-partlabel/rootfs rw rootwait console=tty0 console=ttyMSM0,115200n8"
+                gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.img
             fi
 
             # Create the ext4fs (fastboot compatible)
