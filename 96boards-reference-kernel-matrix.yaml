@@ -25,6 +25,7 @@
             name: MX_PLATFORM
             values:
                 - hikey
+                - dragonboard410c
         - axis:
             type: slave
             name: label
@@ -79,6 +80,10 @@
             if [ "${MX_PLATFORM}" == "hikey" ]; then
                 KERNEL_URL=https://github.com/rsalveti/linux.git
                 KERNEL_BRANCH=hikey-mainline-rebase
+            elif [ "${MX_PLATFORM}" == "dragonboard410c" ]; then
+                KERNEL_URL=https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
+                KERNEL_BRANCH=integration-linux-qcomlt
+                export kernel_config="defconfig distro.config"
             fi
 
             git clone -b ${KERNEL_BRANCH} --depth 1 ${KERNEL_URL} linux
