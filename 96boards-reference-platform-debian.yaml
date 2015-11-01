@@ -93,11 +93,11 @@
             ROOTFS_BUILD_TAR=linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz
 
             # Create pre-built image(s)
-            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-jessie_alip_${VERSION}.img --image-size 2G --binary ${ROOTFS_BUILD_TAR} --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi --part-table gpt
+            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-rootfs-jessie_alip_${VERSION}.img --image-size 2G --binary ${ROOTFS_BUILD_TAR} --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi --part-table gpt
 
             # Create eMMC rootfs image(s)
             mkdir boot rootfs
-            for device in $(sudo kpartx -av ${BOARD}-jessie_alip_${VERSION}.img | cut -d' ' -f3); do
+            for device in $(sudo kpartx -av ${BOARD}-rootfs-jessie_alip_${VERSION}.img | cut -d' ' -f3); do
               partition=$(echo ${device} | cut -d'p' -f3)
               [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
               [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
@@ -150,10 +150,11 @@
                 sudo cp grubaa64.efi boot-fat/grubaa64.efi || true
                 sudo umount boot-fat
                 sudo chmod 777 out/${BOARD}/boot-fat.uefi.img
+                sudo mv out/${BOARD}/boot-fat.uefi.img out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
                 rm -rf boot-fat
 
                 # Compress boot partition image
-                gzip -9 out/${BOARD}/boot-fat.uefi.img
+                gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
 
                 cat >> out/${BOARD}/README.textile << EOF
             * Grub UEFI: "http://builds.96boards.org/snapshots/reference-platform/grub/$GRUB_EFI_BUILD_NUMBER":http://builds.96boards.org/snapshots/reference-platform/grub/$GRUB_EFI_BUILD_NUMBER
@@ -180,13 +181,13 @@
             fi
 
             # Create the ext4fs (fastboot compatible)
-            sudo make_ext4fs -o -L rootfs -l 3056M -s out/${BOARD}/${BOARD}-jessie_alip_${VERSION}.emmc.img rootfs/
+            sudo make_ext4fs -o -L rootfs -l 3056M -s out/${BOARD}/${BOARD}-rootfs-jessie_alip_${VERSION}.emmc.img rootfs/
             sudo umount boot rootfs
-            sudo kpartx -dv ${BOARD}-jessie_alip_${VERSION}.img
+            sudo kpartx -dv ${BOARD}-rootfs-jessie_alip_${VERSION}.img
             sudo rm -rf boot rootfs
 
             # Compress image
-            gzip -9 out/${BOARD}/${BOARD}-jessie_alip_${VERSION}.emmc.img
+            gzip -9 out/${BOARD}/${BOARD}-rootfs-jessie_alip_${VERSION}.emmc.img
 
             # Publish remaining files
             cp hwpack* out/${BOARD}
