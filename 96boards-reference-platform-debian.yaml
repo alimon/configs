@@ -75,7 +75,7 @@
             # Get the reference kernel packages
             KERNEL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel-matrix/MX_PLATFORM=${BOARD},label=docker-utopic-amd64/lastSuccessfulBuild/buildNumber`
             KERNEL_RELEASE=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel-matrix/MX_PLATFORM=${BOARD},label=docker-utopic-amd64/${KERNEL_BUILD_NUMBER}/injectedEnvVars/export | grep KERNEL_RELEASE | cut -d'=' -f2-`
-            KERNEL_BUILD_BASE_URL="https://builds.96boards.org/snapshots/reference-platform/linux/${BOARD}/${KERNEL_BUILD_NUMBER}"
+            KERNEL_BUILD_BASE_URL="https://builds.96boards.org/snapshots/reference-platform/components/linux/${BOARD}/${KERNEL_BUILD_NUMBER}"
             wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-image-${KERNEL_RELEASE}_${KERNEL_RELEASE}-${KERNEL_BUILD_NUMBER}_arm64.deb
             wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-headers-${KERNEL_RELEASE}_${KERNEL_RELEASE}-${KERNEL_BUILD_NUMBER}_arm64.deb
 
@@ -136,10 +136,10 @@
             # Create boot image
             if [ "${BOARD}" == "hikey" ]; then
                 FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-uefi/MX_PLATFORM=hikey,MX_TYPE=RELEASE,label=docker-utopic-amd64/lastStableBuild/buildNumber`
-                FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/reference-platform/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey/AndroidFastbootApp.efi"
+                FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/reference-platform/components/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey/AndroidFastbootApp.efi"
                 wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
                 GRUB_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-grub-efi-arm64/lastStableBuild/buildNumber`
-                GRUB_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64.efi"
+                GRUB_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64.efi"
                 wget --progress=dot ${GRUB_EFI_URL} -O grubaa64.efi
 
                 mkdir boot-fat
@@ -158,8 +158,8 @@
                 gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
 
                 cat >> out/${BOARD}/README.textile << EOF
-            * Grub UEFI: "http://builds.96boards.org/snapshots/reference-platform/grub/$GRUB_EFI_BUILD_NUMBER":http://builds.96boards.org/snapshots/reference-platform/grub/$GRUB_EFI_BUILD_NUMBER
-            * ARM TF / EDK2 UEFI: "http://builds.96boards.org/snapshots/reference-platform/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://builds.96boards.org/snapshots/reference-platform/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
+            * Grub UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER":http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER
+            * ARM TF / EDK2 UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
             EOF
                 # Grub config to be set as part of the rootfs
                 sudo mkdir rootfs/boot/grub
