@@ -47,7 +47,6 @@
         - matrix-tie-parent:
             node: build
     builders:
-        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -109,19 +108,42 @@
             # Create MD5SUMS file
             (cd ${WORKSPACE}/build/tmp-glibc/deploy/images/${OE_MACHINE} && md5sum * > MD5SUMS.txt)
 
-            # Publish
-            # fixup machine names, no 'dash' on publish location
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py \
-              --server ${PUBLISH_SERVER} \
-              --link-latest \
-              ${WORKSPACE}/build/tmp-glibc/deploy/images/${OE_MACHINE} \
-              openembedded/pre-built/${OE_MACHINE//-}/${MANIFEST_BRANCH}/${BUILD_NUMBER}
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            # Publish on 96boards.org
+            if [ "${OE_MACHINE}" == "dragonboard-410c" ]; then
+               time python ${HOME}/bin/linaro-cp.py \
+                    --server ${PUBLISH_SERVER} \
+                    --link-latest \
+                    ${WORKSPACE}/build/tmp-glibc/deploy/images/${OE_MACHINE} \
+                    snapshots/${OE_MACHINE//-}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER}
+            else
+                echo "Do not publish ${OE_MACHINE} on ${PUBLISH_SERVER}"
+            fi
+        - linaro-publish-token:
+            host: snapshots.linaro.org
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            # Publish on linaro.org
+            if [ "${OE_MACHINE}" == "ifc6410" ]; then
+               time python ${HOME}/bin/linaro-cp.py \
+                    --server ${PUBLISH_SERVER} \
+                    --link-latest \
+                    ${WORKSPACE}/build/tmp-glibc/deploy/images/${OE_MACHINE} \
+                    openembedded/pre-built/${OE_MACHINE//-}/${MANIFEST_BRANCH}/${BUILD_NUMBER}
+            else
+                echo "Do not publish ${OE_MACHINE} on ${PUBLISH_SERVER}"
+            fi
     publishers:
         - archive:
             artifacts: 'build/tmp-glibc/deploy/images/${OE_MACHINE}/*'
-        - trigger:
-            project: 'lt-qcom-openembedded-images-publish'
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
         - ircbot:
