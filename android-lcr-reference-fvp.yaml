@@ -12,10 +12,6 @@
             linaro:
                 - job-build
                 - job-cancel
-    parameters:
-        - string:
-            name: BUILD_CONFIG_FILENAME
-            default: 'lcr-reference-fvp'
     disabled: false
     node: docker-utopic-aosp
     display-name: 'FVP - Reference LCR Android Build'
@@ -53,9 +49,13 @@
 
             # Runs as ubuntu
             set -xe
-            rm -rf build-tools jenkins-tools build/out build/android-patchsets
-            git clone --depth 1 https://git.linaro.org/people/daniel.diaz/linaro-android-build-tools-ci.git build-tools
+            rm -rf build-tools jenkins-tools build-configs build/out build/android-patchsets
+            git clone --depth 1 https://git.linaro.org/people/vishal.bhoj/linaro-android-build-tools-ci.git build-tools
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
+            git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
+
+            export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
+            export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
 
             cat << EOF > config.txt
             BUILD_CONFIG_REPO=http://android.git.linaro.org/git/android-build-configs.git
@@ -82,23 +82,34 @@
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
 
-            #build-tools/node/lava-submit "${CONFIG}"
-            #
-            #for f in $(ls -1 build/out/lava-job-info* 2>/dev/null); do
-            #  time linaro-cp.py \
-            #    --no-build-info \
-            #    --split-job-owner \
-            #    --server ${PUBLISH_SERVER} \
-            #    ${f} \
-            #    ${PUB_DEST}
-            #done
+            # Construct post-build-lava parameters
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
 
-            export DEVICE_TYPE=rtsm_fvp_base-aemv8a
-            export BUNDLE_STREAM_NAME="/private/team/wg/wg-private/"
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
             EOF
+
+            grep \
+              -e ^LAVA_JOB_URL \
+              build-configs/${BUILD_CONFIG_FILENAME} \
+                | sed -e 's:^LAVA_JOB_URL:CUSTOM_JSON_URL:g' \
+                >> ${WORKSPACE}/post_build_lava_parameters
 
             echo "Build finished"
         - trigger-builds:
