@@ -36,10 +36,6 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - copyartifact:
-            project: 96boards-hikey-developer
-            filter: '*.deb'
-            target: artifacts
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
@@ -157,13 +153,6 @@
             * rootfs (${rootfs}): http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
             EOF
 
-              if [ "${rootfs}" = "developer" ]; then
-                rm -f linux-image-*-linaro-hikey_*.deb linux-headers-*-linaro-hikey_*.deb
-                mv artifacts/* .
-                linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-hikey_*.deb` -r linux-image -d -i
-                linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
-              fi
-
               if [ "${rootfs}" = "alip" ]; then
                 mali_pkg="xserver-xorg-video-fbdev-mali-450_0.0.1-1_all.deb"
                 wget http://builds.96boards.org/snapshots/hikey/linaro/binaries/20150407/${mali_pkg} -O ${mali_pkg}
@@ -265,21 +254,6 @@
               sudo kpartx -dv out/hikey-jessie_${rootfs}_${VERSION}.img
               sudo rm -rf boot rootfs
 
-              mkdir boot-fat
-              dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
-              sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
-              sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
-              sudo mkdir boot-fat/grub
-              sudo cp -a out/Image out/hi6220-hikey.dtb boot-fat/ || true
-              sudo cp -a out/initrd.img-* boot-fat/initrd.img || true
-              sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
-              sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
-              sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
-              sudo umount boot-fat
-              sudo chmod 777 out/boot-fat.uefi.img
-              mv out/boot-fat.uefi.img out/boot-fat_${rootfs}.uefi.img
-              rm -rf boot-fat
-
               # Compress image(s)
               gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.emmc.img
               gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.img
@@ -302,12 +276,23 @@
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.emmc.img
 
+            dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
+            sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
+            sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
+            sudo mkdir boot-fat/grub
+            sudo cp -a out/Image out/hi6220-hikey.dtb boot-fat/ || true
+            sudo cp -a out/initrd.img-* boot-fat/initrd.img || true
+            sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
+            sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
+            sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
+            sudo umount boot-fat
+            sudo chmod 777 out/boot-fat.uefi.img
+
             rm -rf boot-fat
 
             # Compress boot partition image(s)
             gzip -9 out/boot-fat.emmc.img
-            gzip -9 out/boot-fat_alip.uefi.img
-            gzip -9 out/boot-fat_developer.uefi.img
+            gzip -9 out/boot-fat.uefi.img
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
