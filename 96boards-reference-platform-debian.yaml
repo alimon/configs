@@ -161,10 +161,6 @@
             * Grub UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER":http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER
             * ARM TF / EDK2 UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
             EOF
-
-                # Link for the bootloader output directory
-                ln -s ../../../components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey out/${BOARD}/bootloader
-
                 # Grub config to be set as part of the rootfs
                 sudo mkdir rootfs/boot/grub
                 ## FIXME: Make this generic
@@ -215,9 +211,6 @@
                   --base "0x80000000" \
                   --cmdline "root=/dev/disk/by-partlabel/rootfs rw rootwait console=tty0 console=ttyMSM0,115200n8"
                 gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.img
-
-                # Link for the bootloader output directory
-                ln -s ../../../../../releases/dragonboard410c/linaro/rescue/latest out/${BOARD}/bootloader
             fi
 
             # Create the ext4fs (fastboot compatible)
