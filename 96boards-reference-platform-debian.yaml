@@ -223,10 +223,12 @@
             gzip -9 out/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img
 
             # Publish remaining files
-            cp hwpack* out/${BOARD}
+            mkdir -p out/${BOARD}/hwpack
+            cp hwpack* out/${BOARD}/hwpack
 
-            # Create MD5SUMS file
+            # Create MD5SUMS files
             (cd out/${BOARD} && md5sum *.gz > MD5SUMS.txt)
+            (cd out/${BOARD}/hwpack && md5sum * > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
