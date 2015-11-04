@@ -1,0 +1,168 @@
+- job:
+    name: android-lcr-member-fvp
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 90
+        numToKeep: 100
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - password:
+            name: PRIVATE_KEY
+            default: ${PRIVATE_KEY}
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'FVP - Member LCR Android Build'
+    concurrent: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              kill -9 ${SSH_AGENT_PID}
+            }
+
+            java -version
+
+            sudo add-apt-repository ppa:linaro-maintainers/tools
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch linaro-image-tools
+
+            mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
+
+            if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
+              sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+              sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            fi
+            cd /home/buildslave/srv/${JOB_NAME}
+
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+
+            TMPKEYDIR=$(mktemp -d /tmp/projectara.XXXXXX)
+            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
+            #!/usr/bin/python
+
+            import os
+            import sys
+
+            def main():
+                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
+                if private_key == "Undefined":
+                    sys.exit("PRIVATE_KEY is not defined.")
+
+                buffer = private_key.replace(' ','\n')
+                with open('linaro-private-key', 'w') as f:
+                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
+                    f.write(buffer)
+                    f.write('\n-----END RSA PRIVATE KEY-----\n')
+
+            if __name__ == "__main__":
+                    main()
+            EOF
+            python ${TMPKEYDIR}/private-key-wrapper.py
+            chmod 0600 ${WORKSPACE}/linaro-private-key
+            eval `ssh-agent` >/dev/null 2>/dev/null
+            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
+            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
+
+            # Runs as ubuntu
+            set -xe
+            rm -rf build-tools jenkins-tools build-configs build/out build/android-patchsets
+            git clone --depth 1 https://git.linaro.org/people/vishal.bhoj/linaro-android-build-tools-ci.git build-tools
+            git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
+            git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
+
+            export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
+            export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
+
+            cat << EOF > config.txt
+            BUILD_CONFIG_REPO=http://android.git.linaro.org/git/android-build-configs.git
+            BUILD_CONFIG_BRANCH=master
+            EOF
+            echo config.txt
+            export CONFIG=`base64 -w 0 config.txt`
+
+            build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
+            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
+
+            PUB_SERVER=https://snapshots.linaro.org/
+            PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
+
+            time linaro-cp.py \
+              --manifest \
+              --no-build-info \
+              --link-latest \
+              --split-job-owner \
+              --server ${PUBLISH_SERVER} \
+              build/out \
+              ${PUB_DEST} \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+              --include "^[BHi][^/]+txt$" \
+              --include "^(MANIFEST|MD5SUMS)$"
+
+            # Construct post-build-lava parameters
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+
+            grep \
+              -e ^LAVA_JOB_URL \
+              build-configs/${BUILD_CONFIG_FILENAME} \
+                | sed -e 's:^LAVA_JOB_URL:CUSTOM_JSON_URL:g' \
+                >> ${WORKSPACE}/post_build_lava_parameters
+
+            echo "Build finished"
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+    publishers:
+        - archive:
+            artifacts: '*.xml'
+            latest-only: true
+        - logparser:
+            parse-rules: 'Android Build'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org daniel.diaz@linaro.org'
