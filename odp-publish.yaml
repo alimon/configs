@@ -42,6 +42,7 @@
             name: GIT_BRANCH
             values:
                 - master
+                - next
                 - api-next
         - axis:
             type: slave
@@ -50,7 +51,7 @@
                 - docker-utopic
     execution-strategy:
         combination-filter: |
-            !(GIT_BRANCH=="api-next" && (platform_type=="netmap" || platform_type=="dpdk" || platform_type=="ks2"))
+            !((GIT_BRANCH=="api-next" || GIT_BRANCH=="next") && (platform_type=="netmap" || platform_type=="dpdk" || platform_type=="ks2"))
     wrappers:
         - timestamps
         - matrix-tie-parent:
