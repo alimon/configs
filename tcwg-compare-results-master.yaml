@@ -85,6 +85,7 @@
             # Copy the generated reports
             scp ${log_server}:${dest}/diff-\*.txt ${LOGSDIR}
             scp ${log_server}:${dest}/\*.xml ${LOGSDIR}
+            scp ${log_server}:${dest}/\*.html ${LOGSDIR}
             sed -i ${LOGSDIR}/report0.xml -e "s|BUILD_URL|${BUILD_URL}|"
 
             # Print results in console, in case Jenkins doesn't have the XML
@@ -94,5 +95,5 @@
             exit $status
     publishers:
         - archive:
-            artifacts: 'artifacts/logs/*.xml,artifacts/logs/*.txt'
+            artifacts: 'artifacts/logs/*.xml,artifacts/logs/*.html,artifacts/logs/*.txt'
             latest-only: false
