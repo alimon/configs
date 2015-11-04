@@ -37,8 +37,13 @@
             type: slave
             name: label
             values:
-                - tcwg-x86_64-ex40
                 - tcwg-x86_64-cam
+        - axis:
+            type: user-defined
+            name: bfd
+            values:
+                - --enable-64-bit-bfd=no
+                - --enable-64-bit-bfd=yes
         - axis:
             type: user-defined
             name: target
@@ -46,14 +51,13 @@
                 - aarch64-linux-gnu
                 - aarch64-none-elf
                 - aarch64_be-none-elf
-                - arm-none-eabi
                 - arm-linux-gnueabi
                 - arm-linux-gnueabihf
+                - arm-none-eabi
+                - arm-none-nacl
+                - arm-none-symbianelf
+                - arm-wince-pe
                 - armeb-linux-gnueabihf
-    execution-strategy:
-        combination-filter: |
-            (label=="tcwg-x86_64-ex40") || (label=="tcwg-x86_64-cam")
-        sequential: false
     wrappers:
         - timeout:
             timeout: 600
@@ -73,7 +77,7 @@
 
             mkdir -p build-$target
             cd build-$target
-            ../configure --enable-lto --enable-plugins --prefix=`pwd`/install --target $target
+            ../configure --enable-lto --enable-plugins --prefix=`pwd`/install --target $target ${bfd}
             make all-gas all-ld all-binutils -j4
             make check-gas check-ld check-binutils -j4
             tail `find . -name "*.sum"`
