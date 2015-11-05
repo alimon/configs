@@ -31,7 +31,7 @@
                 - ${binutils_rev}
             skip-tag: true
             shallow-clone: false
-            wipe-workspace: true
+            wipe-workspace: false
     axes:
         - axis:
             type: slave
@@ -91,6 +91,7 @@
             # Workaround by retrying.
             trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
 
+            rm -rf build-$target || true
             mkdir -p build-$target
             cd build-$target
             ${BUILD_SHELL} -c "../configure --enable-lto --enable-plugins --prefix=`pwd`/install --target $target ${bfd}"
