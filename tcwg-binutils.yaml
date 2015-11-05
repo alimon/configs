@@ -46,6 +46,12 @@
                 - --enable-64-bit-bfd=yes
         - axis:
             type: user-defined
+            name: schroot_arch
+            values:
+                - i386
+                - amd64
+        - axis:
+            type: user-defined
             name: target
             values:
                 - aarch64-linux-gnu
@@ -75,9 +81,19 @@
             set -e
             set -x
 
+            schroot_image="tcwg-build-${schroot_arch}-trusty"
+
+            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
+            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+
+            # Sometimes /dev/pts can't get unmounted on the first try.
+            # Workaround by retrying.
+            trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
+
             mkdir -p build-$target
             cd build-$target
-            ../configure --enable-lto --enable-plugins --prefix=`pwd`/install --target $target ${bfd}
-            make all-gas all-ld all-binutils -j4
-            make check-gas check-ld check-binutils -j4
+            ${BUILD_SHELL} -c "../configure --enable-lto --enable-plugins --prefix=`pwd`/install --target $target ${bfd}"
+            ${BUILD_SHELL} -c "make all-gas all-ld all-binutils -j4"
+            ${BUILD_SHELL} -c "make check-gas check-ld check-binutils -j4"
             tail `find . -name "*.sum"`
