@@ -105,5 +105,5 @@
             cd build-$target
             ${BUILD_SHELL} -c "../configure $lto --enable-plugins --prefix=`pwd`/install --target $target ${bfd}"
             ${BUILD_SHELL} -c "make all-gas all-ld all-binutils -j4"
-            ${BUILD_SHELL} -c "make check-gas check-ld check-binutils -j4"
+            ${BUILD_SHELL} -c "make check-gas check-ld check-binutils -j4 -k" || true
             tail `find . -name "*.sum"`
