@@ -71,19 +71,17 @@
             export make_bootwrapper=false
             export make_install=true
             export kernel_flavour=reference-${MX_PLATFORM}
-            export kernel_config="defconfig"
+            export kernel_config="defconfig distro.config"
             export MAKE_DTBS=true
             export ARCH=arm64
             export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
             export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
+            export KERNEL_URL=https://github.com/rsalveti/linux.git
 
             if [ "${MX_PLATFORM}" == "hikey" ]; then
-                KERNEL_URL=https://github.com/rsalveti/linux.git
                 KERNEL_BRANCH=reference-hikey-rebase
             elif [ "${MX_PLATFORM}" == "dragonboard410c" ]; then
-                KERNEL_URL=https://github.com/rsalveti/linux.git
                 KERNEL_BRANCH=reference-qcom-rebase
-                export kernel_config="defconfig distro.config"
             fi
 
             git clone -b ${KERNEL_BRANCH} --depth 1 ${KERNEL_URL} linux
