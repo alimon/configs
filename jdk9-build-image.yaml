@@ -23,15 +23,13 @@
             name: JVM_VARIANT
             values:
                 - server
-                - client
+#                - client
         - axis:
             type: user-defined
             name: BUILD_TYPE
             values:
                 - release
     execution-strategy:
-        combination-filter: |
-            JVM_VARIANT=="server"
         sequential: true
     wrappers:
         - workspace-cleanup:
@@ -66,11 +64,6 @@
             tar xf incoming/jdk9.tar.gz
 
             shopt -s nullglob
-
-            for i in ${WORKSPACE}/patches/*.patch; do
-              echo "Applying patch: $i"
-              (cd jdk9; patch -p1 < $i)
-            done
 
             # Extract boot jdk
             rm -rf primordial-jdk8
