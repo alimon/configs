@@ -72,6 +72,11 @@
 
             cd ${WORKSPACE}/spark
             mvn -o -DskipTests clean package
+
+            rm -f ${WORKSPACE}/spark-*.jar
+            find . -type f -name "spark-*-SNAPSHOT*.jar" -exec mv -t ${WORKSPACE} {} +
     publishers:
+        - archive:
+            artifacts: 'spark-*-SNAPSHOT*.jar'
         - email:
             recipients: 'naresh.bhat@linaro.org fathi.boudra@linaro.org'
