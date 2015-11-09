@@ -89,5 +89,15 @@
                 }
               }
             }
-        - email:
-            recipients: 'naresh.bhat@linaro.org fathi.boudra@linaro.org'
+        - email-ext:
+            recipients: 'naresh.bhat@linaro.org, fathi.boudra@linaro.org'
+            body: |
+                Project: ${PROJECT_NAME}
+                Build number: ${BUILD_NUMBER}
+                Build status: ${BUILD_STATUS}
+                Build URL: ${BUILD_URL}
+                Build summary:
+
+                ${BUILD_LOG_MULTILINE_REGEX,regex="(?ms)(Reactor Summary.*?------------------------------------------------------------------------)"}
+            unstable: true
+
