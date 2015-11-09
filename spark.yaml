@@ -78,5 +78,16 @@
     publishers:
         - archive:
             artifacts: 'spark-*-SNAPSHOT*.jar'
+        - groovy-postbuild: |
+            pattern = ~/(^\[INFO]) (Spark Project) (.*). (.*) (\[.*])/
+            manager.build.logFile.eachLine { line ->
+              matcher = pattern.matcher(line)
+              if (matcher.matches()) {
+                result = matcher.group(5)
+                if (result != "SUCCESS") {
+                  manager.buildUnstable()
+                }
+              }
+            }
         - email:
             recipients: 'naresh.bhat@linaro.org fathi.boudra@linaro.org'
