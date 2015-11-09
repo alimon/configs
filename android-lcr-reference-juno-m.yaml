@@ -16,6 +16,39 @@
     node: docker-utopic-aosp
     display-name: 'Juno - Reference LCR Android M Build'
     concurrent: true
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-patchset'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android/device/linaro/juno'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'lcr-reference-juno-m'
     wrappers:
         - timestamps
         - timeout:
