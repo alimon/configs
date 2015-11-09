@@ -46,8 +46,15 @@
     display-name: 'Build package'
     wrappers:
         - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${codename}: ${source}'
         - matrix-tie-parent:
             node: master
+        - workspace-cleanup:
+            include:
+                - "label/docker-${codename}-amd64/repo.parameters"
+                - "label/docker-${codename}-arm64/repo.parameters"
+                - "label/docker-${codename}-armhf/repo.parameters"
     builders:
         - shell: |
             #!/bin/bash
