@@ -20,15 +20,33 @@
     builders:
         - shell: |
             #!/bin/bash
-            
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf *.deb openjdk-8 primordial-jdk8
+            }
+
             new_name=primordial-jdk8
             orig_name=java-8-openjdk-arm64
 
-            rm -rf ${WORKSPACE}/*
-            mkdir out
-            cp -a ~jenkins/JVMs/${orig_name} .
+            apt-get download openjdk-8-jdk openjdk-8-jre
+            dpkg-deb -x openjdk-8-jdk_*.deb openjdk-8
+            dpkg-deb -x openjdk-8-jre_*.deb openjdk-8
+
+            rm -rf ~/JVMs/${orig_name}
+            mv openjdk-8/usr/lib/jvm/${orig_name} ~/JVMs/
+
+            cp -a ~/JVMs/${orig_name} .
             chmod ug+r .
             mv ${orig_name} ${new_name}
+
+            test -d out || mkdir out
+            rm -f out/${new_name}.tar.gz
             tar -cvf out/${new_name}.tar.gz ${new_name}/jre ${new_name}/lib ${new_name}/bin
     publishers:
         - archive:
