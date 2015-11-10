@@ -130,9 +130,6 @@
             wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O grubaa64.efi
             wget --progress=dot ${GRUB_EFI_URL}/grub.cfg -O grub.cfg
 
-            # FIXME - ship legacy dtb during transition to UEFI and PSCI
-            wget -q http://builds.96boards.org/releases/hikey/linaro/debian/15.06/hi6220-hikey.dtb -O out/hi6220-hikey-spin-table.dtb
-
             cat > out/README.txt << EOF
             Build information:
             * build: ${BUILD_URL}
@@ -262,20 +259,6 @@
             # Create boot image(s)
             mkdir boot-fat
 
-            dd if=/dev/zero of=out/boot-fat.emmc.img bs=512 count=131072
-            sudo mkfs.fat -n "BOOT IMG" out/boot-fat.emmc.img
-            sudo mount -o loop,rw,sync out/boot-fat.emmc.img boot-fat
-            sudo mkdir boot-fat/grub
-            sudo cp -a out/Image boot-fat/Image || true
-            sudo cp -a out/hi6220-hikey-spin-table.dtb boot-fat/lcb.dtb || true
-            sudo cp -a out/initrd.img-* boot-fat/ramdisk.img || true
-            sudo cp -a cmdline.emmc boot-fat/cmdline || true
-            sudo cp -a fastboot.efi boot-fat/fastboot.efi || true
-            sudo cp -a grubaa64.efi boot-fat/grubaa64.efi || true
-            sudo cp -a grub.cfg boot-fat/grub/grub.cfg || true
-            sudo umount boot-fat
-            sudo chmod 777 out/boot-fat.emmc.img
-
             dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
             sudo mkfs.fat -n "BOOT IMG" out/boot-fat.uefi.img
             sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
@@ -291,7 +274,6 @@
             rm -rf boot-fat
 
             # Compress boot partition image(s)
-            gzip -9 out/boot-fat.emmc.img
             gzip -9 out/boot-fat.uefi.img
 
             # Create MD5SUMS file
