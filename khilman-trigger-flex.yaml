@@ -228,7 +228,11 @@
             DEFCONFIG_LIST="allnoconfig "
             DEFCONFIG_LIST+=`(cd arch/${ARCH}/configs; echo *defconfig)`
             DEFCONFIG_LIST+=" "
-            DEFCONFIG_LIST+="CONFIG_LKDTM=y "
+
+            base_defconfig="defconfig"
+            if [ ${ARCH} = "arm" ]; then
+              base_defconfig="multi_v7_defconfig"
+            fi
 
             # tinyconfig
             if [ -e kernel/configs/tiny.config ]; then
@@ -278,9 +282,13 @@
             fi
 
             # Tree specific fragments: Ard's EFI 
-            if [ ${tree_name} = "ardb" ]; then
+            if [ ${tree_name} = "ardb" ] && [ ${arch} = "arm" ];; then
               DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_EFI=y "
+              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_EFI=y+CONFIG_ARM_LPAE=y "
             fi
+
+            # Security testing features
+            DEFCONFIG_LIST+="$base_defconfig+CONFIG_LKDTM=y "
 
             # Tree specific fragments: LSK + KVM fragments
             if [ ${tree_name} = "lsk" ] || [ ${tree_name} = "anders" ]; then
@@ -288,10 +296,6 @@
               DEFCONFIG_LIST=${DEFCONFIG_LIST/allmodconfig/}
 
               FRAGS="linaro/configs/kvm-guest.conf"
-              base_defconfig="defconfig"
-              if [ ${ARCH} = "arm" ]; then
-                base_defconfig="multi_v7_defconfig"
-              fi
 
               # For -rt kernels, build with RT fragment
               RT_FRAG=kernel/configs/preempt-rt.config
