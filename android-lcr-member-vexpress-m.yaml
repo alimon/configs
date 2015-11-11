@@ -20,6 +20,54 @@
     node: docker-utopic-aosp
     display-name: 'Versatile Express - Member LCR Android M Build'
     concurrent: true
+    triggers:
+        - gerrit:
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-patchset'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android/device/linaro/vexpress'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/build'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'lor-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'lor-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/external/vixl'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'lor-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'lcr-member-vexpress-m'
     wrappers:
         - timestamps
         - timeout:
