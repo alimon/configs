@@ -49,6 +49,12 @@
                 - arm64
                 - arm64be
                 - x86
+        - axis:
+            type: user-defined
+            name: frags
+            values:
+                - base
+                - testpackages
     wrappers:
         - timestamps
         - build-name:
@@ -62,7 +68,8 @@
         - shell: |
             #!/bin/bash
 
-            scp output/images/rootfs.cpio.* output/images/rootfs.tar.* storage.armcloud.us:/var/www/images/kernel-ci/images/rootfs/buildroot/${arch}
+            ssh storage.armcloud.us mkdir -p /var/www/images/kernel-ci/images/rootfs/buildroot/${arch}/${frag}
+            scp output/images/rootfs.cpio.* output/images/rootfs.tar.* storage.armcloud.us:/var/www/images/kernel-ci/images/rootfs/buildroot/${arch}/${frag}/
     publishers:
         - email:
             recipients: 'khilman@kernel.org'
