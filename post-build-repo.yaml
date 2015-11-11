@@ -28,12 +28,12 @@
         - shell: |
             #!/bin/bash
             set -e
-
+            echo "Build success: ${build_success}"
             echo "Package job name: ${pkg_job_name}"
             echo "Debsign key ID: ${key_id}"
             echo "Package changes file: ${pkg_changes}"
             echo "Host repo: ${host_ppa}"
-            echo "Source URL: ${pkg_url}"
+            [  "${build_success} = false" ] && exit 0
 
             job_path=/var/lib/jenkins/jobs/${pkg_job_name}/workspace/
             job_path_axis=$(echo ${job_path} | sed -e 's,/label=,/configurations/axis-label/,')
@@ -50,6 +50,7 @@
             done
 
             if [ -n "${pkg_url}" ]; then
+                echo "Source URL: ${pkg_url}"
                 # workaround race where post-build-repo gets called too early
                 timeout=5
                 set +e

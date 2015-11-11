@@ -50,16 +50,14 @@
             name: '#${BUILD_NUMBER}-${ENV,var="codename"}: ${ENV,var="source"}'
         - matrix-tie-parent:
             node: master
-        - workspace-cleanup:
-            include:
-                - "label/docker-${codename}-amd64/repo.parameters"
-                - "label/docker-${codename}-arm64/repo.parameters"
-                - "label/docker-${codename}-armhf/repo.parameters"
     builders:
         - shell: |
             #!/bin/bash
 
             set -ex
+            cat > repo.parameters << EOF
+            build_success=false
+            EOF
 
             arch=`dpkg-architecture -qDEB_HOST_ARCH`
             dist=`lsb_release -sc`
@@ -123,6 +121,7 @@
                 cat $change
             fi
             cat > repo.parameters << EOF
+            build_success=true
             pkg_job_name=${JOB_NAME}
             key_id=B86C70FE
             pkg_changes=${change}
@@ -135,12 +134,9 @@
         - trigger-parameterized-builds:
             - project: post-build-repo
               property-file: "label/docker-${codename}-arm64/repo.parameters"
-              fail-on-missing: true
             - project: post-build-repo
               property-file: "label/docker-${codename}-armhf/repo.parameters"
-              fail-on-missing: true
             - project: post-build-repo
               property-file: "label/docker-${codename}-amd64/repo.parameters"
-              fail-on-missing: true
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
