@@ -19,9 +19,6 @@
             name: JVM_CFG_URL
             default: 'http://people.linaro.org/~naresh.bhat/jdk1509-jvm-cfg-file/jvm.cfg'
         - string:
-            name: M2_URL
-            default: 'http://people.linaro.org/~naresh.bhat/m2/master/m2.tar.gz'
-        - string:
             name: MAVEN_URL
             default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz'
     disabled: false
@@ -48,11 +45,9 @@
 
             set -e
 
-            wget --progress=dot -e dotbytes=2M ${JDK_URL} ${M2_URL} ${MAVEN_URL}
+            wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL}
             tar -Jxf jdk*.tar.xz
             tar -zxf apache-maven-*.tar.gz
-            # default m2 location is ${user.home}/.m2
-            tar -C ${HOME} -zxf m2.tar.gz
 
             cd jdk*/jre/lib/security/
             rm -f cacerts
@@ -71,7 +66,7 @@
             mvn -version
 
             cd ${WORKSPACE}/spark
-            mvn --debug -DskipTests clean package
+            mvn --errors -DskipTests clean package
 
             rm -f ${WORKSPACE}/spark-*.jar
             find . -type f -name "spark-*-SNAPSHOT*.jar" -exec mv -t ${WORKSPACE} {} +
