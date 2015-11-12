@@ -16,9 +16,6 @@
             name: JDK_URL
             default: 'http://openjdk.linaro.org/releases/jdk8u-server-release-1509.tar.xz'
         - string:
-            name: JVM_CFG_URL
-            default: 'http://people.linaro.org/~naresh.bhat/jdk1509-jvm-cfg-file/jvm.cfg'
-        - string:
             name: MAVEN_URL
             default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.3/binaries/apache-maven-3.3.3-bin.tar.gz'
     disabled: false
@@ -53,7 +50,11 @@
             rm -f cacerts
             ln -s /etc/ssl/certs/java/cacerts
 
-            wget ${JVM_CFG_URL} -O ../aarch64/jvm.cfg
+            cat << EOF > ../aarch64/jvm.cfg
+            -server KNOWN
+            -client IGNORE
+            -minimal KNOWN
+            EOF
 
             cd ${WORKSPACE}/jdk*
             export JAVA_HOME=${PWD}
