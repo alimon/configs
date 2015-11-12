@@ -51,6 +51,7 @@
         - matrix-tie-parent:
             node: build
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -60,7 +61,7 @@
             bash -x pre-build-do-cleanup.sh
 
             # do a build
-            bash -x init-and-build.sh -a armv7a -u ${toolchain_url}  linaro-image-${rootfs}
+            bash -x init-and-build.sh -a armv7a -u ${toolchain_url} linaro-image-${rootfs}
 
             cd ${WORKSPACE}
 
