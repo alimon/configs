@@ -199,7 +199,7 @@
               # Get rootfs
               export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
               export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-              #export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
               # Create pre-built image(s)
