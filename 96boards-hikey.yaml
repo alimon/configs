@@ -119,9 +119,6 @@
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-hikey_*.deb` -r linux-image -d -i
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
 
-            echo "console=tty0 console=ttyAMA3,115200n8 root=/dev/disk/by-partlabel/system rootwait rw quiet" > cmdline.emmc
-            echo "console=tty0 console=ttyAMA3,115200n8 root=/dev/mmcblk1p2 rootwait rw quiet" > cmdline
-
             FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
             FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
             wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
@@ -201,9 +198,6 @@
               fi
 
               sudo mkdir boot/grub
-              sudo cp -a boot/hi6220-hikey.dtb boot/lcb.dtb || true
-              sudo cp -a boot/initrd.img-* boot/ramdisk.img || true
-              sudo cp -a cmdline boot/cmdline || true
               sudo cp -a fastboot.efi boot/fastboot.efi || true
               sudo cp -a grubaa64.efi boot/grubaa64.efi || true
               sudo cp -a grub.cfg boot/grub/grub.cfg || true
