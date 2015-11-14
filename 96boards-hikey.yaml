@@ -146,7 +146,7 @@
 
             menuentry 'Fastboot' {
                 search.fs_label boot root
-                chainloader (\$root)/EFI/debian/fastboot.efi
+                chainloader (\$root)/EFI/BOOT/fastboot.efi
             }
             EOF
 
@@ -280,9 +280,9 @@
             dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
             sudo mkfs.fat -F32 -n "boot" out/boot-fat.uefi.img
             sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
-            sudo mkdir -p boot-fat/EFI/debian
-            sudo cp -a fastboot.efi boot-fat/EFI/debian/fastboot.efi || true
-            sudo cp -a grubaa64.efi boot-fat/EFI/debian/grubaa64.efi || true
+            sudo mkdir -p boot-fat/EFI/BOOT
+            sudo cp -a fastboot.efi boot-fat/EFI/BOOT/fastboot.efi || true
+            sudo cp -a grubaa64.efi boot-fat/EFI/BOOT/grubaa64.efi || true
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.uefi.img
 
