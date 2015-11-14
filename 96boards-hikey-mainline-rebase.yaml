@@ -187,12 +187,12 @@
               fi
 
               sudo mkdir rootfs/boot/grub
-              sudo cp -a grub.cfg rootfs/boot/grub/grub.cfg
+              (cd rootfs/boot/grub && sudo ln -sf /boot/grub/EFI/BOOT/grub.cfg)
+              (cd rootfs/boot && sudo ln -s Image-* Image)
               sudo cp -a out/hi6220-hikey.dtb rootfs/boot/
+              (cd rootfs/boot && sudo ln -s initrd.img-* initrd.img)
 
               sudo ln -sf /etc/resolvconf/run/resolv.conf rootfs/etc/resolv.conf
-              (cd rootfs/boot && sudo ln -s Image-* Image)
-              (cd rootfs/boot && sudo ln -s initrd.img-* initrd.img)
 
               cat << EOF | sudo tee rootfs/etc/NetworkManager/dispatcher.d/99hikey
             #!/bin/sh
@@ -250,6 +250,7 @@
             sudo mkdir -p boot-fat/EFI/BOOT
             sudo cp -a fastboot.efi boot-fat/EFI/BOOT/fastboot.efi || true
             sudo cp -a grubaa64.efi boot-fat/EFI/BOOT/grubaa64.efi || true
+            sudo cp -a grub.cfg boot-fat/EFI/BOOT/grub.cfg || true
             sudo umount boot-fat
             sudo chmod 777 out/boot-fat.uefi.img
 
