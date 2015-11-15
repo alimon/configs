@@ -242,6 +242,21 @@
             /dev/disk/by-partlabel/boot   /boot/efi vfat defaults          0 0
             EOF
 
+              cat << EOF | sudo tee rootfs/lib/systemd/system/resize-rootfs.service
+            [Unit]
+            Description=Resize rootfs to fit available disk space
+            After=systemd-remount-fs.service
+
+            [Service]
+            Type=oneshot
+            ExecStart=-/bin/sh -c 'if /bin/grep -q "^HiKey" /proc/device-tree/model; then /sbin/sgdisk -e /dev/mmcblk0; /sbin/resize2fs /dev/disk/by-label/rootfs; fi'
+            ExecStartPost=/bin/systemctl disable resize-rootfs.service
+
+            [Install]
+            WantedBy=default.target
+            EOF
+              (cd rootfs//etc/systemd/system/default.target.wants && sudo ln -sf /lib/systemd/system/resize-rootfs.service)
+
               sudo rm -rf rootfs/dev rootfs/var/lib/apt/lists rootfs/lib/modules/*-linaro-hikey
               sudo mkdir rootfs/dev rootfs/var/lib/apt/lists rootfs/home/linaro/bin
 
@@ -264,7 +279,7 @@
               sudo cp -a ${WORKSPACE}/build-utilites/fs/lib/modules/*-linaro-hikey rootfs/lib/modules/
               # ******** TI wl18xx R8.5 - out of tree modules ********
 
-              sudo make_ext4fs -o -L rootfs -l 3056M -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 2G -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
               sudo umount boot rootfs
               sudo kpartx -dv out/hikey-jessie_${rootfs}_${VERSION}.img
               sudo rm -rf boot rootfs
