@@ -221,7 +221,8 @@
             [Install]
             WantedBy=default.target
             EOF
-              (cd rootfs//etc/systemd/system/default.target.wants && sudo ln -sf /lib/systemd/system/resize-rootfs.service)
+              sudo mkdir -p rootfs/etc/systemd/system/default.target.wants
+              (cd rootfs/etc/systemd/system/default.target.wants && sudo ln -sf /lib/systemd/system/resize-rootfs.service)
 
               sudo rm -rf rootfs/dev rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/var/lib/apt/lists rootfs/home/linaro/bin
