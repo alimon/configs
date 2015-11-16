@@ -207,7 +207,7 @@
 
               # Create eMMC rootfs image(s)
               mkdir rootfs
-              for device in $(sudo kpartx -av out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
+              for device in $(sudo kpartx -av out/arrow-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
                 partition=$(echo ${device} | cut -d'p' -f3)
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
@@ -354,6 +354,3 @@
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
-        - email-ext:
-            recipients: 'gtam@arrow.com, rschwarz@arrow.com'
-            always: true
