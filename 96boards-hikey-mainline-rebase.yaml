@@ -215,7 +215,7 @@
 
             [Service]
             Type=oneshot
-            ExecStart=-/bin/sh -c 'if /bin/grep -q "^HiKey" /proc/device-tree/model; then /sbin/sgdisk -e /dev/mmcblk0; /sbin/resize2fs /dev/disk/by-label/rootfs; fi'
+            ExecStart=-/bin/sh -c 'if /bin/grep -q "^HiKey" /proc/device-tree/model; then /sbin/sgdisk -e /dev/mmcblk0; /sbin/parted /dev/mmcblk0 resizepart 9 Yes 100%; /sbin/resize2fs /dev/disk/by-label/rootfs; fi'
             ExecStartPost=/bin/systemctl disable resize-rootfs.service
 
             [Install]
