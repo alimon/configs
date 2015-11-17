@@ -17,6 +17,20 @@
                 - job-cancel
                 - job-configure
                 - job-delete
+    node: master
+    disabled: false
+    display-name: 'Build RPM for opendataplane.org WiP'
+    scm:
+        - git:
+            url: https://git.linaro.org/lng/odp.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            basedir: odp
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
     axes:
         - axis:
             type: slave
@@ -24,16 +38,6 @@
             values:
                 - docker-centos7-aarch64
                 - docker-fedora23-aarch64
-    execution-strategy:
-        sequential: false
-    disabled: false
-    display-name: 'Build RPM for opendataplane.org WiP'
-    scm:
-        - git:
-            url: https://git.linaro.org/lng/odp.git
-            basedir: odp
-            skip-tag: false
-            clean: true
     wrappers:
         - timestamps
         - matrix-tie-parent:
@@ -41,18 +45,24 @@
     builders:
         - shell: |
             #!/bin/bash
+
             set -ex
+
             cat > repo.parameters << EOF
             build_success=false
             EOF
+
             . /etc/os-release
-            dist=$ID-$VERSION_ID
-            cd odp
+            dist=${ID}-${VERSION_ID}
+
             yum install -y git rpm-build yum-utils
-            yum-builddep -y ./pkg/rpm/odp.spec||true
+            yum-builddep -y ./pkg/rpm/odp.spec || true
             # workaround while we wait for rpm fixes to land
             yum install -y automake autoconf libtool openssl-devel doxygen asciidoc source-highlight texlive-collection-fontsextra texlive-collection-latexextra
+
+            cd odp
             ./scripts/buildrpm
+
             cat > repo.parameters << EOF
             build_success=true
             pkg_job_name=${JOB_NAME}

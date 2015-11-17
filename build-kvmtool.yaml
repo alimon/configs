@@ -5,6 +5,7 @@
     logrotate:
         daysToKeep: 30
         numToKeep: 30
+        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
@@ -15,16 +16,21 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-    parameters:
+    disabled: false
     node: docker-utopic
     display-name: 'KVMtool CI loop'
     scm:
         - git:
-            url: git://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git 
+            url: https://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
             skip-tag: true
-            clean: true
-    triggers:
-        - timed: '@daily'
+            shallow-clone: false
+            clean:
+                after: true
+            wipe-workspace: false
     wrappers:
         - timestamps
         - build-name:
@@ -32,20 +38,24 @@
     builders:
         - shell: |
             #!/bin/bash
+
             set -e
+
             export upstream_repo=git://git.kernel.org/pub/scm/linux/kernel/git/will/kvmtool.git
             export upstream_source=kvmtool
             export packaging_repo=git://anonscm.debian.org/collab-maint/kvmtool.git
             export packaging_dir=kvmtool-debian
+
             wget https://git.linaro.org/ci/ubuntu-packaging-tools.git/blob_plain/HEAD:/jenkins-makesources
+
             bash -x ./jenkins-makesources
+
             cat > kvmtool-params <<EOF
             source=$BUILD_URL/artifact/`cat kvmtool.dsc`
             EOF
     publishers:
         - archive:
             artifacts: '*.changes, *.dsc, *.gz, *.xz'
-            latest-only: true
         - trigger-parameterized-builds:
             - project: build-all-packages
               property-file: kvmtool-params
