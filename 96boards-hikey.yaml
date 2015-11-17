@@ -13,6 +13,15 @@
                 - job-workspace
     parameters:
         - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/hisilicon/hikey/'
+        - string:
+            name: DEVICE_TYPE
+            default: 'hi6220-hikey'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
             name: ROOTFS
             default: 'alip developer'
     disabled: false
@@ -320,6 +329,27 @@
               --build-info out/BUILD-INFO.txt \
               --link-latest \
               out snapshots/hikey/linaro/debian/${BUILD_NUMBER}
+        - shell: |
+            VERSION=$(date +%Y%m%d)-${BUILD_NUMBER}
+
+            export BOOT_URL=https://builds.96boards.org/snapshots/hikey/linaro/debian/${BUILD_NUMBER}/boot-fat.uefi.img.gz
+            export SYSTEM_URL=https://builds.96boards.org/snapshots/hikey/linaro/debian/${BUILD_NUMBER}/hikey-jessie_alip_${VERSION}.emmc.img.gz
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'
