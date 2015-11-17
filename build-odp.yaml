@@ -5,6 +5,7 @@
     logrotate:
         daysToKeep: 30
         numToKeep: 30
+        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
@@ -15,15 +16,20 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-    parameters:
+    disabled: false
     node: docker-utopic
     display-name: 'Build packages for opendataplane.org'
     scm:
         - git:
             url: https://git.linaro.org/lng/odp.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
             basedir: odp
             skip-tag: true
-            clean: true
+            shallow-clone: true
+            wipe-workspace: false
     wrappers:
         - timestamps
         - build-name:
@@ -38,16 +44,17 @@
             sudo apt-get update
             sudo apt-get install -y libssl-dev
 
-            cd odp; ./scripts/builddeb
-            cat > ../odp-params <<EOF
-            source=$BUILD_URL/artifact/`echo *.dsc`
+            cd odp; bash -x scripts/builddeb
+
+            cat > ${WORKSPACE}/odp-params <<EOF
+            source=${BUILD_URL}/artifact/$(echo *.dsc)
             repo=odp
             EOF
-            mv *.dsc *.gz *.xz ..
+
+            mv *.dsc *.gz *.xz ${WORKSPACE}/
     publishers:
         - archive:
             artifacts: '*.dsc, *.gz, *.xz'
-            latest-only: true
         - trigger-parameterized-builds:
             - project: build-all-packages
               property-file: odp-params
