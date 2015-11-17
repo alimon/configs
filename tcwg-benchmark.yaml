@@ -1,0 +1,138 @@
+#See http://docs.openstack.org/infra/jenkins-job-builder/genindex.html
+- job:
+    name: tcwg-benchmark
+    project-type: freestyle
+    node: master
+    display-name: 'TCWG Benchmark'
+    description: 'Dispatch TCWG benchmark jobs to LAVA'
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: benchmark
+            choices:
+              - CPU2006
+              - CPU2000
+              - EEMBC
+              - fakebench
+        - string:
+            name: targets
+            default: 'juno-a53 juno-a57'
+            description: 'Space-separated list of targets to run benchmark on'
+        - string:
+            name: run_flags
+            default: '--size test --iterations 1 --tune base'
+            description: |
+              Flags passed to benchmark framework at runtime.
+              Examples --
+              SPEC -- --size test --iterations 1 int (run 1 iteration of the int suite using the test workload)
+        - string:
+            name: prebuilt
+            description: |
+              A prebuilt benchmark tarball as produced by abe or direct make invocation.
+              If produced by abe, tar up the contents of build/<host>/<target>.
+              If produced by direct make, tar up the top-level git repository (but you can exclude the .git dir).
+              If this option is given, no build will be performed and the compiler_flags and make_flags fields will be ignored.
+        - string:
+            name: toolchain
+            default: 'http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz'
+            description: |
+              Toolchain to use - use local filesystem path, or formats interpretable by wget or scp/rsync.
+              Must be supplied even when using a prebuilt tarball. Benchmarking scripts will use tools such as objdump.
+              Examples --
+              /usr/bin/gcc
+              http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+              my.name@my.server:location_of_my_benchmark
+        - string:
+            name: compiler_flags
+            default: '-march=armv8-a'
+            description: SPEC benchmarks built -O3 -fno-common, unless you override that here.
+        - string:
+            name: make_flags
+            default: ''
+            description: Flags to pass to make, when building the benchmark.
+        - string:
+            name: abe_branch
+            default: origin/benchmarking
+            description: Branch of abe to drive the run
+    scm:
+        - git:
+            url: https://git.linaro.org/toolchain/abe.git
+            branches:
+              - ${abe_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 120
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -ex
+
+          #TODO Benchmarking-specific builds will eliminate these special cases
+          target_session=config/bench/lava/target-session
+          if test x"${TARGET}" = xkvm; then
+            TARGET_SESSION="${TARGET_SESSION}-kvm.yaml"
+          elif test x"${target}" = xmustang; then
+            target_session="${TARGET_SESSION}-mustang.yaml"
+          else
+            target_session="${TARGET_SESSION}.yaml"
+          fi
+
+          cat << EOF > post_build_lava_parameters
+          CUSTOM_JSON_URL=${JOB_URL}/ws/lava-jobdef.json
+
+          JOB_NAME=${BENCHMARK}
+
+          BENCHMARK=${BENCHMARK}
+          TOOLCHAIN=${TOOLCHAIN}
+          RUN_FLAGS=
+          COMPILER_FLAGS=
+
+          HOST_SESSION=config/bench/lava/trusted-host-session.yaml
+          HOST_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
+
+          TARGET_SESSION=${TARGET_SESSION}
+          #TODO Map from target types to specific images
+          TARGET_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
+
+          LAVA_SERVER=${LAVA_SERVER}
+          BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+
+          ABE_REPO=https://git.linaro.org/toolchain/abe
+          ABE_REVISION=bernie/benchmarking-uinstance
+
+          TIMEOUT=691200
+          EOF
+
+          #Convert YAML to JSON
+          rm -rf lci-build-tools
+          git clone -b arbitrary git://git.linaro.org/people/bernie.ogden/lci-build-tools lci-build-tools
+
+          YAML_URL=https://git.linaro.org/people/bernie.ogden/lava-jobs.git/blob_plain/HEAD:/benchmark/template-test.yaml
+          fnam="`basename ${YAML_URL}`"
+          rm -f "${fnam}"
+          wget ${YAML_URL}
+
+          ./lci-build-tools/yaml-to-json.py "${fnam}" > lava-jobdef.json
+
+      - trigger-builds:
+        - project: post-build-lava
+          property-file: post_build_lava_parameters
+
+    publishers:
+      - email:
+          recipients: 'bernie.ogden@linaro.org'
