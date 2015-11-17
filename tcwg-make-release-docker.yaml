@@ -1,0 +1,113 @@
+- job:
+    name: tcwg-make-release
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 10
+        numToKeep: 3
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: gcc_src
+            default: 'http://snapshots.linaro.org/components/toolchain/gcc-linaro/5.2-2015.11/gcc-linaro-snapshot-5.2-2015.11.tar.xz'
+            description: 'The source of GCC. Specify as it would be passed to abe.sh, either a source tarballs, or git branch and revision.'
+        - bool:
+            name: runtests
+            default: false
+            description: 'Whether to run tests on the install binary toolchains.'
+        - bool:
+            name: canadian
+            default: false
+            description: 'Whether to build win32 executables.'
+        - string:
+            name: binutils_src
+            default: 'binutils-gdb.git~linaro_binutils-2_25-branch'
+            description: 'The revision of binutils to use for this release.'
+        - string:
+            name: date
+            default: 'snapshot-2015.11'
+            description: 'A release string different than the the source files.'
+        - string:
+            name: extra_args
+            default:
+            description: 'Extra command line arguments to ABE'
+        - bool:
+            name: source
+            default: false
+            description: 'Whether to build a source tarball'
+        - string:
+            name: abe_branch
+            default: refs/heads/master
+            description: 'ABE revision to test'
+        - bool:
+            name: rpm
+            default: false
+            description: 'Whether to build an RPM package.'
+        - bool:
+            name: deb
+            default: false
+            description: 'Whether to build a DEB package.'
+        - bool:
+            name: debug
+            default: false
+            description: 'Whether to enable bash debugging output.'
+    disabled: false
+    node: tcwg-x86_64-ex40build-01
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG Make Release'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/abe.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            branches:
+                - ${abe_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+            basedir: abe
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-trusty-amd64-twcg
+                - docker-wily-amd64-twcg
+                - docker-trusty-i386-twcg
+            type: user-defined
+            name: target
+            values:
+                - aarch64-elf
+                - aarch64-linux-gnu
+                - aarch64_be-elf
+                - aarch64_be-linux-gnu
+                - armv8l-linux-gnueabihf
+                - arm-eabi
+                - arm-linux-gnueabi
+                - arm-linux-gnueabihf
+                - armeb-eabi
+                - armeb-linux-gnueabi
+                - armeb-linux-gnueabihf
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            bash -x ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin
