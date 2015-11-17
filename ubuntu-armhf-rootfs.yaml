@@ -5,6 +5,7 @@
     logrotate:
         daysToKeep: 30
         numToKeep: 30
+        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
@@ -22,18 +23,19 @@
             url: git://git.linaro.org/ci/ubuntu-build-service.git
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
-            branches: 
+            branches:
                 - refs/heads/master
             skip-tag: true
             shallow-clone: true
-            clean: true
+            clean:
+                after: true
             wipe-workspace: false
     axes:
         - axis:
             type: slave
             name: label
             values:
-                - build
+                - docker-vivid-armhf
         - axis:
             type: user-defined
             name: rootfs
@@ -42,11 +44,6 @@
                 - developer
                 - gnome
                 - nano
-                - nano-lava
-    execution-strategy:
-        sequential: true
-        touchstone:
-            expr: 'rootfs=="nano"'
     wrappers:
         - timestamps
         - matrix-tie-parent:
@@ -64,13 +61,14 @@
             {
               cd ${WORKSPACE}
               sudo umount builddir
-              rm -rf out
             }
+
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends cpio debootstrap live-build python-pycurl uuid-runtime
+            sudo dpkg -i --force-all packages/live-build_3.0.5-1linaro1_all.deb
 
             dpkg -s qemu-user-static |grep '^Version'
             dpkg -s live-build |grep '^Version'
-
-            rm -f linaro-vivid-${rootfs}-* *.txt
 
             test -d builddir || mkdir builddir
             sudo mount -t tmpfs -o size=6G tmpfs builddir
@@ -80,17 +78,17 @@
             make
 
             cd ${WORKSPACE}
-            mkdir out
-            cp -a builddir/vivid-armhf-${rootfs}/linaro-vivid-* out
-            sudo mv builddir/vivid-armhf-${rootfs}/linaro-vivid-* ${WORKSPACE}
+            sudo rm -rf out && mkdir out
+            sudo mv builddir/vivid-armhf-${rootfs}/linaro-vivid-* out
 
             # Publish
-            time python ${HOME}/bin/linaro-cp.py out ubuntu/images/${rootfs}/${BUILD_NUMBER}
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py --link-latest out ubuntu/images/${rootfs}/${BUILD_NUMBER}
     publishers:
         - archive:
-            artifacts: 'linaro-vivid-*.tar.gz'
-            latest-only: true
+            artifacts: 'out/linaro-vivid-${rootfs}-*'
         - trigger:
             project: 'lt-qcom-ubuntu-images'
         - email:
-            recipients: fathi.boudra@linaro.org
+            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
