@@ -115,7 +115,7 @@
           EOF
 
           #Parameters to be substituted into template
-          JOB_NAME=${BENCHMARK}
+          export JOB_NAME=${BENCHMARK}
 
           #BENCHMARK set as parameter
           #TOOLCHAIN set as parameter
@@ -124,23 +124,23 @@
           #MAKE_FLAGS set as parameter
           #PREBUILT set as parameter
 
-          HOST_SESSION=config/bench/lava/trusted-host-session.yaml
-          HOST_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
+          export HOST_SESSION=config/bench/lava/trusted-host-session.yaml
+          export HOST_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
 
-          TARGET_SESSION=${target_session}
+          export TARGET_SESSION=${target_session}
           #TODO Map from target types to specific images
-          TARGET_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
+          export TARGET_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
           #TARGET_CONFIG set as parameter
 
           #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
-          LAVA_SERVER=validation.linaro.org/RPC2/
-          BUNDLE_STREAM_NAME=/private/personal/bernie.ogden
+          export LAVA_SERVER=validation.linaro.org/RPC2/
+          export BUNDLE_STREAM_NAME=/private/personal/bernie.ogden
 
-          ABE_REPO=https://git.linaro.org/toolchain/abe
+          export ABE_REPO=https://git.linaro.org/toolchain/abe
           #TODO Fix this to appropriate branch when we have the uinstance
-          ABE_REVISION=${ABE_REVISION:-bernie/benchmarking-uinstance}
+          export ABE_REVISION=${ABE_REVISION:-bernie/benchmarking-uinstance}
 
-          TIMEOUT=691200
+          export TIMEOUT=691200
           #End of parameters to substitute into template
 
           #Convert YAML to JSON
