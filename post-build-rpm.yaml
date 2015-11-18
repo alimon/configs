@@ -15,27 +15,25 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-                - job-configure
-                - job-delete
     parameters:
         - file:
             name: repo_parameters
             description: "where to find rpms to upload"
     disabled: false
     node: master
-    display-name: 'Upload RPMs to repo.linaro.org WiP'
+    display-name: 'Upload RPMs to repo.linaro.org'
     wrappers:
         - timestamps
     builders:
         - shell: |
             #!/bin/bash
-            set -ex
+            set -e
             echo "Build success: ${build_success}"
             echo "Job name: ${pkg_job_name}"
             echo "Repo: ${repo}"
             echo "Distribution: ${dist}"
             [  "${build_success}" = "false" ] && exit 0
-            if [ -z "${repo}" ] || [ -z "$[dist}" ]
+            if [ -z "${repo}" ] || [ -z "${dist}" ]
             then
                echo "missing repo or dist"
                exit 1
@@ -55,7 +53,7 @@
             done
 
             ls -l .
-            scp *rpm repo.linaro.org:/srv/repos/rpm/${repo}/$dist/incoming
+            scp *rpm upload@repo.linaro.org:/srv/repos/rpm/${repo}/$dist/incoming
             rm -f *rpm
     publishers:
         - email:
