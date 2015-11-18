@@ -24,10 +24,15 @@
               - CPU2000
               - EEMBC
               - fakebench
-        - string:
+        - choice:
             name: TARGET_CONFIG
-            default: 'juno-a53 juno-a57'
-            description: 'Space-separated list of targets to run benchmark on'
+            choices:
+              - Arndale
+              - Mustang
+              - Panda-ES
+              - Juno-A53
+              - Juno-A57
+              - KVM (x86_64)
         - string:
             name: RUN_FLAGS
             default: '--size test --iterations 1 --tune base'
@@ -82,6 +87,7 @@
 
           set -ex
 
+          TARGET_CONFIG="${TARGET_CONFIG,,}"
 
           #TODO Benchmarking-specific builds will eliminate these special cases
           target_session=config/bench/lava/target-session
