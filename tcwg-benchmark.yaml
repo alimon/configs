@@ -16,7 +16,8 @@
             linaro:
                 - job-build
                 - job-cancel
-                - job-workspace
+        - copyartifact:
+            projects: post-build-lava
     parameters:
         - choice:
             name: BENCHMARK
@@ -107,7 +108,7 @@
 
           #Parameters for post-build-lava
           cat << EOF > post_build_lava_parameters
-          CUSTOM_JSON_URL=${JOB_URL}/ws/lava-jobdef.json
+          CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef.json
 
           #DEVICE_TYPE to placate pbl - we don't actually use it
           DEVICE_TYPE=${target_device_type}
@@ -150,9 +151,13 @@
 
           ./lci-build-tools/yaml-to-json.py "`basename ${yaml_url}`" > lava-jobdef.json
 
-      - trigger-builds:
-        - project: post-build-lava
-          property-file: post_build_lava_parameters
     publishers:
+      - archive:
+          artifacts: lava-jobdef.json
+          latest-only: true
+      - trigger-parameterized-builds:
+        - project: post-build-lava
+          condition: SUCCESS
+          property-file: post_build_lava_parameters
       - email:
           recipients: 'bernie.ogden@linaro.org'
