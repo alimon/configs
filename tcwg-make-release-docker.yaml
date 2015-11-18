@@ -62,7 +62,7 @@
     node: tcwg-x86_64-ex40build-01
     retry-count: 3
     concurrent: true
-    display-name: 'TCWG Make Release'
+    display-name: 'TCWG Make Release (on docker)'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/abe.git
@@ -75,12 +75,6 @@
             basedir: abe
     axes:
         - axis:
-            type: slave
-            name: label
-            values:
-                - docker-trusty-amd64-twcg
-#                - docker-trusty-i386-twcg
-#                - docker-wily-amd64-twcg
             type: user-defined
             name: target
             values:
@@ -95,6 +89,13 @@
                 - armeb-eabi
                 - armeb-linux-gnueabi
                 - armeb-linux-gnueabihf
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-trusty-amd64-twcg
+#                - docker-trusty-i386-twcg
+#                - docker-wily-amd64-twcg
     execution-strategy:
         sequential: false
     wrappers:
