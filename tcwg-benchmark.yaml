@@ -121,15 +121,13 @@
           EOF
 
           #Convert YAML to JSON
-          rm -rf lci-build-tools
           git clone -b arbitrary git://git.linaro.org/people/bernie.ogden/lci-build-tools lci-build-tools
 
           YAML_URL=https://git.linaro.org/people/bernie.ogden/lava-jobs.git/blob_plain/HEAD:/benchmark/template-test.yaml
-          fnam="`basename ${YAML_URL}`"
-          rm -f "${fnam}"
           wget ${YAML_URL}
 
-          ./lci-build-tools/yaml-to-json.py "${fnam}" > lava-jobdef.json
+          ./lci-build-tools/yaml-to-json.py "`basename ${YAML_URL}`" > lava-jobdef.json
+
       - trigger-builds:
         - project: post-build-lava
           property-file: post_build_lava_parameters
