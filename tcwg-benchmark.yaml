@@ -72,14 +72,13 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
-    execution-strategy:
-        sequential: false
     wrappers:
         - timeout:
             timeout: 120
     builders:
       - shell: |
           #!/bin/bash
+
           set -ex
 
           #TODO Benchmarking-specific builds will eliminate these special cases
@@ -128,11 +127,9 @@
           wget ${YAML_URL}
 
           ./lci-build-tools/yaml-to-json.py "${fnam}" > lava-jobdef.json
-
       - trigger-builds:
         - project: post-build-lava
           property-file: post_build_lava_parameters
-
     publishers:
       - email:
           recipients: 'bernie.ogden@linaro.org'
