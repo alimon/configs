@@ -119,6 +119,16 @@
             cd ${WORKSPACE}
             # ******** TI wl18xx R8.5 - out of tree modules ********
 
+            git clone --depth 1 https://github.com/OP-TEE/optee_linuxdriver.git
+            export PATH=${WORKSPACE}/srv/toolchain/arm64-tc-15.08/bin:${PATH}
+            export CROSS_COMPILE=aarch64-linux-gnu-
+            make -j$(getconf _NPROCESSORS_ONLN) \
+              O=${KERNEL_PATH} \
+              INSTALL_MOD_PATH=${WORKSPACE}/build-utilites/fs \
+              M=${WORKSPACE}/optee_linuxdriver \
+              modules modules_install
+            cd ${WORKSPACE}
+
             # Create the hardware pack
             cp -a configs/96boards-hikey/hwpacks/linaro-hikey .
 
