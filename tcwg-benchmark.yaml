@@ -18,32 +18,32 @@
                 - job-cancel
     parameters:
         - choice:
-            name: benchmark
+            name: BENCHMARK
             choices:
               - CPU2006
               - CPU2000
               - EEMBC
               - fakebench
         - string:
-            name: targets
+            name: TARGET_CONFIG
             default: 'juno-a53 juno-a57'
             description: 'Space-separated list of targets to run benchmark on'
         - string:
-            name: run_flags
+            name: RUN_FLAGS
             default: '--size test --iterations 1 --tune base'
             description: |
               Flags passed to benchmark framework at runtime.
               Examples --
               SPEC -- --size test --iterations 1 int (run 1 iteration of the int suite using the test workload)
         - string:
-            name: prebuilt
+            name: PREBUILT
             description: |
               A prebuilt benchmark tarball as produced by abe or direct make invocation.
               If produced by abe, tar up the contents of build/<host>/<target>.
               If produced by direct make, tar up the top-level git repository (but you can exclude the .git dir).
               If this option is given, no build will be performed and the compiler_flags and make_flags fields will be ignored.
         - string:
-            name: toolchain
+            name: TOOLCHAIN
             default: 'http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz'
             description: |
               Toolchain to use - use local filesystem path, or formats interpretable by wget or scp/rsync.
@@ -53,22 +53,23 @@
               http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
               my.name@my.server:location_of_my_benchmark
         - string:
-            name: compiler_flags
+            name: COMPILER_FLAGS
             default: '-march=armv8-a'
             description: SPEC benchmarks built -O3 -fno-common, unless you override that here.
         - string:
-            name: make_flags
+            name: MAKE_FLAGS
             default: ''
             description: Flags to pass to make, when building the benchmark.
+        #TODO Remove this when we have the uinstance - at that point, we should be using the benchmarking branch
         - string:
-            name: abe_branch
+            name: ABE_REVISION
             default: origin/benchmarking
             description: Branch of abe to drive the run
     scm:
         - git:
             url: https://git.linaro.org/toolchain/abe.git
             branches:
-              - ${abe_branch}
+              - ${ABE_REVISION}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
@@ -81,52 +82,66 @@
 
           set -ex
 
+
           #TODO Benchmarking-specific builds will eliminate these special cases
           target_session=config/bench/lava/target-session
-          if test x"${TARGET}" = xkvm; then
-            TARGET_SESSION="${TARGET_SESSION}-kvm.yaml"
-          elif test x"${target}" = xmustang; then
-            target_session="${TARGET_SESSION}-mustang.yaml"
+          if test x"${TARGET_CONFIG}" = xkvm; then
+            target_session="${target_session}-kvm.yaml"
+          elif test x"${TARGET_CONFIG}" = xmustang; then
+            target_session="${target_session}-mustang.yaml"
           else
-            target_session="${TARGET_SESSION}.yaml"
+            target_session="${target_session}.yaml"
+          fi
+          if test x"${TARGET_CONFIG%%-*}" = xjuno; then
+            target_device_type=juno
+          else
+            target_device_type="${TARGET_CONFIG}"
           fi
 
+          #Parameters for post-build-lava
           cat << EOF > post_build_lava_parameters
           CUSTOM_JSON_URL=${JOB_URL}/ws/lava-jobdef.json
 
           #DEVICE_TYPE to placate pbl - we don't actually use it
-          DEVICE_TYPE=${TARGET}
+          DEVICE_TYPE=${target_device_type}
+          EOF
 
+          #Parameters to be substituted into template
           JOB_NAME=${BENCHMARK}
 
-          BENCHMARK=${BENCHMARK}
-          TOOLCHAIN=${TOOLCHAIN}
-          RUN_FLAGS=
-          COMPILER_FLAGS=
+          #BENCHMARK set as parameter
+          #TOOLCHAIN set as parameter
+          #RUN_FLAGS set as parameter
+          #COMPILER_FLAGS set as parameter
+          #MAKE_FLAGS set as parameter
+          #PREBUILT set as parameter
 
           HOST_SESSION=config/bench/lava/trusted-host-session.yaml
           HOST_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
 
-          TARGET_SESSION=${TARGET_SESSION}
+          TARGET_SESSION=${target_session}
           #TODO Map from target types to specific images
           TARGET_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
+          #TARGET_CONFIG set as parameter
 
-          LAVA_SERVER=${LAVA_SERVER}
-          BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+          #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
+          LAVA_SERVER=validation.linaro.org/RPC2/
+          BUNDLE_STREAM_NAME=/private/personal/bernie.ogden
 
           ABE_REPO=https://git.linaro.org/toolchain/abe
-          ABE_REVISION=bernie/benchmarking-uinstance
+          #TODO Fix this to appropriate branch when we have the uinstance
+          ABE_REVISION=${ABE_REVISION:-bernie/benchmarking-uinstance}
 
           TIMEOUT=691200
-          EOF
+          #End of parameters to substitute into template
 
           #Convert YAML to JSON
           git clone -b arbitrary git://git.linaro.org/people/bernie.ogden/lci-build-tools lci-build-tools
 
-          YAML_URL=https://git.linaro.org/people/bernie.ogden/lava-jobs.git/blob_plain/HEAD:/benchmark/template-test.yaml
-          wget ${YAML_URL}
+          yaml_url=https://git.linaro.org/people/bernie.ogden/lava-jobs.git/blob_plain/HEAD:/benchmark/template-test.yaml
+          wget ${yaml_url}
 
-          ./lci-build-tools/yaml-to-json.py "`basename ${YAML_URL}`" > lava-jobdef.json
+          ./lci-build-tools/yaml-to-json.py "`basename ${yaml_url}`" > lava-jobdef.json
 
       - trigger-builds:
         - project: post-build-lava
