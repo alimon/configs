@@ -8,6 +8,7 @@
     logrotate:
         daysToKeep: 30
         numToKeep: 30
+        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
@@ -154,7 +155,6 @@
     publishers:
       - archive:
           artifacts: lava-jobdef.json
-          latest-only: true
       - trigger-parameterized-builds:
         - project: post-build-lava
           condition: SUCCESS
