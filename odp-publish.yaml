@@ -100,7 +100,36 @@
                 ;;
             esac
 
+            set +e
             bash -x ${WORKSPACE}/check-odp/build-${platform_type}.sh
+            retcode=$?
+            set -e
+
+            # Set the correct builddir
+            builddir="odp-${platform_type}"
+            [[ "${platform_type}" = "generic" ]] && builddir="odp"
+
+            # Move log files
+            if [ -d check-odp/build/${builddir}/testdir/ ]; then
+              mkdir -p out/log && find check-odp/build/${builddir}/testdir/ -type f -name '*.log' -exec cp {} out/log \;
+            fi
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            if [ -d out ]; then
+            PUB_DEST=components/lng/odp/odp-publish/${platform_type}/${build_type}/${GIT_BRANCH}/${BUILD_NUMBER}
+              time python ${HOME}/bin/linaro-cp.py --link-latest out ${PUB_DEST}
+              echo "***************************"
+              echo "Logs published on http://snapshots.linaro.org/${PUB_DEST}"
+              echo "***************************"
+            fi
+
+            if [ ${retcode} -ne 0 ]; then
+              exit 1
+            else
+              exit 0
+            fi
         - ssh:
             site: 'docs.opendataplane.org'
             target: ''
