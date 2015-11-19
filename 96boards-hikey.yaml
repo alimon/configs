@@ -212,6 +212,9 @@
                 cat << EOF | sudo tee -a rootfs/home/linaro/.config/lxsession/LXDE/autostart
             @bash -c /home/linaro/bin/xmms2-output-plugin-pulse
             EOF
+                [ -f "rootfs/etc/chromium.d/default-flags" ] && cat << EOF | sudo tee -a rootfs/etc/chromium.d/default-flags
+            export CHROMIUM_FLAGS="$CHROMIUM_FLAGS --no-sandbox"
+            EOF
               fi
 
               sudo mkdir rootfs/boot/grub
