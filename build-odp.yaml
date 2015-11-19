@@ -17,8 +17,8 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-utopic
-    display-name: 'Build packages for opendataplane.org'
+    node: docker-jessie
+    display-name: 'Build debian source for opendataplane.org'
     scm:
         - git:
             url: https://git.linaro.org/lng/odp.git
@@ -40,9 +40,8 @@
 
             set -e
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y libssl-dev
+            sudo apt-get install --no-install-recommends -q -y libssl-dev doxygen imagemagick mscgen texlive-latex-recommended
 
             cd odp; bash -x scripts/builddeb
 
