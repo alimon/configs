@@ -109,9 +109,16 @@
             target_device_type="${TARGET_CONFIG}"
           fi
 
+          #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
+          lava_server=https://validation.linaro.org/RPC2/
+
           #Parameters for post-build-lava
           cat << EOF > post_build_lava_parameters
           CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef.json
+
+          #Server to dispatch to, as opposed to server where bundle stream is.
+          #post-build-lava takes responsibility for specifying a protocol.
+          LAVA_SERVER=${lava_server#https://}
 
           #DEVICE_TYPE to placate pbl - we don't actually use it
           DEVICE_TYPE=${target_device_type}
@@ -136,8 +143,8 @@
           #TARGET_CONFIG set as parameter
           export TARGET_DEVICE_TYPE=${target_device_type}
 
-          #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
-          export LAVA_SERVER=https://validation.linaro.org/RPC2/
+          #TODO Change to uinstance server/user/stream, when they exist
+          export BUNDLE_SERVER=${lava_server}
           export BUNDLE_STREAM_NAME=/anonymous/bogden/
 
           export ABE_REPO=https://git.linaro.org/toolchain/abe
