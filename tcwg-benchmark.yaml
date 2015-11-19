@@ -90,7 +90,16 @@
 
           set -ex
 
+          #Process TARGET_CONFIG
           TARGET_CONFIG="${TARGET_CONFIG,,}"
+          if test x"${TARGET_CONFIG%% *}" = xkvm; then #" - fix syntax highlighting
+            TARGET_CONFIG=kvm
+          fi
+          if test x"${TARGET_CONFIG%%-*}" = xjuno; then
+            target_device_type=juno
+          else
+            target_device_type="${TARGET_CONFIG}"
+          fi
 
           #TODO Benchmarking-specific builds will eliminate these special cases
           target_session=config/bench/lava/target-session
@@ -100,13 +109,6 @@
             target_session="${target_session}-mustang.yaml"
           else
             target_session="${target_session}.yaml"
-          fi
-          if test x"${TARGET_CONFIG%%-*}" = xjuno; then
-            target_device_type=juno
-          elif test x"${TARGET_CONFIG%% *}" = xkvm; then #" - fix syntax highlighting
-            target_device_type=kvm
-          else
-            target_device_type="${TARGET_CONFIG}"
           fi
 
           #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
