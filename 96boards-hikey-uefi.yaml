@@ -52,13 +52,16 @@
 
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y python-pycurl
+            sudo apt-get install -y python-pycurl python-crypto
 
             # Use pre-installed linaro toolchain
-            export PATH="${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
+            export PATH="${HOME}/srv/toolchain/arm-tc-15.02/bin:${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
 
             # Check out arm-trusted-firmware
             git clone -b hikey --depth 1 https://github.com/96boards/arm-trusted-firmware.git
+
+            # Check out optee_os
+            git clone --depth 1 https://github.com/OP-TEE/optee_os.git
 
             git clone git://git.linaro.org/uefi/uefi-tools.git
 
@@ -69,7 +72,7 @@
             unset WORKSPACE
 
             cd ${EDK2_DIR}
-            ${UEFI_TOOLS_DIR}/uefi-build.sh -b RELEASE -a ../arm-trusted-firmware hikey
+            ${UEFI_TOOLS_DIR}/uefi-build.sh -b RELEASE -a ../arm-trusted-firmware -s ../optee_os hikey
 
             unset WORKSPACE
             export WORKSPACE=${JENKINS_WORKSPACE}
