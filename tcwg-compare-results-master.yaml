@@ -28,19 +28,19 @@
             default: ex40-01.tcwglab.linaro.org:logs-master
             description: 'Log_Server'
         - string:
-            name: abe_branch
+            name: cmp_version
             default: refs/heads/master
-            description: 'ABE revision to test'
+            description: 'Comparison scripts version to use'
     disabled: false
     node: tcwg-x86_64-ex40build-01-short
     retry-count: 3
     display-name: 'Compare results -- Master'
     scm:
         - git:
-            url: https://git-us.linaro.org/toolchain/abe.git
+            url: https://git-us.linaro.org/toolchain/gcc-compare-results.git
             refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
-                - ${abe_branch}
+                - ${cmp_version}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
@@ -75,10 +75,10 @@
             mkdir -p ${LOGSDIR}
 
             ssh ${log_server} mkdir -p ${dest}
-            scp ./scripts/compare_jobs.sh \
-                ./scripts/compare_tests \
-                ./scripts/compare_dg_tests.pl \
-                ./scripts/unstable-tests.txt ${log_server}:${dest} || status=1
+            scp ./compare_jobs.sh \
+                ./compare_tests \
+                ./compare_dg_tests.pl \
+                ./unstable-tests.txt ${log_server}:${dest} || status=1
             ssh ${log_server} bash ${dest}/compare_jobs.sh \
                 $basedir/$ref_logs $basedir/$new_logs || status=1
 
