@@ -64,6 +64,8 @@
                 - arm-none-symbianelf
                 - arm-wince-pe
                 - armeb-linux-gnueabihf
+    triggers:
+        - pollscm: 'H/5 * * * *'
     wrappers:
         - timeout:
             timeout: 600
@@ -116,3 +118,6 @@
             [ x"$sums" != x ] && egrep '^FAIL:|^XPASS:' $sums || true
             [ x"$sums" != x ] && tail $sums
             exit $result
+    publishers:
+        - email:
+            recipients: 'christophe.lyon@linaro.org'
