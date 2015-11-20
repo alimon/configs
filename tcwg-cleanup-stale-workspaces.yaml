@@ -78,7 +78,7 @@
             fi
 
             echo "du -hs report before:"
-            du -hs $HOME/workspace/*
+            du -hs $HOME/workspace/* || true
 
             # Semantics of find's mtime "+N" stands for N+1 days old or older.
             days_1=$(($days-1))
@@ -87,7 +87,7 @@
 
             rm_dirs=()
             for dir in "${dirs[@]}"; do
-              if ! find $dir -mtime -$days; then
+              if [ x"$(find $dir -mtime -$days)" = x"" ]; then
                 rm_dirs=("${rm_dirs[@]}" $dir)
               fi
             done
@@ -101,4 +101,4 @@
             fi
 
             echo "du -hs report after:"
-            du -hs $HOME/workspace/*
+            du -hs $HOME/workspace/* || true
