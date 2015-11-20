@@ -13,6 +13,8 @@
             linaro:
                 - job-build
                 - job-cancel
+        - throttle:
+            max-per-node: 1
     parameters:
         - string:
             name: days
@@ -28,7 +30,7 @@
             description: 'Do not override unless you understand what you are doing'
     disabled: false
     node: tcwg-x86_64-cam
-    concurrent: false
+    concurrent: true
     display-name: 'TCWG Cleanup stale workspaces'
     axes:
         - axis:
@@ -93,7 +95,7 @@
               fi
             done
 
-            if [ x"${rm_dirs[@]}" != x"" ]; then
+            if [ ${#rm_dirs[@]} != 0 ]; then
               echo "Removing directories:"
               ls -ld "${rm_dirs[@]}"
               if ! $dry_run; then
@@ -101,8 +103,8 @@
               else
                 echo "DRY_RUN: NOT REMOVING DIRECTORIES"
               fi
-            fi
 
-            ls -l $HOME/workspace/
-            echo "du -hs report after:"
-            du -hs $HOME/workspace/* || true
+              ls -l $HOME/workspace/
+              echo "du -hs report after:"
+              du -hs $HOME/workspace/* || true
+            fi
