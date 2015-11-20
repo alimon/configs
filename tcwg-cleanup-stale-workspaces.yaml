@@ -22,7 +22,7 @@
             description: 'Delete workspace more then days old'
         - bool:
             name: dry_run
-            default: 'true'
+            default: 'false'
             description: 'Whether to do a dry-run'
         - string:
             name: maxdepth
@@ -32,6 +32,8 @@
     node: tcwg-x86_64-cam
     concurrent: true
     display-name: 'TCWG Cleanup stale workspaces'
+    triggers:
+        - timed: '@daily'
     axes:
         - axis:
             type: slave
