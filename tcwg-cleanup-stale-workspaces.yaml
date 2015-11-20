@@ -77,6 +77,7 @@
               echo "ERROR: Refusing to delete workspaces that are $days days old"
             fi
 
+            ls -l $HOME/workspace/
             echo "du -hs report before:"
             du -hs $HOME/workspace/* || true
 
@@ -92,13 +93,16 @@
               fi
             done
 
-            echo "Removing directories:"
-            ls -ld "${rm_dirs[@]}"
-            if ! $dry_run; then
-              rm -rf "${rm_dirs[@]}"
-            else
-              echo "DRY_RUN: NOT REMOVING DIRECTORIES"
+            if [ x"${rm_dirs[@]}" != x"" ]; then
+              echo "Removing directories:"
+              ls -ld "${rm_dirs[@]}"
+              if ! $dry_run; then
+                rm -rf "${rm_dirs[@]}"
+              else
+                echo "DRY_RUN: NOT REMOVING DIRECTORIES"
+              fi
             fi
 
+            ls -l $HOME/workspace/
             echo "du -hs report after:"
             du -hs $HOME/workspace/* || true
