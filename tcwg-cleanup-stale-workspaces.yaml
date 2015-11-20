@@ -1,0 +1,104 @@
+- job:
+    name: tcwg-cleanup-stale-workspaces
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: days
+            default: '10'
+            description: 'Delete workspace more then days old'
+        - bool:
+            name: dry_run
+            default: 'true'
+            description: 'Whether to do a dry-run'
+        - string:
+            name: maxdepth
+            default: '1'
+            description: 'Do not override unless you understand what you are doing'
+    disabled: false
+    node: tcwg-x86_64-cam
+    concurrent: true
+    display-name: 'TCWG Cleanup stale workspaces'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-aarch64-07
+                - tcwg-aarch64-build-01
+                - tcwg-aarch64-build-02
+                - tcwg-aarch64-test-01
+                - tcwg-aarch64-test-02
+                - tcwg-x86_64-build-01
+                - tcwg-x86_64-build-02
+                - tcwg-x86_64-build-03
+                - tcwg-x86_64-build-04
+                - tcwg-x86_64-build-05
+                - tcwg-x86_64-build-06
+                - tcwg-x86_64-dev-01
+                - tcwg-x86_64-ex40build-01
+                - tcwg-x86_64-ex40build-02
+                - tcwg-x86_64-ex40build-04
+                - tcwg-x86_64-ex40build-06
+                - tcwg-x86_64-ex40build-07
+                - tcwg-x86_64-ex40build-08
+                - tcwg-x86_64-ex40build-09
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+            set -x
+
+            if ! [ "$days" -ge "1" ]; then
+              echo "ERROR: Refusing to delete workspaces that are $days days old"
+            fi
+
+            echo "du -hs report before:"
+            du -hs $HOME/workspace/*
+
+            # Semantics of find's mtime "+N" stands for N+1 days old or older.
+            days_1=$(($days-1))
+
+            dirs=($(find $HOME/workspace/ -type d -maxdepth $maxdepth -mtime +$days_1))
+
+            rm_dirs=()
+            for dir in "${dirs[@]}"; do
+              if ! find $dir -mtime -$days; then
+                rm_dirs=("${rm_dirs[@]}" $dir)
+              fi
+            done
+
+            echo "Removing directories:"
+            ls -ld "${rm_dirs[@]}"
+            if ! $dry_run; then
+              rm -rf "${rm_dirs[@]}"
+            else
+              echo "DRY_RUN: NOT REMOVING DIRECTORIES"
+            fi
+
+            echo "du -hs report after:"
+            du -hs $HOME/workspace/*
