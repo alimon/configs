@@ -48,11 +48,14 @@
             build_success=false
             EOF
 
+
             . /etc/os-release
             dist=${ID}-${VERSION_ID}
-            cd odp
-
+            sudo wget http://rpm.opendataplane.org/$dist/odp.repo -O /etc/yum.repos.d/odp.repo
+            sudo yum update
             sudo yum install -y git rpm-build yum-utils
+
+            cd odp
             sudo yum-builddep -y ./pkg/rpm/odp.spec || true
             ./scripts/buildrpm
             mv *.rpm ..
