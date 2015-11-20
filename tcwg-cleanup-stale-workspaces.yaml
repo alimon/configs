@@ -28,7 +28,7 @@
             description: 'Do not override unless you understand what you are doing'
     disabled: false
     node: tcwg-x86_64-cam
-    concurrent: true
+    concurrent: false
     display-name: 'TCWG Cleanup stale workspaces'
     axes:
         - axis:
@@ -88,7 +88,7 @@
 
             rm_dirs=()
             for dir in "${dirs[@]}"; do
-              if [ x"$(find $dir -mtime -$days)" = x"" ]; then
+              if [ x"$(find $dir -mtime -$days | wc -l)" = x"0" ]; then
                 rm_dirs=("${rm_dirs[@]}" $dir)
               fi
             done
