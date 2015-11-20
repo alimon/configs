@@ -1,0 +1,45 @@
+- job:
+    name: tcwg-trigger-binutils
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: tcwg-x86_64-ex40build01-short
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG Trigger Binutils'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/binutils-gdb.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - ref/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="binutils_rev"}'
+    builders:
+        - trigger-builds:
+            - project: 'tcwg-binutils'
