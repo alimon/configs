@@ -87,7 +87,7 @@
             #cp -a ${EDK2_DIR}/HisiPkg/HiKeyPkg/NonFree/mcuimage.bin out/
 
             # Ship nvme.img with UEFI binaries for convenience
-            wget -q http://builds.96boards.org/snapshots/hikey/linaro/binaries/20150515/nvme.img -O out/nvme.img
+            dd if=/dev/zero of=out/nvme.img bs=128 count=1024
 
             git clone --depth 1 https://github.com/96boards/l-loader.git
             cd l-loader
