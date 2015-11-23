@@ -81,10 +81,11 @@
             mkdir out
             cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/FV/*.bin out/
             cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/AARCH64/AndroidFastbootApp.efi out/
-            # Don't ship BL33_AP_UEFI.fd and mcuimage.bin
+            # Don't ship BL33_AP_UEFI.fd, mcuimage.bin and tee.bin
             # (already included in the firmware image package - fip)
             #cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/FV/*.fd out/
             #cp -a ${EDK2_DIR}/HisiPkg/HiKeyPkg/NonFree/mcuimage.bin out/
+            rm -f out/tee.bin
 
             # Ship nvme.img with UEFI binaries for convenience
             dd if=/dev/zero of=out/nvme.img bs=128 count=1024
