@@ -162,11 +162,11 @@
             EOF
 
               if [ "${rootfs}" = "alip" ]; then
-                mali_pkg="xserver-xorg-video-fbdev-mali-450_0.0.1-1_all.deb"
-                wget http://builds.96boards.org/snapshots/hikey/linaro/binaries/20150407/${mali_pkg} -O ${mali_pkg}
+                mali_pkg="libmali-450_0.0.1-1_all.deb"
+                wget https://builds.96boards.org/snapshots/hikey/linaro/binaries/20150825/${mali_pkg} -O ${mali_pkg}
                 linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${mali_pkg} -d -i
                 rm -f ${mali_pkg}
-                armsoc_pkg="xserver-xorg-video-armsoc_1.3.0-0linaro1_arm64.deb"
+                armsoc_pkg="xserver-xorg-video-armsoc_1.4.0-0linaro1_arm64.deb"
                 wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/x/xf86-video-armsoc/${armsoc_pkg} -O ${armsoc_pkg}
                 linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${armsoc_pkg} -d -i
                 rm -f ${armsoc_pkg}
