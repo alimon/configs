@@ -79,10 +79,11 @@
 
             if ! [ "$days" -ge "1" ]; then
               echo "ERROR: Refusing to delete workspaces that are $days days old"
+              exit 1
             fi
 
-            ls -l $HOME/workspace/
-            echo "du -hs report before:"
+            echo "Date / size report before:"
+            ls -ld $HOME/workspace/* || true
             du -hs $HOME/workspace/* || true
 
             # Semantics of find's mtime "+N" stands for N+1 days old or older.
@@ -100,13 +101,14 @@
             if [ ${#rm_dirs[@]} != 0 ]; then
               echo "Removing directories:"
               ls -ld "${rm_dirs[@]}"
+              du -hs "${rm_dirs[@]}"
               if ! $dry_run; then
                 rm -rf "${rm_dirs[@]}"
               else
                 echo "DRY_RUN: NOT REMOVING DIRECTORIES"
               fi
 
-              ls -l $HOME/workspace/
-              echo "du -hs report after:"
+              echo "Date / size report after:"
+              ls -ld $HOME/workspace/* || true
               du -hs $HOME/workspace/* || true
             fi
