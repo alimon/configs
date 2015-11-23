@@ -236,21 +236,24 @@
             /dev/disk/by-partlabel/boot   /boot/efi vfat defaults          0 0
             EOF
 
-              cat << EOF | sudo tee rootfs/lib/systemd/system/resize-rootfs.service
+              # FIXME - move to 96boards-tools-common package
+              sudo wget https://raw.githubusercontent.com/fboudra/resize-helper/master/resize-helper.sh rootfs/usr/sbin/resize-helper
+              sudo chmod a+x rootfs/usr/sbin/resize-helper
+              cat << EOF | sudo tee rootfs/lib/systemd/system/resize-helper.service
             [Unit]
-            Description=Resize rootfs to fit available disk space
+            Description=Resize root filesystem to fit available disk space
             After=systemd-remount-fs.service
 
             [Service]
             Type=oneshot
-            ExecStart=-/bin/sh -c 'if /bin/grep -q "^HiKey" /proc/device-tree/model; then /sbin/sgdisk -e /dev/mmcblk0; /sbin/parted /dev/mmcblk0 resizepart 9 Yes 100%; /sbin/resize2fs /dev/disk/by-label/rootfs; fi'
-            ExecStartPost=/bin/systemctl disable resize-rootfs.service
+            ExecStart=-/usr/sbin/resize-helper
+            ExecStartPost=/bin/systemctl disable resize-helper.service
 
             [Install]
             WantedBy=default.target
             EOF
               sudo mkdir -p rootfs/etc/systemd/system/default.target.wants
-              (cd rootfs/etc/systemd/system/default.target.wants && sudo ln -sf /lib/systemd/system/resize-rootfs.service)
+              (cd rootfs/etc/systemd/system/default.target.wants && sudo ln -sf /lib/systemd/system/resize-helper.service)
 
               sudo rm -rf rootfs/dev rootfs/var/lib/apt/lists rootfs/lib/modules/*-linaro-hikey
               sudo mkdir rootfs/dev rootfs/var/lib/apt/lists rootfs/home/linaro/bin
