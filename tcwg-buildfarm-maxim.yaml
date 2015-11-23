@@ -60,11 +60,10 @@
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
         - string:
             name: abe_branch
-            default: refs/heads/master
+            default: refs/remotes/origin/master
             description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64-cam
-    retry-count: 3
     child-workspace: $target
     concurrent: true
     display-name: 'ZZZ: TCWG BuildFarm Maxim'
@@ -73,10 +72,10 @@
             url: https://git-us.linaro.org/toolchain/abe.git
             refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
-                - ${abe_branch}
+                - $abe_branch
             skip-tag: true
             shallow-clone: true
-            wipe-workspace: true
+            wipe-workspace: false
     axes:
         - axis:
             type: slave

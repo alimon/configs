@@ -13,8 +13,6 @@
             linaro:
                 - job-build
                 - job-cancel
-        - throttle:
-            max-per-node: 4
     parameters:
         - string:
             name: gcc_patch
@@ -34,22 +32,22 @@
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
         - string:
             name: abe_branch
-            default: refs/heads/master
+            default: refs/remotes/origin/master
             description: 'ABE revision to use'
     disabled: false
     node: tcwg-x86_64-dev-01
-    retry-count: 3
     concurrent: true
     display-name: 'ZZZ: TCWG Backport Maxim'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/gcc.git
-            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/remotes/changes/*
+            refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
                 - $gcc_patch
             skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
             reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
-            wipe-workspace: true
     wrappers:
         - timeout:
             timeout: 3000
