@@ -19,15 +19,19 @@
         - string:
             name: days
             default: '10'
-            description: 'Delete workspace more then days old'
+            description: 'Delete workspace more then days old.  To effectively disable time check use 0.'
         - bool:
             name: dry_run
             default: 'false'
             description: 'Whether to do a dry-run'
         - string:
+            name: workspace_top
+            default: '/home/tcwg-buildslave/workspace'
+            description: 'Top-level workspace directory.  Can be used to delete workspaces for specific jobs.  Do not override unless you understand what you are doing.'
+        - string:
             name: maxdepth
             default: '1'
-            description: 'Do not override unless you understand what you are doing'
+            description: 'Depth of search for outdated directories.  Do not override unless you understand what you are doing.'
     disabled: false
     node: tcwg-x86_64-cam
     concurrent: true
@@ -77,19 +81,19 @@
             set -e
             set -x
 
-            if ! [ "$days" -ge "1" ]; then
+            if [ "$days" -lt "0" ]; then
               echo "ERROR: Refusing to delete workspaces that are $days days old"
               exit 1
             fi
 
             echo "Date / size report before:"
-            ls -ld $HOME/workspace/* || true
-            du -hs $HOME/workspace/* || true
+            ls -ld $workspace_top/* || true
+            du -hs $workspace_top/* || true
 
             # Semantics of find's mtime "+N" stands for N+1 days old or older.
             days_1=$(($days-1))
 
-            dirs=($(find $HOME/workspace/ -type d -maxdepth $maxdepth -mtime +$days_1))
+            dirs=($(find $workspace_top/ -maxdepth $maxdepth -type d -mtime +$days_1))
 
             rm_dirs=()
             for dir in "${dirs[@]}"; do
@@ -109,6 +113,6 @@
               fi
 
               echo "Date / size report after:"
-              ls -ld $HOME/workspace/* || true
-              du -hs $HOME/workspace/* || true
+              ls -ld $workspace_top/* || true
+              du -hs $workspace_top/* || true
             fi
