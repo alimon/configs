@@ -165,8 +165,18 @@
             - 96boards-artwork
             EOF
 
-            cat > out/README.txt << EOF
-            This build is using artifacts from the following builds:
+            # Build information
+            cat > out/README.textile << EOF
+
+            h4. QCOM Landing Team - Snapdragon 410 - Debian
+
+            Build description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * OS flavour: $OS_FLAVOUR
+            * Kernel tree: "$GIT_URL":$GIT_URL
+            * Kernel branch: $KERNEL_BRANCH
+            * Kernel version: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+            * Kernel defconfig: $kernel_config
             EOF
 
             for rootfs in ${ROOTFS}; do
@@ -243,8 +253,8 @@
               # Compress image(s)
               gzip -9 out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
-              cat >> out/README.txt << EOF
-            Linaro Debian ${rootfs} build: http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
+              cat >> out/README.textile << EOF
+            * Linaro Debian ${rootfs}: http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
             EOF
             done
 
