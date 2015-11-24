@@ -78,7 +78,7 @@
             export WORKSPACE=${JENKINS_WORKSPACE}
 
             cd ${WORKSPACE}
-            mkdir out
+            mkdir -p out/optee
             cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/FV/*.bin out/
             cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/AARCH64/AndroidFastbootApp.efi out/
             # Don't ship BL33_AP_UEFI.fd, mcuimage.bin and tee.bin
@@ -89,6 +89,9 @@
 
             # Ship nvme.img with UEFI binaries for convenience
             dd if=/dev/zero of=out/nvme.img bs=128 count=1024
+
+            # Ship files needed to build OP-TEE test suite
+            tar -C ${WORKSPACE}/optee_os/out -acvf ${WORKSPACE}/out/optee/arm-plat-hikey.tar.xz arm-plat-hikey/export-user_ta
 
             git clone --depth 1 https://github.com/96boards/l-loader.git
             cd l-loader
