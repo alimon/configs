@@ -112,7 +112,7 @@
             # errors.
             ${BUILD_SHELL} -c "../configure $lto --enable-plugins --prefix=`pwd`/install --target $target ${bfd}"
             ${BUILD_SHELL} -c "make all-gas all-ld all-binutils -j$jobs"
-            ${BUILD_SHELL} -c "make check-gas check-ld check-binutils -j$jobs -k RUNTESTFLAGS='-v -v -v'" || result=1
+            ${BUILD_SHELL} -c "make check-gas check-ld check-binutils -j$jobs -k" || result=1
             sums=`find . -name "*.sum"`
             [ x"$sums" != x ] && egrep '^FAIL:|^XPASS:' $sums || true
             [ x"$sums" != x ] && tail $sums
