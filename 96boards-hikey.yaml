@@ -277,13 +277,15 @@
               sudo cp -a ${WORKSPACE}/build-utilites/fs/lib/modules/*-linaro-hikey rootfs/lib/modules/
               # ******** TI wl18xx R8.5 - out of tree modules ********
 
-              sudo make_ext4fs -o -L rootfs -l 2G -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 3204448256 -s out/hikey-jessie_${rootfs}_${VERSION}-4g.emmc.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 7549747200 -s out/hikey-jessie_${rootfs}_${VERSION}-8g.emmc.img rootfs/
               sudo umount boot rootfs
               sudo kpartx -dv out/hikey-jessie_${rootfs}_${VERSION}.img
               sudo rm -rf boot rootfs
 
               # Compress image(s)
-              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.emmc.img
+              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}-4g.emmc.img
+              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}-8g.emmc.img
               gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.img
             done
 
@@ -321,7 +323,7 @@
             VERSION=$(date +%Y%m%d)-${BUILD_NUMBER}
 
             export BOOT_URL=https://builds.96boards.org/snapshots/hikey/linaro/debian/${BUILD_NUMBER}/boot-fat.uefi.img.gz
-            export SYSTEM_URL=https://builds.96boards.org/snapshots/hikey/linaro/debian/${BUILD_NUMBER}/hikey-jessie_alip_${VERSION}.emmc.img.gz
+            export SYSTEM_URL=https://builds.96boards.org/snapshots/hikey/linaro/debian/${BUILD_NUMBER}/hikey-jessie_alip_${VERSION}-4g.emmc.img.gz
 
             ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
 
