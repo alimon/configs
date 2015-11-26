@@ -95,6 +95,10 @@
 
           #Set variables for both post-build-lava and yaml-to-json
           export `bash -x ./abe/scripts/Benchmark.sh`
+          if test $? -ne 0; then
+            echo "Execution of ./abe/scripts/Benchmark.sh failed" >&2
+            exit 1
+          fi
 
           #Parameters for post-build-lava
           cat << EOF > post_build_lava_parameters
@@ -115,6 +119,10 @@
           wget ${yaml_url}
 
           ./lci-build-tools/yaml-to-json.py "`basename ${yaml_url}`" > lava-jobdef.json
+          if test $? -ne 0; then
+            echo "Execution of ./lci-build-tools/yaml-to-json.py failed" >&2
+            exit 1
+          fi
 
     publishers:
       - archive:
