@@ -38,7 +38,7 @@
             type: slave
             name: label
             values:
-                - tcwg-x86_64-ex40
+                - tcwg-x86_64-cam
         - axis:
             type: user-defined
             name: bfd
@@ -112,7 +112,8 @@
             # errors.
             ${BUILD_SHELL} -c "../configure $lto --enable-plugins --prefix=`pwd`/install --target $target ${bfd}"
             ${BUILD_SHELL} -c "make all-gas all-ld all-binutils -j$jobs"
-            ${BUILD_SHELL} -c "make check-gas check-ld check-binutils -j$jobs -k" || result=1
+            strace -f -o strace.check.log ${BUILD_SHELL} -c "make check-gas check-ld check-binutils -j$jobs -k" || result=1
+            [ $result -eq 0 ] && rm strace.check.log
             sums=`find . -name "*.sum"`
             [ x"$sums" != x ] && egrep '^FAIL:|^XPASS:' $sums || true
             [ x"$sums" != x ] && tail $sums
