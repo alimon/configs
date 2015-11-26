@@ -115,12 +115,9 @@
 
           #Convert YAML to JSON
           git clone https://git.linaro.org/ci/lci-build-tools
-
-          yaml_url=https://git.linaro.org/people/bernie.ogden/lava-jobs.git/blob_plain/HEAD:/benchmark/template-test.yaml
-          wget ${yaml_url}
           env -i `bash -x ./abe/scripts/Benchmark.sh` \
             ./lci-build-tools/yaml-to-json.py \
-            "`basename ${yaml_url}`" > lava-jobdef.json
+            abe/config/bench/jobdefs/template.yaml > lava-jobdef.json
           if test $? -ne 0; then
             echo "Execution of ./lci-build-tools/yaml-to-json.py failed" >&2
             exit 1
