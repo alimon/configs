@@ -92,7 +92,7 @@
           #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
           export LAVA_SERVER=validation.linaro.org/RPC2/
 
-          git clone -b ${ABE_REVISION} https://git.linaro.org/toolchain/abe
+          git clone --depth 1 -b ${ABE_REVISION} https://git.linaro.org/toolchain/abe
 
           #Set variables for both post-build-lava and yaml-to-json
           export `bash -x ./abe/scripts/Benchmark.sh`
@@ -114,7 +114,7 @@
           EOF
 
           #Convert YAML to JSON
-          git clone https://git.linaro.org/ci/lci-build-tools
+          git clone --depth 1 https://git.linaro.org/ci/lci-build-tools
           env -i `bash -x ./abe/scripts/Benchmark.sh` \
             ./lci-build-tools/yaml-to-json.py \
             abe/config/bench/jobdefs/template.yaml > lava-jobdef.json
