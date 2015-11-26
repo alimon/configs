@@ -73,14 +73,6 @@
             name: ABE_REVISION
             default: origin/benchmarking
             description: Branch of abe to drive the run
-    scm:
-        - git:
-            url: https://git.linaro.org/toolchain/abe.git
-            branches:
-              - ${ABE_REVISION}
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: true
     wrappers:
         - timeout:
             timeout: 120
@@ -98,6 +90,8 @@
 
           #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
           export LAVA_SERVER=validation.linaro.org/RPC2/
+
+          git clone -b ${ABE_REVISION} https://git.linaro.org/toolchain/abe
 
           #Set variables for both post-build-lava and yaml-to-json
           export `bash -x ./abe/scripts/Benchmark.sh`
