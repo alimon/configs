@@ -95,24 +95,12 @@
           if test x"${TARGET_CONFIG%% *}" = xkvm; then #" - fix syntax highlighting
             TARGET_CONFIG=kvm
           fi
-          if test x"${TARGET_CONFIG%%-*}" = xjuno; then
-            target_device_type=juno
-          else
-            target_device_type="${TARGET_CONFIG}"
-          fi
-
-          #TODO Benchmarking-specific builds will eliminate these special cases
-          target_session=config/bench/lava/target-session
-          if test x"${TARGET_CONFIG}" = xkvm; then
-            target_session="${target_session}-kvm.yaml"
-          elif test x"${TARGET_CONFIG}" = xmustang; then
-            target_session="${target_session}-mustang.yaml"
-          else
-            target_session="${target_session}.yaml"
-          fi
 
           #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
-          lava_server=https://validation.linaro.org/RPC2/
+          export LAVA_SERVER=validation.linaro.org/RPC2/
+
+          #Set variables for both post-build-lava and yaml-to-json
+          export `bash -x ./abe/scripts/Benchmark.sh`
 
           #Parameters for post-build-lava
           cat << EOF > post_build_lava_parameters
@@ -120,41 +108,11 @@
 
           #Server to dispatch to, as opposed to server where bundle stream is.
           #post-build-lava takes responsibility for specifying a protocol.
-          LAVA_SERVER=${lava_server#https://}
+          LAVA_SERVER=${LAVA_SERVER}
 
           #DEVICE_TYPE to placate pbl - we don't actually use it
-          DEVICE_TYPE=${target_device_type}
+          DEVICE_TYPE=${TARGET_DEVICE_TYPE}
           EOF
-
-          #Parameters to be substituted into template
-          export JOB_NAME=${BENCHMARK}
-
-          #BENCHMARK set as parameter
-          #TOOLCHAIN set as parameter
-          #RUN_FLAGS set as parameter
-          #COMPILER_FLAGS set as parameter
-          #MAKE_FLAGS set as parameter
-          #PREBUILT set as parameter
-
-          export HOST_SESSION=config/bench/lava/trusted-host-session.yaml
-          export HOST_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
-
-          export TARGET_SESSION=${target_session}
-          #TODO Map from target types to specific images
-          export TARGET_IMAGE=http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz
-          #TARGET_CONFIG set as parameter
-          export TARGET_DEVICE_TYPE=${target_device_type}
-
-          #TODO Change to uinstance server/user/stream, when they exist
-          export BUNDLE_SERVER=${lava_server}
-          export BUNDLE_STREAM_NAME=/anonymous/bogden/
-
-          export ABE_REPO=https://git.linaro.org/toolchain/abe
-          #TODO Fix this to appropriate branch when we have the uinstance
-          export ABE_REVISION=${ABE_REVISION:-bernie/benchmarking-uinstance}
-
-          export TIMEOUT=1800
-          #End of parameters to substitute into template
 
           #Convert YAML to JSON
           git clone https://git.linaro.org/ci/lci-build-tools
