@@ -1,14 +1,15 @@
 # Large image, expressly to be able to do lava-server tests inside
 # which needs lots of dependencies & space for postgresql.
-# for use testing with django1.7.
+# able to use lava packages from Debian unstable for django1.10
+# and python3 testing.
 
 - job:
-    name: lava-debian-stable-amd64-vm
+    name: lava-debian-unstable-amd64-vm
     project-type: freestyle
     defaults: global
     logrotate:
-        daysToKeep: 30
-        numToKeep: 30
+        daysToKeep: 14
+        numToKeep: 5
     properties:
         - authorization:
             anonymous:
@@ -19,7 +20,7 @@
                 - job-cancel
     disabled: false
     node: docker-jessie-amd64
-    display-name: 'LAVA - Build large amd64 Debian Jessie VM'
+    display-name: 'LAVA - Build large amd64 Debian Sid VM'
     wrappers:
         - timestamps
     builders:
@@ -39,9 +40,9 @@
             mkdir out
             sudo vmdebootstrap \
               --verbose \
-              --image=${WORKSPACE}/out/large-stable.img \
+              --image=${WORKSPACE}/out/large-sid.img \
               --size=3G \
-              --distribution=stable \
+              --distribution=unstable \
               --mirror=http://httpredir.debian.org/debian \
               --enable-dhcp \
               --configure-apt \
@@ -52,12 +53,13 @@
               --log-mode=0644
 
             cat > ${WORKSPACE}/out/readme.txt <<EOF
-            lava-debian-stable-amd64-vm build instructions"
+            lava-debian-unstable-amd64-vm build instructions"
             ================================================
 
-            This image can be used for any tests on jessie (django1.7).
+            This image can be used for any tests on sid (django1.9 and
+            later).
 
-            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-stable-amd64-vm.yaml
+            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-unstable-amd64-vm.yaml
             The base system is a Debian Jessie VM with jessie-backports enabled.
 
             echo "deb http://httpredir.debian.org/debian jessie-backports main" > jessie-backports.list
@@ -68,7 +70,7 @@
             See vmdebootstrap.log for the full log.
             EOF
 
-            gzip -9 ${WORKSPACE}/out/large-stable.img
+            gzip -9 ${WORKSPACE}/out/large-sid.img
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
