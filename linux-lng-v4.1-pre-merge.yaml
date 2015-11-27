@@ -188,6 +188,10 @@
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
+            # Create overlay.tar.gz
+            dpkg-deb -x linux-image-*.deb overlay
+            tar -C overlay -acvf ${WORKSPACE}/out/overlay.tar.gz lib
+
             # Create post-build-lava parameters
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
@@ -247,10 +251,6 @@
                 ./lci-build-tools/yaml-to-json.py configs/linux-lng-v4.1-pre-merge/lava-job-definitions/${DEVICE_TYPE}/template-be-cyclic.yaml > out/lava/template-be-cyclic.json
                 ;;
             esac
-
-            # Create overlay.tar.gz
-            dpkg-deb -x linux-image-*.deb overlay
-            tar -C overlay -acvf ${WORKSPACE}/out/overlay.tar.gz lib
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
