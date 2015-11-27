@@ -25,8 +25,17 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
         - string:
+            name: VENDOR
+            default: 'linaro'
+        - string:
             name: OS_FLAVOUR
             default: 'jessie'
+        - string:
+            name: EXT4FS_IMG_SZ
+            default: '2G'
+        - string:
+            name: PLATFORM_ARCH
+            default: 'armhf'
         - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon'
@@ -71,7 +80,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              sudo kpartx -dv out/linaro-${OS_FLAVOUR}-*.sd.img || true
+              sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
               rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
@@ -102,11 +111,11 @@
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
             # Create the hardware pack
-            cat << EOF > linaro-lt-qcom.default
+            cat << EOF > ${VENDOR}-lt-qcom.default
             format: '3.0'
-            name: linaro-lt-qcom
+            name: ${VENDOR}-lt-qcom
             architectures:
-            - armhf
+            - ${PLATFORM_ARCH}
             origin: Linaro
             maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
             support: supported
@@ -171,10 +180,10 @@
 
             for rootfs in ${ROOTFS}; do
 
-              cat linaro-lt-qcom.default > linaro-lt-qcom
+              cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
 
               # additional packages in desktop images
-              [ "${rootfs}" != "developer" ] && cat << EOF >> linaro-lt-qcom
+              [ "${rootfs}" != "developer" ] && cat << EOF >> ${VENDOR}-lt-qcom
             - libdrm2
             - libdrm-freedreno1
             - libdrm-nouveau2
@@ -194,24 +203,24 @@
             - mesa-utils
             EOF
 
-              rm -f `ls hwpack_linaro-lt-qcom_*_armhf_supported.tar.gz`
+              rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz`
               VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-              linaro-hwpack-create --debug linaro-lt-qcom ${VERSION}
-              linaro-hwpack-replace -t `ls hwpack_linaro-lt-qcom_*_armhf_supported.tar.gz` -p `ls linux-image-*-linaro-lt-qcom_*.deb` -r linux-image -d -i
-              linaro-hwpack-replace -t `ls hwpack_linaro-lt-qcom_*_armhf_supported.tar.gz` -p `ls linux-headers-*-linaro-lt-qcom_*.deb` -r linux-headers -d -i
+              linaro-hwpack-create --debug ${VENDOR}-lt-qcom ${VERSION}
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
 
               # Get rootfs
-              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-armhf-rootfs/label=docker-jessie-armhf,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
-              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-armhf-rootfs/label=docker-jessie-armhf,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
               # Create pre-built image(s)
-              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
+              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file ${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_${VENDOR}-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
 
               # Create eMMC rootfs image(s)
               mkdir rootfs
-              for device in $(sudo kpartx -av out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
+              for device in $(sudo kpartx -av out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
                 partition=$(echo ${device} | cut -d'p' -f3)
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
@@ -228,16 +237,16 @@
             LABEL=qcom-firmware /lib/firmware ext4 defaults 0 0
             EOF
 
-              sudo make_ext4fs -o -L rootfs -l 2G -s out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l ${EXT4FS_IMG_SZ} -s out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
               sudo umount rootfs
-              sudo kpartx -dv out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
-              sudo rm -rf rootfs out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo rm -rf rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
 
               # Compress image(s)
-              gzip -9 out/linaro-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
+              gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
               cat >> out/README.textile << EOF
-            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}
+            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}
             EOF
             done
 
@@ -249,7 +258,7 @@
             ramdiskaddr = 0x83000000
             secondaddr = 0x81100000
             tagsaddr = 0x80200100
-            name = linaro-${PLATFORM_NAME}
+            name = ${VENDOR}-${PLATFORM_NAME}
             cmdline = console=tty0 console=${SERIAL_CONSOLE},115200n8 root=/dev/disk/by-partlabel/userdata rootwait rw systemd.unit=multi-user.target
             EOF
 
@@ -287,7 +296,7 @@
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
 
             export BOOT_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img.gz
-            export DATA_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/linaro-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+            export DATA_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
             export SYSTEM_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
 
             rm -rf configs lci-build-tools
@@ -309,7 +318,7 @@
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
 
             export BOOT_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img.gz
-            export DATA_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/linaro-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+            export DATA_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
             export SYSTEM_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
 
             ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json

@@ -16,8 +16,17 @@
                 - job-cancel
     parameters:
         - string:
+            name: VENDOR
+            default: 'arrow'
+        - string:
             name: OS_FLAVOUR
             default: 'jessie'
+        - string:
+            name: EXT4FS_IMG_SZ
+            default: '6800M'
+        - string:
+            name: PLATFORM_ARCH
+            default: 'arm64'
         - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon-arm64'
@@ -78,7 +87,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              sudo kpartx -dv out/arrow-${OS_FLAVOUR}-*.sd.img || true
+              sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
               rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
@@ -106,19 +115,19 @@
             export kernel_flavour=arrow-lt-qcom
             export kernel_config="defconfig distro.config"
             export MAKE_DTBS=true
-            export ARCH=arm64
-            export tcbindir="${HOME}/srv/toolchain/arm64-tc-14.09/bin"
+            export ARCH=${PLATFORM_ARCH}
+            export tcbindir="${HOME}/srv/toolchain/${PLATFORM_ARCH}-tc-14.09/bin"
             export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
 
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
             bash -x lci-build-tools/jenkins_kernel_build_inst
 
             # Create the hardware pack
-            cat << EOF > arrow-lt-qcom.default
+            cat << EOF > ${VENDOR}-lt-qcom.default
             format: '3.0'
-            name: arrow-lt-qcom
+            name: ${VENDOR}-lt-qcom
             architectures:
-            - arm64
+            - ${PLATFORM_ARCH}
             origin: Linaro
             maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
             support: supported
@@ -159,8 +168,8 @@
               repo: http://repo.linaro.org/ubuntu/linaro-overlay ${OS_FLAVOUR} main
               debian: http://ftp.debian.org/debian/ ${OS_FLAVOUR} main contrib non-free
             packages:
-            - linux-image-arm64
-            - linux-headers-arm64
+            - linux-image-${PLATFORM_ARCH}
+            - linux-headers-${PLATFORM_ARCH}
             - firmware-linux
             - libasound2
             - wcnss-wlan
@@ -169,7 +178,7 @@
             EOF
 
             # additional packages for Arrow flavour
-            cat << EOF >> arrow-lt-qcom.default
+            cat << EOF >> ${VENDOR}-lt-qcom.default
             - libglib2.0-dev
             - libssl-dev
             - iftop
@@ -192,10 +201,10 @@
 
             for rootfs in ${ROOTFS}; do
 
-              cat arrow-lt-qcom.default > arrow-lt-qcom
+              cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
 
               # additional packages in desktop images
-              [ "${rootfs}" != "developer" ] && cat << EOF >> arrow-lt-qcom
+              [ "${rootfs}" != "developer" ] && cat << EOF >> ${VENDOR}-lt-qcom
             - libdrm2
             - libdrm-freedreno1
             - libdrm-nouveau2
@@ -216,24 +225,24 @@
             - gstreamer1.0-plugins-v4l2
             EOF
 
-              rm -f `ls hwpack_arrow-lt-qcom_*_arm64_supported.tar.gz`
+              rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz`
               VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-              linaro-hwpack-create --debug arrow-lt-qcom ${VERSION}
-              linaro-hwpack-replace -t `ls hwpack_arrow-lt-qcom_*_arm64_supported.tar.gz` -p `ls linux-image-*-arrow-lt-qcom_*.deb` -r linux-image -d -i
-              linaro-hwpack-replace -t `ls hwpack_arrow-lt-qcom_*_arm64_supported.tar.gz` -p `ls linux-headers-*-arrow-lt-qcom_*.deb` -r linux-headers -d -i
+              linaro-hwpack-create --debug ${VENDOR}-lt-qcom ${VERSION}
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
 
               # Get rootfs
-              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
-              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
               # Create pre-built image(s)
-              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file arrow-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_arrow-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
+              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file ${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_${VENDOR}-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
 
               # Create eMMC rootfs image(s)
               mkdir rootfs
-              for device in $(sudo kpartx -av out/arrow-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
+              for device in $(sudo kpartx -av out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
                 partition=$(echo ${device} | cut -d'p' -f3)
                 [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
@@ -265,16 +274,16 @@
               sudo cp -f qcom_firmware/device/qcom/msm8916_64/WCNSS_qcom_wlan_nv.bin rootfs/lib/firmware/wlan/prima
               sudo rm -f rootfs/lib/firmware/wlan/macaddr0
 
-              sudo make_ext4fs -o -L rootfs -l 6800M -s out/arrow-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l ${EXT4FS_IMG_SZ} -s out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
               sudo umount rootfs
-              sudo kpartx -dv out/arrow-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
-              sudo rm -rf rootfs out/arrow-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo rm -rf rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
 
               # Compress image(s)
-              gzip -9 out/arrow-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
+              gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
               cat >> out/README.textile << EOF
-            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
+            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}
             EOF
             done
 
@@ -291,12 +300,12 @@
             mkbootimg \
               --kernel out/Image \
               --ramdisk out/initrd.img-* \
-              --output out/boot-arrow-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
+              --output out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
               --dt out/dt.img \
               --pagesize "2048" \
               --base "0x80000000" \
               --cmdline "root=/dev/disk/by-partlabel/rootfs rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
-            gzip -9 out/boot-arrow-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
+            gzip -9 out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
 
             # Final preparation for publishing
             cp -a linux-*.deb out/
@@ -347,8 +356,8 @@
             git log -1
 
             cd emmc_linux
-            cp ../../out/boot-arrow-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz boot.img.gz
-            cp ../../out/arrow-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${VERSION}.img.gz rootfs.img.gz
+            cp ../../out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz boot.img.gz
+            cp ../../out/${VENDOR}-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${VERSION}.img.gz rootfs.img.gz
             gunzip *.img.gz
 
             cat << EOF >> os.json
@@ -385,7 +394,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out snapshots/dragonboard410c/arrow/debian/${BUILD_NUMBER}
+              out snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
