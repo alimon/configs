@@ -248,6 +248,10 @@
                 ;;
             esac
 
+            # Create overlay.tar.gz
+            dpkg-deb -x linux-image-*.deb overlay
+            tar -C overlay -acvf ${WORKSPACE}/out/overlay.tar.gz lib
+
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
