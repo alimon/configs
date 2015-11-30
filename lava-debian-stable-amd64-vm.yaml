@@ -35,6 +35,15 @@
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
 
+            # FIXME: workaround vmdebootstrap/grub usage in docker (not needed on bare-metal machine)
+            # This is mainly to fix a problem in update-grub where /etc/grub.d/10_linux
+            # Checks if the $GRUB_DEVICE_UUID exists in /dev/disk/by-uuid and falls
+            # back to $GRUB_DEVICE if it doesn't.
+            # $GRUB_DEVICE is /dev/mapper/loopXpY (on docker)
+            # Creating the symlink ensures that grub consistently uses
+            # $GRUB_DEVICE_UUID when creating /boot/grub/grub.cfg
+            sudo wget http://people.linaro.org/~fathi.boudra/grub.py -O /usr/lib/python2.7/dist-packages/vmdebootstrap/grub.py
+
             mkdir out
             sudo vmdebootstrap \
               --verbose \
