@@ -5,6 +5,7 @@
     logrotate:
         daysToKeep: 30
         numToKeep: 30
+        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
@@ -19,6 +20,9 @@
             name: LAVA_TOKEN
             default: ${LAVA_TOKEN}
         - string:
+            name: hwpack
+            default: 'lsk-vexpress64'
+        - string:
             name: gcc_version
             default: '5.2'
     disabled: false
@@ -28,6 +32,7 @@
     wrappers:
         - timestamps
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -40,21 +45,27 @@
             git clone git://git.linaro.org/ci/daily-prebuilt-images.git
 
             export BOOTLOADER="uefi"
-            DELETEDIR=1 ./daily-prebuilt-images/build-images -w lsk-vexpress64 -b lamp-armv8-gcc-${gcc_version} -p openembedded -f
-        - ssh:
-            site: 'snapshots.linaro.org'
-            target: '${JOB_NAME}/${BUILD_NUMBER}/openembedded'
-            source: 'out/pre-built/**'
-            timeout: 120000
-            remove-prefix: 'out'
-            always-publish-from-master: true
-        - ssh:
-            site: 'snapshots.linaro.org file-move'
-            target: ''
-            source: ''
-            command: 'reshuffle-files -t prebuilt -j ${JOB_NAME} -n ${BUILD_NUMBER}'
-            timeout: 120000
-            always-publish-from-master: true
+            DELETEDIR=1 ./daily-prebuilt-images/build-images -w ${hwpack} -b lamp-armv8-gcc-${gcc_version} -p openembedded -f
+
+            export HWPACK_JOB_NAME=${JOB_NAME}
+
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_lamp-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
+            export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
+            export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              out/pre-built/${hwpack}/${HWPACK_BUILD_NUMBER} openembedded/pre-built/${hwpack}/${HWPACK_BUILD_NUMBER}
+
+            cat << EOF > env_var_parameters
+            HWPACK_JOB_NAME=${HWPACK_JOB_NAME}
+            HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER}
+            EOF
+        - inject:
+            properties-file: env_var_parameters
         - shell: |
             #!/bin/bash
 
@@ -68,7 +79,7 @@
 
             cat << EOF > ${WORKSPACE}/metadata.json
             {
-              "hwpack.type": "lsk-vexpress64"
+              "hwpack.type": "${hwpack}"
             }
             EOF
 
@@ -84,13 +95,10 @@
             set -x
 
             export DEVICE_TYPE=rtsm_fvp_base-aemv8a
-            export HWPACK_JOB_NAME=${JOB_NAME}
-            export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-lsk-vexpress64/"
+            export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-${hwpack}/"
 
             export ROOTFS_TYPE=lamp-armv8-gcc-${gcc_version}
             export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_lamp-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
-            export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
-            export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
 
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
@@ -99,7 +107,7 @@
             HWPACK_FILE_NAME=${HWPACK_FILE_NAME}
             HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER}
             LAVA_TEST_PLAN='busybox device-tree ethernet kernel-version perf toolchain libhugetlbfs'
-            IMAGE_URL=http://snapshots.linaro.org/openembedded/pre-built/lsk-vexpress64/${HWPACK_BUILD_NUMBER}/${HWPACK_FILE_NAME}
+            IMAGE_URL=http://snapshots.linaro.org/openembedded/pre-built/${hwpack}/${HWPACK_BUILD_NUMBER}/${HWPACK_FILE_NAME}
             DEPLOY_IMAGE_PARAMETERS_URL=${JOB_URL}/ws/deploy_image_parameters.json
             METADATA_URL=${JOB_URL}/ws/metadata.json
             BOOT_IMAGE_PARAMETERS_URL=${JOB_URL}/ws/boot_image_parameters.json
@@ -114,13 +122,10 @@
             set -x
 
             export DEVICE_TYPE=juno
-            export HWPACK_JOB_NAME=${JOB_NAME}
             export BUNDLE_STREAM_NAME="/private/team/wg/wg-private/"
 
             export ROOTFS_TYPE=lamp-armv8-gcc-${gcc_version}
             export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_lamp-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
-            export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
-            export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
 
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
@@ -129,7 +134,7 @@
             HWPACK_FILE_NAME=${HWPACK_FILE_NAME}
             HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER}
             LAVA_TEST_PLAN='busybox device-tree ethernet kernel-version perf toolchain libhugetlbfs'
-            IMAGE_URL=http://snapshots.linaro.org/openembedded/pre-built/lsk-vexpress64/${HWPACK_BUILD_NUMBER}/${HWPACK_FILE_NAME}
+            IMAGE_URL=http://snapshots.linaro.org/openembedded/pre-built/${hwpack}/${HWPACK_BUILD_NUMBER}/${HWPACK_FILE_NAME}
             METADATA_URL=${JOB_URL}/ws/metadata.json
             EOF
         - trigger-builds:
@@ -139,6 +144,5 @@
     publishers:
         - archive:
             artifacts: '*.json'
-            latest-only: true
         - email:
             recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org riku.voipio@linaro.org'
