@@ -18,6 +18,9 @@
         - password:
             name: LAVA_TOKEN
             default: ${LAVA_TOKEN}
+        - string:
+            name: gcc_version
+            default: '5.2'
     disabled: false
     node: precise_hwpack_cloud
     child-workspace: .
@@ -36,8 +39,8 @@
             git clone git://git.linaro.org/ci/daily-prebuilt-images.git
 
             export BOOTLOADER="uefi"
-            DELETEDIR=1 ./daily-prebuilt-images/build-images -w vexpress64 -b minimal-armv8-gcc-4.9 -p openembedded -f
-            REUSE=1 ./daily-prebuilt-images/build-images -w vexpress64 -b lamp-armv8-gcc-4.9 -p openembedded -f
+            DELETEDIR=1 ./daily-prebuilt-images/build-images -w vexpress64 -b minimal-armv8-gcc-${gcc_version} -p openembedded -f
+            REUSE=1 ./daily-prebuilt-images/build-images -w vexpress64 -b lamp-armv8-gcc-${gcc_version} -p openembedded -f
         - ssh:
             site: 'snapshots.linaro.org'
             target: '${JOB_NAME}/${BUILD_NUMBER}/openembedded'
@@ -62,14 +65,14 @@
             export HWPACK_JOB_NAME=${JOB_NAME}
             export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-vexpress64/"
 
-            export ROOTFS_TYPE=minimal-armv8-gcc-4.9
-            export HWPACK_FILE_NAME=`find out/pre-built -type f -name '*_minimal-armv8-gcc-4.9_*.img.gz' |xargs basename`
+            export ROOTFS_TYPE=minimal-armv8-gcc-${gcc_version}
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_minimal-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
             export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
             export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
             python daily-prebuilt-images/lava-submit.py
 
-            export ROOTFS_TYPE=lamp-armv8-gcc-4.9
-            export HWPACK_FILE_NAME=`find out/pre-built -type f -name '*_lamp-armv8-gcc-4.9_*.img.gz' |xargs basename`
+            export ROOTFS_TYPE=lamp-armv8-gcc-${gcc_version}
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_lamp-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
             export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
             export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
             python daily-prebuilt-images/lava-submit.py
@@ -105,8 +108,8 @@
             export HWPACK_JOB_NAME=${JOB_NAME}
             export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-vexpress64/"
 
-            export ROOTFS_TYPE=lamp-armv8-gcc-4.9
-            export HWPACK_FILE_NAME=`find out/pre-built -type f -name '*_lamp-armv8-gcc-4.9_*.img.gz' |xargs basename`
+            export ROOTFS_TYPE=lamp-armv8-gcc-${gcc_version}
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_lamp-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
             export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
             export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
 
@@ -134,8 +137,8 @@
             export HWPACK_JOB_NAME=${JOB_NAME}
             export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-vexpress64/"
 
-            export ROOTFS_TYPE=minimal-armv8-gcc-4.9
-            export HWPACK_FILE_NAME=`find out/pre-built -type f -name '*_minimal-armv8-gcc-4.9_*.img.gz' |xargs basename`
+            export ROOTFS_TYPE=minimal-armv8-gcc-${gcc_version}
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_minimal-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
             export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
             export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
 
@@ -164,8 +167,8 @@
             export HWPACK_JOB_NAME=${JOB_NAME}
             export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-vexpress64/"
 
-            export ROOTFS_TYPE=lamp-armv8-gcc-4.9
-            export HWPACK_FILE_NAME=`find out/pre-built -type f -name '*_lamp-armv8-gcc-4.9_*.img.gz' |xargs basename`
+            export ROOTFS_TYPE=lamp-armv8-gcc-${gcc_version}
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_lamp-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
             export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
             export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
 
@@ -194,8 +197,8 @@
             export HWPACK_JOB_NAME=${JOB_NAME}
             export BUNDLE_STREAM_NAME="/public/team/linaro/pre-built-vexpress64/"
 
-            export ROOTFS_TYPE=minimal-armv8-gcc-4.9
-            export HWPACK_FILE_NAME=`find out/pre-built -type f -name '*_minimal-armv8-gcc-4.9_*.img.gz' |xargs basename`
+            export ROOTFS_TYPE=minimal-armv8-gcc-${gcc_version}
+            export HWPACK_FILE_NAME=`find out/pre-built -type f -name "*_minimal-armv8-gcc-${gcc_version}_*.img.gz" |xargs basename`
             export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
             export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
 
