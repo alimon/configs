@@ -22,7 +22,7 @@
             description: 'Delete schroot sessions more then days old.  To effectively disable time check use 0.'
         - bool:
             name: dry_run
-            default: 'true'
+            default: 'false'
             description: 'Whether to do a dry-run'
         - string:
             name: schroot_name
@@ -97,6 +97,7 @@
               fi
             done
 
+            status="0"
             if [ ${#rm_sessions[@]} != 0 ]; then
               echo "Removing sessions:"
               (cd /var/lib/schroot/session && ls -l "${rm_sessions[@]}")
@@ -108,6 +109,7 @@
                     echo "SUCCESS"
                   else
                     echo "FAILED"
+                    status="1"
                   fi
                 done
               else
@@ -117,3 +119,4 @@
               echo "Sessions report after:"
               ls -l /var/lib/schroot/session/ || true
             fi
+            exit $status
