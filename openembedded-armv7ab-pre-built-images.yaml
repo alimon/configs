@@ -15,7 +15,7 @@
             name: gcc_version
             default: '5.2'
     disabled: false
-    node: precise_hwpack_cloud
+    node: master
     child-workspace: .
     display-name: 'OpenEmbedded pre-built images (ARMv7-A big-endian)'
     axes:
@@ -28,18 +28,21 @@
             type: slave
             name: label
             values:
-                - precise_hwpack_cloud
+                - docker-jessie-amd64
     execution-strategy:
         sequential: true
     wrappers:
         - timestamps
         - matrix-tie-parent:
-            node: precise_hwpack_cloud
+            node: master
     builders:
         - shell: |
             #!/bin/bash
 
             set -x
+
+            sudo apt-get update
+            sudo apt-get install -y bzr
 
             rm -rf daily-prebuilt-images
             git clone git://git.linaro.org/ci/daily-prebuilt-images.git
