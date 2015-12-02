@@ -57,14 +57,6 @@
             # Publish
             mkdir out
 
-            cat > out/README.txt << EOF
-            Build information:
-            * build: ${BUILD_URL}
-            * git URL: ${GIT_URL}
-            * git branch: ${GIT_BRANCH}
-            * git commit: ${GIT_COMMIT}
-            EOF
-
             cp -a u-boot.bin out/
             cp -a u-boot.dtb out/
             cp -a u-boot-dtb.bin out/
@@ -72,6 +64,20 @@
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
+
+            # Build information
+            cat > out/README.textile << EOF
+
+            h4. 96Boards - Actions Semi Bubblegum U-Boot'
+
+            U-Boot development tree for Actions Semi Bubblegum
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * U-Boot tree: "$GIT_URL":$GIT_URL
+            * U-Boot branch: $GIT_BRANCH
+            * U-Boot commit: $GIT_COMMIT
+            EOF
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
