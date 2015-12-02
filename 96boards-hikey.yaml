@@ -250,10 +250,10 @@
             ExecStartPost=/bin/systemctl disable resize-helper.service
 
             [Install]
-            WantedBy=default.target
+            WantedBy=basic.target
             EOF
-              sudo mkdir -p rootfs/etc/systemd/system/default.target.wants
-              (cd rootfs/etc/systemd/system/default.target.wants && sudo ln -sf /lib/systemd/system/resize-helper.service)
+              sudo mkdir -p rootfs/lib/systemd/system/basic.target.wants
+              (cd rootfs/lib/systemd/system/basic.target.wants && sudo ln -sf /lib/systemd/system/resize-helper.service)
 
               sudo rm -rf rootfs/dev rootfs/var/lib/apt/lists rootfs/lib/modules/*-linaro-hikey
               sudo mkdir rootfs/dev rootfs/var/lib/apt/lists rootfs/home/linaro/bin
