@@ -1,0 +1,83 @@
+- job:
+    name: 96boards-bubblegum-u-boot
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: '96boards - Actions Semi Bubblegum U-Boot'
+    scm:
+        - git:
+            url: https://git.linaro.org/people/paul.liu/vendor-uboot.git
+            refspec: +refs/heads/bubblegum96:refs/remotes/origin/bubblegum96
+            name: origin
+            branches:
+                - refs/heads/bubblegum96
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out
+              git clean -fdx
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y libssl-dev python-pycurl
+
+            # Use pre-installed linaro toolchain
+            export PATH="${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
+            export CROSS_COMPILE="aarch64-linux-gnu-"
+
+            make s900_96board_defconfig
+            make -j$(getconf _NPROCESSORS_ONLN)
+
+            # Publish
+            mkdir out
+
+            cat > out/README.txt << EOF
+            Build information:
+            * build: ${BUILD_URL}
+            * git URL: ${GIT_URL}
+            * git branch: ${GIT_BRANCH}
+            * git commit: ${GIT_COMMIT}
+            EOF
+
+            cp -a u-boot.bin out/
+            cp -a .config out/u-boot.config
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/bubblegum/linaro/u-boot/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
