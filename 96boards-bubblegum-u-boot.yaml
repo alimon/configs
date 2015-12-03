@@ -70,22 +70,25 @@
             * git commit: ${GIT_COMMIT}
             EOF
 
-            cat > out/HEADER.html << EOF
-            <html>
-            <body>
-                <div id="content"><meta http-equiv="content-type" content="text/html; charset=utf-8" />
-                <pre style="font-size:.85em; padding:0 0 0 10;">
-                    <linaro:include file="README.txt" />
-                </pre>
-            </body>
-            </html>
-            EOF
-
             cp -a u-boot-dtb.img out/
             cp -a .config out/u-boot.config
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
+
+            # Build information (textile, for the web view)
+            cat > out/README.textile << EOF
+
+            h4. 96Boards - Actions Semi Bubblegum - U-Boot
+
+            U-Boot development build for Actions Semi Bubblegum
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * U-Boot tree: "$GIT_URL":$GIT_URL
+            * U-Boot branch: $GIT_BRANCH
+            * U-Boot commit: $GIT_COMMIT
+            EOF
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
