@@ -1,0 +1,109 @@
+- job:
+    name: 96boards-reference-platform-openembedded
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'core-image-minimal'
+    disabled: false
+    node: master
+    display-name: '96boards - Reference Platform - OpenEmbedded'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - dragonboard-410c
+                - hikey
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb-x11
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-amd64
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+                echo "Running cleanup_exit..."
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl chrpath gawk texinfo libsdl1.2-dev whiptail diffstat cpio
+
+            mkdir -p ${HOME}/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            chmod a+x ${HOME}/bin/repo
+            export PATH=${HOME}/bin:${PATH}
+
+            # initialize repo if not done already
+            if [ ! -e ".repo/manifest.xml" ]; then
+               repo init -u https://github.com/96boards/oe-rpb-manifest.git -b oe-rpb-manifest
+
+               # link to shared downloads on persistent disk
+               # our builds config is expecting downloads and sstate-cache, here.
+               # DL_DIR = "${OEROOT}/sources/downloads"
+               # SSTATE_DIR = "${OEROOT}/build/sstate-cache"
+               mkdir -p ${HOME}/srv/oe/downloads ${HOME}/srv/oe/sstate-cache
+               mkdir -p sources build
+               ln -s ${HOME}/srv/oe/downloads sources/
+               ln -s ${HOME}/srv/oe/sstate-cache build/
+            fi
+
+            repo sync
+            repo manifest -r
+            MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
+
+            # the setup-environment will create auto.conf and site.conf
+            # make sure we get rid of old config.
+            # let's remove the previous TMPDIR as well.
+            # we want to preserve build/buildhistory though.
+            rm -rf conf build/tmp-*glibc/
+            source setup-environment
+
+            # Add job BUILD_NUMBER to image file names
+            echo "IMAGE_NAME_append = \"-${BUILD_NUMBER}\"" > conf/auto.conf
+
+            bitbake ${IMAGES}
+
+            # Prepare files to publish
+            rm -f ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE}/*.txt
+            find ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE} -type l -delete
+
+            # Create MD5SUMS file
+            (cd ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE} && md5sum * > MD5SUMS.txt)
+    publishers:
+        - archive:
+            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
