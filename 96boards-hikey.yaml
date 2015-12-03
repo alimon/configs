@@ -65,12 +65,12 @@
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
             sudo apt-get install -y kpartx python-pycurl
-            wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb
-            sudo dpkg -i --force-all android-tools-fsutils_*.deb
-            rm -f android-tools-fsutils_*.deb
-            # FIXME - temporary workaround
-            sudo wget https://git.linaro.org/ci/linaro-image-tools.git/blob_plain/HEAD:/linaro-hwpack-install -O /usr/bin/linaro-hwpack-install
-            sudo chmod +x /usr/bin/linaro-hwpack-install
+            wget -q \
+              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2015.11-1.linarojessie.1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2015.11-1.linarojessie.1_all.deb
+            sudo dpkg -i --force-all *.deb
+            rm -f *.deb
 
             export LANG=C
             export make_bootwrapper=false
@@ -219,8 +219,6 @@
               (cd rootfs/boot && sudo ln -s Image-* Image)
               sudo cp -a out/hi6220-hikey.dtb rootfs/boot/
               (cd rootfs/boot && sudo ln -s initrd.img-* initrd.img)
-
-              sudo ln -sf /etc/resolvconf/run/resolv.conf rootfs/etc/resolv.conf
 
               cat << EOF | sudo tee rootfs/etc/NetworkManager/dispatcher.d/99hikey
             #!/bin/sh
