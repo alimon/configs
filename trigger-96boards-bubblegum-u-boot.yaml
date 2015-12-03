@@ -1,0 +1,33 @@
+- job:
+    name: trigger-96boards-bubblegum-u-boot
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: '96boards - Actions Semi Bubblegum - U-Boot'
+    scm:
+        - git:
+            url: https://git.linaro.org/people/paul.liu/vendor-uboot.git
+            refspec: +refs/heads/bubblegum96:refs/remotes/origin/bubblegum96
+            name: origin
+            branches:
+                - refs/heads/bubblegum96
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - trigger-builds:
+            - project: '96boards-bubblegum-u-boot'
