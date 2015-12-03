@@ -36,8 +36,8 @@
             description: 'Attempt to bootstrap GCC for compatible host and target combinations'
         - string:
             name: excludecheck
-            default: 'gdb'
-            description: 'Do not run "make check" on this component'
+            default: 'binutils gdb'
+            description: 'Do not run "make check" on these components'
         - bool:
             name: rebuild
             default: true
@@ -172,6 +172,11 @@
               norebuild="--norebuild"
             fi
 
+            excludecheck_opt=""
+            for testsuite in $excludecheck; do
+              excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
+            done
+
             ulimit -u 5000
 
             session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
@@ -183,7 +188,7 @@
             trap "schroot -f -e -c session:$session_id || sleep 60 || schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
 
             result="0"
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result="$?"
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result="$?"
 
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
