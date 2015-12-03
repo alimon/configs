@@ -1,0 +1,48 @@
+format: '3.0'
+name: linaro-bubblegum
+architectures:
+- arm64
+origin: Linaro
+maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+support: supported
+serial_tty: ttyS5
+kernel_addr: '0x00080000'
+initrd_addr: '0x01ffffc0'
+load_addr: '0x00080000'
+dtb_addr: '0x10000000'
+partition_layout: reserved_bootfs_rootfs
+mmc_id: '1:2'
+kernel_file: boot/Image-*-bubblegum
+initrd_file: boot/initrd.img-*-bubblegum
+dtb_file: lib/firmware/*-linaro-bubblegum/device-tree/s900_96board.dtb
+boot_script: boot.scr
+boot_min_size: 32
+extra_serial_options:
+- console=tty0
+- console=ttyS5,115200n8
+assume_installed:
+- adduser
+- apt
+- apt-utils
+- debconf-i18n
+- debian-archive-keyring
+- gcc-4.8
+- gnupg
+- ifupdown
+- initramfs-tools
+- iproute2
+- irqbalance
+- isc-dhcp-client
+- kmod
+- netbase
+- udev
+packages:
+- linux-image-arm64
+- linux-headers-arm64
+- firmware-linux
+- firmware-ti-connectivity
+- ti-uim
+- ti-calibrator
+sources:
+  debian: http://http.debian.net/debian/ jessie main contrib non-free
+  repo: http://repo.linaro.org/ubuntu/linaro-overlay jessie main
