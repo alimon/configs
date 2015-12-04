@@ -234,25 +234,6 @@
             /dev/disk/by-partlabel/boot   /boot/efi vfat defaults          0 0
             EOF
 
-              # FIXME - move to 96boards-tools-common package
-              sudo wget https://raw.githubusercontent.com/fboudra/resize-helper/master/resize-helper.sh -O rootfs/usr/sbin/resize-helper
-              sudo chmod a+x rootfs/usr/sbin/resize-helper
-              cat << EOF | sudo tee rootfs/lib/systemd/system/resize-helper.service
-            [Unit]
-            Description=Resize root filesystem to fit available disk space
-            After=systemd-remount-fs.service
-
-            [Service]
-            Type=oneshot
-            ExecStart=-/usr/sbin/resize-helper
-            ExecStartPost=/bin/systemctl disable resize-helper.service
-
-            [Install]
-            WantedBy=basic.target
-            EOF
-              sudo mkdir -p rootfs/lib/systemd/system/basic.target.wants
-              (cd rootfs/lib/systemd/system/basic.target.wants && sudo ln -sf /lib/systemd/system/resize-helper.service)
-
               sudo rm -rf rootfs/dev rootfs/var/lib/apt/lists rootfs/lib/modules/*-linaro-hikey
               sudo mkdir rootfs/dev rootfs/var/lib/apt/lists rootfs/home/linaro/bin
 
