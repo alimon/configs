@@ -98,6 +98,7 @@
                 VERSION=$(ls -rv EDKII_openssl-*.patch|head -1|sed 's/^.*-\([0-9.a-z]*\).patch/\1/')
 
                 wget -O - -q "http://www.openssl.org/source/openssl-${VERSION}.tar.gz" | tar xzf -
+                [ $? -eq 0 ] || wget -O - -q "http://www.openssl.org/source/old/${VERSION%[a-z]*}/openssl-${VERSION}.tar.gz" | tar xzf -
                 ( cd openssl-${VERSION}; patch -p0 -i ../EDKII_openssl-${VERSION}.patch )
                 ./Install.sh
 
