@@ -88,7 +88,7 @@
             BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
-            ${BUILD_SHELL} -c 'set +x; while sleep 1; do grep -H . /proc/sys/kernel/pty/nr; if [ ! -e /dev/pts/ptmx ]; then echo /dev/pts/ptmx went missing; fi; done' &
+            ${BUILD_SHELL} -c 'set +x; while sleep 1; do grep -H . /proc/sys/kernel/pty/*; if [ ! -e /dev/pts/ptmx ]; then echo /dev/pts/ptmx went missing; ls -ld /dev/pts; ls -l /dev/pts; grep pts /proc/mounts; fi; done' &
             PTY_MON=$!
 
             # Sometimes /dev/pts can't get unmounted on the first try.
