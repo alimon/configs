@@ -110,6 +110,9 @@
             jobs=$(getconf _NPROCESSORS_ONLN)
             echo BUILD STARTED $(date)
 
+            # test that expect is working and output some debug info if not
+            ${BUILD_SHELL} -c 'if ! echo "spawn true" | /usr/bin/expect -f - >/dev/null; then echo "expect cannot spawn processes. Aborting make check."; echo "some debug info follows..."; echo "running: ls -l /dev/ptmx"; ls -l /dev/ptmx; echo "running: ls -l /dev/pts"; ls -l /dev/pts; echo "running: grep devpts /proc/mounts"; grep devpts /proc/mounts; exit 1; fi'
+
             # If configure or build fails, the execution will stop
             # because of 'set -e'. But for 'make check' we want to
             # execute all the tests, and report if there were some
