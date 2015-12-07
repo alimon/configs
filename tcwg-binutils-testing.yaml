@@ -82,17 +82,15 @@
             set -e
             set -x
 
-            # Do not use schroots, testing ptys problems...
-            BUILD_SHELL=bash
-            #schroot_image="tcwg-build-${schroot_arch}-trusty"
+            schroot_image="tcwg-build-${schroot_arch}-trusty"
 
-            #session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
-            #BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
-            #$BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
+            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
-            #trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; }" 0 1 2 3 5 9 13 15
+            trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; }" 0 1 2 3 5 9 13 15
 
             case $target in
                 arm-wince-pe)
