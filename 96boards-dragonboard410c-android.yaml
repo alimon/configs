@@ -15,16 +15,13 @@
     parameters:
         - string:
             name: OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150813/proprietary_LA.BR.1.2.4_01810_8x16_1.tgz 
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151207/proprietary_LA.BR.1.2.4_01810_8x16.0_410C_Nov.tgz
         - string:
             name: PATCHSET_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150918/LA.BR.1.2.4-01810-8x16.0_410C_Aug.tar.gz
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151207/PATCH_8x16_129905_410c_LA.BR.1.2.4-01810-8x16.0.tar.gz
         - string:
             name: SYSTEM_OVERLAY_URL
             default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150813/system_overlay.tar.bz2
-        - string:
-            name: FCC_BINARIES_OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151202/fcc-binaries.tar.gz
         - string:
             name: MANIFEST_FILENAME
             default: LA.BR.1.2.4-01810-8x16.0.xml
@@ -86,15 +83,10 @@
             tar -zxvf ${PATCHSET}
             cd $(basename "${PATCHSET}" .tar.gz)
             pw=${PWD}
-            cp device/qcom/msm8916_64/bootanimation.zip ../device/qcom/msm8916_64/
             export patches=$(find . -iname *.patch | sort)
             for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project};rm -rf .git/rebase-apply; git am ${pw}/${patch}; cd -; done
             cd ..
             rm -rf ${pw}
-
-            FCC_OVERLAY=$(basename ${FCC_BINARIES_OVERLAY_URL})
-            wget --progress=dot -e dotbytes=2M ${FCC_BINARIES_OVERLAY_URL} -O ${FCC_OVERLAY}
-            tar -zxvf ${FCC_OVERLAY}
 
             source build/envsetup.sh
             lunch msm8916_64-userdebug
