@@ -49,6 +49,9 @@
               rm -rf build/tmp/
             }
 
+            # Enable VT
+            sed -i 's/USE_VT = "0"/USE_VT = "1"/' meta/conf/machine/genericarmv8.conf
+
             # Build
             source oe-init-build-env
             echo "BBLAYERS += \" ${WORKSPACE}/meta-luv\"" >> conf/bblayers.conf
