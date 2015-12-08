@@ -19,7 +19,7 @@
     parameters:
         - string:
             name: PROJECTS
-            default: 'glance nova'
+            default: 'cinder glance keystone neutron nova swift'
     disabled: false
     node: docker-jessie-arm64
     display-name: 'GiftWrap for OpenStack'
@@ -44,7 +44,7 @@
             set -ex
 
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends build-essential ruby ruby-dev python-dev git python-pip libxml2-dev libxslt-dev libffi-dev libmysqlclient-dev libpq-dev libjpeg-dev
+            sudo apt-get install -y --no-install-recommends build-essential ruby ruby-dev python-dev git python-pip libxml2-dev libxslt-dev libffi-dev libmysqlclient-dev libpq-dev libjpeg-dev libldap2-dev libsasl2-dev
             sudo gem install --no-ri --no-rdoc fpm
             sudo pip install -r requirements.txt .
             sudo python setup.py install
