@@ -1,0 +1,50 @@
+- job:
+    name: qa-check-web-links
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: 'QA - Check web links'
+    scm:
+        - git:
+            url: https://git.linaro.org/qa/checklink.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+    builders:
+        -shell: |
+            #!/bin/sh
+
+            set -e
+
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends linkchecker
+
+            URLs=$(cat page_checklist.txt | tr '\n' ' ')
+            echo "Checking ${URLs}"
+            python check-link.py -f linaro-release-page.cfg ${URLs}
+    publishers:
+        - archive:
+            artifacts: '*.txt'
+        - email-ext:
+            recipients: 'qa-team@linaro.org'
+            attachments: 'link_check_result.txt'
