@@ -1,0 +1,132 @@
+- job:
+    name: 96boards-reference-kernel-enterprise
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: KERNEL_BRANCH
+            default: '96b/2015.12'
+        - string:
+            name: KERNEL_CONFIG
+            default: 'defconfig'
+    disabled: false
+    node: docker-utopic-amd64
+    display-name: '96boards - Reference Component Enterprise - Linux Kernel'
+    scm:
+        - git:
+            url: https://git.linaro.org/people/amit.kucheria/kernel.git
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y ccache python-pycurl
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+            }
+
+            export LANG=C
+            CCACHE_DIR="${HOME}/srv/ccache"
+            CCACHE_UNIFY=1
+            CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
+            export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS
+            export use_ccache=true
+            export make_bootwrapper=false
+            export make_install=true
+            export kernel_flavour=reference-enterprise
+            export kernel_config="${KERNEL_CONFIG}"
+            export MAKE_DTBS=true
+            export ARCH=arm64
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
+            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
+
+            # Export the kernel packaging version
+            kernel_version=`make kernelversion`
+            kernel_release=${kernel_version}-linaro-${kernel_flavour}
+            export KDEB_PKGVERSION="${kernel_release}-${BUILD_NUMBER}"
+
+            # Build the kernel
+            rm -rf lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            bash -x lci-build-tools/jenkins_kernel_build_inst
+
+            # Final preparation for publishing
+            cp -a *.dsc *.changes *.deb out/
+            cp linux*orig.tar.gz out/
+
+            # Create MD5SUMS file
+            (cd out && md5sum *.tar.gz *.deb > MD5SUMS.txt)
+
+            h4. 96Boards - Reference Component Enterprise - Linux Kernel
+
+            Linux Kernel build consumed by the 96Boards Reference Platform Builds Enterprise Edition
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Kernel tree: "$GIT_URL":$GIT_URL
+            * Kernel branch: $GIT_BRANCH
+            * Kernel commit: $GIT_COMMIT
+            * Kernel version: $kernel_version
+            * Kernel release: $kernel_release
+            * Kernel deb version: $KDEB_PKGVERSION
+            EOF
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/
+
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
+
+            # Create post-build parameters (useful for other jobs)
+            cat << EOF >> post_build_parameters
+            KERNEL_VERSION=${kernel_version}
+            KERNEL_RELEASE=${kernel_release}
+            KDEB_PKGVERSION=${KDEB_PKGVERSION}
+            EOF
+        - inject:
+            properties-file: post_build_parameters
+    publishers:
+        - email:
+            recipients: 'ricardo.salveti@linaro.org amit.kucheria@linaro.org'
