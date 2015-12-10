@@ -45,7 +45,11 @@
 
             sudo yum update
             sudo yum groupinstall "Development Tools" -y
-            sudo yum install -y ruby ruby-devel libpython-devel git python-pip libxml2-devel libxslt-devel libffi-devel libmysqlclient-devel libpq-devel libjpeg-devel
+            sudo yum install -y ruby ruby-devel python-devel git python-setuptools libxml2-devel libxslt-devel libffi-devel libjpeg-devel openldap-devel wget postgresql-devel openssl-devel cyrus-sasl-devel mariadb-devel
+
+            wget https://bootstrap.pypa.io/get-pip.py
+            sudo python get-pip.py
+
             sudo gem install --no-ri --no-rdoc fpm
             sudo pip install -r requirements.txt .
             sudo python setup.py install
