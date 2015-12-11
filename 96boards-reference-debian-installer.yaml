@@ -1,0 +1,73 @@
+- job:
+    name: 96boards-reference-debian-installer
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-configure
+                - job-cancel
+    parameters:
+        - string:
+            name: KERNEL_ABI
+            default: '4.4.0-rc2-17'
+    disabled: false
+    node: docker-jessie-arm64
+    display-name: '96boards - Reference Component Enterprise - Debian Installer'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            sudo apt-get update
+            sudo apt-get install -y ccache python-pycurl quilt cpio kmod kernel-wedge gcc-4.9 xmlto
+            sudo apt-get install -y debian-archive-keyring gnupg dctrl-tools bc debiandoc-sgml xsltproc libbogl-dev glibc-pic libslang2-pic libnewt-pic genext2fs e2fsprogs mklibs genisoimage dosfstools
+            sudo apt-get install -y grub-efi-arm64-bin mtools module-init-tools openssl xorriso bf-utf-source
+
+            # Build the installer
+            dget http://ftp.us.debian.org/debian/pool/main/d/debian-installer/debian-installer_20150422+deb8u2.dsc
+            cd debian-installer-*
+            cd build
+            echo "LINUX_KERNEL_ABI = $KERNEL_ABI" > config/common
+            cat <<EOF > sources.list.udeb
+            deb http://httpredir.debian.org/debian jessie main/debian-installer
+            deb http://repo.linaro.org/ubuntu/rsalveti jessie main
+            EOF
+
+            fakeroot make build_netboot
+
+            # Final preparation for publishing
+            mkdir out
+            cp -a *.dsc *.changes *.deb out/
+            cp *.tar.xz out/
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/reference-platform/components/debian-installer/${BUILD_NUMBER}/
+    publishers:
+        - email:
+            recipients: 'ricardo.salveti@linaro.org'
