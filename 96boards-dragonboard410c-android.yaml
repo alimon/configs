@@ -18,7 +18,7 @@
             default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151207/proprietary_LA.BR.1.2.4_01810_8x16.0_410C_Nov.tgz
         - string:
             name: PATCHSET_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151207/PATCH_8x16_129905_410c_LA.BR.1.2.4-01810-8x16.0.tar.gz
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151211/PATCH_8x16_129905_410c_LA.BR.1.2.4-01810-8x16.0.tar.gz
         - string:
             name: SYSTEM_OVERLAY_URL
             default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150813/system_overlay.tar.bz2
@@ -94,6 +94,8 @@
             FCC_OVERLAY=$(basename ${FCC_BINARIES_OVERLAY_URL})
             wget --progress=dot -e dotbytes=2M ${FCC_BINARIES_OVERLAY_URL} -O ${FCC_OVERLAY}
             tar -zxvf ${FCC_OVERLAY}
+
+            sed -i "s/time_daemon TimeService libTimeService/time_daemon TimeService libTimeService libtime_genoff/g" vendor/qcom/proprietary/common/config/device-vendor.mk
 
             source build/envsetup.sh
             lunch msm8916_64-userdebug
