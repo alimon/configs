@@ -78,8 +78,9 @@
 
             # Final preparation for publishing
             mkdir out
-            cp -a *.dsc *.changes *.debian.tar.xz out/
-            cp orig/*.orig.tar.xz out/
+            rm *.orig.tar.xz
+            cp orig/*.orig.tar.xz ${WORKSPACE}/
+            cp -a *.dsc *.changes *.debian.tar.xz *.orig.tar.xz out/
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
