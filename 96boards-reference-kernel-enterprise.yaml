@@ -20,7 +20,7 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: '96b/2015.12'
+            default: '96b-kernelci'
         - string:
             name: KERNEL_CONFIG
             default: 'defconfig'
@@ -30,7 +30,7 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+            name: '#${BUILD_NUMBER}'
     builders:
         - linaro-publish-token:
             host: builds.96boards.org
@@ -40,28 +40,49 @@
             set -ex
 
             sudo apt-get update
-            sudo apt-get install -y ccache python-pycurl build-essential devscripts debhelper python3 quilt cpio kmod xz-utils kernel-wedge bc gcc-4.9 patchutils xmlto
+            sudo apt-get install -y ccache python-pycurl quilt cpio rsync
 
-            trap cleanup_exit INT TERM EXIT
+            # Checkout source code
+            git clone -b ${KERNEL_BRANCH} --depth 1 https://git.linaro.org/people/amit.kucheria/kernel.git linux-dev
+            git clone --depth 1 https://git.linaro.org/ci/debian-kernel-packaging.git debian-pkg
 
-            cleanup_exit()
-            {
-              cd ${WORKSPACE}
-              rm -rf out
-            }
-
-            # Build the kernel
-            apt-get source linux
-            cd linux-*
-            debuild -uc -us --prepend-path=/usr/lib/ccache
+            # Export the kernel packaging version
+            cd linux-dev
+            kernel_version=`make kernelversion`
+            export KDEB_PKGVERSION="${kernel_version}-${BUILD_NUMBER}"
+            git tag v${kernel_version}
             cd ..
+
+            # Build the source kernel
+            cd debian-pkg
+            cat << EOF > debian/changelog
+            linux ($KDEB_PKGVERSION) jessie; urgency=medium
+
+              * Auto build
+
+             -- Ricardo Salveti <ricardo.salveti@linaro.org>  `date "+%a, %d %b %Y %T %z"`
+
+            EOF
+            echo "CONFIG_AMD_XGBE=y" >> debian/config/arm64/config
+            debian/rules clean || true
+            debian/bin/genorig.py ../linux-dev
+            debian/rules orig
+            fakeroot debian/rules source
+            debuild -S -uc -us
+            cd ..
+
+            cat > ${WORKSPACE}/build-package-params <<EOF
+            source=${BUILD_URL}/artifact/$(echo *.dsc)
+            repo=rsalveti
+            EOF
 
             # Final preparation for publishing
             mkdir out
-            cp -a * out/
+            cp -a *.dsc *.changes *.debian.tar.xz out/
+            cp orig/*.orig.tar.xz out/
 
             # Create MD5SUMS file
-            (cd out && md5sum *.tar.gz *.deb > MD5SUMS.txt)
+            (cd out && md5sum * > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -71,8 +92,16 @@
               --link-latest \
               out snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/
 
-            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
-            CCACHE_DIR=${CCACHE_DIR} ccache -s
+            cat > ${WORKSPACE}/build-package-params <<EOF
+            source=${BUILD_URL}/artifact/$(echo *.dsc)
+            repo=rsalveti
+            EOF
     publishers:
+        - archive:
+            artifacts: '*.dsc, *.xz'
+        - trigger-parameterized-builds:
+            - project: build-all-packages
+              property-file: build-package-params
+              condition: SUCCESS
         - email:
             recipients: 'ricardo.salveti@linaro.org'
