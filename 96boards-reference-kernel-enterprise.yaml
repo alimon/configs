@@ -20,12 +20,12 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: '96b-kernelci'
+            default: '96b/2015.12'
         - string:
-            name: KERNEL_CONFIG
-            default: 'defconfig'
+            name: ARM64_KERNEL_CONFIG
+            default: 'http://people.linaro.org/~ricardo.salveti/96b-distro.config'
     disabled: false
-    node: docker-jessie-arm64
+    node: docker-utopic-amd64
     display-name: '96boards - Reference Component Enterprise - Linux Kernel'
     wrappers:
         - timestamps
@@ -63,7 +63,9 @@
              -- Ricardo Salveti <ricardo.salveti@linaro.org>  `date "+%a, %d %b %Y %T %z"`
 
             EOF
-            echo "CONFIG_AMD_XGBE=y" >> debian/config/arm64/config
+
+            wget $ARM64_KERNEL_CONFIG -O debian/config/arm64/config
+
             debian/rules clean || true
             debian/bin/genorig.py ../linux-dev
             debian/rules orig
