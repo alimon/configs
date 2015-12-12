@@ -21,9 +21,6 @@
         - string:
             name: KERNEL_BRANCH
             default: '96b/2015.12'
-        - string:
-            name: ARM64_KERNEL_CONFIG
-            default: 'http://people.linaro.org/~ricardo.salveti/96b-distro.config'
     disabled: false
     node: docker-jessie-amd64
     display-name: '96boards - Reference Component Enterprise - Linux Kernel'
@@ -64,7 +61,8 @@
 
             EOF
 
-            wget $ARM64_KERNEL_CONFIG -O debian/config/arm64/config
+            # Use the kernel config from the kernel tree
+            cp ../linux-dev/arch/arm64/configs/distro.config debian/config/arm64/config
 
             debian/rules clean || true
             debian/bin/genorig.py ../linux-dev
