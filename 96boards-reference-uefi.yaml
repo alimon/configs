@@ -139,6 +139,8 @@
                 make
                 cp -a l-loader.bin ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
                 wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
+                # Ship nvme.img with UEFI binaries for convenience
+                dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
                 cd ${WORKSPACE}
             fi
 
