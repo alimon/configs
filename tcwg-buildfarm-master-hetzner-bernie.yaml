@@ -172,15 +172,19 @@
               #Cases for which we want to trigger a benchmark
               if test "x${target}" = xarm-linux-gnueabihf ||
                  test "x${target}" = xaarch64-linux-gnu; then
-                cp snapshots/gcc-linaro-*.tar.xz toolchain-"${JOB_NAME////_}".tar.xz
-                cp snapshots/sysroot-*-linaro-*.tar.xz sysroot-"${JOB_NAME////_}".tar.xz
+                toolchain="`ls snapshots/gcc-linaro-*.tar.xz`"
+                sysroot="`ls snapshots/sysroot-*-linaro-*.tar.xz`"
                 cat > bench_parameters <<EOF
             BENCHMARK=fakebench
-            TOOLCHAIN=${BUILD_URL}/artifact/toolchain-${JOB_NAME////_}.tar.xz
-            SYSROOT=${BUILD_URL}/artifact/sysroot-${JOB_NAME////_}.tar.xz
+            TOOLCHAIN=${BUILD_URL}/${toolchain}
+            SYSROOT=${BUILD_URL}/${sysroot}
             TARGET_CONFIG=Juno-A53
             EOF
-                #No need for a 'remove bench_params' case, as we wipe workspace
+                cat > artifact_parameters << EOF
+            TOOLCHAIN=${toolchain}
+            SYSROOT=${sysroot}
+            EOF
+                #No need for a 'remove bench/artifact_params' case, as we wipe workspace
               fi
             fi
 
@@ -189,9 +193,11 @@
               result="0"
             fi
             exit $result
+        - inject:
+            properties-file: 'artifact_parameters'
     publishers:
       - archive:
-          artifacts: 'toolchain-${JOB_NAME////_}.tar.xz sysroot-${JOB_NAME////_}.tar.xz'
+          artifacts: '${TOOLCHAIN} ${SYSROOT}'
           only-if-success: true
           fingerprint: true
           allow-empty: true
