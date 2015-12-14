@@ -1,0 +1,139 @@
+- job:
+    name: odpi-bigtop-rpm
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - string:
+            name: ANT_OPTS
+            default: '-Xmx8G -XX:MaxPermSize=1G'
+        - string:
+            name: MAVEN_OPTS
+            default: '-Xmx8G -XX:MaxPermSize=1G'
+        - string:
+            name: JDK_URL
+            default: 'http://openjdk.linaro.org/releases/jdk7-server-release-1511.tar.xz'
+        - string:
+            name: MAVEN_URL
+            default: 'http://www.us.apache.org/dist/maven/maven-3/3.0.5/binaries/apache-maven-3.0.5-bin.tar.gz'
+        - string:
+            name: SCALA_URL
+            default: 'http://downloads.typesafe.com/scala/2.11.7/scala-2.11.7.tgz'
+        - string:
+            name: NODE_URL
+            default: 'https://nodejs.org/dist/v4.2.1/node-v4.2.1.tar.gz'
+        - string:
+            name: PROTOBUF_URL
+            default: 'https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz'
+    disabled: false
+    node: docker-centos7-aarch64
+    display-name: 'ODPi BigTop (rpm)'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            # number of CPU_CORES to build with
+            export CPU_CORES=$(getconf _NPROCESSORS_ONLN)
+
+            # install pre-requisites
+            sudo yum install -y \
+              ant \
+              asciidoc \
+              chrpath \
+              cmake \
+              cppunit-devel \
+              cyrus-sasl-devel \
+              fuse \
+              fuse-devel \
+              gcc-c++ \
+              krb5-devel \
+              libtool \
+              libxml2-devel \
+              libxslt-devel \
+              libzip-devel \
+              lzo-devel \
+              make \
+              mariadb-devel \
+              openldap-devel \
+              openssl-devel \
+              pkgconfig \
+              python-devel \
+              python-setuptools \
+              rpm-build \
+              rsync \
+              sharutils \
+              sqlite-devel \
+              subversion \
+              unzip \
+              wget \
+              xmlto
+
+            # download OpenJDK 7 and Maven 3.0.5 explicitely
+            wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL} ${SCALA_URL} ${NODE_URL} ${PROTOBUF_URL}
+            tar -Jxf jdk*.tar.xz
+            tar -zxf apache-maven-*.tar.gz
+            tar -zxf scala-*.tgz
+            tar -zxf node-*.tar.gz
+            tar -zxf protobuf-*.tar.gz
+
+            # replace cacerts with distro-supplied
+            cd jdk*/jre/lib/security/
+            rm -f cacerts
+            ln -s /etc/ssl/certs/java/cacerts
+
+            # set JAVA_HOME
+            cd ${WORKSPACE}/jdk*
+            export JAVA_HOME=${PWD}
+
+            # set M3_HOME
+            cd ${WORKSPACE}/apache-maven-*
+            export M3_HOME=${PWD}
+
+            # hack to use archiva
+            wget -q http://people.linaro.org/~fathi.boudra/settings.xml -O conf/settings.xml
+            mkdir ~/.m2
+            cp -a conf/settings.xml ~/.m2/settings.xml
+
+            # set SCALA_HOME
+            cd ${WORKSPACE}/scala-*
+            export SCALA_HOME=${PWD}
+
+            # set PATH
+            export PATH=${JAVA_HOME}/bin:${M3_HOME}/bin:${PATH}
+            java -version
+            mvn -version
+
+            # build and hookup nodejs
+            cd ${WORKSPACE}/node-*
+            ./configure --prefix=${WORKSPACE}/node
+            make -j${CPU_CORES} install
+            export PATH=${WORKSPACE}/node/bin/:${PATH}
+
+            # build and hookup protobuf compiler
+            cd ${WORKSPACE}/protobuf-*
+            ./configure --prefix=${WORKSPACE}/protobuf
+            make -j${CPU_CORES} install
+            export PATH=${WORKSPACE}/protobuf/bin:${PATH}
+            export PKG_CONFIG_PATH=${WORKSPACE}/protobuf/lib/pkgconfig
+
+            # clone the ODPi BigTop definitions
+            git clone --depth 1 https://git.linaro.org/people/fathi.boudra/odpi-bigtop.git ${WORKSPACE}/odpi-bigtop
+            cd ${WORKSPACE}/odpi-bigtop
+
+            # okay everything is in place, this build will take a while
+            ./gradlew rpm
+    publishers:
+        - archive:
+            artifacts: 'odpi-bigtop/output/**'
