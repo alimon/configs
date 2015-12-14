@@ -143,11 +143,11 @@
 
                 mkdir boot-fat
                 dd if=/dev/zero of=out/${BOARD}/boot-fat.uefi.img bs=512 count=131072
-                sudo mkfs.fat -n "BOOT IMG" out/${BOARD}/boot-fat.uefi.img
+                sudo mkfs.fat -F32 -n "boot" out/${BOARD}/boot-fat.uefi.img
                 sudo mount -o loop,rw,sync out/${BOARD}/boot-fat.uefi.img boot-fat
-                sudo cp hi6220-hikey.dtb boot-fat/hi6220-hikey.dtb || true
-                sudo cp fastboot.efi boot-fat/fastboot.efi || true
-                sudo cp grubaa64.efi boot-fat/grubaa64.efi || true
+                sudo mkdir -p boot-fat/EFI/BOOT
+                sudo cp -a fastboot.efi boot-fat/EFI/BOOT/fastboot.efi || true
+                sudo cp -a grubaa64.efi boot-fat/EFI/BOOT/grubaa64.efi || true
                 sudo umount boot-fat
                 sudo chmod 777 out/${BOARD}/boot-fat.uefi.img
                 sudo mv out/${BOARD}/boot-fat.uefi.img out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
