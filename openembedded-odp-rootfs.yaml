@@ -97,13 +97,13 @@
             case "${arch}" in
               armv7a)
                 hwpack="arndale"
-                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v3.14/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
+                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
                 DEVICE_TYPE="arndale"
                 template_file="template-base.yaml"
                 ;;
               armv7ab)
                 hwpack="arndale-be"
-                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v3.14/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
+                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
                 DEVICE_TYPE="arndale"
                 template_file="template-be-base.yaml"
                 ;;
@@ -119,9 +119,9 @@
               test -d ${HOME}/bin || mkdir ${HOME}/bin
               wget https://git.linaro.org/ci/lci-build-tools.git/blob_plain/HEAD:/get_jenkins_variable.py -O ${HOME}/bin/get_jenkins_variable.py
               upstream_build_number=$(${HOEM}/bin/get_jenkins_variable.py openembedded-lng-x86-pre-built-test-definitions --input_variable UPSTREAM_BUILD_NUMBER)
-              KERNEL_URL=$(curl -s http://snapshots.linaro.org/openembedded/pre-built/linaro-lng-x86-64-3.14/${upstream_build_number}/lava/template.json |grep 'kernel":'  | cut -d'"' -f4 | cut -d';' -f1)
+              KERNEL_URL=$(curl -s http://snapshots.linaro.org/openembedded/pre-built/linaro-lng-x86-64-4.1/${upstream_build_number}/lava/template.json |grep 'kernel":'  | cut -d'"' -f4 | cut -d';' -f1)
             else
-              KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v3.14/${hwpack}/${BUILD_NUMBER}"
+              KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v4.1/${hwpack}/${BUILD_NUMBER}"
             fi
             DTB_URL=${KERNEL_URL}/dtbs
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}/$(ls ${JENKINS_WORKSPACE}/out/linaro-image-lng-*.tar.gz |xargs basename)"
