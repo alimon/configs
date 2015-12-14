@@ -48,6 +48,8 @@
         - matrix-tie-parent:
             node: master
     builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -104,6 +106,17 @@
 
             # Create MD5SUMS file
             (cd ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE} && md5sum * > MD5SUMS.txt)
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE}/ \
+              snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}
     publishers:
         - archive:
             artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
+        - email:
+            recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org nicolas.dechesne@linaro.org ricardo.salveti@linaro.org'
