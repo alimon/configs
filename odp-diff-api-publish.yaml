@@ -50,13 +50,10 @@
             rm -rf check-odp
             git clone --depth 1 git://git.linaro.org/lng/check-odp.git
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends libssl-dev libcunit1-dev libipc-system-simple-perl
+            ./check-odp/pre-install.sh
 
             case "${platform_type}" in
               dpdk)
-                sudo apt-get install -y linux-headers-generic libpcap-dev
                 mkdir -p ${HOME}/bin
                 cp check-odp/helper/ci-uname ${HOME}/bin/uname
                 export PATH=${HOME}/bin:${PATH}
