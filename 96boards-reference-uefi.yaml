@@ -25,8 +25,6 @@
     node: build
     child-workspace: .
     display-name: '96boards - Reference Component - UEFI'
-    triggers:
-        - pollscm: 'H/5 * * * *'
     axes:
         - axis:
             type: user-defined
@@ -147,14 +145,14 @@
                 EDK2_GIT_URL=ssh://dev-private-git.linaro.org/96boards/edk2.git
             elif [ "${MX_PLATFORM}" == "d02" ]; then
                 EDK2_GIT_URL=ssh://dev-private-git.linaro.org/96boards/edk2.git
-            if
+            fi
 
             # Clone the repos
             git clone -b $UEFI_TOOLS_GIT_BRANCH --depth 1 $UEFI_TOOLS_GIT_URL uefi-tools
             cd uefi-tools; UEFI_TOOLS_GIT_HEAD=`git log --format="%H" -1`; cd ..
-            git clone -b $EDK2_GIT_URL --depth 1 $EDK2_GIT_BRANCH edk2
+            git clone -b $EDK2_GIT_BRANCH --depth 1 $EDK2_GIT_URL edk2
             cd edk2; EDK2_GIT_HEAD=`git log --format="%H" -1`; cd ..
-            git clone -b $ATF_GIT_URL --depth 1 $ATF_GIT_BRANCH arm-trusted-firmware
+            git clone -b $ATF_GIT_BRANCH --depth 1 $ATF_GIT_URL arm-trusted-firmware
             cd arm-trusted-firmware; ATF_GIT_HEAD=`git log --format="%H" -1`; cd ..
 
             # Build setup
@@ -187,6 +185,7 @@
             # Find out the artifacts and image dir so we can publish the correct output files
             IMAGES=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} images`
             IMAGE_DIR=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o UEFI_IMAGE_DIR get`
+            BUILD_ATF=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o BUILD_ATF get`
 
             cd ${WORKSPACE}
             mkdir -p out/${BUILD_TYPE}
@@ -217,19 +216,24 @@
 
             Build Description:
             * Build URL: "$BUILD_URL":$BUILD_URL
-            * EDK2: "$EDK2_GIT_URL":$EDK2_GIT_URL
-            * EDK2 branch: $EDK2_GIT_BRANCH
-            * EDK2 head: $EDK2_GIT_HEAD
-            * ARM Trusted Firmware: "$ATF_GIT_URL":$ATF_GIT_URL
-            * ARM Trusted Firmware branch: $ATF_GIT_BRANCH
-            * ARM Trusted Firmware head: $ATF_GIT_HEAD
             * UEFI Tools: "$UEFI_TOOLS_GIT_URL":$UEFI_TOOLS_GIT_URL
             * UEFI Tools branch: $UEFI_TOOLS_GIT_BRANCH
             * UEFI Tools head: $UEFI_TOOLS_GIT_HEAD
+            * EDK2: "$EDK2_GIT_URL":$EDK2_GIT_URL
+            * EDK2 branch: $EDK2_GIT_BRANCH
+            * EDK2 head: $EDK2_GIT_HEAD
             EOF
 
+            if [ "$BUILD_ATF" == "yes" ]; then
+                cat >> out/${BUILD_TYPE}/README.textile << EOF
+            * ARM Trusted Firmware: "$ATF_GIT_URL":$ATF_GIT_URL
+            * ARM Trusted Firmware branch: $ATF_GIT_BRANCH
+            * ARM Trusted Firmware head: $ATF_GIT_HEAD
+            EOF
+            fi
+
             # Create MD5SUMS file
-            (cd out/${BUILD_TYPE} && md5sum *.bin *.img *.efi > MD5SUMS.txt)
+            (cd out/${BUILD_TYPE} && md5sum *.bin *.img *.efi *.fd> MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
