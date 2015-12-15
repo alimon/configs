@@ -25,18 +25,6 @@
     node: build
     child-workspace: .
     display-name: '96boards - Reference Component - UEFI'
-    scm:
-        - git:
-            url: https://github.com/96boards/edk2.git
-            refspec: +refs/heads/reference:refs/remotes/origin/reference
-            name: origin
-            branches:
-                - refs/heads/reference
-            basedir: edk2
-            skip-tag: true
-            shallow-clone: true
-            clean: true
-            wipe-workspace: false
     triggers:
         - pollscm: 'H/5 * * * *'
     axes:
@@ -45,6 +33,8 @@
             name: MX_PLATFORM
             values:
                 - hikey
+                - styx
+                - d02
         - axis:
             type: user-defined
             name: MX_TYPE
@@ -95,6 +85,7 @@
               rm -rf arm-trusted-firmware
               rm -rf uefi-tools
               rm -rf l-loader
+              rm -rf OpenPlatformPkg SeattleFDK
               rm -rf out edk2/Build
             }
 
@@ -138,26 +129,57 @@
             # Use pre-installed linaro toolchain (GCC 4.9)
             export PATH="${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
 
-            # Check out common tools and repositories
-            git clone git://git.linaro.org/uefi/uefi-tools.git
+            # Common git repositories to fetch
+            UEFI_TOOLS_GIT_URL=https://git.linaro.org/uefi/uefi-tools.git
+            UEFI_TOOLS_GIT_BRANCH=master
+            EDK2_GIT_URL=https://git.linaro.org/uefi/linaro-edk2.git
+            EDK2_GIT_BRANCH=master
+            ATF_GIT_URL=https://github.com/ARM-software/arm-trusted-firmware.git
+            ATF_GIT_BRANCH=master
 
-            # Check out arm-trusted-firmware (not upstream yet, so also from github)
-            git clone -b reference --depth 1 https://github.com/96boards/arm-trusted-firmware.git
-            cd arm-trusted-firmware
-            ATF_GIT_HEAD=`git log --format="%H" -1`
-            cd ..
+            # Per board repositories overrides
+            if [ "${MX_PLATFORM}" == "hikey" ]; then
+                EDK2_GIT_URL=https://github.com/96boards/edk2.git
+                EDK2_GIT_BRANCH=reference
+                ATF_GIT_URL=https://github.com/96boards/arm-trusted-firmware.git
+                ATF_GIT_BRANCH=reference
+            elif [ "${MX_PLATFORM}" == "styx" ]; then
+                EDK2_GIT_URL=ssh://dev-private-git.linaro.org/96boards/edk2.git
+            elif [ "${MX_PLATFORM}" == "d02" ]; then
+                EDK2_GIT_URL=ssh://dev-private-git.linaro.org/96boards/edk2.git
+            if
 
+            # Clone the repos
+            git clone -b $UEFI_TOOLS_GIT_BRANCH --depth 1 $UEFI_TOOLS_GIT_URL uefi-tools
+            cd uefi-tools; UEFI_TOOLS_GIT_HEAD=`git log --format="%H" -1`; cd ..
+            git clone -b $EDK2_GIT_URL --depth 1 $EDK2_GIT_BRANCH edk2
+            cd edk2; EDK2_GIT_HEAD=`git log --format="%H" -1`; cd ..
+            git clone -b $ATF_GIT_URL --depth 1 $ATF_GIT_BRANCH arm-trusted-firmware
+            cd arm-trusted-firmware; ATF_GIT_HEAD=`git log --format="%H" -1`; cd ..
+
+            # Build setup
             export AARCH64_TOOLCHAIN=GCC49
             export EDK2_DIR=${WORKSPACE}/edk2
+            export ATF_DIR=${WORKSPACE}/arm-trusted-firmware
             export UEFI_TOOLS_DIR=${WORKSPACE}/uefi-tools
             export JENKINS_WORKSPACE=${WORKSPACE}
+
+            # Board specific setup
+            if [ "${MX_PLATFORM}" == "styx" ]; then
+                git clone -b FDK84 --depth 1 ssh://dev-private-git.linaro.org/96boards/SeattleFDK.git
+                git clone --depth 1 ssh://dev-private-git.linaro.org/96boards/OpenPlatformPkg.git
+                cd $EDK2_DIR; ln -s ../OpenPlatformPkg; ln -s ../SeattleFDK/AmdModulePkg; cd ..
+            elif [ "${MX_PLATFORM}" == "d02" ]; then
+                git clone --depth 1 ssh://dev-private-git.linaro.org/96boards/OpenPlatformPkg.git
+                cd $EDK2_DIR; ln -s ../OpenPlatformPkg; cd ..
+            fi
+
             # WORKSPACE is used by uefi-build.sh
             unset WORKSPACE
 
             # Build UEFI for the desired platform, with the specified build type
             cd ${EDK2_DIR}
-            EDK2_GIT_HEAD=`git log --format="%H" -1`
-            bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a ../arm-trusted-firmware ${MX_PLATFORM}
+            bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a $ATF_DIR ${MX_PLATFORM}
 
             unset WORKSPACE
             export WORKSPACE=${JENKINS_WORKSPACE}
@@ -195,10 +217,15 @@
 
             Build Description:
             * Build URL: "$BUILD_URL":$BUILD_URL
-            * EDK2: "https://github.com/96boards/edk2/tree/reference":https://github.com/96boards/edk2/tree/reference
-            * EDK2 head: "$EDK2_GIT_HEAD":https://github.com/96boards/edk2/commit/$EDK2_GIT_HEAD
-            * ARM Trusted Firmware: "https://github.com/96boards/arm-trusted-firmware/tree/reference":https://github.com/96boards/arm-trusted-firmware/tree/reference
-            * ARM Trusted Firmware head: "$ATF_GIT_HEAD":https://github.com/96boards/arm-trusted-firmware/commit/$ATF_GIT_HEAD
+            * EDK2: "$EDK2_GIT_URL":$EDK2_GIT_URL
+            * EDK2 branch: $EDK2_GIT_BRANCH
+            * EDK2 head: $EDK2_GIT_HEAD
+            * ARM Trusted Firmware: "$ATF_GIT_URL":$ATF_GIT_URL
+            * ARM Trusted Firmware branch: $ATF_GIT_BRANCH
+            * ARM Trusted Firmware head: $ATF_GIT_HEAD
+            * UEFI Tools: "$UEFI_TOOLS_GIT_URL":$UEFI_TOOLS_GIT_URL
+            * UEFI Tools branch: $UEFI_TOOLS_GIT_BRANCH
+            * UEFI Tools head: $UEFI_TOOLS_GIT_HEAD
             EOF
 
             # Create MD5SUMS file
