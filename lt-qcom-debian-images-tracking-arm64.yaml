@@ -1,0 +1,366 @@
+- job:
+    name: lt-qcom-debian-images-tracking-arm64
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/lt-qualcomm/'
+        - string:
+            name: DEVICE_TYPE
+            default: 'apq8016-sbc'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: VENDOR
+            default: 'linaro'
+        - string:
+            name: OS_FLAVOUR
+            default: 'jessie'
+        - string:
+            name: EXT4FS_IMG_SZ
+            default: '6800M'
+        - string:
+            name: PLATFORM_ARCH
+            default: 'arm64'
+        - string:
+            name: PLATFORM_NAME
+            default: 'qcom-snapdragon-arm64'
+        - string:
+            name: ROOTFS
+            default: 'developer alip'
+        - string:
+            name: DTBS
+            default: 'msm8916-mtp.dtb apq8016-sbc.dtb'
+        - string:
+            name: SERIAL_CONSOLE
+            default: 'ttyMSM0'
+        - string:
+            name: KERNEL_BRANCH
+            default: 'integration-linux-qcomlt'
+        - string:
+            name: QCOM_FIRMWARE
+            default: 'http://developer.qualcomm.com/download/db410c/firmware-410c-1.1.0.bin'
+        - string:
+            name: QCOM_FIRMWARE_MD5
+            default: 'dffdd5da9fb45e15d786b0ae15a94dab'
+        - string:
+            name: FCC_BINARIES_OVERLAY_URL
+            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151202/fcc-binaries.tar.gz'
+        - string:
+            name: FCC_BINARIES_OVERLAY_URL_MD5
+            default: 'edc098fbd01915501fef277d16008afa'
+        - password:
+            name: PRIVATE_KEY
+            default: ${LT_QUALCOMM_PRIVATE_KEY}
+    disabled: false
+    node: docker-utopic-amd64
+    display-name: 'Qualcomm Debian based images for Snapdragon 410 (tracking branch)'
+    scm:
+        - git:
+            url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+              git clean -fdx
+            }
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y kpartx python-pycurl device-tree-compiler zip
+            wget -q \
+              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2015.11-1.linarojessie.1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2015.11-1.linarojessie.1_all.deb
+            sudo dpkg -i --force-all *.deb
+            rm -f *.deb
+
+            # get the boot image tools, and keep track of commit info in the traces
+            git clone git://codeaurora.org/quic/kernel/skales
+            (cd skales && git log -1)
+            export PATH=`pwd`/skales:$PATH
+
+            export LANG=C
+            export make_bootwrapper=false
+            export make_install=true
+            export kernel_flavour=lt-qcom
+            export kernel_config="defconfig distro.config"
+            export MAKE_DTBS=true
+            export ARCH=${PLATFORM_ARCH}
+            export tcbindir="${HOME}/srv/toolchain/${PLATFORM_ARCH}-tc-14.09/bin"
+            export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+
+            test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
+            bash -x lci-build-tools/jenkins_kernel_build_inst
+
+            # Create the hardware pack
+            cat << EOF > ${VENDOR}-lt-qcom.default
+            format: '3.0'
+            name: ${VENDOR}-lt-qcom
+            architectures:
+            - ${PLATFORM_ARCH}
+            origin: Linaro
+            maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
+            support: supported
+            serial_tty: ${SERIAL_CONSOLE}
+            kernel_addr: '0x80208000'
+            initrd_addr: '0x83000000'
+            load_addr: '0x60008000'
+            dtb_addr: '0x61000000'
+            partition_layout: bootfs_rootfs
+            mmc_id: '0:1'
+            kernel_file: boot/Image-*-qcom
+            initrd_file: boot/initrd.img-*-qcom
+            dtb_file: lib/firmware/*-qcom/device-tree/msm8916-mtp.dtb
+            boot_script: boot.scr
+            boot_min_size: 64
+            extra_serial_options:
+            - console=tty0
+            - console=${SERIAL_CONSOLE},115200n8
+            assume_installed:
+            - adduser
+            - apt
+            - apt-utils
+            - debconf-i18n
+            - debian-archive-keyring
+            - gcc-4.8
+            - gnupg
+            - ifupdown
+            - initramfs-tools
+            - iproute2
+            - irqbalance
+            - isc-dhcp-client
+            - kmod
+            - netbase
+            - udev
+            - linaro-artwork
+            sources:
+              qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${OS_FLAVOUR} main
+              repo: http://repo.linaro.org/ubuntu/linaro-overlay ${OS_FLAVOUR} main
+              debian: http://ftp.debian.org/debian/ ${OS_FLAVOUR} main contrib non-free
+            packages:
+            - linux-image-${PLATFORM_ARCH}
+            - linux-headers-${PLATFORM_ARCH}
+            - firmware-linux
+            - libasound2
+            - wcnss-wlan
+            - wcnss-bt
+            - 96boards-artwork
+            EOF
+
+            # Build information
+            cat > out/README.textile << EOF
+
+            h4. QCOM Landing Team - Snapdragon 410 - Debian
+
+            Build description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * OS flavour: $OS_FLAVOUR
+            * Kernel tree: "$GIT_URL":$GIT_URL
+            * Kernel branch: $KERNEL_BRANCH
+            * Kernel version: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+            * Kernel defconfig: $kernel_config
+            EOF
+
+            for rootfs in ${ROOTFS}; do
+
+              cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
+
+              # additional packages in desktop images
+              [ "${rootfs}" != "developer" ] && cat << EOF >> ${VENDOR}-lt-qcom
+            - libdrm2
+            - libdrm-freedreno1
+            - libdrm-nouveau2
+            - libdrm-radeon1
+            - libegl1-mesa
+            - libegl1-mesa-drivers
+            - libgbm1
+            - libgl1-mesa-dri
+            - libgl1-mesa-glx
+            - libglapi-mesa
+            - libgles1-mesa
+            - libgles2-mesa
+            - libosmesa6
+            - libwayland-egl1-mesa
+            - libxatracker2
+            - xserver-xorg-video-freedreno
+            - mesa-utils
+            - gstreamer1.0-plugins-v4l2
+            EOF
+
+              rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz`
+              VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+              linaro-hwpack-create --debug ${VENDOR}-lt-qcom ${VERSION}
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
+
+              # Get rootfs
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+
+              # Create pre-built image(s)
+              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file ${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_${VENDOR}-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+              # Create eMMC rootfs image(s)
+              mkdir rootfs
+              for device in $(sudo kpartx -av out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
+                partition=$(echo ${device} | cut -d'p' -f3)
+                [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
+              done
+
+              sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+              sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
+
+              # clean up fstab
+              sudo sed -i '/UUID/d' rootfs/etc/fstab
+
+              # add license file in the generated rootfs
+              rm -f license.txt
+              wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
+              sudo cp -f license.txt rootfs/etc/license.txt
+
+              # add firmware (adreno, venus and WCN)
+              rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
+              wget -q ${QCOM_FIRMWARE}
+              wget -q ${FCC_BINARIES_OVERLAY_URL}
+              echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
+              echo "${FCC_BINARIES_OVERLAY_URL_MD5}  $(basename ${FCC_BINARIES_OVERLAY_URL})" >> MD5
+              md5sum -c MD5
+              sh $(basename ${QCOM_FIRMWARE}) --auto-accept
+              tar -zxvf $(basename ${FCC_BINARIES_OVERLAY_URL})
+              cd -
+              sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
+              sudo cp -f qcom_firmware/device/qcom/msm8916_64/WCNSS_qcom_wlan_nv.bin rootfs/lib/firmware/wlan/prima
+              sudo rm -f rootfs/lib/firmware/wlan/macaddr0
+
+              sudo make_ext4fs -o -L rootfs -l ${EXT4FS_IMG_SZ} -s out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
+              sudo umount rootfs
+              sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo rm -rf rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+
+              # Compress image(s)
+              gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
+
+              cat >> out/README.textile << EOF
+            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}
+            EOF
+            done
+
+            # Move all relevant DTBs in out/
+            for f in ${DTBS} ; do
+              mv out/dtbs/${f} out/
+            done
+            rm -rf out/dtbs
+
+            # Create device tree table
+            dtbTool -o out/dt.img -s 2048 out/
+
+            # Create boot image
+            mkbootimg \
+              --kernel out/Image \
+              --ramdisk out/initrd.img-* \
+              --output out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
+              --dt out/dt.img \
+              --pagesize "2048" \
+              --base "0x80000000" \
+              --cmdline "root=/dev/disk/by-partlabel/rootfs rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
+            gzip -9 out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
+
+            # Final preparation for publishing
+            cp -a linux-*.deb out/
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}
+        - shell: |
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+
+            export BOOT_URL=http://snapshots.linaro.org/debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
+            export ROOTFS_BUILD_URL=http://snapshots.linaro.org/debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+
+            export BOOT_URL=http://snapshots.linaro.org/debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
+            export ROOTFS_BUILD_URL=http://snapshots.linaro.org/debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
+
+            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition_ltp.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+    publishers:
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
+        - ircbot:
+            channels:
+                - name: '#linaro-lt-qcomm'
+                  password: ${LT_QCOM_KEY}
