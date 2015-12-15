@@ -191,7 +191,8 @@
 
             # Create overlay.tar.gz
             dpkg-deb -x linux-image-*.deb overlay
-            tar -C overlay -acvf ${WORKSPACE}/out/overlay.tar.gz lib
+            dpkg-deb -x linux-headers-*.deb overlay
+            tar -C overlay -acvf ${WORKSPACE}/out/overlay.tar.gz lib usr/src
 
             # Create post-build-lava parameters
             cat << EOF > post_build_lava_parameters
