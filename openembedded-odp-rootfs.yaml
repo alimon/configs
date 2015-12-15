@@ -94,24 +94,24 @@
             WORKSPACE=$(dirname ${WORKSPACE})
             cd ${WORKSPACE}
 
+            template_file="template-base"
+
             case "${arch}" in
               armv7a)
                 hwpack="arndale"
                 BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
                 DEVICE_TYPE="arndale"
-                template_file="template-base.yaml"
                 ;;
               armv7ab)
                 hwpack="arndale-be"
                 BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
                 DEVICE_TYPE="arndale"
-                template_file="template-be-base.yaml"
+                template_file="template-be-base"
                 ;;
               x86-64)
                 hwpack="x86-64"
                 BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
                 DEVICE_TYPE="x86"
-                template_file="template-base.yaml"
                 ;;
             esac
 
@@ -141,7 +141,7 @@
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            ./lci-build-tools/yaml-to-json.py configs/odp/lava-job-definitions/${DEVICE_TYPE}/${template_file} > ${JENKINS_WORKSPACE}/out/lava/${template_file}
+            ./lci-build-tools/yaml-to-json.py configs/odp/lava-job-definitions/${DEVICE_TYPE}/${template_file}.yaml > ${JENKINS_WORKSPACE}/out/lava/${template_file}.json
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
