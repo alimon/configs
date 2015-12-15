@@ -204,8 +204,12 @@
                 wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
                 # Ship nvme.img with UEFI binaries for convenience
                 dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
-                cd ${WORKSPACE}
+            elif [ "${MX_PLATFORM}" == "styx" ]; then
+                cd ${WORKSPACE}/SeattleFDK
+                Linaro/make-rom.sh ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${IMAGES} >/dev/null
+                cp Linaro/Styx.bin ${WORKSPACE}/out/${BUILD_TYPE}
             fi
+            cd ${WORKSPACE}
 
             # Build information
             cat > out/${BUILD_TYPE}/README.textile << EOF
