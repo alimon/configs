@@ -45,13 +45,9 @@
             sudo wget http://repo.linaro.org/rpm/linaro-overlay/centos-7/linaro-overlay.repo -O /etc/yum.repos.d/linaro-overlay.repo
             yumdownloader --source docker
             rpm -i docker-*.src.rpm
-            sudo yum-builddep --nogpg -y ${WORKSPACE}/rpmbuild/SPECS/docker.spec || true
-            rpmbuild -ba ${WORKSPACE}/rpmbuild/SPECS/docker.spec
-
-            rm -rf \
-              ${WORKSPACE}/rpmbuild/BUILD \
-              ${WORKSPACE}/rpmbuild/BUILDROOT \
-              ${WORKSPACE}/rpmbuild/SOURCES
+            sudo yum-builddep --nogpg -y ~/rpmbuild/SPECS/docker.spec || true
+            rpmbuild -ba ~/rpmbuild/SPECS/docker.spec
+            ln -s ~/rpmbuild
     publishers:
         - archive:
-            artifacts: 'rpmbuild/**'
+            artifacts: 'rpmbuild/*RPMS/**'
