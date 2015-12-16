@@ -94,8 +94,6 @@
             WORKSPACE=$(dirname ${WORKSPACE})
             cd ${WORKSPACE}
 
-            template_file="template-base"
-
             case "${arch}" in
               armv7a)
                 hwpack="arndale"
@@ -104,7 +102,6 @@
               armv7ab)
                 hwpack="arndale-be"
                 DEVICE_TYPE="arndale"
-                template_file="template-be-base"
                 ;;
               x86-64)
                 hwpack="x86-64"
@@ -133,6 +130,13 @@
 
             set -ex
             JENKINS_WORKSPACE=${WORKSPACE}/jenkins-setup
+
+            template_file="template-base"
+            case "${arch}" in
+              armv7ab)
+                template_file="template-be-base"
+                ;;
+            esac
 
             # Parse recipe and get GIT_URL/GIT_BRANCH/GIT_COMMIT
             export GIT_URL=$(grep "^SRC_URI =" jenkins-setup/meta-linaro/meta-linaro/recipes-extra/odp/odp_*.bb | cut -d'"' -f2 | cut -d';' -f1)
