@@ -99,23 +99,20 @@
             case "${arch}" in
               armv7a)
                 hwpack="arndale"
-                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
                 DEVICE_TYPE="arndale"
                 ;;
               armv7ab)
                 hwpack="arndale-be"
-                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
                 DEVICE_TYPE="arndale"
                 template_file="template-be-base"
                 ;;
               x86-64)
                 hwpack="x86-64"
-                BUILD_NUMBER=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)
                 DEVICE_TYPE="x86"
                 ;;
             esac
 
-            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v4.1/${hwpack}/${BUILD_NUMBER}"
+            KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v4.1/${hwpack}/$(wget  -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)"
             DTB_URL=${KERNEL_URL}/dtbs
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}/$(ls ${JENKINS_WORKSPACE}/out/linaro-image-lng-*.tar.gz |xargs basename)"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
