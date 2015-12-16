@@ -19,10 +19,10 @@
     parameters:
         - string:
             name: PROJECTS
-            default: 'glance'
+            default: 'cinder glance horizon keystone neutron nova swift'
     disabled: false
     node: docker-centos7-aarch64
-    display-name: 'GiftWrap for OpenStack'
+    display-name: 'GiftWrap for OpenStack (rpm)'
     scm:
         - git:
             url: https://github.com/fboudra/giftwrap.git
@@ -51,6 +51,7 @@
             sudo python get-pip.py
 
             sudo gem install --no-ri --no-rdoc fpm
+            sudo ln -s /usr/local/bin/fpm /usr/bin/fpm
             sudo pip install -r requirements.txt .
             sudo python setup.py install
 
