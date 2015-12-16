@@ -20,7 +20,7 @@
     parameters:
         - string:
             name: KERNEL_ABI
-            default: '4.4.0-rc2-17'
+            default: '4.4.0-trunk'
     disabled: false
     node: docker-jessie-arm64
     display-name: '96boards - Reference Component Enterprise - Debian Installer'
@@ -37,29 +37,69 @@
             set -ex
 
             sudo apt-get update
-            sudo apt-get install -y ccache python-pycurl quilt cpio kmod kernel-wedge gcc-4.9 xmlto
             sudo apt-get install -y debian-archive-keyring gnupg dctrl-tools bc debiandoc-sgml xsltproc libbogl-dev glibc-pic libslang2-pic libnewt-pic genext2fs e2fsprogs mklibs genisoimage dosfstools
-            sudo apt-get install -y grub-efi-arm64-bin mtools module-init-tools openssl xorriso bf-utf-source
+            sudo apt-get install -y grub-efi-arm64-bin mtools module-init-tools openssl xorriso bf-utf-source docbook-xml docbook-xsl cpio
 
             # Build the installer
             dget http://ftp.us.debian.org/debian/pool/main/d/debian-installer/debian-installer_20150422+deb8u2.dsc
             cd debian-installer-*
+
+            # Config changes
             cd build
-            echo "LINUX_KERNEL_ABI = $KERNEL_ABI" > config/common
+            sed -i "s/LINUX_KERNEL_ABI.*/LINUX_KERNEL_ABI = $KERNEL_ABI/g" config/common
+            sed -i "s/PRESEED.*/PRESEED = default-preseed/g" config/common
+
+            # Local pkg-list (to include all udebs)
+            cat <<EOF > pkg-lists/local
+            ext4-modules-\${kernel:Version}
+            fat-modules-\${kernel:Version}
+            btrfs-modules-\${kernel:Version}
+            md-modules-\${kernel:Version}
+            efi-modules-\${kernel:Version}
+            scsi-modules-\${kernel:Version}
+            jfs-modules-\${kernel:Version}
+            xfs-modules-\${kernel:Version}
+            ata-modules-\${kernel:Version}
+            sata-modules-\${kernel:Version}
+            usb-storage-modules-\${kernel:Version}
+            EOF
+
+            # Set up local repo
             cat <<EOF > sources.list.udeb
+            deb [trusted=yes] http://repo.linaro.org/ubuntu/rsalveti jessie main/debian-installer
             deb http://httpredir.debian.org/debian jessie main/debian-installer
-            deb http://repo.linaro.org/ubuntu/rsalveti jessie main
+            EOF
+
+            # Default preseed to add the overlay and kernel
+            cat <<EOF > default-preseed
+            # Continue install on "no kernel modules were found for this kernel"
+            d-i anna/no_kernel_modules boolean true
+
+            # Continue install on "no installable kernels found"
+            d-i base-installer/kernel/skip-install boolean true
+            d-i base-installer/kernel/no-kernels-found boolean true
+
+            # Adding linaro-overlay PPA by default, so it can find the kernel and extra packages
+            d-i apt-setup/local0/repository string http://repo.linaro.org/ubuntu/rsalveti jessie main
+            d-i apt-setup/local0/comment string Linaro Overlay PPA
+            d-i apt-setup/local0/source boolean true
+            d-i apt-setup/local0/key string http://repo.linaro.org/ubuntu/linarorepo.key
+
+            d-i preseed/late_command string in-target apt-get install -y linux-image-$KERNEL_ABI-arm64
             EOF
 
             fakeroot make build_netboot
+            cd ../..
+
+            cp debian-installer-*/build/dest/netboot/netboot.tar.gz .
 
             # Final preparation for publishing
             mkdir out
-            cp -a *.dsc *.changes *.deb out/
-            cp *.tar.xz out/
+            cp -a netboot.tar.gz out/
+            cd out; tar -zxvf netboot.tar.gz; cd ..
 
             # Create MD5SUMS file
-            (cd out && md5sum * > MD5SUMS.txt)
+            (cd out && find -type f -exec md5sum {} \; | sed "s/  \.\//  /g" > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
