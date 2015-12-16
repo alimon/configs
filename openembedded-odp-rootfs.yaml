@@ -118,7 +118,6 @@
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v4.1/${hwpack}/${BUILD_NUMBER}"
             DTB_URL=${KERNEL_URL}/dtbs
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}/$(ls ${JENKINS_WORKSPACE}/out/linaro-image-lng-*.tar.gz |xargs basename)"
-            [ "${hwpack}" != "mustang" ] || [ "${hwpack}" != "x86-64" ] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack_type}*.tar.gz |xargs basename)"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
             cat << EOF > post_build_lava_parameters
@@ -127,7 +126,6 @@
             LAVA_SERVER=${LAVA_SERVER}
             KERNEL_URL=${KERNEL_URL}
             DTB_URL=${DTB_URL}
-            HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
             STARTUP_NSH=${STARTUP_NSH}
             hwpack_type=${hwpack_type}
             EOF
