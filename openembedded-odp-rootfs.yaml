@@ -126,6 +126,13 @@
             STARTUP_NSH=${STARTUP_NSH}
             hwpack_type=${hwpack_type}
             EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+            JENKINS_WORKSPACE=${WORKSPACE}/jenkins-setup
 
             # Parse recipe and get GIT_URL/GIT_BRANCH/GIT_COMMIT
             export GIT_URL=$(grep "^SRC_URI =" jenkins-setup/meta-linaro/meta-linaro/recipes-extra/odp/odp_*.bb | cut -d'"' -f2 | cut -d';' -f1)
