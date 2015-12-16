@@ -13,7 +13,7 @@
     parameters:
         - string:
             name: MACHINE
-            default: 'genericarmv8'
+            default: 'qemuarm64'
         - string:
             name: DISTRO
             default: 'luv'
@@ -49,18 +49,15 @@
               rm -rf build/tmp/
             }
 
-            # Enable VT
-            sed -i 's/USE_VT = "0"/USE_VT = "1"/' meta/conf/machine/genericarmv8.conf
-
             # Build
             source oe-init-build-env
             echo "BBLAYERS += \" ${WORKSPACE}/meta-luv\"" >> conf/bblayers.conf
             bitbake luv-live-image
 
             # Publish
-            rm -f ${WORKSPACE}/build/tmp/deploy/images/genericarmv8/*.txt
-            find ${WORKSPACE}/build/tmp/deploy/images/genericarmv8 -type l -delete
-            ${HOME}/bin/linaro-cp ${WORKSPACE}/build/tmp/deploy/images/genericarmv8 openembedded/pre-built/luvos/${BUILD_NUMBER}
+            rm -f ${WORKSPACE}/build/tmp/deploy/images/qemuarm64/*.txt
+            find ${WORKSPACE}/build/tmp/deploy/images/qemuarm64 -type l -delete
+            ${HOME}/bin/linaro-cp ${WORKSPACE}/build/tmp/deploy/images/qemuarm64 openembedded/pre-built/luvos/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org naresh.bhat@linaro.org'
