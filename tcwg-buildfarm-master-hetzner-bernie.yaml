@@ -202,8 +202,8 @@
           fingerprint: true
           allow-empty: true
       #If bench_parameters is missing, we don't set any parameters and
-      #therefore do not trigger.
+      #therefore do not trigger. We _do_ trigger even when some configurations
+      #of the build have failed (unless no parameters are set).
       - trigger-parameterized-builds:
            - project: tcwg-benchmark
-             condition: SUCCESS
              property-file: bench_parameters
