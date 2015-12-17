@@ -198,15 +198,31 @@
             exit $result
         - inject:
             properties-file: 'artifact_parameters'
+        #If bench_parameters is missing, we don't set any parameters and
+        #therefore do not trigger. We _do_ trigger even when some configurations
+        #of the build have failed (unless no parameters are set).
+        #There is a race here - tcwg-benchmark may want to access the
+        #artifacts before the archive step (below) completes. In practice, this
+        #is very unlikely to ever cause a problem - the artifacts are accessed
+        #by a lava job triggered by tcwg-benchmark, and the lava target has to
+        #boot, so there is a lot of time for the archive step to run.
+        #Ideally, we would trigger _after_ archive, but this happens in the
+        #master of this matrix job, and the master does not have access to
+        #benchmark_parameters. We can copy benchmark_parameters up to the
+        #master, but then we have the problem of identifying all the benchmark_
+        #parameters for each child of the matrix, and triggering a build for
+        #each.
+        #The 'Use files in matrix child builds' option of trigger-parameterized-builds
+        #would likely solve this problem - but it is not exposed in jjb. Have
+        #raised https://storyboard.openstack.org/#!/story/2000444.
+        #TODO: When we have a jjb that lets us eliminate the race, eliminate
+        #the race.
+        - trigger-builds:
+           - project: tcwg-benchmark
+             property-file: bench_parameters
     publishers:
       - archive:
           artifacts: '${TOOLCHAIN},${SYSROOT}'
           only-if-success: true
           fingerprint: true
           allow-empty: true
-      #If bench_parameters is missing, we don't set any parameters and
-      #therefore do not trigger. We _do_ trigger even when some configurations
-      #of the build have failed (unless no parameters are set).
-      - trigger-parameterized-builds:
-           - project: tcwg-benchmark
-             property-file: bench_parameters
