@@ -145,10 +145,31 @@
             done
 
             # Create boot image(s)
-            # TODO: it contains kernel, dtbs and scripts
+            cat > boot.txt << EOF
+            setenv initrd_high "0xffffffff"
+            setenv fdt_high "0xffffffff"
+            setenv bootpart "2"
+            setenv bootcmd "fatload mmc 1:2 0x00080000 Image; fatload mmc 1:2 0x01ffffc0 uInitrd; fatload mmc 1:2 0x10000000 s900_96board.dtb; bootm 0x00080000 0x01ffffc0 0x10000000"
+            setenv bootargs "console=tty0 console=ttyS5,115200n8 root=/dev/disk/by-partlabel/SYSTEM rootwait ro"
+            run bootcmd
+            boot
+            EOF
+
+            mkdir boot-fat
+
+            dd if=/dev/zero of=out/boot.emmc.img bs=512 count=102400
+            sudo mkfs.fat -F32 -n "BOOT" out/boot.emmc.img
+            sudo mount -o loop,rw,sync out/boot.emmc.img boot-fat
+            sudo cp -a out/Image out/s900_96board.dtb boot-fat/ || true
+            sudo mkimage -A arm -O linux -C none -T ramdisk -a 0 -e 0 -n "initramfs" -d out/initrd.img-* boot-fat/uInitrd || true
+            sudo mkimage -A arm -O linux -C none -T script -a 0 -e 0 -n "boot script" -d boot.txt boot-fat/boot.scr || true
+            sudo umount boot-fat
+            sudo chmod 777 out/boot.emmc.img
+
+            rm -rf boot-fat
 
             # Compress boot partition image(s)
-            #gzip -9 out/boot.emmc.img
+            gzip -9 out/boot.emmc.img
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
