@@ -74,7 +74,7 @@
             repo sync -j16
             set +ex
             mkdir -p out
-            cp .repo/manifest.xml out/source-manifest.xml
+            cp -a .repo/manifest.xml out/source-manifest.xml
             repo manifest -r -o out/pinned-manifest.xml
 
             OVERLAY=$(basename ${OVERLAY_URL})
@@ -165,7 +165,7 @@
             cd db410c_bootloader
             git log -1
 
-            cp  /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/emmc_appsboot.mbn bootloaders/
+            cp -a /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/emmc_appsboot.mbn bootloaders/
             cd emmc_android
             # we didn't remove the file in out folder when we compressed earlier, so we
             # move them here now
@@ -195,7 +195,7 @@
             # add license.txt file
             rm -f license.txt
             wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
-            cp license.txt out/dragonboard410c_sdcard_install_android
+            cp -a license.txt out/dragonboard410c_sdcard_install_android
 
             # create archive for publishing
             zip -rj ../out/target/product/msm8916_64/dragonboard410c_sdcard_install_android-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_install_android
