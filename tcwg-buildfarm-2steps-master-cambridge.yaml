@@ -147,11 +147,12 @@
             BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
+            result="1"
+
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
-            trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; }" 0 1 2 3 5 9 13 15
+            trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id } }; exit \$result" 0 1 2 3 5 9 13 15
 
-            result=0
             case $target in
             aarch64-linux-gnu)
               # Since we are cross-testing, prepare environment for
@@ -179,9 +180,11 @@
               echo "cross_check_script_path=`pwd`/cross_check_script_$target" >> cross_check_parameters_$target
               echo "builder=`hostname -f` " >> cross_check_parameters_$target
               cat cross_check_parameters_$target
+              result="0"
               ;;
             *)
-              ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result="$?"
+              ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild | true
+              result="${PIPESTATUS[0]}"
               ;;
             esac
 
