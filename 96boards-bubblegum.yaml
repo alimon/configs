@@ -161,7 +161,7 @@
             sudo mkfs.fat -F32 -n "BOOT" out/boot.emmc.img
             sudo mount -o loop,rw,sync out/boot.emmc.img boot-fat
             sudo cp -a out/Image out/s900_96board.dtb boot-fat/ || true
-            sudo mkimage -A arm -O linux -C none -T ramdisk -a 0 -e 0 -n "initramfs" -d out/initrd.img-* boot-fat/uInitrd || true
+            sudo mkimage -A arm64 -O linux -C none -T ramdisk -a 0 -e 0 -n "initramfs" -d out/initrd.img-* boot-fat/uInitrd || true
             sudo mkimage -A arm -O linux -C none -T script -a 0 -e 0 -n "boot script" -d boot.txt boot-fat/boot.scr || true
             sudo umount boot-fat
             sudo chmod 777 out/boot.emmc.img
