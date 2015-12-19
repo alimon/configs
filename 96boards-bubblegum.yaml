@@ -127,8 +127,12 @@
                 [ "${partition}" = "3" ] && sudo mount -o loop /dev/mapper/${device} rootfs
               done
 
+               cat << EOF | sudo tee rootfs/etc/modprobe.d/blacklist-pvrsrvkm.conf
+            blacklist pvrsrvkm
+            EOF
+
                cat << EOF | sudo tee rootfs/etc/fstab
-            /dev/mmcblk0p3 / ext4 errors=remount-ro 0 1
+            /dev/disk/by-partlabel/SYSTEM / ext4 errors=remount-ro 0 1
             EOF
 
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
@@ -150,7 +154,7 @@
             setenv fdt_high "0xffffffffffffffff"
             setenv bootpart "2"
             setenv bootcmd "fatload mmc 1:2 0x00080000 Image; fatload mmc 1:2 0x01ffffc0 uInitrd; fatload mmc 1:2 0x10000000 s900_96board.dtb; booti 0x00080000 0x01ffffc0 0x10000000"
-            setenv bootargs "console=tty0 console=ttyS5,115200n8 root=/dev/disk/by-partlabel/SYSTEM rootwait ro"
+            setenv bootargs "console=tty0 console=ttyS5,115200n8 root=/dev/disk/by-partlabel/SYSTEM rootwait rw"
             run bootcmd
             boot
             EOF
