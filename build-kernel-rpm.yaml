@@ -38,7 +38,7 @@
             rpm -i *.src.rpm
 
             sudo yum-builddep --nogpg -y ~/rpmbuild/SPECS/kernel*.spec || true
-            rpmbuild -ba ~/rpmbuild/SPECS/kernel*.spec
+            rpmbuild -vv --without debug --without doc --without debuginfo -ba ~/rpmbuild/SPECS/kernel*.spec
             ln -s ~/rpmbuild
     publishers:
         - archive:
