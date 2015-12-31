@@ -167,7 +167,7 @@
             # Workaround by retrying.
             trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id } }; exit \$result" 0 1 2 3 5 9 13 15
 
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild | true
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild | cat
             result="${PIPESTATUS[0]}"
 
             echo "Result of jenkins.sh: $result"
