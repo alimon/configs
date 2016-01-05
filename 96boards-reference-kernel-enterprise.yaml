@@ -15,7 +15,6 @@
                 - job-read
                 - job-extended-read
                 - job-build
-                - job-configure
                 - job-cancel
     parameters:
         - string:
@@ -43,7 +42,7 @@
             set -ex
 
             sudo apt-get update
-            sudo apt-get install -y ccache python-pycurl quilt cpio rsync
+            sudo apt-get install -y ccache python-pycurl quilt cpio rsync rpm
 
             # Checkout source code
             git clone -b ${KERNEL_GIT_BRANCH} ${KERNEL_GIT_URL} linux
@@ -52,15 +51,22 @@
             # Export the kernel packaging version
             cd linux
 
+            ## To use when we switch to 4.5, since -rc is higher than the final tag
+            # kernel_version=`make kernelversion | sed -e 's/\.0-rc/~rc/'
+
             kernel_version=`make kernelversion`
             export KERNEL_GIT_VERSION=`git log --format="%H" -1`
-            export KDEB_PKGVERSION="${kernel_version}-${BUILD_NUMBER}"
+            export KDEB_PKGVERSION="${kernel_version}.linaro.${BUILD_NUMBER}-1"
             git tag v${kernel_version}
 
             cd ..
 
-            # Build the source kernel
+            # Build the debian source kernel
             cd debian-pkg
+
+            # Allow our own versioning scheme
+            sed -i 's/dfsg/linaro/g' debian/bin/genorig.py debian/lib/python/debian_linux/debian.py
+
             cat << EOF > debian/changelog
             linux ($KDEB_PKGVERSION) jessie; urgency=medium
 
@@ -89,11 +95,42 @@
             codename=jessie
             EOF
 
+            # Build rpm source package
+            rpmversion=${kernel_version//-*/}
+            git clone --depth 1 -b c7-aarch64 git://git.centos.org/rpms/kernel-aarch64.git
+            cd kernel-aarch64
+            sed -i "s/\%define rpmversion.*/\%define rpmversion $rpmversion/g" SPECS/kernel-aarch64.spec
+            sed -i "s/\%define pkgrelease.*/\%define pkgrelease reference.${BUILD_NUMBER}/g" SPECS/kernel-aarch64.spec
+            sed -i "s/\%define signmodules 1/\%define signmodules 0/g" SPECS/kernel-aarch64.spec
+            sed -i "s/mv linux-\%{rheltarball}/mv linux-\*/g" SPECS/kernel-aarch64.spec
+            sed -i '/\%{_libexecdir}\/perf-core\/\*/a\%{_datadir}\/perf-core\/\*' SPECS/kernel-aarch64.spec
+            cp ../linux/arch/arm64/configs/distro.config SOURCES/config-arm64-redhat
+
+            # Make sure config is sane for centos
+            sed -i "s/CONFIG_ATA=.*/CONFIG_ATA=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_ATA_PIIX=.*/CONFIG_ATA_PIIX=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_AUTOFS4_FS=.*/CONFIG_AUTOFS4_FS=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_SATA_AHCI=.*/CONFIG_SATA_AHCI=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_SATA_AHCI_PLATFORM=.*/CONFIG_SATA_AHCI_PLATFORM=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_AHCI_HIP05=.*/CONFIG_AHCI_HIP05=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_AMD_XGBE=.*/CONFIG_AMD_XGBE=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_SCSI_HISI_SAS=.*/CONFIG_SCSI_HISI_SAS=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_IPV6=.*/CONFIG_IPV6=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_HNS_MDIO=.*/CONFIG_HNS_MDIO=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_HNS=.*/CONFIG_HNS=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_HNS_DSAF=.*/CONFIG_HNS_DSAF=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_HNS_ENET=.*/CONFIG_HNS_ENET=y/g" SOURCES/config-arm64-redhat
+
+            cp ../orig/*.orig.tar.xz SOURCES/linux-${rpmversion}-reference.${BUILD_NUMBER}.tar.xz
+            rpmbuild --nodeps --define "%_topdir `pwd`" -bs SPECS/kernel-aarch64.spec
+            cp SRPMS/*.src.rpm ${WORKSPACE}/
+            cd ..
+
             # Final preparation for publishing
             mkdir out
             rm *.orig.tar.xz
             cp orig/*.orig.tar.xz ${WORKSPACE}/
-            cp -a *.dsc *.changes *.debian.tar.xz *.orig.tar.xz out/
+            cp -a *.dsc *.changes *.debian.tar.xz *.orig.tar.xz *.src.rpm out/
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
@@ -112,6 +149,7 @@
             * Git hash: $KERNEL_GIT_VERSION
             * Kernel version: $kernel_version
             * Kernel deb version: $KDEB_PKGVERSION
+            * Kernel rpm version: ${rpmversion}-reference.${BUILD_NUMBER}
             EOF
 
             # Publish
@@ -123,7 +161,7 @@
               out snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/
     publishers:
         - archive:
-            artifacts: '*.dsc, *.xz'
+            artifacts: '*.dsc, *.xz, *.src.rpm'
         - trigger-parameterized-builds:
             - project: build-package
               property-file: build-package-params
