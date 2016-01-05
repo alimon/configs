@@ -22,8 +22,10 @@
             type: slave
             name: label
             values:
-                - docker-vivid-arm64
-                - docker-vivid-armhf
+                - docker-jessie-arm64
+                - docker-jessie-armhf
+    triggers:
+        - timed: '@monthly'
     wrappers:
         - timestamps
         - matrix-tie-parent:
@@ -49,15 +51,15 @@
             arch=`dpkg-architecture -qDEB_HOST_ARCH`
             case "${arch}" in
               armhf)
-              export ROOTFS_BUILD_URL="http://releases.linaro.org/15.05/ubuntu/vivid-images/nano/linaro-vivid-nano-20150522-704.tar.gz"
+              export ROOTFS_BUILD_URL="http://releases.linaro.org/debian/images/developer-armhf/15.12/linaro-jessie-developer-20151210-10.tar.gz"
                 ;;
               arm64)
-              export ROOTFS_BUILD_URL="http://releases.linaro.org/15.05/ubuntu/vivid-images/nano-arm64/linaro-vivid-nano-20150520-94.tar.gz"
+              export ROOTFS_BUILD_URL="http://releases.linaro.org/debian/images/developer-arm64/15.12/linaro-jessie-developer-20150325-10.tar.gz"
                 ;;
             esac
             wget -nc --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL} -O nano.tgz
 
-            dd if=/dev/zero of=kvm.raw bs=1024 seek=1M count=0
+            dd if=/dev/zero of=kvm.raw bs=2048 seek=1M count=0
             /sbin/parted --script kvm.raw mklabe gpt
             /sbin/parted --script kvm.raw mkpart p fat32 1 50
             /sbin/parted --script  -- kvm.raw mkpart p ext4 51 -0
