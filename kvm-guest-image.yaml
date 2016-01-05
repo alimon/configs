@@ -62,10 +62,10 @@
             dd if=/dev/zero of=kvm.raw bs=2048 seek=1M count=0
             /sbin/parted --script kvm.raw mklabe gpt
             /sbin/parted --script kvm.raw mkpart p fat32 1 50
-            /sbin/parted --script  -- kvm.raw mkpart p ext4 51 -0
+            /sbin/parted --script  -- kvm.raw mkpart p ext4 50 -0
             /sbin/parted --script kvm.raw set 1 boot
 
-            for device in $(sudo kpartx -av kvm.raw | cut -d' ' -f3); do
+            for device in $(sudo kpartx -avs kvm.raw | cut -d' ' -f3); do
               partition=$(echo ${device} | cut -d'p' -f3)
               case "${partition}" in
                 1)
