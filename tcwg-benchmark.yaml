@@ -103,9 +103,6 @@
             TARGET_CONFIG=kvm
           fi
 
-          #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
-          export LAVA_SERVER=lava.tcwglab/RPC2/
-
           git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
 
           #Set variables for both post-build-lava and yaml-to-json
@@ -127,7 +124,8 @@
 
           #Server to dispatch to, as opposed to server where bundle stream is.
           #post-build-lava takes responsibility for specifying a protocol.
-          LAVA_SERVER=${LAVA_SERVER}
+          #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
+          LAVA_SERVER=lava.tcwglab/RPC2/
 
           #DEVICE_TYPE to placate pbl - we don't actually use it
           DEVICE_TYPE=${TARGET_DEVICE_TYPE}
