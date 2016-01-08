@@ -169,6 +169,8 @@
             #Do not trigger a benchmark if jenkins.sh exits without error and
             #without having built a toolchain (probably because --norebuild was
             #set and the logs already existed).
+            #trigger-builds will only trigger if the properties file exists, so
+            #create the file conditionally
             if test -e snapshots/gcc-linaro-*.tar.xz; then
               #Cases for which we want to trigger a benchmark
               #if test "x${target}" = xarm-linux-gnueabihf || TODO Uncomment when uinstance is complete
