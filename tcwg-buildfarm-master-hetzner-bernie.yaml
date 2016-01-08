@@ -198,6 +198,9 @@
                 #No need for a 'remove bench/artifact_params' case, as we wipe workspace
               #fi TODO: Uncomment when uinstance is complete
             fi
+            touch artifact_parameters #This file must exist, as it is used in
+                                      #an inject step, and inject won't fail
+                                      #good if there is no file
 
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
