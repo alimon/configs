@@ -98,6 +98,18 @@
             echo config.txt
             export CONFIG=`base64 -w 0 config.txt`
 
+            env
+            export TMPDIR=${WORKSPACE}/tmp
+            mkdir -p $TMPDIR
+            df -h
+            echo "-----vv----- /usr/bin/linaro-android-media-create -----vv-----"
+            cat /usr/bin/linaro-android-media-create
+            echo "-----^^----- /usr/bin/linaro-android-media-create -----^^-----"
+
+            echo "-----vv----- media_create/unpack_binary_tarball.py -----vv-----"
+            cat /usr/lib/pymodules/python2.7/linaro_image_tools/media_create/unpack_binary_tarball.py
+            echo "-----^^----- media_create/unpack_binary_tarball.py -----^^-----"
+
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
 
@@ -161,4 +173,4 @@
         - fingerprint:
             files: 'build/fingerprints/*'
         - email:
-            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org daniel.diaz@linaro.org'
+            recipients: 'daniel.diaz@linaro.org'
