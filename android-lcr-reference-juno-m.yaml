@@ -94,6 +94,7 @@
             cat << EOF > config.txt
             BUILD_CONFIG_REPO=http://android.git.linaro.org/git/android-build-configs.git
             BUILD_CONFIG_BRANCH=master
+            FS_IMAGE_SIZE=4G
             EOF
             echo config.txt
             export CONFIG=`base64 -w 0 config.txt`
@@ -109,6 +110,8 @@
             echo "-----vv----- media_create/unpack_binary_tarball.py -----vv-----"
             cat /usr/lib/pymodules/python2.7/linaro_image_tools/media_create/unpack_binary_tarball.py
             echo "-----^^----- media_create/unpack_binary_tarball.py -----^^-----"
+
+            export FS_IMAGE_SIZE=4G
 
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
