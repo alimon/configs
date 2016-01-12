@@ -69,13 +69,11 @@
             rm -rf check-odp
             git clone --depth 1 git://git.linaro.org/lng/check-odp.git
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends libssl-dev libcunit1-dev
+            ./check-odp/pre-install.sh
+            sudo apt-get install -y python-pycurl
 
             case "${platform_type}" in
               dpdk)
-                sudo apt-get install -y linux-headers-generic libpcap-dev
                 mkdir -p ${HOME}/bin
                 cp check-odp/helper/ci-uname ${HOME}/bin/uname
                 export PATH=${HOME}/bin:${PATH}
@@ -87,20 +85,16 @@
 
             case "${build_type}" in
               lcov)
-                sudo apt-get install -y --no-install-recommends lcov
                 export LCOV=1
                 export SUDO=1
                 ;;
               dox_html)
-                sudo apt-get install -y --no-install-recommends graphviz doxygen mscgen
                 export DOXYGEN_HTML=1
                 ;;
               usr_html)
-              sudo apt-get install -y --no-install-recommends graphviz doxygen asciidoc mscgen source-highlight imagemagick texlive-latex-recommended librsvg2-bin
                 export USER_HTML=1
                 ;;
               scan_build)
-                sudo apt-get install -y --no-install-recommends clang
                 export SCAN_BUILD=1
                 ;;
             esac
