@@ -43,22 +43,17 @@
         - linaro-publish-token
         - shell: |
             #!/bin/bash
-            # Assume build-dependencies packages are installed
-            # build-essential git autoconf automake libtool doxygen libssl-dev
 
             set -ex
 
             rm -rf check-odp
             git clone --depth 1 git://git.linaro.org/lng/check-odp.git
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-            sudo apt-get update
+            ./check-odp/pre-install.sh
             sudo apt-get install -y python-pycurl
-            sudo apt-get install -y --no-install-recommends libssl-dev libcunit1-dev
 
             case "${platform_type}" in
               dpdk)
-                sudo apt-get install -y linux-headers-generic libpcap-dev
                 mkdir -p ${HOME}/bin
                 cp check-odp/helper/ci-uname ${HOME}/bin/uname
                 export PATH=${HOME}/bin:${PATH}
