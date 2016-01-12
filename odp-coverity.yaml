@@ -49,17 +49,13 @@
     builders:
         - shell: |
             #!/bin/bash
-            # Assume build-dependencies packages are installed
-            # build-essential git autoconf automake libtool doxygen libssl-dev
 
             set -e
 
             rm -rf check-odp
             git clone --depth 1 git://git.linaro.org/lng/check-odp.git
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends libssl-dev libcunit1-dev
+            ./check-odp/pre-install.sh
 
             case "${build_type}" in
               generic)
