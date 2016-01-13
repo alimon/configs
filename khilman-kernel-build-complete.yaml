@@ -38,12 +38,12 @@
     display-name: 'khilman - Kernel build complete'
     scm:
         - git:
-            url: http://git.linaro.org/people/kevin.hilman/build-scripts.git
+            url: https://github.com/khilman/kernelci-build.git
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
                 - refs/heads/master
-            basedir: local/build-scripts
+            basedir: local/kernelci-build
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -53,7 +53,7 @@
         - shell: |
             #!/bin/bash
 
-            bash -x ./local/build-scripts/build-complete.sh
+            bash -x ./local/kernelci-build/build-complete.sh
     publishers:
         - trigger-parameterized-builds:
             - project: tbaker-kboot-bot
