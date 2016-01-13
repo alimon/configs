@@ -75,11 +75,11 @@
             # local copy of build scripts
             if [ ! -d local ]; then
               mkdir -p local
-              (cd local; git clone --depth=1 git://git.linaro.org/people/khilman/build-scripts.git)
+              (cd local; git clone --depth=1 https://github.com/khilman/kernelci-build.git)
             fi
 
-            (cd local/build-scripts; git pull)
-            export PATH=${WORKSPACE}/local/build-scripts:${PATH}
+            (cd local/kernelci-build; git pull)
+            export PATH=${WORKSPACE}/local/kernelci-build:${PATH}
 
             # Ensure TREE URL is decoded
             TREE=`python -c "import urllib, sys; print urllib.unquote(sys.argv[1])" ${TREE}`
