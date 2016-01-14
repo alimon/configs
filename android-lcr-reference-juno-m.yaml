@@ -64,7 +64,7 @@
             sudo add-apt-repository ppa:linaro-maintainers/tools
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch linaro-image-tools
+            sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
@@ -87,6 +87,9 @@
             git clone --depth 1 https://git.linaro.org/people/vishal.bhoj/linaro-android-build-tools-ci.git build-tools
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
             git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
+            git clone --depth 1 https://review.linaro.org/ci/linaro-image-tools linaro-image-tools
+
+            export PATH=$(pwd)/linaro-image-tools:$PATH
 
             export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
@@ -94,24 +97,9 @@
             cat << EOF > config.txt
             BUILD_CONFIG_REPO=http://android.git.linaro.org/git/android-build-configs.git
             BUILD_CONFIG_BRANCH=master
-            FS_IMAGE_SIZE=4G
             EOF
             echo config.txt
             export CONFIG=`base64 -w 0 config.txt`
-
-            env
-            export TMPDIR=${WORKSPACE}/tmp
-            mkdir -p $TMPDIR
-            df -h
-            echo "-----vv----- /usr/bin/linaro-android-media-create -----vv-----"
-            cat /usr/bin/linaro-android-media-create
-            echo "-----^^----- /usr/bin/linaro-android-media-create -----^^-----"
-
-            echo "-----vv----- media_create/unpack_binary_tarball.py -----vv-----"
-            cat /usr/lib/pymodules/python2.7/linaro_image_tools/media_create/unpack_binary_tarball.py
-            echo "-----^^----- media_create/unpack_binary_tarball.py -----^^-----"
-
-            export FS_IMAGE_SIZE=4G
 
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
