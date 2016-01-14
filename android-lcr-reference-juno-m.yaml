@@ -66,6 +66,13 @@
             sudo apt-get update
             sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch
 
+            wget -q \
+              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2015.11-1.linarojessie.1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2015.11-1.linarojessie.1_all.deb
+            sudo dpkg -i --force-all *.deb
+            rm -f *.deb
+
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
@@ -87,9 +94,6 @@
             git clone --depth 1 https://git.linaro.org/people/vishal.bhoj/linaro-android-build-tools-ci.git build-tools
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
             git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
-            git clone --depth 1 https://review.linaro.org/ci/linaro-image-tools linaro-image-tools
-
-            export PATH=$(pwd)/linaro-image-tools:$PATH
 
             export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
