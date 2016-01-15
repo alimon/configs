@@ -139,7 +139,11 @@
             # Build kernel/modules and install (default: ./_install_ dir)
             export LANG=C
             export ARCH=${arch}
-            build.py -i -c ${defconfig_translated}
+            if [ $PUBLISH != true ]; then
+                build.py -i -c ${defconfig_translated}
+            else
+                build.py -i -p production -c ${defconfig_translated}
+            fi
             RC=$?
 
             # Remove the build output (important stuff in _install_ dir)
@@ -152,27 +156,7 @@
             exit 0
         - inject:
             properties-file: ${TREE_NAME}/env.properties
-        - shell: |
-            #!/bin/bash
 
-            set -x
-
-            if [ $PUBLISH != true ]; then
-              exit 0
-            fi
-
-            if [ -e ${TREE_NAME}/_install_/${GIT_DESCRIBE} ]; then
-              RC=1
-              while [[ RC -ne 0 ]]
-              do
-                  (set -x; rsync -avz --timeout=120 ${TREE_NAME}/_install_/${GIT_DESCRIBE} storage.armcloud.us:/var/www/images/kernel-ci/${TREE_NAME})
-                  RC=$?
-              done
-            else
-              echo "WARNING: ${TREE_NAME}/_install_/${GIT_DESCRIBE} doesn't exist"
-            fi
-
-            exit 0
         - shell: |
             #!/bin/bash
             #
