@@ -79,12 +79,12 @@
             # do a build
             bash -x init-and-build.sh -a ${arch} -g ${gcc_version} -p virtual/libc
 
+            source ./openembedded-core/oe-init-build-env build
+            cd ${WORKSPACE}
+
             ./srcrev-check.py -d meta-linaro/meta-linaro/recipes-extra/odp -u
 
-            source ./openembedded-core/oe-init-build-env build
-            bitbake linaro-image-lng
-
-            cd ${WORKSPACE}
+            bash -x init-and-build.sh -a ${arch} -g ${gcc_version} -p linaro-image-lng
 
             bash -x post-build-create-image-manifest.sh
 
