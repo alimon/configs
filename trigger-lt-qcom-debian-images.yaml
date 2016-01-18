@@ -1,5 +1,5 @@
 - job:
-    name: trigger-lt-qcom-ubuntu-images-arm64
+    name: trigger-lt-qcom-ubuntu-images
     project-type: freestyle
     defaults: global
     logrotate:
@@ -15,7 +15,7 @@
             default: 'release/qcomlt-4.2'
     disabled: false
     node: build
-    display-name: 'Trigger for Qualcomm Ubuntu/Debian based images (arm64)'
+    display-name: 'Trigger for Qualcomm Debian based images'
     scm:
         - git:
             url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
@@ -34,4 +34,6 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - trigger-builds:
-            - project: 'lt-qcom-ubuntu-images-arm64, lt-qcom-debian-images-arm64, lt-qcom-debian-arrow-images-arm64'
+            - project: 'lt-qcom-debian-images'
+            - project: 'lt-qcom-debian-images-arm64'
+            - project: 'lt-qcom-debian-arrow-images-arm64'
