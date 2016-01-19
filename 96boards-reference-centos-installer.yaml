@@ -1,0 +1,56 @@
+- job:
+    name: 96boards-reference-centos-installer
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-configure
+                - job-cancel
+    disabled: false
+    node: docker-centos7-aarch64
+    display-name: '96boards - Reference Component Enterprise - CentOS Installer'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+            sudo yum update
+            sudo yum install -y lorax anaconda
+
+            # Disable selinux, required by anaconda
+            echo 0 > /selinux/enforce
+
+            # Call lorax to create the netinstall image
+            sudo rm -rf netinstall
+            lorax '--product=CentOS Linux' --version=7 --release=7.2.1511.rpb.${BUILD_NUMBER} \
+              --source=http://mirror.centos.org/altarch/7/os/aarch64/ \
+              --source=http://mirror.centos.org/altarch/7/updates/aarch64/ \
+              --isfinal --nomacboot --noupgrade --buildarch=aarch64 '--volid=CentOS 7 aarch64' netinstall/
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              netinstall snapshots/reference-platform/components/centos-installer/${BUILD_NUMBER}/
+    publishers:
+        - email:
+            recipients: 'ricardo.salveti@linaro.org'
