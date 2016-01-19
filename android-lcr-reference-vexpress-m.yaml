@@ -66,7 +66,15 @@
             sudo add-apt-repository ppa:linaro-maintainers/tools
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch linaro-image-tools
+            sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch
+            sudo apt-get install -y gdisk libyaml-0-2 python-apt python-chardet python-dbus python-dbus-dev python-debian python-gi python-parted python-pkg-resources python-six python-yaml u-boot-tools python-commandnotfound parted
+
+            wget -q \
+              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2015.11-1.linarojessie.1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2015.11-1.linarojessie.1_all.deb
+            sudo dpkg -i --force-all *.deb
+            rm -f *.deb
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
