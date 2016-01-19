@@ -14,7 +14,7 @@
     parameters:
         - string:
             name: ROOTFS
-            default: 'developer'
+            default: 'alip developer'
     disabled: false
     node: docker-utopic-amd64
     display-name: '96boards - HiKey (hikey-mainline-rebase)'
@@ -211,13 +211,15 @@
               rm -rf wl18xx_fw
               # ******** TI wl18xx R8.6 - out of tree firmware ********
 
-              sudo make_ext4fs -o -L rootfs -l 3206528512 -s out/hikey-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 3206528512 -s out/hikey-jessie_${rootfs}_${VERSION}-4g.emmc.img rootfs/
+              sudo make_ext4fs -o -L rootfs -l 7199505920 -s out/hikey-jessie_${rootfs}_${VERSION}-8g.emmc.img rootfs/
               sudo umount boot rootfs
               sudo kpartx -dv out/hikey-jessie_${rootfs}_${VERSION}.img
               sudo rm -rf boot rootfs
 
               # Compress image(s)
-              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.emmc.img
+              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}-4g.emmc.img
+              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}-8g.emmc.img
               gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.img
             done
 
