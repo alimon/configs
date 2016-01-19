@@ -126,6 +126,10 @@
             cp SRPMS/*.src.rpm ${WORKSPACE}/
             cd ..
 
+            cat > ${WORKSPACE}/build-kernel-rpm-params <<EOF
+            source=https://builds.96boards.org/snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/kernel-aarch64-${rpmversion}-reference.${BUILD_NUMBER}.src.rpm
+            EOF
+
             # Final preparation for publishing
             mkdir out
             rm *.orig.tar.xz
@@ -165,6 +169,9 @@
         - trigger-parameterized-builds:
             - project: build-package
               property-file: build-package-params
+              condition: SUCCESS
+            - project: build-kernel-rpm
+              property-file: build-kernel-rpm-params
               condition: SUCCESS
         - email:
             recipients: 'ricardo.salveti@linaro.org'
