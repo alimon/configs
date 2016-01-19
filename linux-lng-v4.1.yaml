@@ -184,6 +184,7 @@
             CCACHE_DIR=${CCACHE_DIR} ccache -s
 
             # Create overlay.tar.gz
+            rm -f linux-image-*-linaro-*-dbg_*.deb
             dpkg-deb -x linux-image-*.deb overlay
             dpkg-deb -x linux-headers-*.deb overlay
             tar -C overlay -acvf ${WORKSPACE}/out/overlay.tar.gz lib usr/src
