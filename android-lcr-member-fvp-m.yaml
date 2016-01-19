@@ -114,6 +114,14 @@
             git config --global user.email "ci_notify@linaro.org"
             git config --global user.name "Linaro CI"
 
+            mkdir -p $HOME/.ssh
+            ssh-keyscan dev-private-git.linaro.org >> $HOME/.ssh/known_hosts
+            cat << EOF >> $HOME/.ssh/config
+            Host dev-private-git.linaro.org
+                User git
+            EOF
+            chmod 0600 $HOME/.ssh/*
+
             TMPKEYDIR=$(mktemp -d /tmp/projectara.XXXXXX)
             cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
             #!/usr/bin/python
