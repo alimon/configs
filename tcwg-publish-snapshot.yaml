@@ -17,7 +17,11 @@
         - string:
                 name: snapshot_version
                 default: ''
-                description: 'Snapshot revision to deploy (like: 5.2-2015.10)'
+                description: 'Snapshot revision to deploy (like: 5.2-2015.10, 5.2-2015.11-rc1)'
+        - bool:
+               name: binaries
+               default: false
+               description: 'Publish binaries'
         - string:
                 name: notes_branch
                 default: 'refs/heads/toolchain-snapshots'
@@ -28,7 +32,7 @@
                description: 'Publish release notes only'
     disabled: false
     node: tcwg-x86_64-ex40build-01
-    display-name: 'TCWG Snapshot source tarball publishing'
+    display-name: 'TCWG source or binaries tarball publishing on snapshot.linaro.org'
     wrappers:
         - timestamps
     builders:
@@ -46,26 +50,47 @@
               rm -rf out
             }
 
-            # Extract GCC version
+            # Extract GCC version, and other needed mangling information
             # Since GCC 5 our branch name only contains GCC major number.
             gcc_version=${snapshot_version%%-*}
             gcc_major=${gcc_version%%.*}
+            version_suffix=${snapshot_version##*-}
+            bin_dir=${snapshot_version#*-}
+            dest_dir="components/toolchain/"
+            prefix="gcc-linaro"
+
+            if [[ "$version_suffix" != rc* ]]; then
+              prefix+="-snapshot"
+              bin_dir="snapshot-$bin_dir"
+            fi
+
             [ $gcc_major -ge "5" ] && gcc_version=$gcc_major
+
+            if ${binaries}; then
+              dest_dir+="binaries"
+              notes_path="/${dest_dir}"
+              cp_content="-r /work/space/binaries/${bin_dir}/*"
+            else
+              dest_dir+="gcc-linaro"
+              notes_path="/${dest_dir}/${gcc_version}"
+              cp_content="/work/space/sources/${prefix}-${snapshot_version}.tar.*"
+            fi
+
+            mkdir -p out
 
             # Release notes
             notes_url=https://git.linaro.org/toolchain/release-notes.git/blob_plain/${notes_branch}
+            wget ${notes_url}:${notes_path}/README.textile -O out/README.textile
 
-            mkdir -p out
-            wget $notes_url:/components/toolchain/gcc-linaro/${gcc_version}/README.textile -O out/README.textile
             if ! ${notes_only}; then
-              cp /work/space/sources/gcc-linaro-snapshot-${snapshot_version}.tar.* out/
+              cp ${cp_content} out/
             fi
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
-              out components/toolchain/gcc-linaro/${snapshot_version}/
+              out ${dest_dir}/${snapshot_version}/
     publishers:
         - email-ext:
             recipients: 'bernhard.rosenkranzer@linaro.org, fathi.boudra@linaro.org, koen.kooi@linaro.org'
