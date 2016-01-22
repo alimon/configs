@@ -15,7 +15,6 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-                - job-configure
     node: master
     disabled: false
     display-name: 'Build RPM packages'
@@ -52,6 +51,7 @@
 
             . /etc/os-release
             dist=${ID}-${VERSION_ID}
+            [ ${codename} = ${dist} ]||exit 0
             sudo yum install -y wget yum-utils
             sudo yum groupinstall -y "Development tools"
             wget $source
