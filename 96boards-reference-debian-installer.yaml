@@ -41,7 +41,8 @@
             sudo apt-get install -y grub-efi-arm64-bin mtools module-init-tools openssl xorriso bf-utf-source docbook-xml docbook-xsl cpio
 
             # Build the installer
-            dget http://ftp.us.debian.org/debian/pool/main/d/debian-installer/debian-installer_20150422+deb8u2.dsc
+            DEB_INSTALLER_VERSION="20150422+deb8u2"
+            dget http://ftp.us.debian.org/debian/pool/main/d/debian-installer/debian-installer_${DEB_INSTALLER_VERSION}.dsc
             cd debian-installer-*
 
             # Config changes
@@ -100,6 +101,21 @@
 
             # Create MD5SUMS file
             (cd out && find -type f -exec md5sum {} \; | sed "s/  \.\//  /g" > MD5SUMS.txt)
+
+            # Build information
+            cat > out/README.textile << EOF
+
+            h4. 96Boards - Reference Component Enterprise - Debian Installer
+
+            Debian Installer (Jessie) produced with the Reference Platform Kernel package.
+
+            Check "https://github.com/96boards/documentation/wiki/Installing-Debian-Jessie":https://github.com/96boards/documentation/wiki/Installing-Debian-Jessie for the install instructions.
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Debian Installer version: $DEB_INSTALLER_VERSION
+            * Kernel: `grep -a "Linux version" out/debian-installer/arm64/linux`
+            EOF
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
