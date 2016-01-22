@@ -31,18 +31,38 @@
             #!/bin/bash
 
             set -ex
-            sudo yum update
-            sudo yum install -y lorax anaconda
 
-            # Disable selinux, required by anaconda
-            echo 0 > /selinux/enforce
+            # Make sure the base image is updated to 7.2.1511
+            sudo sed -i 's/\$releasever/7.2.1511/g' /etc/yum.repos.d/CentOS-Base.repo
+
+            sudo yum update -y
+            sudo yum install -y wget lorax cpio xz
 
             # Call lorax to create the netinstall image
             sudo rm -rf netinstall
-            lorax '--product=CentOS Linux' --version=7 --release=7.2.1511.rpb.${BUILD_NUMBER} \
+            sudo lorax '--product=CentOS Linux' --version=7 --release=7.2.1511 \
               --source=http://mirror.centos.org/altarch/7/os/aarch64/ \
-              --source=http://mirror.centos.org/altarch/7/updates/aarch64/ \
+              --source=http://repo.linaro.org/rpm/rsalveti/centos-7/repo/ \
               --isfinal --nomacboot --noupgrade --buildarch=aarch64 '--volid=CentOS 7 aarch64' netinstall/
+
+            # Modify initrd to include a default kickstart (to include the external repository)
+            cd netinstall/images/pxeboot/
+            sudo mkdir initrd; cd initrd
+            sudo sh -c 'xzcat ../initrd.img | cpio -d -i -m'
+            cat > /tmp/ks.cfg << EOF
+            repo --name="rsalveti" --baseurl=http://repo.linaro.org/rpm/rsalveti/centos-7/repo/
+            EOF
+            sudo cp /tmp/ks.cfg ks.cfg
+            sudo sh -c 'find . | cpio -o -H newc | xz --check=crc32 --lzma2=dict=512KiB > ../initrd.img'
+            cd ..; sudo rm -rf initrd
+            cd ../../..
+
+            # Final preparation for publishing
+            mkdir out
+            cp -rf lorax.log netinstall/.discinfo netinstall/.treeinfo netinstall/EFI netinstall/images netinstall/LiveOS out/
+
+            # Create MD5SUMS file
+            (cd out && find -type f -exec md5sum {} \; | sed "s/  \.\//  /g" > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -50,7 +70,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              netinstall snapshots/reference-platform/components/centos-installer/${BUILD_NUMBER}/
+              out snapshots/reference-platform/components/centos-installer/${BUILD_NUMBER}/
     publishers:
         - email:
             recipients: 'ricardo.salveti@linaro.org'
