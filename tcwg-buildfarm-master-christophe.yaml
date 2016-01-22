@@ -173,6 +173,10 @@
 
             cleanup_error()
             {
+              # Avoid access to the console during the trap handler
+              exec 1> /dev/null
+              exec 2> /dev/null
+
               sums="`find . -name \*.sum`"
               if test x"${sums}" != x; then
                   test_logs=""
@@ -183,7 +187,8 @@
               checks="`find . -name check\*.log`"
               logs="`find . -name make\*.log`"
               eval dir=$"log_name"
-              scp build.out build.err ${sums} ${test_logs} ${check} ${logs} ${log_server}/$dir/
+              echo "Killed by signal" > killed.txt
+              scp -q killed.txt build.out build.err ${sums} ${test_logs} ${check} ${logs} ${log_server}/$dir/
 
               cleanup_exit
             }
