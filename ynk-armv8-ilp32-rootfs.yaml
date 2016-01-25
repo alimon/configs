@@ -37,6 +37,11 @@
             name: gcc_version
             values:
                 - 4.9
+        - axis:
+            type: user-defined
+            name: rootfs
+            values:
+                - minimal-ltp
     execution-strategy:
         sequential: true
     wrappers:
@@ -54,14 +59,14 @@
             # we clean build and populate it from cache
             bash -x pre-build-do-cleanup.sh
 
-            if [ `date +%u` = "6" ]
+            if [ `date +%u` = "6" ] && [ "${rootfs}" = "minimal-ltp" ]
             then
               echo "manual hard cleanup on day 6"
               bash periodic-cleanup.sh hard
             fi
 
             # do a build
-            MACHINE=genericarmv8-ilp32 bash -x init-and-build.sh -a armv8 -g ${gcc_version} -r https://git.linaro.org/people/andrey.konovalov/ilp32-dev-manifest.git -b master linaro-image-minimal-ltp
+            MACHINE=genericarmv8-ilp32 bash -x init-and-build.sh -a armv8 -g ${gcc_version} -r https://git.linaro.org/people/andrey.konovalov/ilp32-dev-manifest.git -b master linaro-image-${rootfs}
 
             # just try the build - don't publish anything for now
     publishers:
