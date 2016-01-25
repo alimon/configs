@@ -36,7 +36,7 @@
             type: user-defined
             name: gcc_version
             values:
-                - 4.9
+                - 5.2
         - axis:
             type: user-defined
             name: rootfs
@@ -55,6 +55,10 @@
             set -x
 
             export PATH="$HOME/bin:$PATH"
+
+            # override few hardcoded settings
+            sed -e 's/\(^GLIBCVERSION\ * = \)\(".*"\)/\1"linaro-2.22"/g' -i functions.sh
+            sed -e 's/\(^LINUXLIBCVERSION\ * = \)\(".*"\)/\1"4.3"/g' -i functions.sh
 
             # we clean build and populate it from cache
             bash -x pre-build-do-cleanup.sh
