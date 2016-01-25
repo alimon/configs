@@ -96,11 +96,12 @@
             fakeroot make build_netboot
             cd ../..
 
+            cp debian-installer-*/build/dest/netboot/mini.iso .
             cp debian-installer-*/build/dest/netboot/netboot.tar.gz .
 
             # Final preparation for publishing
             mkdir out
-            cp -a netboot.tar.gz out/
+            cp -a mini.iso netboot.tar.gz out/
             cd out; tar -zxvf netboot.tar.gz; cd ..
 
             # Create MD5SUMS file
