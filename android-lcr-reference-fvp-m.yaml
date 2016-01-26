@@ -16,43 +16,6 @@
     node: docker-utopic-aosp
     display-name: 'FVP - Reference LCR Android M Build'
     concurrent: true
-    triggers:
-        - gerrit:
-            server-name: android-review.linaro.org
-            trigger-on:
-                - change-merged-event
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'android-patchsets'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'master'
-                  forbidden-file-paths:
-                      - pattern: 'nexus9-master-workarounds'
-                      - pattern: 'nexus9-workarounds'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'platform/manifest'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-marshmallow'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'device/linaro/common'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-marshmallow'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'device/linaro/fvp-armv8'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-marshmallow'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'android-build-configs'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'master'
-                  file-paths:
-                      - compare-type: 'PLAIN'
-                        pattern: 'lcr-reference-fvp-m'
     wrappers:
         - timestamps
         - timeout:
