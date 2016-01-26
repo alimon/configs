@@ -143,11 +143,13 @@
             if __name__ == "__main__":
                     main()
             EOF
+
+            set -xe
             python ${TMPKEYDIR}/private-key-wrapper.py
-            chmod 0600 ${WORKSPACE}/linaro-private-key
+            chmod 0600 linaro-private-key
             eval `ssh-agent` >/dev/null 2>/dev/null
-            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
-            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
+            ssh-add linaro-private-key
+            rm -rf linaro-private-key ${TMPKEYDIR}
 
             export SKIP_LICENSE_CHECK=1
 
@@ -231,4 +233,4 @@
         - fingerprint:
             files: 'build/fingerprints/*'
         - email:
-            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org daniel.diaz@linaro.org'
+            recipients: 'daniel.diaz@linaro.org'
