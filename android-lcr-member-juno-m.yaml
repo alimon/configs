@@ -122,7 +122,7 @@
             EOF
             chmod 0600 $HOME/.ssh/*
 
-            TMPKEYDIR=$(mktemp -d /tmp/projectara.XXXXXX)
+            TMPKEYDIR=$(mktemp -d /tmp/linaroandroid.XXXXXX)
             cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
             #!/usr/bin/python
 
@@ -143,12 +143,11 @@
             if __name__ == "__main__":
                     main()
             EOF
-
-            set -xe
             python ${TMPKEYDIR}/private-key-wrapper.py
             chmod 0600 linaro-private-key
+
             eval `ssh-agent` >/dev/null 2>/dev/null
-            ssh-add linaro-private-key
+            ssh-add linaro-private-key >/dev/null 2>/dev/null
             rm -rf linaro-private-key ${TMPKEYDIR}
 
             export SKIP_LICENSE_CHECK=1
