@@ -52,7 +52,8 @@
               --log-level=debug \
               --log-mode=0644
 
-            cat > ${WORKSPACE}/out/readme.txt <<EOF
+            cat > ${WORKSPACE}/out/debian-sid-amd64-readme.html <<EOF
+            <html><body><pre>
             lava-debian-unstable-amd64-vm build instructions"
             ================================================
 
@@ -68,6 +69,7 @@
             sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
 
             See vmdebootstrap.log for the full log.
+            </pre></body></html>
             EOF
 
             gzip -9 ${WORKSPACE}/out/large-sid.img
@@ -75,7 +77,7 @@
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py --link-latest out debian/images/lava/standard/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py --link-latest out debian/images/lava/standard/debian/sid/amd64/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'neil.williams@linaro.org fathi.boudra@linaro.org'
