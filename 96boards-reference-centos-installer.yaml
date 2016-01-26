@@ -15,7 +15,6 @@
                 - job-read
                 - job-extended-read
                 - job-build
-                - job-configure
                 - job-cancel
     disabled: false
     node: docker-centos7-aarch64
@@ -45,7 +44,7 @@
               --source=http://repo.linaro.org/rpm/rsalveti/centos-7/repo/ \
               --isfinal --nomacboot --noupgrade --buildarch=aarch64 '--volid=CentOS 7 aarch64' netinstall/
 
-            # Modify initrd to include a default kickstart (to include the external repository)
+            # Modify initrd to include a default kickstart (that includes the external repository)
             cd netinstall/images/pxeboot/
             sudo mkdir initrd; cd initrd
             sudo sh -c 'xzcat ../initrd.img | cpio -d -i -m'
@@ -63,6 +62,21 @@
 
             # Create MD5SUMS file
             (cd out && find -type f -exec md5sum {} \; | sed "s/  \.\//  /g" > MD5SUMS.txt)
+
+            # Build information
+            KERNEL_VERSION=`cat out/images/pxeboot/vmlinuz | gzip -d - | grep -a "Linux version"`
+            cat > out/README.textile << EOF
+
+            h4. 96Boards - Reference Component Enterprise - CentOS Installer
+
+            CentOS Installer (7) produced with the Reference Platform Kernel package.
+
+            Check "https://github.com/96boards/documentation/wiki/Installing-CentOS-7":https://github.com/96boards/documentation/wiki/Installing-CentOS-7 for the install instructions.
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Kernel: $KERNEL_VERSION
+            EOF
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
