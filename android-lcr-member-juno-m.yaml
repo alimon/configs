@@ -115,12 +115,6 @@
             git config --global user.name "Linaro CI"
 
             mkdir -p $HOME/.ssh
-            ssh-keyscan dev-private-git.linaro.org >> $HOME/.ssh/known_hosts
-            cat << EOF >> $HOME/.ssh/config
-            Host dev-private-git.linaro.org
-                User git
-            EOF
-            chmod 0600 $HOME/.ssh/*
 
             TMPKEYDIR=$(mktemp -d /tmp/linaroandroid.XXXXXX)
             cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
@@ -144,11 +138,15 @@
                     main()
             EOF
             python ${TMPKEYDIR}/private-key-wrapper.py
-            chmod 0600 linaro-private-key
+            mv linaro-private-key $HOME/.ssh/linaro-private-key
 
-            eval `ssh-agent` >/dev/null 2>/dev/null
-            ssh-add linaro-private-key >/dev/null 2>/dev/null
-            rm -rf linaro-private-key ${TMPKEYDIR}
+            ssh-keyscan dev-private-git.linaro.org >> $HOME/.ssh/known_hosts
+            cat << EOF >> $HOME/.ssh/config
+            Host dev-private-git.linaro.org
+                User git
+                IdentityFile ~/.ssh/linaro-private-key
+            EOF
+            chmod 0600 $HOME/.ssh/*
 
             export SKIP_LICENSE_CHECK=1
 
