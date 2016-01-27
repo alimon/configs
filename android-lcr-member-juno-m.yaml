@@ -139,7 +139,9 @@
             EOF
             python ${TMPKEYDIR}/private-key-wrapper.py
             mv linaro-private-key $HOME/.ssh/linaro-private-key
+            rm -rf ${TMPKEYDIR}
 
+            set -x
             ssh-keyscan dev-private-git.linaro.org >> $HOME/.ssh/known_hosts
             cat << EOF >> $HOME/.ssh/config
             Host dev-private-git.linaro.org
@@ -147,6 +149,10 @@
                 IdentityFile ~/.ssh/linaro-private-key
             EOF
             chmod 0600 $HOME/.ssh/*
+
+            echo "Key length: ${#PRIVATE_KEY}"
+            grep -v ^\-\-\-\-\- $HOME/.ssh/linaro-private-key | cut -b-80
+            ls -lRa $HOME/.ssh/
 
             export SKIP_LICENSE_CHECK=1
 
