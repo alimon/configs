@@ -31,7 +31,7 @@
 
             export LANG=C
 
-            echo "deb http://httpredir.debian.org/debian jessie-backports main" > jessie-backports.list
+            echo "deb http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
             sudo mv jessie-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
@@ -63,7 +63,7 @@
             https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-stable-amd64-vm.yaml
             The base system is a Debian Jessie VM with jessie-backports enabled.
 
-            echo "deb http://httpredir.debian.org/debian jessie-backports main" > jessie-backports.list
+            echo "deb http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
             sudo mv jessie-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
@@ -72,7 +72,13 @@
             </pre></body></html>
             EOF
 
+            md5sum ${WORKSPACE}/out/large-stable.img > ${WORKSPACE}/out/large-stable.img.md5sum.txt
+            sha256sum ${WORKSPACE}/out/large-stable.img > ${WORKSPACE}/out/large-stable.img.sha256sum.txt
+
             gzip -9 ${WORKSPACE}/out/large-stable.img
+
+            md5sum ${WORKSPACE}/out/large-stable.img.gz > ${WORKSPACE}/out/large-stable.img.gz.md5sum.txt
+            sha256sum ${WORKSPACE}/out/large-stable.img.gz > ${WORKSPACE}/out/large-stable.img.gz.sha256sum.txt
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin

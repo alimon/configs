@@ -3,6 +3,12 @@
 # able to use lava packages from Debian unstable for django1.10
 # and python3 testing.
 
+# lava reports & can check the checksum of the decompressed image
+# users may also want the checksum of the downloaded compressed image
+
+# once vmdebootstrap 1.4 is available in jessie-backports, add the
+# --systemd-networkd option.
+
 - job:
     name: lava-debian-unstable-amd64-vm
     project-type: freestyle
@@ -32,7 +38,7 @@
 
             export LANG=C
 
-            echo "deb http://httpredir.debian.org/debian jessie-backports main" > jessie-backports.list
+            echo "deb http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
             sudo mv jessie-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
@@ -65,7 +71,7 @@
             https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-unstable-amd64-vm.yaml
             The base system is a Debian Jessie VM with jessie-backports enabled.
 
-            echo "deb http://httpredir.debian.org/debian jessie-backports main" > jessie-backports.list
+            echo "http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
             sudo mv jessie-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
@@ -74,7 +80,13 @@
             </pre></body></html>
             EOF
 
+            md5sum ${WORKSPACE}/out/large-sid.img > ${WORKSPACE}/out/large-sid.img.md5sum.txt
+            sha256sum ${WORKSPACE}/out/large-sid.img > ${WORKSPACE}/out/large-sid.img.sha256sum.txt
+
             gzip -9 ${WORKSPACE}/out/large-sid.img
+
+            md5sum ${WORKSPACE}/out/large-sid.img.gz > ${WORKSPACE}/out/large-sid.img.gz.md5sum.txt
+            sha256sum ${WORKSPACE}/out/large-sid.img.gz > ${WORKSPACE}/out/large-sid.img.gz.sha256sum.txt
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
