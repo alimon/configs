@@ -39,7 +39,6 @@
               - KVM (x86_64)
         - string:
             name: RUN_FLAGS
-            default: '--size test --iterations 1 --tune base'
             description: |
               Flags passed to benchmark framework at runtime.
               Examples --
@@ -53,7 +52,6 @@
               If this option is given, no build will be performed and the compiler_flags and make_flags fields will be ignored.
         - string:
             name: TOOLCHAIN
-            default: 'https://releases.linaro.org/components/toolchain/binaries/latest-5.1/aarch64-linux-gnu/gcc-linaro-5.1-2015.08-x86_64_aarch64-linux-gnu.tar.xz'
             description: |
               Toolchain to use - use local filesystem path, or formats interpretable by wget or scp/rsync.
               Must be supplied even when using a prebuilt tarball, but in this case does not have to exist on host.
@@ -64,20 +62,16 @@
               my.name@my.server:location_of_my_toolchain
         - string:
             name: SYSROOT
-            default: 'https://releases.linaro.org/components/toolchain/binaries/latest-5.1/aarch64-linux-gnu/sysroot-linaro-glibc-gcc5.1-2015.08-aarch64-linux-gnu.tar.xz'
             description: |
               Sysroot to use - use local filesystem path, or formats interpretable by wget or scp/rsync.
         - string:
             name: COMPILER_FLAGS
-            default: '-march=armv8-a'
             description: SPEC benchmarks built -O3 -fno-common, unless you override that here.
         - string:
             name: MAKE_FLAGS
-            default: ''
             description: Flags to pass to make, when building the benchmark.
         - string:
             name: PUBLIC_KEY
-            default: ''
             description: 'Public key for main instance jobs.'
         #TODO Remove this when we have the uinstance - at that point, we should be using the 'safe benchmarks' bundle stream
         - string:
@@ -91,10 +85,8 @@
             description: Branch of abe to drive the run
         - string:
             name: TIMEOUT
-            default: '604800'
             description: |
               Timeout, in seconds from when the LAVA job starts to run.
-              Default is one week.
     wrappers:
         - timeout:
             timeout: 120
