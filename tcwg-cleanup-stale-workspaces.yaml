@@ -93,12 +93,16 @@
             # Semantics of find's mtime "+N" stands for N+1 days old or older.
             days_1=$(($days-1))
 
+            # Handle dirs with whitespaces by setting $IFS to newline.
+            SAVEIFS=$IFS
+            IFS=$'\n'
             dirs=($(find $workspace_top/ -maxdepth $maxdepth -type d -mtime +$days_1))
+            IFS=$SAVEIFS
 
             rm_dirs=()
             for dir in "${dirs[@]}"; do
-              if [ x"$(find $dir -mtime -$days | wc -l)" = x"0" ]; then
-                rm_dirs=("${rm_dirs[@]}" $dir)
+              if [ x"$(find "$dir" -mtime -$days | wc -l)" = x"0" ]; then
+                rm_dirs=("${rm_dirs[@]}" "$dir")
               fi
             done
 
