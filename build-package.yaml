@@ -29,6 +29,10 @@
             name: repo
             description: 'repository to upload to'
             default: 'linaro-staging'
+        - bool:
+            name: appendversion
+            description: 'append version with linaro$dist'
+            default: 'true'
     axes:
         - axis:
             type: slave
@@ -54,7 +58,7 @@
         - shell: |
             #!/bin/bash
 
-            set -ex
+            set -e
             cat > repo.parameters << EOF
             build_success=false
             EOF
@@ -79,6 +83,7 @@
             echo "dist: $dist"
             echo "source: $source"
             echo "repo: $repo"
+            echo "appendversion: $appendversion"
 
             sudo rm -f *.changes repo work /etc/apt/sources.list.d/local.list
             # build a source repo for apt-get build-dep
@@ -103,7 +108,9 @@
 
             dpkg-source -x ${localdsc} work/
             # Changelog header tampering
-            sed -i -e '1 s,).*;,.'linaro$dist.1') '$dist';,' work/debian/changelog
+            if [ "$appendversion" = "true" ]; then
+               sed -i -e '1 s,).*;,.'linaro$dist.1') '$dist';,' work/debian/changelog
+            fi
             cd work/ && $personality dpkg-buildpackage -rfakeroot -j`getconf _NPROCESSORS_ONLN` $buildpackage_params
             cd ..
 
