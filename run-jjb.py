@@ -36,6 +36,7 @@ for conf_filename in data.splitlines():
             PUBLISH_KEY=os.environ.get('PUBLISH_KEY') or
                         sys.exit('Key is not defined.'),
             AUTH_TOKEN=os.environ.get('AUTH_TOKEN'),
+            PRIVATE_KEY=os.environ.get('PRIVATE_KEY'),
             COVERITY_TOKEN_ODP=os.environ.get('COVERITY_TOKEN_ODP'),
             COVERITY_TOKEN_ODP_DPDK=os.environ.get('COVERITY_TOKEN_ODP_DPDK'),
             COVERITY_TOKEN_ODP_KS2=os.environ.get('COVERITY_TOKEN_ODP_KS2'),
