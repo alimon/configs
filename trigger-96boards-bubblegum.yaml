@@ -1,5 +1,5 @@
 - job:
-    name: trigger-96boards-bubblegum-kernel
+    name: trigger-96boards-bubblegum
     project-type: freestyle
     defaults: global
     logrotate:
@@ -9,20 +9,16 @@
         - authorization:
             anonymous:
                 - job-read
-    parameters:
-        - string:
-            name: KERNEL_BRANCH
-            default: 'bubblegum96'
     disabled: false
     node: build
-    display-name: 'Trigger for 96boards - Actions Semi Bubblegum - Linux Kernel'
+    display-name: 'Trigger for 96boards - Actions Semi Bubblegum'
     scm:
         - git:
             url: https://git.linaro.org/people/paul.liu/vendor-kernel.git
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            refspec: +refs/heads/bubblegum96:refs/remotes/origin/bubblegum96
             name: origin
             branches:
-                - refs/heads/${KERNEL_BRANCH}
+                - refs/heads/bubblegum96
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -34,4 +30,4 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - trigger-builds:
-            - project: '96boards-bubblegum-kernel'
+            - project: '96boards-bubblegum, 96boards-bubblegum-kernel'
