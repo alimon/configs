@@ -97,18 +97,37 @@
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
 
-            build-tools/node/lava-submit "${CONFIG}"
+            # Construct post-build-lava parameters
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
 
-            for f in $(ls -1 build/out/lava-job-info* 2>/dev/null); do
-              time linaro-cp.py \
-                --no-build-info \
-                --split-job-owner \
-                --server ${PUBLISH_SERVER} \
-                ${f} \
-                ${PUB_DEST}
-            done
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            IMAGE_EXTENSION=img.tar.xz
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
+            CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template.json
+            EOF
 
             echo "Build finished"
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+
     publishers:
         - archive:
             artifacts: '*.xml'
