@@ -59,14 +59,16 @@
         - shell: |
             #!/bin/bash
 
-            java -version
-
+            # Install needed packages
             sudo add-apt-repository ppa:linaro-maintainers/tools
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
             sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch
-            sudo apt-get install -y gdisk libyaml-0-2 python-apt python-chardet python-dbus python-dbus-dev python-debian python-gi python-parted python-pkg-resources python-six python-yaml u-boot-tools python-commandnotfound parted
 
+            # Install most recent linaro-image-tools (packaged) and dependencies
+            sudo apt-get install -y gdisk libyaml-0-2 python-apt python-chardet python-dbus python-dbus-dev \
+              python-debian python-gi python-parted python-pkg-resources python-six python-yaml u-boot-tools \
+              python-commandnotfound parted
             wget -q \
               http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2015.11-1.linarojessie.1_amd64.deb \
@@ -74,31 +76,33 @@
             sudo dpkg -i --force-all *.deb
             rm -f *.deb
 
-            mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
-            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            chmod a+x ${HOME}/bin/*
-            export PATH=${HOME}/bin:${PATH}
-
+            # Set local configuration
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+            java -version
             if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
               sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
               sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
             fi
             cd /home/buildslave/srv/${JOB_NAME}
 
-            git config --global user.email "ci_notify@linaro.org"
-            git config --global user.name "Linaro CI"
+            # Download helper scripts (repo, linaro-cp)
+            mkdir -p ${HOME}/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
 
-            # Runs as ubuntu
-            set -xe
-            rm -rf build-tools jenkins-tools build-configs build/out build/android-patchsets
+            # Install helper packages
+            rm -rf build-tools jenkins-tools build-configs
             git clone --depth 1 https://git.linaro.org/people/vishal.bhoj/linaro-android-build-tools-ci.git build-tools
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
             git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
 
+            set -xe
+            # Define job configuration's repo
             export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
-
             cat << EOF > config.txt
             BUILD_CONFIG_REPO=http://android.git.linaro.org/git/android-build-configs.git
             BUILD_CONFIG_BRANCH=master
@@ -106,12 +110,14 @@
             echo config.txt
             export CONFIG=`base64 -w 0 config.txt`
 
+            # Build Android
+            rm -rf build/out build/android-patchsets
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
 
+            # Publish binaries
             PUB_SERVER=https://snapshots.linaro.org/
             PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
-
             time linaro-cp.py \
               --manifest \
               --no-build-info \
