@@ -32,7 +32,7 @@
             default: 'jessie'
         - string:
             name: EXT4FS_IMG_SZ
-            default: '2G'
+            default: '1800M'
         - string:
             name: PLATFORM_ARCH
             default: 'armhf'
@@ -235,10 +235,14 @@
             LABEL=qcom-firmware /lib/firmware ext4 defaults 0 0
             EOF
 
-              sudo make_ext4fs -o -L rootfs -l ${EXT4FS_IMG_SZ} -s out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img rootfs/
-              sudo umount rootfs
+              sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${EXT4FS_IMG_SZ}
+              mkdir rootfs2
+              sudo mount -o loop out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw rootfs2
+              sudo cp -a rootfs/* rootfs2
+              sudo umount rootfs2 rootfs
+              sudo ext2simg -v out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
               sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
-              sudo rm -rf rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
+              sudo rm -rf rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img rootfs2 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw
 
               # Compress image(s)
               gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
