@@ -81,7 +81,7 @@
 
             cleanup_exit()
             {
-              [[ -n ${SSH_AGENT_PID} ]] && kill -9 ${SSH_AGENT_PID}
+              [[ -n ${SSH_AGENT_PID} ]] && kill -9 ${SSH_AGENT_PID} ||:
             }
 
             java -version
@@ -138,8 +138,11 @@
                     main()
             EOF
             python ${TMPKEYDIR}/private-key-wrapper.py
-            mv linaro-private-key $HOME/.ssh/linaro-private-key
-            rm -rf ${TMPKEYDIR}
+            chmod 0600 linaro-private-key
+
+            eval `ssh-agent` >/dev/null 2>/dev/null
+            ssh-add linaro-private-key >/dev/null 2>/dev/null
+            rm -rf linaro-private-key ${TMPKEYDIR}
 
             ssh-keyscan dev-private-git.linaro.org >> $HOME/.ssh/known_hosts
             ssh-keyscan dev-private-review.linaro.org >> $HOME/.ssh/known_hosts
@@ -147,10 +150,8 @@
             cat << EOF >> $HOME/.ssh/config
             Host dev-private-git.linaro.org
                 User git
-                IdentityFile ~/.ssh/linaro-private-key
             Host dev-private-review.linaro.org
                 User git
-                IdentityFile ~/.ssh/linaro-private-key
             EOF
             chmod 0600 $HOME/.ssh/*
 
