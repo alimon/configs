@@ -1,8 +1,9 @@
 #See http://docs.openstack.org/infra/jenkins-job-builder/genindex.html
 - job:
     name: tcwg-benchmark-monthly
-    project-type: freestyle
-    node: master
+    project-type: matrix
+    node: tcwg-x86_64
+    concurrent: true
     display-name: 'TCWG Benchmark Monthly'
     description: 'Monthly release benchmarking'
     logrotate:
@@ -65,6 +66,13 @@
         - timeout:
             timeout: 120
         - workspace-cleanup
+    axes:
+      - axis:
+          type: user-defined
+          name: TARGET_CONFIG
+          values:
+            - juno-a53
+            - juno-a57
     builders:
       - shell: |
           #!/bin/bash
@@ -77,7 +85,6 @@
           #TODO Hack until there's a proper host in the uinstance
           export HOST_DEVICE_TYPE=juno
 
-          export TARGET_DEVICE_TYPE=juno
           export BENCHMARK=CPU2006
           export JOB_NAME='Monthly release benchmark'
 
