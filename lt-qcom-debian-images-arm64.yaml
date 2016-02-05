@@ -53,16 +53,10 @@
             default: 'release/qcomlt-4.4'
         - string:
             name: QCOM_FIRMWARE
-            default: 'http://developer.qualcomm.com/download/db410c/firmware-410c-1.1.0.bin'
+            default: 'http://developer.qualcomm.com/download/db410c/firmware-410c-1.2.0.bin'
         - string:
             name: QCOM_FIRMWARE_MD5
-            default: 'dffdd5da9fb45e15d786b0ae15a94dab'
-        - string:
-            name: FCC_BINARIES_OVERLAY_URL
-            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151202/fcc-binaries.tar.gz'
-        - string:
-            name: FCC_BINARIES_OVERLAY_URL_MD5
-            default: 'edc098fbd01915501fef277d16008afa'
+            default: 'de6038f1c07b93886b8d0845a1d8eb4b'
         - password:
             name: PRIVATE_KEY
             default: ${LT_QUALCOMM_PRIVATE_KEY}
@@ -262,16 +256,12 @@
               # add firmware (adreno, venus and WCN)
               rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
               wget -q ${QCOM_FIRMWARE}
-              wget -q ${FCC_BINARIES_OVERLAY_URL}
               echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
-              echo "${FCC_BINARIES_OVERLAY_URL_MD5}  $(basename ${FCC_BINARIES_OVERLAY_URL})" >> MD5
               md5sum -c MD5
               sh $(basename ${QCOM_FIRMWARE}) --auto-accept
-              tar -zxvf $(basename ${FCC_BINARIES_OVERLAY_URL})
               cd -
               sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
-              sudo cp -f qcom_firmware/device/qcom/msm8916_64/WCNSS_qcom_wlan_nv.bin rootfs/lib/firmware/wlan/prima
-              sudo rm -f rootfs/lib/firmware/wlan/macaddr0
+              sudo rm -f rootfs/lib/firmware/wlan/macaddr0 rootfs/lib/firmware.tar
 
               sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${EXT4FS_IMG_SZ}
               mkdir rootfs2
