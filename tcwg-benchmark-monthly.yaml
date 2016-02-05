@@ -78,7 +78,6 @@
           export HOST_DEVICE_TYPE=juno
 
           export BENCHMARK=CPU2006
-          export JOB_NAME='Monthly release benchmark'
 
           #Derive TRIPLE from TOOLCHAIN
           if test x"${TRIPLE}" = x"(derive from toolchain)"; then
@@ -97,6 +96,7 @@
 
           for TARGET_CONFIG in juno-a57 juno-a53; do
             export TARGET_CONFIG
+            export JOB_NAME="Monthly release benchmark (${TARGET_CONFIG})"
 
             #Run all of this in a subshell so that we enter each loop with
             #environment in the same state.
