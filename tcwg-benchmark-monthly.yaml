@@ -8,7 +8,7 @@
     logrotate:
         daysToKeep: 30
         numToKeep: 30
-        artifactNumToKeep: 1
+        artifactNumToKeep: 2
     properties:
         - authorization:
             anonymous:
@@ -77,7 +77,6 @@
           #TODO Hack until there's a proper host in the uinstance
           export HOST_DEVICE_TYPE=juno
 
-          export TARGET_DEVICE_TYPE=juno
           export BENCHMARK=CPU2006
           export JOB_NAME='Monthly release benchmark'
 
@@ -94,40 +93,46 @@
           fi
 
           git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
-
-          #Set variables for both post-build-lava and yaml-to-json
-          tmpfile=`mktemp`
-          bash -x ./abe/scripts/Benchmark.sh > "${tmpfile}"
-          while read x; do
-            export "$x"
-            done < "${tmpfile}"
-          rm "${tmpfile}"
-          #Must be exported to be visible to Benchmark.sh - env vars that
-          #happen to be job params are already exported, so don't need this
-
-          #Parameters for post-build-lava
-          cat << EOF > post_build_lava_parameters
-          CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef.json
-
-          #Server to dispatch to, as opposed to server where bundle stream is.
-          #post-build-lava takes responsibility for specifying a protocol.
-          LAVA_SERVER=${LAVA_SERVER}
-
-          #DEVICE_TYPE to placate pbl - we don't actually use it
-          DEVICE_TYPE=${TARGET_DEVICE_TYPE}
-          EOF
-
-          #Convert YAML to JSON
           git clone --depth 1 https://git.linaro.org/ci/lci-build-tools
-          ./lci-build-tools/yaml-to-json.py \
-            abe/config/bench/jobdefs/template-uinstance-monthly.yaml > lava-jobdef.json
+
+          for TARGET_CONFIG in juno-a53 juno-a57; do
+            #Set variables for both post-build-lava and yaml-to-json
+            tmpfile=`mktemp`
+            bash -x ./abe/scripts/Benchmark.sh > "${tmpfile}"
+            while read x; do
+              export "$x"
+              done < "${tmpfile}"
+            rm "${tmpfile}"
+            #Must be exported to be visible to Benchmark.sh - env vars that
+            #happen to be job params are already exported, so don't need this
+
+            #Parameters for post-build-lava
+            cat << EOF > post_build_lava_parameters
+            CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef-${TARGET_CONFIG}.json
+
+            #Server to dispatch to, as opposed to server where bundle stream is.
+            #post-build-lava takes responsibility for specifying a protocol.
+            LAVA_SERVER=${LAVA_SERVER}
+
+            #DEVICE_TYPE to placate pbl - we don't actually use it
+            DEVICE_TYPE=${TARGET_DEVICE_TYPE}
+            EOF
+
+            #Convert YAML to JSON
+            ./lci-build-tools/yaml-to-json.py \
+            abe/config/bench/jobdefs/template-uinstance.yaml > "lava-jobdef-${TARGET_CONFIG}.json"
+          done
 
     publishers:
       - archive:
-          artifacts: lava-jobdef.json
+          artifacts: lava-jobdef-*.json
       - trigger-parameterized-builds:
         - project: tcwg-post-build-lava
           condition: SUCCESS
-          property-file: post_build_lava_parameters
+          property-file: post_build_lava_parameters_juno-a53
+      - trigger-parameterized-builds:
+        - project: tcwg-post-build-lava
+          condition: SUCCESS
+          property-file: post_build_lava_parameters_juno-a57
       - email:
           recipients: 'bernie.ogden@linaro.org'
