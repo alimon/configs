@@ -109,11 +109,11 @@
               #environment in the same state.
               (
                 indirect="PREBUILT_${bitness}"
-                export PREBUILT="${!indirect}"
+                export PREBUILT="${!indirect:-}"
                 indirect="TOOLCHAIN_${bitness}"
-                export TOOLCHAIN=${!indirect}
+                export TOOLCHAIN=${!indirect:-}
                 indirect="SYSROOT_${bitness}"
-                export SYSROOT=${!indirect}
+                export SYSROOT=${!indirect:-}
                 unset indirect
                 if test ${bitness} -eq 32; then
                   export TRIPLE=arm-linux-gnueabihf
