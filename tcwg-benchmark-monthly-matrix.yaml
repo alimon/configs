@@ -47,6 +47,7 @@
             description: Triple describing the target
             choices:
               - (derive from TOOLCHAIN)
+              - (native)
               - aarch64-linux-gnu
               - arm-linux-gnueabihf
         - string:
@@ -98,6 +99,8 @@
               echo "Unable to derive TRIPLE from TOOLCHAIN '${TOOLCHAIN}'" >&2
               exit 1
             fi
+          elif test x"${TRIPLE}" = x"(native)"; then
+            TRIPLE=
           fi
 
           git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
