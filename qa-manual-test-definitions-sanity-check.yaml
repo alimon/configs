@@ -1,0 +1,58 @@
+- job:
+    name: qa-manual-test-definitions-sanity-check
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: build
+    display-name: 'QA test definitions sanity check'
+    scm:
+        - git:
+            url: https://review.linaro.org/qa/manual-test-definitions
+            refspec: ${GERRIT_REFSPEC}
+            name: ''
+            branches:
+                - ${GERRIT_PATCHSET_REVISION}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+            choosing-strategy: gerrit
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            gerrit-build-successful-codereview-value: 1
+            gerrit-build-failed-codereview-value: -1
+            readable-message: true
+            successful-message: 'Sanity check OK'
+            failure-message: '[OUTPUT]:'
+            failure-message-file: 'build-error.txt'
+            trigger-for-unreviewed-patches: true
+            projects:
+                - project-compare-type: 'ANT'
+                  project-pattern: 'qa/manual-test-definitions'
+                  branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            env |grep GIT
+            env |grep GERRIT
+
+            wget -q https://git.linaro.org/qa/test-definitions-ci.git/blob_plain/HEAD:/test-definitions-ci.py -O test-definitions-ci.py
+            python test-definitions-ci.py E501
