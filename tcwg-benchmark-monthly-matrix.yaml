@@ -132,12 +132,12 @@
           ./lci-build-tools/yaml-to-json.py \
             abe/config/bench/jobdefs/template-uinstance.yaml > lava-jobdef.json
 
+      #Race - pbl may look for lava-jobdef.json before it has been archived
+      -trigger-builds:
+        - project: tcwg-post-build-lava
+          property-file: post-build-lava-parameters
     publishers:
       - archive:
           artifacts: lava-jobdef.json
-      - trigger-parameterized-builds:
-        - project: tcwg-post-build-lava
-          condition: SUCCESS
-          property-file: post_build_lava_parameters
       - email:
           recipients: 'bernie.ogden@linaro.org'
