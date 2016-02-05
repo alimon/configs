@@ -67,7 +67,8 @@
             wget -q \
               http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2015.11-1.linarojessie.1_amd64.deb \
-              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2015.11-1.linarojessie.1_all.deb
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2015.11-1.linarojessie.1_all.deb \
+              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/m/multipath-tools/kpartx_0.5.0-7ubuntu7.1_amd64.deb
             sudo dpkg -i --force-all *.deb
             rm -f *.deb
 
@@ -99,7 +100,7 @@
 
             # Create eMMC rootfs image(s)
             mkdir boot rootfs
-            for device in $(sudo kpartx -av ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.img | cut -d' ' -f3); do
+            for device in $(sudo kpartx -avs ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.img | cut -d' ' -f3); do
               partition=$(echo ${device} | cut -d'p' -f3)
               [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
               [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
