@@ -1,0 +1,140 @@
+#See http://docs.openstack.org/infra/jenkins-job-builder/genindex.html
+- job:
+  name: tcwg-benchmark-monthly-matrix
+    project-type: matrix
+    node: tcwg-x86_64
+    concurrent: true
+    display-name: 'TCWG Benchmark Monthly Matrix'
+    description: 'Monthly release benchmarking'
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            bernie.ogden@linaro.org:
+                - job-build
+                - job-cancel
+        - copyartifact:
+            projects: tcwg-post-build-lava
+    parameters:
+        - string:
+            name: PREBUILT
+            description: |
+              A prebuilt benchmark tarball as produced by abe or direct make invocation.
+              If produced by abe, tar up the contents of build/_host_/_target_.
+              If produced by direct make, tar up the top-level git repository (but you can exclude the .git dir).
+        - string:
+            name: TOOLCHAIN
+            description: |
+              Toolchain to use - use local filesystem path, or formats interpretable by wget or scp/rsync.
+              Leave blank if you have supplied PREBUILT.
+              Examples --
+              /usr/bin/gcc
+              aarch64-linux-gnu-clang
+              http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+              my.name@my.server:location_of_my_toolchain
+        - string:
+            name: SYSROOT
+            description: |
+              Sysroot to use - use local filesystem path, or formats interpretable by wget or scp/rsync.
+              Leave blank if you have supplied PREBUILT.
+        - choice:
+            name: TRIPLE
+            description: Triple describing the target
+            choices:
+              - (derive from TOOLCHAIN)
+              - aarch64-linux-gnu
+              - arm-linux-gnueabihf
+        - string:
+            name: PUBLIC_KEY
+            description: 'Public key for main instance jobs.'
+        #TODO Remove this when we have the uinstance - at that point, we should be using the 'safe benchmarks' bundle stream
+        - string:
+            name: BUNDLE_STREAM
+            default: '/anonymous/bernie.ogden/'
+            description: 'Bundle stream for main instance jobs.'
+        #TODO Remove this when we have the uinstance - at that point, we should be using the benchmarking branch
+        - string:
+            name: TESTDEF_REVISION
+            default: bernie/benchmarking-uinstance-stability
+            description: Branch of abe to drive the run
+    wrappers:
+        - timeout:
+            timeout: 120
+        - workspace-cleanup
+    axes:
+      - axis:
+          type: user-defined
+          name: TARGET_CONFIG
+          values:
+            - juno-a53
+            - juno-a57
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -eux
+          set -o pipefail
+
+          #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
+          export LAVA_SERVER=192.168.16.2/RPC2/
+
+          #TODO Hack until there's a proper host in the uinstance
+          export HOST_DEVICE_TYPE=juno
+
+          export BENCHMARK=CPU2006
+          export JOB_NAME='Monthly release benchmark'
+
+          #Derive TRIPLE from TOOLCHAIN
+          if test x"${TRIPLE}" = x"(derive from toolchain)"; then
+            if echo "${TOOLCHAIN}" | grep -q aarch64-linux-gnu-; then
+              TRIPLE=aarch64-linux-gnu
+            elif echo "${TOOLCHAIN}" | grep -q arm-linux-gnueabihf-; then
+              TRIPLE=arm-linux-gnueabihf
+            else
+              echo "Unable to derive TRIPLE from TOOLCHAIN '${TOOLCHAIN}'" >&2
+              exit 1
+            fi
+          fi
+
+          git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
+
+          #Set variables for both post-build-lava and yaml-to-json
+          tmpfile=`mktemp`
+          bash -x ./abe/scripts/Benchmark.sh > "${tmpfile}"
+          while read x; do
+            export "$x"
+            done < "${tmpfile}"
+          rm "${tmpfile}"
+          #Must be exported to be visible to Benchmark.sh - env vars that
+          #happen to be job params are already exported, so don't need this
+
+          #Parameters for post-build-lava
+          cat << EOF > post_build_lava_parameters
+          CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef.json
+
+          #Server to dispatch to, as opposed to server where bundle stream is.
+          #post-build-lava takes responsibility for specifying a protocol.
+          LAVA_SERVER=${LAVA_SERVER}
+
+          #DEVICE_TYPE to placate pbl - we don't actually use it
+          DEVICE_TYPE=${TARGET_DEVICE_TYPE}
+          EOF
+
+          #Convert YAML to JSON
+          git clone --depth 1 https://git.linaro.org/ci/lci-build-tools
+          ./lci-build-tools/yaml-to-json.py \
+            abe/config/bench/jobdefs/template-uinstance-monthly.yaml > lava-jobdef.json
+
+    publishers:
+      - archive:
+          artifacts: lava-jobdef.json
+      - trigger-parameterized-builds:
+        - project: tcwg-post-build-lava
+          condition: SUCCESS
+          property-file: post_build_lava_parameters
+      - email:
+          recipients: 'bernie.ogden@linaro.org'
