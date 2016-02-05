@@ -1,0 +1,21 @@
+actions:
+- command: deploy_linaro_image
+  metadata:
+    distribution: openembedded
+    hwpack.build: ${BUILD_NUMBER}
+    hwpack.type: vexpress64
+  parameters:
+    image: ${IMAGE_URL}
+- command: lava_test_shell
+  parameters:
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/smoke-tests-basic.yaml
+    timeout: 800
+- command: submit_results
+  parameters:
+    server: http://${LAVA_SERVER}
+    stream: ${BUNDLE_STREAM_NAME}
+device_type: rtsm_foundation-armv8
+job_name: ${BUILD_URL} - rtsm-foundation-armv8
+timeout: 172800

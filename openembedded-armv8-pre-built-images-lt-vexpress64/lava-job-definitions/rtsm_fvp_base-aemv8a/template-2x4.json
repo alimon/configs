@@ -1,0 +1,47 @@
+{
+    "actions": [
+        {
+            "command": "deploy_linaro_image",
+            "metadata": {
+                "distribution": "openembedded",
+                "hwpack.build": "${BUILD_NUMBER}",
+                "hwpack.type": "vexpress64"
+            },
+            "parameters": {
+                "bootloadertype": "uefi",
+                "image": "${IMAGE_URL}"
+            }
+        },
+        {
+            "command": "boot_linaro_image",
+            "parameters": {
+                "options": [
+                    "cluster0.NUM_CORES=2",
+                    "cluster1.NUM_CORES=4"
+                ]
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "testdef_repos": [
+                    {
+                        "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+                        "testdef": "openembedded/smoke-tests-basic.yaml"
+                    }
+                ],
+                "timeout": 800
+            }
+        },
+        {
+            "command": "submit_results",
+            "parameters": {
+                "server": "http://${LAVA_SERVER}",
+                "stream": "${BUNDLE_STREAM_NAME}"
+            }
+        }
+    ],
+    "device_type": "rtsm_fvp_base-aemv8a",
+    "job_name": "${BUILD_URL} - rtsm_fvp_base-aemv8a 2x4",
+    "timeout": 172800
+}
