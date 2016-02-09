@@ -27,11 +27,13 @@
         - shell: |
             #!/bin/bash
 
+            set -ex
+
             java -version
 
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools libfdt-dev python-mako
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools libfdt-dev python-mako gettext
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
@@ -50,16 +52,16 @@
 
             # Clean any artifacts related to previous build
             rm -rf vendor/db410c
-            rm -rf out/target/product/db410c
+            rm -rf out/target/product/db410c/system/ out/target/product/db410c/data/ out/target/product/db410c/*.xml
+            rm -rf out/target/product/db410c/*.zip out/target/product/db410c/*.img out/target/product/db410c/*.xz
 
             # Runs as ubuntu
-            set -ex
             repo init -u https://android.googlesource.com/platform/manifest -b android-6.0.1_r16
             cd .repo
+            rm -rf local_manifests
             git clone https://github.com/96boards/android_manifest -b android-6.0-db410c local_manifests
             cd ..
-            repo sync --force-sync -j16
-            set +ex
+            repo sync -f --force-sync -j16
 
             # Extract the proprietary firmware
             mkdir -p vendor/db410c
@@ -69,7 +71,7 @@
             cd ../..
 
             mkdir -p out
-            cp -a .repo/manifest.xml out/source-manifest.xml
+            cp .repo/manifest.xml out/source-manifest.xml
             repo manifest -r -o out/pinned-manifest.xml
 
             source build/envsetup.sh
@@ -77,9 +79,9 @@
             make droidcore -j8
 
             cd out/target/product/db410c/
-            for image in "boot-db410c.img" "system.img" "userdata.img" "cache.img"; do
+            for image in "boot-db410c.img" "system.img" "userdata.img" "cache.img" "dt.img" "ramdisk.img"; do
                 echo "Compressing ${image}"
-                tar -Jcf ${image}.tar.xz ${image}
+                xz -z ${image}
             done
             cd -
 
@@ -88,11 +90,40 @@
 
             # Create MD5SUM
             cd out/target/product/db410c/
-            md5sum *.txt *.xz *.zip *.mbn *.xml *.img > MD5SUMS.txt
+            md5sum *.txt *.xz *.xml *.img > MD5SUMS.txt
             cd -
 
             # Publish
             PUB_DEST=snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}
+
+            # Build information
+            cat > out/target/product/db410c/README.textile << EOF
+
+            h4. 96Boards - Reference Platform Build - AOSP - DragonBoard410c
+
+            Build description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+
+            Install (also check the bootloader "install guide":https://github.com/96boards/documentation/wiki/Dragonboard-410c-Installation-Guide-for-Linux-and-Android#install-android-release):
+
+            bc. wget https://builds.96boards.org/snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}/boot-db410c.img.xz
+            wget https://builds.96boards.org/snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}/cache.img.xz
+            wget https://builds.96boards.org/snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}/system.img.xz
+            wget https://builds.96boards.org/snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}/userdata.img.xz
+            for f in *.xz; do xz -d \$f; done
+            sudo fastboot flash boot boot-db410c.img
+            sudo fastboot flash system system.img
+            sudo fastboot flash userdata userdata.img
+            sudo fastboot flash cache cache.img
+
+            EOF
+
+            cat > out/target/product/db410c/BUILD-INFO.txt << EOF
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: open
+            EOF
 
             time linaro-cp.py \
               --manifest \
@@ -102,9 +133,9 @@
               --server ${PUBLISH_SERVER} \
               out/target/product/db410c/ \
               ${PUB_DEST} \
-              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+              --include "^[^/]+[._](xz|xml|sh|config)$" \
               --include "^[BHi][^/]+txt$" \
-              --include "^(MANIFEST|MD5SUMS)$"
+              --include "^(MANIFEST|MD5SUMS|README.textile)$"
 
             echo "Build finished"
     publishers:
