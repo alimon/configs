@@ -23,6 +23,10 @@
             default: gcc_patch_prev
             description: 'Original GCC revision'
         - string:
+            name: override
+            default: ''
+            description: 'Versions of components to pass to BuildFarm jobs.  The above "GERRIT_PATCHSET_REVISION" and "gcc_orig" variables will override any gcc settings in "override".'
+        - string:
             name: log_server
             default: dev-01.tcwglab:/home/maxim.kuvyrkov/logs
             description: 'Log_Server'
@@ -32,9 +36,9 @@
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
         - string:
             name: abe_branch
-            default: refs/remotes/origin/stable
+            default: refs/remotes/changes/56/10356/2
             description: 'ABE revision to use'
-    disabled: true
+    disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: true
     display-name: 'TCWG ZZZ Backport Maxim'
@@ -65,7 +69,7 @@
                   project-pattern: 'toolchain/gcc'
                   branches:
                     - branch-compare-type: 'ANT'
-                      branch-pattern: '**'
+                      branch-pattern: 'doesnt-exist'
     wrappers:
         - timeout:
             timeout: 3000
@@ -89,7 +93,7 @@
             fi
             gcc_orig_rev=$(git rev-parse $gcc_orig)
 
-            echo "gcc_branch=gcc.git@$gcc_orig_rev" > gcc_orig_parameters
+            echo "override=\"$override gcc=gcc.git~$gcc_orig_rev\"" > gcc_orig_parameters
             echo "log_name=tcwg-backport-$gcc_orig_rev/\$(uname -m).\$target" >> gcc_orig_parameters
             echo "rebuild=false" >> gcc_orig_parameters
             echo "dont_fail=true" >> gcc_orig_parameters
@@ -97,7 +101,7 @@
             echo "targets=$targets" >> gcc_orig_parameters
             echo "abe_branch=$abe_branch" >> gcc_orig_parameters
 
-            echo "gcc_branch=gcc.git@$gcc_patch_rev" > gcc_patch_parameters
+            echo "override=\"$override gcc=gcc.git~$gcc_patch_rev\"" > gcc_patch_parameters
             echo "log_name=tcwg-backport-$gcc_patch_rev/\$(uname -m).\$target" >> gcc_patch_parameters
             echo "rebuild=false" >> gcc_patch_parameters
             echo "dont_fail=true" >> gcc_patch_parameters
@@ -116,6 +120,6 @@
                   file-pattern: gcc_*_parameters
               block: true
         - trigger-builds:
-            - project: tcwg-compare-results-master
+            - project: tcwg-compare-results
               property-file: compare_results_parameters
               block: true
