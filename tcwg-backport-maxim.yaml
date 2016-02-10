@@ -93,7 +93,7 @@
             fi
             gcc_orig_rev=$(git rev-parse $gcc_orig)
 
-            echo "override=\"$override gcc=gcc.git~$gcc_orig_rev\"" > gcc_orig_parameters
+            echo "override=$override\ gcc=gcc.git~$gcc_orig_rev" > gcc_orig_parameters
             echo "log_name=tcwg-backport-$gcc_orig_rev/\$(uname -m).\$target" >> gcc_orig_parameters
             echo "rebuild=false" >> gcc_orig_parameters
             echo "dont_fail=true" >> gcc_orig_parameters
@@ -101,7 +101,7 @@
             echo "targets=$targets" >> gcc_orig_parameters
             echo "abe_branch=$abe_branch" >> gcc_orig_parameters
 
-            echo "override=\"$override gcc=gcc.git~$gcc_patch_rev\"" > gcc_patch_parameters
+            echo "override=$override gcc=gcc.git~$gcc_patch_rev" > gcc_patch_parameters
             echo "log_name=tcwg-backport-$gcc_patch_rev/\$(uname -m).\$target" >> gcc_patch_parameters
             echo "rebuild=false" >> gcc_patch_parameters
             echo "dont_fail=true" >> gcc_patch_parameters
