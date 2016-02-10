@@ -98,13 +98,6 @@
             export rootfs_arch=armv8
             export rootfs_type=lamp
 
-            # for efi_runtime module
-            wget http://people.linaro.org/~fu.wei/LAVA/test/UEFI/ci/efi_runtime_Kconfig.patch -O efi_runtime_Kconfig.patch
-            patch -p1 < efi_runtime_Kconfig.patch
-            rm -rf fwts
-            git clone -b V14.12.00 --depth 1 git://kernel.ubuntu.com/hwe/fwts.git
-            cp -a fwts/efi_runtime/efi_runtime* drivers/test_rs/
-
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
             bash lci-build-tools/jenkins_kernel_build_inst
 
