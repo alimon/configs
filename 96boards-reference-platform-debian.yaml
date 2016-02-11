@@ -188,9 +188,10 @@
 
                 ## FIXME: See if we can find a better way to package this
                 # Firmware (adreno, venus and WCN)
-                wget --progress=dot -e dotbytes=1M https://developer.qualcomm.com/download/db410c/firmware-410c-1.1.0.bin
-                yes | sh firmware-410c-1.1.0.bin > /dev/null
-                sudo cp -rf linux-ubuntu-board-support-package-v1.1/proprietary-ubuntu/* rootfs/lib/firmware/
+                wget --progress=dot -e dotbytes=1M https://developer.qualcomm.com/download/db410c/firmware-410c-1.2.0.bin
+                yes | sh firmware-410c-1.2.0.bin > /dev/null
+                sudo cp -a linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
+                sudo rm -f rootfs/lib/firmware.tar
 
                 # add license file in the generated rootfs
                 wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
