@@ -93,8 +93,8 @@
             export conf_filenames="linaro/configs/linaro-base.conf linaro/configs/vexpress64.conf linaro/configs/distribution.conf linaro/configs/acpi.conf linaro/configs/efi.conf"
             export MAKE_DTBS=true
             export ARCH=arm64
-            export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
-            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz"
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.11/bin"
+            export toolchain_url="https://releases.linaro.org/components/toolchain/binaries/5.2-2015.11-2/aarch64-linux-gnu/gcc-linaro-5.2-2015.11-2-x86_64_aarch64-linux-gnu.tar.xz"
             export rootfs_arch=armv8
             export rootfs_type=lamp
 
@@ -103,8 +103,8 @@
 
             # Get rootfs
             rm -f linaro-image-${rootfs_type}-generic*.tar.gz
-            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-${rootfs_arch}-rootfs/gcc_version=4.9,label=build,rootfs=${rootfs_type}/lastSuccessfulBuild/buildNumber`
-            export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-${rootfs_arch}-rootfs/gcc_version=4.9,label=build,rootfs=${rootfs_type}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-${rootfs_arch}-rootfs/gcc_version=5.2,label=build,rootfs=${rootfs_type}/lastSuccessfulBuild/buildNumber`
+            export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-${rootfs_arch}-rootfs/gcc_version=5.2,label=build,rootfs=${rootfs_type}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
             export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/${rootfs_type}-${rootfs_arch}-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-${rootfs_type}-generic${rootfs_arch}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
             wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
