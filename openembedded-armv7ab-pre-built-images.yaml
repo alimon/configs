@@ -66,6 +66,13 @@
             export HWPACK_BUILD_NUMBER=`echo ${HWPACK_FILE_NAME} |cut -d'_' -f3 |cut -d'-' -f2`
             export HWPACK_BUILD_NUMBER=${HWPACK_BUILD_NUMBER%%.img.gz}
 
+            # Add md5sums for all build artefacts that don't have one yet.
+            for f in $(find ${WORKSPACE}/out | grep -v md5) ; do
+                if [ -f "f" ] ; then
+                    md5sum $f > ${f}.md5
+                fi
+            done
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py

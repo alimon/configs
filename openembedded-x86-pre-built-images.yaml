@@ -118,6 +118,13 @@
             ./lci-build-tools/yaml-to-json.py configs/openembedded-x86-pre-built-images/lava-job-definitions/${DEVICE_TYPE}/template-benchmark.yaml > out/lava/template-benchmark.json
             ./lci-build-tools/yaml-to-json.py configs/openembedded-x86-pre-built-images/lava-job-definitions/${DEVICE_TYPE}/template-cyclic.yaml > out/lava/template-cyclic.json
 
+            # Add md5sums for all build artefacts that don't have one yet.
+            for f in $(find ${WORKSPACE}/out | grep -v md5) ; do
+                if [ -f "f" ] ; then
+                    md5sum $f > ${f}.md5
+                fi
+            done
+
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
