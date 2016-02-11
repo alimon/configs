@@ -105,7 +105,7 @@
             rm -f linaro-image-${rootfs_type}-generic*.tar.gz
             export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-${rootfs_arch}-rootfs/gcc_version=5.2,label=build,rootfs=${rootfs_type}/lastSuccessfulBuild/buildNumber`
             export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/openembedded-${rootfs_arch}-rootfs/gcc_version=5.2,label=build,rootfs=${rootfs_type}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/${rootfs_type}-${rootfs_arch}-gcc-4.9/${ROOTFS_BUILD_NUMBER}/linaro-image-${rootfs_type}-generic${rootfs_arch}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/${rootfs_type}-${rootfs_arch}-gcc-5.2/${ROOTFS_BUILD_NUMBER}/linaro-image-${rootfs_type}-generic${rootfs_arch}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.rootfs.tar.gz"
             wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
             # Create pre-built image(s)
