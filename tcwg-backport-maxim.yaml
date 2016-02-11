@@ -34,6 +34,10 @@
             name: targets
             default: 'cross_main cross_aux native_x86'
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
+        - bool:
+            name: rebuild
+            default: false
+            description: 'Rebuild the toolchain even if results are already on logserver'
         - string:
             name: abe_branch
             default: refs/remotes/changes/56/10356/2
@@ -95,7 +99,7 @@
 
             echo "override=$override gcc=gcc.git~$gcc_orig_rev" > gcc_orig_parameters
             echo "log_name=tcwg-backport-$gcc_orig_rev/\$(uname -m).\$target" >> gcc_orig_parameters
-            echo "rebuild=false" >> gcc_orig_parameters
+            echo "rebuild=$rebuild" >> gcc_orig_parameters
             echo "dont_fail=true" >> gcc_orig_parameters
             echo "log_server=$log_server" >> gcc_orig_parameters
             echo "targets=$targets" >> gcc_orig_parameters
@@ -103,7 +107,7 @@
 
             echo "override=$override gcc=gcc.git~$gcc_patch_rev" > gcc_patch_parameters
             echo "log_name=tcwg-backport-$gcc_patch_rev/\$(uname -m).\$target" >> gcc_patch_parameters
-            echo "rebuild=false" >> gcc_patch_parameters
+            echo "rebuild=$rebuild" >> gcc_patch_parameters
             echo "dont_fail=true" >> gcc_patch_parameters
             echo "log_server=$log_server" >> gcc_patch_parameters
             echo "targets=$targets" >> gcc_patch_parameters
