@@ -25,7 +25,7 @@
     display-name: 'OpenEmbedded build for ODP'
     scm:
         - git:
-            url: http://git.linaro.org/lng/odp.git
+            url: https://git.linaro.org/openembedded/jenkins-setup.git
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
@@ -64,13 +64,6 @@
 
             export PATH="$HOME/bin:$PATH"
 
-            git clone https://git.linaro.org/openembedded/jenkins-setup.git
-
-            JENKINS_WORKSPACE=${WORKSPACE}/jenkins-setup
-            # the post-build-* tools need to have the workspace pointing to jenkins-setup
-            WORKSPACE=${JENKINS_WORKSPACE}
-            cd ${WORKSPACE}
-
             # we clean build and populate it from cache
             bash -x pre-build-do-cleanup.sh
 
@@ -89,7 +82,6 @@
             # Capture what we're building in the build output.
             repo manifest -r
 
-            WORKSPACE=$(dirname ${WORKSPACE})
             cd ${WORKSPACE}
 
             case "${arch}" in
@@ -109,7 +101,7 @@
 
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v4.1/${hwpack}/$(wget  -q --no-check-certificate -O - https://ci.linaro.org/job/linux-lng-v4.1/hwpack=${hwpack},label=docker-utopic/lastSuccessfulBuild/buildNumber)"
             DTB_URL=${KERNEL_URL}/dtbs
-            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}/$(ls ${JENKINS_WORKSPACE}/out/linaro-image-lng-*.tar.gz |xargs basename)"
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}/$(ls ${WORKSPACE}/out/linaro-image-lng-*.tar.gz |xargs basename)"
             STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
             cat << EOF > post_build_lava_parameters
@@ -128,7 +120,6 @@
             #!/bin/bash
 
             set -ex
-            JENKINS_WORKSPACE=${WORKSPACE}/jenkins-setup
 
             template_file="template-base"
             case "${arch}" in
@@ -141,19 +132,19 @@
             export GIT_URL=$(grep "^SRC_URI =" jenkins-setup/meta-linaro/meta-linaro/recipes-extra/odp/odp_*.bb | cut -d'"' -f2 | cut -d';' -f1)
             export GIT_COMMIT=$(grep "^SRCREV_odp =" jenkins-setup/meta-linaro/meta-linaro/recipes-extra/odp/odp_*.bb |cut -d'"' -f2 | cut -d'=' -f2)
 
-            mkdir -p ${JENKINS_WORKSPACE}/out/lava
+            mkdir -p ${WORKSPACE}/out/lava
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            ./lci-build-tools/yaml-to-json.py configs/odp/lava-job-definitions/${DEVICE_TYPE}/${template_file}.yaml > ${JENKINS_WORKSPACE}/out/lava/${template_file}.json
+            ./lci-build-tools/yaml-to-json.py configs/odp/lava-job-definitions/${DEVICE_TYPE}/${template_file}.yaml > ${WORKSPACE}/out/lava/${template_file}.json
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
                --api_version 3 \
-               --link-latest ${JENKINS_WORKSPACE}/out openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}
+               --link-latest ${WORKSPACE}/out openembedded/images/odp-${arch}-gcc-${gcc_version}/${BUILD_NUMBER}
         - inject:
             properties-file: post_build_lava_parameters
         - conditional-step:
