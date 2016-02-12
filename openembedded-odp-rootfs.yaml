@@ -64,6 +64,14 @@
 
             export PATH="$HOME/bin:$PATH"
 
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}/meta-linaro
+              git reset --hard
+            }
+
             # we clean build and populate it from cache
             bash -x pre-build-do-cleanup.sh
 
