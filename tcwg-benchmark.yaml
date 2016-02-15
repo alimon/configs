@@ -94,27 +94,6 @@
                     (run 1 iteration of the int suite using the test workload)
                 </dd>
               </dl>
-
-        #Remove this as soon as the uinstance does not need it.
-        - string:
-            name: PUBLIC_KEY
-            description: 'Public key for main instance jobs.'
-            default: |
-              ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCzlCPpuwMRSXZNq4Mut/GuitOhEturcsl9X1iNjOMGZXbtfBC8TCSXqotkziuYXpej1FCdXn3FEQsVw6Mw3I9Wq1p9okkgzVdsNzHAIob8ras/e9kOeJZGY5gSGBYf3t1MubAyaa033MJ+e3NRC4sbUmeeN3d9PD+Wc9QC3en9qfSpm6hh9EFHOHOjFk5+W0YZ83AL1PgalqL/hCN2/p9a8S1fsfDkfTgEh1XFIOiLds0fNzzmyXepxuA1n696iuSFMCIwmNcCfwRwRgt012UPgZu3avegYbDyijk8EtgFBuEA5OvX91BTHmaSjicsD9nJN63ms88l9OZMeTlPVjkD
-        #TODO Change the default of this when we have the uinstance - at that point, we should be using the 'safe benchmarks' bundle stream
-        - string:
-            name: BUNDLE_STREAM
-            default: '/anonymous/bernie.ogden/'
-            description: 'Bundle stream for main instance jobs.'
-
-        #TODO Change the default of this when we have merged back
-        - string:
-            name: TESTDEF_REVISION
-            default: bernie/benchmarking-uinstance-stability
-            description: Branch of abe to drive the run
-        - string:
-            name: TEMPLATE
-            default: config/bench/jobdefs/template-uinstance.yaml
         - string:
             name: Overrides
             description: |
@@ -157,6 +136,15 @@
           elif test x"${TRIPLE}" = x"(Native)"; then
             TRIPLE=
           fi
+
+          #Defaults that user is unlikely to want to twiddle
+          #Remove this as soon as the uinstance does not need it.
+          export PUBLIC_KEY='ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCzlCPpuwMRSXZNq4Mut/GuitOhEturcsl9X1iNjOMGZXbtfBC8TCSXqotkziuYXpej1FCdXn3FEQsVw6Mw3I9Wq1p9okkgzVdsNzHAIob8ras/e9kOeJZGY5gSGBYf3t1MubAyaa033MJ+e3NRC4sbUmeeN3d9PD+Wc9QC3en9qfSpm6hh9EFHOHOjFk5+W0YZ83AL1PgalqL/hCN2/p9a8S1fsfDkfTgEh1XFIOiLds0fNzzmyXepxuA1n696iuSFMCIwmNcCfwRwRgt012UPgZu3avegYbDyijk8EtgFBuEA5OvX91BTHmaSjicsD9nJN63ms88l9OZMeTlPVjkD'
+          #TODO Change the default of this when we have merged back
+          export TESTDEF_REVISION=bernie/benchmarking-uinstance-stability
+          #TODO Change the default of this when we have the uinstance - at that point, we should be using the 'safe benchmarks' bundle stream
+          export BUNDLE_STREAM='/anonymous/bernie.ogden/'
+          export TEMPLATE=config/bench/jobdefs/template-uinstance.yaml
 
           for x in ${Overrides}; do
             export "${x}"
