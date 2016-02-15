@@ -37,12 +37,13 @@
               - Juno-A53
               - Juno-A57
               - KVM (x86_64)
-        - string:
-            name: RUN_FLAGS
-            description: |
-              Flags passed to benchmark framework at runtime.
-              Examples --
-              SPEC -- --size test --iterations 1 int (run 1 iteration of the int suite using the test workload)
+        - choice:
+            name: TRIPLE
+            choices:
+              - (Derive from toolchain)
+              - (Native)
+              - arm-linux-gnueabihf
+              - aarch64-linux-gnu
         - string:
             name: PREBUILT
             description: |
@@ -60,13 +61,6 @@
               aarch64-linux-gnu-clang
               http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
               my.name@my.server:location_of_my_toolchain
-        - choice:
-            name: TRIPLE
-            choices:
-              - (Derive from toolchain)
-              - (Native)
-              - arm-linux-gnueabihf
-              - aarch64-linux-gnu
         - string:
             name: SYSROOT
             description: |
@@ -77,6 +71,12 @@
         - string:
             name: MAKE_FLAGS
             description: Flags to pass to make, when building the benchmark.
+        - string:
+            name: RUN_FLAGS
+            description: |
+              Flags passed to benchmark framework at runtime.
+              Examples --
+              SPEC -- --size test --iterations 1 int (run 1 iteration of the int suite using the test workload)
 
         #Remove this as soon as the uinstance does not need it.
         - string:
