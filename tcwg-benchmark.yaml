@@ -77,15 +77,18 @@
         - string:
             name: MAKE_FLAGS
             description: Flags to pass to make, when building the benchmark.
+
+        #Remove this as soon as the uinstance does not need it.
         - string:
             name: PUBLIC_KEY
             description: 'Public key for main instance jobs.'
-        #TODO Remove this when we have the uinstance - at that point, we should be using the 'safe benchmarks' bundle stream
+        #TODO Change the default of this when we have the uinstance - at that point, we should be using the 'safe benchmarks' bundle stream
         - string:
             name: BUNDLE_STREAM
             default: '/anonymous/bernie.ogden/'
             description: 'Bundle stream for main instance jobs.'
-        #TODO Remove this when we have the uinstance - at that point, we should be using the benchmarking branch
+
+        #TODO Change the default of this when we have merged back
         - string:
             name: TESTDEF_REVISION
             default: bernie/benchmarking-uinstance-arbitrary
@@ -113,6 +116,7 @@
             TARGET_CONFIG=kvm
           fi
 
+          #Process TRIPLE
           if test x"${TRIPLE}" = x"(Derive from TOOLCHAIN)"; then
             if test -z "${TOOLCHAIN}"; then
               echo "Cannot derive TRIPLE from TOOLCHAIN if no TOOLCHAIN is given!" >&2
@@ -134,7 +138,6 @@
             TRIPLE=
           fi
 
-          #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
           export LAVA_SERVER=192.168.16.2/RPC2/
           export BUNDLE_SERVER=lava.tcwglab/RPC2/
 

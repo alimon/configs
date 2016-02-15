@@ -66,15 +66,16 @@
               Sysroot to use - use local filesystem path, or formats interpretable by wget or scp/rsync.
               Leave blank if you have supplied PREBUILT.
               For release benchmarking, should be set to our libc if you have supplied TOOLCHAIN.
+        #Remove this as soon as the uinstance does not need it.
         - string:
             name: PUBLIC_KEY
             description: 'Public key for main instance jobs.'
-        #TODO Remove this when we have the uinstance - at that point, we should be using the 'safe benchmarks' bundle stream
+        #TODO Change the default of this when we have the uinstance - at that point, we should be using the 'safe benchmarks' bundle stream
         - string:
             name: BUNDLE_STREAM
             default: '/anonymous/bernie.ogden/'
             description: 'Bundle stream for main instance jobs.'
-        #TODO Remove this when we have the uinstance - at that point, we should be using the benchmarking branch
+        #TODO Change the default of this when we have merged back
         - string:
             name: TESTDEF_REVISION
             default: bernie/benchmarking-uinstance-stability
@@ -89,7 +90,6 @@
           set -eux
           set -o pipefail
 
-          #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
           export LAVA_SERVER=192.168.16.2/RPC2/
           export BUNDLE_SERVER=lava.tcwglab/RPC2/
 
