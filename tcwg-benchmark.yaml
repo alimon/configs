@@ -115,6 +115,12 @@
         - string:
             name: TEMPLATE
             default: config/bench/jobdefs/template-uinstance.yaml
+        - string:
+            name: Overrides
+            description: |
+              Key=Value arguments, for expert users.
+              Separate with whitespace, for example --
+              TIMEOUT=3600 HOST_DEVICE_TYPE=juno
     wrappers:
         - timeout:
             timeout: 120
@@ -153,6 +159,11 @@
             TRIPLE=
           fi
 
+          for x in ${Overrides}; do
+            export "${x}"
+          done
+
+          #Force this _after_ overrides
           export LAVA_SERVER=192.168.16.2/RPC2/
           export BUNDLE_SERVER=lava.tcwglab/RPC2/
 
