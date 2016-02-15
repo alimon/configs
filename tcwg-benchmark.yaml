@@ -60,6 +60,13 @@
               aarch64-linux-gnu-clang
               http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
               my.name@my.server:location_of_my_toolchain
+        - choice:
+            name: TRIPLE
+            choices:
+              - (Derive from toolchain)
+              - (Native)
+              - arm-linux-gnueabihf
+              - aarch64-linux-gnu
         - string:
             name: SYSROOT
             description: |
@@ -84,6 +91,9 @@
             default: bernie/benchmarking-uinstance-arbitrary
             description: Branch of abe to drive the run
         - string:
+            name: TEMPLATE
+            default: config/bench/jobdefs/template-uinstance.yaml
+        - string:
             name: TIMEOUT
             description: |
               Timeout, in seconds from when the LAVA job starts to run.
@@ -101,6 +111,27 @@
           TARGET_CONFIG="${TARGET_CONFIG,,}"
           if test x"${TARGET_CONFIG%% *}" = xkvm; then #" - fix syntax highlighting
             TARGET_CONFIG=kvm
+          fi
+
+          if test x"${TRIPLE}" = x"(Derive from TOOLCHAIN)"; then
+            if test -z "${TOOLCHAIN}"; then
+              echo "Cannot derive TRIPLE from TOOLCHAIN if no TOOLCHAIN is given!" >&2
+              exit 1
+            fi
+            TRIPLE=
+            for y in aarch64-linux-gnu arm-linux-gnueabihf; do
+              if echo "${TOOLCHAIN}" | grep -q "${y}"; then
+                if test -z "${TRIPLE}"; then
+                  TRIPLE="${y}"
+                else
+                  echo "Cannot derive unique TRIPLE from ambiguous TOOLCHAIN '${TOOLCHAIN}'" >&2
+                  exit 1
+                fi
+              fi
+            done
+            #If TRIPLE is still empty then it means 'Native', which is what we want
+          elif test x"${TRIPLE}" = x"(Native)"; then
+            TRIPLE=
           fi
 
           #TODO Change to uinstance server and 'safe benchmarks' user, when they exist
