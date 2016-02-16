@@ -214,10 +214,15 @@
             fi
 
             # Create the ext4fs (fastboot compatible)
-            sudo make_ext4fs -o -L rootfs -l 3056M -s out/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img rootfs/
-            sudo umount boot rootfs
+            sudo mkfs.ext4 -L rootfs ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw 2500M
+            mkdir rootfs_ext4
+            sudo mount -o loop ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw rootfs_ext4
+            sudo cp -a rootfs/* rootfs_ext4
+            sudo umount rootfs_ext4 rootfs
+            sudo ext2simg -v ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw out/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img
+
             sudo kpartx -dv ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.img
-            sudo rm -rf boot rootfs
+            sudo rm -rf boot rootfs rootfs_ext4 ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw
 
             # Compress image
             gzip -9 out/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img
