@@ -171,8 +171,8 @@
             #create the file conditionally
             if test -e snapshots/gcc-linaro-*.tar.xz; then
               #Cases for which we want to trigger a benchmark
-              #if test "x${target}" = xarm-linux-gnueabihf || TODO Uncomment when uinstance is complete
-              #   test "x${target}" = xaarch64-linux-gnu; then
+              if test "x${target}" = xarm-linux-gnueabihf
+                 test "x${target}" = xaarch64-linux-gnu; then
                 toolchain="`ls snapshots/gcc-linaro-*.tar.xz`"
                 sysroot="`ls snapshots/sysroot-*-linaro-*.tar.xz`"
                 cat > bench_parameters <<EOF
@@ -193,7 +193,7 @@
             SYSROOT=${sysroot}
             EOF
                 #No need for a 'remove bench/artifact_params' case, as we wipe workspace
-              #fi TODO: Uncomment when uinstance is complete
+              fi
             fi
             touch artifact_parameters #This file must exist, as it is used in
                                       #an inject step, and inject won't fail
