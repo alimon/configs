@@ -23,7 +23,7 @@
             projects: tcwg-post-build-lava
     parameters:
         - string:
-            name: JOB_NAME
+            name: LAVA_JOB_NAME
             description: |
               Name of job from LAVA's point-of view, in other words what you
               will see in the LAVA UI.
@@ -160,11 +160,11 @@
           export LAVA_SERVER=192.168.16.2/RPC2/
           export BUNDLE_SERVER=lava.tcwglab/RPC2/
 
-          #Process JOB_NAME
+          #Process LAVA_JOB_NAME
           #Have to do this after overrides in case one of the inputs is overridden
-          #If JOB_NAME itself was overridden then it will not be touched.
-          if test -z "${JOB_NAME:-}"; then
-            export JOB_NAME="${BENCHMARK}_${TARGET_CONFIG}_${TRIPLE:-native}_jenkins"
+          #If LAVA_JOB_NAME itself was overridden then it will not be touched.
+          if test -z "${LAVA_JOB_NAME:-}"; then
+            export LAVA_JOB_NAME="${BENCHMARK}_${TARGET_CONFIG}_${TRIPLE:-native}_jenkins"
           fi
 
           git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
