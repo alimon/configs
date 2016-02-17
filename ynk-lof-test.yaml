@@ -1,0 +1,61 @@
+- job:
+    name: ynk-lof-test
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 15
+        numToKeep: 15
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-cancel
+                - job-configure
+    disabled: false
+    node: build
+    display-name: 'LHG test builds'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - lhg-02
+        - axis:
+            type: user-defined
+            name: image-type
+            values:
+                - media-weston
+        - axis:
+            type: user-defined
+            name: board-type
+            values:
+                - db410c
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: lhg-02
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -x
+
+            manifest_branch=my.jethro.testing
+            manifest_repository=https://github.com/andrey-konovalov/lhg-oe-manifests.git
+
+            rm -rf build
+
+            repo init -u $manifest_repository -b $manifest_branch -m ${image-type}-${board-type}.xml --repo-url=git://android.git.linaro.org/tools/repo
+            repo sync
+
+            MACHINE=dragonboard-410c source meta-lhg/script/envsetup.sh
+            bitbake lof-mm-image
+
+            # just try the build - don't publish anything for now
+    publishers:
+        - email:
+            recipients: 'andrey.konovalov@linaro.org'
