@@ -270,46 +270,6 @@
             LAVA_STREAM=${BUNDLE_STREAM_NAME}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             FRONTEND_JOB_NAME=${JOB_NAME}
-            CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-andebenchpro.json
-            EOF
-
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-
-        - shell: |
-            #!/bin/bash
-            # Publish
-            PUB_DEST=snapshots/reference-platform/aosp/hikey/${BUILD_NUMBER}
-            # Construct post-build-lava parameters
-            rm -rf build-configs
-            git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
-
-            export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
-            export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
-
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-
-            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-            DEVICE_TYPE=hikey
-            TARGET_PRODUCT=hikey
-            MAKE_TARGETS=${MAKE_TARGETS}
-            DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
-            JOB_NAME=${JOB_NAME}
-            BUILD_NUMBER=${BUILD_NUMBER}
-            BUILD_URL=${BUILD_URL}
-            LAVA_SERVER=validation.linaro.org/RPC2/
-            IMAGE_EXTENSION=img.tar.xz
-            LAVA_STREAM=${BUNDLE_STREAM_NAME}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            FRONTEND_JOB_NAME=${JOB_NAME}
             CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-antutu2.json
             EOF
 
