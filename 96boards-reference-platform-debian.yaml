@@ -69,23 +69,16 @@
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2015.11-1.linarojessie.1_all.deb \
               http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/m/multipath-tools/kpartx_0.5.0-7ubuntu7.1_amd64.deb
             sudo dpkg -i --force-all *.deb
+            # Backports workaround
+            sudo wget http://people.linaro.org/~ricardo.salveti/packages.py -O /usr/lib/python2.7/dist-packages/linaro_image_tools/hwpack/packages.py
             rm -f *.deb
 
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            # Get the reference kernel packages
-            KERNEL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel-matrix/MX_PLATFORM=${BOARD},label=docker-utopic-amd64/lastSuccessfulBuild/buildNumber`
-            KERNEL_RELEASE=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-kernel-matrix/MX_PLATFORM=${BOARD},label=docker-utopic-amd64/${KERNEL_BUILD_NUMBER}/injectedEnvVars/export | grep KERNEL_RELEASE | cut -d'=' -f2-`
-            KERNEL_BUILD_BASE_URL="https://builds.96boards.org/snapshots/reference-platform/components/linux/${BOARD}/${KERNEL_BUILD_NUMBER}"
-            wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-image-${KERNEL_RELEASE}_${KERNEL_RELEASE}-${KERNEL_BUILD_NUMBER}_arm64.deb
-            wget --progress=dot -e dotbytes=1M ${KERNEL_BUILD_BASE_URL}/linux-headers-${KERNEL_RELEASE}_${KERNEL_RELEASE}-${KERNEL_BUILD_NUMBER}_arm64.deb
 
             # Create the hardware pack
             cp -a configs/96boards-reference-platform-debian/hwpacks/linaro-${BOARD} .
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
             linaro-hwpack-create --debug linaro-${BOARD} ${VERSION}
-            linaro-hwpack-append -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-image-*.deb` -d -i
-            linaro-hwpack-append -t `ls hwpack_linaro-${BOARD}_*_arm64_supported.tar.gz` -p `ls linux-headers-*.deb` -d -i
 
             # Get rootfs
             export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=alip/lastSuccessfulBuild/buildNumber`
@@ -105,19 +98,13 @@
               [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
             done
 
-            # Needed for make_ext4fs, as it can't handle device files
-            sudo rm -rf rootfs/dev
-            sudo mkdir rootfs/dev
-
             cat << EOF | sudo tee rootfs/etc/fstab
-            /dev/disk/by-partlabel/system /     ext4 errors=remount-ro 0 1
+            /dev/disk/by-label/rootfs   /   ext4 errors=remount-ro 0 1
             EOF
 
             # Make sure rootfs/boot also got the right dtb and links
             sudo mkdir -p rootfs/boot/dtbs/
             sudo cp *.dtb rootfs/boot/dtbs/
-            sudo ln -s Image-${KERNEL_RELEASE} rootfs/boot/Image
-            sudo ln -s initrd.img-${KERNEL_RELEASE} rootfs/boot/initrd.img
 
             mkdir -p out/${BOARD}
 
@@ -128,7 +115,6 @@
 
             Build description:
             * Build URL: "$BUILD_URL":$BUILD_URL
-            * Kernel packages: "$KERNEL_BUILD_BASE_URL":$KERNEL_BUILD_BASE_URL
             * ALIP Rootfs: "http://snapshots.linaro.org/debian/images/alip-arm64/$ROOTFS_BUILD_NUMBER":http://snapshots.linaro.org/debian/images/alip-arm64/$ROOTFS_BUILD_NUMBER
             EOF
 
@@ -146,8 +132,8 @@
                 sudo mkfs.fat -F32 -n "boot" out/${BOARD}/boot-fat.uefi.img
                 sudo mount -o loop,rw,sync out/${BOARD}/boot-fat.uefi.img boot-fat
                 sudo mkdir -p boot-fat/EFI/BOOT
-                sudo cp -a fastboot.efi boot-fat/EFI/BOOT/fastboot.efi || true
-                sudo cp -a grubaa64.efi boot-fat/EFI/BOOT/grubaa64.efi || true
+                sudo cp fastboot.efi boot-fat/EFI/BOOT/fastboot.efi || true
+                sudo cp grubaa64.efi boot-fat/EFI/BOOT/grubaa64.efi || true
                 sudo umount boot-fat
                 sudo chmod 777 out/${BOARD}/boot-fat.uefi.img
                 sudo mv out/${BOARD}/boot-fat.uefi.img out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
@@ -161,9 +147,15 @@
             * ARM TF / EDK2 UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
             EOF
                 # Grub config to be set as part of the rootfs
-                sudo mkdir rootfs/boot/grub
                 ## FIXME: Make this generic
-                sed -e 's/CONSOLE_UART/ttyAMA3,115200/' -e 's/DEVICE_TREE/hi6220-hikey.dtb/' configs/96boards-reference-platform-debian/grub/grub.cfg.in > grub.cfg
+                KERNEL=`basename rootfs/boot/vmlinuz-*`
+                INITRD=`basename rootfs/boot/initrd.img-*`
+                sudo mkdir rootfs/boot/grub
+                sed -e "s/KERNEL/$KERNEL/" \
+                    -e "s/INITRD/$INITRD/" \
+                    -e "s/CONSOLE_UART/ttyAMA3,115200/" \
+                    -e "s/DEVICE_TREE/hi6220-hikey.dtb/" \
+                    configs/96boards-reference-platform-debian/grub/grub.cfg.in > grub.cfg
                 sudo cp grub.cfg rootfs/boot/grub
 
                 # Since it uses uefi, create the boot efi fstab entry
@@ -197,14 +189,12 @@
                 sudo cp -f license.txt rootfs/etc/license.txt
 
                 # Create device tree table
-                mkdir -p dtbs
-                sudo cp rootfs/lib/firmware/*/device-tree/msm8916-mtp.dtb rootfs/lib/firmware/*/device-tree/apq8016-sbc.dtb dtbs/
-                dtbTool -o dt.img -s 2048 dtbs
+                dtbTool -o dt.img -s 2048 rootfs/usr/lib/linux-image-*/qcom
 
                 # Create boot image
                 mkbootimg \
-                  --kernel rootfs/boot/Image \
-                  --ramdisk rootfs/boot/initrd.img \
+                  --kernel rootfs/boot/vmlinuz-*-arm64 \
+                  --ramdisk rootfs/boot/initrd.img-*-arm64 \
                   --output out/${BOARD}/${BOARD}-boot-linux-${VERSION}.img \
                   --dt dt.img \
                   --pagesize "2048" \

@@ -12,11 +12,11 @@ load_addr: '0x60008000'
 dtb_addr: '0x61000000'
 partition_layout: bootfs16_rootfs
 mmc_id: '0:1'
-kernel_file: boot/Image-*
+kernel_file: boot/vmlinuz-*
 initrd_file: boot/initrd.img-*
 dtb_files:
-- msm8916-mtp.dtb: lib/firmware/*/device-tree/msm8916-mtp.dtb
-- apq8016-sbc.dtb: lib/firmware/*/device-tree/apq8016-sbc.dtb
+- msm8916-mtp.dtb: usr/lib/linux-image-*/qcom/msm8916-mtp.dtb
+- apq8016-sbc.dtb: usr/lib/linux-image-*/qcom/apq8016-sbc.dtb
 boot_script: boot.scr
 boot_min_size: 64
 extra_serial_options:
@@ -41,9 +41,18 @@ assume_installed:
 - libnl-3-200
 - libnl-genl-3-200
 - linaro-artwork
+- libdrm2
+- libexpat1
+- xserver-xorg-core
 packages:
 - 96boards-artwork
 - firmware-linux
+- linux-image-reference-arm64
+- wcnss-wlan
+- xserver-xorg-video-freedreno
+- libgl1-mesa-dri
 sources:
   debian: http://http.debian.net/debian/ jessie main contrib non-free
+  backports: http://http.debian.net/debian/ jessie-backports main contrib non-free
   repo: http://repo.linaro.org/ubuntu/linaro-overlay jessie main
+  staging: http://repo.linaro.org/ubuntu/linaro-staging jessie main
