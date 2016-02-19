@@ -107,6 +107,8 @@
               http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/m/multipath-tools/kpartx_0.5.0-7ubuntu7.1_amd64.deb
             sudo dpkg -i --force-all *.deb
             rm -f *.deb
+            # Backports workaround
+            sudo wget http://people.linaro.org/~ricardo.salveti/packages.py -O /usr/lib/python2.7/dist-packages/linaro_image_tools/hwpack/packages.py
 
             # get the boot image tools, and keep track of commit info in the traces
             git clone git://codeaurora.org/quic/kernel/skales
