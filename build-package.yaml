@@ -96,6 +96,15 @@
                 echo "deb http://repo.linaro.org/ubuntu/${repo} ${dist} main" >> local.list
             fi
             sudo cp local.list /etc/apt/sources.list.d/
+            if [ "$dist == jessie" ]
+            then
+               cat > backports.pref <<EOF
+            Package: *
+            Pin: release a=jessie-backports
+            Pin-Priority: 500
+            EOF
+               sudo cp backports.pref /etc/apt/preferences.d/
+            fi
             cd ..
             localdsc=`echo $source|sed -e "s,.*/,$(pwd)/repo/,"`
             sourcename=`basename ${localdsc}|sed -e 's,_.*,,'`
