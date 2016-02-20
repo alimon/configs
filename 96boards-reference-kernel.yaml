@@ -3,8 +3,8 @@
     project-type: freestyle
     defaults: global
     logrotate:
-        daysToKeep: 30
-        numToKeep: 30
+        daysToKeep: 60
+        numToKeep: 60
     properties:
         - authorization:
             anonymous:
@@ -18,78 +18,149 @@
                 - job-cancel
     parameters:
         - string:
-            name: KERNEL_BRANCH
-            default: 'hikey-mainline'
+            name: KERNEL_GIT_BRANCH
+            default: '96b/2015.12'
         - string:
-            name: KERNEL_CONFIG
-            default: 'defconfig 96boards.config'
+            name: KERNEL_GIT_URL
+            default: 'https://git.linaro.org/people/amit.kucheria/kernel.git'
+        - string:
+            name: TARGET_REPO
+            default: 'linaro-staging'
     disabled: false
-    node: docker-utopic-amd64
+    node: docker-jessie-amd64
     display-name: '96boards - Reference Component - Linux Kernel'
-    scm:
-        - git:
-            url: https://git.linaro.org/people/amit.kucheria/kernel.git
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
-            name: origin
-            branches:
-                - refs/heads/${KERNEL_BRANCH}
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+            name: '#${BUILD_NUMBER}'
     builders:
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-            sudo apt-get update
-            sudo apt-get install -y ccache python-pycurl
-
             set -ex
 
-            trap cleanup_exit INT TERM EXIT
+            sudo apt-get update
+            sudo apt-get install -y ccache python-pycurl quilt cpio rsync rpm
 
-            cleanup_exit()
-            {
-              cd ${WORKSPACE}
-              rm -rf lci-build-tools
-              rm -rf builddir*
-              rm -rf out
-            }
-
-            export LANG=C
-            CCACHE_DIR="${HOME}/srv/ccache"
-            CCACHE_UNIFY=1
-            CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
-            export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS
-            export use_ccache=true
-            export make_bootwrapper=false
-            export make_install=true
-            export kernel_flavour=reference
-            export kernel_config="${KERNEL_CONFIG}"
-            export MAKE_DTBS=true
-            export ARCH=arm64
-            export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
-            export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
+            # Checkout source code
+            git clone -b ${KERNEL_GIT_BRANCH} ${KERNEL_GIT_URL} linux
+            git clone --depth 1 https://git.linaro.org/ci/debian-kernel-packaging.git debian-pkg
 
             # Export the kernel packaging version
-            kernel_version=`make kernelversion`
-            kernel_release=${kernel_version}-linaro-${kernel_flavour}
-            export KDEB_PKGVERSION="${kernel_release}-${BUILD_NUMBER}"
+            cd linux
 
-            # Build the kernel
-            rm -rf lci-build-tools
-            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
-            bash -x lci-build-tools/jenkins_kernel_build_inst
+            ## To use when we switch to 4.5, since -rc is higher than the final tag
+            # kernel_version=`make kernelversion | sed -e 's/\.0-rc/~rc/'
+
+            kernel_version=`make kernelversion`
+            export KERNEL_GIT_VERSION=`git log --format="%H" -1`
+            export KDEB_PKGVERSION="${kernel_version}.linaro.${BUILD_NUMBER}-1"
+            git tag v${kernel_version}
+
+            cd ..
+
+            # Build the debian source kernel
+            cd debian-pkg
+
+            # Allow our own versioning scheme
+            sed -i 's/dfsg/linaro/g' debian/bin/genorig.py debian/lib/python/debian_linux/debian.py
+
+            # Use build number as ABI
+            sed -i "s/^abiname:.*/abiname: ${BUILD_NUMBER}/g" debian/config/defines
+
+            cat << EOF > debian/changelog
+            linux ($KDEB_PKGVERSION) jessie; urgency=medium
+
+              * Auto build:
+                - URL: ${KERNEL_GIT_URL}
+                - Branch: ${KERNEL_GIT_BRANCH}
+                - Hash: ${KERNEL_GIT_VERSION}
+
+             -- Ricardo Salveti de Araujo <ricardo.salveti@linaro.org>  `date "+%a, %d %b %Y %T %z"`
+
+            EOF
+
+            # Use the kernel config from the kernel tree
+            cp ../linux/arch/arm64/configs/distro.config debian/config/arm64/config
+
+            debian/rules clean || true
+            debian/bin/genorig.py ../linux
+            debian/rules orig
+            fakeroot debian/rules source
+            debuild -S -uc -us
+            cd ..
+
+            cat > ${WORKSPACE}/build-package-params <<EOF
+            source=${BUILD_URL}/artifact/$(echo *.dsc)
+            repo=${TARGET_REPO}
+            codename=jessie
+            EOF
+
+            # Build rpm source package
+            rpmversion=${kernel_version//-*/}
+            git clone --depth 1 -b c7-aarch64 git://git.centos.org/rpms/kernel-aarch64.git
+            cd kernel-aarch64
+            sed -i "s/\%define rpmversion.*/\%define rpmversion $rpmversion/g" SPECS/kernel-aarch64.spec
+            sed -i "s/\%define pkgrelease.*/\%define pkgrelease reference.${BUILD_NUMBER}/g" SPECS/kernel-aarch64.spec
+            sed -i "s/\%define signmodules 1/\%define signmodules 0/g" SPECS/kernel-aarch64.spec
+            sed -i "s/mv linux-\%{rheltarball}/mv linux-\*/g" SPECS/kernel-aarch64.spec
+            sed -i '/\%{_libexecdir}\/perf-core\/\*/a\%{_datadir}\/perf-core\/\*' SPECS/kernel-aarch64.spec
+            cp ../linux/arch/arm64/configs/distro.config SOURCES/config-arm64-redhat
+
+            # Make sure config is sane for centos
+            sed -i "s/CONFIG_ATA=.*/CONFIG_ATA=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_ATA_PIIX=.*/CONFIG_ATA_PIIX=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_AUTOFS4_FS=.*/CONFIG_AUTOFS4_FS=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_SATA_AHCI=.*/CONFIG_SATA_AHCI=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_SATA_AHCI_PLATFORM=.*/CONFIG_SATA_AHCI_PLATFORM=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_AHCI_HIP05=.*/CONFIG_AHCI_HIP05=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_AMD_XGBE=.*/CONFIG_AMD_XGBE=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_SCSI_HISI_SAS=.*/CONFIG_SCSI_HISI_SAS=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_IPV6=.*/CONFIG_IPV6=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_HNS_MDIO=.*/CONFIG_HNS_MDIO=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_HNS=.*/CONFIG_HNS=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_HNS_DSAF=.*/CONFIG_HNS_DSAF=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_HNS_ENET=.*/CONFIG_HNS_ENET=y/g" SOURCES/config-arm64-redhat
+            # Temporarily disable KVM until it is properly supported, breaks anaconda
+            sed -i "/CONFIG_KVM_.*/d" SOURCES/config-arm64-redhat
+            sed -i "s/CONFIG_KVM=.*/# CONFIG_KVM is not set/g" SOURCES/config-arm64-redhat
+
+            cp ../orig/*.orig.tar.xz SOURCES/linux-${rpmversion}-reference.${BUILD_NUMBER}.tar.xz
+            rpmbuild --nodeps --define "%_topdir `pwd`" -bs SPECS/kernel-aarch64.spec
+            cp SRPMS/*.src.rpm ${WORKSPACE}/
+            cd ..
+
+            cat > ${WORKSPACE}/build-kernel-rpm-params <<EOF
+            source=https://builds.96boards.org/snapshots/reference-platform/components/linux/common/${BUILD_NUMBER}/kernel-aarch64-${rpmversion}-reference.${BUILD_NUMBER}.src.rpm
+            EOF
 
             # Final preparation for publishing
-            cp -a *.dsc *.changes *.deb out/
-            cp linux*orig.tar.gz out/
+            mkdir out
+            rm *.orig.tar.xz
+            cp orig/*.orig.tar.xz ${WORKSPACE}/
+            cp -a *.dsc *.changes *.debian.tar.xz *.orig.tar.xz *.src.rpm out/
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Build information
+            cat > out/README.textile << EOF
+
+            h4. 96Boards - Reference Component - Kernel
+
+            Linux Kernel build consumed by the 96Boards Reference Platform Builds
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Git tree: "$KERNEL_GIT_URL":$KERNEL_GIT_URL
+            * Git branch: $KERNEL_GIT_BRANCH
+            * Git hash: $KERNEL_GIT_VERSION
+            * Kernel version: $kernel_version
+            * Kernel deb version: $KDEB_PKGVERSION
+            * Kernel rpm version: ${rpmversion}-reference.${BUILD_NUMBER}
+            EOF
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -98,18 +169,15 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               out snapshots/reference-platform/components/linux/common/${BUILD_NUMBER}/
-
-            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
-            CCACHE_DIR=${CCACHE_DIR} ccache -s
-
-            # Create post-build parameters (useful for other jobs)
-            cat << EOF >> post_build_parameters
-            KERNEL_VERSION=${kernel_version}
-            KERNEL_RELEASE=${kernel_release}
-            KDEB_PKGVERSION=${KDEB_PKGVERSION}
-            EOF
-        - inject:
-            properties-file: post_build_parameters
     publishers:
+        - archive:
+            artifacts: '*.dsc, *.xz, *.src.rpm'
+        - trigger-parameterized-builds:
+            - project: build-package
+              property-file: build-package-params
+              condition: SUCCESS
+            - project: build-kernel-rpm
+              property-file: build-kernel-rpm-params
+              condition: SUCCESS
         - email:
-            recipients: 'ricardo.salveti@linaro.org amit.kucheria@linaro.org'
+            recipients: 'ricardo.salveti@linaro.org'
