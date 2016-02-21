@@ -232,9 +232,9 @@
                 cp Linaro/Styx.bin ${WORKSPACE}/out/${BUILD_TYPE}
             elif [ "${MX_PLATFORM}" == "d02" ]; then
                 # Temporary produce a version that is only SAS compatible
+                cd ${WORKSPACE}/${BUILD_NUMBER}/OpenPlatformPkg
                 git config user.email "ci@linaro.org"
                 git config user.name "Linaro CI"
-                cd ${WORKSPACE}/${BUILD_NUMBER}/OpenPlatformPkg
                 git revert --no-edit 96d58c4318584f066b1bb7f1c48b72e7e25cf709
                 cd ${EDK2_DIR}
                 bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a $ATF_DIR ${MX_PLATFORM}
