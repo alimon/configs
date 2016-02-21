@@ -18,6 +18,12 @@
                 - job-configure
                 - job-cancel
     parameters:
+        - string:
+            name: EDK2_VERSION
+            default: 'HEAD'
+        - string:
+            name: ATF_VERSION
+            default: 'v1.2'
         - password:
             name: PRIVATE_KEY
             default: ${PRIVATE_KEY}
@@ -31,8 +37,8 @@
             name: MX_PLATFORM
             values:
                 - hikey
-                - styx
                 - d02
+                - juno
         - axis:
             type: user-defined
             name: MX_TYPE
@@ -43,7 +49,7 @@
             type: slave
             name: label
             values:
-                - docker-utopic-amd64
+                - docker-jessie-amd64
     execution-strategy:
         sequential: true
         touchstone:
@@ -69,7 +75,6 @@
             # Create lower case debug/release string for use in paths
             BUILD_TYPE="${MX_TYPE,,}"
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
             sudo apt-get install -y python-pycurl zip
 
@@ -79,13 +84,20 @@
 
             cleanup_exit()
             {
-              cd ${WORKSPACE}
-              rm -rf arm-trusted-firmware
-              rm -rf uefi-tools
-              rm -rf l-loader
-              rm -rf OpenPlatformPkg SeattleFDK
-              rm -rf out edk2/Build
+                cd ${WORKSPACE}
+                rm -rf arm-trusted-firmware
+                rm -rf uefi-tools
+                rm -rf l-loader
+                rm -rf acpica-unix
+                rm -rf OpenPlatformPkg SeattleFDK
+                rm -rf out edk2/Build
             }
+
+            # Make sure we're using the right acpica-unix packages
+            mkdir acpica-unix; cd acpica-unix
+            wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/acpica-tools_20150930-1.linarojessie.1_amd64.deb http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/acpidump_20150930-1.linarojessie.1_all.deb http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/iasl_20150930-1.linarojessie.1_all.deb
+            sudo dpkg -i --force-all *.deb
+            cd ..; rm -rf acpica-unix
 
             # Private repository setup
             TMPKEYDIR=$(mktemp -d /tmp/rpb.XXXXXX)
@@ -125,51 +137,60 @@
             chmod 0600 ~/.ssh/*
 
             # Use pre-installed linaro toolchain (GCC 4.9)
-            export PATH="${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
+            export PATH="${HOME}/srv/toolchain/arm-tc-15.02/bin:${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
 
             # Common git repositories to fetch
             UEFI_TOOLS_GIT_URL=https://git.linaro.org/uefi/uefi-tools.git
-            UEFI_TOOLS_GIT_BRANCH=master
-            EDK2_GIT_URL=https://git.linaro.org/uefi/linaro-edk2.git
-            EDK2_GIT_BRANCH=master
+            EDK2_GIT_URL=https://github.com/tianocore/edk2.git
+            EDK2_GIT_VERSION=$EDK2_VERSION
             ATF_GIT_URL=https://github.com/ARM-software/arm-trusted-firmware.git
-            ATF_GIT_BRANCH=master
+            ATF_GIT_VERSION=$ATF_VERSION
+            OPEN_PLATFORM_PKG_GIT_URL=https://git.linaro.org/uefi/OpenPlatformPkg.git
+            OPEN_PLATFORM_PKG_GIT_BRANCH=master
 
             # Per board repositories overrides
             if [ "${MX_PLATFORM}" == "hikey" ]; then
                 EDK2_GIT_URL=https://github.com/96boards/edk2.git
-                EDK2_GIT_BRANCH=reference
+                EDK2_GIT_VERSION=d1e8dd734165bb83a26b0183c54b59acfd4781fe
                 ATF_GIT_URL=https://github.com/96boards/arm-trusted-firmware.git
-                ATF_GIT_BRANCH=reference
+                ATF_GIT_VERSION=7fb9b0e1bf90d167ba451fa3d1485ad07ca5c1da
             elif [ "${MX_PLATFORM}" == "styx" ]; then
                 EDK2_GIT_URL=ssh://dev-private-git.linaro.org/96boards/edk2.git
+                EDK2_GIT_VERSION=HEAD
+                OPEN_PLATFORM_PKG_GIT_URL=ssh://dev-private-git.linaro.org/96boards/OpenPlatformPkg.git
             elif [ "${MX_PLATFORM}" == "d02" ]; then
-                EDK2_GIT_URL=ssh://dev-private-git.linaro.org/96boards/edk2.git
+                EDK2_GIT_VERSION=4960d8e00427d52c8db5da492ac7aff38cbc9d30
+                OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards/OpenPlatformPkg.git
+                OPEN_PLATFORM_PKG_GIT_BRANCH=d02
             fi
 
+            # So we can easily identify the build number via build path
+            mkdir ${BUILD_NUMBER}; cd ${BUILD_NUMBER}
+
             # Clone the repos
-            git clone -b $UEFI_TOOLS_GIT_BRANCH --depth 1 $UEFI_TOOLS_GIT_URL uefi-tools
-            cd uefi-tools; UEFI_TOOLS_GIT_HEAD=`git log --format="%H" -1`; cd ..
-            git clone -b $EDK2_GIT_BRANCH --depth 1 $EDK2_GIT_URL edk2
-            cd edk2; EDK2_GIT_HEAD=`git log --format="%H" -1`; cd ..
-            git clone -b $ATF_GIT_BRANCH --depth 1 $ATF_GIT_URL arm-trusted-firmware
-            cd arm-trusted-firmware; ATF_GIT_HEAD=`git log --format="%H" -1`; cd ..
+            git clone --depth 1 $UEFI_TOOLS_GIT_URL uefi-tools
+            cd uefi-tools; UEFI_TOOLS_GIT_VERSION=`git log --format="%H" -1`; cd ..
+
+            git clone $EDK2_GIT_URL edk2
+            cd edk2; git checkout -b stable-baseline $EDK2_GIT_VERSION; cd ..
+            git clone -b $OPEN_PLATFORM_PKG_GIT_BRANCH $OPEN_PLATFORM_PKG_GIT_URL OpenPlatformPkg
+            cd edk2; ln -s ../OpenPlatformPkg; cd ..
+            cd OpenPlatformPkg; OPEN_PLATFORM_PKG_GIT_VERSION=`git log --format="%H" -1`; cd ..
+
+            git clone $ATF_GIT_URL arm-trusted-firmware
+            cd arm-trusted-firmware; git checkout -b stable-baseline $ATF_GIT_VERSION; cd ..
 
             # Build setup
             export AARCH64_TOOLCHAIN=GCC49
-            export EDK2_DIR=${WORKSPACE}/edk2
-            export ATF_DIR=${WORKSPACE}/arm-trusted-firmware
-            export UEFI_TOOLS_DIR=${WORKSPACE}/uefi-tools
+            export EDK2_DIR=${WORKSPACE}/${BUILD_NUMBER}/edk2
+            export ATF_DIR=${WORKSPACE}/${BUILD_NUMBER}/arm-trusted-firmware
+            export UEFI_TOOLS_DIR=${WORKSPACE}/${BUILD_NUMBER}/uefi-tools
             export JENKINS_WORKSPACE=${WORKSPACE}
 
             # Board specific setup
             if [ "${MX_PLATFORM}" == "styx" ]; then
                 git clone -b FDK84 --depth 1 ssh://dev-private-git.linaro.org/96boards/SeattleFDK.git
-                git clone --depth 1 ssh://dev-private-git.linaro.org/96boards/OpenPlatformPkg.git
-                cd $EDK2_DIR; ln -s ../OpenPlatformPkg; ln -s ../SeattleFDK/AmdModulePkg; cd ..
-            elif [ "${MX_PLATFORM}" == "d02" ]; then
-                git clone --depth 1 ssh://dev-private-git.linaro.org/96boards/OpenPlatformPkg.git
-                cd $EDK2_DIR; ln -s ../OpenPlatformPkg; cd ..
+                cd $EDK2_DIR; ln -s ../SeattleFDK/AmdModulePkg; cd ..
             fi
 
             # WORKSPACE is used by uefi-build.sh
@@ -196,6 +217,7 @@
             if [ "${MX_PLATFORM}" == "hikey" ]; then
                 # Additional components for hikey, such as fastboot and l-loader
                 cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
+                cd ${WORKSPACE}/${BUILD_NUMBER}
                 git clone --depth 1 https://github.com/96boards/l-loader.git
                 cd l-loader
                 ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
@@ -205,11 +227,23 @@
                 # Ship nvme.img with UEFI binaries for convenience
                 dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
             elif [ "${MX_PLATFORM}" == "styx" ]; then
-                cd ${WORKSPACE}/SeattleFDK
+                cd ${WORKSPACE}/${BUILD_NUMBER}/SeattleFDK
                 Linaro/make-rom.sh ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${IMAGES} >/dev/null
                 cp Linaro/Styx.bin ${WORKSPACE}/out/${BUILD_TYPE}
+            elif [ "${MX_PLATFORM}" == "d02" ]; then
+                # Temporary produce a version that is only SAS compatible
+                git config user.email "ci@linaro.org"
+                git config user.name "Linaro CI"
+                cd ${WORKSPACE}/${BUILD_NUMBER}/OpenPlatformPkg
+                git revert --no-edit 96d58c4318584f066b1bb7f1c48b72e7e25cf709
+                cd ${EDK2_DIR}
+                bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a $ATF_DIR ${MX_PLATFORM}
+                cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${IMAGES} ${WORKSPACE}/out/${BUILD_TYPE}/${IMAGES%.*}-SAS.fd
             fi
             cd ${WORKSPACE}
+
+            # Create MD5SUMS file
+            (cd out/${BUILD_TYPE} && md5sum * > MD5SUMS.txt)
 
             # Build information
             cat > out/${BUILD_TYPE}/README.textile << EOF
@@ -221,23 +255,20 @@
             Build Description:
             * Build URL: "$BUILD_URL":$BUILD_URL
             * UEFI Tools: "$UEFI_TOOLS_GIT_URL":$UEFI_TOOLS_GIT_URL
-            * UEFI Tools branch: $UEFI_TOOLS_GIT_BRANCH
-            * UEFI Tools head: $UEFI_TOOLS_GIT_HEAD
+            * UEFI Tools head: $UEFI_TOOLS_GIT_VERSION
             * EDK2: "$EDK2_GIT_URL":$EDK2_GIT_URL
-            * EDK2 branch: $EDK2_GIT_BRANCH
-            * EDK2 head: $EDK2_GIT_HEAD
+            * EDK2 head: $EDK2_GIT_VERSION
+            * OpenPlatformPkg: "$OPEN_PLATFORM_PKG_GIT_URL":$OPEN_PLATFORM_PKG_GIT_URL
+            * OpenPlatformPkg branch: $OPEN_PLATFORM_PKG_GIT_BRANCH
+            * OpenPlatformPkg head: $OPEN_PLATFORM_PKG_GIT_VERSION
             EOF
 
             if [ "$BUILD_ATF" == "yes" ]; then
                 cat >> out/${BUILD_TYPE}/README.textile << EOF
             * ARM Trusted Firmware: "$ATF_GIT_URL":$ATF_GIT_URL
-            * ARM Trusted Firmware branch: $ATF_GIT_BRANCH
-            * ARM Trusted Firmware head: $ATF_GIT_HEAD
+            * ARM Trusted Firmware head: $ATF_GIT_VERSION
             EOF
             fi
-
-            # Create MD5SUMS file
-            (cd out/${BUILD_TYPE} && md5sum *.bin *.img *.efi *.fd> MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
