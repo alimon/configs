@@ -1,0 +1,46 @@
+- job:
+    name: art-build-metrics
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - password:
+            name: TOKEN
+            default: ${ART_TOKEN}
+    disabled: true
+    node: docker-utopic-art
+    display-name: 'ART - Build Metrics'
+    concurrent: true
+    triggers:
+        - timed: '0 H H/7 * *'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 200
+    builders:
+        - shell: |
+            #!/bin/bash
+            rm -rf art-build-tests android
+            #set -xe
+
+            git clone git://git.linaro.org/people/vishal.bhoj/art-build-tests.sh.git  art-build-tests
+            cd art-build-tests/job-metrics/
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y xml-twig-tools bc
+            . ./metrics.sh $TOKEN
+            cat results.txt
