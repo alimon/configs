@@ -1,0 +1,66 @@
+- job:
+    name: art-stable-aosp-reference
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-extended-read
+            linaro-android-builders:
+                - job-build
+                - job-cancel
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-cancel
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    disabled: true
+    display-name: 'ART - Stable AOSP Reference'
+    concurrent: true
+    triggers:
+        - timed: 'H H * * *'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - aosp-x86_64-09
+                - aosp-x86_64-10
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            java -version
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage
+
+            if [ ! -d "/home/buildslave/srv/linaro-art-stable-aosp-reference" ]; then
+                      sudo mkdir -p /home/buildslave/srv/linaro-art-stable-aosp-reference
+                      sudo chmod 777 /home/buildslave/srv/linaro-art-stable-aosp-reference
+            fi
+
+            cd /home/buildslave/srv/linaro-art-stable-aosp-reference
+
+            curl https://android-git.linaro.org/gitweb/tools/repo.git/blob_plain/refs/heads/stable:/repo > /tmp/repo
+            chmod a+x /tmp/repo
+            sudo mv /tmp/repo /usr/local/bin/repo
+
+            rm -rf .repo/local_manifests
+            repo init -u https://android-git.linaro.org/git/platform/manifest  -b android-6.0.0_r26
+            sed -i "s/clone-depth=\"1\"//g" .repo/manifest.xml
+            repo sync -j16 --force-sync
+    publishers:
+        - logparser:
+            parse-rules: 'Android-ART Build'
+            unstable-on-warning: false
+            fail-on-error: false
