@@ -1,0 +1,126 @@
+- job:
+    name: art-tip-build-codecoverage
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: BUILD_CONFIG_REPO
+            default: 'git://android.git.linaro.org/android-build-configs.git'
+        - string:
+            name: BUILD_CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'linaro-art-tip-aosp_arm64'
+        - password:
+            name: PRIVATE_KEY
+            default: ${PRIVATE_KEY}
+    disabled: true
+    node: docker-utopic-art
+    display-name: 'ART - Tip - Code Coverage'
+    concurrent: true
+    triggers:
+        - timed: 'H 21 * * *'
+        - gerrit:
+            server-name: dev-private-review.linaro.org
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/build'
+                  branches:
+                      - branch-pattern: 'master'
+                  topics:
+                      - pattern: 'includeARTCodeCoverage'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'master'
+                  topics:
+                      - pattern: 'includeARTCodeCoverage'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/external/vixl'
+                  branches:
+                      - branch-pattern: 'master'
+                  topics:
+                      - pattern: 'includeARTCodeCoverage'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            #!/bin/bash
+            rm -rf art-build-tests android
+
+            git clone git://git.linaro.org/people/vishal.bhoj/art-build-tests.sh.git art-build-tests
+            cd art-build-tests
+            . ./setup-host.sh
+            . ./acov.sh
+
+            echo "Build finished"
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml'
+        - logparser:
+            parse-rules: 'Android-ART Build'
+            unstable-on-warning: false
+            fail-on-error: false
+        - groovy-postbuild:
+            script: |
+              import hudson.model.*
+
+              def matcher = manager.getLogMatcher(".*repo sync failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("repo sync failed")
+              }
+              matcher = manager.getLogMatcher(".*patch merge failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("merge failed")
+              }
+              matcher = manager.getLogMatcher(".*make failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("make failed")
+              }
+        - plot:
+            - title: 'Overall coverage'
+              group: 'Coverage Reports'
+              yaxis: '%'
+              style: line
+              series:
+                  - file: overall_1.txt
+                    format: properties
+                  - file: overall_2.txt
+                    format: properties
+            - title: 'Optimizing Compiler'
+              group: 'Coverage Reports'
+              yaxis: '%'
+              style: line
+              series:
+                  - file: optimizing_1.txt
+                    format: properties
+                  - file: optimizing_2.txt
+                    format: properties
+        - html-publisher:
+            name: 'ART Code Coverage Reports'
+            dir: 'gcov-results'
+            files: 'index.html'
+        - naginator:
+            rerun-unstable-builds: true
+            max-failed-builds: 1
