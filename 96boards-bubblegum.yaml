@@ -139,10 +139,14 @@
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
 
-              sudo make_ext4fs -o -L rootfs -l 6G -s out/bubblegum-jessie_${rootfs}_${VERSION}.emmc.img rootfs/
-              sudo umount boot rootfs
+              sudo mkfs.ext4 -L rootfs out/bubblegum-jessie_${rootfs}_${VERSION}.emmc.img.ext4 2G
+              mkdir rootfs-ext4
+              sudo mount -o loop out/bubblegum-jessie_${rootfs}_${VERSION}.emmc.img.ext4 rootfs-ext4
+              sudo cp -a rootfs/* rootfs-ext4
+              sudo umount boot rootfs rootfs-ext4
               sudo kpartx -dv out/bubblegum-jessie_${rootfs}_${VERSION}.img
-              sudo rm -rf boot rootfs
+              sudo ext2simg -v out/bubblegum-jessie_${rootfs}_${VERSION}.emmc.img.ext4 out/bubblegum-jessie_${rootfs}_${VERSION}.emmc.img
+              sudo rm -rf boot rootfs rootfs-ext4 out/*.ext4
 
               # Compress image(s)
               gzip -9 out/bubblegum-jessie_${rootfs}_${VERSION}.emmc.img
