@@ -105,6 +105,8 @@
             sed -i "s/\%define rpmversion.*/\%define rpmversion $rpmversion/g" SPECS/kernel-aarch64.spec
             sed -i "s/\%define pkgrelease.*/\%define pkgrelease reference.${BUILD_NUMBER}/g" SPECS/kernel-aarch64.spec
             sed -i "s/\%define signmodules 1/\%define signmodules 0/g" SPECS/kernel-aarch64.spec
+            sed -i "/_without_debug:/a%define with_debug 0" SPECS/kernel-aarch64.spec
+            sed -i "/_without_debuginfo:/a%define with_debuginfo 0" SPECS/kernel-aarch64.spec
             sed -i "s/mv linux-\%{rheltarball}/mv linux-\*/g" SPECS/kernel-aarch64.spec
             sed -i '/\%{_libexecdir}\/perf-core\/\*/a\%{_datadir}\/perf-core\/\*' SPECS/kernel-aarch64.spec
             sed -i "s/^BuildRequires: openssl$/BuildRequires: openssl-devel/g" SPECS/kernel-aarch64.spec
