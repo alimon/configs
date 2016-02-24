@@ -212,15 +212,17 @@
               rm -rf wl18xx_fw
               # ******** TI wl18xx R8.6 - out of tree firmware ********
 
-              sudo make_ext4fs -o -L rootfs -l 3206528512 -s out/hikey-jessie_${rootfs}_${VERSION}-4g.emmc.img rootfs/
-              sudo make_ext4fs -o -L rootfs -l 7199505920 -s out/hikey-jessie_${rootfs}_${VERSION}-8g.emmc.img rootfs/
-              sudo umount boot rootfs
+              sudo mkfs.ext4 -L rootfs out/hikey-jessie_${rootfs}_${VERSION}.emmc.img.ext4 2G
+              mkdir rootfs-ext4
+              sudo mount -o loop out/hikey-jessie_${rootfs}_${VERSION}.emmc.img.ext4 rootfs-ext4
+              sudo cp -a rootfs/* rootfs-ext4
+              sudo umount boot rootfs rootfs-ext4
               sudo kpartx -dv out/hikey-jessie_${rootfs}_${VERSION}.img
-              sudo rm -rf boot rootfs
+              sudo ext2simg -v out/hikey-jessie_${rootfs}_${VERSION}.emmc.img.ext4 out/hikey-jessie_${rootfs}_${VERSION}.emmc.img
+              sudo rm -rf boot rootfs rootfs-ext4 out/*.ext4
 
               # Compress image(s)
-              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}-4g.emmc.img
-              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}-8g.emmc.img
+              gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.emmc.img
               gzip -9 out/hikey-jessie_${rootfs}_${VERSION}.img
             done
 
