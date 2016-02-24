@@ -54,7 +54,7 @@
             [ ${codename} = ${dist} ]||exit 0
             sudo yum install -y wget yum-utils
             sudo yum groupinstall -y "Development tools"
-            wget $source
+            wget --progress=dot -e dotbytes=2M $source
             sourcefile="*.src.rpm"
             sudo yum-builddep -y $sourcefile
             rpmbuild --rebuild $sourcefile
