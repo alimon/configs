@@ -1,0 +1,98 @@
+- job:
+    name: art-check-lava-status
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - password:
+            name: PRIVATE_KEY
+            default: ${PRIVATE_KEY}
+        - string:
+            name: LAVA_JOB_ID_POOL
+            default:
+        - string:
+            name: LAVA_USER
+            default: vishal.bhoj
+        - password:
+            name: LAVA_TOKEN
+            default: ${LAVA_TOKEN}
+        - string:
+            name: JENKINS_USERNAME
+            default: vishal.bhoj@linaro.org
+        - password:
+            name: JENKINS_TOKEN
+            default: ${JENKINS_TOKEN}
+    disabled: true
+    node: docker-utopic-art
+    display-name: 'ART - Check LAVA status'
+    triggers:
+        - timed: 'H/30 * * * *'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    publishers:
+        - groovy-postbuild:
+            script: |
+              import groovy.net.xmlrpc.*
+
+              void log(msg) {
+                  manager.listener.logger.println(msg)
+              }
+
+              def job = hudson.model.Hudson.instance.getItem("check-lava-status")
+              def property = job.getProperty(hudson.model.ParametersDefinitionProperty.class)
+              def parameter = property.getParameterDefinition("LAVA_JOB_ID_POOL")
+              def lavaJobIdPool = parameter.getDefaultValue().tokenize()
+              def lavaJobIdPoolClone = lavaJobIdPool.clone()
+              def lavaUser = property.getParameterDefinition("LAVA_USER").getDefaultValue()
+              def lavaToken = property.getParameterDefinition("LAVA_TOKEN").getDefaultValue()
+
+              lavaJobIdPool.each {
+                  def pblJob = hudson.model.Hudson.instance.getItem("post-build-lava")
+                  def variables = pblJob.getBuildByNumber(it.toInteger()).getBuildVariables()
+                  def lavaServer = variables.LAVA_SERVER
+                  def lavaJobId = variables.LAVA_JOB_ID
+                  def buildUrl = variables.BUILD_JOB.tokenize("/")
+                  def buildName = buildUrl[4]
+                  if (buildUrl.size() == 7) {
+                      buildName +=  "/" + buildUrl[5]
+                  }
+                  def buildNumber = buildUrl.last().toInteger()
+                  def build = hudson.model.Hudson.instance.getItemByFullName(buildName).getBuildByNumber(buildNumber)
+
+                  def lavaLab = new XMLRPCServerProxy("https://${lavaServer}")
+                  lavaLab.setBasicAuth(lavaUser, lavaToken)
+                  def response = lavaLab.invokeMethod("scheduler.job_status", [lavaJobId])
+                  log response
+                  switch (response.job_status) {
+                      case ["Complete", "Incomplete", "Canceled"]:
+                          lavaJobIdPoolClone.remove(it)
+                          log "LAVA job removed: " + lavaJobId
+                          // update build job information (badge, shortText, description)
+                          description = build.getDescription()
+                          description = description.replaceAll(">${lavaJobId}<", ">${lavaJobId} - ${response.job_status}<")
+                          build.setDescription(description)
+                          break
+                  }
+              }
+
+              lavaJobIdPool = lavaJobIdPoolClone.join(" ")
+              parameter.setDefaultValue(lavaJobIdPool)
+              job.save()
+            classpath:
+                - "/usr/share/groovy/lib/groovy-xmlrpc-0.8.jar"
