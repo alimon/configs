@@ -13,7 +13,7 @@
         - string:
             name: KERNEL_BRANCH
             default: '96b-kernelci'
-    disabled: true
+    disabled: false
     node: build
     display-name: 'Trigger for 96boards - Reference Component Enterprise - Linux Kernel'
     scm:
@@ -26,11 +26,12 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
     wrappers:
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - trigger-parameterized-builds:
+        - trigger-builds:
             - project: '96boards-reference-kernel-enterprise'
-              predefined-parameters: KERNEL_GIT_BRANCH=${KERNEL_BRANCH}
