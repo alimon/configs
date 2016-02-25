@@ -1,0 +1,142 @@
+- job:
+    name: 96boards-hikey-uefi-openplatformpkg
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: '96boards - HiKey UEFI (OpenPlatformPkg)'
+    scm:
+        - git:
+            url: https://github.com/96boards-hikey/edk2.git
+            refspec: +refs/heads/hikey-aosp:refs/remotes/origin/hikey-aosp
+            name: origin
+            branches:
+                - refs/heads/hikey-aosp
+            basedir: linaro-edk2
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf arm64-tc
+              rm -rf arm-trusted-firmware
+              rm -rf linaro-edk2/OpenPlatformPkg
+              rm -rf uefi-tools
+              rm -rf LinaroPkg
+              rm -rf l-loader
+              rm -rf out
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl python-crypto
+
+            # Use pre-installed linaro toolchain
+            export PATH="${HOME}/srv/toolchain/arm-tc-15.02/bin:${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
+            export CROSS_COMPILE_ta_arm64=aarch64-linux-gnu-
+            export CROSS_COMPILE_ta_arm32=arm-linux-gnueabihf-
+
+            # Check out arm-trusted-firmware
+            git clone -b hikey --depth 1 https://github.com/96boards-hikey/arm-trusted-firmware.git
+
+            # Check out OpenPlatformPkg
+            git clone -b hikey-aosp --depth 1 https://github.com/96boards/OpenPlatformPkg.git linaro-edk2/OpenPlatformPkg
+
+            git clone git://git.linaro.org/uefi/uefi-tools.git
+
+            git clone -b hikey-aosp --depth 1 https://github.com/96boards/LinaroPkg.git
+            cp -a LinaroPkg/platforms.config uefi-tools/platforms.config
+
+            export AARCH64_TOOLCHAIN=GCC49
+            export EDK2_DIR=${WORKSPACE}/linaro-edk2
+            export UEFI_TOOLS_DIR=${WORKSPACE}/uefi-tools
+            export JENKINS_WORKSPACE=${WORKSPACE}
+            unset WORKSPACE
+
+            cd ${EDK2_DIR}
+            ${UEFI_TOOLS_DIR}/uefi-build.sh -b RELEASE -a ../arm-trusted-firmware hikey
+
+            unset WORKSPACE
+            export WORKSPACE=${JENKINS_WORKSPACE}
+
+            cd ${WORKSPACE}
+            mkdir out
+            cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/FV/*.bin out/
+            cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/AARCH64/AndroidFastbootApp.efi out/
+            # Don't ship BL33_AP_UEFI.fd, mcuimage.bin and tee.bin
+            # (already included in the firmware image package - fip)
+            #cp -a ${EDK2_DIR}/Build/HiKey/RELEASE_GCC49/FV/*.fd out/
+            #cp -a ${EDK2_DIR}/HisiPkg/HiKeyPkg/NonFree/mcuimage.bin out/
+
+            # Ship nvme.img with UEFI binaries for convenience
+            dd if=/dev/zero of=out/nvme.img bs=128 count=1024
+
+            git clone --depth 1 https://github.com/96boards-hikey/l-loader.git
+            cd l-loader
+            ln -s ${WORKSPACE}/out/bl1.bin
+            make
+            cp -a l-loader.bin ptable*.img ${WORKSPACE}/out/
+            cd ${WORKSPACE}
+
+            cat > out/README.txt << EOF
+            Build information:
+            * build: ${BUILD_URL}
+            * UEFI tools git URL: $(cd uefi-tools && git config remote.origin.url)
+            * UEFI tools git branch: $(cd uefi-tools && git branch | grep -e '*'  | cut -d' ' -f2)
+            * UEFI tools git commit: $(cd uefi-tools && git log -n1 --pretty=format:%H)
+            * EDK2 git URL: ${GIT_URL}
+            * EDK2 git branch: ${GIT_BRANCH}
+            * EDK2 git commit: ${GIT_COMMIT}
+            * ATF git URL: $(cd arm-trusted-firmware && git config remote.origin.url)
+            * ATF git branch: $(cd arm-trusted-firmware && git branch | grep -e '*'  | cut -d' ' -f2)
+            * ATF git commit: $(cd arm-trusted-firmware && git log -n1 --pretty=format:%H)
+            * OpenPlatformPkg git URL: $(cd linaro-edk2/OpenPlatformPkg && git config remote.origin.url)
+            * OpenPlatformPkg git branch: $(cd linaro-edk2/OpenPlatformPkg && git branch | grep -e '*'  | cut -d' ' -f2)
+            * OpenPlatformPkg git commit: $(cd linaro-edk2/OpenPlatformPkg && git log -n1 --pretty=format:%H)
+            EOF
+
+            cat > out/HEADER.html << EOF
+            <html>
+            <body>
+                <div id="content"><meta http-equiv="content-type" content="text/html; charset=utf-8" />
+                <pre style="font-size:.85em; padding:0 0 0 10;">
+                    <linaro:include file="README.txt" />
+                </pre>
+            </body>
+            </html>
+            EOF
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/hikey/linaro/uefi-openplatformpkg/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
