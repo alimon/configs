@@ -1,0 +1,55 @@
+- job:
+    name: art-tip-microbenchmarks-presubmit-test
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    disabled: false
+    display-name: 'ART - Tip - Microbenchmarks Presubmit Test'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: android-review.linaro.org
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/testing'
+                  branches:
+                      - branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            set -xe
+            rm -rf art-testing
+            git clone https://android-git.linaro.org/git/linaro/art-testing.git
+
+            cd art-testing
+            if git pull http://$GERRIT_HOST/$GERRIT_PROJECT $GERRIT_REFSPEC | grep -q "Automatic merge failed"; then
+              git reset --hard
+              echo "Error: *** Error patch merge failed"
+              exit 1
+            fi
+
+            test/test.py 2>&1 | tee logs.txt
+
+            if grep -q "Tests FAILED" logs.txt; then
+              exit 1
+            fi
