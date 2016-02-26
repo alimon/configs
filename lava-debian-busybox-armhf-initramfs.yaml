@@ -25,6 +25,8 @@
         - shell: |
             #!/bin/bash
 
+            mkdir out
+
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/busybox-initramfs.sh
             chmod 744 ./busybox-initramfs.sh
             sudo ./busybox-initramfs.sh armhf
@@ -51,7 +53,7 @@
 
             </pre></body></html>
             EOF
-
+            mv initramfs-armhf.cpio.gz out/
             md5sum ${WORKSPACE}/out/initramfs-armhf.cpio.gz > ${WORKSPACE}/out/initramfs-armhf.cpio.gz.md5sum.txt
             sha256sum ${WORKSPACE}/out/initramfs-armhf.cpio.gz > ${WORKSPACE}/out/initramfs-armhf.cpio.gz.sha256sum.txt
 
