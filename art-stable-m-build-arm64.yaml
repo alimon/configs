@@ -1,0 +1,141 @@
+- job:
+    name: art-stable-m-build-arm64
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: BUILD_CONFIG_REPO
+            default: 'git://android.git.linaro.org/android-build-configs.git'
+        - string:
+            name: BUILD_CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'linaro-art-stable-m-aosp_arm64'
+        - password:
+            name: PRIVATE_KEY
+            default: ${PRIVATE_KEY}
+    disabled: false
+    node: docker-utopic-art
+    display-name: 'ART - Stable (Marshmallow) ARM64'
+    concurrent: true
+    triggers:
+        - timed: 'H 6 * * *'
+        - gerrit:
+            server-name: dev-private-review.linaro.org
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/build'
+                  branches:
+                      - branch-pattern: 'lor_marshmallow'
+                  topics:
+                      - pattern: 'IncludeBootToGUI'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'lor_marshmallow'
+                  topics:
+                      - pattern: 'IncludeBootToGUI'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/external/vixl'
+                  branches:
+                      - branch-pattern: 'lor_marshmallow'
+                  topics:
+                      - pattern: 'IncludeBootToGUI'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # Build scripts
+            ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
+            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+
+            # Private key
+            wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
+            source add-private-key.sh
+
+            cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
+            ./setup_host.sh
+            ./setup_android.sh
+
+            cd ${ANDROID_BUILD_DIR}
+            ${ART_BUILD_SCRIPTS_DIR}/test_boot_to_gui_emulator.sh
+
+            echo "Build finished"
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml'
+        - logparser:
+            parse-rules: 'Android-ART Build'
+            unstable-on-warning: false
+            fail-on-error: false
+        - groovy-postbuild:
+            script: |
+              import hudson.model.*
+
+              def matcher = manager.getLogMatcher(".*repo sync failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("repo sync failed")
+              }
+              matcher = manager.getLogMatcher(".*patch merge failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("merge failed")
+              }
+              matcher = manager.getLogMatcher(".*make failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("make failed")
+              }
+              matcher = manager.getLogMatcher(".*images failed to boot.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("Boot test failed")
+              }
+        - plot:
+            - group: 'Time Measurements'
+              title: 'Sync Time'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: repo_time.txt
+                    format: properties
+        - plot:
+            - group: 'Time Measurements'
+              title: 'Build Time'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: make_time.txt
+                    format: properties
+        - plot:
+            - group: 'Time Measurements'
+              title: 'Boot Time'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: boot_time.txt
+                    format: properties
+        - naginator:
+            rerun-unstable-builds: true
+            max-failed-builds: 1
