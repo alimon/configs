@@ -1,3 +1,59 @@
+- scm:
+    name: jdk9
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev
+            clean: true
+            subdir: jdk9
+- scm:
+    name: corba
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/corba
+            clean: true
+            subdir: jdk9/corba
+- scm:
+    name: hotspot
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/hotspot
+            clean: true
+            subdir: jdk9/hotspot
+- scm:
+    name: jaxp
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/jaxp
+            clean: true
+            subdir: jdk9/jaxp
+- scm:
+    name: jaxws
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/jaxws
+            clean: true
+            subdir: jdk9/jaxws
+- scm:
+    name: jdk
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/jdk
+            clean: true
+            subdir: jdk9/jdk
+- scm:
+    name: langtools
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/langtools
+            clean: true
+            subdir: jdk9/langtools
+- scm:
+    name: nashorn
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk9/dev/nashorn
+            clean: true
+            subdir: jdk9/nashorn
 - job:
     name: jdk9-update-src-tree
     project-type: freestyle
@@ -16,42 +72,18 @@
             anonymous:
                 - job-read
                 - job-extended-read
-    disabled: true
+    disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 9 - Update jdk9 source tree'
     scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev
-            clean: true
-            subdir: jdk9
-        - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/corba
-            clean: true
-            subdir: jdk9/corba
-        - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/hotspot
-            clean: true
-            subdir: jdk9/hotspot
-        - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/jaxp
-            clean: true
-            subdir: jdk9/jaxp
-        - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/jaxws
-            clean: true
-            subdir: jdk9/jaxws
-        - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/jdk
-            clean: true
-            subdir: jdk9/jdk
-        - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/langtools
-            clean: true
-            subdir: jdk9/langtools
-        - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/nashorn
-            clean: true
-            subdir: jdk9/nashorn
+        - jdk9
+        - corba
+        - hotspot
+        - jaxp
+        - jaxws
+        - jdk
+        - langtools
+        - nashorn
     triggers:
 # FIXME - Spread load evenly by using ‘H 00 * * *’ 
         - pollscm: '03 00 * * *'

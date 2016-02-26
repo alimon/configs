@@ -1,3 +1,59 @@
+- scm:
+    name: jdk8
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/aarch64-port/jdk8
+            clean: true
+            subdir: jdk8
+- scm:
+    name: corba
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/aarch64-port/jdk8/corba
+            clean: true
+            subdir: jdk8/corba
+- scm:
+    name: hotspot
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/aarch64-port/jdk8/hotspot
+            clean: true
+            subdir: jdk8/hotspot
+- scm:
+    name: jaxp
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/aarch64-port/jdk8/jaxp
+            clean: true
+            subdir: jdk8/jaxp
+- scm:
+    name: jaxws
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/aarch64-port/jdk8/jaxws
+            clean: true
+            subdir: jdk8/jaxws
+- scm:
+    name: jdk
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/aarch64-port/jdk8/jdk
+            clean: true
+            subdir: jdk8/jdk
+- scm:
+    name: langtools
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/aarch64-port/jdk8/langtools
+            clean: true
+            subdir: jdk8/langtools
+- scm:
+    name: nashorn
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/aarch64-port/jdk8/nashorn
+            clean: true
+            subdir: jdk8/nashorn
 - job:
     name: jdk8-update-src-tree
     project-type: freestyle
@@ -16,42 +72,18 @@
             anonymous:
                 - job-read
                 - job-extended-read
-    disabled: true
+    disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Update jdk8 source tree'
     scm:
-        - hg:
-            url: http://hg.openjdk.java.net/aarch64-port/jdk8
-            clean: true
-            subdir: jdk8
-        - hg:
-            url: http://hg.openjdk.java.net/aarch64-port/jdk8/corba
-            clean: true
-            subdir: jdk8/corba
-        - hg:
-            url: http://hg.openjdk.java.net/aarch64-port/jdk8/hotspot
-            clean: true
-            subdir: jdk8/hotspot
-        - hg:
-            url: http://hg.openjdk.java.net/aarch64-port/jdk8/jaxp
-            clean: true
-            subdir: jdk8/jaxp
-        - hg:
-            url: http://hg.openjdk.java.net/aarch64-port/jdk8/jaxws
-            clean: true
-            subdir: jdk8/jaxws
-        - hg:
-            url: http://hg.openjdk.java.net/aarch64-port/jdk8/jdk
-            clean: true
-            subdir: jdk8/jdk
-        - hg:
-            url: http://hg.openjdk.java.net/aarch64-port/jdk8/langtools
-            clean: true
-            subdir: jdk8/langtools
-        - hg:
-            url: http://hg.openjdk.java.net/aarch64-port/jdk8/nashorn
-            clean: true
-            subdir: jdk8/nashorn
+        - jdk8
+        - corba
+        - hotspot
+        - jaxp
+        - jaxws
+        - jdk
+        - langtools
+        - nashorn
     triggers:
 # FIXME - Spread load evenly by using ‘H 00 * * *’ 
         - pollscm: '03 00 * * *'
