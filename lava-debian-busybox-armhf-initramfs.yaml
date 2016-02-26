@@ -1,0 +1,64 @@
+# Minimal armhf initramfs
+
+- job:
+    name: lava-debian-busybox-armhf-initramfs
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            platform-leads:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: 'LAVA - Build ARMHF minimal busybox initramfs'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/busybox-initramfs.sh
+            chmod 744 ./busybox-initramfs.sh
+            ./busybox-initramfs.sh armhf
+
+            cat > ${WORKSPACE}/out/debian-busybox-armhf-initramfs-readme.html <<EOF
+            <html><body><pre>
+            lava-debian-busybox-armhf-initramfs build instructions"
+            ================================================
+
+            This initramfs is based on busybox-static.
+            dpkg is available as a busybox applet but apt is not.
+            Other useful busybox applets include wget and ifconfig.
+            See https://packages.debian.org/jessie/busybox-static
+
+            https://ci.linaro.org/view/lava-ci/job/lava-debian-busybox-armhf-initramfs/
+
+            The script used by jenkins is available here:
+            https://git.linaro.org/lava-team/refactoring.git/blob/HEAD:/scripts/busybox-initramfs.sh
+
+            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-busybox-armhf-initramfs.yaml
+            The base system is a Debian Jessie VM.
+
+            The initramfs uses a prompt of "root@busybox: #"
+
+            </pre></body></html>
+            EOF
+
+            md5sum ${WORKSPACE}/out/initramfs-armhf.cpio.gz > ${WORKSPACE}/out/initramfs-armhf.cpio.gz.md5sum.txt
+            sha256sum ${WORKSPACE}/out/initramfs-armhf.cpio.gz > ${WORKSPACE}/out/initramfs-armhf.cpio.gz.sha256sum.txt
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py --link-latest out components/lava/standard/debian/busybox-initramfs/armhf/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'neil.williams@linaro.org fathi.boudra@linaro.org'
