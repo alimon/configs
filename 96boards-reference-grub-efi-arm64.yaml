@@ -38,7 +38,8 @@
             }
 
             GRUB_EFI_BIN_PKG=grub-efi-arm64-bin
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            echo "deb http://repo.linaro.org/ubuntu/linaro-overlay jessie main" > local.list
+            sudo cp local.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends $GRUB_EFI_BIN_PKG python-pycurl
 
@@ -50,7 +51,7 @@
             configfile \$prefix/grub.cfg
             EOF
 
-            GRUB_MODULES="boot chain configfile efinet ext2 fat gettext help linux loadenv lsefi normal part_gpt part_msdos read search search_fs_file search_fs_uuid search_label terminal terminfo tftp time"
+            GRUB_MODULES="boot chain configfile efinet ext2 fat gettext gzio help linux loadenv lsefi normal part_gpt part_msdos read search search_fs_file search_fs_uuid search_label terminal terminfo tftp time"
             grub-mkimage \
               --verbose \
               --config=out/grub.configfile \
