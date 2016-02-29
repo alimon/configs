@@ -1,5 +1,5 @@
 - job:
-    name: trigger-96boards-hikey-atf
+    name: trigger-96boards-hikey-edk2-openplatformpkg
     project-type: freestyle
     defaults: global
     logrotate:
@@ -11,16 +11,18 @@
                 - job-read
     disabled: false
     node: build
-    display-name: 'Trigger for 96boards - HiKey UEFI (ATF)'
+    display-name: 'Trigger for 96boards - HiKey UEFI (edk2 OpenPlatformPkg)'
     scm:
         - git:
-            url: https://github.com/96boards-hikey/arm-trusted-firmware.git
-            refspec: +refs/heads/hikey:refs/remotes/origin/hikey
+            url: https://github.com/96boards-hikey/edk2.git
+            refspec: +refs/heads/hikey-aosp:refs/remotes/origin/hikey-aosp
             name: origin
             branches:
-                - refs/heads/hikey
+                - refs/heads/hikey-aosp
+            basedir: linaro-edk2
             skip-tag: true
             shallow-clone: true
+            clean: true
             wipe-workspace: false
     triggers:
         - pollscm: 'H/5 * * * *'
@@ -30,4 +32,4 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - trigger-builds:
-            - project: '96boards-hikey-uefi, 96boards-hikey-uefi-openplatformpkg'
+            - project: '96boards-hikey-uefi-openplatformpkg'
