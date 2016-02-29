@@ -126,15 +126,15 @@
           TARGET_CONFIG="${TARGET_CONFIG,,}"
 
           #Process TRIPLE
-          if test x"${TRIPLE}" = x"(Derive from TOOLCHAIN)"; then
-            if test -z "${TOOLCHAIN}"; then
+          if test x"${TRIPLE:-}" = x"(Derive from TOOLCHAIN)"; then
+            if test -z "${TOOLCHAIN:-}"; then
               echo "Cannot derive TRIPLE from TOOLCHAIN if no TOOLCHAIN is given!" >&2
               exit 1
             fi
             TRIPLE=
             for y in aarch64-linux-gnu arm-linux-gnueabihf; do
               if echo "${TOOLCHAIN}" | grep -q "${y}"; then
-                if test -z "${TRIPLE}"; then
+              if test -z "${TRIPLE:-}"; then
                   TRIPLE="${y}"
                 else
                   echo "Cannot derive unique TRIPLE from ambiguous TOOLCHAIN '${TOOLCHAIN}'" >&2
@@ -142,8 +142,8 @@
                 fi
               fi
             done
-            #If TRIPLE is still empty then it means 'Native', which is what we want
-          elif test x"${TRIPLE}" = x"(Native)"; then
+          #If TRIPLE is still empty then it means 'Native', which is what we want
+          elif test x"${TRIPLE:-}" = x"(Native)"; then
             TRIPLE=
           fi
 
@@ -165,7 +165,7 @@
           #Have to do this after overrides in case one of the inputs is overridden
           #If LAVA_JOB_NAME itself was overridden then it will not be touched.
           if test -z "${LAVA_JOB_NAME:-}"; then
-            export LAVA_JOB_NAME="${BENCHMARK}_${TARGET_CONFIG}_${TRIPLE:-native}_jenkins"
+          export LAVA_JOB_NAME="${BENCHMARK:-}_${TARGET_CONFIG:-}_${TRIPLE:-native}_jenkins"
           fi
 
           git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
