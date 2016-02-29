@@ -62,7 +62,7 @@
             # Builder setup
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y kpartx python-pycurl libfdt-dev
+            sudo apt-get install -y kpartx python-pycurl libfdt-dev grub-common
             wget -q \
               http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2015.11-1.linarojessie.1_amd64.deb \
@@ -98,13 +98,11 @@
               [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
             done
 
+            KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
+
             cat << EOF | sudo tee rootfs/etc/fstab
             /dev/disk/by-label/rootfs   /   ext4 errors=remount-ro 0 1
             EOF
-
-            # Make sure rootfs/boot also got the right dtb and links
-            sudo mkdir -p rootfs/boot/dtbs/
-            sudo cp *.dtb rootfs/boot/dtbs/
 
             mkdir -p out/${BOARD}
 
@@ -116,6 +114,7 @@
             Build description:
             * Build URL: "$BUILD_URL":$BUILD_URL
             * ALIP Rootfs: "http://snapshots.linaro.org/debian/images/alip-arm64/$ROOTFS_BUILD_NUMBER":http://snapshots.linaro.org/debian/images/alip-arm64/$ROOTFS_BUILD_NUMBER
+            * Kernel: "linux-image-$KERNEL_VERSION":http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/l/linux/
             EOF
 
             # Create boot image
@@ -148,15 +147,16 @@
             EOF
                 # Grub config to be set as part of the rootfs
                 ## FIXME: Make this generic
-                KERNEL=`basename rootfs/boot/vmlinuz-*`
-                INITRD=`basename rootfs/boot/initrd.img-*`
-                sudo mkdir rootfs/boot/grub
-                sed -e "s/KERNEL/$KERNEL/" \
-                    -e "s/INITRD/$INITRD/" \
-                    -e "s/CONSOLE_UART/ttyAMA3,115200/" \
-                    -e "s/DEVICE_TREE/hi6220-hikey.dtb/" \
-                    configs/96boards-reference-platform-debian/grub/grub.cfg.in > grub.cfg
+                sudo mkdir rootfs/boot/grub/fonts
+                sudo cp rootfs/usr/share/grub/unicode.pf2 rootfs/boot/grub/fonts
+                sudo grub-editenv rootfs/boot/grubenv create
+                sed -e "s/KERNEL_VERSION/$KERNEL_VERSION/" configs/96boards-reference-platform-debian/grub/grub-hikey.cfg.in > grub.cfg
                 sudo cp grub.cfg rootfs/boot/grub
+                sudo cp configs/96boards-reference-platform-debian/grub/grub-fastboot.cfg rootfs/boot/grub/custom.cfg
+                sudo cp -a rootfs/usr/lib/grub/arm64-efi rootfs/boot/grub
+                sudo cp hi6220-hikey.dtb rootfs/boot/hi6220-hikey-${KERNEL_VERSION}.dtb
+                echo "KERNEL_DEVICETREE=hi6220-hikey" | sudo tee rootfs/etc/default/kernel
+                sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="efi=noruntime rw quiet"/g' rootfs/etc/default/grub
 
                 # Since it uses uefi, create the boot efi fstab entry
                 sudo mkdir rootfs/boot/efi
