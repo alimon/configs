@@ -33,12 +33,17 @@
               - CPU2000
               - CPU2006
               - fakebench
-        - choice:
+        - string:
             name: TARGET_CONFIG
-            choices:
-              - Juno-A53
-              - Juno-A57
-              - KVM (x86_64)
+            description: |
+              Space-separated list of target configuration(s) to run on.
+              At time of writing, may be:<br/>
+              <ul>
+                <li>Juno-A53</li>
+                <li>Juno-A57</li>
+                <li>KVM</li>
+              </ul>
+              Where 'KVM' is an x86.
         - choice:
             name: TRIPLE
             choices:
@@ -116,12 +121,6 @@
           #!/bin/bash
           set -eux
           set -o pipefail
-
-          #Process TARGET_CONFIG
-          TARGET_CONFIG="${TARGET_CONFIG,,}"
-          if test x"${TARGET_CONFIG%% *}" = xkvm; then #" - fix syntax highlighting
-            TARGET_CONFIG=kvm
-          fi
 
           #Process TRIPLE
           if test x"${TRIPLE}" = x"(Derive from TOOLCHAIN)"; then
