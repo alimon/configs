@@ -138,7 +138,7 @@
 
               #Parameters for post-build-lava
               cat << EOF > post_build_lava_parameters_${bitness}
-              CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef-${bitness}.json
+              CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef_${bitness}.json
 
               #Server to dispatch to, as opposed to server where bundle stream is.
               #post-build-lava takes responsibility for specifying a protocol.
@@ -149,14 +149,14 @@
           EOF
 
               #Convert YAML to JSON
-              ./lci-build-tools/yaml-to-json.py "${yaml}" > "lava-jobdef-${bitness}.json"
+              ./lci-build-tools/yaml-to-json.py "${yaml}" > "lava-jobdef_${bitness}.json"
               rm "${yaml}"
             )
           done
 
     publishers:
       - archive:
-          artifacts: lava-jobdef-*.json
+          artifacts: lava-jobdef_*.json
       - trigger-parameterized-builds:
         - project: tcwg-post-build-lava
           condition: SUCCESS
