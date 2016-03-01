@@ -137,7 +137,7 @@
               #happen to be job params are already exported, so don't need this
 
               #Parameters for post-build-lava
-              cat << EOF > post_build_lava_parameters_${TARGET_CONFIG}-${bitness}
+              cat << EOF > post_build_lava_parameters_${bitness}
               CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef-${TARGET_CONFIG}-${bitness}.json
 
               #Server to dispatch to, as opposed to server where bundle stream is.
@@ -160,18 +160,18 @@
       - trigger-parameterized-builds:
         - project: tcwg-post-build-lava
           condition: SUCCESS
-          property-file: post_build_lava_parameters_juno-a57-64
+          property-file: post_build_lava_parameters_64
       - trigger-parameterized-builds:
         - project: tcwg-post-build-lava
           condition: SUCCESS
-          property-file: post_build_lava_parameters_juno-a57-32
+          property-file: post_build_lava_parameters_32
       - trigger-parameterized-builds:
         - project: tcwg-post-build-lava
           condition: SUCCESS
-          property-file: post_build_lava_parameters_juno-a53-64
+          property-file: post_build_lava_parameters_64
       - trigger-parameterized-builds:
         - project: tcwg-post-build-lava
           condition: SUCCESS
-          property-file: post_build_lava_parameters_juno-a53-32
+          property-file: post_build_lava_parameters_32
       - email:
           recipients: 'bernie.ogden@linaro.org'
