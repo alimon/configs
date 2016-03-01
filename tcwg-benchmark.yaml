@@ -170,7 +170,7 @@
 
           git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
 
-          #Set variables for both post-build-lava and yaml-to-json
+          #Generate YAML, which will be converted to JSON
           yaml=`mktemp`
           bash -x ./abe/scripts/Benchmark.sh > "${yaml}"
           #Must be exported to be visible to Benchmark.sh - env vars that
@@ -191,6 +191,7 @@
           #Convert YAML to JSON
           git clone --depth 1 https://git.linaro.org/ci/lci-build-tools
           ./lci-build-tools/yaml-to-json.py "${yaml}" > lava-jobdef.json
+          rm "${yaml}"
 
     publishers:
       - archive:
