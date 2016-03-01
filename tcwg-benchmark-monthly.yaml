@@ -9,7 +9,7 @@
         daysToKeep: 30
         numToKeep: 30
         artifactDaysToKeep: 2
-        artifactNumToKeep: 4
+        artifactNumToKeep: 2
     block-downstream: true
     properties:
         - authorization:
@@ -155,14 +155,6 @@
     publishers:
       - archive:
           artifacts: lava-jobdef_*.json
-      - trigger-parameterized-builds:
-        - project: tcwg-post-build-lava
-          condition: SUCCESS
-          property-file: post_build_lava_parameters_64
-      - trigger-parameterized-builds:
-        - project: tcwg-post-build-lava
-          condition: SUCCESS
-          property-file: post_build_lava_parameters_32
       - trigger-parameterized-builds:
         - project: tcwg-post-build-lava
           condition: SUCCESS
