@@ -119,8 +119,6 @@
             # errors.
             ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
             ${BUILD_SHELL} -c "make all -j$jobs"
-            # Building all these targets in parallel does not work well
-            ${BUILD_SHELL} -c "make info dvi pdf html"
             ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
             sums=`find . -name "*.sum"`
             [ x"$sums" != x ] && egrep '^FAIL:|^XPASS:' $sums || true
