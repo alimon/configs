@@ -39,6 +39,7 @@
             name: label
             values:
                 - tcwg-x86_64-cam
+                - tcwg-aarch64-build
         - axis:
             type: user-defined
             name: bfd
@@ -67,6 +68,13 @@
                 - arm-vxworks
                 - arm-wince-pe
                 - armeb-linux-gnueabihf
+                - native
+                - schroot-i386-native
+                - schroot-armhf-native
+    execution-strategy:
+        combination-filter: |
+            (label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native") && (bfd=="--enable-64-bit-bfd=no") && (schroot_arch=="i386") ))
+        sequential: false
     wrappers:
         - timeout:
             timeout: 600
@@ -84,6 +92,22 @@
             set -e
             set -x
 
+            case ${target} in
+              schroot-*)
+                schroot_arch=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\1/")
+                target=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\2/")
+                ;;
+              *)
+                # If schroot_arch is not implied by $target, use the
+                # value from the matrix on x86_64. On aarch64, use
+                # arm64.
+                case $(uname -m) in
+                  x86_64) ;;
+                  aarch64) schroot_arch="arm64" ;;
+                  *) echo "Unexpected architecture $(uname -m)"; exit 1 ;;
+                esac
+                ;;
+            esac
             schroot_image="tcwg-build-${schroot_arch}-trusty"
 
             session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
@@ -103,12 +127,22 @@
                     ;;
             esac
 
+            case $target in
+                *native*)
+                    target_flag=
+                    ;;
+                *)
+                    target_flag="--target $target"
+                    ;;
+            esac
+
             rm -rf build-$target || true
             mkdir -p build-$target
             cd build-$target
             result=0
             jobs=$(getconf _NPROCESSORS_ONLN)
             echo BUILD STARTED $(date)
+            uname -a
 
             # test that expect is working and output some debug info if not
             ${BUILD_SHELL} -c 'if ! echo "spawn true" | /usr/bin/expect -f - >/dev/null; then echo "expect cannot spawn processes. Aborting make check."; echo "some debug info follows..."; echo "running: ls -l /dev/ptmx"; ls -l /dev/ptmx; echo "running: ls -l /dev/pts"; ls -l /dev/pts; echo "running: grep devpts /proc/mounts"; grep devpts /proc/mounts; exit 1; fi'
@@ -117,7 +151,7 @@
             # because of 'set -e'. But for 'make check' we want to
             # execute all the tests, and report if there were some
             # errors.
-            ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
+            ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install $target_flag ${bfd}"
             ${BUILD_SHELL} -c "make all -j$jobs"
             ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
             sums=`find . -name "*.sum"`
