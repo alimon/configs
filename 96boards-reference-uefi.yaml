@@ -186,7 +186,14 @@
             export JENKINS_WORKSPACE=${WORKSPACE}
 
             # Board specific setup
-            if [ "${MX_PLATFORM}" == "styx" ]; then
+            if [ "${MX_PLATFORM}" == "hikey" ]; then
+                # Force previous EDK2 + ATF only build, since uefi-tools is now building with OPP
+                cd uefi-tools
+                # Commit before it was changed to OPP
+                UEFI_TOOLS_GIT_VERSION=3831996c5d39d602c3a647ad94cc18d5ee965499
+                git reset --hard $UEFI_TOOLS_GIT_VERSION
+                cd -
+            elif [ "${MX_PLATFORM}" == "styx" ]; then
                 git clone -b FDK84 --depth 1 ssh://dev-private-git.linaro.org/96boards/SeattleFDK.git
                 cd $EDK2_DIR; ln -s ../SeattleFDK/AmdModulePkg; cd ..
             fi
