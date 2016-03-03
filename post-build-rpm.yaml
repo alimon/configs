@@ -14,6 +14,7 @@
                 - job-read
                 - job-extended-read
                 - job-workspace
+                - job-configure
                 - job-build
                 - job-cancel
     parameters:
@@ -46,7 +47,7 @@
 
             for path in ${job_path} ${job_path_axis} ${job_path_matrix}
             do
-                if [ "(ls -A ${path}/*.rpm)" ]
+                if [ "$(ls -A ${path}/*.rpm)" ]
                 then
                     cd ${path}
                     break
