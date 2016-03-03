@@ -13,6 +13,7 @@
             linaro:
                 - job-read
                 - job-extended-read
+                - job-workspace
                 - job-build
                 - job-cancel
     parameters:
@@ -27,7 +28,7 @@
     builders:
         - shell: |
             #!/bin/bash
-            set -e
+            set -ex
             echo "Build success: ${build_success}"
             echo "Job name: ${pkg_job_name}"
             echo "Repo: ${repo}"
@@ -45,13 +46,13 @@
 
             for path in ${job_path} ${job_path_axis} ${job_path_matrix}
             do
-                if [ -r "${path}/${pkg_changes}" ]
+                if [ "(ls -A ${path}/*.rpm)" ]
                 then
                     cd ${path}
                     break
                 fi
             done
-
+            pwd
             ls -l .
             scp *rpm upload@repo.linaro.org:/srv/repos/rpm/${repo}/$dist/incoming
             rm -f *rpm
