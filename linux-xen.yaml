@@ -48,7 +48,7 @@
             mv xenlava-${hwpack}.img.xz xenlava-${hwpack}.tar.xz *.dtb Image* uXen* out/||true
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            python ${HOME}/bin/linaro-cp.py --link-latest out ubuntu/images/xen/${hwpack}/${BUILD_NUMBER}/
+            python ${HOME}/bin/linaro-cp.py --api_version 3 --link-latest out ubuntu/images/xen/${hwpack}/${BUILD_NUMBER}/
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
