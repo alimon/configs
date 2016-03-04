@@ -15,7 +15,7 @@
     parameters:
         - string:
             name: OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151207/proprietary_LA.BR.1.2.4_01810_8x16.0_410C_Nov.tgz
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160303/proprietary_LA.BR.1.2.4_01810_8x16.0_410C_Nov.tgz
         - string:
             name: PATCHSET_URL
             default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151211/PATCH_8x16_129905_410c_LA.BR.1.2.4-01810-8x16.0.tar.gz
@@ -99,6 +99,7 @@
 
             source build/envsetup.sh
             lunch msm8916_64-userdebug
+            rm -rf out/target/product/msm8916_64/persist*
             make -j8
 
             wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt  -O out/target/product/msm8916_64/system/etc/license.txt
