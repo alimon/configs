@@ -1,0 +1,75 @@
+actions:
+- command: deploy_linaro_image
+  parameters:
+    bootloadertype: uefi
+    hwpack: '${HWPACK_BUILD_URL}'
+    rootfs: '${ROOTFS_BUILD_URL}'
+  metadata:
+    distribution: 'openembedded'
+    hwpack.build: '${BUILD_NUMBER}'
+    hwpack.type: '${hwpack_type}'
+    rootfs.build: '${ROOTFS_BUILD_NUMBER}'
+    rootfs.type: 'lamp-armv8-gcc-4.9'
+    git URL: '${GIT_URL}'
+    git branch: '${GIT_BRANCH}'
+    git commit: '${GIT_COMMIT}'
+- command: boot_linaro_image
+  parameters:
+    options:
+    - 'cluster0.NUM_CORES=2'
+    - 'cluster1.NUM_CORES=3'
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/busybox.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/device-tree.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/ethernet.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/kernel-version.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 1800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/perf.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/toolchain.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 7200
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/libhugetlbfs.yaml
+- command: lava_test_shell
+  parameters:
+    timeout: 800
+    testdef_repos:
+    - git-repo: git://git.linaro.org/qa/test-definitions.git
+      testdef: openembedded/pointer-tagging-tests.yaml
+- command: submit_results
+  parameters:
+    server: 'http://${LAVA_SERVER}'
+    stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 172800
