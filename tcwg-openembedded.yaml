@@ -1,0 +1,72 @@
+- job:
+    name: tcwg-openembedded
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: toolchain_url
+            default: ''
+        - bool:
+            name: debug
+            default: false
+            description: 'Whether to enable bash debugging output.'
+    disabled: false
+    node: build
+    display-name: 'TCWG OpenEmbedded Validation'
+    scm:
+        - git:
+            url: https://git.linaro.org/openembedded/jenkins-setup.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            if test x"${debug}" = x"true"; then
+              set -x
+              bshell="/bin/bash -x"
+            else
+              bshell="/bin/bash"
+            fi
+
+            # we clean build and populate it from cache
+            ${bshell} pre-build-do-cleanup.sh
+
+            # armv7ab and armv8b for big-endian
+            case "`echo ${toolchain_url} | sed -e 's:^.*x86_64_::'`" in
+              armeb*) cpu=armv7ab ;;
+              arm*) cpu=armv7a ;;
+              aarch64_be*) cpu=armv8b ;;
+              aarch64*) cpu=armv8 ;;
+              *) cpu=x86;;
+            esac
+
+            # do a build
+            ${bshell} init-and-build.sh -a ${cpu} -u ${toolchain_url} linaro-image-minimal
+            cd ${WORKSPACE}
+
+            ${bshell} post-build-create-image-manifest.sh
+            ${bshell} post-build-sort-out-downloads.sh
+
+            # Capture what we're building in the build output.
+            echo "Build configuration: ${PWD}"
+            git log --format="%H %s" -1
+            repo forall -p -c 'git log --format="%H %s" -1'
