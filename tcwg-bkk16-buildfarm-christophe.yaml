@@ -48,7 +48,7 @@
             description: 'Rebuild the toolchain even if results are already on logserver'
         - string:
             name: log_name
-            default: ''
+            default: 'test-bkk16'
             description: 'Logname directory on logserver; leave empty for default'
         - bool:
             name: dont_fail
@@ -56,7 +56,7 @@
             description: 'Do not fail the build'
         - string:
             name: log_server
-            default: dev-01.tcwglab:/home/maxim.kuvyrkov/logs
+            default: ex40-01.tcwglab.linaro.org:logs-bkk16
             description: 'Log_Server'
         - string:
             name: targets
@@ -192,7 +192,13 @@
 
             extraconfig_opt=""
             for config in $extraconfig; do
-              extraconfig_opt="${extraconfig_opt} --extraconfig abe/extraconfigs/$config"
+              tool=${extraconfig%=*}
+              value=${extraconfig#*=}
+              if [ "x${tool}" = x ]; then
+                echo ERROR: wrong extraconfig: $extraconfig
+                exit 1
+              fi
+              extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
             done
 
             ulimit -u 5000
