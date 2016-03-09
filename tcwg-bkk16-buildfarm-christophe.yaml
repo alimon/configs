@@ -192,12 +192,16 @@
 
             extraconfig_opt=""
             for config in $extraconfig; do
-              tool=${extraconfig%=*}
-              value=${extraconfig#*=}
-              if [ "x${tool}" = x ]; then
-                echo ERROR: wrong extraconfig: $extraconfig
-                exit 1
-              fi
+              case ${extraconfig} in
+                *=*)
+                  tool=${extraconfig%=*}
+                  value=${extraconfig#*=}
+                  ;;
+                *)
+                  echo ERROR: wrong extraconfig: $extraconfig
+                  exit 1
+                  ;;
+              esac
               extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
             done
 
