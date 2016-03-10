@@ -101,7 +101,7 @@
             EOF
             fi
         - trigger-builds:
-                - project: tcwg-bkk16-buildfarm
+            - project: tcwg-bkk16-buildfarm
               property-file: buildfarm_parameters
               block: true
         - conditional-step:
@@ -112,9 +112,9 @@
                     - project: tcwg-compare-results
                       property-file: compare_results_parameters
                       block: true
-        - publishers:
-            - workspace-cleanup:
-                include:
-                 - "*_parameters"
-            - email:
-                    recipients: 'yvan.roux@linaro.org kugan.vivekanandarajah@linaro.org'
+    publishers:
+        - workspace-cleanup:
+             include:
+              - "*_parameters"
+        - email:
+             recipients: 'yvan.roux@linaro.org kugan.vivekanandarajah@linaro.org'
