@@ -1,0 +1,266 @@
+- job:
+    name: tcwg-buildfarm-bernie
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactDaysToKeep: 2
+        artifactNumToKeep: 40
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: gcc_branch
+            default: 'latest'
+            description: 'GCC revision to build'
+        - string:
+            name: host_x86_64_languages
+            default: 'default'
+            description: 'Languages to build for x86_64-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: host_aarchXX_languages
+            default: 'c,c++'
+            description: 'Languages to build for AArchXX-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: runtests
+            default: 'x86_64-host'
+            description: 'Run toolchain testsuites: "yes", "no", "x86_64-host"'
+        - bool:
+            name: try_bootstrap
+            default: 'true'
+            description: 'Attempt to bootstrap GCC for compatible host and target combinations'
+        - string:
+            name: excludecheck
+            default: 'binutils gdb'
+            description: 'Do not run "make check" on these components'
+        - bool:
+            name: rebuild
+            default: true
+            description: 'Rebuild the toolchain even if results are already on logserver'
+        - string:
+            name: log_name
+            default: ''
+            description: 'Logname directory on logserver; leave empty for default'
+        - bool:
+            name: dont_fail
+            default: false
+            description: 'Do not fail the build'
+        - string:
+            name: log_server
+            default: dev-01.tcwglab:/home/tcwg-buildslave/logs
+            description: 'Log_Server'
+        - string:
+            name: targets
+            default: 'cross_main cross_aux native_x86'
+            description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
+        - string:
+            name: abe_branch
+            default: refs/remotes/origin/stable
+            description: 'ABE revision to test'
+    disabled: false
+    node: tcwg-x86_64-cam
+    child-workspace: $target
+    concurrent: true
+    display-name: 'TCWG ZZZ BuildFarm Bernie'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/abe.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            branches:
+                - $abe_branch
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-cam
+                - tcwg-aarch64-build
+        - axis:
+            type: user-defined
+            name: target
+            values:
+                - aarch64-linux-gnu
+                - arm-linux-gnueabihf
+                - native
+    execution-strategy:
+        combination-filter: |
+            (label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="gcc_branch"}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+            set -x
+
+            case "$target--$(uname -m)" in
+              native--aarch64|schroot-armhf-native--*) target_kind=native_armv8 ;;
+              native--x86_64|schroot-i386-native--*) target_kind=native_x86 ;;
+              armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
+              *-linux-gnu*--*) target_kind=cross_main ;;
+              *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
+            esac
+
+            if ! echo "$targets" | grep -q "$target_kind"; then
+              echo "NOTE: Skipping target $target because $target_kind is not in list: $targets"
+              exit 0
+            fi
+
+            case ${target} in
+              schroot-*)
+                schroot_arch=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\1/")
+                target=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\2/")
+                ;;
+              *)
+                case $(uname -m) in
+                  x86_64) schroot_arch="amd64" ;;
+                  aarch64) schroot_arch="arm64" ;;
+                  *) echo "Unexpected architecture $(uname -m)"; exit 1 ;;
+                esac
+                ;;
+            esac
+            schroot_image="tcwg-build-${schroot_arch}-trusty"
+
+            case $(uname -m) in
+              x86_64) languages="$host_x86_64_languages" ;;
+              *) languages="$host_aarchXX_languages" ;;
+            esac
+
+            case "$runtests-$(uname -m)" in
+              "yes"-*) runtests_opt="--runtests" ;;
+              "x86_64-host"-x86_64) runtests_opt="--runtests" ;;
+              *) runtests_opt="" ;;
+            esac
+
+            if $try_bootstrap; then
+              bootstrap="--bootstrap"
+            else
+              bootstrap=""
+            fi
+
+            if [ x"$log_name" != x"" ]; then
+              eval "logname_opt=\"--logname $log_name\""
+            fi
+
+            if $rebuild; then
+              norebuild=""
+            else
+              norebuild="--norebuild"
+            fi
+
+            excludecheck_opt=""
+            for testsuite in $excludecheck; do
+              excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
+            done
+
+            ulimit -u 5000
+
+            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
+            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+
+            # Sometimes /dev/pts can't get unmounted on the first try.
+            # Workaround by retrying.
+            trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } }" 0
+
+            result="0"
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild -o '--tarbin' || result=$?
+
+            #Do not trigger a benchmark if jenkins.sh exits without error and
+            #without having built a toolchain (probably because --norebuild was
+            #set and the logs already existed).
+            #trigger-builds will only trigger if the properties file exists, so
+            #create the file conditionally
+            if test -e snapshots/gcc-linaro-*.tar.xz; then
+              #Cases for which we want to trigger a benchmark
+              if test "x${target}" = xarm-linux-gnueabihf ||
+                 test "x${target}" = xaarch64-linux-gnu; then
+                toolchain="`ls snapshots/gcc-linaro-*.tar.xz`"
+                sysroot="`ls snapshots/sysroot-*-linaro-*.tar.xz`"
+                cat > bench_parameters <<EOF
+            BENCHMARK=Coremark-Pro
+            TOOLCHAIN=${JENKINS_URL}/job/${JOB_NAME}/${BUILD_NUMBER}/artifact/${toolchain}
+            SYSROOT=${JENKINS_URL}/job/${JOB_NAME}/${BUILD_NUMBER}/artifact/${sysroot}
+            TARGET_CONFIG=Juno-A57
+            RUN_FLAGS=quickrun
+            Overrides=BUNDLE_STREAM=/anonymous/backbench/ TESTDEF_REVISION=bernie/trust-silent
+            LAVA_JOB_NAME=Backbench: ${target} Coremark-Pro on Juno-A57
+            EOF
+
+                #Archives end up on public internet, so deliver source/scripts
+                #alongside prebuilt binaries
+                git archive HEAD -o source.tar
+                tar rf source.tar --exclude-vcs --exclude=${toolchain} --exclude=${sysroot} snapshots
+                xz source.tar
+
+                cat > artifact_parameters << EOF
+            TOOLCHAIN=${toolchain}
+            SYSROOT=${sysroot}
+            EOF
+                #No need for a 'remove bench/artifact_params' case, as we wipe workspace
+              fi
+            fi
+            touch artifact_parameters #This file must exist, as it is used in
+                                      #an inject step, and inject won't fail
+                                      #good if there is no file
+
+            echo "Result of jenkins.sh: $result"
+            if $dont_fail; then
+              result="0"
+            fi
+            exit $result
+        - inject:
+            properties-file: 'artifact_parameters'
+
+        #If bench_parameters is missing, we don't set any parameters and
+        #therefore do not trigger. We _do_ trigger even when some configurations
+        #of the build have failed (unless no parameters are set).
+
+        #There is a race here - tcwg-benchmark may want to access the
+        #artifacts before the archive step (below) completes. In practice, this
+        #is very unlikely to ever cause a problem - the artifacts are accessed
+        #by a lava job triggered by tcwg-benchmark, and the lava target has to
+        #boot, so there is a lot of time for the archive step to run.
+        #Ideally, we would trigger _after_ archive, but this happens in the
+        #master of this matrix job, and the master does not have access to
+        #benchmark_parameters. We can copy benchmark_parameters up to the
+        #master, but then we have the problem of identifying all the benchmark_
+        #parameters for each child of the matrix, and triggering a build for
+        #each.
+        #The 'Use files in matrix child builds' option of trigger-parameterized-builds
+        #would likely solve this problem - but it is not exposed in jjb. Have
+        #raised https://storyboard.openstack.org/#!/story/2000444.
+        #If we really want to, I believe we could eliminate the race by using
+        #block-upstream in tcwg-benchmark. But this fixes a problem here in a
+        #different place, so I'm not keen.
+        #TODO: When we have a jjb that lets us eliminate the race, eliminate
+        #the race.
+        - trigger-builds:
+           - project: tcwg-benchmark
+             property-file: bench_parameters
+    publishers:
+        - archive:
+            artifacts: '${TOOLCHAIN},${SYSROOT},source.tar.xz'
+            only-if-success: true
+            fingerprint: true
+            allow-empty: true
