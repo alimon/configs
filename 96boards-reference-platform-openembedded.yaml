@@ -95,11 +95,11 @@
             # make sure we get rid of old config.
             # let's remove the previous TMPDIR as well.
             # we want to preserve build/buildhistory though.
-            rm -rf conf build/tmp-*glibc/
+            rm -rf conf build/conf build/tmp-*glibc/
 
             # Accept EULA if/when needed
             export EULA_dragonboard410c=1
-            source setup-environment
+            source setup-environment build
 
             # Add job BUILD_NUMBER to output files names
             cat << EOF >> conf/auto.conf
@@ -109,6 +109,9 @@
             DT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
             BOOT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
             EOF
+
+            # add useful debug info
+            cat conf/{site,auto}.conf
 
             bitbake ${IMAGES}
 
