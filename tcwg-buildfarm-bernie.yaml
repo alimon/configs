@@ -187,6 +187,16 @@
             ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild -o '--tarbin' || result=$?
             echo "Result of jenkins.sh: $result"
 
+            #Ensure that the properties file isn't lying around from some old
+            #build - stops us from kicking off the wrong build.
+            rm -f bench_parameters
+
+            #Ensure that artifact_parameters is empty - must exist to be used
+            #by inject step, but if it is empty we will not publish any
+            #artifacts.
+            rm -f artifact_parameters
+            touch artifact_parameters
+
             #trigger-builds will only trigger if the properties file exists, so
             #create the file conditionally
             if test ${result} -eq 0; then
@@ -225,12 +235,8 @@
                   echo "Multiple matches for toolchain and/or sysroot tarball, cannot dispatch benchmark" >&2
                   result=2
                 fi
-              #else... No need for a 'remove bench/artifact_params' case, as we wipe workspace
               fi
             fi
-            touch artifact_parameters #This file must exist, as it is used in
-                                      #an inject step, and inject won't fail
-                                      #good if there is no file
 
             if $dont_fail; then
               result="0"
