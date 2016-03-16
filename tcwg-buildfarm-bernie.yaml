@@ -208,8 +208,10 @@
                 #exist, there will be no error but also no artifacts.)
                 toolchain="`ls snapshots/gcc-linaro-*.tar.xz`"
                 sysroot="`ls snapshots/sysroot-*-linaro-*.tar.xz`"
-                if test `echo ${toolchain} | wc -l` -eq 1 &&
-                   test `echo ${sysroot}   | wc -l` -eq 1; then
+
+                #Repeat ls, because this way is robust to filenames with spaces
+                if test `ls snapshots/gcc-linaro-*.tar.xz | wc -l` -eq 1 &&
+                   test `ls snapshots/sysroot-*-linaro-*.tar.xz | wc -l` -eq 1; then
                   cat > bench_parameters <<EOF
               BENCHMARK=Coremark-Pro
               TOOLCHAIN=${JENKINS_URL}/job/${JOB_NAME}/${BUILD_NUMBER}/artifact/${toolchain}
@@ -232,8 +234,8 @@
             TOOLCHAIN=${toolchain}
             SYSROOT=${sysroot}
             EOF
-                elif test `echo ${toolchain} | wc -l` -ne 0 ||
-                     test `echo ${sysroot}   | wc -l` -ne 0; then
+                elif test `ls snapshots/gcc-linaro-*.tar.xz | wc -l` -ne 0 ||
+                     test `ls snapshots/sysroot-*-linaro-*.tar.xz | wc -l` -ne 0; then
                   echo "Multiple matches for toolchain and/or sysroot tarball, cannot dispatch benchmark" >&2
                   result=2
                 fi
