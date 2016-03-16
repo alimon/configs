@@ -105,48 +105,50 @@
           git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
           git clone --depth 1 https://git.linaro.org/ci/lci-build-tools
 
-          export TARGET_CONFIG='big:juno-a57 little:juno-a53'
-          for bitness in 64 32; do
-            export LAVA_JOB_NAME="Monthly release benchmark (AArch${bitness})"
+          for TARGET_CONFIG in big:juno-a57 little:juno-a53; do
+            export TARGET_CONFIG
+            for bitness in 64 32; do
+              export LAVA_JOB_NAME="Monthly release benchmark (AArch${bitness} on ${TARGET_CONFIG})"
 
-            #Run all of this in a subshell so that we enter each loop with
-            #environment in the same state.
-            (
-              indirect="PREBUILT_${bitness}"
-              export PREBUILT="${!indirect:-}"
-              indirect="TOOLCHAIN_${bitness}"
-              export TOOLCHAIN=${!indirect:-}
-              indirect="SYSROOT_${bitness}"
-              export SYSROOT="${!indirect:-}"
-              unset indirect
-              if test ${bitness} -eq 32; then
-                export TRIPLE=arm-linux-gnueabihf
-              else
-                export TRIPLE=aarch64-linux-gnu
-              fi
+              #Run all of this in a subshell so that we enter each loop with
+              #environment in the same state.
+              (
+                indirect="PREBUILT_${bitness}"
+                export PREBUILT="${!indirect:-}"
+                indirect="TOOLCHAIN_${bitness}"
+                export TOOLCHAIN=${!indirect:-}
+                indirect="SYSROOT_${bitness}"
+                export SYSROOT="${!indirect:-}"
+                unset indirect
+                if test ${bitness} -eq 32; then
+                  export TRIPLE=arm-linux-gnueabihf
+                else
+                  export TRIPLE=aarch64-linux-gnu
+                fi
 
-              #Generate YAML, which will be converted to JSON
-              yaml=`mktemp`
-              bash -x ./abe/scripts/Benchmark.sh > "${yaml}"
-              #Must be exported to be visible to yaml-to-json.py - env vars that
-              #happen to be job params are already exported, so don't need this
+                #Generate YAML, which will be converted to JSON
+                yaml=`mktemp`
+                bash -x ./abe/scripts/Benchmark.sh > "${yaml}"
+                #Must be exported to be visible to yaml-to-json.py - env vars that
+                #happen to be job params are already exported, so don't need this
 
-              #Parameters for post-build-lava
-              cat << EOF > post_build_lava_parameters_${bitness}
-              CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef_${bitness}.json
+                #Parameters for post-build-lava
+                cat << EOF > post_build_lava_parameters_${TARGET_CONFIG}_${bitness}
+                CUSTOM_JSON_URL=${BUILD_URL}/artifact/lava-jobdef_${TARGET_CONFIG}_${bitness}.json
 
-              #Server to dispatch to, as opposed to server where bundle stream is.
-              #post-build-lava takes responsibility for specifying a protocol.
-              LAVA_SERVER=${LAVA_SERVER}
+                #Server to dispatch to, as opposed to server where bundle stream is.
+                #post-build-lava takes responsibility for specifying a protocol.
+                LAVA_SERVER=${LAVA_SERVER}
 
-              #DEVICE_TYPE to placate pbl - we don't actually use it
-              DEVICE_TYPE=dummy-ssh
+                #DEVICE_TYPE to placate pbl - we don't actually use it
+                DEVICE_TYPE=dummy-ssh
           EOF
 
-              #Convert YAML to JSON
-              ./lci-build-tools/yaml-to-json.py "${yaml}" > "lava-jobdef_${bitness}.json"
-              rm "${yaml}"
-            )
+                #Convert YAML to JSON
+                ./lci-build-tools/yaml-to-json.py "${yaml}" > "lava-jobdef_${TARGET_CONFIG}_${bitness}.json"
+                rm "${yaml}"
+              )
+            done
           done
 
     publishers:
