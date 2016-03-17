@@ -76,27 +76,27 @@
             log_prefix="tcwg-extended-native-master"
 
             cat << EOF > buildfarm_parameters
-            override="$override gcc=gcc.git~$gcc_curr_rev"
-            log_name="${log_prefix}-${BUILD_NUMBER}/\$(uname -m).\$target"
-            host_x86_64_languages="$host_x86_64_languages"
-            host_aarchXX_languages="$host_aarchXX_languages"
-            log_server="$log_server"
-            targets="$targets"
-            abe_branch="$abe_branch"
-            runtests='yes'
-            try_bootstrap='yes'
-            rebuild='false'
-            dont_fail='true'
+            override=$override gcc=gcc.git~$gcc_curr_rev
+            log_name=${log_prefix}-${BUILD_NUMBER}/\$(uname -m).\$target
+            host_x86_64_languages=$host_x86_64_languages
+            host_aarchXX_languages=$host_aarchXX_languages
+            log_server=$log_server
+            targets=$targets
+            abe_branch=$abe_branch
+            runtests=yes
+            try_bootstrap=yes
+            rebuild=false
+            dont_fail=true
             EOF
 
             ref_build_number=$(wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/tcwg-bkk16-trigger-extended-native/lastSuccessfulBuild/buildNumber || true)
 
             if [ x"$ref_build_number" != x ] ; then
             cat << EOF > compare_results_parameters
-            ref_logs="${log_prefix}-$ref_build_number"
-            new_logs="${log_prefix}-$BUILD_NUMBER"
-            log_server="$log_server"
-            abe_branch="$abe_branch"
+            ref_logs=${log_prefix}-$ref_build_number
+            new_logs=${log_prefix}-$BUILD_NUMBER
+            log_server=$log_server
+            abe_branch=$abe_branch
             EOF
             fi
         - trigger-builds:
