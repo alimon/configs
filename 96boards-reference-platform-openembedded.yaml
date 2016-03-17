@@ -21,6 +21,9 @@
         - string:
             name: IMAGES
             default: 'core-image-minimal'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'jethro'
     disabled: false
     node: master
     display-name: '96boards - Reference Platform - OpenEmbedded'
@@ -72,7 +75,7 @@
 
             # initialize repo if not done already
             if [ ! -e ".repo/manifest.xml" ]; then
-               repo init -u https://github.com/96boards/oe-rpb-manifest.git -b oe-rpb-manifest
+               repo init -u https://github.com/96boards/oe-rpb-manifest.git -b ${MANIFEST_BRANCH}
 
                # link to shared downloads on persistent disk
                # our builds config is expecting downloads and sstate-cache, here.
