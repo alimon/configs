@@ -130,8 +130,9 @@
               --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
-
+        - shell: |
             # Construct post-build-lava parameters
+            # LAVA_JOB_URL
             if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
               source build-configs/${BUILD_CONFIG_FILENAME}
             else
@@ -141,6 +142,7 @@
             fi
 
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL}
             DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
             TARGET_PRODUCT=${TARGET_PRODUCT}
             MAKE_TARGETS=${MAKE_TARGETS}
@@ -148,23 +150,548 @@
             BUILD_NUMBER=${BUILD_NUMBER}
             BUILD_URL=${BUILD_URL}
             LAVA_SERVER=validation.linaro.org/RPC2/
-
             LAVA_STREAM=${BUNDLE_STREAM_NAME}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             FRONTEND_JOB_NAME=${JOB_NAME}
             EOF
-
-            grep \
-              -e ^LAVA_JOB_URL= \
-              build-configs/${BUILD_CONFIG_FILENAME} \
-                | sed -e 's:^LAVA_JOB_URL:CUSTOM_JSON_URL:g' \
-                >> ${WORKSPACE}/post_build_lava_parameters
-
-            echo "Build finished"
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_1
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_1}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_2
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_2}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_4
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_4}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_5
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_5}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_6
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_6}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_7
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_7}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_8
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_8}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_9
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_9}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_10
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_10}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_12
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_12}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_13
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_13}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_14
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_14}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_15
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_15}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_16
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_16}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_17
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_17}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_18
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_18}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_19
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_19}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_20
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_20}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # Construct post-build-lava parameters
+            # LAVA_JOB_URL_21
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=${LAVA_JOB_URL_21}
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            echo "Build finished"
     publishers:
         - archive:
             artifacts: '*.xml'
