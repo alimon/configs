@@ -88,7 +88,8 @@
             fi
 
             repo sync
-            repo manifest -r
+            cp .repo/manifest.xml source-manifest.xml
+            repo manifest -r -o pinned-manifest.xml
             MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
             # the setup-environment will create auto.conf and site.conf
@@ -110,6 +111,11 @@
             BOOT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
             EOF
 
+            # get build stats to make sure that we use sstate properly
+            cat << EOF >> conf/auto.conf
+            INHERIT += "buildstats buildstats-summary"
+            EOF
+
             # add useful debug info
             cat conf/{site,auto}.conf
 
@@ -118,6 +124,7 @@
             # Prepare files to publish
             rm -f ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE}/*.txt
             find ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE} -type l -delete
+            mv {source,pinned}-manifest.xml ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE}
 
             # Create MD5SUMS file
             (cd ${WORKSPACE}/build/tmp-*glibc/deploy/images/${MACHINE} && md5sum * > MD5SUMS.txt)
