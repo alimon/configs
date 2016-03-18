@@ -82,6 +82,14 @@
               <code>/home/foo/sysroots/sysroot_bar/</code><br/>
               <code>https://releases.linaro.org/components/toolchain/binaries/latest-5.1/aarch64-linux-gnu/sysroot-linaro-glibc-gcc5.1-2015.08-aarch64-linux-gnu.tar.xz</code><br/>
               <code>my.name@my.server:location_of_my_sysroot</code>
+        - string:
+            name: Overrides
+            description: |
+              Key=Value arguments, for expert users.<br/>
+              Separate with whitespace, for example <code>TIMEOUT=3600 HOST_DEVICE_TYPE=juno</code>.<br/>
+              For testing purposes only.<br/>
+              Note that this job is structured such that some variables cannot
+              be overridden.
     wrappers:
         - timeout:
             timeout: 120
@@ -92,14 +100,19 @@
           set -eux
           set -o pipefail
 
-          export LAVA_SERVER=192.168.16.2/RPC2/
-          export BUNDLE_SERVER=lava.tcwglab/RPC2/
-
           #TODO: If benchmarking ever merges back to mainline abe, set this to a suitable branch
           export TESTDEF_REVISION=benchmarking
           export BUNDLE_STREAM='/anonymous/monthly/'
 
           export BENCHMARK=CPU2006
+
+          for x in ${Overrides:-}; do
+            export "${x}"
+          done
+
+          #Force this _after_ overrides
+          export LAVA_SERVER=192.168.16.2/RPC2/
+          export BUNDLE_SERVER=lava.tcwglab/RPC2/
 
           git clone --depth 1 -b ${TESTDEF_REVISION} https://git.linaro.org/toolchain/abe
           git clone --depth 1 https://git.linaro.org/ci/lci-build-tools
@@ -108,6 +121,9 @@
             export TARGET_CONFIG
             for bitness in 64 32; do
               export LAVA_JOB_NAME="Monthly release benchmark (AArch${bitness} on ${TARGET_CONFIG})"
+              if test -n "${Overrides:+x}"; then
+                export LAVA_JOB_NAME="${LAVA_JOB_NAME}. With overrides: ${Overrides}."
+              fi
 
               #Run all of this in a subshell so that we enter each loop with
               #environment in the same state.
