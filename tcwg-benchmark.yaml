@@ -108,6 +108,17 @@
                 </dd>
               </dl>
         - string:
+            name: BUNDLE_STREAM
+            default: '/anonymous/benchmark/'
+            description: |
+              Stream to dispatch results bundles to.<br/>
+              If planning to run a series of related benchmarks, you might want
+              to direct them all to the same stream. This stream can be created
+              with lava-tool and managed in the LAVA web interface. It must
+              be accessible to the user 'benchmark'. If you're dispatching the
+              benchmark from here, it should be fine to make the stream
+              accessible to everyone.
+        - string:
             name: Overrides
             description: |
               Key=Value arguments, for expert users.<br/>
@@ -150,7 +161,6 @@
           #Defaults that user is unlikely to want to twiddle
           #TODO: If benchmarking ever merges back to mainline abe, set this to a suitable branch
           export TESTDEF_REVISION=benchmarking
-          export BUNDLE_STREAM='/anonymous/benchmark/'
 
           for x in ${Overrides:-}; do
             export "${x}"
