@@ -60,13 +60,6 @@
                 - arm64
                 - arm64be
         - axis:
-            type: user-defined
-            name: GIT_BRANCH
-            values:
-                - master
-                - next
-                - api-next
-        - axis:
             type: slave
             name: label
             values:
@@ -106,8 +99,8 @@
                 ;;
             esac
 
-            GIT_URL=file://${WORKSPACE}/odp
-            GIT_BRANCH=${GERRIT_PATCHSET_REVISION}
+            export GIT_URL=file://${WORKSPACE}/odp
+            export GIT_BRANCH=${GERRIT_PATCHSET_REVISION}
             set +e
             bash -x ${WORKSPACE}/check-odp/build.sh
             retcode=$?
