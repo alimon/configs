@@ -38,6 +38,10 @@
             name: abe_branch
             default: refs/remotes/origin/bkk16
             description: 'ABE revision to test'
+        - bool:
+            name: ref_build
+            default: false
+            description: 'Force a reference build (build only, no comparison performed)'
 
     disabled: false
     node: tcwg-x86_64-dev-01
@@ -91,7 +95,7 @@
 
             ref_build_number=$(wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/tcwg-bkk16-trigger-extended-native/lastSuccessfulBuild/buildNumber || true)
 
-            if [ x"$ref_build_number" != x ] ; then
+            if [ x"$ref_build_number" != x ] && ! $ref_build ; then
             cat << EOF > compare_results_parameters
             ref_logs=${log_prefix}-$ref_build_number
             new_logs=${log_prefix}-$BUILD_NUMBER
