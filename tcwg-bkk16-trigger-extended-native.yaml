@@ -91,6 +91,7 @@
             try_bootstrap=true
             rebuild=false
             dont_fail=true
+            run_benchmark=true
             EOF
 
             ref_build_number=$(wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/tcwg-bkk16-trigger-extended-native/lastSuccessfulBuild/buildNumber || true)
@@ -104,7 +105,7 @@
             EOF
             fi
         - trigger-builds:
-            - project: tcwg-bkk16-buildfarm
+            - project: tcwg-bkk16-buildfarm-benchmark
               property-file: buildfarm_parameters
               block: true
         - conditional-step:
