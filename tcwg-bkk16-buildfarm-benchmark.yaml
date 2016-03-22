@@ -126,6 +126,12 @@
             set -e
             set -x
 
+            #Ensure that artifact_parameters is empty - must exist to be used
+            #by inject step, but if it is empty we will not publish any
+            #artifacts. Must exist before first exit.
+            rm -f artifact_parameters
+            touch artifact_parameters
+
             case "$target--$(uname -m)" in
               native--aarch64|schroot-armhf-native--*) target_kind=native_armv8 ;;
               native--x86_64|schroot-i386-native--*) target_kind=native_x86 ;;
@@ -204,12 +210,6 @@
             #Ensure that the properties file isn't lying around from some old
             #build - stops us from kicking off the wrong build.
             rm -f bench_parameters
-
-            #Ensure that artifact_parameters is empty - must exist to be used
-            #by inject step, but if it is empty we will not publish any
-            #artifacts.
-            rm -f artifact_parameters
-            touch artifact_parameters
 
             #trigger-builds will only trigger if the properties file exists, so
             #create the file conditionally
