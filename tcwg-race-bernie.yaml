@@ -50,8 +50,9 @@
 
             rm -f artifact_parameters
             touch artifact_parameters
+            rm -rf bench_params
+            touch bench_params
             if test x"${target}" = xfake; then
-              touch params_fake
               exit 0
             fi
             #Do not trigger a benchmark if jenkins.sh exits without error and
@@ -61,7 +62,7 @@
             #create the file conditionally
                 toolchain="toolchain_${target}"
                 sysroot="sysroot_${target}"
-              cat > ${target}_params <<EOF
+              cat > bench_params <<EOF
             BENCHMARK=Coremark-Pro
             TOOLCHAIN=${JENKINS_URL}/job/${JOB_NAME}/${BUILD_NUMBER}/artifact/${toolchain}
             SYSROOT=${JENKINS_URL}/job/${JOB_NAME}/${BUILD_NUMBER}/artifact/${sysroot}
@@ -72,7 +73,6 @@
                 cat > artifact_parameters << EOF
             TOOLCHAIN=${toolchain}
             SYSROOT=${sysroot}
-            PARAMS_FILE=params_${target}
             EOF
         - inject:
             properties-file: 'artifact_parameters'
@@ -87,7 +87,7 @@
       #    predefined-parameters: ${BENCHMARK_PARAMS}
       - copy-to-master:
           includes:
-            - ${PARAMS_FILE}
+            - bench_params
       - trigger-parameterized-builds:
         - project: tcwg-benchmark
-          property-file: ${PARAMS_FILE}
+        property-file: label/tcwg-x86-64-ex40/target/${target}/bench_params
