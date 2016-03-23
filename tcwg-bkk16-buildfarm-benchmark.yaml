@@ -84,6 +84,8 @@
             wipe-workspace: false
             clean:
                 before: true
+    #Any changes in these axes may need to be reflected in the build triggers
+    #under publishers, at end of file.
     axes:
         - axis:
             type: slave
@@ -131,6 +133,11 @@
             #artifacts. Must exist before first exit.
             rm -f artifact_parameters
             touch artifact_parameters
+
+            #Ensure that the properties file isn't lying around from some old
+            #build - stops us from kicking off the wrong benchmark.
+            rm -f bench_parameters
+            touch bench_parameters
 
             case "$target--$(uname -m)" in
               native--aarch64|schroot-armhf-native--*) target_kind=native_armv8 ;;
@@ -207,14 +214,10 @@
 
             echo "Result of jenkins.sh: $result"
 
-            #Ensure that the properties file isn't lying around from some old
-            #build - stops us from kicking off the wrong build.
-            rm -f bench_parameters
-
-            #trigger-builds will only trigger if the properties file exists, so
-            #create the file conditionally
             if test ${result} -eq 0; then
               #Cases for which we want to trigger a benchmark
+              #Any changes in this list may need mirroring in the parameterized
+              #builds triggers at end of file.
               if test "x${target}" = xarm-linux-gnueabihf ||
                  test "x${target}" = xaarch64-linux-gnu ||
                  test "x${target}" = xarmv8l-linux-gnueabihf; then
@@ -263,43 +266,31 @@
             exit $result
         - inject: #Create env vars used by achive step, below.
             properties-file: 'artifact_parameters'
-
-        #If bench_parameters is missing, we don't set any parameters and
-        #therefore do not trigger. We _do_ trigger even when some configurations
-        #of the build have failed (unless no parameters are set).
-
-        #There is a race here - tcwg-benchmark may want to access the
-        #artifacts before the archive step (below) completes. We should trigger
-        #after the archive step, but the archive happens in the master of the
-        #matrix job, and master cannot see the benchmark_parameters we
-        #generated above.
-        #
-        #The 'Use files in matrix child builds' option of trigger-parameterized-builds
-        #would likely solve this problem - but it is not exposed in jjb. Have
-        #raised https://storyboard.openstack.org/#!/story/2000444.
-        #
-        #If we really want to, I believe we could eliminate the race by using
-        #block-upstream in tcwg-benchmark. But this fixes a problem here in a
-        #different place, so I'm not keen.
-        #
-        #In practice, this is very unlikely to ever cause a problem - the
-        #artifacts are accessed by a lava job, and the lava target has to
-        #boot at least once before it tries to get the archive. So there is a
-        #lot of time for the archive step to run.
-        #
-        #TODO: When we have a jjb that lets us eliminate the race, eliminate
-        #the race.
-        - trigger-builds:
-           - project: tcwg-benchmark
-             property-file: bench_parameters
-             block: true #Not needed for correctness, but does allow Jenkins
-                         #to produce a link to the build(s) of tcwg-benchmark
     publishers:
         - archive:
             artifacts: '${TOOLCHAIN},${SYSROOT},source.tar.xz'
             only-if-success: true
             fingerprint: true
             allow-empty: true
+        #Because JJB does not expose 'Use files in matrix child builds', we have
+        #to copy the files to master and trigger from the copies. (We make sure
+        #to initialize the files to empty so that we don't retrigger an old
+        #benchmark by mistake.)
+        #TODO: When we upgrade to a JJB that includes a fix for https://storyboard.openstack.org/#!/story/2000444
+        #we can simplify all this, and also stop hard-coding paths that Jenkins
+        #should be deriving from the matrix. And we should then delete the comments
+        #that this commit has inserted next to axes and the list of benchmarkable
+        #targets in the shell, as they will be misleading.
+        - copy-to-master:
+            includes:
+              - bench_parameters
+        - trigger-parameterized-builds:
+          - project: tcwg-benchmark
+            property-file: label/tcwg-x86_64-cam/target/aarch64-linux-gnu/bench_parameters
+          - project: tcwg-benchmark
+            property-file: label/tcwg-x86_64-cam/target/armv8l-linux-gnueabihf/bench_parameters
+          - project: tcwg-benchmark
+            property-file: label/tcwg-x86_64-cam/target/arm-linux-gnueabihf/bench_parameters
         - workspace-cleanup:
             include:
               - "**/.git"
