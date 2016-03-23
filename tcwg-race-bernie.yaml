@@ -1,0 +1,93 @@
+- job:
+    name: 'tcwg-race-bernie'
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 60
+        artifactDaysToKeep: 2
+        artifactNumToKeep: 40
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: tcwg-x86_64-ex40
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG ZZZ Race Bernie'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-ex40
+        - axis:
+            type: user-defined
+            name: target
+            values:
+                - aarch64-linux-gnu
+                - arm-linux-gnueabihf
+                - fake
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="gcc_branch"}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+            set -x
+
+            rm -f artifact_parameters
+            touch artifact_parameters
+            if test x"${target}" = xfake; then
+              touch params_fake
+              exit 0
+            fi
+            #Do not trigger a benchmark if jenkins.sh exits without error and
+            #without having built a toolchain (probably because --norebuild was
+            #set and the logs already existed).
+            #trigger-builds will only trigger if the properties file exists, so
+            #create the file conditionally
+                toolchain="toolchain_${target}"
+                sysroot="sysroot_${target}"
+              cat > ${target}_params <<EOF
+            BENCHMARK=Coremark-Pro
+            TOOLCHAIN=${JENKINS_URL}/job/${JOB_NAME}/${BUILD_NUMBER}/artifact/${toolchain}
+            SYSROOT=${JENKINS_URL}/job/${JOB_NAME}/${BUILD_NUMBER}/artifact/${sysroot}
+            TARGET_CONFIG=Juno-A57
+            RUN_FLAGS=quickrun
+            Overrides=BUNDLE_STREAM=/anonymous/backbench/
+            LAVA_JOB_NAME=Backbench: ${target} Coremark-Pro on Juno-A57"
+                cat > artifact_parameters << EOF
+            TOOLCHAIN=${toolchain}
+            SYSROOT=${sysroot}
+            PARAMS_FILE=params_${target}
+            EOF
+        - inject:
+            properties-file: 'artifact_parameters'
+    publishers:
+      - archive:
+          artifacts: '${TOOLCHAIN},${SYSROOT},source.tar.xz'
+          only-if-success: true
+          fingerprint: true
+          allow-empty: true
+      #- trigger-parameterized-builds:
+      #  - project: tcwg-benchmark
+      #    predefined-parameters: ${BENCHMARK_PARAMS}
+      - copy-to-master:
+          includes:
+            - ${PARAMS_FILE}
+      - trigger-parameterized-builds:
+        - project: tcwg-benchmark
+          property-file: ${PARAMS_FILE}
