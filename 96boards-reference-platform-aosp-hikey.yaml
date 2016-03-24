@@ -110,7 +110,7 @@
 
             # Create smaller userdata partition for 4gb emmc
             cd build/
-            out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/root/file_contexts -L data -l 5588893184 -a data out/userdata-8gb.img out/data
+            out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/root/file_contexts -L data -l 1342177280 -a data out/userdata-4gb.img out/data
             cd -
 
             # Publish
@@ -118,7 +118,7 @@
 
             cd build/out
             rm -f boot.img ramdisk.img
-            for image in "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-8gb.img" "cache.img"; do
+            for image in "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
               echo "Compressing ${image}"
               tar -Jcf ${image}.tar.xz ${image}
               rm -f ${image}
