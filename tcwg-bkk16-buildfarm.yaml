@@ -60,8 +60,8 @@
             description: 'Log_Server'
         - string:
             name: targets
-            default: 'cross_main cross_aux native_x86 native_armv8'
-            description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
+            default: 'cross_main cross_aux native_x86 native_aarch64 native_aarch32'
+            description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_aarch64 native_aarch32'
         - string:
             name: abe_branch
             default: refs/remotes/origin/bkk16
@@ -125,7 +125,8 @@
             set -x
 
             case "$target--$(uname -m)" in
-              native--aarch64|schroot-armhf-native--*) target_kind=native_armv8 ;;
+              native--aarch64) target_kind=native_aarch64 ;;
+              schroot-armhf-native--*) target_kind=native_aarch32 ;;
               native--x86_64|schroot-i386-native--*) target_kind=native_x86 ;;
               armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
               *-linux-gnu*--*) target_kind=cross_main ;;
