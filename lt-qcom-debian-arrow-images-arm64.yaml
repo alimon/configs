@@ -98,8 +98,6 @@
               http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/m/multipath-tools/kpartx_0.5.0-7ubuntu7.1_amd64.deb
             sudo dpkg -i --force-all *.deb
             rm -f *.deb
-            # Backports workaround
-            sudo wget http://people.linaro.org/~ricardo.salveti/packages.py -O /usr/lib/python2.7/dist-packages/linaro_image_tools/hwpack/packages.py
 
             # get the boot image tools, and keep track of commit info in the traces
             git clone git://codeaurora.org/quic/kernel/skales
@@ -209,7 +207,7 @@
 
               rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz`
               VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-              linaro-hwpack-create --debug ${VENDOR}-lt-qcom ${VERSION}
+              linaro-hwpack-create --debug --backports ${VENDOR}-lt-qcom ${VERSION}
               linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
               linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
 
