@@ -235,12 +235,6 @@
                 cd ${WORKSPACE}/${BUILD_NUMBER}/SeattleFDK
                 Linaro/make-rom.sh ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${IMAGES} >/dev/null
                 cp Linaro/Styx.bin ${WORKSPACE}/out/${BUILD_TYPE}
-            elif [ "${MX_PLATFORM}" == "d02" ]; then
-                # Still produce a version that is only SATA compatible
-                sed -i "s/include (\"Sas.asl\")/include (\"Sata.asl\")/g" ${WORKSPACE}/${BUILD_NUMBER}/OpenPlatformPkg/Chips/Hisilicon/Pv660/Pv660AcpiTables/Dsdt/Dsdt.asl
-                cd ${EDK2_DIR}
-                bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a $ATF_DIR ${MX_PLATFORM}
-                cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${IMAGES} ${WORKSPACE}/out/${BUILD_TYPE}/${IMAGES%.*}-SATA.fd
             fi
             cd ${WORKSPACE}
 
