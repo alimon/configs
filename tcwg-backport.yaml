@@ -34,6 +34,10 @@
             name: abe_branch
             default: refs/remotes/origin/stable
             description: 'ABE revision to use'
+        - bool:
+            name: rebuild
+            default: false
+            description: 'Rebuild the toolchain even if results are already on logserver'
     disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: true
@@ -91,7 +95,7 @@
 
             echo "gcc_branch=gcc.git@$gcc_orig_rev" > gcc_orig_parameters
             echo "log_name=tcwg-backport-$gcc_orig_rev/\$(uname -m).\$target" >> gcc_orig_parameters
-            echo "rebuild=false" >> gcc_orig_parameters
+            echo "rebuild=${rebuild}" >> gcc_orig_parameters
             echo "dont_fail=true" >> gcc_orig_parameters
             echo "log_server=$log_server" >> gcc_orig_parameters
             echo "targets=$targets" >> gcc_orig_parameters
@@ -99,7 +103,7 @@
 
             echo "gcc_branch=gcc.git@$gcc_patch_rev" > gcc_patch_parameters
             echo "log_name=tcwg-backport-$gcc_patch_rev/\$(uname -m).\$target" >> gcc_patch_parameters
-            echo "rebuild=false" >> gcc_patch_parameters
+            echo "rebuild=${rebuild}" >> gcc_patch_parameters
             echo "dont_fail=true" >> gcc_patch_parameters
             echo "log_server=$log_server" >> gcc_patch_parameters
             echo "targets=$targets" >> gcc_patch_parameters
