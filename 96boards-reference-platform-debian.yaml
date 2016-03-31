@@ -69,8 +69,6 @@
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.02-1.linarojessie.1_all.deb \
               http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/m/multipath-tools/kpartx_0.5.0-7ubuntu7.1_amd64.deb
             sudo dpkg -i --force-all *.deb
-            # Backports workaround
-            sudo wget http://people.linaro.org/~ricardo.salveti/packages.py -O /usr/lib/python2.7/dist-packages/linaro_image_tools/hwpack/packages.py
             rm -f *.deb
 
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
@@ -78,7 +76,7 @@
             # Create the hardware pack
             cp -a configs/96boards-reference-platform-debian/hwpacks/linaro-${BOARD} .
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-            linaro-hwpack-create --debug linaro-${BOARD} ${VERSION}
+            linaro-hwpack-create --debug --backports linaro-${BOARD} ${VERSION}
 
             # Get rootfs
             export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=alip/lastSuccessfulBuild/buildNumber`
