@@ -38,6 +38,10 @@
             name: excludecheck
             default: 'binutils gdb'
             description: 'Do not run "make check" on these components'
+        - string:
+            name: extraconfig
+            default: ''
+            description: 'Extra configuration files, syntax tool=path'
         - bool:
             name: rebuild
             default: true
@@ -178,6 +182,27 @@
               excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
             done
 
+            # If there were extraconfig options, extract the
+            # corresponding repo
+            if test -n "$extraconfig" ; then
+              git clone http://git.linaro.org/people/christophe.lyon/abe-extraconfigs.git
+            fi
+
+            extraconfig_opt=""
+            for config in $extraconfig; do
+              case ${extraconfig} in
+                *=*)
+                  tool=${extraconfig%=*}
+                  value=${extraconfig#*=}
+                  ;;
+                *)
+                  echo ERROR: wrong extraconfig: $extraconfig
+                  exit 1
+                  ;;
+              esac
+              extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
+            done
+
             ulimit -u 5000
 
             session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
@@ -189,7 +214,7 @@
             trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } }" 0
 
             result="0"
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result=$?
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result=$?
 
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
