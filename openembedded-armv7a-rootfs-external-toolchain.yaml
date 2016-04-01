@@ -57,11 +57,29 @@
 
             set -ex
 
+            case "$(echo ${toolchain_url} | sed -e 's|^.*x86_64_||')" in
+              armeb*)
+                arch=armv7ab
+                ;;
+              arm*)
+                arch=armv7a
+                ;;
+              aarch64_be*)
+                arch=armv8b
+                ;;
+              aarch64*)
+                arch=armv8
+                ;;
+              *)
+                arch=x86
+                ;;
+            esac
+
             # we clean build and populate it from cache
             bash -x pre-build-do-cleanup.sh
 
             # do a build
-            bash -x init-and-build.sh -a armv7a -u ${toolchain_url} linaro-image-${rootfs}
+            bash -x init-and-build.sh -a ${arch} -u ${toolchain_url} linaro-image-${rootfs}
 
             cd ${WORKSPACE}
 
@@ -79,7 +97,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
-              out/ openembedded/images/${rootfs}-armv7a-external-toolchain/${BUILD_NUMBER}
+              out/ openembedded/images/${rootfs}-${arch}-external-toolchain/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org'
