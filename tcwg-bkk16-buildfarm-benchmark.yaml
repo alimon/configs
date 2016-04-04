@@ -69,7 +69,10 @@
             default: false
             description: 'Whether to run a benchmark for benchmarkable targets.'
     disabled: false
-    node: tcwg-x86_64-cam
+    #Change to node would break the use of copy-to-master at end of file.
+    #What we are really doing there is copy-to-matrix-parent, and that only
+    #works if matrix parent == jenkins master node.
+    node: master
     #Change to child workspace may need to be reflected in the build triggers
     #under publishers, at end of file.
     child-workspace: $target
@@ -282,7 +285,9 @@
         #we can simplify all this, and also stop hard-coding paths that Jenkins
         #should be deriving from the matrix. And we should then delete the comments
         #that this commit has inserted next to axes and the list of benchmarkable
-        #targets in the shell, as they will be misleading.
+        #targets in the shell, as they will be misleading. And we can switch
+        #the 'node' parameter back from 'master' to 'tcwg-x86_64-cam' and delete
+        #the comment above 'node', too.
         - copy-to-master:
             includes:
               - bench_parameters
