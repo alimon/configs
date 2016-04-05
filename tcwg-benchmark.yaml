@@ -51,6 +51,11 @@
               - (Native)
               - arm-linux-gnueabihf
               - aarch64-linux-gnu
+              - armv8l-linux-gnueabihf
+              - arm-linux-gnueabi
+              - armeb-linux-gnueabihf
+              - aarch64-none-elf
+              - aarch64_be-none-elf
             description: |
               A triple describing the target (and its execution state).
         - string:
@@ -144,7 +149,10 @@
               exit 1
             fi
             TRIPLE=
-            for y in aarch64-linux-gnu arm-linux-gnueabihf; do
+            for y in aarch64-linux-gnu arm-linux-gnueabihf \
+                     armv8l-linux-gnueabihf arm-linux-gnueabi \
+                     armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf
+            do
               if echo "${TOOLCHAIN}" | grep -q "${y}"; then
               if test -z "${TRIPLE:-}"; then
                   TRIPLE="${y}"
