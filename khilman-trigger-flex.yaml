@@ -263,6 +263,8 @@
               DEFCONFIG_LIST+="versatile_defconfig+CONFIG_OF_UNITTEST=y "
               DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_THUMB2_KERNEL=y "
               DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_SMP=n "
+              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_EFI=y "
+              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_EFI=y+CONFIG_ARM_LPAE=y "
 
               # Platform specific
               if [ -e arch/${ARCH}/configs/mvebu_v7_defconfig ]; then
@@ -298,12 +300,6 @@
             if [ ${tree_name} = "stable" ]; then
               # Don't do allmodconfig builds
               DEFCONFIG_LIST=${DEFCONFIG_LIST/allmodconfig/}
-            fi
-
-            # Tree specific fragments: Ard's EFI 
-            if [ ${tree_name} = "ardb" ] && [ ${ARCH} = "arm" ]; then
-              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_EFI=y "
-              DEFCONFIG_LIST+="multi_v7_defconfig+CONFIG_EFI=y+CONFIG_ARM_LPAE=y "
             fi
 
             # Security testing features
