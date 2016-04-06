@@ -1,0 +1,21 @@
+- job:
+    name: trigger-96boards-reference-platform-openembedded
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: true
+    node: build
+    display-name: 'Trigger for 96boards OE RPB'
+    triggers:
+        - timed: '@weekly'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: '96boards-reference-platform-openembedded'

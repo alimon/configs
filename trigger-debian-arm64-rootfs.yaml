@@ -1,0 +1,21 @@
+- job:
+    name: trigger-debian-arm64-rootfs
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: true
+    node: build
+    display-name: 'Trigger for Debian arm64 rootfs'
+    triggers:
+        - timed: '@weekly'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'debian-arm64-rootfs'
