@@ -51,7 +51,10 @@
             set -exu
 
             ## Extract jdk
-            tar xf incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            ls -lRa incoming
+            jdktarball=$(find incoming/ -name jdk9-*.tar.gz)
+            tar tvf ${jdktarball}
+            tar xf incoming/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
             export JAVA_HOME=${WORKSPACE}/jdk9-${JVM_VARIANT}-${BUILD_TYPE}
             export PATH=$JAVA_HOME/bin:$PATH
             which java
