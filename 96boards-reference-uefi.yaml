@@ -149,10 +149,12 @@
 
             # Per board repositories overrides
             if [ "${MX_PLATFORM}" == "hikey" ]; then
-                EDK2_GIT_URL=https://github.com/96boards/edk2.git
-                EDK2_GIT_VERSION=7da6cdf18127ee52e79f3cf990c8d630fd037784
-                ATF_GIT_URL=https://github.com/96boards/arm-trusted-firmware.git
-                ATF_GIT_VERSION=7fb9b0e1bf90d167ba451fa3d1485ad07ca5c1da
+                EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
+                EDK2_GIT_VERSION=29fcbd986a7b3fc0fe4aedc1e3d164a1adf0eb4a
+                ATF_GIT_URL=https://github.com/96boards-hikey/arm-trusted-firmware.git
+                ATF_GIT_VERSION=873e19dde34efec93a1dd4c6de060ccde57418a0
+                OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
+                OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
             elif [ "${MX_PLATFORM}" == "styx" ]; then
                 EDK2_GIT_URL=ssh://dev-private-git.linaro.org/96boards/edk2.git
                 EDK2_GIT_VERSION=HEAD
@@ -172,7 +174,7 @@
             git clone $EDK2_GIT_URL edk2
             cd edk2; git checkout -b stable-baseline $EDK2_GIT_VERSION; cd ..
             git clone -b $OPEN_PLATFORM_PKG_GIT_BRANCH $OPEN_PLATFORM_PKG_GIT_URL OpenPlatformPkg
-            cd edk2; ln -s ../OpenPlatformPkg; cd ..
+            cd edk2; rm -rf OpenPlatformPkg; ln -s ../OpenPlatformPkg; cd ..
             cd OpenPlatformPkg; OPEN_PLATFORM_PKG_GIT_VERSION=`git log --format="%H" -1`; cd ..
 
             git clone $ATF_GIT_URL arm-trusted-firmware
@@ -186,14 +188,7 @@
             export JENKINS_WORKSPACE=${WORKSPACE}
 
             # Board specific setup
-            if [ "${MX_PLATFORM}" == "hikey" ]; then
-                # Force previous EDK2 + ATF only build, since uefi-tools is now building with OPP
-                cd uefi-tools
-                # Commit before it was changed to OPP
-                UEFI_TOOLS_GIT_VERSION=3831996c5d39d602c3a647ad94cc18d5ee965499
-                git reset --hard $UEFI_TOOLS_GIT_VERSION
-                cd -
-            elif [ "${MX_PLATFORM}" == "styx" ]; then
+            if [ "${MX_PLATFORM}" == "styx" ]; then
                 git clone -b FDK84 --depth 1 ssh://dev-private-git.linaro.org/96boards/SeattleFDK.git
                 cd $EDK2_DIR; ln -s ../SeattleFDK/AmdModulePkg; cd ..
             fi
@@ -223,7 +218,7 @@
                 # Additional components for hikey, such as fastboot and l-loader
                 cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
                 cd ${WORKSPACE}/${BUILD_NUMBER}
-                git clone --depth 1 https://github.com/96boards/l-loader.git
+                git clone --depth 1 https://github.com/96boards-hikey/l-loader.git
                 cd l-loader
                 ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
                 make
