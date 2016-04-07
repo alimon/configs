@@ -141,9 +141,8 @@
               echo "in android-build-configs.git"
               exit 1
             fi
-
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-            CUSTOM_JSON_URL=${LAVA_JOB_URL}
+            CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/lcr-member-juno-m/template.json
             DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
             TARGET_PRODUCT=${TARGET_PRODUCT}
             MAKE_TARGETS=${MAKE_TARGETS}
@@ -160,323 +159,115 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_1
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_1}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cts-focused1.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_2
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_2}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cts-focused2.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_3
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_3}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-antutu2.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_4
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_4}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-antutu3.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_5
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_5}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-antutu5.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_6
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_6}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-benchmarkpi.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_7
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_7}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cf-bench.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_8
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_8}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-gearses2eclair.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_9
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_9}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-geekbench3.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_10
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_10}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-javawhetstone.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_12
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_12}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-jbench.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_13
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_13}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-linpack.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_14
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_14}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-quadrantpro.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_15
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_15}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-scimark.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_16
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_16}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-sqlite.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_17
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_17}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-vellamo3.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_18
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_18}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-applications.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_19
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_19}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-caffeinemark.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_20
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_20}/g" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            cd /home/buildslave/srv/${JOB_NAME}
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-            # Construct post-build-lava parameters
-            # LAVA_JOB_URL_21
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=${LAVA_JOB_URL_21}/g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-antutu6.0.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
