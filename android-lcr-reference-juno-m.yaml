@@ -131,6 +131,15 @@
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
 
+            # Construct post-build-lava parameters
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
             CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/lcr-member-juno-m/template.json
             DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
