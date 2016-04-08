@@ -40,11 +40,13 @@
         - matrix-tie-parent:
             node: aarch64-06
     builders:
-        - copyartifact:
-            project: jdk9-build-image
-            filter: 'out/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
-            target: incoming
-            flatten: true
+# copyartifact is slow and the file is local
+# copy instead of going back and forth between master <-> slave
+#        - copyartifact:
+#            project: jdk9-build-image
+#            filter: 'out/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
+#            target: incoming
+#            flatten: true
         - copyartifact:
             project: openjdk8-hadoop-LCA14
             filter: 'out/openjdk8-hadoop-LCA14.tar.gz'
@@ -59,7 +61,7 @@
 
             ## Extract jdk
             rm -rf jdk9*
-            tar xf incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=aarch64-06/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            tar xf ~/workspace/jdk9-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${JVM_VARIANT}/label/${NODE_NAME}/out/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
 
             export JAVA_HOME=${WORKSPACE}/jdk9-${JVM_VARIANT}-${BUILD_TYPE}
             export PATH=${JAVA_HOME}/bin:$PATH
@@ -70,7 +72,8 @@
 
             ## Benchmark
             # FIXME
-            (cd incoming; wget --progress=dot -e dotbytes=10M http://openjdk-apm1/openjdk8-build-artefacts/${NGIGABYTES}GB.tar.gz; tar xf ${NGIGABYTES}GB.tar.gz)
+            #(cd incoming; wget --progress=dot -e dotbytes=10M http://openjdk-apm1/openjdk8-build-artefacts/${NGIGABYTES}GB.tar.gz; tar xf ${NGIGABYTES}GB.tar.gz)
+            (cd incoming; tar xf ~/srv/hadoop-terasort-reference-files/${NGIGABYTES}GB.tar.gz)
 
             TERAGEN_BASELINE_DIR=${WORKSPACE}/incoming
             HADOOP_DIR=${WORKSPACE}/openjdk8-hadoop-LCA14
