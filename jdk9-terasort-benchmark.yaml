@@ -83,6 +83,7 @@
 
             sed -i '/^export JAVA_HOME=/d' ${HADOOP_DIR}/conf/hadoop-env.sh
             echo "export JAVA_HOME=$JAVA_HOME" >> ${HADOOP_DIR}/conf/hadoop-env.sh
+            sed -i 's|/work/${user.name}/hadoop-tmp|${user.home}/hadoop/tmp|' ${HADOOP_DIR}/conf/core-site.xml
 
             source ${HADOOP_DIR}/env.sh
 
@@ -94,7 +95,8 @@
             stop-dfs.sh
             stop-yarn.sh
 
-            rm -rf ${HOME}/hadoop-tmp
+            rm -rf ${HOME}/hadoop
+            mkdir -p ${HOME}/hadoop/tmp
             hdfs namenode -format -force
             start-dfs.sh
             start-yarn.sh
