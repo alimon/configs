@@ -58,11 +58,13 @@
             filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
             target: incoming
             flatten: true
-        - copyartifact:
-            project: jdk9-build-image
-            filter: 'out/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
-            target: incoming
-            flatten: true
+# copyartifact is slow and the file is local
+# copy instead of going back and forth between master <-> slave
+#        - copyartifact:
+#            project: jdk9-build-image
+#            filter: 'out/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
+#            target: incoming
+#            flatten: true
         - copyartifact:
             project: jdk9-update-src-tree
             filter: 'out/jdk9.tar.gz, out/build-date.sh'
@@ -99,7 +101,7 @@
             : ${JTREG_SUBCATEGORIES:=.}
 
             tar xf incoming/jdk9.tar.gz
-            tar xf incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=aarch64-06/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            tar xf ~/workspace/jdk9-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${JVM_VARIANT}/label/${NODE_NAME}/out/jdk9-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
             tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
 
             # All the output directories and general frobbing
