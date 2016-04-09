@@ -12,7 +12,14 @@
             anonymous:
                 - job-read
                 - job-extended-read
-    disabled: true
+    parameters:
+        - string:
+            name: JDK_URL
+            default: 'http://openjdk.linaro.org/releases/jdk8-server-release-1603.tar.xz'
+        - string:
+            name: MAVEN_URL
+            default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz'
+    disabled: false
     node: aarch64-06
     display-name: 'OpenJDK - Build jcstress jar'
     scm:
@@ -26,25 +33,39 @@
     wrappers:
         - timestamps
     builders:
-        - copyartifact:
-            project: jdk8-build-image
-            filter: 'out/**/*'
-            target: incoming
-            flatten: true
         - shell: |
             #!/bin/bash
 
             set -exu
 
-            rm -rf jdk8*
-            tar xf incoming/BUILD_TYPE=release,JVM_VARIANT=server/jdk8-server-release.tar.gz
+            rm -rf jdk* apache-maven-*
 
-            # This will only build with a very recent version of openjdk8-server.
-            # /usr/bin/java (jdk7) does not work.
-            export JAVA_HOME=${WORKSPACE}/jdk8-server-release
-            export PATH=${JAVA_HOME}/bin:${PATH}
+            wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL}
+            tar -Jxf jdk*.tar.xz
+            tar -zxf apache-maven-*.tar.gz
+
+            cd jdk*/jre/lib/security/
+            rm -f cacerts
+            ln -s /etc/ssl/certs/java/cacerts
+
+            cd ${WORKSPACE}/jdk*
+            export JAVA_HOME=${PWD}
+
+            cd ${WORKSPACE}/apache-maven-*
+            export M3_HOME=${PWD}
+
+            # JDK 8 is needed to compile all the tests (tests-all)
+            # FIXME - linaro jdk8 returns errors on
+            # Contended is internal proprietary API and may be removed in a future release
+            # use distro jdk8 as it returns warnings instead
+            #export PATH=${JAVA_HOME}/bin:${M3_HOME}/bin:${PATH}
+            unset JAVA_HOME
+            export PATH=${M3_HOME}/bin:${PATH}
             which java
             java -version
+            mvn -version
+
+            cd ${WORKSPACE}
             mvn clean install -pl tests-all,tests-custom -am
     publishers:
         - archive:
