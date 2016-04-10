@@ -70,7 +70,10 @@
             mvn --errors -DskipTests clean package
 
             rm -f ${WORKSPACE}/spark-*.jar
-            find . -type f -name "spark-*-SNAPSHOT*.jar" -exec mv -t ${WORKSPACE} {} +
+            # FIXME - ignore errors -> mv: will not overwrite just-created
+            set +e
+            find . -type f -name "spark-*-SNAPSHOT*.jar" -exec mv -v -t ${WORKSPACE} {} +
+            set -e
     publishers:
         - archive:
             artifacts: 'spark-*-SNAPSHOT*.jar'
