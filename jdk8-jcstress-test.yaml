@@ -28,9 +28,12 @@
             name: BUILD_TYPE
             values:
                 - release
+        - axis:
+            type: slave
+            name: label
+            values:
+                - aarch64-06
     execution-strategy:
-#        combination-filter: |
-#            JVM_VARIANT=="server"
         sequential: true
     wrappers:
         - workspace-cleanup:
@@ -45,12 +48,14 @@
             project: jcstress-build
             filter: 'tests-custom/target/jcstress.jar, tests-all/target/jcstress.jar'
             target: incoming
-            flatten: true
-        - copyartifact:
-            project: jdk8-build-image
-            filter: 'out/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
-            target: incoming
-            flatten: true
+            flatten: false
+# copyartifact is slow and the file is local
+# copy instead of going back and forth between master <-> slave
+#        - copyartifact:
+#            project: jdk8-build-image
+#            filter: 'out/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
+#            target: incoming
+#            flatten: true
         - shell: |
             #!/bin/bash
 
@@ -61,7 +66,7 @@
 
             JCSTRESS_JAR=${WORKSPACE}/incoming/tests-${TEST_TYPE}/target/jcstress.jar
             rm -rf jdk8*
-            tar xf incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            tar xf ~/workspace/jdk8-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${JVM_VARIANT}/label/${NODE_NAME}/out/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
             export JAVA_HOME=${WORKSPACE}/jdk8-${JVM_VARIANT}-${BUILD_TYPE}
             export PATH=${JAVA_HOME}/bin:${PATH}
             which java
