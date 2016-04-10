@@ -30,9 +30,14 @@
               - name: jdk9-build-image
                 current-parameters: true
                 kill-phase-on: FAILURE
+# FIXME - set SPECjbb2013 benchmark continuation condition from SUCCESSFUL to ALWAYS
+# Exception in thread "main" java.util.ServiceConfigurationError:
+# org.spec.jbb.core.comm.connectivity.ConnectivityProvider:
+# Provider org.spec.jbb.core.comm.connectivity.GrizzlyNioProvider could not be instantiated
+# Caused by: java.lang.IllegalStateException: java.lang.RuntimeException: java.lang.NullPointerException
         - multijob:
             name: 'SPECjbb2013 benchmark'
-            condition: SUCCESSFUL
+            condition: ALWAYS
             projects:
               - name: jdk9-specjbb2013-benchmark
                 current-parameters: true
