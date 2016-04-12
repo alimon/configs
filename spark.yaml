@@ -2,15 +2,15 @@
     name: spark
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
-        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            daysToKeep: 30
+            numToKeep: 30
+            artifactNumToKeep: 1
     parameters:
         - string:
             name: JDK_URL
@@ -70,24 +70,22 @@
             mvn --errors -DskipTests clean package
 
             rm -f ${WORKSPACE}/spark-*.jar
-            # FIXME - ignore errors -> mv: will not overwrite just-created
-            set +e
-            find . -type f -name "spark-*-SNAPSHOT*.jar" -exec mv -v -t ${WORKSPACE} {} +
-            set -e
+            find . -type f -name "spark-*-SNAPSHOT*.jar" -exec mv -v -n -t ${WORKSPACE} {} +
     publishers:
         - archive:
             artifacts: 'spark-*-SNAPSHOT*.jar'
-        - groovy-postbuild: |
-            pattern = ~/(^\[INFO]) (Spark Project) (.*). (.*) (\[.*])/
-            manager.build.logFile.eachLine { line ->
-              matcher = pattern.matcher(line)
-              if (matcher.matches()) {
-                result = matcher.group(4)
-                if (result != "SUCCESS") {
-                  manager.buildUnstable()
+        - groovy-postbuild:
+            script: |
+                pattern = ~/(^\[INFO]) (Spark Project) (.*). (.*) (\[.*])/
+                manager.build.logFile.eachLine { line ->
+                  matcher = pattern.matcher(line)
+                  if (matcher.matches()) {
+                    result = matcher.group(4)
+                    if (result != "SUCCESS") {
+                      manager.buildUnstable()
+                    }
+                  }
                 }
-              }
-            }
         - email-ext:
             recipients: 'naresh.bhat@linaro.org, fathi.boudra@linaro.org'
             body: |
