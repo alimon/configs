@@ -4,14 +4,14 @@
     defaults: global
     description: |
         * Polls upstream for changes and builds jcstress.jar.
-    logrotate:
-        numToKeep: 10
-        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            numToKeep: 10
+            artifactNumToKeep: 1
     parameters:
         - string:
             name: JDK_URL
@@ -29,7 +29,8 @@
             browser: hgweb
             browser-url: http://hg.openjdk.java.net/code-tools/jcstress/
     triggers:
-        - pollscm: 'H 20 * * *'
+        - pollscm:
+            cron: 'H 20 * * *'
     wrappers:
         - timestamps
     builders:
