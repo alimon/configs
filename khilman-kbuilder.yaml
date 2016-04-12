@@ -2,9 +2,6 @@
     name: khilman-kbuilder
     project-type: matrix
     defaults: global
-    logrotate:
-        daysToKeep: 7
-        numToKeep: 30
     parameters:
         - string:
             name: ARCH_LIST
@@ -36,6 +33,9 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            daysToKeep: 7
+            numToKeep: 30
         - throttle:
             max-total: 6
             option: project
@@ -172,42 +172,43 @@
 
             exit $RC
     publishers:
-        - groovy-postbuild: |
-            def build_number = manager.build.getEnvVars()['BUILD_NUMBER']
-            def tree_name = manager.build.getEnvVars()['TREE_NAME']
-            def branch = manager.build.getEnvVars()["BRANCH"]
-            def description = manager.build.getEnvVars()['GIT_DESCRIBE']
-            def arch = manager.build.getEnvVars()['ARCH_LIST']
-            def publish = manager.build.getEnvVars()['PUBLISH']
-            def resultsUrl="http://status.armcloud.us/build/${tree_name}/kernel/${description}/"
+        - groovy-postbuild:
+            script: |
+                def build_number = manager.build.getEnvVars()['BUILD_NUMBER']
+                def tree_name = manager.build.getEnvVars()['TREE_NAME']
+                def branch = manager.build.getEnvVars()["BRANCH"]
+                def description = manager.build.getEnvVars()['GIT_DESCRIBE']
+                def arch = manager.build.getEnvVars()['ARCH_LIST']
+                def publish = manager.build.getEnvVars()['PUBLISH']
+                def resultsUrl="http://status.armcloud.us/build/${tree_name}/kernel/${description}/"
 
-            def jobDescription = "&nbsp;ARCH: ${arch}"
-            // FIXME: resultsURL is only valid when PUBLISH = "true"
-            jobDescription = jobDescription + ",&nbsp;<a href='${resultsUrl}'>Results db</a>"
+                def jobDescription = "&nbsp;ARCH: ${arch}"
+                // FIXME: resultsURL is only valid when PUBLISH = "true"
+                jobDescription = jobDescription + ",&nbsp;<a href='${resultsUrl}'>Results db</a>"
 
-            manager.build.setDisplayName("#" + build_number + "-" + tree_name + '/' + branch + "-" + description)
-            manager.build.setDescription(jobDescription)
+                manager.build.setDisplayName("#" + build_number + "-" + tree_name + '/' + branch + "-" + description)
+                manager.build.setDescription(jobDescription)
 
-            def cause = manager.build.getAction(hudson.model.CauseAction.class).getCauses()
-            def upstreamBuild = cause[0].upstreamBuild
-            def upstreamProject = cause[0].upstreamProject
-            def jobName = upstreamProject
-            def jobConfiguration = upstreamProject
+                def cause = manager.build.getAction(hudson.model.CauseAction.class).getCauses()
+                def upstreamBuild = cause[0].upstreamBuild
+                def upstreamProject = cause[0].upstreamProject
+                def jobName = upstreamProject
+                def jobConfiguration = upstreamProject
 
-            // Multi-configuration project
-            if (upstreamProject.contains("/")) {
-              jobName = upstreamProject.split("/")[0]
-              jobConfiguration = upstreamProject.split("/")[1]
-            }
+                // Multi-configuration project
+                if (upstreamProject.contains("/")) {
+                  jobName = upstreamProject.split("/")[0]
+                  jobConfiguration = upstreamProject.split("/")[1]
+                }
 
-            def jobs = hudson.model.Hudson.instance.getItem(jobName).getAllJobs()
+                def jobs = hudson.model.Hudson.instance.getItem(jobName).getAllJobs()
 
-            for (job in jobs) {
-              if(job.name == jobConfiguration) {
-                job.getLastBuild().setDisplayName("#" + build_number + "-" + tree_name + '/' + branch + "-" + description)
-                job.getLastBuild().setDescription(jobDescription)
-              }
-            }
+                for (job in jobs) {
+                  if(job.name == jobConfiguration) {
+                    job.getLastBuild().setDisplayName("#" + build_number + "-" + tree_name + '/' + branch + "-" + description)
+                    job.getLastBuild().setDescription(jobDescription)
+                  }
+                }
         - trigger-parameterized-builds:
             - project: khilman-kernel-build-complete
               property-file: ${TREE_NAME}/env.properties

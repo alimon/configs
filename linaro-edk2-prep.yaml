@@ -2,9 +2,6 @@
     name: linaro-edk2-prep
     project-type: matrix
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -16,6 +13,9 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            daysToKeep: 30
+            numToKeep: 30
     parameters:
         - string:
             name: BUNDLE_STREAM_NAME
@@ -601,13 +601,14 @@
               property-file: post_build_lava_parameters_qemu_aarch64_uefi
               block: true
     publishers:
-        - groovy-postbuild: |
-            def matcher = manager.getLogMatcher("^fail\t.*")
-            if (matcher?.matches()) {
-              resultFailCount = matcher.group(0).split("\t")[1].toInteger()
-              if (resultFailCount > 0) {
-                manager.buildUnstable()
-              }
-            }
+        - groovy-postbuild:
+            script: |
+                def matcher = manager.getLogMatcher("^fail\t.*")
+                if (matcher?.matches()) {
+                  resultFailCount = matcher.group(0).split("\t")[1].toInteger()
+                  if (resultFailCount > 0) {
+                    manager.buildUnstable()
+                  }
+                }
         - email:
             recipients: 'leif.lindholm@linaro.org fathi.boudra@linaro.org'
