@@ -20,7 +20,7 @@
     display-name: 'Build RPM for opendataplane.org'
     scm:
         - git:
-            url: https://git.linaro.org/lng/odp.git
+            url: https://git.linaro.org/people/anders.roxell/odp-packaging.git
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
@@ -54,9 +54,9 @@
             sudo yum install -y wget git rpm-build yum-utils make
             sudo wget http://rpm.opendataplane.org/$dist/odp.repo -O /etc/yum.repos.d/odp.repo
 
-            cd odp
+            cd odp-packaging
             sudo yum-builddep --nogpg -y ./pkg/rpm/odp.spec || true
-            ./scripts/buildrpm
+            ./build-rpm-package
             mv *.rpm ..
 
             cat > ../repo.parameters << EOF

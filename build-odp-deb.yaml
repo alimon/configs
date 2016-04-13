@@ -21,7 +21,7 @@
     display-name: 'Build debian source for opendataplane.org'
     scm:
         - git:
-            url: https://git.linaro.org/lng/odp.git
+            url: https://git.linaro.org/people/anders.roxell/odp-packaging.git
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
@@ -43,7 +43,7 @@
             sudo apt-get update
             sudo apt-get install --no-install-recommends -q -y libssl-dev doxygen imagemagick libmagickcore-extra asciidoc mscgen texlive-latex-recommended ghostscript dh-autoreconf graphviz libcunit1-dev
 
-            cd odp; bash -x scripts/builddeb
+            cd odp-packaging; bash -x ./build-deb-package
 
             cat > ${WORKSPACE}/odp-params <<EOF
             source=${BUILD_URL}/artifact/$(echo *.dsc)
