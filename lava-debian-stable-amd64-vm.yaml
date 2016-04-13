@@ -2,6 +2,9 @@
 # which needs lots of dependencies & space for postgresql.
 # for use testing with django1.7.
 
+# lava reports & can check the checksum of the compressed image
+# after download.
+
 - job:
     name: lava-debian-stable-amd64-vm
     project-type: freestyle
@@ -41,7 +44,7 @@
               --verbose \
               --image=${WORKSPACE}/out/large-stable.img \
               --size=3G \
-              --distribution=stable \
+              --distribution=jessie \
               --mirror=http://mirror.bytemark.co.uk/debian \
               --enable-dhcp \
               --configure-apt \
@@ -59,10 +62,20 @@
             This image can be used for any tests on jessie (django1.7).
 
             The image uses a prompt of "root@debian:"
+            </pre>
+            <p><a href="https://ci.linaro.org/view/lava-ci/job/lava-debian-stable-amd64-vm/">
+            https://ci.linaro.org/view/lava-ci/job/lava-debian-stable-amd64-vm/</a></p>
 
-            https://ci.linaro.org/view/lava-ci/job/lava-debian-stable-amd64-vm/
+            <p><a href="https://ci.linaro.org/view/lava-ci/job/lava-debian-stable-amd64-vm/console">
+            https://ci.linaro.org/view/lava-ci/job/lava-debian-stable-amd64-vm/console</a></p>
 
-            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-stable-amd64-vm.yaml
+            <p><a href="https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-stable-amd64-vm.yaml">
+            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-stable-amd64-vm.yaml</a></p>
+
+            <p><a href="http://snapshots.linaro.org/components/lava/standard/debian/jessie/amd64/${BUILD_NUMBER}">
+            http://snapshots.linaro.org/components/lava/standard/debian/jessie/amd64/${BUILD_NUMBER}</a></p>
+
+            <pre>
             The base system is a Debian Jessie VM with jessie-backports enabled.
 
             echo "deb http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
@@ -78,6 +91,9 @@
 
             md5sum ${WORKSPACE}/out/large-stable.img.gz > ${WORKSPACE}/out/large-stable.img.gz.md5sum.txt
             sha256sum ${WORKSPACE}/out/large-stable.img.gz > ${WORKSPACE}/out/large-stable.img.gz.sha256sum.txt
+
+            # echo final location
+            echo Publishing to: http://snapshots.linaro.org/components/lava/standard/debian/jessie/amd64/${BUILD_NUMBER}
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
