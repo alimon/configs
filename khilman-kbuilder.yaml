@@ -116,7 +116,7 @@
             cd ${TREE_NAME}
             #rm -rf _install_
             git clean -df
-            git fetch origin ${REFSPEC}
+            timeout --preserve-status -k 10s 5m git fetch origin ${REFSPEC}
             if [ $? != 0 ]; then
               exit 1
             fi
