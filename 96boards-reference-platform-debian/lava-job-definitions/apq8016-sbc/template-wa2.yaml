@@ -1,0 +1,29 @@
+actions:
+    - command: deploy_linaro_android_image
+      parameters:
+        images:
+        - partition: 'boot'
+          url: '${BOOT_URL}'
+        - partition: 'rootfs'
+          url: '${ROOTFS_BUILD_URL}'
+        target_type: 'ubuntu'
+    - command: boot_linaro_image
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+        - git-repo: git://git.linaro.org/qa/wa2-lava.git
+          testdef: wa2-linux-local.yaml
+        timeout: 7200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+        - git-repo: git://git.linaro.org/qa/wa2-lava.git
+          testdef: wa2host_postprocessing.yaml
+        timeout: 3600
+    - command: submit_results
+      parameters:
+          server: 'http://${LAVA_SERVER}'
+          stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 18000

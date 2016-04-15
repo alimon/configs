@@ -1,0 +1,47 @@
+actions:
+    - command: deploy_linaro_android_image
+      parameters:
+        images:
+        - partition: 'ptable'
+          url: '${PTABLE_URL}'
+        - partition: 'boot'
+          url: '${BOOT_URL}'
+        - partition: 'system'
+          url: '${ROOTFS_BUILD_URL}'
+        target_type: 'ubuntu'
+    - command: boot_linaro_image
+      parameters:
+        boot_cmds:
+        - 'expect Start:'
+        - sendline 2
+        - expect Debian
+        - sendline c
+        - expect grub>
+        - sendline search.fs_label rootfs root
+        - expect grub>
+        - sendline linux ($root)/boot/vmlinuz console=tty0 console=ttyAMA3,115200 root=/dev/disk/by-partlabel/system rootwait rw efi=noruntime
+        - expect grub>
+        - sendline initrd ($root)/boot/initrd.img
+        - expect grub>
+        - sendline devicetree ($root)/boot/${DTB}
+        - expect grub>
+        - sendline boot
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+        - git-repo: git://git.linaro.org/qa/wa2-lava.git
+          testdef: wa2-linux-local.yaml
+        timeout: 7200
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+        - git-repo: git://git.linaro.org/qa/wa2-lava.git
+          testdef: wa2host_postprocessing.yaml
+        timeout: 3600
+    - command: submit_results
+      parameters:
+          server: 'http://${LAVA_SERVER}'
+          stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 18000
