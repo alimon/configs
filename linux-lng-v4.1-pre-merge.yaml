@@ -121,9 +121,6 @@
                 export ARCH="arm64"
                 export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.02/bin"
                 export toolchain_url="http://releases.linaro.org/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz"
-                cat << EOF > startup.nsh
-            fs3:\Image dtb=juno\juno.dtb console=ttyAMA0,115200 earlyprintk=pl011,0x7ff80000 root=/dev/sda5 rootwait rootfstype=ext4 rw verbose debug uefi_debug ignore_loglevel
-            EOF
                 ;;
               vexpress64-be)
                 export board_types="rtsm_fvp_base-aemv8a"
@@ -172,13 +169,11 @@
             esac
 
             mkdir -p out/lava
-            [ "${hwpack}" = "vexpress64" ] && mv startup.nsh out/
             [[ "${hwpack}" != "mustang" && "${hwpack}" != "x86_64" ]] && mv hwpack_linaro-${hwpack}* out/
 
             KERNEL_URL="http://snapshots.linaro.org/kernel-hwpack/linux-linaro-lng-v4.1-pre-merge/${hwpack}/${BUILD_NUMBER}"
             DTB_URL=${KERNEL_URL}/dtbs
             [[ "${hwpack}" != "mustang" && "${hwpack}" != "x86_64" ]] && HWPACK_BUILD_URL="${KERNEL_URL}/$(ls out/hwpack_linaro-${hwpack}*.tar.gz |xargs basename)"
-            STARTUP_NSH="${KERNEL_URL}/startup.nsh"
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
@@ -197,7 +192,6 @@
             KERNEL_URL=${KERNEL_URL}
             DTB_URL=${DTB_URL}
             HWPACK_BUILD_URL=${HWPACK_BUILD_URL}
-            STARTUP_NSH=${STARTUP_NSH}
             hwpack_type=${hwpack}
             EOF
         - inject:
