@@ -22,14 +22,20 @@
     concurrent: true
     triggers:
         - gerrit:
+            server-name: __ANY__
             trigger-on:
                 - change-merged-event
             projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'android-patchsets'
+                  project-pattern: 'android/android-patchsets'
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'MARSHMALLOW-MLCR-PATCHSET'
+                      - compare-type: 'PLAIN'
+                        pattern: 'juno-m-workarounds'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'device/linaro/common'
                   branches:
@@ -46,20 +52,15 @@
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'linaro-marshmallow'
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/build'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'lor-marshmallow'
-                - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'lor-marshmallow'
+                        branch-pattern: 'lor_marshmallow'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/external/vixl'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'lor-marshmallow'
+                        branch-pattern: 'lor_marshmallow'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'android-build-configs'
                   branches:
