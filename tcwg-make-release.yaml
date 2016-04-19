@@ -1,10 +1,11 @@
+# http://docs.openstack.org/infra/jenkins-job-builder/definition.html
 - job:
     name: tcwg-make-release
     project-type: matrix
     defaults: global
     logrotate:
-        daysToKeep: 10
-        numToKeep: 3
+        daysToKeep: 30
+        numToKeep: 10
     properties:
         - authorization:
             anonymous:
@@ -16,7 +17,7 @@
     parameters:
         - string:
             name: gcc_src
-            default: 'gcc-linaro-5.1-2015.08-rc1.tar.xz'
+            default: 'gcc-linaro-5.3-2016.02.tar.xz'
             description: 'The source of GCC. Specify as it would be passed to abe.sh, either a source tarballs, or git branch and revision.'
         - bool:
             name: runtests
@@ -32,37 +33,37 @@
             description: 'The revision of binutils to use for this release.'
         - string:
             name: date
-            default: '2015.08'
+            default: '2016.03'
             description: 'A release string different than the the source files.'
         - string:
-            name: extra_args
-            default:
-            description: 'Extra command line arguments to ABE'
-        - bool:
-            name: source
-            default: false
-            description: 'Whether to build a source tarball'
+            name: gitref
+            default: '/linaro/shared/snapshots'
+            description: 'A GIT reference directory for faster cloning.'
         - string:
             name: abe_branch
-            default: refs/heads/master
+            default: refs/heads/merget
             description: 'ABE revision to test'
         - bool:
-            name: rpm
-            default: false
-            description: 'Whether to build an RPM package.'
-        - bool:
-            name: deb
-            default: false
-            description: 'Whether to build a DEB package.'
-        - bool:
             name: debug
-            default: false
+            default: true
             description: 'Whether to enable bash debugging output.'
+        - string:
+            name: fileserver
+            default: 148.251.136.42
+            description: 'Remote file server for logs and binaries'
+        # - bool:
+        #     name: rpm
+        #     default: false
+        #     description: 'Whether to build an RPM package.'
+        # - bool:
+        #     name: deb
+        #     default: false
+        #     description: 'Whether to build a DEB package.'
     disabled: false
-    node: tcwg-x86_64-ex40build-01
+    node: tcwg-x86_64-ex40
     retry-count: 3
     concurrent: true
-    display-name: 'TCWG BBB Make Release'
+    display-name: 'TCWG Make Release'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/abe.git
@@ -84,29 +85,53 @@
             name: target
             values:
                 - aarch64-elf
-                - aarch64-linux-gnu
-                - aarch64_be-elf
-                - aarch64_be-linux-gnu
-                - armv8l-linux-gnueabihf
-                - arm-eabi
-                - arm-linux-gnueabi
                 - arm-linux-gnueabihf
-                - armeb-eabi
-                - armeb-linux-gnueabi
-                - armeb-linux-gnueabihf
     execution-strategy:
         sequential: false
     wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
         - timeout:
             timeout: 300
         - timestamps
         - ssh-agent-credentials:
-            # tcwg-buildslave user id
             users:
-                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+              - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a' # tcwg-buildslave
         - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+            name: '#${BUILD_NUMBER}-${target}'
     builders:
-        - shell: |
+      - shell: |
             #!/bin/bash
-            bash -x ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin
+
+            if test x"${debug}" = x"true"; then
+              shell="/bin/bash -x"
+              set -x
+            else
+              shell="/bin/bash"
+            fi
+            ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver}
+            if test $? -gt 0; then
+              exit 1
+            fi
+            tarball="`find ${WORKSPACE} -name gcc-linaro\*${date}\*${target}\*.tar.xz`"
+            if test x"${tarball}" = x""; then
+              echo "ERROR: no binary tarball found!"
+              exit 1
+            fi
+            tarball="`basename ${tarball}`"
+            tarball_url="http://${fileserver}/binaries/${date}/${target}/${tarball}"
+            cat << EOF > tcwg.params
+            tarball=${tarball_url}
+            EOF
+      - inject:
+           properties-file: tcwg.params
+      - conditional-step:
+           condition-kind: current-status
+           steps:
+              - trigger-builds:
+                  - project: 'tcwg-test-release'
+                    predefined-parameters: tarball_url=${tarball}
+                    boolean-parmeters: debug=${debug}
+                    current-parameters: true
+                    block: false
