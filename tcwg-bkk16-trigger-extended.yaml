@@ -19,13 +19,17 @@
             default: ''
             description: 'Versions of components to build; e.g. binutils=binutils-gdb.git/linaro_binutils-2_25-branch gcc=gcc.git~linaro/gcc-5-branch glibc=glibc.git~release/2.21/master'
         - string:
-            name: host_x86_64_languages
+            name: native_x86_64_languages
             default: 'c,c++,fortran,go,lto,objc,obj-c++'
-            description: 'Languages to build for x86_64-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+            description: 'Languages to build for x86_64 native toolchains, e.g., "c,c++" or "all" or "default"'
         - string:
-            name: host_aarchXX_languages
+            name: native_aarchXX_languages
             default: 'c,c++,fortran,go,lto,objc,obj-c++'
-            description: 'Languages to build for AArchXX-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+            description: 'Languages to build for AArchXX native toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: cross_languages
+            default: 'default'
+            description: 'Languages to build for cross toolchains, e.g., "c,c++" or "all" or "default"'
         - string:
             name: log_server
             default: dev-01.tcwglab:logs-bkk16
@@ -65,8 +69,6 @@
             cat << EOF > buildfarm_parameters
             override=glibc=glibc.git~master gcc=gcc.git~master $override
             log_name=${JOB_NAME}-${BUILD_NUMBER}/\$(uname -m).\$target
-            host_x86_64_languages=$host_x86_64_languages
-            host_aarchXX_languages=$host_aarchXX_languages
             log_server=$log_server
             abe_branch=$abe_branch
             runtests=yes
@@ -98,17 +100,23 @@
             projects:
               - name: tcwg-bkk16-buildfarm
                 condition: COMPLETED
-                predefined-parameters: run_benchmark=false
+                predefined-parameters: |
+                  run_benchmark=false
+                  host_aarchXX_languages=$native_aarchXX_languages
                 property-file: buildfarm_parameters
                 restrict-matrix-project: 'label=="tcwg-aarch64-build" && target=="native"'
               - name: tcwg-bkk16-buildfarm
                 condition: COMPLETED
-                predefined-parameters: run_benchmark=false
+                predefined-parameters: |
+                  run_benchmark=false
+                  host_x86_64_languages=$native_x86_64_languages
                 property-file: buildfarm_parameters
                 restrict-matrix-project: 'label=="tcwg-x86_64-cam" && (target=="native" || target=="schroot-i386-native")'
               - name: tcwg-bkk16-buildfarm-benchmark
                 condition: COMPLETED
-                predefined-parameters: run_benchmark=true
+                predefined-parameters: |
+                  run_benchmark=true
+                  host_x86_64_languages=$cross_languages
                 property-file: buildfarm_parameters
                 restrict-matrix-project: 'label=="tcwg-x86_64-cam" && (target=="aarch64-linux-gnu" || target=="arm-linux-gnueabihf" || target=="armv8l-linux-gnueabihf")'
         - conditional-step:
