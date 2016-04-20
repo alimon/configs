@@ -78,6 +78,9 @@
             fi
             debsign -k${key_id} ${pkg_changes}
             dput ${host_ppa} ${pkg_changes}
+            set +e
+            # use dcut for passing build log url
+            dcut ${host_ppa} rm ${pkg_build_url}/consoleText
             for file in $(dcmd ${pkg_changes})
             do
                  rm -f $file
@@ -86,4 +89,4 @@
             find . -mtime +1 -exec rm -f {} \;
     publishers:
         - email:
-            recipients: 'fathi.boudra@linaro.org wookey@linaro.org riku.voipio@linaro.org'
+            recipients: 'packages@lists.linaro.org'
