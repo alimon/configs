@@ -79,8 +79,8 @@
             debsign -k${key_id} ${pkg_changes}
             dput ${host_ppa} ${pkg_changes}
             set +e
-            # use dcut for passing build log url
-            dcut ${host_ppa} rm ${pkg_build_url}/consoleText
+            logname=${pkg_changes/changes/log}
+            ssh upload@repo.linaro.org curl -o /srv/repos/ubuntu/$repo/incoming/$logname $pkg_build_url/consoleText
             for file in $(dcmd ${pkg_changes})
             do
                  rm -f $file
