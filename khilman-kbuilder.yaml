@@ -190,12 +190,12 @@
     publishers:
         - groovy-postbuild:
             script: |
-                def build_number = manager.build.getEnvVars()['BUILD_NUMBER']
-                def tree_name = manager.build.getEnvVars()['TREE_NAME']
-                def branch = manager.build.getEnvVars()["BRANCH"]
-                def description = manager.build.getEnvVars()['GIT_DESCRIBE']
-                def arch = manager.build.getEnvVars()['ARCH_LIST']
-                def publish = manager.build.getEnvVars()['PUBLISH']
+                def build_number = manager.build.getEnvironment(manager.listener)['BUILD_NUMBER']
+                def tree_name = manager.build.getEnvironment(manager.listener)['TREE_NAME']
+                def branch = manager.build.getEnvironment(manager.listener)["BRANCH"]
+                def description = manager.build.getEnvironment(manager.listener)['GIT_DESCRIBE']
+                def arch = manager.build.getEnvironment(manager.listener)['ARCH_LIST']
+                def publish = manager.build.getEnvironment(manager.listener)['PUBLISH']
                 def resultsUrl="http://status.armcloud.us/build/${tree_name}/kernel/${description}/"
 
                 def jobDescription = "&nbsp;ARCH: ${arch}"
