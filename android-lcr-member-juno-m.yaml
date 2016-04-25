@@ -177,7 +177,7 @@
             export CONFIG=`base64 -w 0 config.txt`
 
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
+            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
 
             PUB_SERVER=https://snapshots.linaro.org/
             PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
@@ -379,7 +379,7 @@
             echo "Build finished"
     publishers:
         - archive:
-            artifacts: '*.xml'
+            artifacts: '*.xml,*.json'
             latest-only: true
         - logparser:
             parse-rules: 'Android Build'

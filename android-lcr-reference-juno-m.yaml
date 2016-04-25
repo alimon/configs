@@ -114,7 +114,7 @@
             # Build Android
             rm -rf build/out build/android-patchsets
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
+            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
 
             # Publish binaries
             PUB_SERVER=https://snapshots.linaro.org/
@@ -316,7 +316,7 @@
             echo "Build finished"
     publishers:
         - archive:
-            artifacts: '*.xml'
+            artifacts: '*.xml,*.json'
             latest-only: true
         - logparser:
             parse-rules: 'Android Build'
