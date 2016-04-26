@@ -67,9 +67,14 @@
             bash -x ${WORKSPACE}/check-odp/diff-api.sh |tee
         - ssh:
             site: 'docs.opendataplane.org'
-            target: ''
+            target: 'incoming/${JOB_NAME}/${BUILD_NUMBER}'
             source: 'check-odp/publishing/**'
-            timeout: 60
+            command: |
+                cd /srv/docs.opendataplane.org
+                rm -rf diff-api
+                cp -a incoming/${JOB_NAME}/${BUILD_NUMBER}/diff-api snapshots/
+                rm -rf incoming/${JOB_NAME}/${BUILD_NUMBER}
+            timeout: 120000
             remove-prefix: 'check-odp/publishing'
             always-publish-from-master: true
     publishers:
