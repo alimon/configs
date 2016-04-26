@@ -1,0 +1,63 @@
+- job:
+    name: ci-job-configs-sanity-check
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build
+    display-name: 'CI job configs sanity check'
+    scm:
+        - git:
+            url: https://review.linaro.org/ci/job/configs
+            refspec: ${GERRIT_REFSPEC}
+            name: ''
+            branches:
+                - ${GERRIT_PATCHSET_REVISION}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+            choosing-strategy: gerrit
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'ci/job/configs'
+                  branches:
+                    - branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            env |grep GIT
+            env |grep GERRIT
+
+            set -ex
+
+            git clean -fdx
+            git reset --hard
+
+            # FIXME run-jjb.py was meant to be used for deployment only
+            # use JJB 'test' command instead of 'update' command
+            sed -i "s|update|test|" run-jjb.py
+            # set a fake publish key as it is required by run-jjb.py
+            export PUBLISH_KEY="test"
+
+            export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
+            python run-jjb.py
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
