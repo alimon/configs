@@ -76,6 +76,8 @@
             gitstats -c max_authors=50 -c merge_authors="mike-holmes,Mike Holmes" -c merge_authors="santosh shukla,Santosh Shukla" -c merge_authors="Yan Sonming,Yan Songming" -c merge_authors="venkatesh vivekanandan,Venkatesh Vivekanandan" . ./publishing/linux-${platform_type}-gitstats
 
             echo "build_type_dir=linux-${platform_type}-gitstats" > remote_directory_parameters
+        - inject:
+            properties-file: remote_directory_parameters
         - ssh:
             site: 'docs.opendataplane.org'
             target: 'incoming/${JOB_NAME}/${BUILD_NUMBER}'
