@@ -131,6 +131,7 @@
                     deltatype="new package"
                     ;;
                 *Backport*from*)
+                *Rebuild*for*)
                     deltatype="backport"
                     ;;
                 *Added*patch*)
@@ -202,7 +203,7 @@
             subject: 'build-package: ${ENV,var="source"} failed'
             matrix-trigger: only-configurations
             body: |
-                Build ${BUILD_NUMBER} for ${ENV,var="source"} failed on ${ENV,var="codename"}-${ENV,var="arch"}'
+                Build ${BUILD_NUMBER} for ${ENV,var="source"} failed on ${ENV,var="codename"}'
                 Build Log: ${BUILD_URL}/consoleText
                 Build URL: ${BUILD_URL}
             send-to:
@@ -212,9 +213,9 @@
             attach-build-log: true
             success: true
             subject: 'build-package: ${ENV,var="source"} success'
-            matrix-trigger: only-configurations
+            matrix-trigger: only-parent
             body: |
-                Build ${BUILD_NUMBER} for ${ENV,var="source"} succeeded on ${ENV,var="codename"}-${ENV,var="arch"}'
+                Build ${BUILD_NUMBER} for ${ENV,var="source"} succeeded on ${ENV,var="codename"}'
                 Build Log: ${BUILD_URL}/consoleText
                 Build URL: ${BUILD_URL}
 
