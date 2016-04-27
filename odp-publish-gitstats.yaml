@@ -74,19 +74,15 @@
             mkdir odp/publishing
             cd odp
             gitstats -c max_authors=50 -c merge_authors="mike-holmes,Mike Holmes" -c merge_authors="santosh shukla,Santosh Shukla" -c merge_authors="Yan Sonming,Yan Songming" -c merge_authors="venkatesh vivekanandan,Venkatesh Vivekanandan" . ./publishing/linux-${platform_type}-gitstats
-
-            echo "build_type_dir=linux-${platform_type}-gitstats" > remote_directory_parameters
-        - inject:
-            properties-file: remote_directory_parameters
         - ssh:
             site: 'docs.opendataplane.org'
             target: 'incoming/${JOB_NAME}/${BUILD_NUMBER}'
             source: 'odp/publishing/**'
             command: |
                 cd /srv/docs.opendataplane.org
-                rm -rf ${build_type_dir}
+                rm -rf linux-${platform_type}-gitstats
                 mkdir snapshots
-                cp -a incoming/${JOB_NAME}/${BUILD_NUMBER}/${build_type_dir} snapshots/
+                cp -a incoming/${JOB_NAME}/${BUILD_NUMBER}/linux-${platform_type}-gitstats snapshots/
                 rm -rf incoming/${JOB_NAME}/${BUILD_NUMBER}
             timeout: 120000
             remove-prefix: 'odp/publishing'
