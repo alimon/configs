@@ -91,19 +91,19 @@
               lcov)
                 export LCOV=1
                 export SUDO=1
-                echo "build_type_dir=${GIT_BRANCH}/linux-${platform_type}-*lcov-html" > remote_directory_parameters
+                echo "build_type_dir=linux-${platform_type}-*lcov-html" > remote_directory_parameters
                 ;;
               dox_html)
                 export DOXYGEN_HTML=1
-                echo "build_type_dir=${GIT_BRANCH}/linux-${platform_type}-doxygen-html" > remote_directory_parameters
+                echo "build_type_dir=linux-${platform_type}-doxygen-html" > remote_directory_parameters
                 ;;
               usr_html)
                 export USER_HTML=1
-                echo "build_type_dir=${GIT_BRANCH}/linux-${platform_type}" > remote_directory_parameters
+                echo "build_type_dir=linux-${platform_type}" > remote_directory_parameters
                 ;;
               scan_build)
                 export SCAN_BUILD=1
-                echo "build_type_dir=${GIT_BRANCH}/linux-${platform_type}-scan-build" > remote_directory_parameters
+                echo "build_type_dir=linux-${platform_type}-scan-build" > remote_directory_parameters
                 ;;
             esac
 
@@ -145,9 +145,9 @@
             source: 'check-odp/publishing/**'
             command: |
                 cd /srv/docs.opendataplane.org
-                rm -rf ${build_type_dir}
+                rm -rf snapshots/${GIT_BRANCH}/${build_type_dir}
                 mkdir -p snapshots/${GIT_BRANCH}
-                cp -a incoming/${JOB_NAME}/${BUILD_NUMBER}/${build_type_dir} snapshots/${GIT_BRANCH}
+                cp -a incoming/${JOB_NAME}/${BUILD_NUMBER}/${GIT_BRANCH}/${build_type_dir} snapshots/${GIT_BRANCH}
                 rm -rf incoming/${JOB_NAME}/${BUILD_NUMBER}
             timeout: 120000
             remove-prefix: 'check-odp/publishing'
