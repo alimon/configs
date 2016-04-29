@@ -38,16 +38,7 @@
     node: docker-utopic-art
     display-name: 'ART - Tip - Test Host'
     concurrent: true
-    scm:
-        - git:
-            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
-            credentials-id: 'git'
-            branches: 
-                - '*/master'
-            skip-tag: true
-            shallow-clone: true
     triggers:
-        - pollscm: 'H/5 * * * *'
         - gerrit:
             server-name: 'dev-private-review.linaro.org'
             trigger-on:
@@ -63,6 +54,15 @@
                       - branch-pattern: 'master'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/external/vixl'
+                  branches:
+                      - branch-pattern: 'master'
+        - gerrit:
+            server-name: 'dev-private-review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
                   branches:
                       - branch-pattern: 'master'
     wrappers:
