@@ -1,3 +1,31 @@
+- scm:
+    name: gcc
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/gcc.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            branches:
+                - refs/heads/master
+            basedir: gcc
+            skip-tag: true
+            wipe-workspace: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            clean:
+                before: true
+- scm:
+    name: glibc
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/glibc.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            branches:
+                - refs/heads/master
+            basedir: glibc
+            skip-tag: true
+            wipe-workspace: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/glibc.git
+            clean:
+                before: true
 - job:
     name: tcwg-bkk16-trigger-extended
     project-type: multijob
@@ -46,6 +74,9 @@
     node: tcwg-x86_64-dev-01
     concurrent: true
     display-name: 'TCWG BKK16 Trigger Extended Validation'
+    scm:
+        - gcc
+        - glibc
     triggers:
         - timed: '@daily'
     wrappers:
@@ -66,8 +97,15 @@
 
             shopt -s extglob
 
+            for i in gcc glibc; do
+                pushd $i
+                comp_rev=$(git rev-parse HEAD)
+                comp_list="$i=$i.git@$comp_rev $comp_list"
+                popd
+            done
+
             cat << EOF > buildfarm_parameters
-            override=glibc=glibc.git~master gcc=gcc.git~master $override
+            override=$comp_list $override
             log_name=${JOB_NAME}-${BUILD_NUMBER}/\$(uname -m).\$target
             log_server=$log_server
             abe_branch=$abe_branch
