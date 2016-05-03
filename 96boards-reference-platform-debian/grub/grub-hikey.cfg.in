@@ -23,9 +23,9 @@ menuentry 'Debian GNU/Linux' --class debian --class gnu-linux --class gnu --clas
         insmod gzio
         insmod part_gpt
         insmod ext2
-        search --label --set=root rootfs
+        set root=(hd0,gpt9)
         echo    'Loading Linux KERNEL_VERSION ...'
-        linux   /boot/vmlinuz-KERNEL_VERSION root=/dev/disk/by-label/rootfs rw efi=noruntime quiet
+        linux   /boot/vmlinuz-KERNEL_VERSION root=/dev/mmcblk0p9 rw efi=noruntime quiet
         echo    'Loading initial ramdisk ...'
         initrd  /boot/initrd.img-KERNEL_VERSION
         echo    'Loading devicetree ...'
@@ -36,9 +36,9 @@ submenu 'Advanced options for Debian GNU/Linux' $menuentry_id_option 'gnulinux-a
                 insmod gzio
                 insmod part_gpt
                 insmod ext2
-                search --label --set=root rootfs
+                set root=(hd0,gpt9)
                 echo    'Loading Linux KERNEL_VERSION ...'
-                linux   /boot/vmlinuz-KERNEL_VERSION root=/dev/disk/by-label/rootfs rw efi=noruntime quiet
+                linux   /boot/vmlinuz-KERNEL_VERSION root=/dev/mmcblk0p9 rw efi=noruntime quiet
                 echo    'Loading initial ramdisk ...'
                 initrd  /boot/initrd.img-KERNEL_VERSION
                 echo    'Loading devicetree ...'
@@ -48,9 +48,9 @@ submenu 'Advanced options for Debian GNU/Linux' $menuentry_id_option 'gnulinux-a
                 insmod gzio
                 insmod part_gpt
                 insmod ext2
-                search --label --set=root rootfs
+                set root=(hd0,gpt9)
                 echo    'Loading Linux KERNEL_VERSION ...'
-                linux   /boot/vmlinuz-KERNEL_VERSION root=/dev/disk/by-label/rootfs rw efi=noruntime single
+                linux   /boot/vmlinuz-KERNEL_VERSION root=/dev/mmcblk0p9 rw efi=noruntime single
                 echo    'Loading initial ramdisk ...'
                 initrd  /boot/initrd.img-KERNEL_VERSION
                 echo    'Loading devicetree ...'

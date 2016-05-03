@@ -98,10 +98,6 @@
 
             KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
 
-            cat << EOF | sudo tee rootfs/etc/fstab
-            /dev/disk/by-label/rootfs   /   ext4 errors=remount-ro 0 1
-            EOF
-
             mkdir -p out/${BOARD}
 
             # Build information
@@ -152,7 +148,7 @@
                 sudo cp rootfs/usr/share/grub/unicode.pf2 rootfs/boot/grub/fonts
                 sudo grub-editenv rootfs/boot/grubenv create
                 sed -e "s/KERNEL_VERSION/$KERNEL_VERSION/" configs/96boards-reference-platform-debian/grub/grub-hikey.cfg.in > grub.cfg
-                sudo cp grub.cfg rootfs/boot/grub
+                sed -e "s/root=(hd0,gpt9)/root=(hd1,msdos2)/g" -e "s/mmcblk0p9/mmcblk1p2/g" grub.cfg > grub-sd.cfg
                 sudo cp configs/96boards-reference-platform-debian/grub/grub-fastboot.cfg rootfs/boot/grub/custom.cfg
                 sudo cp -a rootfs/usr/lib/grub/arm64-efi rootfs/boot/grub
                 sudo cp hi6220-hikey.dtb rootfs/boot/hi6220-hikey-${KERNEL_VERSION}.dtb
@@ -161,7 +157,7 @@
 
                 # Since it uses uefi, create the boot efi fstab entry
                 sudo mkdir rootfs/boot/efi
-                cat << EOF | sudo tee -a rootfs/etc/fstab
+                cat << EOF | sudo tee rootfs/etc/fstab
             /dev/disk/by-partlabel/boot   /boot/efi vfat defaults          0 0
             EOF
 
@@ -202,6 +198,11 @@
             mkdir rootfs_ext4
             sudo mount -o loop ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw rootfs_ext4
             sudo cp -a rootfs/* rootfs_ext4
+            ## Make grub specific to the image type (e.g. emmc, sd)
+            if [ -f grub.cfg ]; then
+                sudo cp grub.cfg rootfs_ext4/boot/grub
+                sudo cp grub-sd.cfg rootfs/boot/grub
+            fi
             sudo umount boot rootfs_ext4 rootfs
             sudo ext2simg -v ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw out/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img
 
