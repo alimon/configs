@@ -43,9 +43,9 @@
             type: slave
             name: label
             values:
-                - docker-wily-amd64
-                - docker-wily-arm64
-                - docker-wily-armhf
+                - docker-xenial-amd64
+                - docker-xenial-arm64
+                - docker-xenial-armhf
                 - docker-jessie-amd64
                 - docker-jessie-arm64
                 - docker-jessie-armhf
@@ -211,10 +211,10 @@
             recipients: packages@lists.linaro.org
             attach-build-log: true
             success: true
-            subject: 'build-package: ${ENV,var="source"} success'
+            subject: 'build-package: ${ENV,var="source"} ${BUILD_STATUS}'
             matrix-trigger: only-parent
             body: |
-                Build ${BUILD_NUMBER} for ${ENV,var="source"} succeeded on ${ENV,var="codename"}'
+                Build ${BUILD_NUMBER} for ${ENV,var="source"} ${BUILD_STATUS} on ${ENV,var="codename"}'
                 Build Log: ${BUILD_URL}/consoleText
                 Build URL: ${BUILD_URL}
 

@@ -27,15 +27,13 @@
     display-name: 'Build all Debian/Ubuntu packages'
     wrappers:
         - timestamps
-        - matrix-tie-parent:
-            node: master
     publishers:
         - trigger-parameterized-builds:
             - project: build-package
               current-parameters: true
-              predefined-parameters: "codename=wily"
+              predefined-parameters: "codename=xenial"
             - project: build-package
               current-parameters: true
               predefined-parameters: "codename=jessie"
         - email:
-            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
+            recipients: 'packages@lists.linaro.org'
