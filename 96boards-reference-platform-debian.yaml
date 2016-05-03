@@ -118,7 +118,9 @@
                 wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
                 GRUB_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-grub-efi-arm64/lastStableBuild/buildNumber`
                 GRUB_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64.efi"
+                GRUB_SD_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64-sd.efi"
                 wget --progress=dot ${GRUB_EFI_URL} -O grubaa64.efi
+                wget --progress=dot ${GRUB_SD_EFI_URL} -O grubaa64-sd.efi
 
                 mkdir boot-fat
                 dd if=/dev/zero of=out/${BOARD}/boot-fat.uefi.img bs=512 count=131072
@@ -130,6 +132,9 @@
                 # Replicate boot image into the original img file
                 sudo rm -rf boot/*
                 sudo cp -a boot-fat/* boot/
+                # Boot partition for SD needs a different grub (default root search)
+                sudo cp grubaa64-sd.efi boot/EFI/BOOT/grubaa64.efi
+                sudo cp grubaa64-sd.efi boot/EFI/BOOT/BOOTAA64.EFI
                 sudo umount boot-fat
                 sudo chmod 777 out/${BOARD}/boot-fat.uefi.img
                 sudo mv out/${BOARD}/boot-fat.uefi.img out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
