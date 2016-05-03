@@ -51,11 +51,24 @@
             configfile \$prefix/grub.cfg
             EOF
 
+            cat << EOF > out/grub-sd.configfile
+            set root=(hd1,msdos2)
+            set prefix=(\$root)'/boot/grub'
+            configfile \$prefix/grub.cfg
+            EOF
+
             GRUB_MODULES="boot chain configfile echo efinet eval ext2 fat font gettext gfxterm gzio help linux loadenv lsefi normal part_gpt part_msdos read regexp search search_fs_file search_fs_uuid search_label terminal terminfo test tftp time"
             grub-mkimage \
               --verbose \
               --config=out/grub.configfile \
               --output=out/grubaa64.efi \
+              --format=arm64-efi \
+              $GRUB_MODULES
+
+            grub-mkimage \
+              --verbose \
+              --config=out/grub-sd.configfile \
+              --output=out/grubaa64-sd.efi \
               --format=arm64-efi \
               $GRUB_MODULES
 
@@ -75,11 +88,18 @@
             echo $GRUB_MODULES >> out/README.textile
             cat >> out/README.textile << EOF
 
-            * Grub config used:
+            * Grub config used (roofs search with label):
 
             EOF
             echo -n "bc. " >> out/README.textile
             cat out/grub.configfile >> out/README.textile
+            cat >> out/README.textile << EOF
+
+            * Grub config used (sdcard):
+
+            EOF
+            echo -n "bc. " >> out/README.textile
+            cat out/grub-sd.configfile >> out/README.textile
             cat >> out/README.textile << EOF
 
             * $GRUB_EFI_BIN_PKG package:
