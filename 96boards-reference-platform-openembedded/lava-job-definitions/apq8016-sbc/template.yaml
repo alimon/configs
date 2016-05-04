@@ -1,0 +1,19 @@
+actions:
+- command: deploy_linaro_android_image
+  parameters:
+    images:
+    - partition: 'boot'
+      url: '${BOOT_URL}'
+    - partition: 'rootfs'
+      url: '${ROOTFS_BUILD_URL}'
+    target_type: 'ubuntu'
+    login_prompt: 'login:'
+    username: 'root'
+- command: boot_linaro_image
+- command: submit_results
+  parameters:
+    server: 'http://${LAVA_SERVER}'
+    stream: '${BUNDLE_STREAM_NAME}'
+device_type: '${DEVICE_TYPE}'
+job_name: '${BUILD_URL}'
+timeout: 18000

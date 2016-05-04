@@ -24,6 +24,12 @@
         - string:
             name: MANIFEST_BRANCH
             default: 'jethro'
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/rpb-openembedded/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: master
     display-name: '96boards - Reference Platform - OpenEmbedded'
@@ -139,6 +145,42 @@
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ \
               snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}
+
+            cat << EOF > post_build_lava_parameters
+            BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/boot-*-${MACHINE}-*-${BUILD_NUMBER}.img | xargs basename)
+            ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
+            SYSTEM_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
+            EOF
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            case "${MACHINE}" in
+              dragonboard-410c)
+                export DEVICE_TYPE=apq8016-sbc
+                ;;
+              hikey)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+              96boards-64)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+            esac
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            ./lci-build-tools/yaml-to-json.py configs/96boards-reference-platform-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - archive:
             artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
