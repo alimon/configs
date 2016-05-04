@@ -164,7 +164,7 @@
                 sudo cp configs/96boards-reference-platform-debian/grub/grub-fastboot.cfg rootfs/boot/grub/custom.cfg
                 sudo cp -a rootfs/usr/lib/grub/arm64-efi rootfs/boot/grub
                 sudo cp hi6220-hikey.dtb rootfs/boot/hi6220-hikey.dtb-${KERNEL_VERSION}
-                ln -s hi6220-hikey.dtb-${KERNEL_VERSION} rootfs/boot/hi6220-hikey.dtb
+                sudo ln -s hi6220-hikey.dtb-${KERNEL_VERSION} rootfs/boot/hi6220-hikey.dtb
                 echo "KERNEL_DEVICETREE=hi6220-hikey" | sudo tee rootfs/etc/default/kernel
                 sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="efi=noruntime rw quiet"/g' rootfs/etc/default/grub
 
