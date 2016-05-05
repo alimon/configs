@@ -24,7 +24,7 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
     disabled: false
-    node: docker-vivid-amd64
+    node: docker-jessie-amd64
     display-name: 'Linaro EDK II - UEFI Continuous Integration (upstream)'
     scm:
         - git:
@@ -69,8 +69,9 @@
             export CLANG35_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
             export CLANG35_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
 
+            sudo dpkg --add-architecture i386
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends clang python-pycurl zip
+            sudo apt-get install -y --no-install-recommends clang python-pycurl zip libstdc++6:i386 zlib1g:i386
 
             export OUTDIR=${WORKSPACE}/out
 
