@@ -6,17 +6,18 @@
         - authorization:
             anonymous:
                 - job-read
+                - job-extended-read
             linaro:
                 - job-build
-                - job-configure
                 - job-cancel
+                - job-configure
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
+            artifact-num-to-keep: 1
     disabled: false
     node: docker-utopic-aosp
     display-name: 'Chromium apk Built with gcc for ARMv7'
-    concurrent: true
     wrappers:
         - timestamps
         - timeout:
@@ -30,7 +31,6 @@
     publishers:
         - archive:
             artifacts: '*.xml,*.json'
-            latest-only: true
         - logparser:
             parse-rules: 'Android Build'
             unstable-on-warning: false
