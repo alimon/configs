@@ -56,9 +56,6 @@
 
             ROOTFS_BUILD_URL="http://releases.linaro.org/debian/images"
             ROOTFS_RELEASE_NUMBER=16.03
-            export DIST=debian
-            export TARGET_TYPE=ubuntu
-            export ROOTFS_TYPE=jessie-developer
             case "${arch}" in
               armv7a)
                 hwpack="arndale"
@@ -82,7 +79,6 @@
                 hwpack="x86_64"
                 DEVICE_TYPE="x86"
                 ROOTFS_BUILD_URL="http://images.validation.linaro.org/x86/debian/linaro-jessie-nano-20150123-1.tar.gz"
-                ROOTFS_TYPE=jessie-nano
                 ;;
             esac
 
@@ -106,10 +102,17 @@
 
             set -ex
 
+            export DIST=debian
+            export TARGET_TYPE=ubuntu
+            export ROOTFS_TYPE=jessie-developer
+
             template_file="template-base"
             case "${arch}" in
               armv7ab)
                 template_file="template-be-base"
+                ;;
+              x86_64)
+                ROOTFS_TYPE=jessie-nano
                 ;;
             esac
 
