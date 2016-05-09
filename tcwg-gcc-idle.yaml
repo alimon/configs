@@ -83,21 +83,21 @@
                 log_prefix="${JOB_NAME}"
 
                 cat << EOF > buildfarm_parameters
-                override=glibc=glibc.git~master gcc=gcc.git~$gcc_curr_rev $override
-                log_name=${JOB_NAME}-${BUILD_NUMBER}/\$(uname -m).\$target
-                host_x86_64_languages=${host_x86_64_languages}
-                host_aarchXX_languages=${host_aarchXX_languages}
-                log_server=${log_server}
-                targets=$targets
-                abe_branch=${abe_branch}
-                runtests=yes
-                try_bootstrap=true
-                rebuild=false
-                dont_fail=true
-                run_benchmark=false
-                host_x86_64_excludecheck=
-                host_aarchXX_excludecheck=
-                EOF
+            override=glibc=glibc.git~master gcc=gcc.git~$gcc_curr_rev $override
+            log_name=${JOB_NAME}-${BUILD_NUMBER}/\$(uname -m).\$target
+            host_x86_64_languages=${host_x86_64_languages}
+            host_aarchXX_languages=${host_aarchXX_languages}
+            log_server=${log_server}
+            targets=$targets
+            abe_branch=${abe_branch}
+            runtests=yes
+            try_bootstrap=true
+            rebuild=false
+            dont_fail=true
+            run_benchmark=false
+            host_x86_64_excludecheck=
+            host_aarchXX_excludecheck=
+            EOF
 
                 if [ x"${ref_build}" != x ] ; then
                     case "${ref_build}" in
@@ -118,11 +118,11 @@
 
                     # Scrambled indentation because of here-doc
                     cat << EOF > compare_results_parameters
-                    ref_logs=${log_prefix}-${ref_build_num}
-                    new_logs=${log_prefix}-${BUILD_NUMBER}
-                    log_server=${log_server}
-                    abe_branch=${abe_branch}
-                    EOF
+            ref_logs=${log_prefix}-${ref_build_num}
+            new_logs=${log_prefix}-${BUILD_NUMBER}
+            log_server=${log_server}
+            abe_branch=${abe_branch}
+            EOF
                 fi
             fi
         - trigger-builds:
