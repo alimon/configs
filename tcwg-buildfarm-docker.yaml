@@ -98,8 +98,6 @@
                 - aarch64-none-elf
                 - aarch64_be-none-elf
                 - native
-                - schroot-i386-native
-                - schroot-armhf-native
     execution-strategy:
         combination-filter: |
             (label=="docker-trusty-amd64-tcwg" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
@@ -136,18 +134,16 @@
 
             case ${target} in
               schroot-*)
-                schroot_arch=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\1/")
                 target=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\2/")
                 ;;
               *)
                 case $(uname -m) in
-                  x86_64) schroot_arch="amd64" ;;
-                  aarch64) schroot_arch="arm64" ;;
+                  x86_64) ;;
+                  aarch64) ;;
                   *) echo "Unexpected architecture $(uname -m)"; exit 1 ;;
                 esac
                 ;;
             esac
-            schroot_image="tcwg-build-${schroot_arch}-trusty"
 
             case $(uname -m) in
               x86_64) languages="$host_x86_64_languages" ;;
@@ -204,13 +200,8 @@
 
             ulimit -u 5000
 
-            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
-            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+            BUILD_SHELL="bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
-
-            # Sometimes /dev/pts can't get unmounted on the first try.
-            # Workaround by retrying.
-            trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } }" 0
 
             result="0"
             ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result=$?
