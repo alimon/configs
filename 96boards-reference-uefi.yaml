@@ -39,7 +39,7 @@
                 - d02
                 - juno
                 - styx
-                - husky
+                - cello
         - axis:
             type: user-defined
             name: MX_TYPE
@@ -157,12 +157,10 @@
                 ATF_GIT_VERSION=873e19dde34efec93a1dd4c6de060ccde57418a0
                 OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
                 OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
-            elif [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "husky" ]; then
-                EDK2_GIT_URL=ssh://dev-private-git.linaro.org/96boards/edk2.git
-                EDK2_GIT_VERSION=6864c068ddbfa261754cad471ce7ccfc93fb370c
+            elif [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
                 ATF_GIT_VERSION=6e9fa3866d2f6382bec5f3e2a215351386a3331b
                 OPEN_PLATFORM_PKG_GIT_URL=ssh://dev-private-git.linaro.org/96boards/OpenPlatformPkg.git
-                OPEN_PLATFORM_PKG_GIT_BRANCH=dev-FDK101
+                OPEN_PLATFORM_PKG_GIT_BRANCH=dev-FDK102
             elif [ "${MX_PLATFORM}" == "d02" ]; then
                 EDK2_GIT_VERSION=d0d34cdf1d2752f0d7c3ca41af7e7ed29c221d11
                 OPEN_PLATFORM_PKG_GIT_BRANCH=d02-release
@@ -192,8 +190,8 @@
             export JENKINS_WORKSPACE=${WORKSPACE}
 
             # Board specific setup
-            if [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "husky" ]; then
-                git clone -b dev-FDK1_0_0_1 --depth 1 ssh://dev-private-git.linaro.org/96boards/SeattleFDK.git
+            if [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
+                git clone -b dev-FDK1_0_0_2 --depth 1 ssh://dev-private-git.linaro.org/96boards/SeattleFDK.git
                 cd $EDK2_DIR; ln -s ../SeattleFDK/AmdModulePkg; cd ..
             fi
 
@@ -237,7 +235,7 @@
                 wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
                 # Ship nvme.img with UEFI binaries for convenience
                 dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
-            elif [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "husky" ]; then
+            elif [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
                 # Build ARM Trusted Firmware
                 cd ${WORKSPACE}/${BUILD_NUMBER}/SeattleFDK/AmdTrustedFirmwarePkg
                 ln -s ${ATF_DIR} arm-trusted-firmware
@@ -259,8 +257,8 @@
                 cd ${WORKSPACE}/${BUILD_NUMBER}/SeattleFDK/Linaro
                 if [ "${MX_PLATFORM}" == "styx" ]; then
                     FLASH_CONFIG="ScpDirectory-Overdrive.txt"
-                elif [ "${MX_PLATFORM}" == "husky" ]; then
-                    FLASH_CONFIG="ScpDirectory-Husky.txt"
+                elif [ "${MX_PLATFORM}" == "cello" ]; then
+                    FLASH_CONFIG="ScpDirectory-Cello.txt"
                 fi
                 ./make-rom.sh ${FLASH_CONFIG} ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${IMAGES} >/dev/null
                 cp Styx.bin ${WORKSPACE}/out/${BUILD_TYPE}
