@@ -15,6 +15,10 @@
             days-to-keep: 60
             num-to-keep: 60
             artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: ARGS
+            default: 'gcc_arm'
     disabled: false
     node: docker-xenial-chromium
     display-name: 'Chromium apk Built with gcc for ARMv7'
@@ -27,10 +31,32 @@
         - shell: |
             #!/bin/bash
 
+            if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
+              sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+              sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            fi
+            cd /home/buildslave/srv/${JOB_NAME}
+
+            rm -rf configs
+            git clone https://git.linaro.org/ci/job/configs.git
+            ./configs/android-chromium/chromium-build.sh
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              chromium/src/out/Default/apks \
+              android/${JOB_NAME}/${BUILD_NUMBER} \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|apk)$" \
+              --include "^[BHi][^/]+txt$" \
+              --include "^(MANIFEST|MD5SUMS)$"
+
             echo "Build finished"
     publishers:
         - archive:
-            artifacts: '*.xml,*.json'
+            artifacts: '*.xml, *.json'
         - logparser:
             parse-rules: 'Android Build'
             unstable-on-warning: false
