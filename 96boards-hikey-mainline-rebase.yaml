@@ -69,6 +69,10 @@
             export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.08/bin"
             export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/5.1-2015.08/aarch64-linux-gnu/gcc-linaro-5.1-2015.08-x86_64_aarch64-linux-gnu.tar.xz
 
+            # FIXME workaround build failure introduced by
+            # https://github.com/96boards-hikey/linux/commit/18d938d
+            sed -i '/etnaviv/d' drivers/gpu/drm/Makefile
+
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
