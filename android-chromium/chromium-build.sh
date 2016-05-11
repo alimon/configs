@@ -35,7 +35,7 @@ setup_buildenv() {
     clang_arm)
       gn gen out/Default --args="target_os=\"android\" target_cpu=\"arm\" is_debug=true is_component_build=true is_clang=true symbol_level=1 enable_incremental_javac=true"
       ;;
-    clang_arm6)
+    clang_arm64)
       gn gen out/Default --args="target_os=\"android\" target_cpu=\"arm64\" is_debug=true is_component_build=true is_clang=true symbol_level=1 enable_incremental_javac=true"
       ;;
   esac
