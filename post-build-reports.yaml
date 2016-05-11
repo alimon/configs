@@ -1,0 +1,35 @@
+- job:
+    name: post-build-reports
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            milosz.wasilewski@linaro.org:
+                - job-build
+                - job-cancel
+                - job-configure
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: ''
+        - string:
+            name: LAVA_JOB_ID
+            default: ''
+        - string:
+            name: BUILD_JOB
+            default: ''
+    disabled: false
+    node: master
+    display-name: 'Post build reports'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
