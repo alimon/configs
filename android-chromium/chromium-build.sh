@@ -58,7 +58,7 @@ apply_patches() {
 }
 
 main() {
-  set -x
+  set -xe
   setup_depottools
   setup_chromium
   sync_source
