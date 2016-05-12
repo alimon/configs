@@ -64,6 +64,9 @@
             rm -fr build
             rm -fr dist
 
+            # syntax of the -target and -source command have changed with jdk9
+            sed -i 's|1.8|8|g' make/build.xml
+
             ant -v -f make/build.xml \
                 -Djunit.jar=./junit/junit.jar \
                 -Dtestng.jar=./testng/testng.jar \
