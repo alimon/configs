@@ -151,7 +151,7 @@
 
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
-            trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } }" 0
+            trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true }" 0
 
             case $target in
             aarch64-linux-gnu)
