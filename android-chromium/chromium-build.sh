@@ -20,9 +20,8 @@ sync_source() {
 }
 
 install_deps() {
-  ./src/build/install-build-deps.sh --no-syms --no-chromeos-fonts --no-prompt
-  ./src/build/install-build-deps-android.sh --no-prompt
-  sudo update-java-alternatives --set java-1.7.0-openjdk-amd64
+  sudo ./src/build/install-build-deps.sh --no-syms --no-chromeos-fonts --no-prompt
+  sudo ./src/build/install-build-deps-android.sh --no-prompt
 }
 
 setup_buildenv() {
