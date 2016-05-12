@@ -12,7 +12,7 @@ setup_depottools() {
 setup_chromium() {
   test -d chromium || mkdir chromium
   cd chromium
-  fetch --nohooks android
+  test -d src || fetch --nohooks android
 }
 
 sync_source() {
