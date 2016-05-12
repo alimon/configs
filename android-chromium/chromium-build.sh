@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 setup_depottools() {
   sudo apt-get update
   rm -rf depot_tools
@@ -8,7 +10,7 @@ setup_depottools() {
 }
 
 setup_chromium() {
-  mkdir chromium
+  test -d chromium || mkdir chromium
   cd chromium
   fetch --nohooks android
 }
@@ -58,7 +60,6 @@ apply_patches() {
 }
 
 main() {
-  set -xe
   setup_depottools
   setup_chromium
   sync_source
