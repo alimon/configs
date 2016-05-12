@@ -13,7 +13,7 @@
                 - job-read
                 - job-extended-read
     disabled: false
-    node: build
+    node: aarch64-06
     display-name: 'OpenJDK - Build JDK Regression Test Harness (jtreg)'
     scm:
         - hg:
@@ -63,6 +63,9 @@
 
             rm -fr build
             rm -fr dist
+
+            which java
+            java -version
 
             # syntax of the -target and -source command have changed with jdk9
             sed -i 's|1.8|8|g' make/build.xml
