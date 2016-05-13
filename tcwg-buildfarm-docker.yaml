@@ -85,7 +85,8 @@
             type: slave
             name: label
             values:
-                - docker-trusty-amd64-tcwg
+                - docker-trusty-amd64-tcwg-dev-01
+                - docker-trusty-amd64-tcwg-dev-02
         - axis:
             type: user-defined
             name: target
@@ -99,8 +100,6 @@
                 - aarch64_be-none-elf
                 - native
     execution-strategy:
-        combination-filter: |
-            (label=="docker-trusty-amd64-tcwg" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
         sequential: false
     wrappers:
         - timeout:
