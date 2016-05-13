@@ -163,7 +163,7 @@
 
             # Sometimes /dev/pts can't get unmounted on the first try.
             # Workaround by retrying.
-            trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true }" 0
+            trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true; }" 0
 
             result="0"
             ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --gcc-branch ${gcc_branch} --languages ${languages} $bootstrap $runtests_opt --excludecheck ${excludecheck} --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result=$?
