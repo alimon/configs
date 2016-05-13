@@ -146,6 +146,9 @@
               ${DEPLOY_DIR_IMAGE}/ \
               snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}
 
+            # Ignore error as we always want to create post_build_lava_parameters
+            set +e
+
             cat << EOF > post_build_lava_parameters
             BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/boot-*-${MACHINE}-*-${BUILD_NUMBER}.img | xargs basename)
             ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
