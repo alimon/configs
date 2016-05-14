@@ -118,7 +118,13 @@
             ${BUILD_SHELL} -c "make all -j$jobs"
             ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
             sums=`find . -name "*.sum"`
+            echo '############################################'
+            echo 'See unexpected results below:'
+            echo '############################################'
             [ x"$sums" != x ] && egrep '^FAIL:|^XPASS:' $sums || true
+            echo '############################################'
+            echo 'See ends of sumfiles below:'
+            echo '############################################'
             [ x"$sums" != x ] && tail $sums
 
             echo BUILD FINISHED $(date)
