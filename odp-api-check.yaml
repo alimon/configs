@@ -46,9 +46,18 @@
             values:
                 - docker-utopic
                 - docker-utopic-arm64
+        - axis:
+            type: user-defined
+            name: pktio
+            values:
+                - none
+                - all
+                - dpdk
+                - ipc
+                - netmap
     execution-strategy:
         combination-filter: |
-            !(label=="docker-utopic-arm64" && (ARCH=="x86-64" || ARCH=="arm" || ARCH=="armeb" || ARCH=="arm64be"))
+            !(label=="docker-utopic-arm64" && (ARCH=="x86-64" || ARCH=="arm" || ARCH=="armeb" || ARCH=="arm64be")) || !((ARCH="arm" || ARCH="armeb" || ARCH="arm64" || ARCH="arm64be") && (pktio="all" || pktio="dpdk"))
     wrappers:
         - timestamps
         - matrix-tie-parent:
@@ -71,7 +80,7 @@
             export tcbindir="${HOME}/srv/toolchain/${ARCH}-tc-16.02/bin"
 
             case "${ARCH}" in
-            x86-64)
+              x86-64)
                 unset ARCH
                 ;;
             esac
@@ -79,6 +88,25 @@
             case "${label}" in
               docker-utopic-arm64)
                 unset ARCH
+                ;;
+            esac
+
+            case "${pktio}" in
+              none)
+                ;;
+              all)
+                export ENABLE_DPDK_PKTIO=1
+                export ENABLE_IPC_PKTIO=1
+                export ENABLE_NETMAP_PKTIO=1
+                ;;
+              dpdk)
+                export ENABLE_DPDK_PKTIO=1
+                ;;
+              ipc)
+                export ENABLE_IPC_PKTIO=1
+                ;;
+              netmap)
+                export ENABLE_NETMAP_PKTIO=1
                 ;;
             esac
 
