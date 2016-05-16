@@ -1,0 +1,138 @@
+- job:
+    name: robher-aosp
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            rob.herring@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'AOSP build playground for Rob Herring'
+    concurrent: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - linaro-publish-token:
+            host: snapshots.linaro.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            java -version
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools libfdt-dev python-mako gettext
+
+            mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
+
+            if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
+              sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+              sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            fi
+            cd /home/buildslave/srv/${JOB_NAME}
+
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+
+            # Clean any artifacts related to previous build
+            rm -rf vendor/db410c
+            rm -rf out/target/product/db410c/system/ out/target/product/db410c/data/ out/target/product/db410c/*.xml out/target/product/db410c/obj/kernel/
+            rm -rf out/target/product/db410c/*.zip out/target/product/db410c/*.img out/target/product/db410c/*.xz
+
+            # Runs as ubuntu
+            repo init -u https://android.googlesource.com/platform/manifest
+            cd .repo
+            rm -rf local_manifests
+            git clone https://github.com/96boards/android_manifest -b android-6.0-db410c local_manifests
+            cd ..
+            repo sync -f --force-sync -j16
+
+            # Extract the proprietary firmware
+            mkdir -p vendor/db410c
+            cd vendor/db410c
+            wget --progress=dot -e dotbytes=1M http://developer.qualcomm.com/download/db410c/firmware-410c-1.2.0.bin
+            yes | sh firmware-410c-1.2.0.bin > /dev/null
+            cd ../..
+
+            mkdir -p out
+            cp .repo/manifest.xml out/source-manifest.xml
+            repo manifest -r -o out/pinned-manifest.xml
+
+            source build/envsetup.sh
+            lunch db410c-userdebug
+            make droidcore -j8
+
+            cd out/target/product/db410c/
+            for image in "boot-db410c.img" "system.img" "userdata.img" "cache.img" "dt.img" "ramdisk.img"; do
+                echo "Compressing ${image}"
+                xz -z ${image}
+            done
+            cd -
+
+            cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml /home/buildslave/srv/${JOB_NAME}/out/target/product/db410c/
+            cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml ${WORKSPACE}/
+
+            # Create MD5SUM
+            cd out/target/product/db410c/
+            md5sum *.txt *.xz *.xml *.img > MD5SUMS.txt
+            cd -
+
+            # Publish
+            PUB_DEST=snapshots/rob.herring/aosp/${BUILD_NUMBER}
+
+            # Build information
+            cat > out/target/product/db410c/README.textile << EOF
+
+            h4. TODO
+            EOF
+
+            cat > out/target/product/db410c/BUILD-INFO.txt << EOF
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: open
+            EOF
+
+            time linaro-cp.py \
+              --manifest \
+              --no-build-info \
+              --link-latest \
+              --split-job-owner \
+              --server ${PUBLISH_SERVER} \
+              out/target/product/db410c/ \
+              ${PUB_DEST} \
+              --include "^[^/]+[._](xz|xml|sh|config)$" \
+              --include "^[BHi][^/]+txt$" \
+              --include "^(MANIFEST|MD5SUMS.txt|BUILD-INFO.txt|README.textile)$"
+
+            echo "Build finished"
+    publishers:
+        - archive:
+            artifacts: '*.xml'
+            latest-only: true
+        - logparser:
+            parse-rules: 'Android Build'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'rob.herring@linaro.org vishal.bhoj@linaro.org'
