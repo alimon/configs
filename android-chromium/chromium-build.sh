@@ -65,6 +65,7 @@ main() {
   install_deps
   cd src
   sync_source
+  git rebase-update
   apply_patches
   setup_buildenv
   echo ${PWD}
