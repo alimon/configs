@@ -41,7 +41,7 @@
 
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools libfdt-dev python-mako gettext
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools libfdt-dev python-mako gettext openjdk-8-jdk
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
@@ -59,77 +59,45 @@
             git config --global user.name "Linaro CI"
 
             # Clean any artifacts related to previous build
-            rm -rf vendor/db410c
-            rm -rf out/target/product/db410c/system/ out/target/product/db410c/data/ out/target/product/db410c/*.xml out/target/product/db410c/obj/kernel/
-            rm -rf out/target/product/db410c/*.zip out/target/product/db410c/*.img out/target/product/db410c/*.xz
+            rm -rf out/target/product/*/system/ out/target/product/*/data/ out/target/product/*/*.xml out/target/product/*/obj/kernel/
+            rm -rf out/target/product/*/*.zip out/target/product/*/*.img out/target/product/*/*.xz
 
             # Runs as ubuntu
-            repo init -u https://android.googlesource.com/platform/manifest
+            repo init -u https://android.googlesource.com/platform/manifest -b master
             cd .repo
             rm -rf local_manifests
-            git clone https://github.com/96boards/android_manifest -b android-6.0-db410c local_manifests
+            git clone https://github.com/robherring/android_manifest -b mesa-master-test local_manifests
             cd ..
             repo sync -f --force-sync -j16
-
-            # Extract the proprietary firmware
-            mkdir -p vendor/db410c
-            cd vendor/db410c
-            wget --progress=dot -e dotbytes=1M http://developer.qualcomm.com/download/db410c/firmware-410c-1.2.0.bin
-            yes | sh firmware-410c-1.2.0.bin > /dev/null
-            cd ../..
 
             mkdir -p out
             cp .repo/manifest.xml out/source-manifest.xml
             repo manifest -r -o out/pinned-manifest.xml
 
+            cd external/mesa3d
+            rev=$(git rev-parse freedesktop/master)
+
+            # temporary until upstream can build
+            #git reset --hard ${rev}
+            git pull --no-edit https://github.com/robherring/mesa.git android-m
+
+            # Enable gpu drivers
+            sed -i -e 's/\(^MESA_GPU_DRIVERS.*\)/MESA_GPU_DRIVERS := $(strip $(BOARD_GPU_DRIVERS)) i915 i965 r300g r600g i915g swrast vc4/' Android.mk
+            # Commit it so repo will throw it away
+            git commit -m "Android: enable GPU drivers" -a -s
+
+            cd ../..
+
+
             source build/envsetup.sh
-            lunch db410c-userdebug
-            make droidcore -j8
-
-            cd out/target/product/db410c/
-            for image in "boot-db410c.img" "system.img" "userdata.img" "cache.img" "dt.img" "ramdisk.img"; do
-                echo "Compressing ${image}"
-                xz -z ${image}
+            for arch in arm64 x86_64; do
+                    lunch linaro_${arch}-userdebug
+                    make -k -j8 gallium_dri i915_dri i965_dri libGLES_mesa gralloc.drm || (true; failed=1)
             done
-            cd -
 
-            cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml /home/buildslave/srv/${JOB_NAME}/out/target/product/db410c/
-            cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml ${WORKSPACE}/
-
-            # Create MD5SUM
-            cd out/target/product/db410c/
-            md5sum *.txt *.xz *.xml *.img > MD5SUMS.txt
-            cd -
-
-            # Publish
-            PUB_DEST=snapshots/rob.herring/aosp/${BUILD_NUMBER}
-
-            # Build information
-            cat > out/target/product/db410c/README.textile << EOF
-
-            h4. TODO
-            EOF
-
-            cat > out/target/product/db410c/BUILD-INFO.txt << EOF
-            Format-Version: 0.5
-
-            Files-Pattern: *
-            License-Type: open
-            EOF
-
-            time linaro-cp.py \
-              --manifest \
-              --no-build-info \
-              --link-latest \
-              --split-job-owner \
-              --server ${PUBLISH_SERVER} \
-              out/target/product/db410c/ \
-              ${PUB_DEST} \
-              --include "^[^/]+[._](xz|xml|sh|config)$" \
-              --include "^[BHi][^/]+txt$" \
-              --include "^(MANIFEST|MD5SUMS.txt|BUILD-INFO.txt|README.textile)$"
-
-            echo "Build finished"
+            ###### Don't care about artifacts for now ######
+            echo "Build for mesa rev ${rev} finished."
+            exit $failed
     publishers:
         - archive:
             artifacts: '*.xml'
@@ -142,3 +110,16 @@
             files: 'build/fingerprints/*'
         - email:
             recipients: 'rob.herring@linaro.org vishal.bhoj@linaro.org'
+        - email-ext:
+            recipients: 'rob.herring@linaro.org'
+            content-type: text
+            subject: 'errors for mesa master Android build ${BUILD_NUMBER}'
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+
+                ERRORS:
+                ${BUILD_LOG_REGEX, regex="^.*? error: .*?$", linesBefore=3, linesAfter=2, showTruncatedLines=false}
+            unstable: true
+
