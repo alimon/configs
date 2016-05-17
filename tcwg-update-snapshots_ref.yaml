@@ -64,19 +64,28 @@
             set -x
 
             if $regenerate; then
-              opts=""
+              regenerate_opt=""
             else
-              opts="-r"
+              regenerate_opt="-r"
             fi
 
             case "$label" in
               tcwg-x86_64-ex40build-01)
-                machines="$(for i in 1 2 4 6 7 8 9; do echo tcwg-ex40-0$i; done) r1-a7.aus-colo r1-a12.aus-colo"
+                master_machine=tcwg-ex40-01
+                machines="$(for i in 2 4 6 7 8 9; do echo tcwg-ex40-0$i; done) r1-a7.aus-colo r1-a12.aus-colo"
                 ;;
               tcwg-x86_64-dev-01)
-                machines="dev-01.tcwglab dev-02.tcwglab $(for i in `seq 1 6`; do echo build-0$i.tcwglab; done) apm-01.tcwglab apm-02.tcwglab test-armv8-01.tcwglab test-armv8-02.tcwglab"
+                master_machine=dev-01.tcwglab
+                machines="dev-02.tcwglab $(for i in `seq 1 6`; do echo build-0$i.tcwglab; done) apm-01.tcwglab apm-02.tcwglab test-armv8-01.tcwglab test-armv8-02.tcwglab"
                 ;;
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
 
-            ./scripts/update-snapshots-ref.sh -v $opts $machines
+            ./scripts/update-snapshots-ref.sh -v $regenerate_opt $master_machine
+            if $regenerate; then
+              # Distribute Foundation Model to the builders so that containers
+              # running there can access Foundation Model via a bind-mount for
+              # bare-metal testing.
+              tar xzf $HOME/FM000-KT-00035-r9p5-41rel0.tgz -C $HOME/snapshots-ref-new
+            fi
+            ./scripts/update-snapshots-ref.sh -v $machines
