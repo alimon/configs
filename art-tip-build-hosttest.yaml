@@ -123,6 +123,21 @@
               currentBuild.setDescription(description)
               manager.addShortText("Tests failed")
               }
+        - plot:
+            - title: 'Sync Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_repo.txt
+                    format: properties
+            - title: 'Test Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_test.txt
+                    format: properties
         - naginator:
             rerun-unstable-builds: true
             max-failed-builds: 1
