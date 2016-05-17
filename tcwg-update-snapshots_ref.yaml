@@ -64,9 +64,9 @@
             set -x
 
             if $regenerate; then
-              regenerate_opt=""
+              nogen_opt=""
             else
-              regenerate_opt="-r"
+              nogen_opt="-r"
             fi
 
             case "$label" in
@@ -81,7 +81,7 @@
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
 
-            ./scripts/update-snapshots-ref.sh -v $regenerate_opt $master_machine
+            ./scripts/update-snapshots-ref.sh -v $nogen_opt $master_machine
             if $regenerate; then
               # Distribute Foundation Model to the builders so that containers
               # running there can access Foundation Model via a bind-mount for
@@ -89,4 +89,4 @@
               tar xzf $HOME/FM000-KT-00035-r9p5-41rel0.tgz -C $HOME/snapshots-ref-new
               chmod -R ugo+rx $HOME/snapshots-ref-new/Foundation_Platformpkg
             fi
-            ./scripts/update-snapshots-ref.sh -v $machines
+            ./scripts/update-snapshots-ref.sh -v -r $machines
