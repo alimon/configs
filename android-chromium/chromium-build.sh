@@ -64,9 +64,8 @@ main() {
   sync_source
   install_deps
   cd src
-  git pull
-  gclient runhooks
   sync_source
+  git rebase-update
   apply_patches
   setup_buildenv
   echo ${PWD}
