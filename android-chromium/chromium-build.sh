@@ -49,6 +49,7 @@ build_chromium() {
 
 apply_patches() {
   cd ..
+  rm -rf chromium-patchsets
   git clone http://android-review.linaro.org/chromium-patchsets
   cd chromium-patchsets
   pw=${PWD}
