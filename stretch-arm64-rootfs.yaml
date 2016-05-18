@@ -1,0 +1,95 @@
+- job:
+    name: stretch-arm64-rootfs
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: codename
+            default: 'stretch'
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'Linaro Debian arm64 rootfs (Stretch)'
+    scm:
+        - git:
+            url: git://git.linaro.org/ci/ubuntu-build-service.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            clean:
+                after: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-arm64
+        - axis:
+            type: user-defined
+            name: rootfs
+            values:
+                - alip
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+        - timeout:
+            timeout: 120
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo umount builddir
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends cpio debootstrap live-build python-pycurl uuid-runtime
+            sudo dpkg -i --force-all packages/live-build_3.0.5-1linaro1_all.deb
+
+            dpkg -s qemu-user-static |grep '^Version'
+            dpkg -s live-build |grep '^Version'
+
+            test -d builddir || mkdir builddir
+            sudo mount -t tmpfs -o size=6G tmpfs builddir
+            cp -a ${codename}-arm64-${rootfs} builddir/
+            cd builddir/${codename}-arm64-${rootfs}
+            ./configure
+            make
+
+            cd ${WORKSPACE}
+            sudo rm -rf out && mkdir out
+            sudo mv builddir/${codename}-arm64-${rootfs}/linaro-${codename}-* out
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py --api_version 3 --link-latest out debian/images/${codename}/${rootfs}-arm64/${BUILD_NUMBER}
+    publishers:
+        - archive:
+            artifacts: 'out/linaro-${codename}-${rootfs}-*'
+        - email:
+            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
