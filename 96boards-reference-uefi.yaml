@@ -158,7 +158,6 @@
                 OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
                 OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
             elif [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
-                ATF_GIT_VERSION=6e9fa3866d2f6382bec5f3e2a215351386a3331b
                 OPEN_PLATFORM_PKG_GIT_URL=ssh://dev-private-git.linaro.org/96boards/OpenPlatformPkg.git
                 OPEN_PLATFORM_PKG_GIT_BRANCH=dev-FDK102
             elif [ "${MX_PLATFORM}" == "d02" ]; then
@@ -239,14 +238,6 @@
                 # Ship nvme.img with UEFI binaries for convenience
                 dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
             elif [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
-                # Build ARM Trusted Firmware
-                #cd ${WORKSPACE}/${BUILD_NUMBER}/SeattleFDK/AmdTrustedFirmwarePkg
-                #ln -s ${ATF_DIR} arm-trusted-firmware
-                #cp -a Override plat arm-trusted-firmware/
-                #cd arm-trusted-firmware; CROSS_COMPILE=aarch64-linux-gnu- make -f Override/Makefile PLAT=seattle EMULATION=0
-                # For the README.textile
-                #BUILD_ATF="yes"
-
                 # Make ROM private for now
                 cat > ${WORKSPACE}/out/${BUILD_TYPE}/BUILD-INFO.txt << EOF
             Format-Version: 0.5
@@ -255,17 +246,6 @@
             License-Type: protected
             Auth-Groups: employees
             EOF
-
-                # Build ROM
-                #cd ${WORKSPACE}/${BUILD_NUMBER}/SeattleFDK/Linaro
-                #if [ "${MX_PLATFORM}" == "styx" ]; then
-                #    FLASH_CONFIG="ScpDirectory-Overdrive.txt"
-                #elif [ "${MX_PLATFORM}" == "cello" ]; then
-                #    FLASH_CONFIG="ScpDirectory-Cello.txt"
-                #fi
-                #./make-rom.sh ${FLASH_CONFIG} ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${IMAGES} >/dev/null
-                #cp Styx.bin ${WORKSPACE}/out/${BUILD_TYPE}
-                cp ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${IMAGES} ${WORKSPACE}/out/${BUILD_TYPE}
             fi
             cd ${WORKSPACE}
 
