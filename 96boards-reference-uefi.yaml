@@ -37,6 +37,7 @@
             values:
                 - hikey
                 - d02
+                - d03
                 - juno
                 - styx
                 - cello
@@ -160,7 +161,7 @@
             elif [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
                 OPEN_PLATFORM_PKG_GIT_URL=ssh://dev-private-git.linaro.org/96boards/OpenPlatformPkg.git
                 OPEN_PLATFORM_PKG_GIT_BRANCH=dev-FDK102
-            elif [ "${MX_PLATFORM}" == "d02" ]; then
+            elif [ "${MX_PLATFORM}" == "d02" -o "${MX_PLATFORM}" == "d03" ]; then
                 OPEN_PLATFORM_PKG_GIT_URL=https://git.linaro.org/people/heyi.guo/OpenPlatformPkg.git
                 OPEN_PLATFORM_PKG_GIT_BRANCH=d02-d03-upstream-04
             fi
@@ -195,7 +196,7 @@
             if [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
                 git clone -b dev-FDK1_0_0_2 --depth 1 ssh://dev-private-git.linaro.org/96boards/SeattleFDK.git
                 cd $EDK2_DIR; ln -s ../SeattleFDK/AmdModulePkg; cd ..
-            elif [ "${MX_PLATFORM}" == "d02" ]; then
+            elif [ "${MX_PLATFORM}" == "d02" -o "${MX_PLATFORM}" == "d03" ]; then
                 # Need revert on 2 known upstream changes for now, Heyi still working on a proper fix
                 cd ${EDK2_DIR}
                 git config user.email "ci@linaro.org"
