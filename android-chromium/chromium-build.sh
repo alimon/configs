@@ -67,6 +67,7 @@ main() {
   cd src
   sync_source
   git rebase-update
+  sync_source
   apply_patches
   setup_buildenv
   echo ${PWD}
