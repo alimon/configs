@@ -204,6 +204,13 @@
                   --base "0x80000000" \
                   --cmdline "root=/dev/disk/by-partlabel/rootfs rw rootwait console=tty0 console=ttyMSM0,115200n8"
                 gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.img
+
+                # For U-Boot
+                sudo cp apq8016-sbc.dtb rootfs/boot/apq8016-sbc.dtb-${KERNEL_VERSION}
+                sudo ln -s apq8016-sbc.dtb-${KERNEL_VERSION} rootfs/boot/apq8016-sbc.dtb
+                echo "KERNEL_DEVICETREE=apq8016-sbc" | sudo tee rootfs/etc/default/kernel
+                sudo mkdir -p rootfs/boot/extlinux
+                cp configs/96boards-reference-platform-debian/extlinux/dragonboard410c.conf rootfs/boot/extlinux/extlinux.conf
             fi
 
             # Create the ext4fs (fastboot compatible)
