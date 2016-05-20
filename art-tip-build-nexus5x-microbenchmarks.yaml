@@ -1,0 +1,209 @@
+- job:
+    name: art-tip-build-nexus5x-microbenchmarks-baseline
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: BUILD_CONFIG_REPO
+            default: 'git://android.git.linaro.org/android-build-configs.git'
+        - string:
+            name: BUILD_CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'linaro-art-tip-nexus5x'
+        - string:
+            name: ART_URL
+            default: 'https://art-reports.linaro.org/api/'
+        - password:
+            name: ART_TOKEN
+            default: ${ART_TOKEN}
+        - password:
+            name: PRIVATE_KEY
+            default: ${PRIVATE_KEY}
+    disabled: true
+    node: docker-utopic-art
+    display-name: 'ART - Tip - Nexus 5X MicroBenchmarks Baseline'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: dev-private-review.linaro.org
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/build'
+                  branches:
+                      - branch-pattern: 'master'
+                  topics:
+                      - pattern: 'IncludeAllTests'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'master'
+                  topics:
+                      - pattern: 'IncludeAllTests'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/external/vixl'
+                  branches:
+                      - branch-pattern: 'master'
+                  topics:
+                      - pattern: 'IncludeAllTests'
+        - gerrit:
+            server-name: 'dev-private-review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+            rm -rf art-build-tests build-configs android
+
+            git clone git://git.linaro.org/people/vishal.bhoj/art-build-tests.sh.git art-build-tests
+            git clone http://android.git.linaro.org/git/android-build-configs.git build-configs
+            git clone https://github.com/mwasilew/art-db-client.git pba
+
+            cd art-build-tests
+            . ./setup-host.sh
+            . ./build.sh
+
+            PUB_SERVER=https://snapshots.linaro.org/
+            PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
+
+            cat > out/target/product/bullhead/BUILD-INFO.txt << EOF
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: protected
+            Auth-Groups: linaro-art
+            EOF
+
+            time linaro-cp.py \
+              --manifest \
+              --no-build-info \
+              --split-job-owner \
+              --server $PUB_SERVER \
+              out/target/product/*/ $PUB_DEST \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+              --include "^[BHi][^/]+txt$" \
+              --include "^(MANIFEST|MD5SUMS)$"
+
+            # Construct post-build-lava parameters
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/refs/heads/master:/android/nexus5x/nexus5x-ubenchmarks-32bit-a53.json
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=droidcore
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/refs/heads/master:/android/nexus5x/nexus5x-ubenchmarks-32bit-a57.json#g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/refs/heads/master:/android/nexus5x/nexus5x-ubenchmarks-64bit-a53.json#g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/refs/heads/master:/android/nexus5x/nexus5x-ubenchmarks-64bit-a57.json#g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            # TODO: Report back to ART DB.
+            #python ./pba/jenkins.py
+
+            echo "Build finished"
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml'
+        - logparser:
+            parse-rules: 'Android-ART Build'
+            unstable-on-warning: false
+            fail-on-error: false
+        - groovy-postbuild:
+            script: |
+              import hudson.model.*
+
+              def matcher = manager.getLogMatcher(".*repo sync failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("repo sync failed")
+              }
+              matcher = manager.getLogMatcher(".*patch merge failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("merge failed")
+              }
+              matcher = manager.getLogMatcher(".*make failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("make failed")
+              }
+              matcher = manager.getLogMatcher(".*images failed to boot.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("Boot test failed")
+              }
+        - plot:
+            - title: 'Sync Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: repo_time.txt
+                    format: properties
+            - title: 'Build Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: make_time.txt
+                    format: properties
+        - naginator:
+            rerun-unstable-builds: true
+            max-failed-builds: 1
