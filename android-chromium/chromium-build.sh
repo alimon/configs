@@ -71,6 +71,7 @@ main() {
   apply_patches
   setup_buildenv
   echo ${PWD}
+  export PATH=${PATH}:${PWD}/third_party/android_tools/ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/
   build_chromium
 }
 
