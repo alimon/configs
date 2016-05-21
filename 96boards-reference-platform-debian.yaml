@@ -93,11 +93,11 @@
             ROOTFS_BUILD_TAR=linaro-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz
 
             # Create pre-built image(s)
-            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-debian-jessie-alip-${VERSION}.img --image-size 2500M --binary ${ROOTFS_BUILD_TAR} --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi
+            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} --image-file ${BOARD}-debian-jessie-alip-sdcard-${VERSION}.img --image-size 2500M --binary ${ROOTFS_BUILD_TAR} --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi
 
             # Create eMMC rootfs image(s)
             mkdir boot rootfs
-            for device in $(sudo kpartx -avs ${BOARD}-debian-jessie-alip-${VERSION}.img | cut -d' ' -f3); do
+            for device in $(sudo kpartx -avs ${BOARD}-debian-jessie-alip-sdcard-${VERSION}.img | cut -d' ' -f3); do
               partition=$(echo ${device} | cut -d'p' -f3)
               [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
               [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
@@ -228,7 +228,7 @@
             sudo umount boot rootfs_ext4 rootfs
             sudo ext2simg -v ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw out/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img
 
-            sudo kpartx -dv ${BOARD}-debian-jessie-alip-${VERSION}.img
+            sudo kpartx -dv ${BOARD}-debian-jessie-alip-sdcard-${VERSION}.img
             sudo rm -rf boot rootfs rootfs_ext4 ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw
 
             # Compress image
@@ -238,8 +238,8 @@
             mkdir -p out/${BOARD}/hwpack
             cp hwpack* out/${BOARD}/hwpack
             ## For SD Card or other boot medias
-            cp ${BOARD}-debian-jessie-alip-${VERSION}.img out/${BOARD}/
-            gzip -9 out/${BOARD}/${BOARD}-debian-jessie-alip-${VERSION}.img
+            cp ${BOARD}-debian-jessie-alip-sdcard-${VERSION}.img out/${BOARD}/
+            gzip -9 out/${BOARD}/${BOARD}-debian-jessie-alip-sdcard-${VERSION}.img
 
             # Create MD5SUMS files
             (cd out/${BOARD} && md5sum *.gz > MD5SUMS.txt)
