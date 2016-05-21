@@ -107,9 +107,38 @@
 
             cp debian-installer-*/build/dest/netboot/mini.iso .
             cp debian-installer-*/build/dest/netboot/netboot.tar.gz .
+
+            # Final preparation for publishing
+            mkdir out
+            cp -a mini.iso netboot.tar.gz out/
+            cd out; tar -zxvf netboot.tar.gz; cd ..
+
+            # Create MD5SUMS file
+            (cd out && find -type f -exec md5sum {} \; | sed "s/  \.\//  /g" > MD5SUMS.txt)
+
+            # Build information
+            KERNEL_VERSION=`grep -a "Linux version" out/debian-installer/arm64/linux`
+            cat > out/README.textile << EOF
+
+            h4. 96Boards - Reference Component Enterprise - Debian Installer (Staging)
+
+            Debian Installer (Jessie) produced with the Reference Platform Kernel package.
+
+            Check "https://github.com/96boards/documentation/wiki/Installing-Debian-Jessie":https://github.com/96boards/documentation/wiki/Installing-Debian-Jessie for the install instructions.
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Debian Installer version: $DEB_INSTALLER_VERSION
+            * Kernel: $KERNEL_VERSION
+            EOF
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/reference-platform/components/debian-installer-staging/${BUILD_NUMBER}/
     publishers:
-        - archive:
-            artifacts: 'mini.iso, netboot.tar.gz'
-            latest-only: true
         - email:
             recipients: 'ricardo.salveti@linaro.org'
