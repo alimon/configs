@@ -1,0 +1,27 @@
+- job:
+    name: trigger-96boards-reference-centos-installer-staging
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for 96boards - Reference Component Enterprise - CentOS Installer (Staging)'
+    triggers:
+        - pollurl:
+            cron: '@hourly'
+            polling-node: build
+            urls:
+              - url: 'http://repo.linaro.org/rpm/linaro-staging/centos-7/repo/'
+                check-content:
+                  - simple: true
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: '96boards-reference-centos-installer-staging'
