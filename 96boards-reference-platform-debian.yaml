@@ -191,18 +191,20 @@
                 wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
                 sudo cp -f license.txt rootfs/etc/license.txt
 
-                # Create device tree table
+                # Create device tree table (not really required by u-boot, but needed by mkbootimg)
                 dtbTool -o dt.img -s 2048 rootfs/usr/lib/linux-image-*/qcom
+                # mkbootimg also needs initrd, just use an empty one
+                touch initrd
 
-                # Create boot image
+                # Create boot image (u-boot)
                 mkbootimg \
-                  --kernel rootfs/boot/vmlinuz-*-arm64 \
-                  --ramdisk rootfs/boot/initrd.img-*-arm64 \
+                  --kernel rootfs/usr/lib/u-boot/dragonboard410c/u-boot.bin \
+                  --ramdisk initrd \
                   --output out/${BOARD}/${BOARD}-boot-linux-${VERSION}.img \
                   --dt dt.img \
                   --pagesize "2048" \
                   --base "0x80000000" \
-                  --cmdline "root=/dev/disk/by-partlabel/rootfs rw rootwait console=tty0 console=ttyMSM0,115200n8"
+                  --cmdline ""
                 gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.img
 
                 # For U-Boot
