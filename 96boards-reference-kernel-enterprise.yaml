@@ -132,8 +132,10 @@
             cp SRPMS/*.src.rpm ${WORKSPACE}/
             cd ..
 
-            cat > ${WORKSPACE}/build-kernel-rpm-params <<EOF
+            cat > ${WORKSPACE}/build-rpm-params <<EOF
             source=https://builds.96boards.org/snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/kernel-aarch64-${rpmversion}-reference.${BUILD_NUMBER}.src.rpm
+            repo=${TARGET_REPO}
+            codename=centos-7
             EOF
 
             # Final preparation for publishing
@@ -176,8 +178,8 @@
             - project: build-package
               property-file: build-package-params
               condition: SUCCESS
-            - project: build-kernel-rpm
-              property-file: build-kernel-rpm-params
+            - project: build-rpm
+              property-file: build-rpm-params
               condition: SUCCESS
         - email:
             recipients: 'ricardo.salveti@linaro.org'
