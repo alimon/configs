@@ -14,20 +14,14 @@
                 - job-cancel
     parameters:
         - string:
-            name: OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160329/proprietary_LA.BR.1.2.4_01810_8x16.0_410C_Nov.tgz
+            name: VENDOR_OVERLAY_URL
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160523/proprietary_LA.BR.1.2.7_01010_8x16.0_410C_May.tgz
         - string:
-            name: PATCHSET_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151211/PATCH_8x16_129905_410c_LA.BR.1.2.4-01810-8x16.0.tar.gz
+            name: BUILD_SCRIPT_URL
+            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/2016053/DB410c_build.sh
         - string:
-            name: SYSTEM_OVERLAY_URL
+            name: USERDATA_OVERLAY_URL
             default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20150813/system_overlay.tar.bz2
-        - string:
-            name: FCC_BINARIES_OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20151202/fcc-binaries.tar.gz
-        - string:
-            name: MANIFEST_FILENAME
-            default: LA.BR.1.2.4-01810-8x16.0.xml
         - password:
             name: PRIVATE_KEY
             default: ${LT_QUALCOMM_PRIVATE_KEY}
@@ -64,62 +58,35 @@
             git config --global user.email "ci_notify@linaro.org"
             git config --global user.name "Linaro CI"
 
-            # Clean any artifacts related to previous build
-            rm -rf vendor/qcom/proprietary
-            rm -rf out/target/product/msm8916_64/system/ out/target/product/msm8916_64/data/ out/target/product/msm8916_64/*.zip
-
             # Runs as ubuntu
             set -ex
-            repo init -u git://codeaurora.org/platform/manifest.git -b release -m ${MANIFEST_FILENAME} --repo-url=git://codeaurora.org/tools/repo.git
-            repo sync -j16
-            set +ex
-            mkdir -p out
-            cp -a .repo/manifest.xml out/source-manifest.xml
-            repo manifest -r -o out/pinned-manifest.xml
 
-            OVERLAY=$(basename ${OVERLAY_URL})
-            wget --progress=dot -e dotbytes=2M ${OVERLAY_URL} -O ${OVERLAY}
-            tar -zxvf ${OVERLAY} -C vendor/qcom/
+            BUILD_SCRIPT=$(basename ${BUILD_SCRIPT_URL})
+            wget --progress=dot -e dotbytes=2M ${BUILD_SCRIPT_URL} -O ${BUILD_SCRIPT}
 
-            PATCHSET=$(basename ${PATCHSET_URL})
-            wget --progress=dot -e dotbytes=2M ${PATCHSET_URL} -O ${PATCHSET}
-            tar -zxvf ${PATCHSET}
-            cd $(basename "${PATCHSET}" .tar.gz)
-            pw=${PWD}
-            export patches=$(find . -iname *.patch | sort)
-            for patch in ${patches}; do echo "applying $patch"; project=$(dirname ${patch}); cd ../${project};rm -rf .git/rebase-apply; git am ${pw}/${patch}; cd -; done
-            cd ..
-            rm -rf ${pw}
+            VENDOR_OVERLAY=$(basename ${VENDOR_OVERLAY_URL})
+            wget --progress=dot -e dotbytes=2M ${VENDOR_OVERLAY_URL} -O ${VENDOR_OVERLAY}
+            chmod a+x ${BUILD_SCRIPT}
+            ./${BUILD_SCRIPT}
 
-            FCC_OVERLAY=$(basename ${FCC_BINARIES_OVERLAY_URL})
-            wget --progress=dot -e dotbytes=2M ${FCC_BINARIES_OVERLAY_URL} -O ${FCC_OVERLAY}
-            tar -zxvf ${FCC_OVERLAY}
-
-            sed -i "s/time_daemon TimeService libTimeService/time_daemon TimeService libTimeService libtime_genoff/g" vendor/qcom/proprietary/common/config/device-vendor.mk
-
-            source build/envsetup.sh
-            lunch msm8916_64-userdebug
-            rm -rf out/target/product/msm8916_64/persist*
-            cp vendor/qcom/proprietary/WCNSS_qcom_wlan_nv.bin device/qcom/msm8916_64/WCNSS_qcom_wlan_nv.bin
-            make -j8
-
+            cd APQ8016_410C_LA.BR.1.2.7-01010-8x16.0_5.1.1_Marsh_Mallo_P2/
             wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt  -O out/target/product/msm8916_64/system/etc/license.txt
-
-            SYSTEM_OVERLAY=(basename ${SYSTEM_OVERLAY_URL})
-            wget ${SYSTEM_OVERLAY_URL} -O ${SYSTEM_OVERLAY}
-            tar -xvjf ${SYSTEM_OVERLAY} -C out/target/product/msm8916_64/
+            cp -a .repo/manifest.xml out/target/product/msm8916_64/source-manifest.xml
+            repo manifest -r -o out/target/product/msm8916_64/pinned-manifest.xml
+            USERDATA_OVERLAY=(basename ${USERDATA_OVERLAY_URL})
+            wget ${USERDATA_OVERLAY_URL} -O ${USERDATA_OVERLAY}
+            tar -xvjf ${USERDATA_OVERLAY} -C out/target/product/msm8916_64/
             rm -rf out/target/product/msm8916_64/userdata.img out/target/product/msm8916_64/obj/PACKAGING/userdata_intermediates/
             make -j8 snod userdataimage
 
             cd out/target/product/msm8916_64/
+            cp -a *.xml ${WORKSPACE}/
             for image in "boot.img" "system.img" "userdata.img" "cache.img" "persist.img" "recovery.img"; do
                 echo "Compressing $image"
                 tar -Jcf ${image}.tar.xz ${image}
             done
             cd -
 
-            cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/
-            cp -a /home/buildslave/srv/${JOB_NAME}/out/*.xml ${WORKSPACE}/
 
             #######################################
             # let's create the SD install image now
@@ -167,16 +134,16 @@
             cd db410c_bootloader
             git log -1
 
-            cp -a /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/emmc_appsboot.mbn bootloaders/
+            cp -a /home/buildslave/srv/${JOB_NAME}/APQ8016_410C_LA.BR.1.2.7-01010-8x16.0_5.1.1_Marsh_Mallo_P2/out/target/product/msm8916_64/emmc_appsboot.mbn bootloaders/
             cd emmc_android
             # we didn't remove the file in out folder when we compressed earlier, so we
             # move them here now
-            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/boot.img .
-            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/recovery.img .
-            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/system.img .
-            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/userdata.img .
-            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/persist.img .
-            mv /home/buildslave/srv/${JOB_NAME}/out/target/product/msm8916_64/cache.img .
+            mv /home/buildslave/srv/${JOB_NAME}/APQ8016_410C_LA.BR.1.2.7-01010-8x16.0_5.1.1_Marsh_Mallo_P2/out/target/product/msm8916_64/boot.img .
+            mv /home/buildslave/srv/${JOB_NAME}/APQ8016_410C_LA.BR.1.2.7-01010-8x16.0_5.1.1_Marsh_Mallo_P2/out/target/product/msm8916_64/recovery.img .
+            mv /home/buildslave/srv/${JOB_NAME}/APQ8016_410C_LA.BR.1.2.7-01010-8x16.0_5.1.1_Marsh_Mallo_P2/out/target/product/msm8916_64/system.img .
+            mv /home/buildslave/srv/${JOB_NAME}/APQ8016_410C_LA.BR.1.2.7-01010-8x16.0_5.1.1_Marsh_Mallo_P2/out/target/product/msm8916_64/userdata.img .
+            mv /home/buildslave/srv/${JOB_NAME}/APQ8016_410C_LA.BR.1.2.7-01010-8x16.0_5.1.1_Marsh_Mallo_P2/out/target/product/msm8916_64/persist.img .
+            mv /home/buildslave/srv/${JOB_NAME}/APQ8016_410C_LA.BR.1.2.7-01010-8x16.0_5.1.1_Marsh_Mallo_P2/out/target/product/msm8916_64/cache.img .
 
             cat << EOF >> os.json
             {
