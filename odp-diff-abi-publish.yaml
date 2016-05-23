@@ -75,14 +75,14 @@
             bash -x ${WORKSPACE}/check-odp/diff-abi.sh |tee
         - ssh:
             site: 'docs.opendataplane.org'
-            target: 'incoming/${JOB_NAME}/${BUILD_NUMBER}'
+            target: 'incoming/odp-diff-abi-publish/${platform_type}/${BUILD_NUMBER}'
             source: 'check-odp/publishing/**'
             command: |
                 cd /srv/docs.opendataplane.org
-                rm -rf snapshots/diff-abi
-                mkdir snapshots
-                cp -a incoming/${JOB_NAME}/${BUILD_NUMBER}/diff-abi snapshots/
-                rm -rf incoming/${JOB_NAME}/${BUILD_NUMBER}
+                mkdir -p snapshots/odp-diff-abi-publish/${platform_type}/${BUILD_NUMBER}
+                cp -a incoming/odp-diff-abi-publish/${platform_type}/${BUILD_NUMBER}/* snapshots/odp-diff-abi-publish/${platform_type}/${BUILD_NUMBER}
+                ln -sf $(pwd)/snapshots/odp-diff-abi-publish/${platform_type}/${BUILD_NUMBER} snapshots/odp-diff-abi-publish/${platform_type}/latest
+                rm -rf incoming/odp-diff-abi-publish/${platform_type}/${BUILD_NUMBER}
             timeout: 120000
             remove-prefix: 'check-odp/publishing'
             always-publish-from-master: true
