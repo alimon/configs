@@ -77,6 +77,8 @@
             wget ${USERDATA_OVERLAY_URL} -O ${USERDATA_OVERLAY}
             tar -xvjf ${USERDATA_OVERLAY} -C out/target/product/msm8916_64/
             rm -rf out/target/product/msm8916_64/userdata.img out/target/product/msm8916_64/obj/PACKAGING/userdata_intermediates/
+            source build/envsetup.sh
+            lunch msm8916_64-userdebug
             make -j8 snod userdataimage
 
             cd out/target/product/msm8916_64/
