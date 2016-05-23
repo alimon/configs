@@ -147,7 +147,7 @@
                 cd /srv/docs.opendataplane.org
                 mkdir -p snapshots/${JOB_NAME}/${BUILD_NUMBER}/${GIT_BRANCH}
                 cp -a incoming/${JOB_NAME}/${BUILD_NUMBER}/${GIT_BRANCH}/${build_type_dir} snapshots/${JOB_NAME}/${BUILD_NUMBER}/${GIT_BRANCH}
-                ln -sf snapshots/${JOB_NAME}/${BUILD_NUMBER} snapshots/${JOB_NAME}/latest
+                ln -sf $(pwd)/snapshots/${JOB_NAME}/${BUILD_NUMBER} snapshots/${JOB_NAME}/latest
                 rm -rf incoming/${JOB_NAME}/${BUILD_NUMBER}
             timeout: 120000
             remove-prefix: 'check-odp/publishing'

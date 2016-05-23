@@ -82,7 +82,7 @@
                 cd /srv/docs.opendataplane.org
                 mkdir snapshots/${JOB_NAME}/${BUILD_NUMBER}
                 cp -a incoming/${JOB_NAME}/${BUILD_NUMBER}/linux-${platform_type}-gitstats snapshots/${JOB_NAME}/${BUILD_NUMBER}/
-                ln -sf snapshots/${JOB_NAME}/${BUILD_NUMBER} snapshots/${JOB_NAME}/latest
+                ln -sf $(pwd)/snapshots/${JOB_NAME}/${BUILD_NUMBER} snapshots/${JOB_NAME}/latest
                 rm -rf incoming/${JOB_NAME}/${BUILD_NUMBER}
             timeout: 120000
             remove-prefix: 'odp/publishing'
