@@ -102,10 +102,10 @@
                 - armeb-linux-gnueabihf
         - axis:
             type: user-defined
-            name: canadian
+            name: hosttype
             values:
-                - true
-                - false
+                - linux
+                - mingw
     execution-strategy:
         sequential: false
     wrappers:
@@ -130,6 +130,13 @@
             else
               shell="/bin/bash"
             fi
+
+            export canadian=false
+            case ${hosttype} in
+            linux) ;;
+            mingw) canadian=true ;;
+            esac
+
             ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver}
             if test $? -gt 0; then
               exit 1
