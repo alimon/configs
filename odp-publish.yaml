@@ -141,14 +141,14 @@
             properties-file: remote_directory_parameters
         - ssh:
             site: 'docs.opendataplane.org'
-            target: 'incoming/odp-publish-${platform_type}-${build_type}/${BUILD_NUMBER}'
+            target: 'incoming/odp-publish/${platform_type}/${build_type}/${BUILD_NUMBER}'
             source: 'check-odp/publishing/**'
             command: |
                 cd /srv/docs.opendataplane.org
-                mkdir -p snapshots/odp-publish-${platform_type}-${build_type}/${BUILD_NUMBER}/${GIT_BRANCH}
-                cp -a incoming/odp-publish-${platform_type}-${build_type}/${BUILD_NUMBER}/${GIT_BRANCH}/${build_type_dir} snapshots/odp-publish-${platform_type}-${build_type}/${BUILD_NUMBER}/${GIT_BRANCH}
-                ln -sf $(pwd)/snapshots/odp-publish-${platform_type}-${build_type}/${BUILD_NUMBER} snapshots/odp-publish-${platform_type}-${build_type}/latest
-                rm -rf incoming/odp-publish-${platform_type}-${build_type}/${BUILD_NUMBER}
+                mkdir -p snapshots/odp-publish/${platform_type}/${build_type}/${BUILD_NUMBER}/${GIT_BRANCH}
+                cp -a incoming/odp-publish/${platform_type}/${build_type}/${BUILD_NUMBER}/${GIT_BRANCH}/${build_type_dir} snapshots/odp-publish/${platform_type}/${build_type}/${BUILD_NUMBER}/${GIT_BRANCH}
+                ln -sf $(pwd)/snapshots/odp-publish/${platform_type}/${build_type}/${BUILD_NUMBER} snapshots/odp-publish/${platform_type}/${build_type}/latest
+                rm -rf incoming/odp-publish/${platform_type}/${build_type}/${BUILD_NUMBER}
             timeout: 120000
             remove-prefix: 'check-odp/publishing'
             always-publish-from-master: true
