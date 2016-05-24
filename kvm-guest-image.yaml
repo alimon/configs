@@ -95,7 +95,7 @@
             mkdir out; mv kvm.qcow2.xz out/kvm-${arch}.qcow2.xz
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            python ${HOME}/bin/linaro-cp.py out ubuntu/images/kvm-guest/${BUILD_NUMBER}/${arch}
+            python ${HOME}/bin/linaro-cp.py --api_version 3 out ubuntu/images/kvm-guest/${BUILD_NUMBER}/${arch}
     publishers:
         - email:
             recipients: 'riku.voipio@linaro.org'
