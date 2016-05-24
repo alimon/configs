@@ -53,6 +53,7 @@
             values:
                 - armv7a
                 - armv7ab
+                - armv8
                 - x86-64
     execution-strategy:
         sequential: true
@@ -107,6 +108,10 @@
               armv7ab)
                 hwpack="arndale-be"
                 DEVICE_TYPE="arndale"
+                ;;
+              armv8)
+                hwpack="vexpress64"
+                DEVICE_TYPE="juno"
                 ;;
               x86-64)
                 hwpack="x86_64"
@@ -182,6 +187,15 @@
             steps:
                 - trigger-builds:
                     - project: 'odp-armv7ab-test-definitions'
+                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      block: true
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="arch"}'
+            condition-string2: 'armv8'
+            steps:
+                - trigger-builds:
+                    - project: 'odp-armv8-test-definitions'
                       predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
                       block: true
         - conditional-step:
