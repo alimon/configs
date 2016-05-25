@@ -53,10 +53,10 @@
             default: 'release/qcomlt-4.4'
         - string:
             name: QCOM_FIRMWARE
-            default: 'http://developer.qualcomm.com/download/db410c/firmware-410c-1.2.0.bin'
+            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160524/linux-board-support-package-v1.2.zip'
         - string:
             name: QCOM_FIRMWARE_MD5
-            default: 'de6038f1c07b93886b8d0845a1d8eb4b'
+            default: 'a03af6a277dabd7cf78340bd48b443f0'
         - password:
             name: PRIVATE_KEY
             default: ${LT_QUALCOMM_PRIVATE_KEY}
@@ -243,7 +243,7 @@
               wget -q ${QCOM_FIRMWARE}
               echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
               md5sum -c MD5
-              sh $(basename ${QCOM_FIRMWARE}) --auto-accept
+              unzip $(basename ${QCOM_FIRMWARE})
               cd -
               sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
               sudo rm -f rootfs/lib/firmware/wlan/macaddr0 rootfs/lib/firmware.tar
