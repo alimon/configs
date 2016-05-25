@@ -67,6 +67,7 @@
             git add buildman.conf
             git commit -m "dummy commit"
 
+            set +e
             ./tools/buildman/buildman --config-file=buildman.conf --list-tool-chains
             ./tools/buildman/buildman \
               --config-file=buildman.conf \
@@ -81,6 +82,7 @@
               --verbose \
               --show_errors \
               --list-error-boards
+            set -e
 
             # Publish
             mv $(find build -type d -name vexpress_aemv8a_juno | xargs dirname)/* build/
