@@ -1,0 +1,109 @@
+- job:
+    name: zephyr-upstream
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'Zephyr project for ARM (v7-M and v7E-M)'
+    scm:
+        - git:
+            url: https://gerrit.zephyrproject.org/r/zephyr
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-utopic-art
+        - axis:
+            type: user-defined
+            name: BOARD
+            values:
+                - arduino_due
+                - frdm_k64f
+                - olimexino_stm32
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            head -5 Makefile
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out
+              git clean -fdx
+            }
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y git g++ libc6-dev-i386 g++-multilib python3-ply gcc-arm-none-eabi python-pycurl rsync
+
+            # Set build environment variables
+            export ZEPHYR_BASE=${WORKSPACE}
+            export PATH=${ZEPHYR_BASE}/scripts:${PATH}
+            export CROSS_COMPILE=arm-none-eabi-
+            export ARCH=arm
+
+            # Ignore errors for now as we build all the sample applications
+            # even the samples not intended for the architecture or the platform
+            set +e
+            # Build using ARCH, CROSS_COMPILE and BOARD environment variables set
+            for project in $(find samples -type f -name prj.conf | xargs dirname); do
+              cd ${ZEPHYR_BASE}/${project}
+              make -j$(getconf _NPROCESSORS_ONLN)
+            done
+            set -e
+
+            cd ${WORKSPACE}
+            find samples -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
+            rsync -avm \
+              --include=zephyr.bin \
+              --include=zephyr.config \
+              --include='*/' \
+              --exclude='*' \
+              samples/ out/
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              out components/kernel/zephyr/${BOARD}/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
