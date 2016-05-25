@@ -139,6 +139,12 @@
             mingw) canadian=true ;;
             esac
 
+            echo label=${label}
+            echo target=${target}
+            echo hosttype=${hosttype}
+            echo canadian=${canadian}
+            exit 0
+
             ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver}
             if test $? -gt 0; then
               exit 1
