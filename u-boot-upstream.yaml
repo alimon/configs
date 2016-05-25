@@ -2,9 +2,6 @@
     name: u-boot-upstream
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -15,8 +12,11 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
     disabled: false
-    node: docker-utopic-amd64
+    node: docker-xenial-amd64
     display-name: 'U-Boot upstream (mainline)'
     scm:
         - git:
@@ -37,6 +37,8 @@
         - shell: |
             #!/bin/bash
 
+            env |grep GIT
+
             set -ex
 
             trap cleanup_exit INT TERM EXIT
@@ -46,31 +48,43 @@
               cd ${WORKSPACE}
               rm -rf build out
               git clean -fdx
+              git reset --hard
             }
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
             sudo apt-get install -y libssl-dev python-pycurl rsync
 
-            # Use pre-installed linaro toolchain
-            export PATH="${HOME}/srv/toolchain/arm-tc-15.02/bin:${HOME}/srv/toolchain/arm64-tc-15.02/bin:$PATH"
-            export CROSS_COMPILE="arm-linux-gnueabihf-"
+            cat > buildman.conf << EOF
+            [toolchain]
+            arm: ${HOME}/srv/toolchain/arm-tc-16.02/bin
+            aarch64: ${HOME}/srv/toolchain/arm64-tc-16.02/bin
+            x86_64: /usr/bin
+            EOF
 
-            # Hack to avoid to clean the build as we want to publish build artifacts
-            sed -i "s|\t\t\${MAKE} -s clean||" MAKEALL
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+            git checkout -b u-boot-ci origin/master
+            git add buildman.conf
+            git commit -m "dummy commit"
 
-            # FIXME kill_children doesn't kill only the children, it kills also the shell parents
-            # java -jar slave.jar -> /bin/bash /tmp/hudsonXXX.sh -> MAKEALL
-            sed -i "s|\t\tkill_children|\t\tkill -- -\$$|" MAKEALL
-
-            for CPU in armv7 armv8; do
-              [ "${CPU}" = "armv8" ] && export CROSS_COMPILE="aarch64-linux-gnu-"
-              export BUILD_DIR="${WORKSPACE}/build/${CPU}"
-              export BUILD_NBUILDS=2
-              ./MAKEALL --cpu ${CPU}
-            done
+            ./tools/buildman/buildman --config-file=buildman.conf --list-tool-chains
+            ./tools/buildman/buildman \
+              --config-file=buildman.conf \
+              --keep-outputs \
+              --output-dir=build \
+              --branch=origin/master..u-boot-ci \
+              --step=1 \
+              'armv7|armv8|x86' \
+              --show-sizes \
+              --force-reconfig \
+              --detail \
+              --verbose \
+              --show_errors \
+              --list-error-boards
 
             # Publish
+            mv $(find build -type d -name vexpress_aemv8a_juno | xargs dirname)/* build/
+            rm -rf build/origin_master_u-boot-ci
             find build -type f -name '.config' -exec rename 's/.config/u-boot.config/' {} +
             rsync -avm \
               --include=u-boot \
@@ -88,4 +102,4 @@
               out components/kernel/u-boot/${BUILD_NUMBER}
     publishers:
         - email:
-            recipients: 'andrey.konovalov@linaro.org fathi.boudra@linaro.org'
+            recipients: 'fathi.boudra@linaro.org'
