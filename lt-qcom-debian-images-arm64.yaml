@@ -172,7 +172,6 @@
             - firmware-linux
             - wcnss-wlan
             - wcnss-bt
-            - 96boards-artwork
             EOF
 
             # Build information
@@ -198,9 +197,10 @@
               cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
 
               # additional packages in desktop images
-              [ "${rootfs}" != "developer" ] && cat << EOF >> ${VENDOR}-lt-qcom
+              [ "${rootfs}" = "alip" ] && cat << EOF >> ${VENDOR}-lt-qcom
             - xserver-xorg-video-freedreno
             - gstreamer1.0-plugins-v4l2
+            - 96boards-artwork
             EOF
 
               rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz`
