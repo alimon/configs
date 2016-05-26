@@ -31,14 +31,11 @@
             name: OS_FLAVOUR
             default: 'jessie'
         - string:
-            name: EXT4FS_IMG_SZ
-            default: '1800M'
-        - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon-arm64'
         - string:
             name: ROOTFS
-            default: 'developer,arm64 alip,arm64'
+            default: 'developer,arm64,1800M alip,arm64,1800M'
         - string:
             name: DTBS
             default: 'msm8916-mtp.dtb apq8016-sbc.dtb'
@@ -193,8 +190,9 @@
 
             for rootfs in ${ROOTFS}; do
 
-              rootfs_arch=${rootfs#*,}
-              rootfs=${rootfs%,*}
+              rootfs_arch=$(echo $rootfs | cut -f2 -d,)
+              rootfs_sz=$(echo $rootfs | cut -f3 -d,)
+              rootfs=$(echo $rootfs | cut -f1 -d,)
 
               cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
 
@@ -247,7 +245,7 @@
               sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
               sudo rm -f rootfs/lib/firmware/wlan/macaddr0 rootfs/lib/firmware.tar
 
-              sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${EXT4FS_IMG_SZ}
+              sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
               mkdir rootfs2
               sudo mount -o loop out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw rootfs2
               sudo cp -a rootfs/* rootfs2

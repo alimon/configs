@@ -31,14 +31,11 @@
             name: OS_FLAVOUR
             default: 'jessie'
         - string:
-            name: EXT4FS_IMG_SZ
-            default: '1800M'
-        - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon'
         - string:
             name: ROOTFS
-            default: 'developer,armhf alip,armhf'
+            default: 'developer,armhf,1800M alip,armhf,1800M'
         - string:
             name: DTBS
             default: 'qcom-apq8064-ifc6410.dtb qcom-apq8064-cm-qs600.dtb qcom-apq8064-eI_ERAGON600.dtb'
@@ -178,8 +175,9 @@
 
             for rootfs in ${ROOTFS}; do
 
-              rootfs_arch=${rootfs#*,}
-              rootfs=${rootfs%,*}
+              rootfs_arch=$(echo $rootfs | cut -f2 -d,)
+              rootfs_sz=$(echo $rootfs | cut -f3 -d,)
+              rootfs=$(echo $rootfs | cut -f1 -d,)
 
               cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
 
@@ -220,7 +218,7 @@
             LABEL=qcom-firmware /lib/firmware ext4 defaults 0 0
             EOF
 
-              sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${EXT4FS_IMG_SZ}
+              sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
               mkdir rootfs2
               sudo mount -o loop out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw rootfs2
               sudo cp -a rootfs/* rootfs2
