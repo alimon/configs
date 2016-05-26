@@ -78,18 +78,18 @@
             export CROSS_COMPILE=arm-none-eabi-
             export ARCH=arm
 
-            # Ignore errors for now as we build all the sample applications
-            # even the samples not intended for the architecture or the platform
+            # Ignore errors for now as we build all the sample and test applications
+            # even the samples/tests not intended for the architecture or the platform
             set +e
             # Build using ARCH, CROSS_COMPILE and BOARD environment variables set
-            for project in $(find samples -type f -name prj.conf | xargs dirname); do
+            for project in $(find samples tests -type f -name prj.conf | xargs dirname); do
               cd ${ZEPHYR_BASE}/${project}
               make -j$(getconf _NPROCESSORS_ONLN)
             done
             set -e
 
             cd ${WORKSPACE}
-            find samples -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
+            find samples tests -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
             rsync -avm \
               --include=zephyr.bin \
               --include=zephyr.config \
