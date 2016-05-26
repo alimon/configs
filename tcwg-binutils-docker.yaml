@@ -1,0 +1,128 @@
+- job:
+    name: tcwg-binutils
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: binutils_rev
+            default: 'refs/remotes/origin/master'
+            description: 'binutils revision to build'
+    disabled: false
+    node: tcwg-x86_64-ex40
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG BBB Binutils'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/binutils-gdb.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            branches:
+                - ${binutils_rev}
+            skip-tag: true
+            shallow-clone: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-trusty-amd64-tcwg-dev-01
+                - docker-trusty-amd64-tcwg-dev-02
+                - docker-trusty-i386-tcwg
+        - axis:
+            type: user-defined
+            name: bfd
+            values:
+                - --enable-64-bit-bfd=no
+                - --enable-64-bit-bfd=yes
+        - axis:
+            type: user-defined
+            name: target
+            values:
+                - aarch64-linux-gnu
+                - aarch64-none-elf
+                - aarch64_be-none-elf
+                - arm-linux-gnueabi
+                - arm-linux-gnueabihf
+                - arm-netbsdelf
+                - arm-none-eabi
+                - arm-none-nacl
+                - arm-none-symbianelf
+                - arm-vxworks
+                - arm-wince-pe
+                - armeb-linux-gnueabihf
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="binutils_rev"}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+            set -x
+
+            BUILD_SHELL="bash"
+            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+
+            case $target in
+                arm-wince-pe)
+                    lto=
+                    ;;
+                *)
+                    lto=--enable-lto
+                    ;;
+            esac
+
+            rm -rf build-$target || true
+            mkdir -p build-$target
+            cd build-$target
+            result=0
+            jobs=$(getconf _NPROCESSORS_ONLN)
+            echo BUILD STARTED $(date)
+            echo label=${label}
+            echo target=${target}
+            echo bfd=${bfd}
+            echo host=`hostname`
+
+            # If configure or build fails, the execution will stop
+            # because of 'set -e'. But for 'make check' we want to
+            # execute all the tests, and report if there were some
+            # errors.
+            ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
+            ${BUILD_SHELL} -c "make all -j$jobs"
+            ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
+            sums=`find . -name "*.sum"`
+            echo '############################################'
+            echo 'See unexpected results below:'
+            echo '############################################'
+            [ x"$sums" != x ] && egrep '^FAIL:|^XPASS:' $sums || true
+            echo '############################################'
+            echo 'See ends of sumfiles below:'
+            echo '############################################'
+            [ x"$sums" != x ] && tail $sums
+
+            echo BUILD FINISHED $(date)
+
+            exit $result
+    publishers:
+        - email:
+            recipients: 'christophe.lyon@linaro.org'
