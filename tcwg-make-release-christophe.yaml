@@ -108,7 +108,7 @@
                 - mingw
     execution-strategy:
         combination-filter: |
-            (hosttype=="linux") || (hosttype=="mingw" && label=="docker-trusty-amd64-tcwg")
+            (label==docker-trusty-amd64-tcwg) || (label=docker-trusty-i386-tcwg && hosttype=="linux" && (target=="arm-eabi" || target=="arm-linux-gnueabihf"))
         sequential: false
     wrappers:
         - timestamps
@@ -132,19 +132,6 @@
             else
               shell="/bin/bash"
             fi
-
-            export canadian=false
-            case ${hosttype} in
-            linux) ;;
-            mingw) canadian=true ;;
-            esac
-
-            echo label=${label}
-            echo target=${target}
-            echo hosttype=${hosttype}
-            echo canadian=${canadian}
-            exit 0
-
             ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver}
             if test $? -gt 0; then
               exit 1
