@@ -34,14 +34,11 @@
             name: EXT4FS_IMG_SZ
             default: '1800M'
         - string:
-            name: PLATFORM_ARCH
-            default: 'arm64'
-        - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon-arm64'
         - string:
             name: ROOTFS
-            default: 'developer alip'
+            default: 'developer,arm64 alip,arm64'
         - string:
             name: DTBS
             default: 'msm8916-mtp.dtb apq8016-sbc.dtb'
@@ -119,8 +116,8 @@
             export kernel_flavour=lt-qcom
             export kernel_config="defconfig distro.config"
             export MAKE_DTBS=true
-            export ARCH=${PLATFORM_ARCH}
-            export tcbindir="${HOME}/srv/toolchain/${PLATFORM_ARCH}-tc-14.09/bin"
+            export ARCH=arm64
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-14.09/bin"
             export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
 
             test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
@@ -131,7 +128,7 @@
             format: '3.0'
             name: ${VENDOR}-lt-qcom
             architectures:
-            - ${PLATFORM_ARCH}
+            - arm64
             origin: Linaro
             maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
             support: supported
@@ -173,8 +170,8 @@
               debian: http://ftp.debian.org/debian/ ${OS_FLAVOUR} main contrib non-free
               backports: http://ftp.debian.org/debian/ ${OS_FLAVOUR}-backports main
             packages:
-            - linux-image-${PLATFORM_ARCH}
-            - linux-headers-${PLATFORM_ARCH}
+            - linux-image-arm64
+            - linux-headers-arm64
             - firmware-linux
             - wcnss-wlan
             - wcnss-bt
@@ -197,6 +194,9 @@
 
             for rootfs in ${ROOTFS}; do
 
+              rootfs_arch=${rootfs#*,}
+              rootfs=${rootfs%,*}
+
               cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
 
               # additional packages in desktop images
@@ -205,16 +205,16 @@
             - gstreamer1.0-plugins-v4l2
             EOF
 
-              rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz`
+              rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz`
               VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
               linaro-hwpack-create --debug --backports ${VENDOR}-lt-qcom ${VERSION}
-              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
-              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
 
               # Get rootfs
-              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
-              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
               # Create pre-built image(s)
@@ -261,7 +261,7 @@
               gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
               cat >> out/README.textile << EOF
-            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}
+            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}
             EOF
             done
 

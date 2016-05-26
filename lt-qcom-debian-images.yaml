@@ -34,14 +34,11 @@
             name: EXT4FS_IMG_SZ
             default: '1800M'
         - string:
-            name: PLATFORM_ARCH
-            default: 'armhf'
-        - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon'
         - string:
             name: ROOTFS
-            default: 'developer alip'
+            default: 'developer,armhf alip,armhf'
         - string:
             name: DTBS
             default: 'qcom-apq8064-ifc6410.dtb qcom-apq8064-cm-qs600.dtb qcom-apq8064-eI_ERAGON600.dtb qcom-apq8064-arrow-db600c.dtb'
@@ -116,7 +113,7 @@
             format: '3.0'
             name: ${VENDOR}-lt-qcom
             architectures:
-            - ${PLATFORM_ARCH}
+            - armhf
             origin: Linaro
             maintainer: Linaro Platform <linaro-dev@lists.linaro.org>
             support: supported
@@ -181,6 +178,9 @@
 
             for rootfs in ${ROOTFS}; do
 
+              rootfs_arch=${rootfs#*,}
+              rootfs=${rootfs%,*}
+
               cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
 
               # additional packages in desktop images
@@ -188,16 +188,16 @@
             - xserver-xorg-video-freedreno
             EOF
 
-              rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz`
+              rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz`
               VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
               linaro-hwpack-create --debug --backports ${VENDOR}-lt-qcom ${VERSION}
-              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
-              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${PLATFORM_ARCH}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
+              linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
 
               # Get rootfs
-              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
-              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${PLATFORM_ARCH}-rootfs/label=docker-jessie-${PLATFORM_ARCH},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
               # Create pre-built image(s)
@@ -233,7 +233,7 @@
               gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
               cat >> out/README.textile << EOF
-            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${PLATFORM_ARCH}/${ROOTFS_BUILD_NUMBER}
+            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}
             EOF
             done
 
