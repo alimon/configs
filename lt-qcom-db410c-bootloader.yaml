@@ -111,6 +111,7 @@
             done
 
             mkdir -p out/dragonboard410c_sdcard_rescue \
+                  out/dragonboard410c_bootloader_sd_linux \
                   out/dragonboard410c_bootloader_emmc_linux \
                   out/dragonboard410c_bootloader_emmc_android
 
@@ -142,6 +143,12 @@
             sudo sgdisk -bgpt.bin gpt.img
             ./mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_android/gpt_both0.bin
 
+            # bootloader_sd_linux
+            cp -a license.txt \
+               lk_sd_boot/build-msm8916/emmc_appsboot.mbn \
+               bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,tz-psci.mbn,hyp.mbn} \
+               out/dragonboard410c_bootloader_sd_linux
+
             # sdcard_rescue
             cp -a license.txt out/dragonboard410c_sdcard_rescue
             sudo ./mksdcard -x -p dragonboard410c/linux/sdrescue.txt \
@@ -150,8 +157,9 @@
                  -i bootloaders-linux/
 
             # Create MD5SUMS file
-            for i in dragonboard410c_sdcard_rescue dragonboard410c_bootloader_emmc_linux dragonboard410c_bootloader_emmc_android; do
-                (cd out/$i && md5sum * > MD5SUMS.txt)
+            for i in dragonboard410c_sdcard_rescue dragonboard410c_bootloader_sd_linux \
+                dragonboard410c_bootloader_emmc_linux dragonboard410c_bootloader_emmc_android; do
+                    (cd out/$i && md5sum * > MD5SUMS.txt)
             done
 
             # Final preparation of archives for publishing
@@ -159,6 +167,7 @@
             zip -rj out2/dragonboard410c_sdcard_rescue-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_rescue
             zip -rj out2/dragonboard410c_bootloader_emmc_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_linux
             zip -rj out2/dragonboard410c_bootloader_emmc_android-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_android
+            zip -rj out2/dragonboard410c_bootloader_sd_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_sd_linux
 
             # Create MD5SUMS file
             (cd out2 && md5sum * > MD5SUMS.txt)
@@ -170,8 +179,9 @@
 
             This page provides the bootloaders packages for the Dragonboard 410c. There are several packages:
             * *sdcard_rescue* : an SD card image that can be used to boot from SD card, and rescue a board when the onboard eMMC is empty or corrupted
-            * *bootloader_emmc_linux* : includes the bootloaders and partition table (GPT) used when booting Linux images
-            * *bootloader_emmc_android* : includes the bootloaders and partition table (GPT) used when booting Android images
+            * *bootloader_emmc_linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from onboard eMMC
+            * *bootloader_emmc_android* : includes the bootloaders and partition table (GPT) used when booting Android images from onboard eMMC
+            * *bootloader_sd_linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from SD card
 
             Build description:
             * Build URL: "$BUILD_URL":$BUILD_URL
