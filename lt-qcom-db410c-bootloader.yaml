@@ -18,6 +18,36 @@
         - string:
             name: BRANCH
             default: 'master'
+        - string:
+            name: LK_GIT_LINARO
+            default: 'https://git.linaro.org/landing-teams/working/qualcomm/lk.git'
+        - string:
+            name: LK_GCC_GIT
+            default: 'git://codeaurora.org/platform/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8.git'
+        - string:
+            name: LK_GCC_REL
+            default: 'LA.BR.1.1.3.c4-01000-8x16.0'
+        - string:
+            name: LK_GIT_REL_SD_RESCUE
+            default: 'release/LA.BR.1.1.2-02210-8x16.0+rescue'
+        - string:
+            name: LK_GIT_REL_SD_BOOT
+            default: 'release/LA.BR.1.1.2-02210-8x16.0+sdboot'
+        - string:
+            name: LK_GIT_REL_EMMC_BOOT
+            default: 'release/LA.BR.1.2.4-00310-8x16.0'
+        - string:
+            name: QCOM_LINUX_FIRMWARE
+            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160620/linux-board-support-package-v1.3.zip'
+        - string:
+            name: QCOM_LINUX_FIRMWARE_MD5
+            default: '810c7d39c86f8e39f3eb64eb1122aefb'
+        - string:
+            name: QCOM_ANDROID_FIRMWARE
+            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160524/bootloaders-android.zip'
+        - string:
+            name: QCOM_ANDROID_FIRMWARE_MD5
+            default: 'b6fb005bc1b6b001420f3214b49bca45'
     disabled: false
     node: docker-jessie-amd64
     display-name: 'Qualcomm bootloader for DragonBoard 410c'
@@ -28,77 +58,92 @@
             host: builds.96boards.org
         - shell: |
             #!/bin/bash
-
             set -e
 
-            trap cleanup_exit INT TERM EXIT
-
-            cleanup_exit()
-            {
-              cd ${WORKSPACE}
-              kill -9 ${SSH_AGENT_PID}
-              rm -rf out*
-            }
-
             sudo apt-get update
-            sudo apt-get install -y python-pycurl zip
+            sudo apt-get install -y zip gdisk
 
-            TMPKEYDIR=$(mktemp -d /tmp/qcom.XXXXXX)
-            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
-            #!/usr/bin/python
-
-            import os
-            import sys
-
-            def main():
-                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
-                if private_key == "Undefined":
-                    sys.exit("PRIVATE_KEY is not defined.")
-
-                buffer = private_key.replace(' ','\n')
-                with open('linaro-private-key', 'w') as f:
-                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
-                    f.write(buffer)
-                    f.write('\n-----END RSA PRIVATE KEY-----\n')
-
-            if __name__ == "__main__":
-                    main()
-            EOF
-            python ${TMPKEYDIR}/private-key-wrapper.py
-            chmod 0600 ${WORKSPACE}/linaro-private-key
-
-            eval `ssh-agent` >/dev/null 2>/dev/null
-            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
-            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
-
-            mkdir -p ~/.ssh
-            ssh-keyscan dev-private-git.linaro.org >> ~/.ssh/known_hosts
-            cat << EOF >> ~/.ssh/config
-            Host dev-private-git.linaro.org
-                User git
-            EOF
-            chmod 0600 ~/.ssh/* || true
-
-            git clone --depth 1 -b ${BRANCH} ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git ${WORKSPACE}
+            git clone --depth 1 -b ${BRANCH} https://git.linaro.org/people/nicolas.dechesne/db-boot-tools.git
             # record commit info in build log
-            git log -1
+            (cd db-boot-tools && git log -1)
 
-            ./build sdcard_rescue_image bootloader_linux bootloader_android
+            # download the firmware packages
+            wget -q ${QCOM_LINUX_FIRMWARE}
+            wget -q ${QCOM_ANDROID_FIRMWARE}
+            echo "${QCOM_LINUX_FIRMWARE_MD5}  $(basename ${QCOM_LINUX_FIRMWARE})" > MD5
+            echo "${QCOM_ANDROID_FIRMWARE_MD5}  $(basename ${QCOM_ANDROID_FIRMWARE})" > MD5
+            md5sum -c MD5
 
-            # add license.txt file
+            unzip $(basename ${QCOM_LINUX_FIRMWARE})
+            unzip $(basename ${QCOM_ANDROID_FIRMWARE})
+            mv linux-board-support-package-*/bootloaders-linux/ .
+
+            # Get the Android compiler
+            git clone ${LK_GCC_GIT} --depth 1 -b ${LK_GCC_REL} android-gcc
+
+            # Build all needed flavors of LK
+            git clone --depth 1 ${LK_GIT_LINARO} -b ${LK_GIT_REL_SD_RESCUE} lk_sdrescue
+            git clone --depth 1 ${LK_GIT_LINARO} -b ${LK_GIT_REL_SD_BOOT} lk_sd_boot
+            git clone --depth 1 ${LK_GIT_LINARO} -b ${LK_GIT_REL_EMMC_BOOT} lk_emmc_boot
+
+            for lk in lk_sdrescue lk_sd_boot lk_emmc_boot; do
+                echo "Building LK in : $lk"
+                cd $lk
+                make -j4 msm8916 EMMC_BOOT=1 TOOLCHAIN_PREFIX=${WORKSPACE}/android-gcc/bin/arm-eabi-
+                cd -
+            done
+
+            mkdir -p out/dragonboard410c_sdcard_rescue \
+                  out/dragonboard410c_bootloader_emmc_linux \
+                  out/dragonboard410c_bootloader_emmc_android
+
+            # get license.txt file
             wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
-            cp license.txt out/dragonboard410c_sdcard_rescue
-            cp license.txt out/dragonboard410c_bootloader_emmc_linux
-            cp license.txt out/dragonboard410c_bootloader_emmc_android
 
-            # Final preparation of archives for publishing
-            mkdir out-rescue
-            zip -rj out-rescue/dragonboard410c_sdcard_rescue-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_rescue
-            zip -rj out-rescue/dragonboard410c_bootloader_emmc_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_linux
-            zip -rj out-rescue/dragonboard410c_bootloader_emmc_android-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_android
+            # bootloader_emmc_linux
+            cp -a license.txt \
+               db-boot-tools/dragonboard410c/linux/flashall \
+               lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
+               bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,tz-psci.mbn,hyp.mbn} \
+               out/dragonboard410c_bootloader_emmc_linux
+
+            # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
+            sudo ./db-boot-tools/mksdcard -g -o gpt.img -p db-boot-tools/dragonboard410c/linux/partitions.txt
+            sudo sgdisk -bgpt.bin gpt.img
+            ./db-boot-tools/mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_linux/gpt_both0.bin
+
+            # bootloader_emmc_android
+            cp -a license.txt \
+               db-boot-tools/dragonboard410c/android/flashall \
+               db-boot-tools/dragonboard410c/android/emmc_appsboot.mbn \
+               bootloaders-android/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn} \
+               out/dragonboard410c_bootloader_emmc_android
+
+            # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
+            sudo ./db-boot-tools/mksdcard -g -o gpt.img -p db-boot-tools/dragonboard410c/android/partitions.txt
+            sudo sgdisk -bgpt.bin gpt.img
+            ./db-boot-tools/mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_android/gpt_both0.bin
+
+            # sdcard_rescue
+            cp -a license.txt out/dragonboard410c_sdcard_rescue
+            sudo ./db-boot-tools/mksdcard -p db-boot-tools/dragonboard410c/linux/sdrescue.txt \
+                 -o out/dragonboard410c_sdcard_rescue/db410c_sd_rescue.img \
+                 -i lk_sdrescue/build-msm8916/ \
+                 -i bootloaders-linux/
 
             # Create MD5SUMS file
-            (cd out-rescue && md5sum * > MD5SUMS.txt)
+            for i in dragonboard410c_sdcard_rescue dragonboard410c_bootloader_emmc_linux dragonboard410c_bootloader_emmc_android; do
+                (cd out/$i && md5sum * > MD5SUMS.txt)
+            done
+
+            # Final preparation of archives for publishing
+            mkdir out2
+            zip -rj out2/dragonboard410c_sdcard_rescue-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_rescue
+            zip -rj out2/dragonboard410c_bootloader_emmc_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_linux
+            zip -rj out2/dragonboard410c_bootloader_emmc_android-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_android
+
+            # Create MD5SUMS file
+            (cd out2 && md5sum * > MD5SUMS.txt)
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -106,15 +151,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out-rescue snapshots/dragonboard410c/linaro/rescue/${BUILD_NUMBER}
-        - shell: |
-            #!/bin/bash
-
-            set -e
-
-            # Cleanup any sensitive files
-            git clean -fdx
-            rm -rf ${WORKSPACE}/* ${WORKSPACE}/.git*
+              out2 snapshots/dragonboard410c/linaro/rescue-ng/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
