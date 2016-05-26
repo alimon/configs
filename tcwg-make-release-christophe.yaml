@@ -132,6 +132,13 @@
             else
               shell="/bin/bash"
             fi
+
+            if test x"${hosttype}" = x"mingw"; then
+              export canadian="true"
+            else
+              export canadian="false"
+            fi
+
             ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver}
             if test $? -gt 0; then
               exit 1
