@@ -51,8 +51,7 @@
             }
 
             sudo apt-get update
-            sudo apt-get install -y kpartx python-pycurl
-            sudo apt-get install -y android-tools-fsutils kpartx python-pycurl
+            sudo apt-get install -y android-tools-fsutils kpartx mtools python-pycurl
             wget -q \
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.02-1.linarojessie.1_amd64.deb \
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.02-1.linarojessie.1_all.deb
@@ -230,19 +229,13 @@
             done
 
             # Create boot image(s)
-            mkdir boot-fat
-
-            dd if=/dev/zero of=out/boot-fat.uefi.img bs=512 count=131072
-            sudo mkfs.fat -F32 -n "boot" out/boot-fat.uefi.img
-            sudo mount -o loop,rw,sync out/boot-fat.uefi.img boot-fat
-            sudo mkdir -p boot-fat/EFI/BOOT
-            sudo cp -a fastboot.efi boot-fat/EFI/BOOT/fastboot.efi || true
-            sudo cp -a grubaa64.efi boot-fat/EFI/BOOT/grubaa64.efi || true
-            sudo cp -a configs/96boards-hikey/boot/grub.cfg boot-fat/EFI/BOOT/grub.cfg || true
-            sudo umount boot-fat
-            sudo chmod 777 out/boot-fat.uefi.img
-
-            rm -rf boot-fat
+            mkfs.fat -F32 -n "boot" -C out/boot-fat.uefi.img 65536
+            mmd -i out/boot-fat.uefi.img -s ::EFI
+            mmd -i out/boot-fat.uefi.img -s ::EFI/BOOT
+            mcopy -i out/boot-fat.uefi.img fastboot.efi ::EFI/BOOT/fastboot.efi
+            mcopy -i out/boot-fat.uefi.img grubaa64.efi ::EFI/BOOT/grubaa64.efi
+            mcopy -i out/boot-fat.uefi.img configs/96boards-hikey/boot/grub.cfg ::EFI/BOOT/grub.cfg
+            chmod 644 out/boot-fat.uefi.img
 
             # Compress boot partition image(s)
             gzip -9 out/boot-fat.uefi.img
