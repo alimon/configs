@@ -89,12 +89,15 @@
 
             cd ${WORKSPACE}
             find samples tests -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
-            rsync -avm \
-              --include=zephyr.bin \
-              --include=zephyr.config \
-              --include='*/' \
-              --exclude='*' \
-              samples/ out/
+            mkdir out
+            for project in samples tests; do
+              rsync -avm \
+                --include=zephyr.bin \
+                --include=zephyr.config \
+                --include='*/' \
+                --exclude='*' \
+                ${project}/ out/${project}/
+            done
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
