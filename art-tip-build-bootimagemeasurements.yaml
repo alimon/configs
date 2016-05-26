@@ -73,6 +73,7 @@
     builders:
         - shell: |
             #!/bin/bash
+
             rm -rf art-build-tests android
 
             git clone git://git.linaro.org/people/vishal.bhoj/art-build-tests.sh.git art-build-tests
@@ -82,7 +83,7 @@
             . ./setup-host.sh
             . ./boot-image-measurement.sh
 
-            # TODO: Report back to ART DB.
+            # TODO: Report back to ART DB
             #python ./pba/jenkins.py
 
             echo "Build finished"
@@ -101,10 +102,12 @@
               if ( matcher?.matches()) {
                   manager.addShortText("repo sync failed")
               }
+
               matcher = manager.getLogMatcher(".*patch merge failed.*")
               if ( matcher?.matches()) {
                   manager.addShortText("merge failed")
               }
+
               matcher = manager.getLogMatcher(".*make failed.*")
               if ( matcher?.matches()) {
                   manager.addShortText("make failed")
