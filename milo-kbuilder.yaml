@@ -39,8 +39,8 @@
                 - job-build
                 - job-cancel
         - build-discarder:
-            days-to-keep: 7
-            num-to-keep: 30
+            days-to-keep: 3
+            num-to-keep: 5
         - throttle:
             max-total: 6
             option: project
@@ -140,7 +140,6 @@
             GIT_DESCRIBE=$(eval git describe $describe_args)
             GIT_DESCRIBE=${GIT_DESCRIBE//\//_}  # replace any '/' with '_'
             echo GIT_DESCRIBE=${GIT_DESCRIBE} > env.properties
-            echo PREV_BUILD_NUMBER=${BUILD_NUMBER} >> env.properties
 
             #export CCACHE_DISABLE=true
 
@@ -233,4 +232,3 @@
                   TREE_NAME=${TREE_NAME}
                   ARCH_LIST=${ARCH_LIST}
                   GIT_DESCRIBE=${GIT_DESCRIBE}
-                  PREV_BUILD_NUMBER=${PREV_BUILD_NUMBER}
