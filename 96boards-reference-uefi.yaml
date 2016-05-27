@@ -91,7 +91,7 @@
                 rm -rf uefi-tools
                 rm -rf l-loader
                 rm -rf acpica-unix
-                rm -rf OpenPlatformPkg SeattleFDK
+                rm -rf OpenPlatformPkg
                 rm -rf out edk2/Build
             }
 
@@ -188,14 +188,14 @@
             # Build setup
             export AARCH64_TOOLCHAIN=GCC49
             export EDK2_DIR=${WORKSPACE}/${BUILD_NUMBER}/edk2
+            export OPP_DIR=${WORKSPACE}/${BUILD_NUMBER}/OpenPlatformPkg
             export ATF_DIR=${WORKSPACE}/${BUILD_NUMBER}/arm-trusted-firmware
             export UEFI_TOOLS_DIR=${WORKSPACE}/${BUILD_NUMBER}/uefi-tools
             export JENKINS_WORKSPACE=${WORKSPACE}
 
             # Board specific setup
             if [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
-                git clone -b dev-FDK1_0_0_2 --depth 1 ssh://dev-private-git.linaro.org/96boards/SeattleFDK.git
-                cd $EDK2_DIR; ln -s ../SeattleFDK/AmdModulePkg; cd ..
+                export PACKAGES_PATH=${OPP_DIR}/Platforms/AMD/Styx/Binary
             elif [ "${MX_PLATFORM}" == "d02" -o "${MX_PLATFORM}" == "d03" ]; then
                 # Need revert on 2 known upstream changes for now, Heyi still working on a proper fix
                 cd ${EDK2_DIR}
@@ -245,15 +245,6 @@
                 wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
                 # Ship nvme.img with UEFI binaries for convenience
                 dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
-            elif [ "${MX_PLATFORM}" == "styx" -o "${MX_PLATFORM}" == "cello" ]; then
-                # Make ROM private for now
-                cat > ${WORKSPACE}/out/${BUILD_TYPE}/BUILD-INFO.txt << EOF
-            Format-Version: 0.5
-
-            Files-Pattern: *
-            License-Type: protected
-            Auth-Groups: employees
-            EOF
             fi
             cd ${WORKSPACE}
 
