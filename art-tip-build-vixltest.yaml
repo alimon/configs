@@ -63,7 +63,7 @@
             timeout: 500
     builders:
         - shell: |
-            #!/bin/bash
+            #!/bin/bash -xe
 
             # Build scripts
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
@@ -85,9 +85,8 @@
             ./setup_android.sh
 
             cd ${ANDROID_BUILD_DIR}
-            setsid ${ART_BUILD_SCRIPTS_DIR}/test_art_vixl.sh
-
-            echo "Build finished"
+            perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
+              ${ART_BUILD_SCRIPTS_DIR}/test_art_vixl.sh
     publishers:
         - archive:
             artifacts: '*.txt, *.xml'

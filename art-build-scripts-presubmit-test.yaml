@@ -40,7 +40,8 @@
             timeout: 10
     builders:
         - shell: |
-            set -x
+            #!/bin/bash -xe
+
             rm -rf art-build-scripts
             git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git
             cd art-build-scripts
@@ -51,7 +52,8 @@
               exit 1
             fi
 
-            setsid ./presubmit.sh
+            perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
+              ./presubmit.sh
     publishers:
         - email:
             recipients: 'daniel.diaz@linaro.org'

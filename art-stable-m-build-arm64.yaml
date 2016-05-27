@@ -66,7 +66,7 @@
             timeout: 500
     builders:
         - shell: |
-            #!/bin/bash
+            #!/bin/bash -xe
 
             # Build scripts
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
@@ -82,9 +82,8 @@
             ./setup_android.sh
 
             cd ${ANDROID_BUILD_DIR}
-            ${ART_BUILD_SCRIPTS_DIR}/test_boot_to_gui_emulator.sh
-
-            echo "Build finished"
+            perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
+              ${ART_BUILD_SCRIPTS_DIR}/test_boot_to_gui_emulator.sh
     publishers:
         - archive:
             artifacts: '*.txt, *.xml'
