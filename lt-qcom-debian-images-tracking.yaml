@@ -222,6 +222,7 @@
               mkdir rootfs2
               sudo mount -o loop out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw rootfs2
               sudo cp -a rootfs/* rootfs2
+              rootfs_sz_real=$(sudo du -sh rootfs2 | cut -f1)
               sudo umount rootfs2 rootfs
               sudo ext2simg -v out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
               sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
@@ -231,7 +232,7 @@
               gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
               cat >> out/README.textile << EOF
-            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}
+            * Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER} , size: ${rootfs_sz_real}
             EOF
             done
 
