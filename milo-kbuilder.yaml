@@ -140,7 +140,6 @@
             GIT_DESCRIBE=$(eval git describe $describe_args)
             GIT_DESCRIBE=${GIT_DESCRIBE//\//_}  # replace any '/' with '_'
             echo GIT_DESCRIBE=${GIT_DESCRIBE} > env.properties
-            export GIT_DESCRIBE # so it overrides default done by build.py
 
             #export CCACHE_DISABLE=true
 
@@ -165,9 +164,10 @@
 
             # Always return success here so pass/fail results can still be published
             exit 0
+
         - inject:
             properties-file: ${TREE_NAME}/env.properties
-            properties-content: GIT_DESCRIBE=${GIT_DESCRIBE}
+
         - shell: |
             #!/bin/bash
             #
@@ -229,3 +229,4 @@
                   TREE_NAME=${TREE_NAME}
                   ARCH_LIST=${ARCH_LIST}
                   GIT_DESCRIBE=${GIT_DESCRIBE}
+                  PREV_BUILD_NUMBER=${BUILD_NUMBER}
