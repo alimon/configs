@@ -1,0 +1,54 @@
+- job:
+    name: milo-kernel-build-complete
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 5
+        numToKeep: 5
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            milo.casagrande@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: TREE_NAME
+            default: ''
+        - string:
+            name: PUBLISH
+            default: ''
+        - string:
+            name: GIT_DESCRIBE
+            default: ''
+        - string:
+            name: ARCH_LIST
+            default: ''
+        - text:
+            name: RESULTS
+            default: 'No Results'
+    disabled: false
+    node: kci-x86_64-build-complete-01
+    display-name: 'milo - Kernel build complete'
+    scm:
+        - git:
+            url: https://github.com/MiloCasagrande/kernelci-build.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/build-complete
+            basedir: local/kernelci-build
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            bash -x ./local/kernelci-build/build-complete.sh
