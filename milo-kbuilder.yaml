@@ -140,6 +140,7 @@
             GIT_DESCRIBE=$(eval git describe $describe_args)
             GIT_DESCRIBE=${GIT_DESCRIBE//\//_}  # replace any '/' with '_'
             echo GIT_DESCRIBE=${GIT_DESCRIBE} > env.properties
+            echo PREV_BUILD_NUMBER=${BUILD_NUMBER} >> env.properties
 
             #export CCACHE_DISABLE=true
 
@@ -174,6 +175,9 @@
             # This script determines overall result of jenkins job
             #
             exit `cat ${TREE_NAME}/build.result`
+
+            echo "Old build number"
+            echo $PREV_BUILD_NUMBER
 
             BUILD_DIR=${TREE_NAME}/_install_/${GIT_DESCRIBE}/${arch}-${defconfig}
             BUILD_META=${BUILD_DIR}/build.meta
@@ -229,4 +233,4 @@
                   TREE_NAME=${TREE_NAME}
                   ARCH_LIST=${ARCH_LIST}
                   GIT_DESCRIBE=${GIT_DESCRIBE}
-                  PREV_BUILD_NUMBER=${BUILD_NUMBER}
+                  PREV_BUILD_NUMBER=${PREV_BUILD_NUMBER}
