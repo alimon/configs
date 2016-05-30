@@ -92,6 +92,7 @@
                 rm -rf l-loader
                 rm -rf acpica-unix
                 rm -rf OpenPlatformPkg
+                rm -rf optee_os
                 rm -rf out edk2/Build
             }
 
@@ -149,6 +150,7 @@
             ATF_GIT_VERSION=$ATF_VERSION
             OPEN_PLATFORM_PKG_GIT_URL=https://git.linaro.org/uefi/OpenPlatformPkg.git
             OPEN_PLATFORM_PKG_GIT_BRANCH=master
+            OPTEE_OS_GIT_URL=https://github.com/OP-TEE/optee_os.git
 
             # Per board repositories overrides
             if [ "${MX_PLATFORM}" == "hikey" ]; then
@@ -185,11 +187,15 @@
             git clone $ATF_GIT_URL arm-trusted-firmware
             cd arm-trusted-firmware; git checkout -b stable-baseline $ATF_GIT_VERSION; cd ..
 
+            git clone $OPTEE_OS_GIT_URL optee_os
+            cd optee_os; OPTEE_OS_GIT_VERSION=`git log --format="%H" -1`; cd ..
+
             # Build setup
             export AARCH64_TOOLCHAIN=GCC49
             export EDK2_DIR=${WORKSPACE}/${BUILD_NUMBER}/edk2
             export OPP_DIR=${WORKSPACE}/${BUILD_NUMBER}/OpenPlatformPkg
             export ATF_DIR=${WORKSPACE}/${BUILD_NUMBER}/arm-trusted-firmware
+            export OPTEE_OS_DIR=${WORKSPACE}/${BUILD_NUMBER}/optee_os
             export UEFI_TOOLS_DIR=${WORKSPACE}/${BUILD_NUMBER}/uefi-tools
             export JENKINS_WORKSPACE=${WORKSPACE}
 
@@ -210,7 +216,7 @@
 
             # Build UEFI for the desired platform, with the specified build type
             cd ${EDK2_DIR}
-            bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a ${ATF_DIR} ${MX_PLATFORM}
+            bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a ${ATF_DIR} -s ${OPTEE_OS_DIR} ${MX_PLATFORM}
 
             unset WORKSPACE
             export WORKSPACE=${JENKINS_WORKSPACE}
@@ -219,6 +225,7 @@
             IMAGES=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} images`
             IMAGE_DIR=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o UEFI_IMAGE_DIR get`
             BUILD_ATF=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o BUILD_ATF get`
+            BUILD_TOS=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o BUILD_TOS get`
 
             cd ${WORKSPACE}
             mkdir -p out/${BUILD_TYPE}
@@ -245,6 +252,11 @@
                 wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
                 # Ship nvme.img with UEFI binaries for convenience
                 dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
+
+                # Ship files needed to build OP-TEE test suite
+                tar -C ${OPTEE_OS_DIR}/out -acvf \
+                  ${WORKSPACE}/out/${BUILD_TYPE}/optee-arm-plat-hikey.tar.xz \
+                  arm-plat-hikey/export-ta_arm64 arm-plat-hikey/export-ta_arm32
             fi
             cd ${WORKSPACE}
 
@@ -273,6 +285,12 @@
                 cat >> out/${BUILD_TYPE}/README.textile << EOF
             * ARM Trusted Firmware: "$ATF_GIT_URL":$ATF_GIT_URL
             * ARM Trusted Firmware head: $ATF_GIT_VERSION
+            EOF
+
+            if [ "$BUILD_TOS" == "yes" ]; then
+                cat >> out/${BUILD_TYPE}/README.textile << EOF
+            * OP-TEE OS: "$OPTEE_OS_GIT_URL":$OPTEE_OS_GIT_URL
+            * OP-TEE OS head: $OPTEE_OS_GIT_VERSION
             EOF
             fi
 
