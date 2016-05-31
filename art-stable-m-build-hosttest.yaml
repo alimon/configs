@@ -42,20 +42,8 @@
         - gerrit:
             server-name: 'dev-private-review.linaro.org'
             trigger-on:
-                - patchset-created-event
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/build'
-                  branches:
-                      - branch-pattern: 'lor_marshmallow'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/art'
-                  branches:
-                      - branch-pattern: 'lor_marshmallow'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/external/vixl'
-                  branches:
-                      - branch-pattern: 'lor_marshmallow'
+                - comment-added-contains-event:
+                    comment-contains-value: '.*IncludeAllTest.*'
         - gerrit:
             server-name: 'dev-private-review.linaro.org'
             trigger-on:
