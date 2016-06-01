@@ -1,0 +1,84 @@
+- job:
+    name: leg-cloud-image-centos
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: true
+    node: docker-centos7-aarch64
+    display-name: 'LEG Cloud image CentOS'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            IMAGE_NAME=centos7-cloud-image.qcow2
+
+            sudo yum install -y /usr/bin/virt-install
+
+            cat > kickstart.cfg << EOF
+            reboot
+            eula --agreed
+            text
+            firstboot --disable
+            ignoredisk --only-use=vda
+            keyboard --vckeymap=us --xlayouts='us'
+            lang en_GB.UTF-8
+            network  --bootproto=dhcp --device=eth0 --onboot=off --ipv6=auto --hostname=localhost.localdomain
+            repo --name=os      --baseurl=http://mirror.centos.org/altarch/7/os/aarch64/
+            repo --name=extras  --baseurl=http://mirror.centos.org/altarch/7/extras/aarch64/
+            repo --name=updates --baseurl=http://mirror.centos.org/altarch/7/updates/aarch64/
+            rootpw --plaintext root
+            timezone Europe/Warsaw --isUtc
+            bootloader  --boot-drive=vda
+            autopart --type=plain
+            clearpart --all --initlabel --drives=vda
+
+            %packages
+            @base
+            @core
+            cloud-init
+            %end
+
+            %post
+            echo 'add_drivers+="virtio-blk virtio-scsi"' > /etc/dracut.conf.d/add-virtio-modules.conf
+            dracut -f /boot/initramfs-`rpm -qa kernel|sed -e "s/kernel-//g"`.img `rpm -qa kernel|sed -e "s/kernel-//g"`
+            %end
+            EOF
+
+            virt-install \
+              --name ${IMAGE_NAME} \
+              --initrd-inject kickstart.cfg \
+              --extra-args "ks=file:/kickstart.cfg" \
+              --connect=qemu:///system \
+              --disk=path=${IMAGE_NAME},size=10,format=qcow2,bus=virtio \
+              --memory 2048 \
+              --location http://mirror.centos.org/altarch/7/os/aarch64/ \
+              --noreboot
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              ${WORKSPACE}/${IMAGE_NAME} snapshots/developer-cloud/centos/cloud-image/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org marcin.juszkiewicz@linaro.org'
