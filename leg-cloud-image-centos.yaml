@@ -30,7 +30,9 @@
 
             IMAGE_NAME=centos7-cloud-image.qcow2
 
-            sudo yum install -y /usr/bin/virt-install
+            sudo yum install -y virt-install libvirt-daemon libvirt-daemon-driver-qemu libvirt-daemon-driver-storage
+            sudo systemctl start virtlockd
+            sudo systemctl start libvirtd
 
             cat > kickstart.cfg << EOF
             reboot
@@ -62,7 +64,7 @@
             %end
             EOF
 
-            virt-install \
+            sudo virt-install \
               --name ${IMAGE_NAME} \
               --initrd-inject kickstart.cfg \
               --extra-args "ks=file:/kickstart.cfg" \
