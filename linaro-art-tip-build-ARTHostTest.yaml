@@ -1,5 +1,5 @@
 - job:
-    name: art-stable-m-build-hosttest
+    name: linaro-art-tip-build-ARTHostTest
     project-type: freestyle
     defaults: global
     properties:
@@ -27,7 +27,7 @@
             default: 'master'
         - string:
             name: BUILD_CONFIG_FILENAME
-            default: 'linaro-art-stable-m-aosp_arm64'
+            default: 'linaro-art-tip-aosp_arm64'
         - string:
             name: CURRENT_FAILING_ART_TESTS
             default:
@@ -36,7 +36,7 @@
             default: ${PRIVATE_KEY}
     disabled: false
     node: docker-utopic-art
-    display-name: 'ART - Stable (Marshmallow) - Host Test'
+    display-name: 'ART - Tip - Host Test'
     concurrent: true
     triggers:
         - gerrit:
@@ -52,7 +52,7 @@
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
                   branches:
-                      - branch-pattern: 'lor_marshmallow'
+                      - branch-pattern: 'master'
     wrappers:
         - timestamps
         - timeout:
@@ -60,8 +60,6 @@
     builders:
         - shell: |
             #!/bin/bash -xe
-
-            ulimit -c unlimited
 
             # Build scripts
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
@@ -112,6 +110,21 @@
               currentBuild.setDescription(description)
               manager.addShortText("Tests failed")
               }
+        - plot:
+            - title: 'Sync Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_repo.txt
+                    format: properties
+            - title: 'Test Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_test.txt
+                    format: properties
         - naginator:
             rerun-unstable-builds: true
             max-failed-builds: 1
