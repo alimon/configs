@@ -39,16 +39,21 @@
     node: docker-utopic-art
     display-name: 'linaro-art-stable-m-build-ARTHostTest'
     concurrent: true
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
+            branches:
+                - origin/lor_marshmallow
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
     triggers:
+        - pollscm: 'H/5 * * * *'
         - gerrit:
             server-name: 'dev-private-review.linaro.org'
             trigger-on:
-                - comment-added-contains-event:
-                    comment-contains-value: '.*IncludeAllTests.*'
-        - gerrit:
-            server-name: 'dev-private-review.linaro.org'
-            trigger-on:
-                - change-merged-event
+                - patchset-created-event
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
