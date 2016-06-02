@@ -38,7 +38,14 @@
     node: docker-utopic-art-test
     display-name: 'linaro-art-tip-build-ARTTargetTest'
     concurrent: true
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
     triggers:
+        - pollscm: 'H/5 * * * *'
         - gerrit:
             trigger-on:
                 - comment-added-contains-event:
