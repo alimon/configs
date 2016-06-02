@@ -15,7 +15,7 @@
     parameters:
         - string:
             name: JDK_URL
-            default: 'http://openjdk.linaro.org/releases/jdk8-server-release-1510.tar.xz'
+            default: 'http://openjdk.linaro.org/releases/jdk9-server-release-1605.tar.xz'
         - string:
             name: MAVEN_URL
             default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz'
@@ -45,7 +45,7 @@
             tar -Jxf jdk*.tar.xz
             tar -zxf apache-maven-*.tar.gz
 
-            cd jdk*/jre/lib/security/
+            cd jdk*/lib/security/
             rm -f cacerts
             ln -s /etc/ssl/certs/java/cacerts
 
@@ -55,10 +55,7 @@
             cd ${WORKSPACE}/apache-maven-*
             export M3_HOME=${PWD}
 
-            # JDK 8 is needed to compile all the tests (tests-all)
-            # FIXME - linaro jdk8 > 15.10 returns errors on
-            # Contended is internal proprietary API and may be removed in a future release
-            # use distro jdk8 as it returns warnings instead
+            # JDK 9 is needed to compile all the tests (tests-all)
             export PATH=${JAVA_HOME}/bin:${M3_HOME}/bin:${PATH}
             which java
             java -version
