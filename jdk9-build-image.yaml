@@ -14,6 +14,10 @@
             anonymous:
                 - job-read
                 - job-extended-read
+    parameters:
+        - string:
+            name: JDK_URL
+            default: 'http://openjdk.linaro.org/releases/jdk9-server-release-1605.tar.xz'
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 9 - Configure and build OpenJDK 9'
@@ -64,18 +68,31 @@
 
             ccache_build_opts=--disable-ccache
 
+            rm -rf jdk* primordial-jdk* build*
+
+            wget --progress=dot -e dotbytes=2M ${JDK_URL}
+            tar -Jxf jdk*.tar.xz
+
+            cd jdk*/jre/lib/security/
+            rm -f cacerts
+            ln -s /etc/ssl/certs/java/cacerts
+
+            cd ${WORKSPACE}/jdk*
+            export JAVA_HOME=${PWD}
+
+            export PATH=${JAVA_HOME}/bin:${PATH}
+
+            cd ${WORKSPACE}
+
             # Extract sources from upstream job
-            rm -rf jdk9
             tar xf incoming/jdk9.tar.gz
 
             shopt -s nullglob
 
             # Extract boot jdk
-            rm -rf primordial-jdk8
             tar xf incoming/primordial-jdk8.tar.gz
 
-            # Configure and build.
-            rm -rf build*
+            # Configure and build
             mkdir -p build-stage1 build-stage2
 
             two_stage_build=0
