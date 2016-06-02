@@ -1,5 +1,5 @@
 - job:
-    name: art-stable-m-build-targettest
+    name: linaro-art-tip-build-ARTTargetTest
     project-type: freestyle
     defaults: global
     properties:
@@ -27,16 +27,16 @@
             default: 'master'
         - string:
             name: BUILD_CONFIG_FILENAME
-            default: 'linaro-art-stable-m-aosp_flounder'
+            default: 'linaro-art-tip-aosp_flounder'
         - string:
             name: CURRENT_FAILING_ART_TESTS
-            default:
+            default: 'libcore.java.lang.OldSystemTest#test_inheritedChannel'
         - password:
             name: PRIVATE_KEY
             default: ${PRIVATE_KEY}
     disabled: false
     node: docker-utopic-art-test
-    display-name: 'ART - Stable (Marshmallow) - Target Test'
+    display-name: 'linaro-art-tip-build-ARTTargetTest'
     concurrent: true
     triggers:
         - gerrit:
@@ -47,15 +47,24 @@
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/build'
                   branches:
-                      - branch-pattern: 'lor_marshmallow'
+                      - branch-pattern: 'master'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
                   branches:
-                      - branch-pattern: 'lor_marshmallow'
+                      - branch-pattern: 'master'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/external/vixl'
                   branches:
-                      - branch-pattern: 'lor_marshmallow'
+                      - branch-pattern: 'master'
+        - gerrit:
+            server-name: 'dev-private-review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'master'
     wrappers:
         - timestamps
         - timeout:
@@ -63,7 +72,6 @@
     builders:
         - shell: |
             #!/bin/bash -xe
-
             # Build scripts
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
@@ -79,8 +87,8 @@
             ./setup_android.sh
 
             cd ${ANDROID_BUILD_DIR}
-            perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
-              ${ART_BUILD_SCRIPTS_DIR}/test_art_target.sh --default
+            perl art-build-scripts/jenkins/test_launcher.pl \
+              art-build-scripts/test_art_target.sh --default
     publishers:
         - archive:
             artifacts: '*.txt, *.xml'
