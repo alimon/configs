@@ -62,13 +62,13 @@
             %end
             EOF
 
-            IMAGE_NAME=centos7-cloud-image.qcow2
+            IMAGE_NAME=centos7-cloud-image
             sudo virt-install \
               --name ${IMAGE_NAME} \
               --initrd-inject kickstart.cfg \
               --extra-args "ks=file:/kickstart.cfg" \
               --connect=qemu:///system \
-              --disk=path=/var/lib/libvirt/images/${IMAGE_NAME},size=10,format=qcow2,bus=virtio \
+              --disk=pool=default,size=10,format=qcow2,bus=virtio \
               --memory 2048 \
               --location http://mirror.centos.org/altarch/7/os/aarch64/ \
               --noreboot
