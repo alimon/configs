@@ -15,6 +15,7 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+            artifact-num-to-keep: 30
     disabled: false
     node: master
     child-workspace: .
@@ -37,11 +38,29 @@
                 - docker-jessie-amd64
         - axis:
             type: user-defined
-            name: BOARD
+            name: TOOLCHAIN
             values:
+                - gcc-arm-embedded
+                - zephyr-sdk
+        - axis:
+            type: user-defined
+            name: PLATFORM
+            values:
+#                - arduino_101
+#                - arduino_101_sss
                 - arduino_due
                 - frdm_k64f
+#                - galileo
+#                - minnowboard
+#                - nucleo_f103rb
                 - olimexino_stm32
+#                - qemu_cortex_m3
+#                - qemu_x86
+#                - qemu_x86_iamcu
+#                - quark_d2000_crb
+#                - quark_se_devboard
+#                - quark_se_sss_devboard
+#                - stm32_mini_a15
     execution-strategy:
         sequential: true
     wrappers:
@@ -55,49 +74,61 @@
         - shell: |
             #!/bin/bash
 
-            head -5 Makefile
+            set -e
+            set +x
 
-            set -ex
+            git clean -fdx
+
+            head -5 Makefile
 
             trap cleanup_exit INT TERM EXIT
 
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf out
-              git clean -fdx
+              rm -rf out sanity-out
             }
 
             sudo apt-get update
             sudo apt-get install -y git g++ libc6-dev-i386 g++-multilib python3-ply gcc-arm-none-eabi python-pycurl rsync
 
+            case "${TOOLCHAIN}" in
+              gcc-arm-embedded)
+                export PATH=${HOME}/srv/toolchain/gcc-arm-embedded-5-2016q1/bin:${PATH}
+                export CROSS_COMPILE=arm-none-eabi-
+                export ARCH=arm
+              ;;
+              zephyr-sdk)
+                bash ${HOME}/srv/toolchain/zephyr-sdk-0.8-i686-setup.run --quiet --nox11 -- <<< "${HOME}/zephyr-sdk"
+                export ZEPHYR_GCC_VARIANT=zephyr
+                export ZEPHYR_SDK_INSTALL_DIR="${HOME}/zephyr-sdk"
+              ;;
+            esac
+
             # Set build environment variables
             export ZEPHYR_BASE=${WORKSPACE}
             export PATH=${ZEPHYR_BASE}/scripts:${PATH}
-            export CROSS_COMPILE=arm-none-eabi-
-            export ARCH=arm
 
-            # Ignore errors for now as we build all the sample and test applications
-            # even the samples/tests not intended for the architecture or the platform
-            set +e
-            # Build using ARCH, CROSS_COMPILE and BOARD environment variables set
-            for project in $(find samples tests -type f -name prj.conf | xargs dirname); do
-              cd ${ZEPHYR_BASE}/${project}
-              make -j$(getconf _NPROCESSORS_ONLN)
-            done
-            set -e
+            echo ""
+            echo "########################################################################"
+            echo "    sanitycheck"
+            echo "########################################################################"
+
+            sanitycheck \
+              --platform ${PLATFORM} \
+              --inline-logs \
+              --build-only \
+              --no-clean \
+              --enable-slow
 
             cd ${WORKSPACE}
-            find samples tests -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
-            mkdir out
-            for project in samples tests; do
-              rsync -avm \
-                --include=zephyr.bin \
-                --include=zephyr.config \
-                --include='*/' \
-                --exclude='*' \
-                ${project}/ out/${project}/
-            done
+            find sanity-out -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
+            rsync -avm \
+              --include=zephyr.bin \
+              --include=zephyr.config \
+              --include='*/' \
+              --exclude='*' \
+              sanity-out/ out/
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -105,7 +136,9 @@
             time python ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
-              out components/kernel/zephyr/${BOARD}/${BUILD_NUMBER}
+              out/${PLATFORM} components/kernel/zephyr/${TOOLCHAIN}/${PLATFORM}/${BUILD_NUMBER}
     publishers:
+        - archive:
+            artifacts: 'scripts/sanity_chk/last_sanity.csv'
         - email:
             recipients: 'fathi.boudra@linaro.org'
