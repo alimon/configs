@@ -19,7 +19,7 @@
     disabled: false
     node: master
     child-workspace: .
-    display-name: 'Zephyr project for ARM (v7-M and v7E-M)'
+    display-name: 'Zephyr project'
     scm:
         - git:
             url: https://gerrit.zephyrproject.org/r/zephyr
@@ -46,22 +46,24 @@
             type: user-defined
             name: PLATFORM
             values:
-#                - arduino_101
-#                - arduino_101_sss
+                - arduino_101
+                - arduino_101_sss
                 - arduino_due
                 - frdm_k64f
-#                - galileo
-#                - minnowboard
-#                - nucleo_f103rb
+                - galileo
+                - minnowboard
+                - nucleo_f103rb
                 - olimexino_stm32
-#                - qemu_cortex_m3
-#                - qemu_x86
-#                - qemu_x86_iamcu
-#                - quark_d2000_crb
-#                - quark_se_devboard
-#                - quark_se_sss_devboard
-#                - stm32_mini_a15
+                - qemu_cortex_m3
+                - qemu_x86
+                - qemu_x86_iamcu
+                - quark_d2000_crb
+                - quark_se_devboard
+                - quark_se_sss_devboard
+                - stm32_mini_a15
     execution-strategy:
+        combination-filter: |
+             TOOLCHAIN=="zephyr-sdk" || (TOOLCHAIN=="gcc-arm-embedded" && (PLATFORM=="arduino_due" || PLATFORM=="frdm_k64f" || PLATFORM=="olimexino_stm32"))
         sequential: true
     wrappers:
         - timestamps
