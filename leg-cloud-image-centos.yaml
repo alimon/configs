@@ -28,8 +28,6 @@
 
             set -ex
 
-            IMAGE_NAME=centos7-cloud-image.qcow2
-
             sudo yum install -y virt-install libvirt-daemon libvirt-daemon-driver-qemu libvirt-daemon-driver-storage qemu-kvm
             sudo systemctl start virtlockd
             sudo systemctl start libvirtd
@@ -64,12 +62,13 @@
             %end
             EOF
 
+            IMAGE_NAME=centos7-cloud-image.qcow2
             sudo virt-install \
               --name ${IMAGE_NAME} \
               --initrd-inject kickstart.cfg \
               --extra-args "ks=file:/kickstart.cfg" \
               --connect=qemu:///system \
-              --disk=path=${IMAGE_NAME},size=10,format=qcow2,bus=virtio \
+              --disk=path=/var/lib/libvirt/images/${IMAGE_NAME},size=10,format=qcow2,bus=virtio \
               --memory 2048 \
               --location http://mirror.centos.org/altarch/7/os/aarch64/ \
               --noreboot
@@ -80,7 +79,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
-              ${WORKSPACE}/${IMAGE_NAME} snapshots/developer-cloud/centos/cloud-image/${BUILD_NUMBER}
+              /var/lib/libvirt/images snapshots/developer-cloud/centos/cloud-image/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org marcin.juszkiewicz@linaro.org'
