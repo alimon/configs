@@ -2,9 +2,6 @@
     name: linux-kvm
     project-type: matrix
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -15,6 +12,9 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
     disabled: false
     display-name: 'Linaro KVM image builds'
     axes:
@@ -29,7 +29,7 @@
             type: slave
             name: label
             values:
-                - docker-vivid-amd64
+                - docker-xenial-amd64
     triggers:
         - timed: 'H(0-30) H(9-11) * * *'
     wrappers:
@@ -39,13 +39,16 @@
     builders:
         - linaro-publish-token
         - shell: |
-            #!/bin/bash -e
+            #!/bin/bash
+
+            set -e
+
             rm -rf kvm-ci
             git clone git://git.linaro.org/ci/kvm-ci.git kvm-ci
-
             bash ./kvm-ci/jenkins-run
+
             # Publish
-            mkdir -p out/
+            mkdir out
             mv *.gz uImage* Image* zImage* *.dtb *.deb out/ ||true
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
