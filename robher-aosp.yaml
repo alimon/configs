@@ -61,6 +61,7 @@
             # Clean any artifacts related to previous build
             rm -rf out/target/product/*/system/ out/target/product/*/data/ out/target/product/*/*.xml out/target/product/*/obj/kernel/
             rm -rf out/target/product/*/*.zip out/target/product/*/*.img out/target/product/*/*.xz
+            rm -rf external/mesa3d/
 
             # Runs as ubuntu
             repo init -u https://android.googlesource.com/platform/manifest -b master
@@ -99,15 +100,10 @@
             echo "Build for mesa rev ${rev} finished."
             exit $failed
     publishers:
-        - archive:
-            artifacts: '*.xml'
-            latest-only: true
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
             unstable-on-warning: false
             fail-on-error: false
-        - fingerprint:
-            files: 'build/fingerprints/*'
         - email:
             recipients: 'rob.herring@linaro.org vishal.bhoj@linaro.org'
         - email-ext:
