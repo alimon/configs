@@ -59,6 +59,7 @@
                 - cross_build
                 - native_build
                 - testsuite
+                - abe-tests
     execution-strategy:
         sequential: false
     wrappers:
@@ -94,5 +95,10 @@
                 set -x
                 ./configure --with-fileserver=ex40-01.tcwglab.linaro.org/snapshots-ref
                 make check
+                ;;
+              abe-tests)
+                git clone https://git.linaro.org/toolchain/abe-tests.git
+                cd abe-tests
+                ./test-manifest2.sh --abe-path `pwd`/.. --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report
                 ;;
             esac
