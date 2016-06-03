@@ -1,0 +1,52 @@
+- job:
+    name: tcwg-publish-files
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+                name: src_dir
+                default: '/home/maxim.kuvyrkov/public_html/infrastructure/gcc6'
+                description: 'Directory to publish files from on dev-01'
+        - string:
+                name: dst_dir
+                default: 'infrastructure'
+                description: 'Destination dir under snapshots.linaro.org:components/toolchain/'
+        - bool:
+               name: dry_run
+               default: true
+               description: 'Whether to do a dry-run'
+    disabled: false
+    node: tcwg-x86_64-dev-01
+    display-name: 'TCWG CCC Copy files to snapshots.l.o'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            echo "Publishing $src_dir to components/toolchain/$dst_dir"
+            ls -la $src_dir
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            $dry_run || time python ${HOME}/bin/linaro-cp.py --api_version 3 \
+              $src_dir components/toolchain/$dst_dir/
+    publishers:
+        - email-ext:
+            recipients: 'maxim.kuvyrkov@linaro.org, robert.savoye@linaro.org, fathi.boudra@linaro.org'
+            always: true
