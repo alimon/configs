@@ -88,7 +88,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
-              rm -rf out sanity-out
+              rm -rf out
             }
 
             sudo apt-get -q=2 update
@@ -109,8 +109,16 @@
             esac
 
             # Set build environment variables
-            export ZEPHYR_BASE=${WORKSPACE}
-            export PATH=${ZEPHYR_BASE}/scripts:${PATH}
+            LANG=C
+            ZEPHYR_BASE=${WORKSPACE}
+            PATH=${ZEPHYR_BASE}/scripts:${PATH}
+            OUTDIR=${HOME}/srv/zephyr/${ZEPHYR_GCC_VARIANT}/${PLATFORM}
+            export LANG ZEPHYR_BASE PATH
+            CCACHE_DIR="${HOME}/srv/ccache"
+            CCACHE_UNIFY=1
+            CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
+            USE_CCACHE=1
+            export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS USE_CCACHE
             env |grep ZEPHYR
 
             echo ""
@@ -122,17 +130,19 @@
               --platform ${PLATFORM} \
               --inline-logs \
               --build-only \
+              --outdir ${OUTDIR} \
               --no-clean \
               --enable-slow
 
             cd ${WORKSPACE}
-            find sanity-out -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
+            find ${OUTDIR} -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
             rsync -avm \
               --include=zephyr.bin \
               --include=zephyr.config \
               --include='*/' \
               --exclude='*' \
-              sanity-out/ out/
+              ${OUTDIR}/ out/
+            find ${OUTDIR} -type f -name 'zephyr.config' -delete
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -141,6 +151,9 @@
               --api_version 3 \
               --link-latest \
               out/${PLATFORM} components/kernel/zephyr/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
+
+            CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
+            CCACHE_DIR=${CCACHE_DIR} ccache -s
     publishers:
         - archive:
             artifacts: 'scripts/sanity_chk/last_sanity.csv'
