@@ -28,9 +28,18 @@
 
             set -ex
 
-            sudo yum install -y virt-install libvirt-daemon libvirt-daemon-driver-qemu libvirt-daemon-driver-storage qemu-kvm AAVMF
+            sudo yum install -y \
+              AAVMF \
+              ebtables \
+              libvirt-daemon-config-network \
+              libvirt-daemon-driver-* \
+              qemu-kvm \
+              virt-install
             sudo systemctl start virtlockd
             sudo systemctl start libvirtd
+            sudo virsh --connect=qemu:///system capabilities
+            sudo virsh --connect=qemu:///system pool-list --all
+            sudo virsh --connect=qemu:///system net-list --all
 
             cat > kickstart.cfg << EOF
             reboot
