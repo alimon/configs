@@ -59,17 +59,15 @@
         - linaro-publish-token
         - shell: |
             #!/bin/bash
-            rm -rf art-build-tests android
+            rm -rf art-build-tests android build-configs pba
 
-            git clone git://git.linaro.org/people/daniel.diaz/art-build-tests.sh.git art-build-tests
-            git clone https://github.com/mwasilew/art-db-client.git pba
+            git clone --depth 1 git://git.linaro.org/people/daniel.diaz/art-build-tests.sh.git art-build-tests
+            git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
+            git clone --depth 1 https://github.com/mwasilew/art-db-client.git pba
 
             cd art-build-tests
             . ./setup-host.sh
             . ./build.sh
-
-            PUB_SERVER=https://snapshots.linaro.org/
-            PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
 
             cat > out/target/product/flounder/BUILD-INFO.txt << EOF
             Format-Version: 0.5
@@ -79,19 +77,23 @@
             Auth-Groups: linaro-art
             EOF
 
+            PUB_SERVER=https://snapshots.linaro.org/
+            PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
             time linaro-cp.py \
+              --api_version 3 \
               --manifest \
               --no-build-info \
+              --link-latest \
               --split-job-owner \
-              --server $PUB_SERVER \
-              out/target/product/*/ $PUB_DEST \
+              --server ${PUB_SERVER} \
+              out/target/product/*/ ${PUB_DEST} \
               --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
 
             # Construct post-build-lava parameters
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
+            if [ -f ${WORKSPACE}/build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source ${WORKSPACE}/build-configs/${BUILD_CONFIG_FILENAME}
             else
               echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
               echo "in android-build-configs.git"
