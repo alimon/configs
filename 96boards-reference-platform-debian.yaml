@@ -127,8 +127,8 @@
                 wget --progress=dot ${GRUB_SD_EFI_URL} -O grubaa64-sd.efi
 
                 /sbin/mkfs.fat -F32 -n "boot" -C out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img 65536
-                mmd -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img -s ::EFI
-                mmd -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img -s ::EFI/BOOT
+                mmd -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img EFI
+                mmd -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img EFI/BOOT
                 mcopy -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img fastboot.efi ::EFI/BOOT/fastboot.efi
                 mcopy -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img grubaa64.efi ::EFI/BOOT/grubaa64.efi
                 chmod 644 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
