@@ -2,9 +2,6 @@
     name: qemu-docker
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -15,9 +12,12 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
     disabled: false
-    node: docker-utopic
-    display-name: 'QEMU build'
+    node: docker-xenial
+    display-name: 'QEMU source package build'
     scm:
         - git:
             url: git://git.qemu.org/qemu.git
