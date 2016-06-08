@@ -93,7 +93,7 @@
 
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y kpartx python-pycurl device-tree-compiler zip libfdt-dev
+            sudo apt-get install -y kpartx python-pycurl device-tree-compiler zip libfdt-dev mtools
             wget -q \
               http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
@@ -244,8 +244,8 @@
               unzip $(basename ${QCOM_FIRMWARE})
               cd -
               sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
-              sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/bootloaders-ubuntu/mba.mbn rootfs/lib/firmware
-              sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/bootloaders-ubuntu/modem.b* rootfs/lib/firmware
+              sudo MTOOLS_SKIP_CHECK=1 mcopy -i qcom_firmware/linux-ubuntu-board-support-package-*/bootloaders-ubuntu/NON-HLOS.bin \
+                   ::image/modem.b* ::image/mba.mbn rootfs/lib/firmware
               sudo rm -f rootfs/lib/firmware/wlan/macaddr0 rootfs/lib/firmware.tar
 
               sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
