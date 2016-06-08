@@ -1,3 +1,36 @@
+- scm:
+    name: art
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
+            branches:
+                - origin/lor_marshmallow
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: build
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/build.git
+            branches:
+                - origin/lor_marshmallow
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: vixl
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/external/vixl.git
+            branches:
+                - origin/lor_marshmallow
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
 - job:
     name: linaro-art-stable-m-build-ARTTargetTest
     project-type: freestyle
@@ -40,14 +73,9 @@
     display-name: 'linaro-art-stable-m-build-ARTTargetTest'
     concurrent: true
     scm:
-        - git:
-            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
-            branches:
-                - origin/lor_marshmallow
-            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
+        - art
+        - build
+        - vixl
     triggers:
         - pollscm: 'H/5 * * * *'
         - gerrit:
