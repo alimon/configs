@@ -244,6 +244,8 @@
               unzip $(basename ${QCOM_FIRMWARE})
               cd -
               sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
+              sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/bootloaders-ubuntu/mba.mbn rootfs/lib/firmware
+              sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/bootloaders-ubuntu/modem.b* rootfs/lib/firmware
               sudo rm -f rootfs/lib/firmware/wlan/macaddr0 rootfs/lib/firmware.tar
 
               sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
