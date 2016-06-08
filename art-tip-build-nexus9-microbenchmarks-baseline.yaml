@@ -77,7 +77,6 @@
             Auth-Groups: linaro-art
             EOF
 
-            PUB_SERVER=https://snapshots.linaro.org/
             PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
             time linaro-cp.py \
               --api_version 3 \
@@ -85,7 +84,6 @@
               --no-build-info \
               --link-latest \
               --split-job-owner \
-              --server ${PUB_SERVER} \
               out/target/product/*/ ${PUB_DEST} \
               --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
               --include "^[BHi][^/]+txt$" \
@@ -101,8 +99,15 @@
             fi
 
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-            CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/refs/heads/master:/android/nexus9-aosp-master/nexus9-ubenchmarks-64bit.json
+            DEVICE_TYPE=aosp_flounder
             MAKE_TARGETS=droidcore
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
+            CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/refs/heads/master:/android/nexus9-aosp-master/nexus9-ubenchmarks-64bit.json
             EOF
         - trigger-builds:
             - project: 'post-build-lava'
