@@ -23,9 +23,6 @@
         - string:
             name: ATF_VERSION
             default: 'v1.2'
-        - password:
-            name: PRIVATE_KEY
-            default: ${PRIVATE_KEY}
     disabled: false
     node: build
     child-workspace: .
@@ -101,43 +98,6 @@
             wget http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/acpica-tools_20150930-1.linarojessie.1_amd64.deb http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/acpidump_20150930-1.linarojessie.1_all.deb http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/iasl_20150930-1.linarojessie.1_all.deb
             sudo dpkg -i --force-all *.deb
             cd ..; rm -rf acpica-unix
-
-            # Private repository setup
-            TMPKEYDIR=$(mktemp -d /tmp/rpb.XXXXXX)
-            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
-            #!/usr/bin/python
-
-            import os
-            import sys
-
-            def main():
-                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
-                if private_key == "Undefined":
-                    sys.exit("PRIVATE_KEY is not defined.")
-
-                buffer = private_key.replace(' ','\n')
-                with open('linaro-private-key', 'w') as f:
-                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
-                    f.write(buffer)
-                    f.write('\n-----END RSA PRIVATE KEY-----\n')
-
-            if __name__ == "__main__":
-                    main()
-            EOF
-            python ${TMPKEYDIR}/private-key-wrapper.py
-            chmod 0600 ${WORKSPACE}/linaro-private-key
-
-            eval `ssh-agent` >/dev/null 2>/dev/null
-            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
-            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
-
-            test -d ~/.ssh || mkdir ~/.ssh
-            ssh-keyscan dev-private-git.linaro.org >> ~/.ssh/known_hosts
-            cat << EOF >> ~/.ssh/config
-            Host dev-private-git.linaro.org
-                User git
-            EOF
-            chmod 0600 ~/.ssh/*
 
             # Use pre-installed linaro toolchain (GCC 5.3)
             export PATH="${HOME}/srv/toolchain/arm-tc-16.02/bin:${HOME}/srv/toolchain/arm64-tc-16.02/bin:$PATH"
