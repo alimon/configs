@@ -308,13 +308,6 @@
               DEFCONFIG_LIST=${DEFCONFIG_LIST/allmodconfig/}
             fi
 
-            # Temporary config, bridge for kvm testing
-            if [ ${tree_name} = "mainline"} ] && [ ${ARCH} = "arm64" ]; then
-              if ! grep -q CONFIG_BRIDGE= arch/arm64/configs/defconfig; thn
-                DEFCONFIG_LIST+="defconfig+CONFIG_BRIDGE=m"
-              fi
-            fi
-
             # Security testing features
             DEFCONFIG_LIST+="$base_defconfig+CONFIG_LKDTM=y "
 
