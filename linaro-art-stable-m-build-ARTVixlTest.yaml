@@ -1,0 +1,128 @@
+- job:
+    name: art-stable-m-build-vixltest
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: BUILD_CONFIG_REPO
+            default: 'git://android.git.linaro.org/android-build-configs.git'
+        - string:
+            name: BUILD_CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'linaro-art-stable-m-aosp_arm64'
+        - password:
+            name: PRIVATE_KEY
+            default: ${PRIVATE_KEY}
+    disabled: false
+    node: docker-utopic-art
+    display-name: 'ART - Stable (Marshmallow) - VIXL Test'
+    concurrent: true
+    triggers:
+        - timed: 'H 6 * * *'
+        - gerrit:
+            server-name: dev-private-review.linaro.org
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/build'
+                  branches:
+                      - branch-pattern: 'lor_marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'lor_marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/external/vixl'
+                  branches:
+                      - branch-pattern: 'lor_marshmallow'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+
+            # Build scripts
+            ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
+            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+
+            # VIXL dependencies
+            #sudo apt-get -y install scons
+            #mkdir -p "${HOME}/bin"
+            #wget -O "${HOME}/bin/cpplint.py" https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
+            export PATH="${HOME}/bin:${PATH}"
+
+            # Private key
+            wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
+            source add-private-key.sh
+
+            cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
+            ./setup_host.sh
+            ./setup_android.sh
+
+            cd ${ANDROID_BUILD_DIR}
+            perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
+              ${ART_BUILD_SCRIPTS_DIR}/test_art_vixl.sh
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml'
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android-art.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - groovy-postbuild:
+            script: |
+              import hudson.model.*
+
+              def matcher = manager.getLogMatcher(".*repo sync failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("repo sync failed")
+              }
+              matcher = manager.getLogMatcher(".*patch merge failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("merge failed")
+              }
+              matcher = manager.getLogMatcher(".*make failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("make failed")
+              }
+              matcher = manager.getLogMatcher(".*images failed to boot.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("Boot test failed")
+              }
+        - plot:
+            - title: 'Sync Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_repo.txt
+                    format: properties
+            - title: 'Test Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_test.txt
+                    format: properties
