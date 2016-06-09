@@ -159,6 +159,8 @@
             fi
 
             export DEBIAN_FRONTEND=noninteractive
+            echo exit 101 | sudo tee /usr/sbin/policy-rc.d
+            sudo chmod +x /usr/sbin/policy-rc.d
             sudo apt-get update -qq||true
             sudo apt-get dist-upgrade -y -q||true
             sudo apt-get build-dep -q --no-install-recommends -y ${sourcename}
