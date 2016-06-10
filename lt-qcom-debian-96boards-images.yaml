@@ -1,5 +1,5 @@
 - job:
-    name: lt-qcom-debian-images
+    name: lt-qcom-debian-96boards-images
     project-type: freestyle
     defaults: global
     logrotate:
@@ -38,16 +38,22 @@
             default: 'developer,armhf,1800M alip,armhf,1800M'
         - string:
             name: DTBS
-            default: 'qcom-apq8064-ifc6410.dtb qcom-apq8064-cm-qs600.dtb qcom-apq8064-eI_ERAGON600.dtb'
+            default: 'qcom-apq8064-arrow-sd-600eval.dtb'
         - string:
             name: SERIAL_CONSOLE
             default: 'ttyMSM0'
         - string:
             name: KERNEL_BRANCH
             default: 'release/qcomlt-4.4'
+        - string:
+            name: QCOM_FIRMWARE
+            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160614/SD_600eval-linux_proprietary_firmware-v1.0.zip'
+        - string:
+            name: QCOM_FIRMWARE_MD5
+            default: 'a03af6a277dabd7cf78340bd48b443f0'
     disabled: false
     node: docker-utopic-amd64
-    display-name: 'Qualcomm Debian based images for Snapdragon 600'
+    display-name: 'Qualcomm Debian based images for Snapdragon 600 based 96boards'
     scm:
         - git:
             url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
@@ -63,7 +69,8 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - linaro-publish-token
+        - linaro-publish-token:
+            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -75,11 +82,7 @@
             {
               cd ${WORKSPACE}
               sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
-              rm -rf lci-build-tools
-              rm -rf builddir*
-              rm -rf out
-              rm -rf qcom-firmware
-              git clean -fdx
+              sudo git clean -fdx
             }
 
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
@@ -123,11 +126,9 @@
             mmc_id: '0:1'
             kernel_file: boot/vmlinuz-*-qcom
             initrd_file: boot/initrd.img-*-qcom
-            dtb_file: lib/firmware/*-qcom/device-tree/qcom-apq8064-ifc6410.dtb
+            dtb_file: lib/firmware/*-qcom/device-tree/qcom-apq8064-arrow-sd-600eval.dtb
             dtb_files:
-            - qcom-apq8064-ifc6410.dtb: lib/firmware/*-qcom/device-tree/qcom-apq8064-ifc6410.dtb
-            - qcom-apq8064-cm-qs600.dtb: lib/firmware/*-qcom/device-tree/qcom-apq8064-cm-qs600.dtb
-            - qcom-apq8064-eI_ERAGON600.dtb: lib/firmware/*-qcom/device-tree/qcom-apq8064-eI_ERAGON600.dtb
+            - qcom-apq8064-arrow-sd-600eval.dtb: lib/firmware/*-qcom/device-tree/qcom-apq8064-arrow-sd-600eval.dtb
             boot_script: boot.scr
             boot_min_size: 64
             extra_serial_options:
@@ -173,6 +174,18 @@
             * Kernel defconfig: $kernel_config
             EOF
 
+            # Download license file and firmware
+            rm -f license.txt
+            wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
+
+            rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
+            wget -q ${QCOM_FIRMWARE}
+            echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
+            md5sum -c MD5
+            unzip $(basename ${QCOM_FIRMWARE})
+            cd -
+            rm -f qcom_firmware/SD_600eval-linux_proprietary_firmware-v1.0/license.txt
+
             for rootfs in ${ROOTFS}; do
 
               rootfs_arch=$(echo $rootfs | cut -f2 -d,)
@@ -182,8 +195,9 @@
               cat ${VENDOR}-lt-qcom.default > ${VENDOR}-lt-qcom
 
               # additional packages in desktop images
-              [ "${rootfs}" != "developer" ] && cat << EOF >> ${VENDOR}-lt-qcom
+              [ "${rootfs}" = "alip" ] && cat << EOF >> ${VENDOR}-lt-qcom
             - xserver-xorg-video-freedreno
+            - 96boards-artwork
             EOF
 
               rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz`
@@ -214,9 +228,11 @@
               # clean up fstab
               sudo sed -i '/UUID/d' rootfs/etc/fstab
 
-              cat << EOF | sudo tee -a rootfs/etc/fstab
-            LABEL=qcom-firmware /lib/firmware ext4 defaults 0 0
-            EOF
+              # add license file in the generated rootfs
+              sudo cp -f license.txt rootfs/etc/license.txt
+
+              # add firmware (adreno, DSP and WCN)
+              sudo cp -a qcom_firmware/SD_600eval-linux_proprietary_firmware-v1.0/* rootfs/lib/firmware
 
               sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
               mkdir rootfs2
@@ -245,7 +261,7 @@
             secondaddr = 0x81100000
             tagsaddr = 0x80200100
             name = ${VENDOR}-${PLATFORM_NAME}
-            cmdline = console=tty0 console=${SERIAL_CONSOLE},115200n8 root=/dev/disk/by-partlabel/userdata rootwait rw systemd.unit=multi-user.target
+            cmdline = console=tty0 console=${SERIAL_CONSOLE},115200n8 root=/dev/disk/by-partlabel/userdata rootwait rw
             EOF
 
             # Create one boot image for each platform supported, since we need to append DTB to zImage
@@ -258,13 +274,6 @@
             done
             rm -rf out/dtbs
 
-            # Create an empty partition, placeholder for proprietary firmware
-            # do no create sparse file, so that the file can be easily loop mounted
-            mkdir qcom-firmware
-            sudo make_ext4fs -L qcom-firmware -l 64M out/firmware-${PLATFORM_NAME}-${VERSION}.img qcom-firmware/
-            rm -rf qcom-firmware
-            gzip -9 out/firmware-${PLATFORM_NAME}-${VERSION}.img
-
             # Final preparation for publishing
             cp -a linux-*.deb out/
             rm -f out/vmlinuz
@@ -276,50 +285,9 @@
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
-              --api_version 3 \
+              --server ${PUBLISH_SERVER} \
               --link-latest \
-              out debian/pre-built/snapdragon/${BUILD_NUMBER}
-        - shell: |
-            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-
-            export BOOT_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img.gz
-            export DATA_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
-            export SYSTEM_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
-
-            rm -rf configs lci-build-tools
-            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
-
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-
-            export BOOT_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/boot-qcom-apq8064-ifc6410-${PLATFORM_NAME}-${VERSION}.img.gz
-            export DATA_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
-            export SYSTEM_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
-
-            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
-
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition_ltp.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
+              out snapshots/sd-600eval/${VENDOR}/debian/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
