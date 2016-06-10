@@ -51,6 +51,7 @@
                   project-pattern: 'linaro-art/platform/art'
                   branches:
                       - branch-pattern: 'master'
+            silent: true
     wrappers:
         - timestamps
         - timeout:
@@ -121,6 +122,9 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
+            set -a
+            source ${WORKSPACE}/build-configs/${BUILD_CONFIG_FILENAME}
+            source ${WORKSPACE}/post_build_lava_parameters
             python ./pba/jenkins.py
 
             echo "Build finished"
