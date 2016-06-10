@@ -207,7 +207,6 @@
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr-member-hikey/build-info/template.txt -O build/out/BUILD-INFO.txt
 
             # Publish binaries
-            PUB_SERVER=https://snapshots.linaro.org/
             PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
             time linaro-cp.py \
               --api_version 3 \
@@ -215,7 +214,6 @@
               --no-build-info \
               --link-latest \
               --split-job-owner \
-              --server ${PUB_SERVER} \
               build/out \
               ${PUB_DEST} \
               --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
