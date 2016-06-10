@@ -1,0 +1,67 @@
+- job:
+    name: linaro-art-tip-VixlUpstreamPresubmit
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    disabled: false
+    node: aosp
+    display-name: 'linaro-art-tip-VixlUpstreamPresubmit'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: review.linaro.org
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'arm/vixl'
+                  branches:
+                      - branch-pattern: 'master'
+            silent: false
+            silent-start: false
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 60
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+
+            export PATH=${HOME}/bin:${PATH}
+
+            cd ${HOME}/srv/${JOB_NAME}
+            if [[ -d arm-vixl ]]; then
+              cd arm-vixl
+              git fetch origin
+              git clean -fdx
+              git reset --hard origin/master
+            else
+              git clone https://git.linaro.org/arm/vixl.git arm-vixl
+              cd arm-vixl/
+            fi
+
+            if git pull http://{$GERRIT_HOST}/${GERRIT_PROJECT} ${GERRIT_REFSPEC} | grep -q "Automatic merge failed"; then
+              git reset --hard
+              echo "Error: *** Error patch merge failed"
+              exit 1
+            fi
+
+            ./tools/test.py --noclang-format
+    publishers:
+        - email:
+            recipients: 'daniel.diaz@linaro.org'
