@@ -87,9 +87,10 @@
               exit 1
             fi
 
-            echo "Date / size report before:"
+            echo "Date / size report before (`date`):"
             ls -ld $workspace_top/* || true
-            du -hs $workspace_top/* || true
+            df -h $workspace_top || true
+            du -hsc $workspace_top/* || true
 
             # Semantics of find's mtime "+N" stands for N+1 days old or older.
             days_1=$(($days-1))
@@ -117,9 +118,10 @@
                 echo "DRY_RUN: NOT REMOVING DIRECTORIES"
               fi
 
-              echo "Date / size report after:"
+              echo "Date / size report after (`date`):"
               ls -ld $workspace_top/* || true
-              du -hs $workspace_top/* || true
+              df -h $workspace_top || true
+              du -hsc $workspace_top/* || true
             fi
     publishers:
         - email:
