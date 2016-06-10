@@ -33,26 +33,25 @@
             default: ${PRIVATE_KEY}
     disabled: false
     node: docker-utopic-art
-    display-name: 'ART - Tip - VIXL Test'
+    display-name: 'linaro-art-tip-build-ARTVixlTest'
     concurrent: true
     triggers:
         - timed: 'H 6 * * *'
         - gerrit:
+            server-name: dev-private-review.linaro.org
             trigger-on:
-                - patchset-created-event
+                - comment-added-contains-event:
+                    comment-contains-value: '.*IncludeAllTests.*'
+                - change-merged-event
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/build'
                   branches:
                       - branch-pattern: 'master'
-                  topics:
-                      - pattern: 'IncludeVixlTest'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
                   branches:
                       - branch-pattern: 'master'
-                  topics:
-                      - pattern: 'IncludeVixlTest'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/external/vixl'
                   branches:
