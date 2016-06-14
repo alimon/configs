@@ -365,6 +365,12 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/hikey\/template-weekly.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
             if [ -n "$GERRIT_PROJECT" ]; then
                 echo "SKIP_LAVA=1" >> ${WORKSPACE}/post_build_lava_parameters
             fi
@@ -399,12 +405,6 @@
               block: true
         - shell: |
             sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/hikey\/template-glbenchmark-2.5.1.json/g" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/hikey\/template-weekly.json/g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
