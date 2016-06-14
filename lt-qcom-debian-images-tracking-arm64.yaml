@@ -187,6 +187,21 @@
             * Kernel defconfig: $kernel_config
             EOF
 
+            # Download license file and firmware
+            rm -f license.txt
+            wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
+
+            rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
+            wget -q ${QCOM_FIRMWARE}
+            echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
+            md5sum -c MD5
+            unzip $(basename ${QCOM_FIRMWARE})
+            cd -
+            rm -f qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/wlan/macaddr0
+            rm -f qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/firmware.tar
+            sudo MTOOLS_SKIP_CHECK=1 mcopy -i qcom_firmware/linux-ubuntu-board-support-package-*/bootloaders-ubuntu/NON-HLOS.bin \
+                        ::image/modem.b* ::image/mba.mbn qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu
+
             for rootfs in ${ROOTFS}; do
 
               rootfs_arch=$(echo $rootfs | cut -f2 -d,)
@@ -231,21 +246,10 @@
               sudo sed -i '/UUID/d' rootfs/etc/fstab
 
               # add license file in the generated rootfs
-              rm -f license.txt
-              wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
               sudo cp -f license.txt rootfs/etc/license.txt
 
               # add firmware (adreno, venus and WCN)
-              rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
-              wget -q ${QCOM_FIRMWARE}
-              echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
-              md5sum -c MD5
-              unzip $(basename ${QCOM_FIRMWARE})
-              cd -
               sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
-              sudo MTOOLS_SKIP_CHECK=1 mcopy -i qcom_firmware/linux-ubuntu-board-support-package-*/bootloaders-ubuntu/NON-HLOS.bin \
-                   ::image/modem.b* ::image/mba.mbn rootfs/lib/firmware
-              sudo rm -f rootfs/lib/firmware/wlan/macaddr0 rootfs/lib/firmware.tar
 
               sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
               mkdir rootfs2
