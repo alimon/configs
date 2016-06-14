@@ -1,5 +1,21 @@
 - job:
     name: post-build-reports
+    description: 'This project helps submit build and test results
+        to reporting tools. It requires the following variables to be set:
+        <ul>
+        <li>SOURCE_PROJECT_NAME - Jenkins project name
+        <li>SOURCE_BUILD_NUMBER - Jenkins build number
+        <li>LAVA_JOB_IDS - comma separated list of LAVA job IDs
+        <li>ART_URL - URL of the API endpoing of art-reports
+        </ul>
+        Optionally the following variables might be set:
+        <ul>
+        <li>SOURCE_BRANCH_NAME - branch name of the manifest (for AOSP builds)
+        <li>SOURCE_GERRIT_CHANGE_NUMBER
+        <li>SOURCE_GERRIT_PATCHSET_NUMBER
+        <li>SOURCE_GERRIT_CHANGE_URL
+        <li>GERRIT_CHANGE_ID
+        </ul>'
     project-type: freestyle
     defaults: global
     properties:
@@ -16,20 +32,53 @@
             num-to-keep: 90
             artifact-num-to-keep: 1
     parameters:
-        - string:
-            name: LAVA_SERVER
-            default: ''
-        - string:
-            name: LAVA_JOB_ID
-            default: ''
-        - string:
-            name: BUILD_JOB
-            default: ''
+        - password:
+            name: ART_TOKEN_ART_REPORTS
+            default: ${ART_TOKEN_ART_REPORTS}
+        - password:
+            name: ART_TOKEN_ANDROID_REPORTS
+            default: ${ART_TOKEN_ANDROID_REPORTS}
     disabled: false
     node: master
     display-name: 'Post build reports'
+    execution-strategy:
+        sequential: true
     wrappers:
         - timestamps
     builders:
+        - copyartifact:
+            project: ${SOURCE_PROJECT_NAME}
+            filter: 'pinned-manifest.xml'
+            target: artifacts
+            optional: true
+            flatten: true
+            which-build: specific-build
+            build-number: ${SOURCE_BUILD_NUMBER}
+        - copyartifact:
+            project: ${SOURCE_PROJECT_NAME}
+            filter: 'boot_oat_size*'
+            target: artifacts
+            optional: true
+            flatten: true
+            which-build: specific-build
+            build-number: ${SOURCE_BUILD_NUMBER}
+        - copyartifact:
+            project: ${SOURCE_PROJECT_NAME}
+            filter: 'avg_oat_time*'
+            target: artifacts
+            optional: true
+            flatten: true
+            which-build: specific-build
+            build-number: ${SOURCE_BUILD_NUMBER}
         - shell: |
             #!/bin/bash
+            # Send to art-reports
+            rm pinned-manifest.xml
+            rm boot_oat_size*
+            rm avg_oat_size*
+            rm -rf pbr
+            git clone git://git.linaro.org/qa/post-build-report.git pbr
+            python pbr/post-build-report.py
+    publishers:
+        - email:
+            recipients: 'milosz.wasilewski@linaro.org'
