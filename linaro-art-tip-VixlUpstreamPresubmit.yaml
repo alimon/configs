@@ -42,7 +42,7 @@
         - shell: |
             #!/bin/bash -xe
 
-            mkdir -p ${HOME}/bin
+            mkdir -p "${HOME}/bin"
             export PATH="${HOME}/bin:${PATH}"
 
             if ! which cpplint.py > /dev/null; then
@@ -51,6 +51,7 @@
               chmod a+x "${HOME}/bin/cpplint.py"
             fi
 
+            mkdir -p "${HOME}/srv/${JOB_NAME}"
             cd "${HOME}/srv/${JOB_NAME}"
             if [[ -d arm-vixl ]]; then
               cd arm-vixl
