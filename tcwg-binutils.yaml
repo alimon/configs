@@ -118,6 +118,7 @@
             ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
             ${BUILD_SHELL} -c "make all -j$jobs"
             ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
+
             sums=`find . -name "*.sum"`
             echo '############################################'
             echo 'See unexpected results below:'
@@ -129,6 +130,11 @@
             [ x"$sums" != x ] && tail $sums
 
             echo BUILD FINISHED $(date)
+
+            # Cleanup to save disk space
+            cd ..
+            du -sh build-$target
+            rm -rf build-$target || true
 
             exit $result
     publishers:
