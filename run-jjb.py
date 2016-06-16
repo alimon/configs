@@ -36,6 +36,8 @@ for conf_filename in data.splitlines():
             PUBLISH_KEY=os.environ.get('PUBLISH_KEY') or
                         sys.exit('Key is not defined.'),
             ART_TOKEN=os.environ.get('ART_TOKEN'),
+            ART_TOKEN_ART_REPORTS=os.environ.get('ART_TOKEN_ART_REPORTS'),
+            ART_TOKEN_ANDROID_REPORTS=os.environ.get('ART_TOKEN_ANDROID_REPORTS'),
             AUTH_TOKEN=os.environ.get('AUTH_TOKEN'),
             DB_TOKEN=os.environ.get('DB_TOKEN'),
             PRIVATE_KEY=os.environ.get('PRIVATE_KEY'),
