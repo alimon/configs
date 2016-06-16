@@ -16,6 +16,9 @@
         - password:
             name: PRIVATE_KEY
             default: ${PRIVATE_KEY}
+        - string:
+            name: ART_URL
+            default: https://android-qa-reports.linaro.org/api/
     disabled: false
     node: docker-utopic-aosp
     display-name: 'Juno - Member LCR Android M Build'
@@ -219,6 +222,7 @@
             LAVA_STREAM=${BUNDLE_STREAM_NAME}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             FRONTEND_JOB_NAME=${JOB_NAME}
+            SKIP_REPORT=false
             EOF
         - trigger-builds:
             - project: 'post-build-lava'

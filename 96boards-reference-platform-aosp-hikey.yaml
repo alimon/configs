@@ -16,6 +16,9 @@
         - string:
             name: BUILD_CONFIG_FILENAME
             default: 'reference-platform-aosp-hikey'
+        - string:
+            name: ART_URL
+            default: https://android-qa-reports.linaro.org/api/
     disabled: false
     node: docker-utopic-aosp
     display-name: '96boards - Reference Platform - AOSP - HiKey'
@@ -161,6 +164,7 @@
             FRONTEND_JOB_NAME=${JOB_NAME}
             DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
             CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-boot.json
+            SKIP_REPORT=false
             EOF
 
             echo "Build finished"
