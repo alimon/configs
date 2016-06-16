@@ -117,12 +117,12 @@
                 EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
                 EDK2_GIT_VERSION=76c7cfcc22c7448638acb6f904088b2ff3f79f63
                 ATF_GIT_URL=https://github.com/96boards-hikey/arm-trusted-firmware.git
-                ATF_GIT_VERSION=e02159297b04d50be456e2083e06db7358b85709
+                ATF_GIT_VERSION=bdec62eeb8f3153a4647770e08aafd56a0bcd42b
                 OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
                 OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
             elif [ "${MX_PLATFORM}" == "d02" -o "${MX_PLATFORM}" == "d03" ]; then
                 OPEN_PLATFORM_PKG_GIT_URL=https://git.linaro.org/people/heyi.guo/OpenPlatformPkg.git
-                OPEN_PLATFORM_PKG_GIT_BRANCH=d02-d03-upstream-09
+                OPEN_PLATFORM_PKG_GIT_BRANCH=d02-d03-upstream-10
             fi
 
             # So we can easily identify the build number via build path
@@ -155,16 +155,6 @@
             export OPTEE_OS_DIR=${WORKSPACE}/${BUILD_NUMBER}/optee_os
             export UEFI_TOOLS_DIR=${WORKSPACE}/${BUILD_NUMBER}/uefi-tools
             export JENKINS_WORKSPACE=${WORKSPACE}
-
-            # Board specific setup
-            if [ "${MX_PLATFORM}" == "d02" -o "${MX_PLATFORM}" == "d03" ]; then
-                # Need revert on 2 known upstream changes for now, Heyi still working on a proper fix
-                cd ${EDK2_DIR}
-                git config user.email "ci@linaro.org"
-                git config user.name "Linaro CI"
-                git revert --no-edit 61b02ba1f2a3f80fa06f5006f0aea1572093a067
-                cd ..
-            fi
 
             # WORKSPACE is used by uefi-build.sh
             unset WORKSPACE
