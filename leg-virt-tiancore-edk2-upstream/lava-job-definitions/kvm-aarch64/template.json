@@ -17,6 +17,9 @@
         },{
             "device_type": "kvm-aarch64",
             "role": "guest-grub-secure"
+        },{
+            "device_type": "kvm-aarch32",
+            "role": "guest-nonsecure-arm32"
         }]
     },
     "actions": [
@@ -36,7 +39,7 @@
             "parameters": {
                 "kernel": "http://snapshots.linaro.org/kernel-hwpack/linux-mainline/defconfig/${KERNEL_BUILD_NUM}/Image",
                 "ramdisk": "http://storage.kernelci.org/images/rootfs/buildroot/arm64/rootfs.cpio.gz",
-                "firmware": "${QEMU_EFI_URL}",
+                "firmware": "${QEMU_EFI_URL}/QEMU-AARCH64/RELEASE_GCC49/QEMU_EFI.img.gz",
                 "role": "guest-nonsecure"
             }
         },
@@ -45,7 +48,7 @@
             "parameters": {
                 "kernel": "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/Image",
                 "ramdisk": "http://storage.kernelci.org/images/rootfs/buildroot/arm64/rootfs.cpio.gz",
-                "qemu_pflash": ["${QEMU_EFI_URL}", "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/vars.bin.gz"],
+                "qemu_pflash": ["${QEMU_EFI_URL}/QEMU-AARCH64/RELEASE_GCC49/QEMU_EFI.img.gz", "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/vars.bin.gz"],
                 "role": "guest-secure"
             }
         },
@@ -54,8 +57,17 @@
             "parameters": {
                 "kernel": "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/grubaa64.efi",
                 "rootfs": "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/vexpress64-openembedded_minimal-armv8.img.gz",
-                "qemu_pflash": ["${QEMU_EFI_URL}", "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/grub-vars.bin.gz"],
+                "qemu_pflash": ["${QEMU_EFI_URL}/QEMU-AARCH64/RELEASE_GCC49/QEMU_EFI.img.gz", "http://people.linaro.org/~ard.biesheuvel/lava-uefi/secureboot/grub-vars.bin.gz"],
                 "role": "guest-grub-secure"
+            }
+        },
+        {
+            "command": "deploy_linaro_kernel",
+            "parameters": {
+                "kernel": "http://people.linaro.org/~ard.biesheuvel/lava-uefi/arm32-efi/zImage",
+                "ramdisk": "http://storage.kernelci.org/images/rootfs/buildroot/armel/rootfs.cpio.gz",
+                "firmware": "${QEMU_EFI_URL}/QEMU-ARM/RELEASE_GCC49/QEMU_EFI.img.gz",
+                "role": "guest-nonsecure-arm32"
             }
         },
         {
