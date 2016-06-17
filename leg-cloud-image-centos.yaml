@@ -71,8 +71,7 @@
               --disk=pool=default,size=10,format=qcow2,bus=virtio \
               --memory 2048 \
               --location http://mirror.centos.org/altarch/7/os/aarch64/ \
-              --noreboot \
-              --noautoconsole
+              --noreboot
 
             sudo virsh list --all
             sudo virsh pool-list --all
@@ -88,7 +87,7 @@
               --link-latest \
               /var/lib/libvirt/images snapshots/developer-cloud/centos/cloud-image/${BUILD_NUMBER}
 
-            sudo rm -f /var/lib/libvirt/images/centos7-cloud-image.qcow2
+            sudo rm -f /var/lib/libvirt/images/${IMAGE_NAME}.qcow2
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org marcin.juszkiewicz@linaro.org'
