@@ -85,13 +85,13 @@
               --location http://mirror.centos.org/altarch/7/os/aarch64/ \
               --noreboot
 
-            set +e
+            set +ex
             while [ true ]; do
               sleep 1
               vm_running=$(sudo virsh list --name --state-running | grep "^${image_name}" | wc -l)
               [ "${vm_running}" -eq "0" ] && break
             done
-            set -e
+            set -ex
 
             sudo virsh list --all
             sudo virsh pool-list --all
