@@ -15,7 +15,7 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    disabled: true
+    disabled: false
     node: docker-centos7-aarch64
     display-name: 'LEG Cloud image CentOS'
     wrappers:
@@ -31,15 +31,12 @@
             sudo yum install -y \
               AAVMF \
               ebtables \
-              libvirt-daemon-config-network \
-              libvirt-daemon-driver-* \
               qemu-kvm \
               virt-install
-            sudo systemctl start virtlockd
-            sudo systemctl start libvirtd
-            sudo virsh --connect=qemu:///system capabilities
-            sudo virsh --connect=qemu:///system pool-list --all
-            sudo virsh --connect=qemu:///system net-list --all
+
+            sudo virsh capabilities
+            sudo virsh pool-list --all
+            sudo virsh net-list --all
 
             cat > kickstart.cfg << EOF
             reboot
@@ -76,11 +73,15 @@
               --name ${IMAGE_NAME} \
               --initrd-inject kickstart.cfg \
               --extra-args "ks=file:/kickstart.cfg" \
-              --connect=qemu:///system \
               --disk=pool=default,size=10,format=qcow2,bus=virtio \
               --memory 2048 \
               --location http://mirror.centos.org/altarch/7/os/aarch64/ \
-              --noreboot
+              --noreboot \
+              --noautoconsole
+
+            sudo virsh list --all
+            sudo virsh pool-list --all
+            sudo virsh net-list --all
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
