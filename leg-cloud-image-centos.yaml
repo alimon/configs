@@ -63,9 +63,9 @@
             %end
             EOF
 
-            IMAGE_NAME=centos7-cloud-image
+            image_name=centos7-cloud-image
             sudo virt-install \
-              --name ${IMAGE_NAME} \
+              --name ${image_name} \
               --initrd-inject kickstart.cfg \
               --extra-args "ks=file:/kickstart.cfg" \
               --disk=pool=default,size=10,format=qcow2,bus=virtio \
@@ -75,15 +75,13 @@
 
             while [ true ]; do
               sleep 1
-              vm_running=$(sudo virsh list --name --state-running | grep "^${IMAGE_NAME}" | wc -l)
+              vm_running=$(sudo virsh list --name --state-running | grep "^${image_name}" | wc -l)
               [ "${vm_running}" -eq "0" ] && break
             done
 
             sudo virsh list --all
             sudo virsh pool-list --all
             sudo virsh net-list --all
-            sudo virsh destroy ${IMAGE_NAME}
-            sudo virsh undefine ${IMAGE_NAME}
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -93,7 +91,9 @@
               --link-latest \
               /var/lib/libvirt/images snapshots/developer-cloud/centos/cloud-image/${BUILD_NUMBER}
 
-            sudo rm -f /var/lib/libvirt/images/${IMAGE_NAME}.qcow2
+            sudo virsh destroy ${image_name}
+            sudo virsh undefine ${image_name}
+            sudo rm -f /var/lib/libvirt/images/${image_name}.qcow2
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org marcin.juszkiewicz@linaro.org'
