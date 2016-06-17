@@ -26,7 +26,20 @@
         - shell: |
             #!/bin/bash
 
+            export image_name=centos7-cloud-image
+
             set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo virsh destroy ${image_name} || true
+              sudo virsh undefine ${image_name} || true
+              sudo rm -f /var/lib/libvirt/images/${image_name}*
+              rm -rf out
+            }
 
             sudo yum install -y virt-install
 
@@ -63,7 +76,6 @@
             %end
             EOF
 
-            image_name=centos7-cloud-image
             sudo virt-install \
               --name ${image_name} \
               --initrd-inject kickstart.cfg \
@@ -85,17 +97,16 @@
             sudo virsh pool-list --all
             sudo virsh net-list --all
 
+            mkdir out
+            cp -a /var/lib/libvirt/images/${image_name}* out/
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
-              /var/lib/libvirt/images snapshots/developer-cloud/centos/cloud-image/${BUILD_NUMBER}
-
-            sudo virsh destroy ${image_name}
-            sudo virsh undefine ${image_name}
-            sudo rm -f /var/lib/libvirt/images/${image_name}.qcow2
+              out snapshots/developer-cloud/centos/cloud-image/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org marcin.juszkiewicz@linaro.org'
