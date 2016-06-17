@@ -28,13 +28,8 @@
 
             set -ex
 
-            sudo yum install -y \
-              AAVMF \
-              ebtables \
-              qemu-kvm \
-              virt-install
+            sudo yum install -y virt-install
 
-            sudo virsh capabilities
             sudo virsh pool-list --all
             sudo virsh net-list --all
 
@@ -82,6 +77,8 @@
             sudo virsh list --all
             sudo virsh pool-list --all
             sudo virsh net-list --all
+            sudo virsh destroy ${IMAGE_NAME}
+            sudo virsh undefine ${IMAGE_NAME}
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -90,6 +87,8 @@
               --api_version 3 \
               --link-latest \
               /var/lib/libvirt/images snapshots/developer-cloud/centos/cloud-image/${BUILD_NUMBER}
+
+            sudo rm -f /var/lib/libvirt/images/centos7-cloud-image.qcow2
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org marcin.juszkiewicz@linaro.org'
