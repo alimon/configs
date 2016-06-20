@@ -1,5 +1,5 @@
 - job:
-    name: leg-cloud-image-centos
+    name: leg-cloud-image-debian
     project-type: freestyle
     defaults: global
     properties:
@@ -17,7 +17,7 @@
             num-to-keep: 30
     disabled: false
     node: docker-centos7-aarch64
-    display-name: 'LEG Cloud image CentOS'
+    display-name: 'LEG Cloud image Debian'
     wrappers:
         - timestamps
     builders:
@@ -97,7 +97,7 @@
               --initrd-inject preseed.cfg \
               --disk=pool=default,size=10,format=qcow2,bus=virtio \
               --memory 2048 \
-              --location http://ftp.uk.debian.org/debian/dists/stable/main/installer-arm64/ \
+              --location http://ftp.debian.org/debian/dists/stable/main/installer-arm64/ \
               --noreboot
 
             set +ex
