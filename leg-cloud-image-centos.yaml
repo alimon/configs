@@ -71,6 +71,9 @@
             %end
 
             %post
+            curl http://repo.linaro.org/rpm/linaro-overlay/centos-7/linaro-overlay.repo > /etc/yum.repos.d/linaro-overlay.repo
+            yum update -y --nogpgcheck
+
             echo 'add_drivers+="virtio-blk virtio-scsi"' > /etc/dracut.conf.d/add-virtio-modules.conf
             dracut -f /boot/initramfs-`rpm -qa kernel|sed -e "s/kernel-//g"`.img `rpm -qa kernel|sed -e "s/kernel-//g"`
             %end
