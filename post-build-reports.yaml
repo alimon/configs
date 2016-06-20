@@ -46,6 +46,12 @@
     wrappers:
         - timestamps
     builders:
+        - shell: |
+            #!/bin/bash
+            # Send to art-reports
+            rm artifacts/pinned-manifest.xml
+            rm artifacts/boot_oat_size*
+            rm artifacts/avg_oat_size*
         - copyartifact:
             project: ${SOURCE_PROJECT_NAME}
             filter: 'pinned-manifest.xml'
@@ -73,9 +79,6 @@
         - shell: |
             #!/bin/bash
             # Send to art-reports
-            rm pinned-manifest.xml
-            rm boot_oat_size*
-            rm avg_oat_size*
             rm -rf pbr
             git clone git://git.linaro.org/qa/post-build-report.git pbr
             python pbr/post-build-report.py
