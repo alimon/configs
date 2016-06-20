@@ -47,10 +47,10 @@
             default: 'integration-linux-qcomlt'
         - string:
             name: QCOM_FIRMWARE
-            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160524/linux-board-support-package-v1.2.zip'
+            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160620/linux-board-support-package-v1.3.zip'
         - string:
             name: QCOM_FIRMWARE_MD5
-            default: 'a03af6a277dabd7cf78340bd48b443f0'
+            default: '810c7d39c86f8e39f3eb64eb1122aefb'
         - password:
             name: PRIVATE_KEY
             default: ${LT_QUALCOMM_PRIVATE_KEY}
@@ -197,10 +197,10 @@
             md5sum -c MD5
             unzip $(basename ${QCOM_FIRMWARE})
             cd -
-            rm -f qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/wlan/macaddr0
-            rm -f qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/firmware.tar
-            sudo MTOOLS_SKIP_CHECK=1 mcopy -i qcom_firmware/linux-ubuntu-board-support-package-*/bootloaders-ubuntu/NON-HLOS.bin \
-                        ::image/modem.* ::image/mba.mbn qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu
+            rm -f qcom_firmware/linux-board-support-package-*/proprietary-linux/wlan/macaddr0
+            rm -f qcom_firmware/linux-board-support-package-*/proprietary-linux/firmware.tar
+            sudo MTOOLS_SKIP_CHECK=1 mcopy -i qcom_firmware/linux-board-support-package-*/bootloaders-linux/NON-HLOS.bin \
+                        ::image/modem.* ::image/mba.mbn qcom_firmware/linux-board-support-package-*/proprietary-linux
 
             for rootfs in ${ROOTFS}; do
 
@@ -249,7 +249,7 @@
               sudo cp -f license.txt rootfs/etc/license.txt
 
               # add firmware (adreno, venus and WCN)
-              sudo cp -a qcom_firmware/linux-ubuntu-board-support-package-*/proprietary-ubuntu/* rootfs/lib/firmware
+              sudo cp -a qcom_firmware/linux-board-support-package-*/proprietary-linux/* rootfs/lib/firmware
 
               sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
               mkdir rootfs2
