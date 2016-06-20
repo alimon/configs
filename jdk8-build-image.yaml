@@ -81,10 +81,19 @@
 
             shopt -s nullglob
 
-            for i in ${WORKSPACE}/patches/*.patch; do
-              echo "Applying patch: $i"
-              (cd jdk8; patch -p1 < $i)
-            done
+            # Apply patches
+            # Only apply to client builds.
+            if [ "$JVM_VARIANT" = "client" ]; then
+                OLDDIR=$PWD
+                cd $WORKSPACE/patches
+                for patch in $(find  -name '*.patch'); do
+                    patch_dir=$(dirname $patch)
+                    patch_path=$(pwd)/$patch
+                    (echo Applying $patch to $patch_dir ; cd $OLDDIR/jdk8/$patch_dir; \
+                    patch -p1  < $patch_path)
+                done
+                cd $OLDDIR
+            fi
 
             # Extract boot jdk
             rm -rf primordial-jdk7
