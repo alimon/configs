@@ -45,44 +45,14 @@
         - shell: |
             #!/bin/bash -xe
 
-            mkdir -p "${HOME}/bin"
             export PATH="${HOME}/bin:${PATH}"
 
-            sudo apt-get update
+            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
 
-            if ! which cpplint.py >/dev/null; then
-              wget -O "${HOME}/bin/cpplint.py" \
-                https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
-              chmod a+x "${HOME}/bin/cpplint.py"
-            fi
-
-            if ! dpkg -l scons >/dev/null 2>&1; then
-              sudo apt-get install -y --no-install-recommends scons
-            fi
-
-            if ! which clang++ >/dev/null 2>&1; then
-              sudo apt-get install -y --no-install-recommends clang
-            fi
-
-            mkdir -p "${HOME}/srv/${JOB_NAME}"
-            cd "${HOME}/srv/${JOB_NAME}"
-            if [[ -d arm-vixl ]]; then
-              cd arm-vixl
-              git fetch origin
-              git clean -fdx
-              git reset --hard origin/master
-            else
-              git clone https://git.linaro.org/arm/vixl.git arm-vixl
-              cd arm-vixl/
-            fi
-
-            if git pull "http://${GERRIT_HOST}/${GERRIT_PROJECT}" "${GERRIT_REFSPEC}" | grep -q "Automatic merge failed"; then
-              git reset --hard
-              echo "Error: *** Error patch merge failed"
-              exit 1
-            fi
-
-            ./tools/test.py --noclang-format
+            cd ${ART_BUILD_SCRIPTS_DIR}/
+            ./jenkins/setup_host.sh
+            ./misc/presubmit_vixl_test.sh
     publishers:
         - email:
             recipients: 'daniel.diaz@linaro.org'
