@@ -46,7 +46,7 @@
             sudo virsh pool-list --all
             sudo virsh net-list --all
 
-            cat > debian-jessie-arm64-preseed.cfg << EOF
+            cat > preseed.cfg << EOF
                 d-i debian-installer/locale string en_GB
                 d-i keyboard-configuration/xkb-keymap select us
                 d-i netcfg/choose_interface select auto
@@ -100,7 +100,7 @@
 
             sudo virt-install \
               --name ${image_name} \
-              --initrd-inject debian-jessie-arm64-preseed.cfg \
+              --initrd-inject preseed.cfg \
               --disk=pool=default,size=10,format=qcow2,bus=virtio \
               --memory 2048 \
               --location http://ftp.debian.org/debian/dists/stable/main/installer-arm64/ \
@@ -119,7 +119,7 @@
             sudo virsh net-list --all
 
             mkdir out
-            mv debian-jessie-arm64-preseed.cfg out/
+            mv preseed.cfg out/debian-jessie-arm64-preseed.cfg
             sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
             sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
             sudo chown -R buildslave:buildslave out
