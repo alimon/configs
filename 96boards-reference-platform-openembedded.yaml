@@ -20,7 +20,7 @@
     parameters:
         - string:
             name: IMAGES
-            default: 'rpb-console-image rpb-desktop-image'
+            default: 'rpb-console-image'
         - string:
             name: MANIFEST_BRANCH
             default: 'jethro'
@@ -46,6 +46,7 @@
             name: DISTRO
             values:
                 - rpb
+                - rpb-wayland
         - axis:
             type: slave
             name: label
@@ -126,6 +127,8 @@
             # add useful debug info
             cat conf/{site,auto}.conf
 
+            [ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image"
+            [ "${DISTRO}" = "rpb-wayland" ]  && IMAGES+=" rpb-weston-image"
             bitbake ${IMAGES}
             DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
@@ -144,15 +147,15 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ \
-              snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}
+              snapshots/reference-platform/openembedded/${MACHINE}/${DISTRO}/${BUILD_NUMBER}
 
             # Ignore error as we always want to create post_build_lava_parameters
             set +e
 
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-            BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/boot-*-${MACHINE}-*-${BUILD_NUMBER}.img | xargs basename)
-            ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
-            SYSTEM_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
+            BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/boot-*-${MACHINE}-*-${BUILD_NUMBER}.img | xargs basename)
+            ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
+            SYSTEM_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
             EOF
         - inject:
             properties-file: post_build_lava_parameters
