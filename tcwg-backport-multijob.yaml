@@ -143,20 +143,17 @@
             EOF
         - multijob:
             name: 'Builds'
+            condition: COMPLETED
             projects:
               - name: tcwg-buildfarm
-                condition: COMPLETED
                 property-file: gcc_orig_parameters
                 restrict-matrix-project: '(label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))'
               - name: tcwg-buildfarm
-                condition: COMPLETED
                 property-file: gcc_patch_parameters
                 restrict-matrix-project: '(label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))'
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: compare_results_parameters
-            steps:
-                - trigger-builds:
-                    - project: tcwg-compare-results
-                      property-file: compare_results_parameters
-                      block: true
+        - multijob:
+            name: 'Comparison'
+            condition: COMPLETED
+            projects:
+              - name: tcwg-compare-results
+                property-file: compare_results_parameters
