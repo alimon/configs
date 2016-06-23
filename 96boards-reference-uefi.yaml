@@ -99,6 +99,9 @@
             sudo dpkg -i --force-all *.deb
             cd ..; rm -rf acpica-unix
 
+            # sbin isn't in the PATH by default and prevent to find sgdisk
+            export PATH="/usr/sbin:/sbin:$PATH"
+
             # Use pre-installed linaro toolchain (GCC 5.3)
             export PATH="${HOME}/srv/toolchain/arm-tc-16.02/bin:${HOME}/srv/toolchain/arm64-tc-16.02/bin:$PATH"
 
