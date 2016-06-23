@@ -119,7 +119,7 @@
             set +e
             ssh nexus-machine killall adb-stable adb-tip
             set -e
-            ssh nexus-machine ./adb-stable -p ${ANDROID_ADB_SERVER_PORT} start-server
+            ssh nexus-machine ./adb-stable -P ${ANDROID_ADB_SERVER_PORT} start-server
             ssh -L ${ANDROID_ADB_SERVER_PORT}:127.0.0.1:${ANDROID_ADB_SERVER_PORT} nexus-machine -f -N
 
             cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
