@@ -75,6 +75,7 @@
     builders:
         - shell: |
             #!/bin/bash -xe
+
             # Build scripts
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
@@ -100,7 +101,7 @@
 
             cd ${ANDROID_BUILD_DIR}
             perl scripts/jenkins/test_launcher.pl \
-              scripts/test_art_target.sh --default
+              scripts/tests/test_art_target.sh --default
     publishers:
         - archive:
             artifacts: '*.txt, *.xml'

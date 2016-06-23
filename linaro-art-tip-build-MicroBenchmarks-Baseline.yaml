@@ -80,12 +80,12 @@
 
             cd ${ANDROID_BUILD_DIR}
             perl scripts/jenkins/test_launcher.pl \
-              scripts/benchmarks_run_target.sh --default
+              scripts/benchmarks/benchmarks_run_target.sh --default
 
             # Now run the microbenchmarks on Nexus9
             export ANDROID_SERIAL=${FLOUNDER}
             perl scripts/jenkins/test_launcher.pl \
-              scripts/benchmarks_run_target.sh --default
+              scripts/benchmarks/benchmarks_run_target.sh --default
     publishers:
         - archive:
             artifacts: '*.txt, *.xml'
