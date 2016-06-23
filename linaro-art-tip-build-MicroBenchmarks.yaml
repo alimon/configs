@@ -1,0 +1,128 @@
+- job:
+    name: linaro-art-tip-build-MicroBenchmarks
+    project-type: freestyle
+    defaults: global
+    description: <a href="https://android-git.linaro.org/gitweb/linaro-art/art-build-scripts.git/blob/HEAD:/benchmarks_run_target.sh"> Microbenchmarks Test script</a>
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: BUILD_CONFIG_REPO
+            default: 'git://android.git.linaro.org/android-build-configs.git'
+        - string:
+            name: BUILD_CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'linaro-art-tip'
+        - password:
+            name: PRIVATE_KEY
+            default: ${PRIVATE_KEY}
+    disabled: false
+    node: docker-utopic-art
+    display-name: 'ART - Tip - Microbenchmarks (Nexus 5X)'
+    concurrent: true
+    triggers:
+        - gerrit:
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: '.*IncludeAllTests.*'
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/build'
+                  branches:
+                      - branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/external/vixl'
+                  branches:
+                      - branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+
+            # Build scripts
+            ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
+            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+
+            # Private key
+            wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
+            source add-private-key.sh
+
+            # Port forwarding magic to have access to Nexus devices
+            source /home/buildslave/srv/nexus-config
+            export ANDROID_SERIAL=${BULLHEAD}
+            export ANDROID_ADB_SERVER_PORT=${ANDROID_ADB_SERVER_PORT_TIP}
+            ssh nexus-machine ./adb-tip -p ${ANDROID_ADB_SERVER_PORT} start-server
+            ssh -L ${ANDROID_ADB_SERVER_PORT}:127.0.0.1:${ANDROID_ADB_SERVER_PORT} nexus-machine -f -N
+
+            cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
+            ./setup_host.sh
+            ./setup_android.sh
+
+            cd ${ANDROID_BUILD_DIR}
+            perl scripts/jenkins/test_launcher.pl \
+              scripts/benchmarks_run_target.sh --default
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml, *.json'
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android-art.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - groovy-postbuild:
+            script: |
+              import hudson.model.*
+              def currentBuild = Thread.currentThread().executable
+              def description = ""
+              def matcher = manager.getLogMatcher(".*repo sync failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("repo sync failed")
+              }
+              matcher = manager.getLogMatcher(".*patch merge failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("merge failed")
+              }
+              matcher = manager.getLogMatcher(".*error: no devices/emulators found.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("No Device Found")
+              }
+              matcher = manager.getLogMatcher(".*buildbot-build setup failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("buildbot-build setup failed.")
+              }
+              matcher = manager.getLogMatcher(".* tests have failed")
+              if (matcher?.matches()) {
+                  def test = matcher.group(0).split(" ")
+                  manager.listener.logger.println test.length
+                  i=0
+                  while( i<test.length-3) {
+                       description+="${test[i]} failed<br>"
+                       i++;
+                  }
+                  currentBuild.setDescription(description)
+                  manager.addShortText("Tests failed")
+              }
