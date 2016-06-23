@@ -76,7 +76,9 @@
             source /home/buildslave/srv/nexus-config
             export ANDROID_SERIAL=${BULLHEAD}
             export ANDROID_ADB_SERVER_PORT=${ANDROID_ADB_SERVER_PORT_STABLE}
+            set +e
             ssh nexus-machine killall adb-stable adb-tip
+            set -e
             ssh nexus-machine ./adb-stable -p ${ANDROID_ADB_SERVER_PORT} start-server
             ssh -L ${ANDROID_ADB_SERVER_PORT}:127.0.0.1:${ANDROID_ADB_SERVER_PORT} nexus-machine -f -N
 
