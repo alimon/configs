@@ -99,16 +99,15 @@
         - shell: |
             #!/bin/bash -xe
 
+            # Some Docker instances mount ${HOME}/.ssh/config from the host.
+            mv ${HOME}/.ssh{,.not}
+            mkdir -p "${HOME}/bin"
+            export PATH="${HOME}/bin:${PATH}"
+
             # Build scripts
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
             git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
-
-            # VIXL dependencies
-            #sudo apt-get -y install scons
-            #mkdir -p "${HOME}/bin"
-            #wget -O "${HOME}/bin/cpplint.py" https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
-            export PATH="${HOME}/bin:${PATH}"
 
             # Private key
             wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
