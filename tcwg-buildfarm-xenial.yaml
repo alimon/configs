@@ -67,7 +67,7 @@
             default: refs/remotes/origin/stable
             description: 'ABE revision to test'
     disabled: false
-    node: tcwg-x86_64-build-01
+    node: tcwg-x86_64-cam
     child-workspace: $target
     concurrent: true
     display-name: 'TCWG ZZZ BuildFarm Xenial'
@@ -85,8 +85,7 @@
             type: slave
             name: label
             values:
-                - tcwg-x86_64-cam
-                - tcwg-aarch64-build
+                - tcwg-x86_64-build-01
         - axis:
             type: user-defined
             name: target
@@ -103,7 +102,7 @@
                 - schroot-armhf-native
     execution-strategy:
         combination-filter: |
-            (label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
+            (label=="tcwg-x86_64-build-01" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
         sequential: false
     wrappers:
         - timeout:
