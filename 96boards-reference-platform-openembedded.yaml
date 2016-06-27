@@ -64,6 +64,12 @@
         - shell: |
             #!/bin/bash
 
+            # workaround EDK2 is confused by the long path used during the build
+            # and truncate files name expected by VfrCompile
+            sudo mkdir -p /srv/oe
+            sudo chown buildslave:buildslave /srv/oe
+            cd /srv/oe
+
             set -ex
 
             trap cleanup_exit INT TERM EXIT
@@ -135,7 +141,7 @@
             # Prepare files to publish
             rm -f ${DEPLOY_DIR_IMAGE}/*.txt
             find ${DEPLOY_DIR_IMAGE} -type l -delete
-            mv ${WORKSPACE}/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
+            mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 
             # Create MD5SUMS file
             (cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
@@ -188,7 +194,8 @@
               property-file: post_build_lava_parameters
               block: true
     publishers:
-        - archive:
-            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
+# We can only archive files that are located in the workspace
+#        - archive:
+#            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
         - email:
             recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org nicolas.dechesne@linaro.org ricardo.salveti@linaro.org'
