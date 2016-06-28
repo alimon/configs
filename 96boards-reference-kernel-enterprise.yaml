@@ -126,6 +126,8 @@
             sed -i "s/CONFIG_HNS=.*/CONFIG_HNS=y/g" SOURCES/config-arm64-redhat
             sed -i "s/CONFIG_HNS_DSAF=.*/CONFIG_HNS_DSAF=y/g" SOURCES/config-arm64-redhat
             sed -i "s/CONFIG_HNS_ENET=.*/CONFIG_HNS_ENET=y/g" SOURCES/config-arm64-redhat
+            sed -i "s/.*CONFIG_ARM64_4K_PAGES.*/# CONFIG_ARM64_4K_PAGES is not set/g" SOURCES/config-arm64-redhat
+            sed -i "s/.*CONFIG_ARM64_64K_PAGES.*/CONFIG_ARM64_64K_PAGES=y/g" SOURCES/config-arm64-redhat
 
             cp ../orig/*.orig.tar.xz SOURCES/linux-${rpmversion}-reference.${BUILD_NUMBER}.tar.xz
             rpmbuild --nodeps --define "%_topdir `pwd`" -bs SPECS/kernel-aarch64.spec
