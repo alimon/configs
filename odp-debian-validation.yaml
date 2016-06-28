@@ -40,6 +40,15 @@
                 - armv7a
                 - armv8
                 - x86_64
+        - axis:
+            type: user-defined
+            name: test
+            values:
+                - cpp
+                - example
+                - helper
+                - perf
+                - vald
     execution-strategy:
         sequential: true
         touchstone:
@@ -104,7 +113,16 @@
 
             export DIST=debian
             export TARGET_TYPE=ubuntu
+            export CONFIG_OPTIONS="--enable-test-${test}"
+            export TESTDEF_FILE="ubuntu/odp-tests"
             export ROOTFS_TYPE=jessie-developer
+
+            case "${test}" in
+              vald)
+                export CONFIG_OPTIONS=""
+                export TESTDEF_FILE="common/odp-validation"
+                ;;
+            esac
 
             template_file="template-base"
             case "${arch}" in

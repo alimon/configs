@@ -21,7 +21,9 @@ actions:
     skip_install: '${SKIP_INSTALL}'
     testdef_repos:
     - git-repo: git://git.linaro.org/qa/test-definitions.git
-      testdef: common/odp-validation.yaml
+      parameters:
+        CONFIG_OPTIONS: ${CONFIG_OPTIONS}
+      testdef: ${TESTDEF_FILE}.yaml
 - command: submit_results
   parameters:
     server: 'http://${LAVA_SERVER}'
