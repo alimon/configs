@@ -109,6 +109,14 @@
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
             git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
 
+            # OpenJDK 7
+            sudo apt-get update
+            sudo apt-get -y --no-install-recommends install software-properties-common
+            sudo add-apt-repository ppa:openjdk-r/ppa
+            sudo apt-get update
+            sudo apt-get -y --no-install-recommends install openjdk-7-jdk
+            sudo update-java-alternatives -s java-1.7.0-openjdk-amd64
+
             # Private key
             wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
             source add-private-key.sh
@@ -116,6 +124,12 @@
             cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
             ./setup_host.sh
             ./setup_android.sh
+
+            # https://android-review.googlesource.com/223100
+            cd ${ANDROID_BUILD_DIR}/build/
+            git reset --hard
+            git fetch https://android.googlesource.com/platform/build \
+              refs/changes/00/223100/1 && git cherry-pick FETCH_HEAD
 
             cd ${ANDROID_BUILD_DIR}
             perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
