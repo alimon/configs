@@ -143,6 +143,18 @@
             # Create MD5SUMS file
             (cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
 
+            # Build information
+            cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
+
+            h4. Reference Platform Build - CE OpenEmbedded
+
+            Build description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Manifest URL: "https://github.com/96boards/oe-rpb-manifest.git":https://github.com/96boards/oe-rpb-manifest.git
+            * Manifest branch: ${MANIFEST_BRANCH}
+            * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
+            EOF
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
