@@ -18,22 +18,14 @@
             name: toolchain_url
             default: ''
             description: 'Toolchain URL'
-        - bool:
-            name: gcc
-            default: true
-            description: 'Build GCC'
-        - bool:
-            name: linux
-            default: true
-            description: 'Build the Linux kernel'
-        - bool:
-            name: arm_linux_gnueabihf
-            default: true
-            description: 'Build for arm-linux-gnueabihf'
-        - bool:
-            name: aarch64_linux_gnu
-            default: true
-            description: 'Build for aarch64-linux-gnu'
+        - string:
+            name: app_list
+            default: gcc linux
+            description: 'Apps to build'
+        - string:
+            name: target_list
+            default: arm_linux_gnueabihf aarch64_linux_gnu
+            description: 'Targets'
     disabled: false
     node: tcwg-x86_64-dev-01-short
     concurrent: true
@@ -58,23 +50,9 @@
             #!/bin/bash
             set -ex
 
-            echo -n "app_list=" > buildapp.properties
-            if $gcc; then
-              echo -n "gcc " >> buildapp.properties
-            fi
-            if $linux; then
-              echo -n "linux " >> buildapp.properties
-            fi
+            echo "app_list=$app_list" > buildapp.properties
 
-            # New line for next variable:
-            echo >> buildapp.properties
-            echo -n "target_list=" >> buildapp.properties
-            if $arm_linux_gnueabihf; then
-              echo -n "arm-linux-gnueabihf " >> buildapp.properties
-            fi
-            if $aarch64_linux_gnu; then
-              echo -n "aarch64-linux-gnu " >> buildapp.properties
-            fi
+            echo "target_list=$target_list" >> buildapp.properties
             cat buildapp.properties
         - trigger-builds:
             - project: 'tcwg-buildapp-christophe'
