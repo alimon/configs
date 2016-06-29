@@ -1,0 +1,80 @@
+- job:
+    name: tcwg-trigger-buildapp
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: toolchain_url
+            default: ''
+            description: 'Toolchain URL'
+        - bool:
+            name: gcc
+            default: true
+            description: 'Build GCC'
+        - bool:
+            name: linux
+            default: true
+            description: 'Build the Linux kernel'
+        - bool:
+            name: arm_linux_gnueabihf
+            default: true
+            description: 'Build for arm-linux-gnueabihf'
+        - bool:
+            name: aarch64_linux_gnu
+            default: true
+            description: 'Build for aarch64-linux-gnu'
+    disabled: false
+    node: tcwg-x86_64-dev-01-short
+    concurrent: true
+    display-name: 'TCWG ZZZ Trigger BuildApp'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/tcwg-buildapp.git
+            wipe-workspace: true
+            skip-tag: true
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            echo -n "app_list=" > buildapp.properties
+            if $gcc; then
+              echo -n gcc >> buildapp.properties
+            fi
+            if $linux; then
+              echo -n linux >> buildapp.properties
+            fi
+
+            # New line for next variable:
+            echo >> buildapp.properties
+            echo -n "target_list=" > buildapp.properties
+            if $arm_linux_gnueabihf; then
+              echo -n arm-linux-gnueabihf >> buildapp.properties
+            fi
+            if $aarch64_linux_gnu; then
+              echo -n aarch64-linux-gnu >> buildapp.properties
+            fi
+        - trigger-builds:
+            - project: 'tcwg-buildapp-christophe'
+              property-file: buildapp.properties

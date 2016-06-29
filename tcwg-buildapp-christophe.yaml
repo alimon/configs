@@ -1,0 +1,65 @@
+- job:
+    name: tcwg-buildapp-christophe
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - file:
+            name: buildapp.properties
+        - string:
+            name: toolchain_url
+            default: ''
+            description: 'Toolchain URL'
+    disabled: false
+    node: tcwg-x86_64-cam
+    child-workspace: $target
+    concurrent: true
+    display-name: 'TCWG ZZZ BuildApp Christophe'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/tcwg-buildapp.git
+            wipe-workspace: true
+            skip-tag: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-cam
+        - axis:
+            type: dynamic
+            name: app
+            values:
+                - app_list
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            echo ./tcwg-buildapp.sh ${toolchain_url} ${app} ${target}
