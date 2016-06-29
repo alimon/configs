@@ -46,7 +46,7 @@
             name: KERNEL_BRANCH
             default: 'release/qcomlt-4.4'
     disabled: false
-    node: docker-utopic-amd64
+    node: docker-jessie-amd64
     display-name: 'Qualcomm Debian based images for Snapdragon 600'
     scm:
         - git:
@@ -82,14 +82,11 @@
               git clean -fdx
             }
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
-            sudo apt-get install -y kpartx python-pycurl device-tree-compiler zip
+            sudo apt-get install -y kpartx python-pycurl device-tree-compiler zip android-tools-fsutils
             wget -q \
-              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
               http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
-              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb \
-              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/m/multipath-tools/kpartx_0.5.0-7ubuntu7.1_amd64.deb
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb
             sudo dpkg -i --force-all *.deb
             rm -f *.deb
 
