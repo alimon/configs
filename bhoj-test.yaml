@@ -1,0 +1,34 @@
+- job:
+    name: ddiaz-aosp
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            vishal.bhoj@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+    disabled: false
+    node: docker-utopic-art-test
+    display-name: 'AOSP build playground for Vishal Bhoj'
+    concurrent: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            env
+            echo "Hello, world!"
+    publishers:
+        - email:
+            recipients: 'vishal.bhoj@linaro.org'
