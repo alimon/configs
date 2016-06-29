@@ -1,0 +1,141 @@
+- job:
+    name: 96boards-b2260
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: ROOTFS
+            default: 'developer'
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: '96boards - STiH410 B2260'
+    scm:
+        - git:
+            url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf lci-build-tools
+              rm -rf builddir*
+              rm -rf out
+              sudo git clean -fdx
+            }
+
+            #
+            # Pull required tooling into Docker container
+            #
+            sudo apt-get update
+            sudo apt-get install -y python-pycurl
+            wget -q \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb
+            sudo dpkg -i --force-all *.deb
+            rm -f *.deb
+
+            export LANG=C
+            export make_bootwrapper=false
+            export make_install=true
+            export kernel_flavour=multi-v7
+            export kernel_config=multi_v7_defconfig
+            export MAKE_DTBS=true
+            export tcbindir="${HOME}/srv/toolchain/arm-tc-16.02/bin"
+            export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/5.3-2016.02/arm-linux-gnueabihf/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf.tar.xz
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            bash -x lci-build-tools/jenkins_kernel_build_inst
+            rm -rf out/dtbs
+            cp -a linux-*.deb out/
+
+            #
+            # Create the hardware pack
+            #
+            cp -a configs/96boards-b2260/hwpacks/linaro-b2260 .
+
+            VERSION=$(date +%Y%m%d)-${BUILD_NUMBER}
+            linaro-hwpack-create --debug linaro-b2260 ${VERSION}
+            linaro-hwpack-replace -t `ls hwpack_linaro-b2260_*_armhf_supported.tar.gz` -p `ls linux-image-*-linaro-multi-v7_*.deb` -r linux-image -d -i
+            linaro-hwpack-replace -t `ls hwpack_linaro-b2260_*_armhf_supported.tar.gz` -p `ls linux-headers-*-linaro-multi-v7_*.deb` -r linux-headers -d -i
+
+            #
+            # Generate build information
+            #
+            cat > out/HEADER.textile << EOF
+
+            h4. 96boards STiH410 B2260 - CE Debian
+
+            Build description:
+            * Build URL: "${BUILD_URL}":${BUILD_URL}
+            * Kernel tree: "${GIT_URL}":${GIT_URL}
+            * Kernel branch: ${GIT_BRANCH}
+            * Kernel commit: "${GIT_COMMIT}":${GIT_URL}/commit/${GIT_COMMIT}
+            * Kernel config: multi_v7_defconfig
+            EOF
+
+            for rootfs in ${ROOTFS}; do
+              # Get rootfs
+              export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-armhf-rootfs/label=docker-jessie-armhf,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+              export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-armhf-rootfs/label=docker-jessie-armhf,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+              export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}/linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+              wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+
+              cat >> out/HEADER.textile << EOF
+            * Rootfs (${rootfs}): "${rootfs}":http://snapshots.linaro.org/debian/images/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}
+            EOF
+
+              # Create pre-built image(s)
+              linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file b2260-jessie_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-b2260_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+              # Compress image(s)
+              gzip -9 out/b2260-jessie_${rootfs}_${VERSION}.img
+            done
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            #
+            # Publish to the server
+            #
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+#            time python ${HOME}/bin/linaro-cp.py \
+#              --server ${PUBLISH_SERVER} \
+#              --link-latest \
+#              out snapshots/b2260/linaro/debian/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org lee.jones@linaro.org'
