@@ -60,20 +60,20 @@
 
             echo -n "app_list=" > buildapp.properties
             if $gcc; then
-              echo -n gcc >> buildapp.properties
+              echo -n "gcc " >> buildapp.properties
             fi
             if $linux; then
-              echo -n linux >> buildapp.properties
+              echo -n "linux " >> buildapp.properties
             fi
 
             # New line for next variable:
             echo >> buildapp.properties
-            echo -n "target_list=" > buildapp.properties
+            echo -n "target_list=" >> buildapp.properties
             if $arm_linux_gnueabihf; then
-              echo -n arm-linux-gnueabihf >> buildapp.properties
+              echo -n "arm-linux-gnueabihf " >> buildapp.properties
             fi
             if $aarch64_linux_gnu; then
-              echo -n aarch64-linux-gnu >> buildapp.properties
+              echo -n "aarch64-linux-gnu " >> buildapp.properties
             fi
             cat buildapp.properties
         - trigger-builds:
