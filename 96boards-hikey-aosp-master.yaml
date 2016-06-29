@@ -94,13 +94,15 @@
             PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
 
             cd build/out
-            rm -f boot.img ramdisk.img
-            for image in "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
+            for image in "boot.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
               echo "Compressing ${image}"
               tar -Jcf ${image}.tar.xz ${image}
               rm -f ${image}
             done
             cd -
+
+            rm -rf build/out/BUILD-INFO.txt
+            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr-member-hikey/build-info/template.txt -O build/out/BUILD-INFO.txt
 
             time linaro-cp.py \
               --manifest \
