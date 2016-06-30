@@ -71,13 +71,13 @@
             ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
             rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
 
-            mkdir ~/.ssh
+            mkdir -p ~/.ssh
             ssh-keyscan dev-private-git.linaro.org >> ~/.ssh/known_hosts
             cat << EOF >> ~/.ssh/config
             Host dev-private-git.linaro.org
                 User git
             EOF
-            chmod 0600 ~/.ssh/*
+            chmod 0600 ~/.ssh/* || true
 
             git clone --depth 1 -b ${BRANCH} ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git ${WORKSPACE}
             # record commit info in build log
