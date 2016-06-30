@@ -44,6 +44,10 @@
             default: ''
             description: 'Import a manifest file to reproduce a release'
         - string:
+            name: extra
+            default:
+            description: 'Extra config file options. (optional)'
+        - string:
             name: gitref
             default: '/linaro/shared/snapshots'
             description: 'A GIT reference directory for faster cloning.'
@@ -128,7 +132,7 @@
             else
               shell="/bin/bash"
             fi
-            ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver}
+            ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver} ${extra}
             if test $? -gt 0; then
               exit 1
             fi
