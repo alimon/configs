@@ -44,9 +44,9 @@
             default: ''
             description: 'Import a manifest file to reproduce a release'
         - string:
-            name: extra
-            default:
-            description: 'Extra config file options. (optional)'
+            name: toolchain_config
+            default: 'default'
+            description: 'Toolchain version config.  E.g., default or gcc5 or gcc6'
         - string:
             name: gitref
             default: '/linaro/shared/snapshots'
@@ -132,7 +132,7 @@
             else
               shell="/bin/bash"
             fi
-            ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver} ${extra}
+            ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --tarbin --fileserver ${fileserver} --toolchainconfig ${toolchain_config}
             if test $? -gt 0; then
               exit 1
             fi
