@@ -1,0 +1,32 @@
+- job:
+    name: 96boards-reference-platform-hikey-sd-installer
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    disabled: false
+    node: docker-jessie-arm64
+    display-name: '96boards - Reference Platform - Hikey SD Installer'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw: 96boards-reference-platform-hikey-sd-installer/builders.sh
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
