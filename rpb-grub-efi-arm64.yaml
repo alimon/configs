@@ -73,40 +73,40 @@
               $GRUB_MODULES
 
             # Build information
-            cat > out/README.textile << EOF
+            cat > out/HEADER.textile << EOF
 
-            h4. 96Boards - Reference Component - GRUB UEFI
+            h4. Reference Platform - GRUB UEFI
 
-            GRUB UEFI build consumed by the 96Boards Reference Platform Builds
+            GRUB UEFI build consumed by the Reference Platform Builds
 
             Build Description:
             * Build URL: "$BUILD_URL":$BUILD_URL
             * Grub modules used:
 
             EOF
-            echo -n "bc. " >> out/README.textile
-            echo $GRUB_MODULES >> out/README.textile
-            cat >> out/README.textile << EOF
+            echo -n "bc. " >> out/HEADER.textile
+            echo $GRUB_MODULES >> out/HEADER.textile
+            cat >> out/HEADER.textile << EOF
 
             * Grub config used (roofs search with label):
 
             EOF
-            echo -n "bc. " >> out/README.textile
-            cat out/grub.configfile >> out/README.textile
-            cat >> out/README.textile << EOF
+            echo -n "bc. " >> out/HEADER.textile
+            cat out/grub.configfile >> out/HEADER.textile
+            cat >> out/HEADER.textile << EOF
 
             * Grub config used (sdcard):
 
             EOF
-            echo -n "bc. " >> out/README.textile
-            cat out/grub-sd.configfile >> out/README.textile
-            cat >> out/README.textile << EOF
+            echo -n "bc. " >> out/HEADER.textile
+            cat out/grub-sd.configfile >> out/HEADER.textile
+            cat >> out/HEADER.textile << EOF
 
             * $GRUB_EFI_BIN_PKG package:
 
             EOF
-            echo -n "bc. " >> out/README.textile
-            apt-cache show $GRUB_EFI_BIN_PKG >> out/README.textile
+            echo -n "bc. " >> out/HEADER.textile
+            apt-cache show $GRUB_EFI_BIN_PKG >> out/HEADER.textile
 
             # Create MD5SUMS file
             (cd out && md5sum g* > MD5SUMS.txt)

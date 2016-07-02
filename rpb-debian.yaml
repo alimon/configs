@@ -105,9 +105,9 @@
             mkdir -p out/${BOARD}
 
             # Build information
-            cat > out/${BOARD}/README.textile << EOF
+            cat > out/${BOARD}/HEADER.textile << EOF
 
-            h4. 96Boards - Reference Platform Build - Debian
+            h4. Reference Platform Build - Debian
 
             Build description:
             * Build URL: "$BUILD_URL":$BUILD_URL
@@ -144,7 +144,7 @@
                 # Compress boot partition image
                 gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
 
-                cat >> out/${BOARD}/README.textile << EOF
+                cat >> out/${BOARD}/HEADER.textile << EOF
             * Grub UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER":http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER
             * ARM TF / EDK2 UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
             EOF
