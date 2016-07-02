@@ -150,8 +150,17 @@
               exit 1
             fi
 
+            # Extract the gcc_version information from gcc_src to determine
+            # which directory to copy the tarballs into.
+            gcc_version="`basename $gcc_src | awk -F '-' '{ print $3 }'`"
+            tcwg_version="`echo $gcc_version | awk -F '.' '{ print $1 }'`"
+            gcc_minor="`echo $gcc_version | awk -F '.' '{ print $2 }'`"
+            if test ${tcwg_version} -lt 5; then
+                tcwg_version="${tcwg_version}.${gcc_minor}"
+            fi
+
             tarball="`basename ${tarball}`"
-            tarball_url="http://${fileserver}/binaries/${tcwg_release}/${target}/${tarball}"
+            tarball_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}/${target}/${tarball}"
             cat << EOF > tcwg.params
             tarball=${tarball_url}
             EOF
