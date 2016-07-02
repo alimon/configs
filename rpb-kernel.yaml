@@ -1,5 +1,5 @@
 - job:
-    name: 96boards-reference-kernel-enterprise
+    name: 96boards-reference-kernel
     project-type: freestyle
     defaults: global
     logrotate:
@@ -19,16 +19,16 @@
     parameters:
         - string:
             name: KERNEL_GIT_BRANCH
-            default: '96b/releases/2016.06'
+            default: '96b-kernelci'
         - string:
             name: KERNEL_GIT_URL
-            default: 'https://github.com/96boards/linux.git'
+            default: 'https://git.linaro.org/people/amit.kucheria/kernel.git'
         - string:
             name: TARGET_REPO
             default: 'linaro-staging'
-    disabled: false
+    disabled: true
     node: docker-jessie-amd64
-    display-name: '96boards - Reference Component Enterprise - Linux Kernel'
+    display-name: 'Reference Platform - Linux Kernel'
     wrappers:
         - timestamps
         - build-name:
@@ -126,18 +126,14 @@
             sed -i "s/CONFIG_HNS=.*/CONFIG_HNS=y/g" SOURCES/config-arm64-redhat
             sed -i "s/CONFIG_HNS_DSAF=.*/CONFIG_HNS_DSAF=y/g" SOURCES/config-arm64-redhat
             sed -i "s/CONFIG_HNS_ENET=.*/CONFIG_HNS_ENET=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/.*CONFIG_ARM64_4K_PAGES.*/# CONFIG_ARM64_4K_PAGES is not set/g" SOURCES/config-arm64-redhat
-            sed -i "s/.*CONFIG_ARM64_64K_PAGES.*/CONFIG_ARM64_64K_PAGES=y/g" SOURCES/config-arm64-redhat
 
             cp ../orig/*.orig.tar.xz SOURCES/linux-${rpmversion}-reference.${BUILD_NUMBER}.tar.xz
             rpmbuild --nodeps --define "%_topdir `pwd`" -bs SPECS/kernel-aarch64.spec
             cp SRPMS/*.src.rpm ${WORKSPACE}/
             cd ..
 
-            cat > ${WORKSPACE}/build-rpm-params <<EOF
-            source=https://builds.96boards.org/snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/kernel-aarch64-${rpmversion}-reference.${BUILD_NUMBER}.src.rpm
-            repo=${TARGET_REPO}
-            codename=centos-7
+            cat > ${WORKSPACE}/build-kernel-rpm-params <<EOF
+            source=https://builds.96boards.org/snapshots/reference-platform/components/linux/common/${BUILD_NUMBER}/kernel-aarch64-${rpmversion}-reference.${BUILD_NUMBER}.src.rpm
             EOF
 
             # Final preparation for publishing
@@ -152,9 +148,9 @@
             # Build information
             cat > out/README.textile << EOF
 
-            h4. 96Boards - Reference Component Enterprise - Kernel
+            h4. 96Boards - Reference Component - Kernel
 
-            Linux Kernel build consumed by the 96Boards Reference Platform Enterprise Builds
+            Linux Kernel build consumed by the 96Boards Reference Platform Builds
 
             Build Description:
             * Build URL: "$BUILD_URL":$BUILD_URL
@@ -172,7 +168,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/
+              out snapshots/reference-platform/components/linux/common/${BUILD_NUMBER}/
     publishers:
         - archive:
             artifacts: '*.dsc, *.xz, *.src.rpm'
@@ -180,8 +176,8 @@
             - project: build-package
               property-file: build-package-params
               condition: SUCCESS
-            - project: build-rpm
-              property-file: build-rpm-params
+            - project: build-kernel-rpm
+              property-file: build-kernel-rpm-params
               condition: SUCCESS
         - email:
             recipients: 'fathi.boudra@linaro.org ricardo.salveti@linaro.org'

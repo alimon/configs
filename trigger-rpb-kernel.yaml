@@ -1,5 +1,5 @@
 - job:
-    name: trigger-96boards-reference-kernel-enterprise
+    name: trigger-96boards-reference-kernel
     project-type: freestyle
     defaults: global
     logrotate:
@@ -12,13 +12,13 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: '96b/releases/2016.06'
-    disabled: false
+            default: '96b-kernelci'
+    disabled: true
     node: build
-    display-name: 'Trigger for 96boards - Reference Component Enterprise - Linux Kernel'
+    display-name: 'Trigger for Reference Platform - Linux Kernel'
     scm:
         - git:
-            url: https://github.com/96boards/linux.git
+            url: https://git.linaro.org/people/amit.kucheria/kernel.git
             refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
             name: origin
             branches:
@@ -34,4 +34,4 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - trigger-builds:
-            - project: '96boards-reference-kernel-enterprise'
+            - project: '96boards-reference-kernel'

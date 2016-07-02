@@ -1,5 +1,5 @@
 - job:
-    name: trigger-96boards-reference-debian-installer-staging
+    name: trigger-96boards-reference-centos-installer
     project-type: freestyle
     defaults: global
     logrotate:
@@ -11,17 +11,17 @@
                 - job-read
     disabled: false
     node: build
-    display-name: 'Trigger for 96boards - Reference Component Enterprise - Debian Installer - Staging'
+    display-name: 'Trigger for Reference Platform - CentOS Installer'
     triggers:
         - pollurl:
             cron: '@hourly'
             polling-node: build
             urls:
-              - url: 'http://repo.linaro.org/ubuntu/linaro-staging/dists/jessie/main/binary-arm64/'
+              - url: 'http://repo.linaro.org/rpm/linaro-overlay/centos-7/repo/'
                 check-content:
                   - simple: true
     wrappers:
         - timestamps
     builders:
         - trigger-builds:
-            - project: '96boards-reference-debian-installer-staging'
+            - project: '96boards-reference-centos-installer'
