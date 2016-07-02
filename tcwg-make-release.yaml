@@ -18,7 +18,7 @@
         - string:
             name: gcc_src
             default: 'gcc-linaro-5.3-2016.02.tar.xz'
-            description: 'The source of GCC. Specify as it would be passed to abe.sh, either a source tarballs, or git branch and revision.'
+            description: 'The source of GCC. Specify as it would be passed to abe.sh, either a source tarballs, git branch and revision, or a URL of a tarball e.g., "gcc-linaro-5.3-2016.02.tar.xz"'
         - bool:
             name: runtests
             default: false
@@ -29,16 +29,16 @@
             description: 'Whether to build win32 executables.'
         - string:
             name: binutils_src
-            default: 'binutils-gdb.git~linaro_binutils-2_25-branch'
-            description: 'The revision of binutils to use for this release.'
+            default: ''
+            description: 'A optional revision of binutils to use for this release, e.g., "binutils-gdb.git~linaro_binutils-2_25-branch"'
         - string:
             name: glibc_src
-            default: 'glibc.git~release/2.21/master'
-            description: 'The revision of Glibc to use for this release.'
+            default: ''
+            description: 'An optional revision of Glibc to use for this release, e.g., "glibc.git~linaro/2.21/master"'
         - string:
             name: date
-            default: '2016.03'
-            description: 'A release string different than the the source files.'
+            default: ''
+            description: 'An optional release string to use, e.g., "2016.05", "2016.05-rc3", "2016.05-1", "2016.05-1-rc2". The default is to extract the release string from the gcc_src field'
         - string:
             name: manifest_src
             default: ''
@@ -46,7 +46,7 @@
         - string:
             name: toolchain_config
             default: 'default'
-            description: 'Toolchain version config.  E.g., default or gcc5 or gcc6'
+            description: 'Toolchain version config, e.g., "default", "gcc5", or "gcc6"'
         - string:
             name: gitref
             default: '/linaro/shared/snapshots'
@@ -136,13 +136,22 @@
             if test $? -gt 0; then
               exit 1
             fi
-            tarball="`find ${WORKSPACE} -name gcc-linaro\*${date}\*${target}\*.tar.xz`"
+
+            tcwg_release=${date}
+            # If there is no date set, extract release information from the gcc_src
+            if test "${date:+set}" != "set"; then
+                tcwg_release="`basename $gcc_src | cut -d '-' -f4-`"
+                tcwg_release=${tcwg_release%".tar.xz"}
+            fi
+
+            tarball="`find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz`"
             if test x"${tarball}" = x""; then
               echo "ERROR: no binary tarball found!"
               exit 1
             fi
+
             tarball="`basename ${tarball}`"
-            tarball_url="http://${fileserver}/binaries/${date}/${target}/${tarball}"
+            tarball_url="http://${fileserver}/binaries/${tcwg_release}/${target}/${tarball}"
             cat << EOF > tcwg.params
             tarball=${tarball_url}
             EOF
