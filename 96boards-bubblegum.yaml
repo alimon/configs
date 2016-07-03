@@ -87,23 +87,12 @@
             linaro-hwpack-replace -t `ls hwpack_linaro-bubblegum_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-bubblegum_*.deb` -r linux-image -d -i
             linaro-hwpack-replace -t `ls hwpack_linaro-bubblegum_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-bubblegum_*.deb` -r linux-headers -d -i
 
-            cat > out/README.txt << EOF
+            cat > out/HEADER.textile << EOF
             Build information:
-            * build: ${BUILD_URL}
-            * git URL: ${GIT_URL}
+            * build: "${BUILD_URL}":${BUILD_URL}
+            * git URL: "${GIT_URL}":${GIT_URL}
             * git branch: ${GIT_BRANCH}
             * git commit: ${GIT_COMMIT}
-            EOF
-
-            cat > out/HEADER.html << EOF
-            <html>
-            <body>
-                <div id="content"><meta http-equiv="content-type" content="text/html; charset=utf-8" />
-                <pre style="font-size:.85em; padding:0 0 0 10;">
-                    <linaro:include file="README.txt" />
-                </pre>
-            </body>
-            </html>
             EOF
 
             for rootfs in ${ROOTFS}; do
@@ -113,8 +102,8 @@
               export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}/linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
               wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
-              cat >> out/README.txt << EOF
-            * rootfs (${rootfs}): http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
+              cat >> out/HEADER.textile << EOF
+            * rootfs (${rootfs}): "${rootfs}":http://snapshots.linaro.org/debian/images/${rootfs}-arm64/${ROOTFS_BUILD_NUMBER}
             EOF
 
               # Create pre-built image(s)
