@@ -106,32 +106,21 @@
             cp -a l-loader.bin ptable*.img ${WORKSPACE}/out/
             cd ${WORKSPACE}
 
-            cat > out/README.txt << EOF
+            cat > out/HEADER.textile << EOF
             Build information:
-            * build: ${BUILD_URL}
-            * UEFI tools git URL: $(cd uefi-tools && git config remote.origin.url)
+            * build: "${BUILD_URL}":${BUILD_URL}
+            * UEFI tools git URL: "$(cd uefi-tools && git config remote.origin.url)":$(cd uefi-tools && git config remote.origin.url)
             * UEFI tools git branch: $(cd uefi-tools && git branch | grep -e '*'  | cut -d' ' -f2)
             * UEFI tools git commit: $(cd uefi-tools && git log -n1 --pretty=format:%H)
-            * EDK2 git URL: ${GIT_URL}
+            * EDK2 git URL: "${GIT_URL}":${GIT_URL}
             * EDK2 git branch: ${GIT_BRANCH}
             * EDK2 git commit: ${GIT_COMMIT}
-            * ATF git URL: $(cd arm-trusted-firmware && git config remote.origin.url)
+            * ATF git URL: "$(cd arm-trusted-firmware && git config remote.origin.url)":$(cd arm-trusted-firmware && git config remote.origin.url)
             * ATF git branch: $(cd arm-trusted-firmware && git branch | grep -e '*'  | cut -d' ' -f2)
             * ATF git commit: $(cd arm-trusted-firmware && git log -n1 --pretty=format:%H)
-            * OpenPlatformPkg git URL: $(cd linaro-edk2/OpenPlatformPkg && git config remote.origin.url)
+            * OpenPlatformPkg git URL: "$(cd linaro-edk2/OpenPlatformPkg && git config remote.origin.url)":$(cd linaro-edk2/OpenPlatformPkg && git config remote.origin.url)
             * OpenPlatformPkg git branch: $(cd linaro-edk2/OpenPlatformPkg && git branch | grep -e '*'  | cut -d' ' -f2)
             * OpenPlatformPkg git commit: $(cd linaro-edk2/OpenPlatformPkg && git log -n1 --pretty=format:%H)
-            EOF
-
-            cat > out/HEADER.html << EOF
-            <html>
-            <body>
-                <div id="content"><meta http-equiv="content-type" content="text/html; charset=utf-8" />
-                <pre style="font-size:.85em; padding:0 0 0 10;">
-                    <linaro:include file="README.txt" />
-                </pre>
-            </body>
-            </html>
             EOF
 
             # Publish
