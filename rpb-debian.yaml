@@ -206,7 +206,8 @@
                 sudo ln -s apq8016-sbc.dtb-${KERNEL_VERSION} rootfs/boot/apq8016-sbc.dtb
                 echo "KERNEL_DEVICETREE=apq8016-sbc" | sudo tee rootfs/etc/default/kernel
                 sudo mkdir -p rootfs/boot/extlinux
-                sudo cp configs/96boards-reference-platform-debian/extlinux/dragonboard410c.conf rootfs/boot/extlinux/extlinux.conf
+                sudo cp configs/96boards-reference-platform-debian/extlinux/dragonboard410c.conf extlinux.conf
+                sed -e "s/mmcblk0p10/mmcblk1p2/g" extlinux.conf > extlinux-sd.conf
             fi
 
             # Create the ext4fs (fastboot compatible)
@@ -218,6 +219,11 @@
             if [ -f grub.cfg ]; then
                 sudo cp grub.cfg rootfs_ext4/boot/grub
                 sudo cp grub-sd.cfg rootfs/boot/grub/grub.cfg
+            fi
+            ## Same for extlinux (used by dragonboard410c)
+            if [ -f extlinux.conf ]; then
+                sudo cp extlinux.conf rootfs_ext4/boot/extlinux
+                sudo cp extlinux-sd.conf rootfs/boot/extlinux/extlinux.conf
             fi
             sudo umount boot rootfs_ext4 rootfs
             sudo ext2simg -v ${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.raw out/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img
