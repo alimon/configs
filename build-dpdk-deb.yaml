@@ -1,0 +1,67 @@
+- job:
+    name: build-dpdk-deb
+    project-type: freestyle
+    defaults: global
+    properties:
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
+            artifact-num-to-keep: 1
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-jessie-arm64
+    display-name: 'Build DPDK deb packages for opendataplane.org'
+    scm:
+        - git:
+            url: https://git.launchpad.net/~ubuntu-server/dpdk
+            refspec: +refs/heads/ubuntu-yakkety-dpdk16.04:refs/remotes/origin/ubuntu-yakkety-dpdk16.04
+            name: origin
+            branches:
+                - refs/heads/ubuntu-yakkety-dpdk16.04
+            basedir: dpdk
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - timeout:
+            timeout: 20
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            sudo apt-get update
+            sudo apt-get install -y git-buildpackage debhelper dh-python dh-systemd dkms doxygen graphviz inkscape libcap-dev libpcap-dev libxen-dev libxenstore3.0 python python-sphinx texlive-fonts-recommended texlive-latex-extra
+
+            cd dpdk
+            git remote add upstream http://dpdk.org/git/dpdk
+            git remote update
+            gbp buildpackage --git-upstream-tag='v%(version)s' --git-ignore-branch --git-builder="debuild -i\.git -I.git -S -uc -us"
+
+            cat > ${WORKSPACE}/dpdk-params <<EOF
+            source=${BUILD_URL}/artifact/$(echo *.dsc)
+            repo=dpdk
+            EOF
+
+            mv *.dsc *.gz *.xz ${WORKSPACE}/
+    publishers:
+        - archive:
+            artifacts: '*.dsc, *.gz, *.xz'
+        - trigger-parameterized-builds:
+            - project: build-all-packages
+              property-file: dpdk-params
+              condition: SUCCESS
+        - email:
+            recipients: 'anders.roxell@linaro.org fathi.boudra@linaro.org'
