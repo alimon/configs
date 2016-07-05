@@ -63,11 +63,11 @@
             type: slave
             name: label
             values:
-                - docker-utopic
-                - docker-utopic-arm64
+                - docker-jessie-amd64
+                - docker-jessie-arm64
     execution-strategy:
         combination-filter: |
-            !(label=="docker-utopic-arm64" && (ARCH=="x86-64" || ARCH=="arm" || ARCH=="armeb" || ARCH=="arm64be"))
+            !(label=="docker-jessie-arm64" && (ARCH=="x86-64" || ARCH=="arm" || ARCH=="armeb" || ARCH=="arm64be"))
     wrappers:
         - timestamps
         - build-name:
@@ -94,7 +94,7 @@
             esac
 
             case "${label}" in
-              docker-utopic-arm64)
+              docker-jessie-arm64)
                 unset ARCH
                 ;;
             esac
