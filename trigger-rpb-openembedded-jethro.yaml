@@ -1,0 +1,21 @@
+- job:
+    name: trigger-96boards-reference-platform-openembedded-jethro
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for Reference Platform - OpenEmbedded (jethro)'
+    triggers:
+        - timed: '@weekly'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: '96boards-reference-platform-openembedded-jethro'
