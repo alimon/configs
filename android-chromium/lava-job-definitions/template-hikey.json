@@ -1,0 +1,144 @@
+{
+    "actions": [
+        {
+            "command": "deploy_linaro_image",
+            "metadata": {
+                "chromium.lcr_base": "111",
+                "chromium.build": "${BUILD_NUMBER}",
+                "chromium.name": "${JOB_NAME}"
+            },
+            "parameters": {
+                "image": "http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz",
+                "role": "host"
+            }
+        },
+        {
+            "command": "deploy_linaro_android_image",
+            "metadata": {
+                "chromium.lcr_base": "111",
+                "chromium.build": "${BUILD_NUMBER}",
+                "chromium.name": "${JOB_NAME}"
+            },
+            "parameters": {
+                "role": "target",
+                "bootloadertype": "uefi",
+                "images": [
+                    {
+                        "partition": "ptable",
+                        "url": "http://builds.96boards.org/snapshots/reference-platform/components/uefi/latest/release/hikey/ptable-aosp-8g.img"
+                    },
+                    {
+                        "partition": "boot",
+                         "url": "http://releases.linaro.org/android/reference-lcr/hikey/6.0-16.06/boot_fat.uefi.img.tar.xz"
+                    },
+                    {
+                        "partition": "system",
+                        "url": "http://releases.linaro.org/android/reference-lcr/hikey/6.0-16.06/system.img.tar.xz"
+                    },
+                    {
+                        "partition": "userdata",
+                        "url": "http://releases.linaro.org/android/reference-lcr/hikey/6.0-16.06/userdata.img.tar.xz"
+                    },
+                    {
+                        "partition": "cache",
+                        "url": "http://releases.linaro.org/android/reference-lcr/hikey/6.0-16.06/cache.img.tar.xz"
+                    }
+                ]
+            }
+        },
+        {
+            "command": "boot_linaro_android_image",
+            "parameters":
+            {
+                "role": "target",
+                "enable_network_after_boot_android": false,
+                "test_image_prompt": "shell@hikey"
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "role": "host",
+                "testdef_repos": [
+                    {
+                        "git-repo": "git://git.linaro.org/qa/test-definitions.git",
+                        "parameters": {
+                            "DOWNLOAD_URL": "$APK_URL",
+                            "TEST_NAME": "installchromium"
+                        },
+                        "testdef": "android/installapk.yaml"
+                    }
+                ],
+                "timeout": 7200
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "role": "target",
+                "testdef_repos": [
+                    {
+                        "url": "https://git.linaro.org/qa/test-definitions.git/blob_plain/HEAD:/android/multinode-target.yaml",
+                        "parameters": {
+                            "TEST_NAME": "installchromium"
+                        }
+                    }
+                ],
+                "timeout": 7200
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "role": "host",
+                "testdef_repos": [
+                    {
+                        "git-repo": "git://git.linaro.org/qa/android-apk-automation.git",
+                        "parameters": {
+                            "TEST_NAME": "vellamo3"
+                        },
+                        "testdef": "lava-android-benchmark-host.yaml"
+                    }
+                ],
+                "timeout": 10800
+            }
+        },
+        {
+            "command": "lava_test_shell",
+            "parameters": {
+                "role": "target",
+                "testdef_repos": [
+                    {
+                        "url": "https://git.linaro.org/qa/test-definitions.git/blob_plain/HEAD:/android/multinode-target.yaml",
+                        "parameters": {
+                            "TEST_NAME": "vellamo3"
+                        }
+                    }
+                ],
+                "timeout": 10800
+            }
+        },
+        {
+            "command": "submit_results_on_host",
+            "parameters": {
+                "server": "http://${LAVA_SERVER}",
+                "stream": "/private/team/lmg/"
+            }
+        }
+    ],
+    "device_group": [
+        {
+            "count": 1,
+            "device_type": "kvm",
+            "role": "host"
+        },
+        {
+            "count": 1,
+            "device_type": "${DEVICE_TYPE}",
+            "role": "target"
+        }
+    ],
+    "job_name": "${BUILD_URL}",
+    "logging_level": "INFO",
+    "timeout": 9000
+}
