@@ -37,9 +37,6 @@
             name: ROOTFS
             default: 'developer,arm64,1800M alip,arm64,1800M'
         - string:
-            name: DTBS
-            default: 'msm8916-mtp.dtb apq8016-sbc.dtb'
-        - string:
             name: SERIAL_CONSOLE
             default: 'ttyMSM0'
         - string:
@@ -268,8 +265,8 @@
             done
 
             # Move all relevant DTBs in out/
-            for f in ${DTBS} ; do
-              mv out/dtbs/${f} out/
+            for f in arch/arm64/boot/dts/qcom/*.dts ; do
+              mv out/dtbs/$(basename ${f} .dts).dtb out/
             done
             rm -rf out/dtbs
 
