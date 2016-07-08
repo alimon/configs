@@ -4,9 +4,6 @@
     defaults: global
     description: |
         * Build ODP natively on arm(be), arm64(be) and x86-64 and run the validation tests.
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -17,6 +14,9 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
     disabled: false
     node: master
     child-workspace: .

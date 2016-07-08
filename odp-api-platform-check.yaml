@@ -4,9 +4,6 @@
     defaults: global
     description: |
         * Build different ODP implementations.
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -17,6 +14,9 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
     disabled: false
     node: master
     child-workspace: .

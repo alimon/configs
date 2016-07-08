@@ -6,9 +6,6 @@
         * Setup a testplan on arm(be), arm64(be)<br>
         * and x86-64, to be able to run the validation tests.<br>
         * Use a Debian rootfs.<br>
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     parameters:
         - string:
             name: LAVA_SERVER
@@ -24,6 +21,9 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
     disabled: false
     node: build
     display-name: 'ODP Debian validation'

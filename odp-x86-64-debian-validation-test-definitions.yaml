@@ -2,14 +2,14 @@
     name: odp-x86-64-debian-validation-test-definitions
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
     parameters:
         - string:
             name: BUNDLE_STREAM_NAME

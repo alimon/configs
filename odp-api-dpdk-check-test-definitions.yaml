@@ -4,14 +4,14 @@
     defaults: global
     description: |
         * Send a job to LAVA to build and run ODP-DPDK's validation suite.
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
     disabled: false
     node: master
     display-name: 'LNG ODP-DPDK API check test definitions'

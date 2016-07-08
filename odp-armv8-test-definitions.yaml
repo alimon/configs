@@ -5,14 +5,14 @@
     description: |
         * Send a job to LAVA to test ODP's validation test suite on a armv8
         * openembedded rootfs with the latest code from ODPs repository.
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
     parameters:
         - string:
             name: BUNDLE_STREAM_NAME
