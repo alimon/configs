@@ -19,10 +19,13 @@
             default: 'lng.validation.linaro.org/RPC2/'
         - string:
             name: PUB_DEST
-            default: 'http://snapshots.linaro.org/debian/images/odp/armv8-validation/'
+            default: 'http://snapshots.linaro.org/debian/images/odp/armv8-'
         - string:
             name: UPSTREAM_BUILD_NUMBER
             default: '1'
+        - string:
+            name: UPSTREAM_TEST
+            default: 'vald'
     disabled: false
     node: master
     display-name: 'ODP Debian validation (armv8) - Submit LAVA test definitions'
@@ -33,7 +36,7 @@
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=juno
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${PUB_DEST}/${UPSTREAM_BUILD_NUMBER}/lava/template-base.json
+            CUSTOM_JSON_URL=${PUB_DEST}${UPSTREAM_TEST}/${UPSTREAM_BUILD_NUMBER}/lava/template-base.json
             LAVA_SERVER=${LAVA_SERVER}
             EOF
         - trigger-builds:

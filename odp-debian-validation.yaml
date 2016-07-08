@@ -146,7 +146,7 @@
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
                --api_version 3 \
-               --link-latest ${WORKSPACE}/out debian/images/odp/${arch}-validation/${BUILD_NUMBER}
+               --link-latest ${WORKSPACE}/out debian/images/odp/${arch}-${test}/${BUILD_NUMBER}
         - inject:
             properties-file: post_build_lava_parameters
         - conditional-step:
@@ -156,7 +156,9 @@
             steps:
                 - trigger-builds:
                     - project: 'odp-armv7a-debian-validation-test-definitions'
-                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      predefined-parameters: |
+                          UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                          UPSTREAM_TEST=${test}
                       block: true
         - conditional-step:
             condition-kind: strings-match
@@ -165,7 +167,9 @@
             steps:
                 - trigger-builds:
                     - project: 'odp-armv8-debian-validation-test-definitions'
-                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      predefined-parameters: |
+                          UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                          UPSTREAM_TEST=${test}
                       block: true
         - conditional-step:
             condition-kind: strings-match
@@ -174,7 +178,9 @@
             steps:
                 - trigger-builds:
                     - project: 'odp-x86-64-debian-validation-test-definitions'
-                      predefined-parameters: UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                      predefined-parameters: |
+                          UPSTREAM_BUILD_NUMBER=${BUILD_NUMBER}
+                          UPSTREAM_TEST=${test}
                       block: true
     publishers:
         - email:
