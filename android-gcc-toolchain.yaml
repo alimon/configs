@@ -1,0 +1,112 @@
+- job:
+    name: android-gcc-toolchain
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: GCCVER
+            default: '6.1.0'
+            description: 'GCC version (e.g. x.y.z or x.y-YYYY.MM for TCWG releases)'
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'GCC based AOSP toolchain'
+    triggers:
+        - gerrit:
+            server-name: __ANY__
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'people/bernhard.rosenkranzer/android-ndk-build'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'init-and-build.sh'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    scm:
+        - git:
+            url: https://git.linaro.org/people/bernhard.rosenkranzer/android-ndk-build.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            basedir: android-ndk-build
+            skip-tag: true
+            shallow-clone: true
+            clean:
+                after: true
+            wipe-workspace: false
+    builders:
+       - linaro-publish-token
+       - shell: |
+            #!/bin/bash
+
+            # Install build dependencies
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y \
+              autoconf automake bash bison build-essential bzip2 chrpath \
+              coreutils cpio flex g++ gawk gcc git gzip libffi-dev libncurses5-dev \
+              make realpath sed tar texi2html texinfo unzip wget
+
+            test -d ${HOME}/bin || mkdir -p ${HOME}/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            chmod a+x ${HOME}/bin/repo
+            export PATH=${HOME}/bin:${PATH}
+
+            # Set some reasonable defaults
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+
+            # Set up our build environment
+            cd ${WORKSPACE}/android-ndk-build
+            GCCVER=${GCCVER} OURDIR="${WORKSPACE}/android-ndk-build" ./init-and-build.sh 2>&1 |tee ${WORKSPACE}/build.log || :
+            if [ ! -e ${WORKSPACE}/android-ndk-build/ndk/out/dist/gcc-arm-linux-x86_64.tar.bz2 ]; then
+                echo "ARMv7 crosscompiler failed to build"
+                exit 1
+            fi
+            if [ ! -e ${WORKSPACE}/android-ndk-build/ndk/out/dist/gcc-arm64-linux-x86_64.tar.bz2 ]; then
+                echo "ARMv8 crosscompiler failed to build"
+                exit 1
+            fi
+
+            # Let's save some space and assign better filenames
+            cd ${WORKSPACE}/android-ndk-build/ndk/out/dist
+            bunzip2 gcc-arm-linux-x86_64.tar.bz2
+            mv gcc-arm-linux-x86_64.tar gcc-${GCCVER}-arm-linux-x86_64.tar
+            bunzip2 gcc-arm64-linux-x86_64.tar.bz2
+            mv gcc-arm64-linux-x86_64.tar gcc-${GCCVER}-arm64-linux-x86_64.tar
+            xz -9ef *.tar
+            # And remove stuff we don't need
+            rm -rf *.tar.bz2 *.zip logs
+
+            # Publish
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+                --api_version 3 \
+                --link-latest \
+                ${WORKSPACE}/android-ndk-build/ndk/out/dist android/${JOB_NAME}/${BUILD_NUMBER}
+    publishers:
+        - archive:
+            artifacts: '*.log'
+        - email:
+            recipients: 'bernhard.rosenkranzer@linaro.org'
