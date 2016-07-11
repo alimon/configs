@@ -80,6 +80,14 @@
             # Set up our build environment
             cd ${WORKSPACE}/android-ndk-build
             GCCVER=${GCCVER} OURDIR="${WORKSPACE}/android-ndk-build" ./init-and-build.sh 2>&1 |tee ${WORKSPACE}/build.log || :
+            pwd
+            ls ${WORKSPACE} || :
+            ls ${WORKSPACE}/android-ndk-build || :
+            ls ${WORKSPACE}/android-ndk-build/ndk || :
+            ls ${WORKSPACE}/android-ndk-build/ndk/out/dist || :
+            ls ${WORKSPACE}/ndk || :
+            ls ${WORKSPACE}/ndk/out || :
+            ls ${WORKSPACE}/ndk/out/dist || :
             if [ ! -e ${WORKSPACE}/android-ndk-build/ndk/out/dist/gcc-arm-linux-x86_64.tar.bz2 ]; then
                 echo "ARMv7 crosscompiler failed to build"
                 exit 1
