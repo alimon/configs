@@ -50,6 +50,7 @@
             git remote update
             gbp buildpackage --git-upstream-tag='v%(version)s' --git-ignore-branch --git-builder="debuild -i\.git -I.git -S -uc -us"
 
+            cd ${WORKSPACE}
             cat > ${WORKSPACE}/dpdk-params <<EOF
             source=${BUILD_URL}/artifact/$(echo *.dsc)
             repo=dpdk
