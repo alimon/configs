@@ -79,9 +79,7 @@
                 - $abe_branch
             skip-tag: true
             shallow-clone: true
-            wipe-workspace: false
-            clean:
-                before: true
+            wipe-workspace: true
     axes:
         - axis:
             type: slave
@@ -211,6 +209,7 @@
             exit $result
     publishers:
         - workspace-cleanup:
-            include:
-              - "**/.git"
-            dirmatch: true
+            exclude:
+              - "**.log"
+              - "**.err"
+              - "**.out"
