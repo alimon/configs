@@ -1,0 +1,118 @@
+- job:
+    name: tcwg-cleanup-stale-tcwg-build-schroot-sessions-christophe-freestyle
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: tcwg-x86_64-cam
+    display-name: 'TCWG ZZZ Cleanup stale tcwg-build schroot sessions Christophe'
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timeout:
+            timeout: 60
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - trigger-builds:
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-aarch64-07
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-aarch64-build-01
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-aarch64-build-02
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-aarch64-test-01
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-aarch64-test-02
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-build-01
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-build-02
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-build-03
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-build-04
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-build-05
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-build-06
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-dev-01
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-dev-02
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-ex40build-01
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-ex40build-07
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-ex40build-08
+            - project: 'tcwg-cleanup-stale-schroot-sessions-christophe'
+              predefined-parameters:
+                schroot_name=tcwg-build-*
+              node-label-name: TCWG_SLAVES
+              node-label: tcwg-x86_64-ex40build-09
+    publishers:
+        - email:
+            recipients: 'christophe.lyon@linaro.org'
