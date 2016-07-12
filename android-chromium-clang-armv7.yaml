@@ -44,8 +44,6 @@
             rm -rf configs
             git clone https://git.linaro.org/ci/job/configs.git
             ./configs/android-chromium/chromium-build.sh
-            # Prepare LAVA JSON
-            sed -i "s/\$APK_URL/https:\/\/snapshots.linaro.org\/android\/${JOB_NAME}\/${BUILD_NUMBER}\/ChromePublic.apk/g" ./configs/android-chromium/lava-job-definitions/hikey/template.json
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -75,6 +73,7 @@
             BUILD_URL=${BUILD_URL}
             LAVA_SERVER=validation.linaro.org/RPC2/
             CUSTOM_JSON_URL=https://snapshots.linaro.org/android/${JOB_NAME}/${BUILD_NUMBER}/hikey/template.json
+            DOWNLOAD_URL=https://snapshots.linaro.org/android/${JOB_NAME}/${BUILD_NUMBER}
             EOF
 
             echo "Build finished"

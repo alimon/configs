@@ -4,8 +4,9 @@
             "command": "deploy_linaro_image",
             "metadata": {
                 "chromium.lcr_base": "111",
-                "chromium.build": "${BUILD_NUMBER}",
-                "chromium.name": "${JOB_NAME}"
+                "chromium.build": "%%ANDROID_META_BUILD%%",
+                "chromium.name": "%%JOB_NAME%%",
+                "chromium.url": "%%ANDROID_META_URL%%"
             },
             "parameters": {
                 "image": "http://images.validation.linaro.org/ubuntu-14-04-server-base.img.gz",
@@ -16,8 +17,9 @@
             "command": "deploy_linaro_android_image",
             "metadata": {
                 "chromium.lcr_base": "111",
-                "chromium.build": "${BUILD_NUMBER}",
-                "chromium.name": "${JOB_NAME}"
+                "chromium.build": "%%ANDROID_META_BUILD%%",
+                "chromium.name": "%%JOB_NAME%%",
+                "chromium.url": "%%ANDROID_META_URL%%"
             },
             "parameters": {
                 "role": "target",
@@ -63,7 +65,7 @@
                     {
                         "git-repo": "git://git.linaro.org/qa/test-definitions.git",
                         "parameters": {
-                            "DOWNLOAD_URL": "$APK_URL",
+                            "DOWNLOAD_URL": "%%DOWNLOAD_URL%%/ChromePublic.apk",
                             "TEST_NAME": "installchromium"
                         },
                         "testdef": "android/installapk.yaml"
@@ -121,7 +123,7 @@
         {
             "command": "submit_results_on_host",
             "parameters": {
-                "server": "http://${LAVA_SERVER}",
+                "server": "http://validation.linaro.org/RPC2/",
                 "stream": "/private/team/lmg/"
             }
         }
@@ -134,11 +136,11 @@
         },
         {
             "count": 1,
-            "device_type": "${DEVICE_TYPE}",
+            "device_type": "hi6220-hikey",
             "role": "target"
         }
     ],
-    "job_name": "${BUILD_URL}",
+    "job_name": "%%ANDROID_META_URL%%",
     "logging_level": "INFO",
     "timeout": 9000
 }
