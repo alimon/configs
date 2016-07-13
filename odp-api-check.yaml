@@ -80,12 +80,14 @@
 
             case "${ARCH}" in
               x86-64)
+                arch_ARCH=${ARCH}
                 unset ARCH
                 ;;
             esac
 
             case "${label}" in
               docker-jessie-arm64)
+                label_ARCH=${ARCH}
                 unset ARCH
                 ;;
             esac
@@ -116,6 +118,18 @@
             fi
 
             # Publish to snapshots
+            case "${ARCH}" in
+              x86-64)
+                export ARCH=${arch_ARCH}
+                ;;
+            esac
+
+            case "${label}" in
+              docker-jessie-arm64)
+                export ARCH=${label_ARCH}
+                ;;
+            esac
+
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             if [ -d out ]; then
