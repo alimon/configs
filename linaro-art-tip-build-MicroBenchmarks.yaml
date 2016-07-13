@@ -94,6 +94,30 @@
             cd ${ANDROID_BUILD_DIR}
             perl scripts/jenkins/test_launcher.pl \
               scripts/benchmarks/benchmarks_run_target.sh --default
+
+            # create parameters for post-build-reports
+            TEST_JOB_IDS=""
+            for RESULT_FILE in artifacts/*.json;
+            do
+              TEST_JOB_IDS="${TEST_JOB_IDS},J${BUILD_NUMBER}_${JOB_NAME}_{$RESULT_FILE}"
+            done
+            cat << EOF > ${WORKSPACE}/post_build_reports_parameters
+            SOURCE_PROJECT_NAME=${JOB_NAME}
+            SOURCE_BUILD_NUMBER=${BUILD_NUMBER}
+            ART_URL=https://art-reports.linaro.org/api/
+            LAVA_JOB_IDS=${TEST_JOB_IDS}
+            SOURCE_BRANCH_NAME=master
+            SOURCE_GERRIT_CHANGE_NUMBER=${GERRIT_CHANGE_NUMBER}
+            SOURCE_GERRIT_PATCHSET_NUMBER=${GERRIT_PATCHSET_NUMBER}
+            SOURCE_GERRIT_CHANGE_URL=${GERRIT_CHANGE_URL}
+            SOURCE_GERRIT_CHANGE_ID=${GERRIT_CHANGE_ID}
+            EOF
+
+        - trigger-builds:
+            - project: 'post-build-reports'
+              property-file: post_build_reports_parameters
+              block: true
+
     publishers:
         - archive:
             artifacts: '*.txt, *.xml, *.json'

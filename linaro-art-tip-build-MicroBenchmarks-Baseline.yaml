@@ -76,7 +76,7 @@
             ssh nexus-machine killall adb-stable adb-tip ||:
             ssh nexus-machine ./adb-tip -P ${ANDROID_ADB_SERVER_PORT} start-server
             ssh -L ${ANDROID_ADB_SERVER_PORT}:127.0.0.1:${ANDROID_ADB_SERVER_PORT} nexus-machine -f -N
-            
+
             cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
             ./setup_host.sh
             ./setup_android.sh
@@ -90,6 +90,26 @@
             export ANDROID_SERIAL=${FLOUNDER}
             perl scripts/jenkins/test_launcher.pl \
               scripts/benchmarks/benchmarks_run_target.sh --default
+
+            # create parameters for post-build-reports
+            TEST_JOB_IDS=""
+            for RESULT_FILE in artifacts/*.json;
+            do
+              TEST_JOB_IDS="${TEST_JOB_IDS},J${BUILD_NUMBER}_${JOB_NAME}_{$RESULT_FILE}"
+            done
+            cat << EOF > ${WORKSPACE}/post_build_reports_parameters
+            SOURCE_PROJECT_NAME=${JOB_NAME}
+            SOURCE_BUILD_NUMBER=${BUILD_NUMBER}
+            ART_URL=https://art-reports.linaro.org/api/
+            LAVA_JOB_IDS=${TEST_JOB_IDS}
+            SOURCE_BRANCH_NAME=master
+            EOF
+
+        - trigger-builds:
+            - project: 'post-build-reports'
+              property-file: post_build_reports_parameters
+              block: true
+
     publishers:
         - archive:
             artifacts: '*.txt, *.xml, *.json'
