@@ -83,7 +83,7 @@
             # the setup-environment will create local.conf, make sure we get rid
             # of old config. Let's remove the previous TMPDIR as well. We want
             # to preserve build/buildhistory though.
-            rm -rf build/conf build/tmp-glibc/
+            rm -rf build/conf build/tmp-*glibc/
 
             # Accept EULA if/when needed
             export EULA_dragonboard410c=1
@@ -104,6 +104,6 @@
             # for now
     publishers:
         - archive:
-            artifacts: '${DEPLOY_DIR_IMAGE}/*rootfs.ext4.gz,${DEPLOY_DIR_IMAGE}/*manifest*,${DEPLOY_DIR_IMAGE}/MD5SUMS.txt'
+            artifacts: 'build/tmp-*glibc/deploy/images/$MACHINE{}/boot--*.img,build/tmp-*glibc/deploy/images/$MACHINE{}/*rootfs.ext4.gz,build/tmp-*glibc/deploy/images/$MACHINE{}/*manifest*,build/tmp-*glibc/deploy/images/$MACHINE{}/MD5SUMS.txt'
         - email:
             recipients: 'andrey.konovalov@linaro.org'
