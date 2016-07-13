@@ -41,7 +41,7 @@
               rm -rf out
             }
 
-            sudo yum install -y qemu-img virt-install
+            sudo yum install -y qemu-img virt-install libguestfs-tools-c
 
             sudo virsh pool-list --all
             sudo virsh net-list --all
@@ -170,6 +170,9 @@
             sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
             sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
             sudo chown -R buildslave:buildslave out
+
+            sudo virt-copy-out -a ${image_name}.qcow2 /boot/ .
+            cp boot/vmlinuz-4*.aarch64 boot/initramfs-4*.aarch64.img out/
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
