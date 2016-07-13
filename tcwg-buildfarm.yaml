@@ -216,12 +216,21 @@
             result="0"
             ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
 
+            manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
+            mkdir -p artifacts/
+            if [ x"${manifest}" != x ]; then
+              cp ${manifest} artifacts/
+            fi
+
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
               result="0"
             fi
             exit $result
     publishers:
+        - archive:
+            artifacts: 'artifacts/*'
+            latest-only: false
         - workspace-cleanup:
             exclude:
               - "**/*.log"
