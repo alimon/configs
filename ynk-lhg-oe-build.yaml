@@ -52,9 +52,8 @@
 
             # workaround EDK2 is confused by the long path used during the build
             # and truncate files name expected by VfrCompile
-            sudo mkdir -p /srv/oe
-            sudo chown buildslave:buildslave /srv/oe
-            cd /srv/oe
+            mkdir -p ${HOME}/ynk-lhg-oe-build
+            cd ${HOME}/ynk-lhg-oe-build
 
             set -x
 
@@ -95,7 +94,7 @@
             # Prepare files to archive
             rm -f ${DEPLOY_DIR_IMAGE}/*.txt
             find ${DEPLOY_DIR_IMAGE} -type l -delete
-            mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
+            mv ${HOME}/ynk-lhg-oe-build/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 
             # Create MD5SUMS file
             (cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
