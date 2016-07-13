@@ -99,24 +99,18 @@
 
             case ${GERRIT_BRANCH} in
               *gcc-5*)
-                binutils=binutils-gdb.git/linaro_binutils-2_25-branch
-                glibc=glibc.git~linaro/2.21/master
-                newlib=newlib.git~linaro_newlib-branch
+                toolchainconf='--extraconfigdir ../config/gcc5'
                 ;;
               *gcc-6*)
-                binutils=binutils-gdb.git/linaro_binutils-2_26-branch
-                glibc=glibc.git~linaro/2.23/master
-                newlib=newlib.git~linaro-local/linaro-2.4-branch
+                toolchainconf='--extraconfigdir ../config/gcc6'
                 ;;
               *)
-                binutils=binutils-gdb.git/master
-                glibc=glibc.git~master
-                newlib=newlib.git~master
+                toolchainconf='--extraconfigdir ../config/gcc6 binutils=binutils-gdb.git/master glibc=glibc.git~master newlib=newlib.git~master'
                 ;;
             esac
 
             cat <<EOF > gcc_orig_parameters
-            override=gcc=gcc.git@$gcc_orig_rev binutils=${binutils} glibc=${glibc} newlib=${newlib}
+            override=$toolchainconf gcc=gcc.git@$gcc_orig_rev
             log_name=tcwg-backport-$gcc_orig_rev/\$(uname -m).\$target
             rebuild=${rebuild}
             dont_fail=true
@@ -126,7 +120,7 @@
             EOF
 
             cat <<EOF > gcc_patch_parameters
-            override=gcc=gcc.git@$gcc_patch_rev binutils=${binutils} glibc=${glibc} newlib=${newlib}
+            override=$toolchainconf gcc=gcc.git@$gcc_patch_rev
             log_name=tcwg-backport-$gcc_patch_rev/\$(uname -m).\$target
             rebuild=${rebuild}
             dont_fail=true
