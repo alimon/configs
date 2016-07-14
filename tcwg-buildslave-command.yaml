@@ -22,6 +22,10 @@
             name: command
             default: 'ls $HOME/*'
             description: 'Command to run'
+        - bool:
+            name: dry_run
+            default: 'false'
+            description: 'Whether to do a dry-run'
     disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: true
@@ -66,4 +70,4 @@
             chmod +x command.sh.$$$$
 
             scp command.sh.$$$$ $machine:/tmp/
-            ssh $machine /tmp/command.sh.$$$$
+            $dry_run || ssh $machine /tmp/command.sh.$$$$
