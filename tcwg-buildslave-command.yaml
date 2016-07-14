@@ -47,7 +47,10 @@
         - shell: |
             #!/bin/bash
 
-            cat > command.sh.$$ << EOF
+            set -e
+            set -x
+
+            cat > command.sh.$$$$ << EOF
             #!/bin/bash
 
             set -e
@@ -57,4 +60,4 @@
             EOF
 
             scp command.sh.$$ $machine:/tmp/
-            ssh $machine /tmp/command.sh.$$
+            ssh $machine /tmp/command.sh.$$$$
