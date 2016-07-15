@@ -149,23 +149,18 @@
             SOURCE_BRANCH_NAME=lor_marshmallow
             EOF
 
-            if [ - ${GERRIT_CHANGE_NUMBER} ]; then
-            do
+            if [[ ${GERRIT_CHANGE_NUMBER} ]]; then
               echo SOURCE_GERRIT_CHANGE_NUMBER=${GERRIT_CHANGE_NUMBER} >> ${WORKSPACE}/post_build_reports_parameters
-            done
-            if [ - ${GERRIT_CHANGE_ID} ]; then
-            do
+            fi
+            if [[ ${GERRIT_CHANGE_ID} ]]; then
               echo SOURCE_GERRIT_CHANGE_ID=${GERRIT_CHANGE_ID} >> ${WORKSPACE}/post_build_reports_parameters
-            done
-            if [ - ${GERRIT_CHANGE_URL} ]; then
-            do
+            fi
+            if [[ ${GERRIT_CHANGE_URL} ]]; then
               echo SOURCE_GERRIT_CHANGE_URL=${GERRIT_CHANGE_URL} >> ${WORKSPACE}/post_build_reports_parameters
-            done
-            if [ - ${GERRIT_PATCHSET_NUMBER} ]; then
-            do
+            fi
+            if [[ ${GERRIT_PATCHSET_NUMBER} ]]; then
               echo SOURCE_GERRIT_PATCHSET_NUMBER=${GERRIT_PATCHSET_NUMBER} >> ${WORKSPACE}/post_build_reports_parameters
-            done
-
+            fi
         - trigger-builds:
             - project: 'post-build-reports'
               property-file: post_build_reports_parameters
