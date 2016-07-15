@@ -103,16 +103,12 @@
             cat << EOF > ${WORKSPACE}/post_build_reports_parameters
             SOURCE_PROJECT_NAME=${JOB_NAME}
             SOURCE_BUILD_NUMBER=${BUILD_NUMBER}
+            SOURCE_BUILD_ID=${BUILD_NUMBER}
             SOURCE_BUILD_URL=${BUILD_URL}
             ART_URL=https://art-reports.linaro.org/api/
             LAVA_JOB_IDS=${TEST_JOB_IDS}
             SOURCE_BRANCH_NAME=master
             EOF
-
-        - trigger-builds:
-            - project: 'post-build-reports'
-              property-file: post_build_reports_parameters
-              block: true
 
     publishers:
         - archive:
@@ -154,3 +150,6 @@
                   currentBuild.setDescription(description)
                   manager.addShortText("Tests failed")
               }
+        - trigger-parameterized-builds:
+            - project: 'post-build-reports'
+              property-file: post_build_reports_parameters
