@@ -136,10 +136,11 @@
               scripts/benchmarks/benchmarks_run_target.sh --default
 
             # create parameters for post-build-reports
+            cd ${WORKSPACE}
             TEST_JOB_IDS=""
-            for RESULT_FILE in ${WORKSPACE}/*.json;
+            for RESULT_FILE in *.json;
             do
-              TEST_JOB_IDS="${TEST_JOB_IDS},J${BUILD_NUMBER}_${JOB_NAME}_{$RESULT_FILE}"
+              TEST_JOB_IDS="${TEST_JOB_IDS},J${BUILD_NUMBER}_${JOB_NAME}_${RESULT_FILE}"
             done
             cat << EOF > ${WORKSPACE}/post_build_reports_parameters
             SOURCE_PROJECT_NAME=${JOB_NAME}
