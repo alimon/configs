@@ -141,19 +141,12 @@
               scripts/benchmarks/benchmarks_run_target.sh --default
 
             # create parameters for post-build-reports
-            cd ${WORKSPACE}
-            TEST_JOB_IDS=""
-            for RESULT_FILE in *.json;
-            do
-              TEST_JOB_IDS="${TEST_JOB_IDS},J${BUILD_NUMBER}_${JOB_NAME}_${RESULT_FILE}"
-            done
             cat << EOF > ${WORKSPACE}/post_build_reports_parameters
             SOURCE_PROJECT_NAME=${JOB_NAME}
             SOURCE_BUILD_NUMBER=${BUILD_NUMBER}
             SOURCE_BUILD_ID=${BUILD_NUMBER}
             SOURCE_BUILD_URL=${BUILD_URL}
             ART_URL=https://art-reports.linaro.org/api/
-            LAVA_JOB_IDS=${TEST_JOB_IDS}
             SOURCE_BRANCH_NAME=lor_marshmallow
             EOF
 
