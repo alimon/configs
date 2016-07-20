@@ -53,7 +53,8 @@
             rm -f \
               artifacts/pinned-manifest.xml \
               artifacts/boot_oat_size* \
-              artifacts/avg_oat_size*
+              artifacts/avg_oat_size* \
+              artifacts/*.json
         - copyartifact:
             project: ${SOURCE_PROJECT_NAME}
             filter: 'pinned-manifest.xml'
@@ -73,6 +74,14 @@
         - copyartifact:
             project: ${SOURCE_PROJECT_NAME}
             filter: 'avg_oat_time*'
+            target: artifacts
+            optional: true
+            flatten: true
+            which-build: specific-build
+            build-number: ${SOURCE_BUILD_NUMBER}
+        - copyartifact:
+            project: ${SOURCE_PROJECT_NAME}
+            filter: '*.json'
             target: artifacts
             optional: true
             flatten: true
