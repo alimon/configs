@@ -28,7 +28,7 @@
     display-name: 'ART - Build Metrics'
     concurrent: true
     triggers:
-        - timed: '0 H H/7 * *'
+        - timed: '@weekly'
     wrappers:
         - timestamps
         - timeout:
@@ -48,7 +48,7 @@
             cat results.txt
     publishers:
         - email-ext:
-            recipients: 'vishal.bhoj@linaro.org'
+            recipients: 'linaro-art@linaro.org'
             content-type: text
             subject: 'Build Time statistics for ART CI Jobs'
             body: |
