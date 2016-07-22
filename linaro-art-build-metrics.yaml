@@ -46,3 +46,13 @@
             sudo apt-get install -y xml-twig-tools bc
             . ./metrics.sh $TOKEN
             cat results.txt
+    publishers:
+        - email-ext:
+            recipients: 'vishal.bhoj@linaro.org'
+            content-type: text
+            subject: 'Build Time statistics for ART CI Jobs'
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                ${BUILD_LOG_REGEX, regex=".*Build Time.*", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+            always: true
