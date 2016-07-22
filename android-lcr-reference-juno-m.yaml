@@ -1,3 +1,23 @@
+- scm:
+    name: kernel
+    scm:
+        - git:
+            url: git://git.linaro.org/landing-teams/working/arm/kernel-release.git
+            branches:
+                - origin/lsk-3.18-armlt
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: firmware
+    scm:
+        - git:
+            url: git://git.linaro.org/arm/vexpress-firmware.git
+            branches:
+                - origin/juno-recovery-tarball
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
 - job:
     name: android-lcr-reference-juno-m
     project-type: freestyle
@@ -20,7 +40,11 @@
     node: docker-utopic-aosp
     display-name: 'Juno - Reference LCR Android M Build'
     concurrent: true
+    scm:
+        - kernel
+        - firmware
     triggers:
+        - pollscm: 'H/5 * * * *'
         - timed: 'H H * * 6'
         - gerrit:
             server-name: __ANY__
