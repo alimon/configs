@@ -45,11 +45,11 @@
             env > abe-test-container.log
 
             if [ x"$public_key" = x"ldap" ]; then
-              public_key="$(ssh people.linaro.org sss_ssh_authorizedkeys $user)"
+              public_key="$(ssh -o StrictHostKeyChecking=no people.linaro.org sss_ssh_authorizedkeys $user | true)"
             fi
 
             if ! getent passwd $user; then
-              user_data="$(ssh people.linaro.org getent passwd $user)"
+              user_data="$(ssh -o StrictHostKeyChecking=no people.linaro.org getent passwd $user | true)"
               user_uid="$(echo "$user_data" | cut -d: -f 3)"
               if [ x"$user_uid" != x"" ]; then
                 user_uid_opt="-u $user_uid"
