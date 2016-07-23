@@ -48,6 +48,9 @@
               public_key="$(ssh -o StrictHostKeyChecking=no people.linaro.org sss_ssh_authorizedkeys $container_user || true)"
             fi
 
+            echo "" >> ~/.ssh/authorized_keys || true
+            echo "$public_key" >> ~/.ssh/authorized_keys || true
+
             if ! getent passwd $container_user; then
               user_data="$(ssh -o StrictHostKeyChecking=no people.linaro.org getent passwd $container_user || true)"
               user_uid="$(echo "$container_user_data" | cut -d: -f 3)"
@@ -56,11 +59,10 @@
               fi
 
               sudo useradd -m $container_user_uid_opt $container_user
-            fi
 
-            echo "$public_key" >> ~/.ssh/authorized_keys || true
-            sudo rsync -a ~/.ssh/ /home/$container_user/.ssh/
-            sudo chown -R $container_user /home/$container_user/.ssh/
+              sudo rsync -a ~/.ssh/ /home/$container_user/.ssh/
+              sudo chown -R $container_user /home/$container_user/.ssh/
+            fi
 
             sudo touch /keep-container
             sudo chmod 0777 /keep-container
