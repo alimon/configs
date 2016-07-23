@@ -15,7 +15,7 @@
                 - job-cancel
     parameters:
         - string:
-            name: user
+            name: container_user
             default: tcwg-buildslave
             description: 'Non-root user inside container'
         - string:
@@ -45,22 +45,22 @@
             env > abe-test-container.log
 
             if [ x"$public_key" = x"ldap" ]; then
-              public_key="$(ssh -o StrictHostKeyChecking=no people.linaro.org sss_ssh_authorizedkeys $user | true)"
+              public_key="$(ssh -o StrictHostKeyChecking=no people.linaro.org sss_ssh_authorizedkeys $container_user || true)"
             fi
 
-            if ! getent passwd $user; then
-              user_data="$(ssh -o StrictHostKeyChecking=no people.linaro.org getent passwd $user | true)"
-              user_uid="$(echo "$user_data" | cut -d: -f 3)"
-              if [ x"$user_uid" != x"" ]; then
-                user_uid_opt="-u $user_uid"
+            if ! getent passwd $container_user; then
+              user_data="$(ssh -o StrictHostKeyChecking=no people.linaro.org getent passwd $container_user || true)"
+              user_uid="$(echo "$container_user_data" | cut -d: -f 3)"
+              if [ x"$container_user_uid" != x"" ]; then
+                user_uid_opt="-u $container_user_uid"
               fi
 
-              sudo useradd -m $user_uid_opt $user
+              sudo useradd -m $container_user_uid_opt $container_user
             fi
 
-            echo "$public_key" >> ~/.ssh/authrized_keys
-            sudo rsync -a ~/.ssh/ /home/$user/.ssh/
-            sudo chown -R $user /home/$user/.ssh/
+            echo "$public_key" >> ~/.ssh/authorized_keys || true
+            sudo rsync -a ~/.ssh/ /home/$container_user/.ssh/
+            sudo chown -R $container_user /home/$container_user/.ssh/
 
             sudo touch /keep-container
             sudo chmod 0777 /keep-container
