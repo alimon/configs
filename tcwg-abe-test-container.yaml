@@ -20,8 +20,8 @@
             description: 'Non-root user inside container'
         - string:
             name: public_key
-            default: ldap
-            description: 'SSH public key to install for $user and root'
+            default: ''
+            description: 'SSH public key.  Leave empty to not install additional public keys or use "ldap" to fetch from LDAP'
     disabled: false
     node: docker-trusty-i386-tcwg
     concurrent: true
@@ -47,9 +47,10 @@
             if [ x"$public_key" = x"ldap" ]; then
               public_key="$(ssh -o StrictHostKeyChecking=no people.linaro.org sss_ssh_authorizedkeys $container_user || true)"
             fi
-
-            echo "" >> ~/.ssh/authorized_keys || true
-            echo "$public_key" >> ~/.ssh/authorized_keys || true
+            if [ x"$public_key" != x"" ]; then
+              echo "" >> ~/.ssh/authorized_keys || true
+              echo "$public_key" >> ~/.ssh/authorized_keys || true
+            fi
 
             if ! getent passwd $container_user; then
               user_data="$(ssh -o StrictHostKeyChecking=no people.linaro.org getent passwd $container_user || true)"
@@ -75,7 +76,7 @@
 
             set +x
             echo "Testing container: $container_user@$docker_host:$ssh_port"
-            echo "To stop container run: ssh -o Port=$ssh_port $container_user@docker_host sh -c 'echo 0 > /keep_container'"
+            echo "To stop container run: ssh -o Port=$ssh_port $container_user@$docker_host sh -c 'echo 0 > /keep_container'"
 
             echo "Hosting tests"
             while [ -e /keep-container ] && [ x"$(cat /keep-container)" = x"1" ]; do
