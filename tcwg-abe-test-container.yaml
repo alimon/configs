@@ -75,7 +75,7 @@
 
             set +x
             echo "Testing container: $container_user@$docker_host:$ssh_port"
-            echo "To stop container run: ssh -o Port=$ssh_port $container_user@docker_host sh -c "echo 0 > /keep_container"
+            echo "To stop container run: ssh -o Port=$ssh_port $container_user@docker_host sh -c 'echo 0 > /keep_container'"
 
             echo "Hosting tests"
             while [ -e /keep-container ] && [ x"$(cat /keep-container)" = x"1" ]; do
