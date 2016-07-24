@@ -67,10 +67,19 @@
             sudo touch /keep-container
             sudo chmod 0777 /keep-container
             echo "1" > /keep-container
-        - trigger-builds:
-            - project: 'tcwg-abe-test-container-wait'
-              same-node: true
-    publishers:
-        - archive:
-            artifacts: 'abe-test-container.log'
-            latest-only: false
+
+            docker_host="$(echo $DOCKER_HOST | sed -e "s/^tcp://\(.*\):.*/\1/")"
+            docker_host="$(echo $docker_host | sed -e "s/-x86_64//")"
+            ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
+            ssh_port="$(echo $ssh_port | cut -d: -f 2)"
+
+            set +x
+            echo "Testing container: $container_user@$docker_host:$ssh_port"
+            echo "To stop container run: ssh -o Port=$ssh_port $container_user@docker_host sh -c "echo 0 > /keep_container"
+
+            echo "Hosting tests"
+            while [ -e /keep-container ] && [ x"$(cat /keep-container)" = x"1" ]; do
+              sleep 60
+              echo "Running processes: $(ps ax | wc -l)"
+            done
+            echo "Exiting"
