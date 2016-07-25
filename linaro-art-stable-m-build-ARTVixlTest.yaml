@@ -74,7 +74,7 @@
             name: PRIVATE_KEY
             default: ${PRIVATE_KEY}
     disabled: false
-    node: docker-xenial-aosp
+    node: docker-utopic-art
     display-name: 'ART - Stable (Marshmallow) - VIXL Test'
     concurrent: true
     scm:
@@ -121,17 +121,14 @@
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
             git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
 
-            # OpenJDK 7
-            sudo apt-get update
-            sudo apt-get -y --no-install-recommends install software-properties-common
-            sudo add-apt-repository ppa:openjdk-r/ppa
-            sudo apt-get update
-            sudo apt-get -y --no-install-recommends install openjdk-7-jdk
-            sudo update-java-alternatives -s java-1.7.0-openjdk-amd64
-
             # Private key
             wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
             source add-private-key.sh
+
+            # clang-format-3.6
+            wget -q http://mirrors.kernel.org/ubuntu/pool/universe/l/llvm-toolchain-3.6/clang-format-3.6_3.6-2ubuntu1~trusty1_amd64.deb \
+              http://mirrors.kernel.org/ubuntu/pool/main/l/llvm-toolchain-3.6/libllvm3.6_3.6-2ubuntu1~trusty1_amd64.deb
+            sudo dpkg -i clang-format-3.6_3.6-2ubuntu1~trusty1_amd64.deb libllvm3.6_3.6-2ubuntu1~trusty1_amd64.deb
 
             cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
             ./setup_host.sh
