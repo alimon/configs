@@ -1,0 +1,378 @@
+- scm:
+    name: kernel
+    scm:
+        - git:
+            url: git://git.linaro.org/landing-teams/working/arm/kernel-release.git
+            branches:
+                - origin/lsk-3.18-armlt
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: firmware
+    scm:
+        - git:
+            url: git://git.linaro.org/arm/vexpress-firmware.git
+            branches:
+                - origin/juno-recovery-tarball
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- job:
+    name: android-lcr-reference-juno-m-member-build
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: ART_URL
+            default: https://android-qa-reports.linaro.org/api/
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'Juno - Reference LCR Android M Build'
+    concurrent: true
+    scm:
+        - kernel
+        - firmware
+    triggers:
+        - pollscm: 'H/5 * * * *'
+        - timed: 'H H * * 6'
+        - gerrit:
+            server-name: __ANY__
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-patchsets'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android/device/linaro/juno'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-marshmallow'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'lcr-reference-juno-m'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Install needed packages
+            sudo add-apt-repository ppa:linaro-maintainers/tools
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch
+
+            # Install most recent linaro-image-tools (packaged) and dependencies
+            sudo apt-get install -y gdisk libyaml-0-2 python-apt python-chardet python-dbus python-dbus-dev \
+              python-debian python-gi python-parted python-pkg-resources python-six python-yaml u-boot-tools \
+              python-commandnotfound parted
+            wget -q \
+              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb
+            sudo dpkg -i --force-all *.deb
+            rm -f *.deb
+
+            # Set local configuration
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+            java -version
+            if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
+              sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+              sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            fi
+            cd /home/buildslave/srv/${JOB_NAME}
+
+            # Download helper scripts (repo, linaro-cp)
+            mkdir -p ${HOME}/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
+
+            # Install helper packages
+            rm -rf build-tools jenkins-tools build-configs
+            git clone --depth 1 https://git.linaro.org/infrastructure/linaro-android-build-tools.git build-tools
+            git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
+            git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
+
+            set -xe
+            # Define job configuration's repo
+            export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
+            export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
+            cat << EOF > config.txt
+            BUILD_CONFIG_REPO=http://android.git.linaro.org/git/android-build-configs.git
+            BUILD_CONFIG_BRANCH=master
+            EOF
+            echo config.txt
+            export CONFIG=`base64 -w 0 config.txt`
+
+            # Build Android
+            rm -rf build/out build/android-patchsets
+            build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
+            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
+
+            # Publish binaries
+            PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
+            time linaro-cp.py \
+              --api_version 3 \
+              --manifest \
+              --no-build-info \
+              --link-latest \
+              --split-job-owner \
+              build/out \
+              ${PUB_DEST} \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+              --include "^[BHi][^/]+txt$" \
+              --include "^(MANIFEST|MD5SUMS|changelog.txt)$"
+
+            # Construct post-build-lava parameters
+            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              source build-configs/${BUILD_CONFIG_FILENAME}
+            else
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/lcr-member-juno-m/template.json
+            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+            TARGET_PRODUCT=${TARGET_PRODUCT}
+            MAKE_TARGETS=${MAKE_TARGETS}
+            JOB_NAME=${JOB_NAME}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_STREAM=${BUNDLE_STREAM_NAME}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            SKIP_REPORT=false
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cts-focused1.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cts-focused2.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-antutu2.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-antutu3.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-antutu5.7.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-benchmarkpi.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cf-bench.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-gearses2eclair.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-geekbench3.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-javawhetstone.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-jbench.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-linpack.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-quadrantpro.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-scimark.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-sqlite.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-vellamo3.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-applications.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-caffeinemark.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-antutu6.0.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            if [ -n "$GERRIT_PROJECT" ]; then
+                echo "SKIP_LAVA=1" >> ${WORKSPACE}/post_build_lava_parameters
+            fi
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cts-part1.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cts-part2.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cts-opengl.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-cts-media.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-glbenchmark-2.5.1.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/lcr-member-juno-m\/template-weekly.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/armv8-android-juno-lsk\/template-wa-workloads.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s/CUSTOM_JSON_URL=.*/CUSTOM_JSON_URL=https:\/\/git.linaro.org\/qa\/test-plans.git\/blob_plain\/HEAD:\/android\/armv8-android-juno-lsk\/template-wa-workloads-audio.json/g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+
+        - shell: |
+            echo "Build finished"
+    publishers:
+        - email-ext:
+            recipients: '${GERRIT_CHANGE_OWNER_EMAIL},${GERRIT_EVENT_ACCOUNT_EMAIL},vishal.bhoj@linaro.org,daniel.diaz@linaro.org'
+            content-type: text
+            body: |
+                Build Triggered by: ${GERRIT_CHANGE_SUBJECT}: ${GERRIT_CHANGE_URL}
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex=".*ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+        - archive:
+            artifacts: '*.xml,*.json'
+            latest-only: true
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org daniel.diaz@linaro.org'
