@@ -87,20 +87,10 @@
                 rm -rf arm-trusted-firmware
                 rm -rf uefi-tools
                 rm -rf l-loader
-                rm -rf acpica-unix
                 rm -rf OpenPlatformPkg
                 rm -rf optee_os
                 rm -rf out edk2/Build
             }
-
-            # Make sure we're using the right acpica-unix packages
-            mkdir acpica-unix; cd acpica-unix
-            wget \
-              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/acpica-tools_20160527-1linarojessie1_arm64.deb \
-              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/acpidump_20160527-1linarojessie1_all.deb \
-              http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/acpica-unix/iasl_20160527-1linarojessie1_all.deb
-            sudo dpkg -i --force-all *.deb
-            cd ..; rm -rf acpica-unix
 
             # sbin isn't in the PATH by default and prevent to find sgdisk
             export PATH="/usr/sbin:/sbin:$PATH"
