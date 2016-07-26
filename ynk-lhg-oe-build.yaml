@@ -99,13 +99,22 @@
             # Create MD5SUMS file
             (cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
 
-            # just archive some of the build artifacts - don't publish anything
-            # for now
+            # Just archive some of the build artifacts - don't publish anything
+            # for now.
+            #
+            # The archive publisher can't handle files located outside
+            # ${WORKSPACE} - copy the artifacts there before archiving.
+            rm -rf ${WORKSPACE}/out
+            mkdir ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/*rootfs.ext4.gz ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/*manifest* ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/MD5SUMS.txt ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/boot--*.img ${WORKSPACE}/out || true
     publishers:
         - archive:
-            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*rootfs.ext4.gz,build/tmp-*glibc/deploy/images/${MACHINE}/*manifest*,build/tmp-*glibc/deploy/images/${MACHINE}/MD5SUMS.txt'
+            artifacts: 'out/*rootfs.ext4.gz,out/*manifest*,out/MD5SUMS.txt'
         - archive:
-            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/boot--*.img'
+            artifacts: 'out/boot--*.img'
             allow-empty: true
         - email:
             recipients: 'andrey.konovalov@linaro.org'
