@@ -41,7 +41,7 @@
               rm -rf out
             }
 
-            sudo yum install -y qemu-img virt-install
+            sudo yum install -y qemu-img virt-install libguestfs-tools-c
 
             sudo virsh pool-list --all
             sudo virsh net-list --all
@@ -124,6 +124,10 @@
             mv preseed.cfg out/debian-jessie-arm64-preseed.cfg
             sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
             sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
+            # extract kernel and initramfs from image
+            # --unversioned-names may be handy to get vmlinuz/initrd.img names if needed
+            sudo LIBGUESTFS_BACKEND=direct virt-copy-out -a ${image_name}.qcow2 /boot/ .
+            sudo cp -a boot/*-arm64 out/
             sudo chown -R buildslave:buildslave out
 
             # Publish
