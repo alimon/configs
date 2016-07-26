@@ -22,6 +22,10 @@
             name: public_key
             default: ''
             description: 'SSH public key.  Leave empty to not install additional public keys or use "ldap" to fetch from LDAP'
+        - string:
+            name: upstream_dest
+            default: ''
+            description: 'SSH destination to write connection parameters to, e.g., dev-01.tcwglab:/tmp/my-abe-test-container.param.  Location must be writable by tcwg-buildslave.'
     disabled: false
     node: docker-trusty-i386-tcwg
     concurrent: true
@@ -43,7 +47,7 @@
             set -ex
 
             if [ x"$public_key" = x"ldap" ]; then
-              public_key="$(ssh -o StrictHostKeyChecking=no lab.validation.linaro.org sss_ssh_authorizedkeys $container_user)"
+              public_key="$(ssh -o StrictHostKeyChecking=no aus-colo.linaro.org /etc/ssh/ssh_keys.py $container_user)"
             fi
             if [ x"$public_key" != x"" ]; then
               echo "" >> ~/.ssh/authorized_keys || true
@@ -51,7 +55,7 @@
             fi
 
             if ! getent passwd $container_user; then
-              user_data="$(ssh -o StrictHostKeyChecking=no lab.validation.linaro.org getent passwd $container_user)"
+              user_data="$(ssh -o StrictHostKeyChecking=no aus-colo.linaro.org getent passwd $container_user)"
               user_uid="$(echo "$container_user_data" | cut -d: -f 3)"
               if [ x"$container_user_uid" != x"" ]; then
                 user_uid_opt="-u $container_user_uid"
@@ -71,6 +75,12 @@
             docker_host="$(echo $docker_host | sed -e "s/-x86//")"
             ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
             ssh_port="$(echo $ssh_port | cut -d: -f 2)"
+
+            if [ x"$upstream_dest" != x"" ]; then
+              upstream_machine="$(cut -d: -f 1)"
+              upstream_file="$(cut -d: -f 2)"
+              echo "$container_user@$docker_host:$ssh_port" | ssh $upstream_machine tee $upstream_file > dev/null
+            fi
 
             set +x
             echo "Testing container: $container_user@$docker_host:$ssh_port"
