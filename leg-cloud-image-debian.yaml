@@ -102,10 +102,10 @@
             sudo virt-install \
               --name ${image_name} \
               --initrd-inject preseed.cfg \
+              --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
               --disk=pool=default,size=10,format=qcow2,bus=virtio \
               --memory 2048 \
               --location http://ftp.debian.org/debian/dists/stable/main/installer-arm64/ \
-              --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
               --noreboot
 
             set +ex
