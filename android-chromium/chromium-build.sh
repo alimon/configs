@@ -73,6 +73,9 @@ main() {
   echo ${PWD}
   export PATH=${PATH}:${PWD}/third_party/android_tools/ndk/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/
   build_chromium
+  commit=`git log -1 | grep commit | cut -d' ' -f2`
+  cp /home/buildslave/srv/${JOB_NAME}/configs/android-chromium/manifest-template.xml out/Default/apks/pinned-manifest.xml
+  sed -i "s/%%REVISION%%/${commit}/g" out/Default/apks/pinned-manifest.xml
 }
 
 main "$@"
