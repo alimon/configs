@@ -1,0 +1,117 @@
+- job:
+    name: ynk-lhg-oe-build
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'jethro.lhg'
+        - string:
+            name: DISTRO
+            default: 'rpb-wayland'
+        - string:
+            name: image_type
+            default: 'rpb-weston-image'
+    disabled: false
+    node: lhg
+    display-name: 'LHG rpb-based build'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - lhg
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - dragonboard-410c
+                - hikey
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: lhg
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # workaround EDK2 is confused by the long path used during the build
+            # and truncate files name expected by VfrCompile
+            mkdir -p ${HOME}/ynk-lhg-oe-build
+            cd ${HOME}/ynk-lhg-oe-build
+
+            set -x
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+                echo "Running cleanup_exit..."
+            }
+
+            mkdir -p ${HOME}/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            chmod a+x ${HOME}/bin/repo
+            export PATH=${HOME}/bin:${PATH}
+
+            # initialize repo if not done already
+            if [ ! -e ".repo/manifest.xml" ]; then
+               repo init -u https://github.com/andrey-konovalov/oe-rpb-manifest.git -b ${MANIFEST_BRANCH} -m default.xml
+               mkdir -p build
+            fi
+
+            repo sync
+            cp .repo/manifest.xml source-manifest.xml
+            repo manifest -r -o pinned-manifest.xml
+
+            # the setup-environment will create local.conf, make sure we get rid
+            # of old config. Let's remove the previous TMPDIR as well. We want
+            # to preserve build/buildhistory though.
+            rm -rf build/conf build/tmp-*glibc/
+
+            # Accept EULA if/when needed
+            export EULA_dragonboard410c=1
+            source setup-environment build
+
+            bitbake ${image_type}
+            DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
+
+            # Prepare files to archive
+            rm -f ${DEPLOY_DIR_IMAGE}/*.txt
+            find ${DEPLOY_DIR_IMAGE} -type l -delete
+            mv ${HOME}/ynk-lhg-oe-build/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
+
+            # Create MD5SUMS file
+            (cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
+
+            # Just archive some of the build artifacts - don't publish anything
+            # for now.
+            #
+            # The archive publisher can't handle files located outside
+            # ${WORKSPACE} - copy the artifacts there before archiving.
+            rm -rf ${WORKSPACE}/out
+            mkdir ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/*rootfs.ext4.gz ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/*manifest* ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/MD5SUMS.txt ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/boot--*.img ${WORKSPACE}/out || true
+    publishers:
+        - archive:
+            artifacts: 'out/*'
+        - email:
+            recipients: 'andrey.konovalov@linaro.org'
