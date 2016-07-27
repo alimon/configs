@@ -52,8 +52,8 @@
 
             # workaround EDK2 is confused by the long path used during the build
             # and truncate files name expected by VfrCompile
-            mkdir -p ${HOME}/ynk-lhg-oe-build
-            cd ${HOME}/ynk-lhg-oe-build
+            mkdir -p ${HOME}/${JOB_NAME}
+            cd ${HOME}/${JOB_NAME}
 
             set -x
 
@@ -94,7 +94,7 @@
             # Prepare files to archive
             rm -f ${DEPLOY_DIR_IMAGE}/*.txt
             find ${DEPLOY_DIR_IMAGE} -type l -delete
-            mv ${HOME}/ynk-lhg-oe-build/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
+            mv ${HOME}/${JOB_NAME}/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 
             # Create MD5SUMS file
             (cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
@@ -103,7 +103,7 @@
             # for now.
             #
             # The archive publisher can't handle files located outside
-            # ${WORKSPACE} - copy the artifacts there before archiving
+            # ${WORKSPACE} - copy the artifacts there before archiving.
             rm -rf ${WORKSPACE}/out
             mkdir ${WORKSPACE}/out
             cp ${DEPLOY_DIR_IMAGE}/*rootfs.ext4.gz ${WORKSPACE}/out
