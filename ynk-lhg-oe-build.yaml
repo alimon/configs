@@ -52,8 +52,9 @@
 
             # workaround EDK2 is confused by the long path used during the build
             # and truncate files name expected by VfrCompile
-            mkdir -p ${HOME}/${JOB_NAME}
-            cd ${HOME}/${JOB_NAME}
+            DIR_FOR_WORK=${HOME}/`dirname ${JOB_NAME}`
+            mkdir -p ${DIR_FOR_WORK}
+            cd ${DIR_FOR_WORK}
 
             set -x
 
@@ -94,7 +95,7 @@
             # Prepare files to archive
             rm -f ${DEPLOY_DIR_IMAGE}/*.txt
             find ${DEPLOY_DIR_IMAGE} -type l -delete
-            mv ${HOME}/${JOB_NAME}/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
+            mv ${DIR_FOR_WORK}/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 
             # Create MD5SUMS file
             (cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
