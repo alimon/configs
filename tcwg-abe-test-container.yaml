@@ -77,8 +77,8 @@
             ssh_port="$(echo $ssh_port | cut -d: -f 2)"
 
             if [ x"$upstream_dest" != x"" ]; then
-              upstream_machine="$(cut -d: -f 1)"
-              upstream_file="$(cut -d: -f 2)"
+              upstream_machine="$(echo "$upstream_dest" | cut -d: -f 1)"
+              upstream_file="$(echo "$upstream_dest" | cut -d: -f 2)"
               echo "$container_user@$docker_host:$ssh_port" | ssh $upstream_machine tee $upstream_file > /dev/null
             fi
 
