@@ -94,6 +94,12 @@ actions:
             parameters:
               TEST: 'cpu'
         timeout: 8000
+    - command: lava_test_shell
+      parameters:
+        testdef_repos:
+          - git-repo: 'http://git.linaro.org/qa/test-definitions.git'
+            testdef: 'ubuntu/docker.yaml'
+        timeout: 8000
     - command: submit_results
       parameters:
           server: 'http://${LAVA_SERVER}'
