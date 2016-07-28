@@ -1,3 +1,47 @@
+- scm:
+    name: art
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: bionic
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/bionic.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: build
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/build.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: vixl
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/external/vixl.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
 - job:
     name: linaro-art-tip-build-MicroBenchmarks-Baseline
     project-type: freestyle
@@ -43,14 +87,10 @@
     display-name: 'ART - Tip - Microbenchmarks Baseline (Nexus 5X and 9)'
     concurrent: true
     scm:
-        - git:
-            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
-            branches:
-                - origin/master
-            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
+        - art
+        - bionic
+        - build
+        - vixl
     triggers:
         - pollscm: 'H/5 * * * *'
     wrappers:
