@@ -49,7 +49,7 @@
             sudo apt-get -q=2 -y --no-install-recommends install debhelper devscripts xz-utils
 
             pkg_source=odp
-            cd ${pkg_source}
+            pushd ${pkg_source}
 
             base_version=$(git describe --match='v*' | sed -e 's/^v//' | cut -d'-' -f1)
             nb_commit=$(git describe --match='v*' | sed -e 's/^v//' | cut -d'-' -f2)
@@ -57,12 +57,20 @@
             pkg_version=${base_version}+git${nb_commit}+${scm_commit}
             pkg_dir=${pkg_source}-${pkg_version}
 
-            sed -i "s|^AC_INIT.*|AC_INIT([OpenDataPlane], [${base_version}], [lng-odp@lists.linaro.org])|" configure.ac
-
             git config tar.tar.xz.command "xz -c"
             git archive --format=tar.xz --prefix=${pkg_dir}/ origin/master > ../${pkg_source}_${pkg_version}.orig.tar.xz
 
-            cd ..
+            # append .scmversion, otherwise bootstrap fails
+            . scripts/git_hash.sh .
+            SCMTMP=`mktemp -d`
+            pushd $SCMTMP
+            mkdir ${pkg_dir}
+            cp ${WORKSPACE}/${pkg_source}/.scmversion ${pkg_dir}
+            tar --update -v -f ${WORKSPACE}/${pkg_source}_${pkg_version}.orig.tar ${pkg_dir}
+            xz ${WORKSPACE}/${pkg_source}_${pkg_version}.orig.tar
+            popd
+
+            popd
 
             tar xf ${pkg_source}_${pkg_version}.orig.tar.xz
 
@@ -74,7 +82,7 @@
 
             rm -rf ${pkg_source} ${packaging_dir}
 
-            cd ${pkg_dir}
+            pushd ${pkg_dir}
 
             pkg_repository=https://git.linaro.org/lng/odp.git
             current_date=$(date -R)
@@ -96,7 +104,7 @@
 
             dpkg-buildpackage -d -nc -us -uc -rfakeroot -S -sa
 
-            cd ..
+            popd
 
             cat > ${WORKSPACE}/build-package.properties <<EOF
             codename=jessie
