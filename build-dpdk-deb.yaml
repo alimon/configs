@@ -22,12 +22,12 @@
     scm:
         - git:
             url: http://dpdk.org/git/dpdk
-            refspec: +refs/tags/v16.07:refs/remotes/origin/v16.07
+            refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
-                - refs/tags/v16.07
+                - refs/heads/master
             basedir: dpdk
-            skip-tag: false
+            skip-tag: true
             shallow-clone: false
             wipe-workspace: false
     wrappers:
@@ -51,14 +51,19 @@
             pkg_source=dpdk
             cd ${pkg_source}
 
+            git checkout v16.07
+
             base_version=$(git describe --match='v*' | sed -e 's/^v//' | cut -d'-' -f1)
             nb_commit=$(git describe --match='v*' | sed -e 's/^v//' | cut -d'-' -f2)
             scm_commit=$(git log -n1 --pretty=format:%h)
-            pkg_version=${base_version}+git${nb_commit}+${scm_commit}
+            # For snapshot version
+            # pkg_version=${base_version}+git${nb_commit}+${scm_commit}
+            # For tagged version
+            pkg_version=${base_version}
             pkg_dir=${pkg_source}-${pkg_version}
 
             git config tar.tar.xz.command "xz -c"
-            git archive --format=tar.xz --prefix=${pkg_dir}/ refs/tags/v16.07 > ../${pkg_source}_${pkg_version}.orig.tar.xz
+            git archive --format=tar.xz --prefix=${pkg_dir}/ v16.07 > ../${pkg_source}_${pkg_version}.orig.tar.xz
 
             cd ..
 
@@ -105,7 +110,7 @@
         - archive:
             artifacts: '*.dsc, *.gz, *.xz'
         - trigger-parameterized-builds:
-            - project: build-packages
+            - project: build-package
               property-file: build-package.properties
               condition: SUCCESS
         - email:
