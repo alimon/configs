@@ -22,10 +22,10 @@
     scm:
         - git:
             url: http://dpdk.org/git/dpdk
-            refspec: +refs/tags/v16.04:refs/remotes/origin/v16.04
+            refspec: +refs/tags/v16.07:refs/remotes/origin/v16.07
             name: origin
             branches:
-                - refs/tags/v16.04
+                - refs/tags/v16.07
             basedir: dpdk
             skip-tag: false
             shallow-clone: false
@@ -65,8 +65,8 @@
             tar xf ${pkg_source}_${pkg_version}.orig.tar.xz
 
             packaging_dir=deb_dpdk
-            packaging_repository=https://git.launchpad.net/~ubuntu-server/dpdk
-            git clone -b ubuntu-yakkety-dpdk16.04 --depth 1 ${packaging_repository} ${packaging_dir}
+            packaging_repository=https://gerrit.fd.io/r/p/${packaging_dir}.git
+            git clone -b deb_dpdk_16.07 --depth 1 ${packaging_repository}
             packaging_commit=$(cd ${packaging_dir} && git log -n1 --pretty=format:%h)
             mv ${packaging_dir}/debian ${pkg_dir}
 
