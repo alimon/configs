@@ -57,8 +57,6 @@
             pkg_version=${base_version}+git${nb_commit}+${scm_commit}
             pkg_dir=${pkg_source}-${pkg_version}
 
-            sed -i "s|^AC_INIT.*|AC_INIT([OpenDataPlane], [${base_version}], [lng-odp@lists.linaro.org])|" configure.ac
-
             git config tar.tar.xz.command "xz -c"
             git archive --format=tar.xz --prefix=${pkg_dir}/ origin/master > ../${pkg_source}_${pkg_version}.orig.tar.xz
 
