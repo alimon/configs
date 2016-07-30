@@ -21,13 +21,13 @@
     display-name: 'Build DPDK deb packages for opendataplane.org'
     scm:
         - git:
-            url: https://git.launchpad.net/~ubuntu-server/dpdk
-            refspec: +refs/heads/ubuntu-yakkety-dpdk16.04:refs/remotes/origin/ubuntu-yakkety-dpdk16.04
+            url: http://dpdk.org/git/dpdk
+            refspec: +refs/tags/v16.04:refs/remotes/origin/v16.04
             name: origin
             branches:
-                - refs/heads/ubuntu-yakkety-dpdk16.04
+                - refs/tags/v16.04
             basedir: dpdk
-            skip-tag: true
+            skip-tag: false
             shallow-clone: false
             wipe-workspace: false
     wrappers:
@@ -40,27 +40,73 @@
         - shell: |
             #!/bin/bash
 
-            set -e
+            set -ex
 
-            sudo apt-get update
-            sudo apt-get install -y git-buildpackage debhelper dh-python dh-systemd dkms doxygen graphviz inkscape libcap-dev libpcap-dev libxen-dev libxenstore3.0 python python-sphinx texlive-fonts-recommended texlive-latex-extra
+            wget -qO - http://deb.opendataplane.org/odp.key | sudo apt-key add -
+            echo 'deb http://deb.opendataplane.org/ jessie main' | sudo tee /etc/apt/sources.list.d/odp.list
 
-            cd dpdk
-            git remote add upstream http://dpdk.org/git/dpdk
-            git remote update
-            gbp buildpackage --git-upstream-tag='v%(version)s' --git-ignore-branch --git-builder="debuild -i\.git -I.git -S -uc -us"
+            sudo apt-get -q=2 update
+            sudo apt-get -q=2 -y --no-install-recommends install debhelper devscripts xz-utils
 
-            cd ${WORKSPACE}
-            cat > ${WORKSPACE}/dpdk-params <<EOF
-            source=${BUILD_URL}/artifact/$(echo *.dsc)
+            pkg_source=dpdk
+            cd ${pkg_source}
+
+            base_version=$(git describe --match='v*' | sed -e 's/^v//' | cut -d'-' -f1)
+            nb_commit=$(git describe --match='v*' | sed -e 's/^v//' | cut -d'-' -f2)
+            scm_commit=$(git log -n1 --pretty=format:%h)
+            pkg_version=${base_version}+git${nb_commit}+${scm_commit}
+            pkg_dir=${pkg_source}-${pkg_version}
+
+            git config tar.tar.xz.command "xz -c"
+            git archive --format=tar.xz --prefix=${pkg_dir}/ refs/tags/v16.07 > ../${pkg_source}_${pkg_version}.orig.tar.xz
+
+            cd ..
+
+            tar xf ${pkg_source}_${pkg_version}.orig.tar.xz
+
+            packaging_dir=deb_dpdk
+            packaging_repository=https://git.launchpad.net/~ubuntu-server/dpdk
+            git clone -b ubuntu-yakkety-dpdk16.04 --depth 1 ${packaging_repository} ${packaging_dir}
+            packaging_commit=$(cd ${packaging_dir} && git log -n1 --pretty=format:%h)
+            mv ${packaging_dir}/debian ${pkg_dir}
+
+            rm -rf ${pkg_source} ${packaging_dir}
+
+            cd ${pkg_dir}
+
+            pkg_repository=http://dpdk.org/git/dpdk
+            current_date=$(date -R)
+
+            cat > debian/changelog << EOF
+            ${pkg_source} (${pkg_version}-0linaro1) unstable; urgency=medium
+
+              * CI - ${pkg_source} snapshot:
+                - repository: ${pkg_repository}
+                - commit: ${scm_commit}
+                - build: ${BUILD_URL}
+
+                - debian/ repository: ${packaging_repository}
+                - debian/ commit: ${packaging_commit}
+
+             -- Anders Roxell <anders.roxell@linaro.org>  ${current_date}
+
+            EOF
+
+            dpkg-buildpackage -d -nc -us -uc -rfakeroot -S -sa
+
+            cd ..
+
+            cat > ${WORKSPACE}/build-package.properties <<EOF
+            codename=jessie
+            source=${BUILD_URL}/artifact/${pkg_source}_${pkg_version}-0linaro1.dsc
             repo=odp
             EOF
     publishers:
         - archive:
             artifacts: '*.dsc, *.gz, *.xz'
         - trigger-parameterized-builds:
-            - project: build-all-packages
-              property-file: dpdk-params
+            - project: build-packages
+              property-file: build-package.properties
               condition: SUCCESS
         - email:
             recipients: 'anders.roxell@linaro.org fathi.boudra@linaro.org'
