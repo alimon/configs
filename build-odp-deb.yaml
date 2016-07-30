@@ -3,10 +3,6 @@
     project-type: freestyle
     defaults: global
     properties:
-        - build-discarder:
-            num-to-keep: 30
-            days-to-keep: 30
-            artifact-num-to-keep: 1
         - authorization:
             anonymous:
                 - job-read
@@ -16,9 +12,13 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
+            artifact-num-to-keep: 1
     disabled: false
     node: docker-jessie-arm64
-    display-name: 'Build debian source for opendataplane.org'
+    display-name: 'Build debian source for opendataplane.org (Generic implementation)'
     scm:
         - git:
             url: https://git.linaro.org/lng/odp.git
@@ -66,7 +66,7 @@
 
             packaging_dir=odp-packaging
             packaging_repository=https://git.linaro.org/lng/${packaging_dir}.git
-            git clone --depth 1 ${packaging_repository}
+            git clone -b master --depth 1 ${packaging_repository}
             packaging_commit=$(cd ${packaging_dir} && git log -n1 --pretty=format:%h)
             mv ${packaging_dir}/pkg/debian ${pkg_dir}
 
