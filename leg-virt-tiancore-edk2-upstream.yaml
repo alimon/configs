@@ -69,6 +69,9 @@
             export CLANG35_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
             export CLANG35_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
 
+            # now that we invoke Clang as the linker, it will look for $(TARGET)-ld on the path
+            export PATH=$PATH:${HOME}/srv/toolchain/arm64-tc-14.09/bin:${HOME}/srv/toolchain/arm-tc-14.09/bin
+
             sudo dpkg --add-architecture i386
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends clang python-pycurl zip libstdc++6:i386 zlib1g:i386
