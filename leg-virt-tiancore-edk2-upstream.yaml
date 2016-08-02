@@ -67,6 +67,7 @@
 
             # reuse the binutils that ship with GCC 4.9 for the CLANG35 builds
             export CLANG35_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
+            export CLANG35_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
 
             sudo dpkg --add-architecture i386
             sudo apt-get update
@@ -101,19 +102,12 @@
                 cd ${WORKSPACE}
                 for type in DEBUG RELEASE
                 do
-                    for tc in GCC48 GCC49
+                    for tc in GCC48 GCC49 CLANG35
                     do
                         mkdir -p ${OUTDIR}/QEMU-ARM/${type}_${tc}
                         build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
                         cp Build/ArmVirtQemu-ARM/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-ARM/${type}_${tc}
 
-                        mkdir -p ${OUTDIR}/XEN-ARM/${type}_${tc}
-                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
-                        cp Build/ArmVirtXen-ARM/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-ARM/${type}_${tc}
-                    done
-
-                    for tc in GCC48 GCC49 CLANG35
-                    do
                         mkdir -p ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
                         cp Build/ArmVirtQemu-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
@@ -121,6 +115,10 @@
                         mkdir -p ${OUTDIR}/QEMU-KERNEL-AARCH64/${type}_${tc}
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemuKernel.dsc -D SECURE_BOOT_ENABLE
                         cp Build/ArmVirtQemuKernel-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-KERNEL-AARCH64/${type}_${tc}
+
+                        mkdir -p ${OUTDIR}/XEN-ARM/${type}_${tc}
+                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
+                        cp Build/ArmVirtXen-ARM/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-ARM/${type}_${tc}
 
                         mkdir -p ${OUTDIR}/XEN-AARCH64/${type}_${tc}
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
