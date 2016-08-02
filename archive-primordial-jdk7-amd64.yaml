@@ -1,0 +1,57 @@
+- job:
+    name: archive-primordial-jdk7-amd64
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job archives (via a saved artifact) openjdk-7-jdk.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-utopic-amd64
+    display-name: 'OpenJDK - Archive primordial OpenJDK 7 (amd64)'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf *.deb openjdk-7 primordial-jdk7
+            }
+
+            new_name=primordial-jdk7
+            orig_name=java-7-openjdk-amd64
+
+            apt-get download openjdk-7-jdk openjdk-7-jre
+            dpkg-deb -x openjdk-7-jdk_*.deb openjdk-7
+            dpkg-deb -x openjdk-7-jre_*.deb openjdk-7
+
+            rm -rf ~/JVMs/${orig_name}
+            mkdir -p ~/JVMs
+            mv openjdk-7/usr/lib/jvm/${orig_name} ~/JVMs/
+
+            cp -a ~/JVMs/${orig_name} .
+            chmod ug+r .
+            mv ${orig_name} ${new_name}
+
+            test -d out || mkdir out
+            rm -f out/${new_name}.tar.gz
+            tar -cvf out/${new_name}.tar.gz ${new_name}/jre ${new_name}/lib ${new_name}/bin
+    publishers:
+        - archive:
+            artifacts: 'out/*.tar.gz'

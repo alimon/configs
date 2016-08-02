@@ -1,0 +1,69 @@
+- job:
+    name: jdk7u-build-image-amd64
+    project-type: matrix
+    defaults: global
+    description: |
+        * Builds the jdk7 images.
+    logrotate:
+        numToKeep: 10
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-utopic-amd64
+    display-name: 'OpenJDK - Build OpenJDK 7 images'
+    axes:
+        - axis:
+            type: user-defined
+            name: JVM_VARIANT
+            values:
+                - client
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: docker-utopic-amd64
+    builders:
+        - copyartifact:
+            project: jdk7u-update-src-tree
+            filter: 'out/jdk7u.tar.gz'
+            target: incoming
+            flatten: true
+        - copyartifact:
+            project: archive-primordial-jdk7-amd64
+            filter: 'out/primordial-jdk7.tar.gz'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            rm -rf jdk7u primordial-jdk7
+            tar xf incoming/jdk7u.tar.gz
+            tar xf incoming/primordial-jdk7.tar.gz
+            pushd jdk7u
+            export LANG=C
+            make ALT_BOOTDIR=${WORKSPACE}/primordial-jdk7 BUILD_NUMBER=b${BUILD_NUMBER}
+            popd
+
+            # Archive the result
+            rm -rf out
+            mkdir out
+            artifact_name=jdk7u-${JVM_VARIANT}-${BUILD_TYPE}
+            tar -C jdk7u/build/linux-amd64/j2sdk-image --exclude=\*.diz --transform="s#^#${artifact_name}/#" -acf out/${artifact_name}.tar.gz jre bin lib
+    publishers:
+        - archive:
+            artifacts: 'out/*.tar.gz'
