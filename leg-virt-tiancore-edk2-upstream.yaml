@@ -65,6 +65,10 @@
             export GCC49_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
             export GCC49_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
 
+            # use Xenial's default cross toolchains as GCC5
+            export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
+            export GCC5_ARM_PREFIX=arm-linux-gnueabihf-
+
             # reuse the binutils that ship with GCC 4.9 for the CLANG35 builds
             export CLANG35_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
             export CLANG35_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
@@ -74,7 +78,8 @@
 
             sudo dpkg --add-architecture i386
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends clang python-pycurl zip libstdc++6:i386 zlib1g:i386
+            sudo apt-get install -y --no-install-recommends clang python-pycurl zip libstdc++6:i386 zlib1g:i386 \
+                            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
 
             export OUTDIR=${WORKSPACE}/out
 
@@ -105,7 +110,7 @@
                 cd ${WORKSPACE}
                 for type in DEBUG RELEASE
                 do
-                    for tc in GCC48 GCC49 CLANG35
+                    for tc in GCC48 GCC49 GCC5 CLANG35
                     do
                         mkdir -p ${OUTDIR}/QEMU-ARM/${type}_${tc}
                         build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
@@ -189,4 +194,4 @@
               block: true
     publishers:
         - email:
-            recipients: 'ard.biesheuvel@linaro.org'
+            recipients: 'ard.biesheuvel@linaro.org eugene@hp.com'
