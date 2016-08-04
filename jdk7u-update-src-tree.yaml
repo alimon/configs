@@ -1,3 +1,52 @@
+- scm:
+    name: jdk7u
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u
+            clean: true
+            subdir: jdk7u
+- scm:
+    name: corba
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/corba
+            clean: true
+            subdir: jdk7u/corba
+- scm:
+    name: hotspot
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/hotspot
+            clean: true
+            subdir: jdk7u/hotspot
+- scm:
+    name: jaxp
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jaxp
+            clean: true
+            subdir: jdk7u/jaxp
+- scm:
+    name: jaxws
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jaxws
+            clean: true
+            subdir: jdk7u/jaxws
+- scm:
+    name: jdk
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jdk
+            clean: true
+            subdir: jdk7u/jdk
+- scm:
+    name: langtools
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk7u/jdk7u/langtools
+            clean: true
+            subdir: jdk7u/langtools
 - job:
     name: jdk7u-update-src-tree
     project-type: freestyle
@@ -12,38 +61,20 @@
             anonymous:
                 - job-read
                 - job-extended-read
-    disabled: true
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
     node: aarch64-06
     display-name: 'OpenJDK - Archive jdk7 source tree'
     scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk7u/jdk7u
-            clean: true
-            subdir: jdk7u
-        - hg:
-            url: http://hg.openjdk.java.net/jdk7u/jdk7u/corba
-            clean: true
-            subdir: jdk7u/corba
-        - hg:
-            url: http://hg.openjdk.java.net/jdk7u/jdk7u/hotspot
-            clean: true
-            subdir: jdk7u/hotspot
-        - hg:
-            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jaxp
-            clean: true
-            subdir: jdk7u/jaxp
-        - hg:
-            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jaxws
-            clean: true
-            subdir: jdk7u/jaxws
-        - hg:
-            url: http://hg.openjdk.java.net/jdk7u/jdk7u/jdk
-            clean: true
-            subdir: jdk7u/jdk
-        - hg:
-            url: http://hg.openjdk.java.net/jdk7u/jdk7u/langtools
-            clean: true
-            subdir: jdk7u/langtools
+        - jdk7u
+        - corba
+        - hotspot
+        - jaxp
+        - jaxws
+        - jdk
+        - langtools
     triggers:
         - pollscm: 'H 10 * * *'
     wrappers:
@@ -60,5 +91,3 @@
     publishers:
         - archive:
             artifacts: 'out/jdk7u.tar.gz'
-        - email:
-            recipients: 'fathi.boudra@linaro.org'
