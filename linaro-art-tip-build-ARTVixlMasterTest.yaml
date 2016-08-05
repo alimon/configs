@@ -1,0 +1,148 @@
+- job:
+    name: linaro-art-tip-build-ARTVixlMasterTest
+    project-type: freestyle
+    defaults: global
+    description: >
+      Runs the
+      <a href="https://android-git.linaro.org/gitweb/linaro-art/art-build-scripts.git/blob/HEAD:tests/test_art_vixl.sh">VIXL Tests</a>
+      on the tip using the upstream VIXL tree instead of AOSP VIXL.
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: BUILD_CONFIG_REPO
+            default: 'git://android.git.linaro.org/android-build-configs.git'
+        - string:
+            name: BUILD_CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'linaro-art-tip-aosp_arm64'
+        - password:
+            name: PRIVATE_KEY
+            default: ${PRIVATE_KEY}
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'ART - Tip - VIXL Upstream Test'
+    concurrent: true
+    triggers:
+        - timed: 'H 6 * * *'
+        - gerrit:
+            server-name: dev-private-review.linaro.org
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: '.*IncludeUpstreamVIXLTests.*'
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/build'
+                  branches:
+                      - branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/external/vixl'
+                  branches:
+                      - branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+
+            # Some Docker instances mount ${HOME}/.ssh/config from the host.
+            mv ${HOME}/.ssh{,.not}
+            mkdir -p "${HOME}/bin"
+            export PATH="${HOME}/bin:${PATH}"
+
+            # Build scripts
+            ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
+            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+
+            # Private key
+            wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
+            source add-private-key.sh
+
+            cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
+            ./setup_host.sh
+            ./setup_android.sh
+
+            cd ${ANDROID_BUILD_DIR}
+            rm -rf external/vixl
+            git clone https://git.linaro.org/arm/vixl external/vixl
+            perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
+              ${ART_BUILD_SCRIPTS_DIR}/tests/test_art_vixl.sh
+    publishers:
+        - email-ext:
+            recipients: '${GERRIT_CHANGE_OWNER_EMAIL},${GERRIT_EVENT_ACCOUNT_EMAIL},vishal.bhoj@linaro.org,daniel.diaz@linaro.org,julien.duraj@linaro.org'
+            content-type: text
+            body: |
+                Build Triggered by: ${GERRIT_CHANGE_SUBJECT}: ${GERRIT_CHANGE_URL}
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex=".*ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+        - archive:
+            artifacts: '*.txt, *.xml'
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android-art.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - groovy-postbuild:
+            script: |
+              import hudson.model.*
+
+              def matcher = manager.getLogMatcher(".*repo sync failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("repo sync failed")
+              }
+              matcher = manager.getLogMatcher(".*patch merge failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("merge failed")
+              }
+              matcher = manager.getLogMatcher(".*make failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("make failed")
+              }
+              matcher = manager.getLogMatcher(".*images failed to boot.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("Boot test failed")
+              }
+        - plot:
+            - title: 'Sync Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_repo.txt
+                    format: properties
+            - title: 'Test Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_test.txt
+                    format: properties
