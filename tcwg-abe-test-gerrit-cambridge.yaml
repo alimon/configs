@@ -88,8 +88,8 @@
             trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true" 0 1 2 3 5 9 13 15
 
             case "$test" in
-              cross_build) ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb ;;
-              native_build) ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb ;;
+              cross_build) ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb --override '--extraconfigdir ../config/gcc6' ;;
+              native_build) ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb --override '--extraconfigdir ../config/gcc5' ;;
               testsuite)
                 ${BUILD_SHELL} -c "set -ex; ./configure; make check"
                 ;;
