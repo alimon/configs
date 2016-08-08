@@ -64,7 +64,7 @@
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_aarch64 native_aarch32'
         - string:
             name: abe_branch
-            default: refs/remotes/origin/bkk16
+            default: refs/remotes/origin/master
             description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64-cam
@@ -200,7 +200,7 @@
             trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true; }" 0
 
             result="0"
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --fileserver ex40-01.tcwglab.linaro.org/snapshots-ref --logserver $log_server $logname_opt $norebuild || result=$?
+            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --logserver $log_server $logname_opt $norebuild || result=$?
 
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
