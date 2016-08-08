@@ -48,7 +48,18 @@
 
             tree -f .
 
-            source ~openjdk-testing/specjbb-test-scripts/common.sh
+            PERSIST=$HOME/srv/openjdk
+            TOPDIR=$PERSIST
+            mkdir -p $TOPDIR
+
+            SCRIPT_DIR=$PERSIST/specjbb-test-scripts
+            if [ -d $SCRIPT_DIR ]; then
+                (cd $SCRIPT_DIR; git pull)
+            else
+                git clone https://git.linaro.org/leg/openjdk/specjbb-test-scripts.git $SCRIPT_DIR
+            fi
+
+            source $SCRIPT_DIR/common.sh
             echo "Previous Results"
             cat ${RESULTS_CSV}
             set -eux
@@ -58,4 +69,4 @@
             cp incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/*.data.gz ${SPECJBB_EXPANDED_RESULTS_DIR}
             pushd ${SPECJBB_EXPANDED_RESULTS_DIR}
             echo "Updating ${RESULTS_CSV}"
-            ~openjdk-testing/specjbb-test-scripts/update-results-csv -- --verbose --output=${RESULTS_CSV}
+            $SCRIPT_DIR/update-results-csv -- --verbose --output=${RESULTS_CSV}

@@ -3,7 +3,7 @@
     project-type: matrix
     defaults: global
     description: |
-        * Writes the results to /work/openjdk-testing/openjdk8-jtreg-nightly-tests.
+        * Writes the results to $HOME/srv/openjdk/openjdk8-jtreg-nightly-tests.
     logrotate:
         numToKeep: 10
     properties:
@@ -58,6 +58,8 @@
 
             tree -f .
 
+            PERSIST=$HOME/srv/openjdk
+
             result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JTREG_CATEGORY=${JTREG_CATEGORY},JVM_VARIANT=${JVM_VARIANT}/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
 
             image_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/jdk8-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
@@ -65,7 +67,7 @@
             : ${YEAR:=$(date +%Y)}
             : ${DAY_OF_YEAR:=$(date +%j)}
 
-            basedir=~openjdk-testing/openjdk8-jtreg-nightly-tests
+            basedir=$PERSIST/openjdk8-jtreg-nightly-tests
             src_dir=${basedir}/src/${YEAR}/${DAY_OF_YEAR}
             work_dir=${basedir}/builds/${JVM_VARIANT}-${BUILD_TYPE}/${YEAR}/${DAY_OF_YEAR}/JTwork-${JTREG_CATEGORY}
             report_dir=${basedir}/reports/${JVM_VARIANT}-${BUILD_TYPE}/${JTREG_CATEGORY}/$(uname -m)/${YEAR}/${DAY_OF_YEAR}/JTreport

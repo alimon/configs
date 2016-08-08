@@ -20,8 +20,17 @@
         - shell: |
             #!/bin/bash
 
-            export TOP_DIR=${HOME}
-            ${HOME}/jcstress-test-scripts/jcstress-publish /home/openjdk-testing
+
+            PERSIST=$HOME/src/openjdk
+            SCRIPT_DIR=$PERSIST/jcstress-test-scripts
+            if [ -d $SCRIPT_DIR ]; then
+                (cd $SCRIPT_DIR; git pull)
+            else
+                git clone https://git.linaro.org/leg/openjdk/jcstress-test-scripts.git $SCRIPT_DIR
+            fi
+            export TOP_DIR=$PERSIST
+
+            $SCRIPT_DIR/jcstress-publish /home/openjdk-testing
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'

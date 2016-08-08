@@ -78,6 +78,8 @@
             source incoming/build-date.sh
 
             IMAGE_DIR=${WORKSPACE}/jdk8-${JVM_VARIANT}-${BUILD_TYPE}
+            PERSIST=$HOME/srv/openjdk
+
 
             # Only set =1 for debugging.
             use_subcategories=0
@@ -166,7 +168,7 @@
             find ${work_dir} -name \*.class -exec rm {} \;
 
             # Match the exact output of the cron-based scripts.
-            dest=~openjdk-testing/openjdk8-jtreg-nightly-tests
+            dest=$PERSIST/openjdk8-jtreg-nightly-tests
             sed_expr=$(echo s!${WORKSPACE}/${basedir}!$dest!g)
             find ${work_dir} -type f -exec perl -p -i -e "$sed_expr" {} \;
             find ${report_dir} -type f -exec perl -p -i -e "$sed_expr" {} \;

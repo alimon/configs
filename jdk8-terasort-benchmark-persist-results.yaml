@@ -44,8 +44,17 @@
 
             set -exu
 
+            PERSIST=$HOME/srv/openjdk
+            BENCHMARK_RESULTS_DIR=$PERSIST/hadoop-terasort-benchmark-results
             new_results=incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/*.csv
-            prev_results=~openjdk-testing/hadoop-terasort-benchmark-results/results.csv
+            prev_results=$BENCHMARK_RESULTS_DIR/results.csv
+
+            SCRIPT_DIR=$PERSIST/hadoop-test-scripts
+            if [ -d $SCRIPT_DIR ]; then
+                (cd $SCRIPT_DIR; git pull)
+            else
+                git clone https://git.linaro.org/leg/openjdk/hadoop-test-scripts.git $SCRIPT_DIR
+            fi
 
             echo "Previous Results"
             echo "----------------"
@@ -54,4 +63,4 @@
 
             cat ${new_results} >> ${prev_results}
 
-            ~openjdk-testing/hadoop-test-scripts/update-results-db
+            $SCRIPT_DIR/update-results-db
