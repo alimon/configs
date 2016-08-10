@@ -6,12 +6,14 @@
         * Writes the results to /work/openjdk-testing/SPECjbb2013-1.00-nightly-runs.<br>
         * This job has the client axis <b>disabled</b> until there is enough build/test time available.<br>
           * If the client axis is enabled the heap size for the VM will need to be adjusted using -Xmxm
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             linaro:
                 - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Write SPECjbb2013 results'

@@ -4,13 +4,14 @@
     defaults: global
     description: |
         * Runs the terasort benchmark.
-    logrotate:
-        numToKeep: 10
-        artifactNumToKeep: 1
     properties:
         - authorization:
             linaro:
                 - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Run terasort benchmark'

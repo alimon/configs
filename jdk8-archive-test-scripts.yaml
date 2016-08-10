@@ -4,14 +4,15 @@
     defaults: global
     description: |
         * This job is no longer necessary as these directories are held at git.linaro.org.
-    logrotate:
-        numToKeep: 10
-        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Archive OpenJDK 8 test scripts'

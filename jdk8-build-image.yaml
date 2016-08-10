@@ -6,14 +6,15 @@
         * Configures and builds jdk8 (ie, bin/java, bin/javac, et al) for various configurations.<br>
         * The source tarball is copied from the jdk8-update-src-tree job.<br>
         * <b>Note:</b> we are no longer building -fastdebug variants as there is not enough time to test the images.
-    logrotate:
-        numToKeep: 10
-        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Configure and build OpenJDK 8'

@@ -5,13 +5,15 @@
     description: |
         This jobs writes the current jdk8 src tree to /work/openjdk-testing/openjdk8-jtreg-nightly-tests/...<br>
         It is used to report failure/errors against the jtreg results.
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Write jdk8 source tree'

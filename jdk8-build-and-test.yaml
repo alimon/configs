@@ -7,14 +7,15 @@
         * <b>Note:</b> this job is usually triggered by a source change (ie. the "jdk8-update-src-tree" job).<br>
         If it is run manually it will use the source tarball from the last successful build of that job.<br>
         * If this jobs runs to completion the results are published to http://openjdk.linaro.org/.
-    logrotate:
-        numToKeep: 10
-        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: build
     display-name: 'OpenJDK 8 - Build jdk images and run tests/benchmarks'

@@ -6,13 +6,14 @@
         * This job creates an archive of the SPECjbb2013 product.<br>
           It can be copied as a *copy artifact* by other jobs.<br>
         * <b>Note:</b> SPECjbb2013 should <b>not</b> be shared publically as there are licensing restrictions.
-    logrotate:
-        numToKeep: 10
-        artifactNumToKeep: 1
     properties:
         - authorization:
             linaro:
                 - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: build
     display-name: 'OpenJDK - Archive SPECjbb2013 product'

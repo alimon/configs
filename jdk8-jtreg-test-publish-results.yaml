@@ -4,13 +4,15 @@
     defaults: global
     description: |
         * Results are published to http://openjdk.linaro.org/openjdk8-jtreg-nightly-tests/
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Publish jtreg results'

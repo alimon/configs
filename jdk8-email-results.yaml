@@ -5,13 +5,15 @@
     description: |
         * Sends the report.txt file to the aarch64-port-dev mailing list.<br>
         * The text report is copied from the jdk8-generate-text-report job.
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     parameters:
         - string:
             name: RECIPIENTS

@@ -4,13 +4,15 @@
     defaults: global
     description: |
         * This job persist all results.
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: build
     display-name: 'OpenJDK 8 - Persist all results'

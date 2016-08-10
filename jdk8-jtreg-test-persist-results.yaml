@@ -4,12 +4,14 @@
     defaults: global
     description: |
         * Writes the results to $HOME/srv/openjdk/openjdk8-jtreg-nightly-tests.
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             linaro:
                 - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Write jtreg tests results'
