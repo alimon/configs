@@ -56,17 +56,12 @@
         - shell: |
             #!/bin/bash
 
-            set -e
-            set -x
-
-            env
-            ssh-add -l
+            set -ex
 
             cat > command.sh.$$$$ << EOF
             #!/bin/bash
 
-            set -e
-            set -x
+            set -ex
 
             $command
             EOF
@@ -75,4 +70,5 @@
             cat command.sh.$$$$
 
             scp command.sh.$$$$ $machine:/tmp/
-            $dry_run || ssh -v $machine /tmp/command.sh.$$$$
+            # Don't use ssh shared connection to reliably proxy SSH agent.
+            $dry_run || ssh -Snone $machine /tmp/command.sh.$$$$
