@@ -37,6 +37,8 @@
             new_name=primordial-jdk7
             orig_name=java-7-openjdk-amd64
 
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo sed -i -e 's/^.*arm64.*$//g' /etc/apt/sources.list
             sudo apt-get update
             apt-get download openjdk-7-jdk openjdk-7-jre
             dpkg-deb -x openjdk-7-jdk_*.deb openjdk-7
