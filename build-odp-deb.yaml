@@ -51,8 +51,8 @@
             pkg_source=odp
             cd ${pkg_source}
 
-            base_version=$(git describe --match='v*' | sed -e 's/^v//' | cut -d'-' -f1)
-            nb_commit=$(git describe --match='v*' | sed -e 's/^v//' | cut -d'-' -f2)
+            base_version=$(git describe --long --match='v*' | sed -e 's/^v//' | cut -d'-' -f1)
+            nb_commit=$(git describe --long --match='v*' | sed -e 's/^v//' | cut -d'-' -f2)
             scm_commit=$(git log -n1 --pretty=format:%h)
             pkg_version=${base_version}+git${nb_commit}+${scm_commit}
             pkg_dir=${pkg_source}-${pkg_version}
