@@ -51,12 +51,10 @@
             # Export the kernel packaging version
             cd linux
 
-            ## To use when we switch to RCs, since -rc is higher than the final tag
-            kernel_version=$(make kernelversion | sed -e 's/\.0-rc/~rc/')
-            ## To use when we switch to the final tag
-            # kernel_version=$(make kernelversion)
+            kernel_version=$(make kernelversion)
+            kernel_deb_pkg_version=$(echo ${kernel_version} | sed -e 's/\-rc/~rc/')
             export KERNEL_GIT_VERSION=$(git log --format="%H" -1)
-            export KDEB_PKGVERSION="${kernel_version}.linaro.${BUILD_NUMBER}-1"
+            export KDEB_PKGVERSION="${kernel_deb_pkg_version}.linaro.${BUILD_NUMBER}-1"
             git tag v${kernel_version}
 
             cd ..
