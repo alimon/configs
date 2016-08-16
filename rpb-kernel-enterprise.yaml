@@ -52,10 +52,10 @@
             cd linux
 
             ## To use when we switch to RCs, since -rc is higher than the final tag
-            kernel_version=`make kernelversion | sed -e 's/\.0-rc/~rc/'
+            kernel_version=$(make kernelversion | sed -e 's/\.0-rc/~rc/')
             ## To use when we switch to the final tag
-            # kernel_version=`make kernelversion`
-            export KERNEL_GIT_VERSION=`git log --format="%H" -1`
+            # kernel_version=$(make kernelversion)
+            export KERNEL_GIT_VERSION=$(git log --format="%H" -1)
             export KDEB_PKGVERSION="${kernel_version}.linaro.${BUILD_NUMBER}-1"
             git tag v${kernel_version}
 
@@ -78,7 +78,7 @@
                 - Branch: ${KERNEL_GIT_BRANCH}
                 - Hash: ${KERNEL_GIT_VERSION}
 
-             -- Fathi Boudra <fathi.boudra@linaro.org>  `date "+%a, %d %b %Y %T %z"`
+             -- Fathi Boudra <fathi.boudra@linaro.org>  $(date -R)
 
             EOF
 
