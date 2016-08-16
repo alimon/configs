@@ -19,10 +19,10 @@
     parameters:
         - string:
             name: KERNEL_GIT_BRANCH
-            default: '96b/releases/2016.06'
+            default: 'master'
         - string:
             name: KERNEL_GIT_URL
-            default: 'https://github.com/96boards/linux.git'
+            default: 'https://github.com/Linaro/rpk.git'
         - string:
             name: TARGET_REPO
             default: 'linaro-staging'
@@ -51,10 +51,10 @@
             # Export the kernel packaging version
             cd linux
 
-            ## To use when we switch to 4.5, since -rc is higher than the final tag
-            # kernel_version=`make kernelversion | sed -e 's/\.0-rc/~rc/'
-
-            kernel_version=`make kernelversion`
+            ## To use when we switch to RCs, since -rc is higher than the final tag
+            kernel_version=`make kernelversion | sed -e 's/\.0-rc/~rc/'
+            ## To use when we switch to the final tag
+            # kernel_version=`make kernelversion`
             export KERNEL_GIT_VERSION=`git log --format="%H" -1`
             export KDEB_PKGVERSION="${kernel_version}.linaro.${BUILD_NUMBER}-1"
             git tag v${kernel_version}
@@ -78,7 +78,7 @@
                 - Branch: ${KERNEL_GIT_BRANCH}
                 - Hash: ${KERNEL_GIT_VERSION}
 
-             -- Ricardo Salveti de Araujo <ricardo.salveti@linaro.org>  `date "+%a, %d %b %Y %T %z"`
+             -- Fathi Boudra <fathi.boudra@linaro.org>  `date "+%a, %d %b %Y %T %z"`
 
             EOF
 
