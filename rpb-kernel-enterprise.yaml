@@ -81,7 +81,8 @@
             EOF
 
             # Use the kernel config from the kernel tree
-            cp ../linux/arch/arm64/configs/distro.config debian/config/arm64/config
+            #cp ../linux/arch/arm64/configs/distro.config debian/config/arm64/config
+            wget -q https://raw.githubusercontent.com/96boards/linux/96b/releases/2016.06/arch/arm64/configs/distro.config -O debian/config/arm64/config
 
             debian/rules clean || true
             debian/bin/genorig.py ../linux
