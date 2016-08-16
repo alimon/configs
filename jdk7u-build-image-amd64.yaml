@@ -1,12 +1,9 @@
 - job:
     name: jdk7u-build-image-amd64
-    project-type: matrix
+    project-type: freestyle
     defaults: global
     description: |
         * Builds the jdk7 images.
-    logrotate:
-        numToKeep: 10
-        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
@@ -15,26 +12,21 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: JVM_VARIANT
+            default: client
+        - string:
+            name: BUILD_TYPE
+            default: release
     disabled: false
     node: docker-utopic-amd64
     display-name: 'OpenJDK - Build OpenJDK 7 images'
-    axes:
-        - axis:
-            type: user-defined
-            name: JVM_VARIANT
-            values:
-                - client
-        - axis:
-            type: user-defined
-            name: BUILD_TYPE
-            values:
-                - release
-    execution-strategy:
-        sequential: true
     wrappers:
         - timestamps
-        - matrix-tie-parent:
-            node: docker-utopic-amd64
     builders:
         - copyartifact:
             project: jdk7u-update-src-tree
