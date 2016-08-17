@@ -52,10 +52,10 @@
             cd linux
 
             kernel_version=$(make kernelversion)
-            kernel_deb_pkg_version=$(echo ${kernel_version} | sed -e 's/\-rc/~rc/')
+            kernel_deb_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
             export KERNEL_GIT_VERSION=$(git log --format="%H" -1)
             export KDEB_PKGVERSION="${kernel_deb_pkg_version}.linaro.${BUILD_NUMBER}-1"
-            git tag v${kernel_version}
+            git tag v${kernel_deb_pkg_version//\~/-}
 
             cd ..
 
