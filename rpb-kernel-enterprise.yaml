@@ -63,7 +63,6 @@
 
             kernel_version=$(make kernelversion)
             kernel_deb_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
-            export KERNEL_GIT_VERSION=$(git log --format="%H" -1)
             export KDEB_PKGVERSION="${kernel_deb_pkg_version}.linaro.${BUILD_NUMBER}-1"
             git tag v${kernel_deb_pkg_version//\~/-}
 
@@ -80,9 +79,9 @@
             linux ($KDEB_PKGVERSION) unstable; urgency=medium
 
               * Auto build:
-                - URL: ${KERNEL_GIT_URL}
-                - Branch: ${KERNEL_GIT_BRANCH}
-                - Hash: ${KERNEL_GIT_VERSION}
+                - URL: ${GIT_URL}
+                - Branch: ${GIT_BRANCH}
+                - Commit: ${GIT_COMMIT}
 
              -- Fathi Boudra <fathi.boudra@linaro.org>  $(date -R)
 
@@ -165,12 +164,12 @@
             Linux Kernel build consumed by the Reference Platform Enterprise Builds
 
             Build Description:
-            * Build URL: "$BUILD_URL":$BUILD_URL
-            * Git tree: "$KERNEL_GIT_URL":$KERNEL_GIT_URL
-            * Git branch: $KERNEL_GIT_BRANCH
-            * Git hash: $KERNEL_GIT_VERSION
-            * Kernel version: $kernel_version
-            * Kernel deb version: $KDEB_PKGVERSION
+            * Build URL: "${BUILD_URL}":${BUILD_URL}
+            * Git tree: "${GIT_URL}":${GIT_URL}
+            * Git branch: ${GIT_BRANCH}
+            * Git commit: ${GIT_COMMIT}
+            * Kernel version: ${kernel_version}
+            * Kernel deb version: ${KDEB_PKGVERSION}
             * Kernel rpm version: ${rpmversion}-reference.${BUILD_NUMBER}
             EOF
 
