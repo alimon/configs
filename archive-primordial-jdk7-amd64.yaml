@@ -40,9 +40,10 @@
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo sed -i -e 's/^.*arm64.*$//g' /etc/apt/sources.list
             sudo apt-get update
-            apt-get download openjdk-7-jdk openjdk-7-jre
+            apt-get download openjdk-7-jdk openjdk-7-jre openjdk-7-jre-headless
             dpkg-deb -x openjdk-7-jdk_*.deb openjdk-7
             dpkg-deb -x openjdk-7-jre_*.deb openjdk-7
+            dpkg-deb -x openjdk-7-jre-headless_*.deb openjdk-7
 
             rm -rf ~/JVMs/${orig_name}
             mkdir -p ~/JVMs
