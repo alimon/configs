@@ -11,18 +11,21 @@
                 - job-read
     parameters:
         - string:
-            name: KERNEL_BRANCH
+            name: KERNEL_GIT_BRANCH
             default: 'master'
+        - string:
+            name: KERNEL_GIT_URL
+            default: 'https://github.com/Linaro/rpk.git'
     disabled: false
     node: build
     display-name: 'Trigger for Reference Platform - Linux Kernel (EE)'
     scm:
         - git:
-            url: https://github.com/Linaro/rpk.git
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            url: ${KERNEL_GIT_URL}
+            refspec: +refs/heads/${KERNEL_GIT_BRANCH}:refs/remotes/origin/${KERNEL_GIT_BRANCH}
             name: origin
             branches:
-                - refs/heads/${KERNEL_BRANCH}
+                - refs/heads/${KERNEL_GIT_BRANCH}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false

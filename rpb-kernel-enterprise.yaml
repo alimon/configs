@@ -29,6 +29,17 @@
     disabled: false
     node: docker-jessie-amd64
     display-name: 'Reference Platform - Linux Kernel (EE)'
+    scm:
+        - git:
+            url: ${KERNEL_GIT_URL}
+            refspec: +refs/heads/${KERNEL_GIT_BRANCH}:refs/remotes/origin/${KERNEL_GIT_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNEL_GIT_BRANCH}
+            basedir: linux
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
     wrappers:
         - timestamps
         - build-name:
@@ -45,7 +56,6 @@
             sudo apt-get install -y ccache python-pycurl quilt cpio rsync rpm
 
             # Checkout source code
-            git clone -b ${KERNEL_GIT_BRANCH} ${KERNEL_GIT_URL} linux
             git clone --depth 1 https://git.linaro.org/ci/debian-kernel-packaging.git debian-pkg
 
             # Export the kernel packaging version
