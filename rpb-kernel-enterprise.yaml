@@ -109,7 +109,8 @@
             sed -i "s/mv linux-\%{rheltarball}/mv linux-\*/g" SPECS/kernel-aarch64.spec
             sed -i '/\%{_libexecdir}\/perf-core\/\*/a\%{_datadir}\/perf-core\/\*' SPECS/kernel-aarch64.spec
             sed -i "s/^BuildRequires: openssl$/BuildRequires: openssl-devel/g" SPECS/kernel-aarch64.spec
-            cp ../linux/arch/arm64/configs/distro.config SOURCES/config-arm64-redhat
+            #cp ../linux/arch/arm64/configs/distro.config SOURCES/config-arm64-redhat
+            wget -q https://raw.githubusercontent.com/96boards/linux/96b/releases/2016.06/arch/arm64/configs/distro.config -O SOURCES/config-arm64-redhat
 
             # Make sure config is sane for centos
             sed -i "s/CONFIG_ATA=.*/CONFIG_ATA=y/g" SOURCES/config-arm64-redhat
