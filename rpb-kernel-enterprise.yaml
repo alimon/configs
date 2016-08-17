@@ -59,7 +59,7 @@
             git clone --depth 1 https://git.linaro.org/ci/debian-kernel-packaging.git debian-pkg
 
             # Export the kernel packaging version
-            cd linux
+            cd ${WORKSPACE}/linux
 
             kernel_version=$(make kernelversion)
             kernel_deb_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
@@ -67,10 +67,8 @@
             export KDEB_PKGVERSION="${kernel_deb_pkg_version}.linaro.${BUILD_NUMBER}-1"
             git tag v${kernel_deb_pkg_version//\~/-}
 
-            cd ..
-
             # Build the debian source kernel
-            cd debian-pkg
+            cd ${WORKSPACE}/debian-pkg
 
             # Allow our own versioning scheme
             sed -i 's/dfsg/linaro/g' debian/bin/genorig.py debian/lib/python/debian_linux/debian.py
@@ -110,7 +108,7 @@
             # Build rpm source package
             rpmversion=${kernel_version//-*/}
             git clone --depth 1 -b c7-aarch64 git://git.centos.org/rpms/kernel-aarch64.git
-            cd kernel-aarch64
+            cd ${WORKSPACE}/kernel-aarch64
             sed -i "s/\%define rpmversion.*/\%define rpmversion $rpmversion/g" SPECS/kernel-aarch64.spec
             sed -i "s/\%define pkgrelease.*/\%define pkgrelease reference.${BUILD_NUMBER}/g" SPECS/kernel-aarch64.spec
             sed -i "s/\%define signmodules 1/\%define signmodules 0/g" SPECS/kernel-aarch64.spec
