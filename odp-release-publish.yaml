@@ -130,7 +130,7 @@
         - ssh:
             site: 'docs.opendataplane.org'
             target: 'incoming/odp-release-publish/${platform_type}/${build_type}/${GIT_BRANCH}/${BUILD_NUMBER}'
-            source: 'check-odp/publishing/**'
+            source: 'check-odp/publishing/${GIT_BRANCH}/**'
             command: |
                 cd /srv/docs.opendataplane.org
                 mkdir -p snapshots/odp-release-publish/${platform_type}/${build_type}/${GIT_BRANCH}/${BUILD_NUMBER}
@@ -139,7 +139,7 @@
                 ln -sf $(pwd)/snapshots/odp-release-publish/${platform_type}/${build_type}/${GIT_BRANCH}/${BUILD_NUMBER} snapshots/odp-release-publish/${platform_type}/${build_type}/${GIT_BRANCH}/latest
                 rm -rf incoming/odp-release-publish/${platform_type}/${build_type}/${GIT_BRANCH}/${BUILD_NUMBER}
             timeout: 120000
-            remove-prefix: 'check-odp/publishing'
+            remove-prefix: 'check-odp/publishing/${GIT_BRANCH}'
             always-publish-from-master: true
     publishers:
         - warnings:
