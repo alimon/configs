@@ -22,12 +22,13 @@
         - string:
             name: platform_type
             default: 'generic'
+        - string:
+            name: GIT_BRANCH
+            default: 'master'
     disabled: false
     node: master
     child-workspace: .
     display-name: 'ODP publish'
-    triggers:
-        - timed: '@daily'
     axes:
         - axis:
             type: user-defined
@@ -37,13 +38,6 @@
                 - dox_html
                 - usr_html
                 - scan_build
-        - axis:
-            type: user-defined
-            name: GIT_BRANCH
-            values:
-                - master
-                - next
-                - api-next
         - axis:
             type: slave
             name: label
