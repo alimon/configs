@@ -18,6 +18,10 @@
         - build-discarder:
             num-to-keep: 30
             days-to-keep: 30
+    parameters:
+        - string:
+            name: platform_type
+            default: 'generic'
     disabled: false
     node: master
     child-workspace: .
@@ -33,13 +37,6 @@
                 - dox_html
                 - usr_html
                 - scan_build
-        - axis:
-            type: user-defined
-            name: platform_type
-            values:
-                - generic
-                - dpdk
-#                - ks2
         - axis:
             type: user-defined
             name: GIT_BRANCH
