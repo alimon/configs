@@ -74,8 +74,6 @@
               sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
               rm -rf lci-build-tools
               rm -rf builddir*
-              rm -rf out
-              git clean -fdx
             }
 
             sudo apt-get update
@@ -255,8 +253,11 @@
             # Final preparation for publishing
             cp -a linux-*.deb out/
 
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
     publishers:
         - archive:
-            artifacts: 'out/*.img.gz'
+            artifacts: 'out/*'
         - email:
             recipients: 'ricardo.salveti@linaro.org'
