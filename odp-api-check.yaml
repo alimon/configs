@@ -17,6 +17,10 @@
         - build-discarder:
             num-to-keep: 30
             days-to-keep: 30
+    parameters:
+        - string:
+            name: GIT_BRANCH
+            default: 'master'
     disabled: false
     node: master
     child-workspace: .
@@ -33,13 +37,6 @@
                 - armeb
                 - arm64
                 - arm64be
-        - axis:
-            type: user-defined
-            name: GIT_BRANCH
-            values:
-                - master
-                - next
-                - api-next
         - axis:
             type: slave
             name: label

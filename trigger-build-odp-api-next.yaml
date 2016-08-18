@@ -1,5 +1,5 @@
 - job:
-    name: trigger-build-odp
+    name: trigger-build-odp-api-next
     project-type: freestyle
     defaults: global
     logrotate:
@@ -9,16 +9,20 @@
         - authorization:
             anonymous:
                 - job-read
+    parameters:
+        - string:
+            name: GIT_BRANCH
+            default: 'api-next'
     disabled: false
     node: build
-    display-name: 'Trigger for ODP packages'
+    display-name: 'Trigger for ODPs api-next'
     scm:
         - git:
             url: https://git.linaro.org/lng/odp.git
-            refspec: +refs/heads/master:refs/remotes/origin/master
+            refspec: +refs/heads/${GIT_BRANCH}:refs/remotes/origin/${GIT_BRANCH}
             name: origin
             branches:
-                - refs/heads/master
+                - refs/heads/${GIT_BRANCH}
             basedir: odp
             skip-tag: true
             shallow-clone: true
@@ -29,6 +33,8 @@
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
-    builders:
-        - trigger-builds:
-            - project: 'build-odp-deb, build-odp-rpm, openembedded-odp-rootfs, odp-debian-validation odp-api-check'
+    publishers:
+        - trigger-parameterized-builds:
+            - project: 'odp-api-check'
+              predefined-parameters: GIT_BRANCH=${GIT_BRANCH}
+              condition: SUCCESS
