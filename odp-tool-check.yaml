@@ -18,12 +18,14 @@
         - build-discarder:
             num-to-keep: 30
             days-to-keep: 30
+    parameters:
+        - string:
+            name: GIT_BRANCH
+            default: 'master'
     disabled: false
     node: master
     child-workspace: .
     display-name: 'ODP tool check'
-    triggers:
-        - timed: '@daily'
     axes:
         - axis:
             type: user-defined
@@ -35,13 +37,6 @@
                 - clang
                 - run_valid_from_install
                 - clang_and_m32_on_64
-        - axis:
-            type: user-defined
-            name: GIT_BRANCH
-            values:
-                - master
-                - next
-                - api-next
         - axis:
             type: slave
             name: label
