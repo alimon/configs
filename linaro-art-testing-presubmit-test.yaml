@@ -1,0 +1,61 @@
+- job:
+    name: linaro-art-testing-presubmit-test
+    project-type: freestyle
+    defaults: global
+    description: >
+      Runs the
+      <a href="https://android-git.linaro.org/gitweb/linaro/art-testing.git/blob/HEAD:test/test.py">Art Testing Presubmit Tests</a>.
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    disabled: false
+    node: docker-xenial-amd64
+    display-name: 'ART Testing - Presubmit Test'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: android-review.linaro.org
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro/art-testing'
+                  branches:
+                      - branch-pattern: 'master'
+            silent: false
+            silent-start: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 60
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+
+            export PATH="${HOME}/bin:${PATH}"
+
+            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+
+            cd ${ART_BUILD_SCRIPTS_DIR}/
+            ./jenkins/setup_host.sh
+            ./jenkins/presubmit_art_testing.sh
+    publishers:
+        - email:
+            recipients: 'daniel.diaz@linaro.org'
