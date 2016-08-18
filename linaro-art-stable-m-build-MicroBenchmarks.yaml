@@ -78,9 +78,6 @@
         - string:
             name: BUILD_CONFIG_FILENAME
             default: 'linaro-art-stable-m'
-        - password:
-            name: PRIVATE_KEY
-            default: ${PRIVATE_KEY}
     disabled: false
     node: docker-utopic-art
     display-name: 'ART - Stable (Marshmallow) - Microbenchmarks (Nexus 5X)'
@@ -115,6 +112,10 @@
         - timestamps
         - timeout:
             timeout: 500
+        - credentials-binding:
+            - text:
+                credential-id: PRIVATE_KEY
+                variable: PRIVATE_KEY
     builders:
         - shell: |
             #!/bin/bash -xe

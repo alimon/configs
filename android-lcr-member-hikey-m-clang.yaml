@@ -20,11 +20,6 @@
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
-    parameters:
-        - password:
-            name: PRIVATE_KEY
-            default: ${PRIVATE_KEY}
-
     disabled: false
     node: docker-utopic-aosp
     display-name: 'Hikey - Member LCR Android M Build with Clang'
@@ -73,6 +68,10 @@
         - timestamps
         - timeout:
             timeout: 500
+        - credentials-binding:
+            - text:
+                credential-id: PRIVATE_KEY
+                variable: PRIVATE_KEY
     builders:
         - linaro-publish-token
         - shell: |

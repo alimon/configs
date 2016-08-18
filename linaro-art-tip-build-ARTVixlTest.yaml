@@ -34,9 +34,6 @@
         - string:
             name: BUILD_CONFIG_FILENAME
             default: 'linaro-art-tip-aosp_arm64'
-        - password:
-            name: PRIVATE_KEY
-            default: ${PRIVATE_KEY}
     disabled: false
     node: docker-xenial-aosp
     display-name: 'ART - Tip - VIXL Test'
@@ -68,6 +65,10 @@
         - timestamps
         - timeout:
             timeout: 500
+        - credentials-binding:
+            - text:
+                credential-id: PRIVATE_KEY
+                variable: PRIVATE_KEY
     builders:
         - shell: |
             #!/bin/bash -xe

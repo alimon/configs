@@ -45,9 +45,6 @@
         - string:
             name: CURRENT_FAILING_ART_TESTS
             default: 'libcore.java.lang.OldSystemTest#test_inheritedChannel'
-        - password:
-            name: PRIVATE_KEY
-            default: ${PRIVATE_KEY}
     disabled: false
     node: docker-utopic-art
     display-name: 'ART - Tip - Target Test'
@@ -87,6 +84,10 @@
         - timestamps
         - timeout:
             timeout: 500
+        - credentials-binding:
+            - text:
+                credential-id: PRIVATE_KEY
+                variable: PRIVATE_KEY
     builders:
         - shell: |
             #!/bin/bash -xe
