@@ -23,7 +23,7 @@
             name: BUILD_TYPE
             default: release
     disabled: false
-    node: docker-utopic-amd64
+    node: docker-jessie-amd64
     display-name: 'OpenJDK - Build OpenJDK 7 images'
     wrappers:
         - timestamps
@@ -42,7 +42,6 @@
         - shell: |
             #!/bin/bash
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get -q=2 update
             sudo apt-get -q=2 install -y --no-install-recommends \
               ant \
