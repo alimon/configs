@@ -156,6 +156,10 @@
             - wcnss-wlan
             - wcnss-bt
             - wcnss-start
+            - ndppd
+            - radvd
+            - bluez
+            - libbluetooth3
             EOF
 
             # Download license file and firmware
@@ -172,6 +176,46 @@
             rm -f qcom_firmware/linux-board-support-package-*/proprietary-linux/firmware.tar
             sudo MTOOLS_SKIP_CHECK=1 mcopy -i qcom_firmware/linux-board-support-package-*/bootloaders-linux/NON-HLOS.bin \
                         ::image/modem.* ::image/mba.mbn qcom_firmware/linux-board-support-package-*/proprietary-linux
+
+            ## Default config file templates
+            # Enable forwarding by default, required by radvd
+            cat << EOF > gateway.conf
+            #net.ipv6.conf.wlan0.accept_ra=2
+            #net.ipv6.conf.all.forwarding=1
+            #net.ipv6.conf.all.proxy_ndp=1
+            EOF
+            # Default address for the bt le 6lowpan interface
+            cat << EOF > bt0
+            #auto bt0
+            #allow-hotplug bt0
+            #iface bt0 inet6 static
+            #    address 2001:db8::4
+            #    netmask 68
+            EOF
+            cat << EOF > radvd.conf
+            #interface bt0
+            #{
+            #    IgnoreIfMissing on;
+            #    AdvSendAdvert on;
+            #    prefix 2001:db8::/64
+            #    {
+            #        AdvOnLink off;
+            #        AdvAutonomous on;
+            #        AdvRouterAddr on;
+            #    };
+            #};
+            EOF
+            cat << EOF > ndppd.conf
+            #route-ttl 30000
+            #proxy wlan0 {
+            #   router yes
+            #   timeout 500
+            #   ttl 30000
+            #   rule 2001:db8::/68 {
+            #      static
+            #   }
+            #}
+            EOF
 
             for rootfs in ${ROOTFS}; do
 
@@ -214,6 +258,12 @@
 
               # add firmware (adreno, venus and WCN)
               sudo cp -a qcom_firmware/linux-board-support-package-*/proprietary-linux/* rootfs/lib/firmware
+
+              # add default config file templates
+              sudo cp gateway.conf rootfs/etc/sysctl.d/
+              sudo cp bt0 rootfs/etc/network/interfaces.d/
+              sudo cp radvd.conf rootfs/etc/radvd.conf
+              sudo cp ndppd.conf rootfs/etc/ndppd.conf
 
               sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
               mkdir rootfs2
