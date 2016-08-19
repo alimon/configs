@@ -1,8 +1,8 @@
         - linaro-publish-token
         - shell:
             !include-raw:
-                - lcr/setup-build.sh
-                - lcr/juno-build.sh
+                - android-lcr/common/builders.sh
+                - android-lcr/juno/builders.sh
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
@@ -166,7 +166,5 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
-
         - shell: |
             echo "Build finished"
-

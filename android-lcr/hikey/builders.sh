@@ -66,4 +66,3 @@ SKIP_REPORT=false
 EOF
 
 echo "Build finished"
-

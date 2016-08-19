@@ -1,8 +1,8 @@
         - linaro-publish-token
         - shell:
             !include-raw:
-                - lcr/setup-build.sh
-                - lcr/hikey-build.sh
+                - android-lcr/common/builders.sh
+                - android-lcr/hikey/builders.sh
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
