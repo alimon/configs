@@ -137,30 +137,19 @@
               echo "***************************"
             fi
 
-            # Prepare to publish to docs.opendataplane.org/snapshots
-            mkdir -p doc_snapshots
-            wget -q ${BUILD_URL}/badge/icon -O doc_snapshots/icon
-
             if [ ${retcode} -ne 0 ]; then
               exit 1
             else
               exit 0
             fi
-        - ssh:
-            site: 'docs.opendataplane.org'
-            target: 'incoming/odp-api-check/${GIT_BRANCH}/${label}/${ARCH}/${pktio}/${BUILD_NUMBER}'
-            source: 'doc_snapshots/**'
-            command: |
-                cd /srv/docs.opendataplane.org
-                mkdir -p snapshots/odp-api-check/${GIT_BRANCH}/${label}/${ARCH}/${pktio}/${BUILD_NUMBER}
-                cp -a incoming/odp-api-check/${GIT_BRANCH}/${label}/${ARCH}/${pktio}/${BUILD_NUMBER}/icon snapshots/odp-api-check/${GIT_BRANCH}/${label}/${ARCH}/${pktio}/${BUILD_NUMBER}
-                rm -rf $(pwd)/snapshots/odp-api-check/${GIT_BRANCH}/${label}/${ARCH}/${pktio}/latest
-                ln -sf $(pwd)/snapshots/odp-api-check/${GIT_BRANCH}/${label}/${ARCH}/${pktio}/${BUILD_NUMBER} snapshots/odp-api-check/${GIT_BRANCH}/${label}/${ARCH}/${pktio}/latest
-                rm -rf incoming/odp-api-check/${GIT_BRANCH}/${label}/${ARCH}/${pktio}/${BUILD_NUMBER}
-            timeout: 120000
-            remove-prefix: 'doc_snapshots'
-            always-publish-from-master: true
     publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - odp-publish-icon
+              predefined-parameters: |
+                  UPSTREAM_BUILD_URL=${BUILD_URL}
+                  UPSTREAM_GIT_BRANCH=${GIT_BRANCH}
+              condition: SUCCESS
         - warnings:
             console-log-parsers:
               - 'GNU Make + GNU C Compiler (gcc)'
