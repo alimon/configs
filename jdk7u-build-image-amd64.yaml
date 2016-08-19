@@ -42,26 +42,32 @@
         - shell: |
             #!/bin/bash
 
-            set -exu
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get -q=2 update
+            sudo apt-get -q=2 install -y --no-install-recommends \
+              ant \
+              gawk \
+              libasound2-dev \
+              libcups2-dev \
+              libfreetype6-dev \
+              libxext-dev \
+              libxrender-dev \
+              libxt-dev \
+              libxtst-dev \
+              unzip \
+              zip
 
-            sudo sed -i \
-              -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' \
-              -e 's/^.*arm64.*$//g' \
-              /etc/apt/sources.list
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends \
-              ant gawk libasound2-dev libcups2-dev libfreetype6-dev libxext-dev \
-              libxrender-dev libxt-dev libxtst-dev unzip zip
+            set -exu
 
             rm -rf jdk7u primordial-jdk7
             tar xf incoming/jdk7u.tar.gz
             tar xf incoming/primordial-jdk7.tar.gz
-            pushd jdk7u
+            cd jdk7u
             export LANG=C
             make ALT_BOOTDIR=${WORKSPACE}/primordial-jdk7 BUILD_NUMBER=b${BUILD_NUMBER}
-            popd
 
             # Archive the result
+            cd ${WORKSPACE}
             rm -rf out
             mkdir out
             artifact_name=jdk7u-${JVM_VARIANT}-${BUILD_TYPE}
