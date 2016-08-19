@@ -28,6 +28,7 @@
     wrappers:
         - timestamps
     builders:
+        - linaro-publish-token
         - copyartifact:
             project: jdk7u-update-src-tree
             filter: 'out/jdk7u.tar.gz'
@@ -65,6 +66,14 @@
             mkdir out
             artifact_name=jdk7u-${JVM_VARIANT}-${BUILD_TYPE}
             tar -C jdk7u/build/linux-amd64/j2sdk-image --exclude=\*.diz --transform="s#^#${artifact_name}/#" -acf out/${artifact_name}.tar.gz jre bin lib
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              out components/openjdk/jdk7u-x86_64/${BUILD_NUMBER}
     publishers:
         - archive:
             artifacts: 'out/*.tar.gz'
