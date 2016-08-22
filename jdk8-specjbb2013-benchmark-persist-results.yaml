@@ -29,6 +29,11 @@
             name: BUILD_TYPE
             values:
                 - release
+        - axis:
+            type: slave
+            name: label
+            values:
+                - aarch64-06
     execution-strategy:
 #        combination-filter: |
 #            JVM_VARIANT=="server"
@@ -65,7 +70,7 @@
             echo "Previous Results"
             cat ${RESULTS_CSV}
             set -eux
-            result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/specjbb-result-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=${label}/specjbb-result-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
             [ -e $result_tarball ] || exit 1
             tar -C ${SPECJBB_EXPANDED_RESULTS_DIR} -xf $result_tarball
             cp incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/*.data.gz ${SPECJBB_EXPANDED_RESULTS_DIR}
