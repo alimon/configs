@@ -65,6 +65,7 @@ main() {
   sync_source
   install_deps
   cd src
+  git reset --hard
   sync_source
   git reset --hard
   git rebase-update
