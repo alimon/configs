@@ -8,7 +8,7 @@
       on a device via adb using android root. The build slave in the cloud is
       able to reach the physical device using port forwarding via SSH.
       This job is for the tip.
-      This build can be triggered by adding the comment "IncludeAllTests"
+      This build can be triggered by adding the comment "IncludeAllTests" or "IncludeTargetTests"
       in your Gerrit patch.
     properties:
         - authorization:
@@ -67,6 +67,8 @@
             trigger-on:
                 - comment-added-contains-event:
                     comment-contains-value: '.*IncludeAllTests.*'
+                - comment-added-contains-event:
+                    comment-contains-value: '.*IncludeTargetTests.*'
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/build'
