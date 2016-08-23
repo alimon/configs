@@ -56,8 +56,8 @@
             tree -f .
 
             PERSIST=$HOME/srv/openjdk
-            TOPDIR=$PERSIST
-            mkdir -p $TOPDIR
+            TOP_DIR=$PERSIST
+            mkdir -p $TOP_DIR
 
             SCRIPT_DIR=$PERSIST/specjbb-test-scripts
             if [ -d $SCRIPT_DIR ]; then
@@ -67,6 +67,10 @@
             fi
 
             source $SCRIPT_DIR/common.sh
+
+            # Ensure nightly results dir exists.
+            mkdir -p $SPECJBB_EXPANDED_RESULTS_DIR
+
             echo "Previous Results"
             cat ${RESULTS_CSV}
             set -eux
