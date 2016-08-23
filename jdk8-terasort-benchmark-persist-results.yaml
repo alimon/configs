@@ -57,6 +57,10 @@
             new_results=incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=${label}/*.csv
             prev_results=$BENCHMARK_RESULTS_DIR/results.csv
 
+            if [ ! -f $prev_results ]; then
+                touch $prev_results
+            fi
+
             SCRIPT_DIR=$PERSIST/hadoop-test-scripts
             if [ -d $SCRIPT_DIR ]; then
                 (cd $SCRIPT_DIR; git pull)
