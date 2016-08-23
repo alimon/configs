@@ -49,13 +49,20 @@
             trimmed_build_url=$(echo ${UPSTREAM_BUILD_URL} | sed 's|.*jenkins/job/||g')
             upstream_job_name=$(echo ${trimmed_build_url} | awk -F'/' '{print $1}')
             upstream_axis=$(echo ${trimmed_build_url} | awk -F'/' '{print $2}')
-            export upstream_buildnumber=$(echo ${trimmed_build_url} | awk -F'/' '{print $3}')
+            upstream_buildnumber=$(echo ${trimmed_build_url} | awk -F'/' '{print $3}')
 
-            export construct_publish_path=${upstream_job_name}/${UPSTREAM_GIT_BRANCH}
+            construct_publish_path=${upstream_job_name}/${UPSTREAM_GIT_BRANCH}
             for axis in $(echo $( echo ${upstream_axis}| sed 's|,| |g')); do
                 construct_publish_path=${construct_publish_path}/$(echo ${axis}|awk -F'=' '{print $2}')
             done
 
+            cat << EOF > remote_directory_parameters
+            upstream_buildnumber=${upstream_buildnumber}
+            construct_publish_path=${construct_publish_path}
+            EOF
+
+        - inject:
+            properties-file: remote_directory_parameters
         - ssh:
             site: 'docs.opendataplane.org'
             target: 'incoming/${construct_publish_path}/${upstream_buildnumber}'
