@@ -77,7 +77,7 @@
             result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=${label}/specjbb-result-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
             [ -e $result_tarball ] || exit 1
             tar -C ${SPECJBB_EXPANDED_RESULTS_DIR} -xf $result_tarball
-            cp incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/*.data.gz ${SPECJBB_EXPANDED_RESULTS_DIR}
+            cp incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=${label}/*.data.gz ${SPECJBB_EXPANDED_RESULTS_DIR}
             pushd ${SPECJBB_EXPANDED_RESULTS_DIR}
             echo "Updating ${RESULTS_CSV}"
             $SCRIPT_DIR/update-results-csv -- --verbose --output=${RESULTS_CSV}
