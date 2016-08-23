@@ -57,6 +57,10 @@
             new_results=incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=${label}/*.csv
             prev_results=$BENCHMARK_RESULTS_DIR/results.csv
 
+            # Ensure persistent directory exists.
+            mkdir -p $BENCHMARK_RESULTS_DIR
+
+            # Tolerate missing results.csv file.
             if [ ! -f $prev_results ]; then
                 touch $prev_results
             fi
