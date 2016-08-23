@@ -142,12 +142,27 @@
             else
               exit 0
             fi
+            cat << EOF > remote_directory_parameters
+            retcode=${retcode}
+            EOF
         - trigger-builds:
             - project:
                 - odp-publish-icon
               predefined-parameters: |
                   UPSTREAM_BUILD_URL=${BUILD_URL}
                   UPSTREAM_GIT_BRANCH=${GIT_BRANCH}
+        - inject:
+            properties-file: remote_directory_parameters
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            if [ ${retcode} -ne 0 ]; then
+              exit 1
+            else
+              exit 0
+            fi
     publishers:
         - warnings:
             console-log-parsers:
