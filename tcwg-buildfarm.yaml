@@ -216,10 +216,21 @@
             result="0"
             ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
 
-            manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
+            # If we actually built a toolchain, save its manifest.
+            # If the build was a no-op (results already present on log_server),
+            # copy the existing ones.
+            if [ -d _build/builds ]; then
+              manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
+            else
+              manifest=""
+            fi
             mkdir -p artifacts/
             if [ x"${manifest}" != x ]; then
               cp ${manifest} artifacts/
+            else
+              # We need to do the same name expansion as jenkins.sh
+              eval dir="$log_name"
+              scp "$log_server/$dir/*manifest.txt" artifacts/
             fi
 
             echo "Result of jenkins.sh: $result"
