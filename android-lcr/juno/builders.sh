@@ -1,5 +1,5 @@
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
+cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.xml /home/buildslave/srv/${BUILD_DIR}/build/out/*.json ${WORKSPACE}/
 
 PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
 

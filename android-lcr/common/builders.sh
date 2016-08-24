@@ -28,9 +28,11 @@ rm -f *.deb
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 java -version
-if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
-  sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
-  sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+
+BUILD_DIR=${BUILD_DIR:${JOB_NAME}}
+if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
+  sudo mkdir -p /home/buildslave/srv/${BUILD_DIR}
+  sudo chmod 777 /home/buildslave/srv/${BUILD_DIR}
 fi
 cd /home/buildslave/srv/${JOB_NAME}
 

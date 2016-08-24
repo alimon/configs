@@ -8,7 +8,7 @@ yes "I ACCEPT" | ./extract-linaro-hikey.sh
 cd -
 
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.json /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
+cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.json /home/buildslave/srv/${BUILD_DIR}/build/out/*.xml ${WORKSPACE}/
 
 # Compress images
 cd build/
