@@ -1,0 +1,72 @@
+- job:
+    name: android-lcr-member-hikey-n
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-cancel
+            vishal.bhoj@linaro.org:
+                - job-build
+                - job-extended-read
+                - job-read
+            daniel.diaz@linaro.org:
+                - job-build
+                - job-extended-read
+                - job-read
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: ART_URL
+            default: https://android-qa-reports.linaro.org/api/
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'Hikey - Member LCR Android N Build'
+    concurrent: true
+    triggers:
+        - timed: 'H H * * 6'
+        - gerrit:
+            server-name: __ANY__
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android/android-patchsets'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-nougat'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-nougat'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'lcr-member-hikey-n'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - credentials-binding:
+            - text:
+                credential-id: PRIVATE_KEY
+                variable: PRIVATE_KEY
+    builders:
+        !include: android-lcr/hikey/builders.yaml.inc
+    publishers:
+        !include: android-lcr/common/publishers.yaml.inc
