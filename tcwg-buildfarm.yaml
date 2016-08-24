@@ -122,6 +122,8 @@
             set -e
             set -x
 
+            mkdir -p artifacts/
+
             case "$target--$(uname -m)" in
               native--aarch64|schroot-armhf-native--*) target_kind=native_armv8 ;;
               native--x86_64|schroot-i386-native--*) target_kind=native_x86 ;;
@@ -132,6 +134,8 @@
 
             if ! echo "$targets" | grep -q "$target_kind"; then
               echo "NOTE: Skipping target $target because $target_kind is not in list: $targets"
+              # Create at least an (empty) artifact so that Jenkins does not complain
+              echo > artifacts/target-skipped.txt
               exit 0
             fi
 
@@ -224,7 +228,6 @@
             else
               manifest=""
             fi
-            mkdir -p artifacts/
             if [ x"${manifest}" != x ]; then
               cp ${manifest} artifacts/
             else
