@@ -139,10 +139,19 @@
                 tcwg_release=${tcwg_release%".tar.xz"}
             fi
 
-            tarball="`find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz`"
-            if test x"${tarball}" = x""; then
-              echo "ERROR: no binary tarball found!"
+            # We always build a Linux tarball, even in canadian cross mode
+            tarball_linux="`find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep -v mingw`"
+            if test x"${tarball_linux}" = x""; then
+              echo "ERROR: no binary Linux tarball found!"
               exit 1
+            fi
+
+            if test x"${canadian}" = x"true"; then
+              tarball_mingw="`find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep mingw`"
+              if test x"${tarball_mingw}" = x""; then
+                echo "ERROR: no binary MingW tarball found!"
+                exit 1
+              fi
             fi
 
             # Extract the gcc_version information from gcc_src to determine
@@ -154,20 +163,35 @@
                 tcwg_version="${tcwg_version}.${gcc_minor}"
             fi
 
-            tarball="`basename ${tarball}`"
-            tarball_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}/${target}/${tarball}"
-            cat << EOF > tcwg.params
-            tarball=${tarball_url}
+            tarball_linux="`basename ${tarball_linux}`"
+            tarball_linux_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}/${target}/${tarball_linux}"
+            cat << EOF > tcwg.params.linux
+            tarball_url=${tarball_linux_url}
             EOF
-      - inject:
-           properties-file: tcwg.params
+
+            if test x"${canadian}" = x"true"; then
+              tarball_mingw="`basename ${tarball_mingw}`"
+              tarball_mingw_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}/${target}/${tarball_mingw}"
+              cat << EOF > tcwg.params.mingw
+            tarball_url=${tarball_mingw_url}
+            EOF
+            fi
+
       - conditional-step:
            condition-kind: current-status
            steps:
               - trigger-builds:
                   - project: 'tcwg-test-release'
-                    predefined-parameters: tarball_url=${tarball}
-                    boolean-parmeters: debug=${debug}
+                    property-file: tcwg.params.linux
+                    current-parameters: true
+                    block: false
+      - conditional-step:
+          condition-kind: file-exists
+          condition-filename: tcwg.params.mingw
+          steps:
+              - trigger-builds:
+                  - project: 'tcwg-test-release'
+                    property-file: tcwg.params.mingw
                     current-parameters: true
                     block: false
     publishers:
