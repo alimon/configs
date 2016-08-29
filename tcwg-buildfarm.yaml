@@ -35,9 +35,13 @@
             default: 'true'
             description: 'Attempt to bootstrap GCC for compatible host and target combinations'
         - string:
-            name: excludecheck
-            default: 'binutils gdb'
-            description: 'Do not run "make check" on these components'
+            name: host_x86_64_excludecheck
+            default: 'gdb'
+            description: 'Do not run "make check" on these components on x86_64'
+        - string:
+            name: host_aarchXX_excludecheck
+            default: 'gcc'
+            description: 'Do not run "make check" on these components on AArchXX'
         - string:
             name: extraconfig
             default: ''
@@ -86,6 +90,7 @@
             name: label
             values:
                 - tcwg-x86_64-cam
+                - tcwg-x86_64-2-cam
                 - tcwg-aarch64-build
         - axis:
             type: user-defined
@@ -103,7 +108,7 @@
                 - schroot-armhf-native
     execution-strategy:
         combination-filter: |
-            (label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
+            (label=="tcwg-x86_64-cam" && (target!="schroot-armhf-native" || target!="native" || target!="schroot-i386-native")) || (label=="tcwg-x86_64-2-cam" && (target=="native" || target=="schroot-i386-native")) || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
         sequential: false
     wrappers:
         - timeout:
@@ -125,7 +130,8 @@
             mkdir -p artifacts/
 
             case "$target--$(uname -m)" in
-              native--aarch64|schroot-armhf-native--*) target_kind=native_armv8 ;;
+              native--aarch64) target_kind=native_aarch64 ;;
+              schroot-armhf-native--*) target_kind=native_aarch32 ;;
               native--x86_64|schroot-i386-native--*) target_kind=native_x86 ;;
               armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
               *-linux-gnu*--*) target_kind=cross_main ;;
@@ -180,6 +186,11 @@
             else
               norebuild="--norebuild"
             fi
+
+            case $(uname -m) in
+              x86_64) excludecheck="$host_x86_64_excludecheck" ;;
+              *) excludecheck="$host_aarchXX_excludecheck" ;;
+            esac
 
             excludecheck_opt=""
             for testsuite in $excludecheck; do

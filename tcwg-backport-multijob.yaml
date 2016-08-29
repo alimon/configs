@@ -147,10 +147,10 @@
             projects:
               - name: tcwg-buildfarm
                 property-file: gcc_orig_parameters
-                restrict-matrix-project: '(label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))'
+                restrict-matrix-project: '(label=="tcwg-x86_64-cam" && (target!="schroot-armhf-native" || target!="native" || target!="schroot-i386-native")) || (label=="tcwg-x86_64-2-cam" && (target=="native" || target=="schroot-i386-native")) || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))'
               - name: tcwg-buildfarm
                 property-file: gcc_patch_parameters
-                restrict-matrix-project: '(label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))'
+                restrict-matrix-project: '(label=="tcwg-x86_64-cam" && (target!="schroot-armhf-native" || target!="native" || target!="schroot-i386-native")) || (label=="tcwg-x86_64-2-cam" && (target=="native" || target=="schroot-i386-native")) || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))'
         - multijob:
             name: 'Comparison'
             condition: COMPLETED
