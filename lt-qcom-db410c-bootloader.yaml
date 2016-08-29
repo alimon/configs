@@ -74,9 +74,8 @@
             echo "${QCOM_ANDROID_FIRMWARE_MD5}  $(basename ${QCOM_ANDROID_FIRMWARE})" > MD5
             md5sum -c MD5
 
-            unzip $(basename ${QCOM_LINUX_FIRMWARE})
-            unzip $(basename ${QCOM_ANDROID_FIRMWARE})
-            mv linux-board-support-package-*/bootloaders-linux/ .
+            unzip -j -d bootloaders-android $(basename ${QCOM_ANDROID_FIRMWARE})
+            unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*"
 
             # Get the Android compiler
             git clone ${LK_GCC_GIT} --depth 1 -b ${LK_GCC_REL} android-gcc
