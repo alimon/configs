@@ -19,10 +19,6 @@
             name: gcc_src
             default: 'gcc-linaro-5.3-2016.02.tar.xz'
             description: 'The source of GCC. Specify as it would be passed to abe.sh, either a source tarballs, git branch and revision, or a URL of a tarball e.g., "gcc-linaro-5.3-2016.02.tar.xz"'
-        - bool:
-            name: canadian
-            default: false
-            description: 'Whether to build win32 executables.'
         - string:
             name: binutils_src
             default: ''
@@ -128,6 +124,9 @@
             else
               shell="/bin/bash"
             fi
+            # This job always uses Canadian cross builds and builds 2
+            # toolchains at a time
+            export canadian=true
             ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --fileserver ${fileserver} --toolchainconfig ${toolchain_config}
             if test $? -gt 0; then
               exit 1
