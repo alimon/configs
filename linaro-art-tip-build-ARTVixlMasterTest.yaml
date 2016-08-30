@@ -6,8 +6,9 @@
       Tests the integration of
       <a href="https://android-git.linaro.org/gitweb/linaro-art/art-build-scripts.git/blob/HEAD:tests/test_art_vixl.sh">VIXL Tests</a>
       from upstream tree with the Linaro Android tip branch.
-      This build is triggered by adding the comment "IncludeUpstreamVIXLTests"
-      in your Gerrit patch.
+      This build is triggered nightly.
+      This build can also be triggered by adding the comment "IncludeUpstreamVIXLTests"
+      in your Gerrit patch within the ART or upstream VIXL projects.
     properties:
         - authorization:
             anonymous:
@@ -55,15 +56,20 @@
                     comment-contains-value: '.*IncludeUpstreamVIXLTests.*'
             projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/build'
-                  branches:
-                      - branch-pattern: 'master'
-                - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
                   branches:
                       - branch-pattern: 'master'
+        - gerrit:
+            server-name: review.linaro.org
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: '.*IncludeUpstreamVIXLTests.*'
+            projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/external/vixl'
+                  project-pattern: 'arm/vixl'
                   branches:
                       - branch-pattern: 'master'
     wrappers:
