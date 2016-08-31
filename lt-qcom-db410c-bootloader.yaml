@@ -57,8 +57,20 @@
     disabled: false
     node: docker-jessie-amd64
     display-name: 'Qualcomm bootloader for DragonBoard 410c'
+    scm:
+        - git:
+            url: https://git.linaro.org/people/nicolas.dechesne/db-boot-tools.git
+            refspec: +refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
     wrappers:
         - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - linaro-publish-token:
             host: builds.96boards.org
@@ -68,10 +80,6 @@
 
             sudo apt-get update
             sudo apt-get install -y zip gdisk
-
-            git clone --depth 1 -b ${BRANCH} https://git.linaro.org/people/nicolas.dechesne/db-boot-tools.git
-            # record commit info in build log
-            (cd db-boot-tools && git log -1)
 
             # download the firmware packages
             wget -q ${QCOM_LINUX_FIRMWARE}
@@ -111,32 +119,32 @@
 
             # bootloader_emmc_linux
             cp -a license.txt \
-               db-boot-tools/dragonboard410c/linux/flashall \
+               dragonboard410c/linux/flashall \
                lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
                bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,tz-psci.mbn,hyp.mbn} \
                out/dragonboard410c_bootloader_emmc_linux
 
             # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
-            sudo ./db-boot-tools/mksdcard -x -g -o gpt.img -p db-boot-tools/dragonboard410c/linux/partitions.txt
+            sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/linux/partitions.txt
             sudo sgdisk -bgpt.bin gpt.img
-            ./db-boot-tools/mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_linux/gpt_both0.bin
+            ./mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_linux/gpt_both0.bin
 
             # bootloader_emmc_android
             cp -a license.txt \
-               db-boot-tools/dragonboard410c/android/flashall \
-               db-boot-tools/dragonboard410c/android/emmc_appsboot.mbn \
+               dragonboard410c/android/flashall \
+               dragonboard410c/android/emmc_appsboot.mbn \
                bootloaders-android-old/sbl1.mbn \
                bootloaders-android/{NON-HLOS.bin,rpm.mbn,tz.mbn,hyp.mbn} \
                out/dragonboard410c_bootloader_emmc_android
 
             # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
-            sudo ./db-boot-tools/mksdcard -x -g -o gpt.img -p db-boot-tools/dragonboard410c/android/partitions.txt
+            sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/android/partitions.txt
             sudo sgdisk -bgpt.bin gpt.img
-            ./db-boot-tools/mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_android/gpt_both0.bin
+            ./mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_android/gpt_both0.bin
 
             # sdcard_rescue
             cp -a license.txt out/dragonboard410c_sdcard_rescue
-            sudo ./db-boot-tools/mksdcard -x -p db-boot-tools/dragonboard410c/linux/sdrescue.txt \
+            sudo ./mksdcard -x -p dragonboard410c/linux/sdrescue.txt \
                  -o out/dragonboard410c_sdcard_rescue/db410c_sd_rescue.img \
                  -i lk_sdrescue/build-msm8916/ \
                  -i bootloaders-linux/
