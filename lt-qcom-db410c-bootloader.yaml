@@ -128,7 +128,7 @@
             # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
             sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/linux/partitions.txt
             sudo sgdisk -bgpt.bin gpt.img
-            ./mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_linux/gpt_both0.bin
+            ./mkgpt -d -i gpt.bin -o out/dragonboard410c_bootloader_emmc_linux/gpt_both0.bin
 
             # bootloader_emmc_android
             cp -a license.txt \
@@ -141,7 +141,7 @@
             # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
             sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/android/partitions.txt
             sudo sgdisk -bgpt.bin gpt.img
-            ./mkgpt -i gpt.bin -o out/dragonboard410c_bootloader_emmc_android/gpt_both0.bin
+            ./mkgpt -d -i gpt.bin -o out/dragonboard410c_bootloader_emmc_android/gpt_both0.bin
 
             # bootloader_sd_linux
             cp -a license.txt \
