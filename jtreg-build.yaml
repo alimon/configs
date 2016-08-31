@@ -74,11 +74,11 @@
 
             # Pick out version automatically from Mercurial tags.
             JTREG_TAG=$(hg log -r "." --template "{latesttag}\n")
-            BUILD_VERSION=$(echo $JTREG_TAG | sed 's,jtreg\([0-9]*\.[0-9]*\)-b.*,\1,g')
-            BUILD_NUMBER=$(echo $JTREG_TAG | sed 's,jtreg[0-9]*\.[0-9]*-\(b[0-9]*\),\1,g')
+            BUILD_VERSION=$(echo $JTREG_TAG | sed 's,jtreg\([0-9]*\.[0-9]*\)-b.*,\1,')
+            BUILD_NUMBER=$(echo $JTREG_TAG | sed 's,jtreg[0-9]*\.[0-9]*-\(b[0-9]*\),\1,')
 
-            MAJOR=$(echo $BUILD_VERSION | sed 's,\([0-9]*\)\.[0-9]*,')
-            MINOR=$(echo $BUILD_VERSION | sed 's,[0-9]*\.\([0-9]*\),')
+            MAJOR=$(echo $BUILD_VERSION | sed 's,\([0-9]*\)\.[0-9]*,\1,')
+            MINOR=$(echo $BUILD_VERSION | sed 's,[0-9]*\.\([0-9]*\),\1,')
 
 
             # BUILD_VERSION=4.2
@@ -124,6 +124,6 @@
             rm -fr ${artifact}
     publishers:
         - archive:
-            artifacts: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
+            artifacts: 'jtreg-build-*-SNAPSHOT.tar.xz'
         - email:
             recipients: 'stuart.monteith@linaro.org fathi.boudra@linaro.org'
