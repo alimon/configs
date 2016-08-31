@@ -163,6 +163,28 @@
             # Create MD5SUMS file
             (cd out2 && md5sum * > MD5SUMS.txt)
 
+            # Build information
+            cat > out2/HEADER.textile << EOF
+
+            h4. Bootloaders for Dragonboard 410c
+
+            This page provides the bootloaders packages for the Dragonboard 410c. There are several packages:
+            * *sdcard_rescue* : an SD card image that can be used to boot from SD card, and rescue a board when the onboard eMMC is empty or corrupted
+            * *bootloader_emmc_linux* : includes the bootloaders and partition table (GPT) used when booting Linux images
+            * *bootloader_emmc_android* : includes the bootloaders and partition table (GPT) used when booting Android images
+
+            Build description:
+            * Build URL: "$":$BUILD_URL
+            * Proprietary bootloaders can be found on "Qualcomm Developer Network":https://developer.qualcomm.com/hardware/dragonboard-410c/tools
+            * Android proprietary bootloaders package: $(basename ${QCOM_ANDROID_FIRMWARE})
+            * Linux proprietary bootloaders package: $(basename ${QCOM_LINUX_FIRMWARE})
+            * Little Kernel (LK) source code:
+            ** SD rescue boot : "$":$LK_GIT_LINARO/shortlog/refs/heads/$LK_GIT_REL_SD_RESCUE
+            ** SD Linux boot : "$":$LK_GIT_LINARO/shortlog/refs/heads/$LK_GIT_REL_SD_BOOT
+            ** eMMC Linux boot : "$":$LK_GIT_LINARO/shortlog/refs/heads/$LK_GIT_REL_EMMC_BOOT
+            * Tools version: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+            EOF
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
