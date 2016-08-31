@@ -69,9 +69,17 @@
             which java
             java -version
 
+            # Pick out version automatically from Mercurial tags.
+            JTREG_TAG=$(hg log -r "." --template "{latesttag}\n")
+            BUILD_VERSION=$(echo $JTREG_TAG | sed 's,jtreg\([0-9]*.[0-9]*\)-b.*,\1,g'
+            BUILD_NUMBER=$(echo $JTREG_TAG | sed 's,jtreg[0-9]*.[0-9]*-\(b[0-9]*\),\1,g')
+
+            # BUILD_VERSION=4.2
+            # BUILD_NUMBER=b03
+            echo jtreg$BUILD_VERSION-$BUILD_NUMBER
+
             # syntax of the -target and -source command have changed with jdk9
             sed -i 's|1.8|8|g' make/build.xml
-
             ant -v -f make/build.xml \
                 -Djunit.jar=./junit/junit.jar \
                 -Dtestng.jar=./testng/testng.jar \
@@ -81,8 +89,8 @@
                 -Djavahelp.home=./jh2.0 \
                 -Djhall.jar=./jh2.0/javahelp/lib/jhall.jar \
                 -Djh.jar=./jh2.0/javahelp/lib/jh.jar \
-                -Dbuild.version=4.2 \
-                -Dbuild.number=b02
+                -Dbuild.version=$BUILD_VERSION \
+                -Dbuild.number=$BUILD_NUMBER
 
             rm -f *.zip
             rm -f *.tar.gz
