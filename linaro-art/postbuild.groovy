@@ -37,6 +37,10 @@ manager.build.logFile.eachLine { line ->
   }
 }
 
+if (manager.logContains(".*Unable to determine architecture.*")) {
+  manager.addWarningBadge("Unable to determine architecture bug was triggered.")
+}
+
 errorList.each {
   manager.addShortText(it, "white", "red", "1px", "grey")
 }
