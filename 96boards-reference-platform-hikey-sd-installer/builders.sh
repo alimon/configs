@@ -29,8 +29,8 @@ cat > out/HEADER.textile << EOF
 h4. Reference Platform Build - Installer for HiKey
 
 Build description:
- * Build URL: "${BUILD_URL}":${BUILD_URL}
- * installer Rootfs: "${ROOTFS_BUILD_URL}":${ROOTFS_BUILD_URL}
+* Build URL: "${BUILD_URL}":${BUILD_URL}
+* Installer Rootfs: "${ROOTFS_BUILD_URL}":${ROOTFS_BUILD_URL}
 EOF
 
 # set up partitions
