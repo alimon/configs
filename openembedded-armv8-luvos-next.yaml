@@ -1,5 +1,5 @@
 - job:
-    name: openembedded-armv8-luvos
+    name: openembedded-armv8-luvos-next
     project-type: freestyle
     defaults: global
     logrotate:
@@ -17,16 +17,19 @@
         - string:
             name: DISTRO
             default: 'luv'
+        - string:
+            name: BRANCH
+            default: 'next'
     disabled: false
     node: build
-    display-name: 'Linux UEFI Validation Operating System (luvOS) for ARMv8'
+    display-name: 'Linux UEFI Validation Operating System (luvOS) for ARMv8 (next)'
     scm:
         - git:
             url: https://github.com/01org/luv-yocto.git
-            refspec: +refs/heads/master:refs/remotes/origin/master
+            refspec: +refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}
             name: origin
             branches:
-                - refs/heads/master
+                - refs/heads/${BRANCH}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -36,28 +39,8 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - linaro-publish-token
-        - shell: |
-            #!/bin/bash
-
-            set -ex
-
-            trap cleanup_exit INT TERM EXIT
-
-            cleanup_exit()
-            {
-              cd ${WORKSPACE}
-              rm -rf build/tmp/
-            }
-
-            # Build
-            source oe-init-build-env
-            echo "BBLAYERS += \" ${WORKSPACE}/meta-luv\"" >> conf/bblayers.conf
-            bitbake luv-live-image
-
-            # Publish
-            rm -f ${WORKSPACE}/build/tmp/deploy/images/qemuarm64/*.txt
-            find ${WORKSPACE}/build/tmp/deploy/images/qemuarm64 -type l -delete
-            ${HOME}/bin/linaro-cp --api_version 3 ${WORKSPACE}/build/tmp/deploy/images/qemuarm64 openembedded/pre-built/luvos/${BUILD_NUMBER}
+        - shell:
+            !include-raw: openembedded-armv8-luvos/builders.sh
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org naresh.bhat@linaro.org'

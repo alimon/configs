@@ -1,0 +1,46 @@
+- job:
+    name: openembedded-armv8-luvos-master
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - string:
+            name: MACHINE
+            default: 'qemuarm64'
+        - string:
+            name: DISTRO
+            default: 'luv'
+        - string:
+            name: BRANCH
+            default: 'master'
+    disabled: false
+    node: build
+    display-name: 'Linux UEFI Validation Operating System (luvOS) for ARMv8 - master'
+    scm:
+        - git:
+            url: https://github.com/01org/luv-yocto.git
+            refspec: +refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw: openembedded-armv8-luvos/builders.sh
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org naresh.bhat@linaro.org'
