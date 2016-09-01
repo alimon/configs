@@ -1,23 +1,3 @@
-- scm:
-    name: kernel
-    scm:
-        - git:
-            url: git://git.linaro.org/landing-teams/working/arm/kernel-release.git
-            branches:
-                - origin/lsk-3.18-armlt
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-- scm:
-    name: firmware
-    scm:
-        - git:
-            url: git://git.linaro.org/arm/vexpress-firmware.git
-            branches:
-                - origin/juno-recovery-tarball
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
 - job:
     name: android-lcr-reference-juno-m-member-build
     project-type: freestyle
@@ -40,45 +20,6 @@
     node: docker-utopic-aosp
     display-name: 'Juno - Reference LCR Android based ARM Member Build.'
     concurrent: true
-    scm:
-        - kernel
-        - firmware
-    triggers:
-        - pollscm: 'H/5 * * * *'
-        - timed: 'H H * * 6'
-        - gerrit:
-            server-name: __ANY__
-            trigger-on:
-                - change-merged-event
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'android-patchsets'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'master'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'platform/manifest'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-marshmallow'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'device/linaro/common'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-marshmallow'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'android/device/linaro/juno'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-marshmallow'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'android-build-configs'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'master'
-                  file-paths:
-                      - compare-type: 'PLAIN'
-                        pattern: 'lcr-reference-juno-m'
     wrappers:
         - timestamps
         - timeout:
