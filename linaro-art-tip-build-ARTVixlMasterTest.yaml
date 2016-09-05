@@ -47,7 +47,6 @@
     triggers:
         - timed: 'H 6 * * *'
         - gerrit:
-            server-name: dev-private-review.linaro.org
             override-votes: true
             gerrit-build-successful-verified-value: 1
             gerrit-build-failed-verified-value: -1
@@ -59,15 +58,6 @@
                   project-pattern: 'linaro-art/platform/art'
                   branches:
                       - branch-pattern: 'master'
-        - gerrit:
-            server-name: review.linaro.org
-            override-votes: true
-            gerrit-build-successful-verified-value: 1
-            gerrit-build-failed-verified-value: -1
-            trigger-on:
-                - comment-added-contains-event:
-                    comment-contains-value: '.*IncludeUpstreamVIXLTests.*'
-            projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'arm/vixl'
                   branches:
