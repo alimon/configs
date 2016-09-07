@@ -78,7 +78,7 @@
             current_date=$(date -R)
 
             cat > debian/changelog << EOF
-            ${pkg_source} (${pkg_version}-0linaro1) unstable; urgency=medium
+            ${pkg_source} (${pkg_version}-1) unstable; urgency=medium
 
               * CI - ${pkg_source} snapshot:
                 - repository: ${pkg_repository}
@@ -96,17 +96,26 @@
 
             cd ..
 
-            cat > ${WORKSPACE}/build-package.properties <<EOF
+            cat > ${WORKSPACE}/build-package.jessie.properties <<EOF
             codename=jessie
-            source=${BUILD_URL}/artifact/${pkg_source}_${pkg_version}-0linaro1.dsc
+            source=${BUILD_URL}/artifact/${pkg_source}_${pkg_version}-1.dsc
             repo=odp-staging
             EOF
+            cat > ${WORKSPACE}/build-package.xenial.properties <<EOF
+            codename=xenial
+            source=${BUILD_URL}/artifact/${pkg_source}_${pkg_version}-1.dsc
+            repo=odp-staging
+            EOF
+    publishers:
     publishers:
         - archive:
             artifacts: '*.dsc, *.gz, *.xz'
         - trigger-parameterized-builds:
             - project: build-package
-              property-file: build-package.properties
+              property-file: build-package.xenial.properties
+              condition: SUCCESS
+            - project: build-package
+              property-file: build-package.jessie.properties
               condition: SUCCESS
         - email:
             recipients: 'riku.voipio@linaro.org lng-ci@lists.linaro.org'
