@@ -124,19 +124,20 @@
             else
               shell="/bin/bash"
             fi
-            # This job always uses Canadian cross builds and builds 2
-            # toolchains at a time
-            export canadian=true
-            ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target} --fileserver ${fileserver} --toolchainconfig ${toolchain_config}
-            if test $? -gt 0; then
-              exit 1
-            fi
 
             tcwg_release=${date}
             # If there is no date set, extract release information from the gcc_src
             if test "${date:+set}" != "set"; then
                 tcwg_release="`basename $gcc_src | cut -d '-' -f4-`"
                 tcwg_release=${tcwg_release%".tar.xz"}
+            fi
+
+            # This job always uses Canadian cross builds and builds 2
+            # toolchains at a time
+            export canadian=true
+            ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config}
+            if test $? -gt 0; then
+              exit 1
             fi
 
             # We always build a Linux tarball, even in canadian cross mode
