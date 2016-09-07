@@ -23,12 +23,12 @@
         - timestamps
         - timeout:
             timeout: 500
+        - credentials-binding:
+            - text:
+                credential-id: PRIVATE_KEY
+                variable: PRIVATE_KEY
     builders:
-        - shell: |
-            #!/bin/bash
-
-            env
-            echo "Hello, world!"
+        !include: android-lcr/hikey/builders.yaml.inc
     publishers:
-        - email:
-            recipients: 'vishal.bhoj@linaro.org'
+        !include: android-lcr/common/publishers.yaml.inc
+
