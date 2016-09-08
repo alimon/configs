@@ -72,13 +72,15 @@
             pkg_build_url=${BUILD_URL}
             EOF
 
-            arch=`dpkg-architecture -qDEB_HOST_ARCH`
             dist=`lsb_release -sc`
+            # lsb doesn't give stretch codename until release
+            [ "$dist" = "n/a" ] && dist=stretch
             if [ "$dist" != "$codename" ]
             then
                 echo "$codename requested while we are $dist, skip"
                 exit 0
             fi
+            arch=`dpkg-architecture -qDEB_HOST_ARCH`
             # arm64 is the must build target with source uploads for all dists
             if [ $arch = arm64 ]
             then
