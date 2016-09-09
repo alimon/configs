@@ -173,6 +173,15 @@ EOF
     # add firmware (adreno, venus and WCN)
     sudo cp -a qcom_firmware/linux-board-support-package-*/proprietary-linux/* rootfs/lib/firmware
 
+    if [ "${rootfs}" = "installer" ]; then
+        # no need to resize rootfs for SD card boot
+        rm -f rootfs/lib/systemd/system/resize-helper.service
+        # needed by GUI installer
+        cat << EOF | sudo tee -a rootfs/etc/fstab
+/dev/mmcblk1p9 /mnt vfat defaults 0 0
+EOF
+    fi
+
     sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
     mkdir rootfs2
     sudo mount -o loop out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw rootfs2
@@ -211,6 +220,17 @@ mkbootimg \
     --cmdline "root=/dev/disk/by-partlabel/rootfs rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
 gzip -9 out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
 
+# Create boot image for SD installer
+mkbootimg \
+    --kernel out/Image \
+    --ramdisk out/initrd.img-* \
+    --output out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
+    --dt out/dt.img \
+    --pagesize "2048" \
+    --base "0x80000000" \
+    --cmdline "root=/dev/mmcblk1p8 rw rootwait console=${SERIAL_CONSOLE},115200n8"
+gzip -9 out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
+
 # Final preparation for publishing
 cp -a linux-*.deb out/
 
@@ -218,53 +238,29 @@ cp -a linux-*.deb out/
 # let's create the SD install image now
 #######################################
 
-TMPKEYDIR=$(mktemp -d /tmp/qcom.XXXXXX)
-cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
-#!/usr/bin/python
-
-import os
-import sys
-
-def main():
-    private_key = os.environ.get("PRIVATE_KEY", "Undefined")
-    if private_key == "Undefined":
-        sys.exit("PRIVATE_KEY is not defined.")
-
-    buffer = private_key.replace(' ','\n')
-    with open('linaro-private-key', 'w') as f:
-        f.write('-----BEGIN RSA PRIVATE KEY-----\n')
-        f.write(buffer)
-        f.write('\n-----END RSA PRIVATE KEY-----\n')
-
-if __name__ == "__main__":
-        main()
-EOF
-python ${TMPKEYDIR}/private-key-wrapper.py
-chmod 0600 ${WORKSPACE}/linaro-private-key
-
-eval `ssh-agent` >/dev/null 2>/dev/null
-ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
-rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
-
-mkdir -p ~/.ssh
-ssh-keyscan dev-private-git.linaro.org >> ~/.ssh/known_hosts
-cat << EOF >> ~/.ssh/config
-Host dev-private-git.linaro.org
-    User git
-EOF
-chmod 0600 ~/.ssh/* || true
-
-git clone --depth 1 ssh://dev-private-git.linaro.org/landing-teams/working/qualcomm/db410c_bootloader.git
+git clone --depth 1 -b master https://git.linaro.org/people/nicolas.dechesne/db-boot-tools.git
 # record commit info in build log
-cd db410c_bootloader
+cd db-boot-tools
 git log -1
 
-cd emmc_linux
-cp ../../out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz boot.img.gz
-cp ../../out/${VENDOR}-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${VERSION}.img.gz rootfs.img.gz
-gunzip *.img.gz
+# Get SD and EMMC bootloader package
+BL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-db410c-bootloader/lastSuccessfulBuild/buildNumber`
+wget --progress=dot -e dotbytes=2M \
+     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue-ng/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
+wget --progress=dot -e dotbytes=2M \
+     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue-ng/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_emmc_linux-${BL_BUILD_NUMBER}.zip
 
-cat << EOF >> os.json
+unzip -d out dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
+cp ${WORKSPACE}/out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz out/boot.img.gz
+cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-installer-${PLATFORM_NAME}-${VERSION}.img.gz out/rootfs.img.gz
+gunzip out/{boot,rootfs}.img.gz
+
+mkdir -p os/debian
+cp ${WORKSPACE}/out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz os/debian/boot.img.gz
+cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${VERSION}.img.gz os/debian/rootfs.img.gz
+gunzip os/debian/{boot,rootfs}.img.gz
+
+cat << EOF >> os/debian/os.json
 {
 "name": "Linaro Linux Desktop for DragonBoard 410c - Build #${BUILD_NUMBER}",
 "url": "http://builds.96boards.org/releases/dragonboard410c",
@@ -274,19 +270,28 @@ cat << EOF >> os.json
 }
 EOF
 
-cd ../sd_install
-# quick hack for now, need to create the proper job that builds the initrd
-wget --progress=dot -e dotbytes=2M http://people.linaro.org/~nicolas.dechesne/boot-burn.img
-cd ..
-./build sdcard_install_debian
+cp mksdcard flash os/
+cp dragonboard410c/linux/partitions.txt os/debian
+unzip -d os/debian dragonboard410c_bootloader_emmc_linux-${BL_BUILD_NUMBER}.zip
 
-# add license.txt file
-rm -f license.txt
-wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
-cp license.txt out/dragonboard410c_sdcard_install_debian
+# get size of OS partition
+size_os=$(du -sk os | cut -f1)
+size_os=$(((($size_os + 1024 - 1) / 1024) * 1024))
+size_os=$(($size_os + 200*1024))
+# pad for SD image size (including rootfs and bootloaders)
+size_img=$(($size_os + 1024*1024 + 300*1024))
+
+# create OS image
+sudo rm -f out/os.img
+sudo mkfs.fat -a -F32 -n "OS" -C out/os.img $size_os
+mkdir -p mnt
+sudo mount -o loop out/os.img mnt
+sudo cp -r os/* mnt/
+sudo umount mnt
+sudo ./mksdcard -p dragonboard410c/linux/installer.txt -s $size_img -i out -o db410c_sd_install_debian.img
 
 # create archive for publishing
-zip -rj ../out/dragonboard410c_sdcard_install_debian-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_install_debian
+zip -j ${WORKSPACE}/out/dragonboard410c_sdcard_install_debian-${BUILD_NUMBER}.zip db410c_sd_install_debian.img ${WORKSPACE}/license.txt
 cd ..
 
 # Create MD5SUMS file
