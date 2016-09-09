@@ -47,10 +47,13 @@
             name: abe_branch
             default: refs/heads/master
             description: 'ABE revision to test'
-        - bool:
+        - choice:
             name: debug
-            default: false
-            description: 'Whether to enable bash debugging output.'
+            choices:
+                - none
+                - abe
+                - yaml
+            description: "Level of debug information: none - No debugging information, abe - ABE debugging information, yaml - tcwg-make-release.yaml debug information (and exit)."
         - string:
             name: fileserver
             default: ex40-01.tcwglab.linaro.org
@@ -118,11 +121,18 @@
       - shell: |
             #!/bin/bash
 
-            if test x"${debug}" = x"true"; then
-              shell="/bin/bash -x"
-              set -x
+            if test x"${debug}" = x"abe"; then
+                shell="/bin/bash -x"
+                set -x
             else
-              shell="/bin/bash"
+                shell="/bin/bash"
+            fi
+
+            if test x"${debug}" = x"yaml"; then
+                echo WORKSPACE:  $WORKSPACE
+                echo CURRENTDIR: `pwd`
+                ls -lR
+                exit 0
             fi
 
             tcwg_release=${date}
