@@ -79,7 +79,6 @@
                 - ${abe_branch}
             skip-tag: true
             shallow-clone: true
-            wipe-workspace: true
             basedir: abe
     axes:
         - axis:
@@ -107,11 +106,11 @@
         sequential: false
     wrappers:
         - timestamps
+        - workspace-cleanup
         - matrix-tie-parent:
             node: master
         - timeout:
             timeout: 300
-        - timestamps
         - ssh-agent-credentials:
             users:
               - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a' # tcwg-buildslave
@@ -121,9 +120,9 @@
       - shell: |
             #!/bin/bash
 
-            if test x"${debug}" = x"abe"; then
-                shell="/bin/bash -x"
-                set -x
+            if test x"${debug}" = x"true"; then
+              shell="/bin/bash -x"
+              set -x
             else
                 shell="/bin/bash"
             fi
