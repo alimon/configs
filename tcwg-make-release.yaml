@@ -142,8 +142,19 @@
             fi
 
             # This job always uses Canadian cross builds and builds 2
-            # toolchains at a time
-            export canadian=true
+            # toolchains at a time when run on a amd64 slave.
+            # When run on a i386 host, no need to duplicate the
+            # Canadian cross build for mingw.
+            case ${label} in
+              docker-*-amd64-tcwg*)
+                export canadian=true ;;
+              docker-*-i386-tcwg*)
+                export canadian=no ;;
+             *)
+                echo "ERROR: unsupported label: ${label}"
+                exit 1
+                ;;
+            esac
             ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config}
             if test $? -gt 0; then
               exit 1
