@@ -16,9 +16,9 @@ cd ${WORKSPACE}/openstack-venvs
 sudo ./build_all.sh
 
 mkdir out
-mv /tmp/*.tgz out/
-(cd out && sha256sum * > SHA256SUMS)
+sudo mv /tmp/*.tgz out/
 sudo chown -R buildslave:buildslave out
+(cd out && sha256sum * > SHA256SUMS)
 
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
