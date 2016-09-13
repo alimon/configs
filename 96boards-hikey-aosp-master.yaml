@@ -85,6 +85,9 @@
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
 
+            cd /home/buildslave/srv/${JOB_NAME}/build/
+            source build/envsetup.sh
+            lunch hikey-userdebug
             cd /home/buildslave/srv/${JOB_NAME}/build/out/dist/
             . ../../device/linaro/hikey/factory-images/generate-factory-images-package.sh
             cp /home/buildslave/srv/${JOB_NAME}/build/out/*.xml  /home/buildslave/srv/${JOB_NAME}/build/out/dist/
