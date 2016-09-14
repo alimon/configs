@@ -1,0 +1,25 @@
+- job:
+    name: qa-kvm-image-ubuntu
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: docker-xenial-amd64
+    display-name: 'QA KVM image Ubuntu (Xenial)'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: qa-kvm-image-ubuntu/builders.sh
