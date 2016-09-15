@@ -8,11 +8,7 @@ cleanup_exit()
 {
     cd ${WORKSPACE}
     sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
-    rm -rf lci-build-tools
-    rm -rf builddir*
-    rm -rf out
-    rm -rf qcom-firmware
-    git clean -fdx
+    sudo git clean -fdxq
 }
 
 sudo apt-get update
