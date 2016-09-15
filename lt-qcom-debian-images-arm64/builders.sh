@@ -175,7 +175,7 @@ EOF
 
     if [ "${rootfs}" = "installer" ]; then
         # no need to resize rootfs for SD card boot
-        rm -f rootfs/lib/systemd/system/resize-helper.service
+        sudo rm -f rootfs/lib/systemd/system/resize-helper.service
         # needed by GUI installer
         cat << EOF | sudo tee -a rootfs/etc/fstab
 /dev/mmcblk1p9 /mnt vfat defaults 0 0
