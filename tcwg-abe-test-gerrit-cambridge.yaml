@@ -60,6 +60,7 @@
                 - native_build
                 - testsuite
                 - abe-tests
+                - abe-tests-checkout
     execution-strategy:
         sequential: false
     wrappers:
@@ -95,6 +96,9 @@
                 ;;
               abe-tests)
                 ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report"
+                ;;
+              abe-tests-checkout)
+                ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-checkout.sh --clean-snapshots --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref"
                 ;;
             esac
     publishers:
