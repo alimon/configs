@@ -20,12 +20,12 @@
     display-name: 'Build RPM for opendataplane.org'
     scm:
         - git:
-            url: https://git.linaro.org/lng/odp-packaging.git
+            url: https://git.linaro.org/lng/odp.git
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
                 - refs/heads/master
-            basedir: odp-packaging
+            basedir: odp
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -38,6 +38,8 @@
                 - docker-fedora23-aarch64
     wrappers:
         - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
             node: master
     builders:
@@ -52,12 +54,55 @@
             . /etc/os-release
             dist=${ID}-${VERSION_ID}
             sudo yum install -y wget git rpm-build yum-utils make
-            sudo wget http://rpm.opendataplane.org/$dist/odp.repo -O /etc/yum.repos.d/odp.repo
 
-            cd odp-packaging
-            sudo yum-builddep --nogpg -y ./pkg/rpm/odp.spec || true
-            ./build-rpm-package
-            mv *.rpm ..
+            pkg_source=odp
+            cd ${pkg_source}
+
+            # Create tarball
+            base_version=$(git describe --long --match='v*' | sed -e 's/^v//' | cut -d'-' -f1)
+            nb_commit=$(git describe --long --match='v*' | sed -e 's/^v//' | cut -d'-' -f2)
+            scm_commit=$(git log -n1 --pretty=format:%h)
+            pkg_version=${base_version}+git${nb_commit}+${scm_commit}
+            pkg_dir=${pkg_source}-${pkg_version}
+
+            git archive --format=tar.gz --prefix=${pkg_dir}/ origin/master > ../${pkg_source}_${pkg_version}.tar.gz
+
+            cd ..
+
+            # download spec file
+            mkdir -p rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
+            cp ${pkg_source}-${pkg_version}.tar.gz rpmbuild/SOURCES/
+            packaging_dir=odp-packaging
+            packaging_repository=https://git.linaro.org/lng/${packaging_dir}.git
+            git clone -b master --depth 1 ${packaging_repository}
+            packaging_commit=$(cd ${packaging_dir} && git log -n1 --pretty=format:%h)
+            cp ${packaging_dir}/pkg/rpm/odp.spec rpmbuild/
+
+            # Prepare spec file
+            pkg_repository=https://git.linaro.org/lng/odp.git
+
+            if [ ${nb_commit} -ne 0 ]; then
+                creation_date=$(date '+%a %b %e %G')
+                RPMEMAIL="anders.roxell@linaro.org"
+                sed -i -e "s|changelog|changelog\n\
+            * ${creation_date} - ${RPMEMAIL}\n\
+            - CI - ${pkg_source} snapshot:\n\
+              repository: ${pkg_repository}\n\
+              commit: ${scm_commit}\n\
+              build: ${BUILD_URL} \n\n\
+              rpm/ repository: ${packaging_repository}\n\
+              rpm/ commit: ${packaging_commit}\n\
+            |g" rpmbuild/odp.spec
+            fi
+            sed -i "s|^Version: .*$|Version: ${pkg_version}|g" rpmbuild/odp.spec
+
+            # Install prerequisite
+            sudo wget http://rpm.opendataplane.org/$dist/odp.repo -O /etc/yum.repos.d/odp.repo
+            sudo yum-builddep --nogpg -y ./rpmbuild/odp.spec || true
+
+            # Build rpm
+            rpmbuild --quiet --nodeps --define="_topdir $(pwd)/rpmbuild" -ba ./rpmbuild/odp.spec
+            find rpmbuild/RPMS -type f -name '*.rpm' -exec mv {} . \;
 
             cat > ../repo.parameters << EOF
             build_success=true
