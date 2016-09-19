@@ -35,9 +35,17 @@
             default: 'true'
             description: 'Attempt to bootstrap GCC for compatible host and target combinations'
         - string:
-            name: excludecheck
-            default: 'binutils gdb'
-            description: 'Do not run "make check" on these components'
+            name: host_x86_64_excludecheck
+            default: 'gdb'
+            description: 'Do not run "make check" on these components on x86_64'
+        - string:
+            name: host_aarchXX_excludecheck
+            default: 'gcc'
+            description: 'Do not run "make check" on these components on AArchXX'
+        - string:
+            name: extraconfig
+            default: ''
+            description: 'Extra configuration files, syntax tool=path'
         - bool:
             name: rebuild
             default: true
@@ -60,7 +68,7 @@
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
         - string:
             name: abe_branch
-            default: refs/remotes/changes/56/10356/2
+            default: refs/remotes/origin/master
             description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64-cam
@@ -75,16 +83,16 @@
                 - $abe_branch
             skip-tag: true
             shallow-clone: true
-            wipe-workspace: false
-            clean:
-                before: true
+            wipe-workspace: true
     axes:
         - axis:
             type: slave
             name: label
             values:
-                - tcwg-x86_64-cam
-                - tcwg-aarch64-build
+                - docker-trusty-amd64-tcwg-build
+                - docker-trusty-i386-tcwg-build
+                - docker-trusty-arm64-tcwg-build
+                - docker-trusty-armhf-tcwg-build
         - axis:
             type: user-defined
             name: target
@@ -97,11 +105,9 @@
                 - aarch64-none-elf
                 - aarch64_be-none-elf
                 - native
-                - schroot-i386-native
-                - schroot-armhf-native
     execution-strategy:
         combination-filter: |
-            (label=="tcwg-x86_64-cam" && target!="schroot-armhf-native") || (label=="tcwg-aarch64-build" && (target=="native" || target=="schroot-armhf-native"))
+            label=="docker-trusty-amd64-tcwg-build" || target=="native"
         sequential: false
     wrappers:
         - timeout:
@@ -120,9 +126,12 @@
             set -e
             set -x
 
+            mkdir -p artifacts/
+
             case "$target--$(uname -m)" in
-              native--aarch64|schroot-armhf-native--*) target_kind=native_armv8 ;;
-              native--x86_64|schroot-i386-native--*) target_kind=native_x86 ;;
+              native--aarch64) target_kind=native_aarch64 ;;
+              native--arm*) target_kind=native_aarch32 ;;
+              native--x86_64|native--i686) target_kind=native_x86 ;;
               armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
               *-linux-gnu*--*) target_kind=cross_main ;;
               *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
@@ -130,23 +139,10 @@
 
             if ! echo "$targets" | grep -q "$target_kind"; then
               echo "NOTE: Skipping target $target because $target_kind is not in list: $targets"
+              # Create at least an (empty) artifact so that Jenkins does not complain
+              echo > artifacts/target-skipped.txt
               exit 0
             fi
-
-            case ${target} in
-              schroot-*)
-                schroot_arch=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\1/")
-                target=$(echo ${target} | sed -e "s/^schroot-\([^-]*\)-\(.*\)/\2/")
-                ;;
-              *)
-                case $(uname -m) in
-                  x86_64) schroot_arch="amd64" ;;
-                  aarch64) schroot_arch="arm64" ;;
-                  *) echo "Unexpected architecture $(uname -m)"; exit 1 ;;
-                esac
-                ;;
-            esac
-            schroot_image="tcwg-build-${schroot_arch}-trusty"
 
             case $(uname -m) in
               x86_64) languages="$host_x86_64_languages" ;;
@@ -175,23 +171,57 @@
               norebuild="--norebuild"
             fi
 
+            case $(uname -m) in
+              x86_64) excludecheck="$host_x86_64_excludecheck" ;;
+              *) excludecheck="$host_aarchXX_excludecheck" ;;
+            esac
+
             excludecheck_opt=""
             for testsuite in $excludecheck; do
               excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
             done
 
+            # If there were extraconfig options, extract the
+            # corresponding repo
+            if test -n "$extraconfig" ; then
+              git clone http://git.linaro.org/people/christophe.lyon/abe-extraconfigs.git
+            fi
+
+            extraconfig_opt=""
+            for config in $extraconfig; do
+              case ${extraconfig} in
+                *=*)
+                  tool=${extraconfig%=*}
+                  value=${extraconfig#*=}
+                  ;;
+                *)
+                  echo ERROR: wrong extraconfig: $extraconfig
+                  exit 1
+                  ;;
+              esac
+              extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
+            done
+
             ulimit -u 5000
 
-            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
-            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
-            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
-
-            # Sometimes /dev/pts can't get unmounted on the first try.
-            # Workaround by retrying.
-            trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true; }" 0
-
             result="0"
-            ${BUILD_SHELL} -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --logserver $log_server $logname_opt $norebuild || result=$?
+            /bin/bash -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
+
+            # If we actually built a toolchain, save its manifest.
+            # If the build was a no-op (results already present on log_server),
+            # copy the existing ones.
+            if [ -d _build/builds ]; then
+              manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
+            else
+              manifest=""
+            fi
+            if [ x"${manifest}" != x ]; then
+              cp ${manifest} artifacts/
+            else
+              # We need to do the same name expansion as jenkins.sh
+              eval dir="$log_name"
+              scp "$log_server/$dir/*manifest.txt" artifacts/
+            fi
 
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
@@ -199,7 +229,13 @@
             fi
             exit $result
     publishers:
+        - archive:
+            artifacts: 'artifacts/*'
+            latest-only: false
         - workspace-cleanup:
-            include:
-              - "**/.git"
+            exclude:
+              - "**/*.log"
+              - "**/*.err"
+              - "**/*.out"
+              - "**/*.txt"
             dirmatch: true
