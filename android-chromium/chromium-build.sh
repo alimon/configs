@@ -10,7 +10,8 @@ setup_depottools() {
 }
 
 setup_chromium() {
-  test -d chromium || mkdir chromium
+  rm -rf chromium
+  mkdir chromium
   cd chromium
   test -d src || fetch --nohooks android
 }
