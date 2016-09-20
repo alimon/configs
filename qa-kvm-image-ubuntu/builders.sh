@@ -50,7 +50,7 @@ sudo virsh net-list --all
 
 mkdir out
 mv preseed.cfg out/ubuntu-xenial-amd64-preseed.cfg
-sudo qemu-img convert -O raw /var/lib/libvirt/images/${image_name}.qcow2 out/${image_name}.img
+sudo qemu-img convert -c -O qcow2 /var/lib/libvirt/images/${image_name}.qcow2 out/${image_name}.img
 sudo chown -R buildslave:buildslave out
 time pigz -9 out/${image_name}.img
 
