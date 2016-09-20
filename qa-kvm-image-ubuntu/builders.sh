@@ -16,7 +16,7 @@ cleanup_exit()
 }
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 -y install qemu-utils virtinst libguestfs-tools pigz
+sudo apt-get -q=2 -y install python-pycurl qemu-utils virtinst libguestfs-tools pigz
 
 default_gw=$(ip route show default 0.0.0.0/0 | cut -d' ' -f3)
 sudo sed -i "/^uri_default/d" /etc/libvirt/libvirt.conf
@@ -53,3 +53,10 @@ mv preseed.cfg out/ubuntu-xenial-amd64-preseed.cfg
 sudo qemu-img convert -O raw /var/lib/libvirt/images/${image_name}.qcow2 out/${image_name}.img
 sudo chown -R buildslave:buildslave out
 time pigz -9 out/${image_name}.img
+
+test -d ${HOME}/bin || mkdir ${HOME}/bin
+wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+time python ${HOME}/bin/linaro-cp.py \
+  --api_version 3 \
+  --link-latest \
+  out ubuntu/images/qa-kvm/${BUILD_NUMBER}
