@@ -147,8 +147,10 @@
             # Canadian cross build for mingw.
             case ${label} in
               docker-*-amd64-tcwg*)
+                host=x86_64
                 export canadian=true ;;
               docker-*-i386-tcwg*)
+                host=i686
                 export canadian=no ;;
              *)
                 echo "ERROR: unsupported label: ${label}"
@@ -189,7 +191,7 @@
             cat << EOF > tcwg.params.linux
             tarball_url=${tarball_linux_url}
             release=${tcwg_release}
-            target=${target}
+            target=${host}-${target}
             EOF
 
             if test x"${canadian}" = x"true"; then
@@ -198,7 +200,7 @@
               cat << EOF > tcwg.params.mingw
             tarball_url=${tarball_mingw_url}
             release=${tcwg_release}
-            target=${target}
+            target=mingw-${target}
             EOF
             fi
 
