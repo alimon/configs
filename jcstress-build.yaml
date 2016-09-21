@@ -9,13 +9,16 @@
             anonymous:
                 - job-read
                 - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
         - build-discarder:
             num-to-keep: 10
             artifact-num-to-keep: 1
     parameters:
         - string:
             name: JDK_URL
-            default: 'http://openjdk.linaro.org/releases/jdk9-server-release-1605.tar.xz'
+            default: 'http://openjdk.linaro.org/releases/jdk9-server-release-1609.tar.xz'
         - string:
             name: MAVEN_URL
             default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz'
@@ -55,7 +58,7 @@
             cd ${WORKSPACE}/apache-maven-*
             export M3_HOME=${PWD}
 
-            # JDK 9 is needed to compile all the tests (tests-all)
+            # JDK 9 is needed to compile all the tests (tests-all).
             export PATH=${JAVA_HOME}/bin:${M3_HOME}/bin:${PATH}
             which java
             java -version
