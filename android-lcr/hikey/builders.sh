@@ -19,8 +19,7 @@ cd build/out
 rm -f ramdisk.img
 for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
   echo "Compressing ${image}"
-  tar -Jcf ${image}.tar.xz ${image}
-  rm -f ${image}
+  xz ${image}
 done
 cd -
 
