@@ -20,16 +20,6 @@
     node: master
     child-workspace: .
     display-name: 'Zephyr project'
-#    scm:
-#        - git:
-#            url: https://git.linaro.org/zephyrproject-org/zephyr.git
-#            refspec: +refs/heads/master:refs/remotes/origin/master
-#            name: origin
-#            branches:
-#                - refs/heads/master
-#            skip-tag: true
-#            shallow-clone: true
-#            wipe-workspace: false
     axes:
         - axis:
             type: slave
@@ -67,8 +57,6 @@
         sequential: true
     wrappers:
         - timestamps
-        - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
             node: master
     builders:
@@ -81,7 +69,7 @@
 
             git clone --depth 1 https://git.linaro.org/zephyrproject-org/zephyr.git ${WORKSPACE}
             git clean -fdx
-            git rev-parse HEAD
+            echo "#${BUILD_NUMBER}-$(git rev-parse --short=8 HEAD)" > version.txt
 
             head -5 Makefile
 
@@ -156,6 +144,9 @@
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
             CCACHE_DIR=${CCACHE_DIR} ccache -s
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
     publishers:
         - archive:
             artifacts: 'scripts/sanity_chk/last_sanity.csv'
