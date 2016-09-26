@@ -1,0 +1,49 @@
+- job:
+    name: tcwg-test-container
+    project-type: multijob
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: container_name
+            default: docker-trusty-arm64-tcwg-test
+            description: 'Container name'
+        - string:
+            name: container_user
+            default: tcwg-buildslave
+            description: 'Non-root user inside container'
+        - string:
+            name: public_key
+            default: ''
+            description: 'SSH public key.  Leave empty to not install additional public keys or use "ldap" to fetch from LDAP'
+        - string:
+            name: upstream_dest
+            default: ''
+            description: 'SSH destination to write connection parameters to, e.g., dev-01.tcwglab:/tmp/my-abe-test-container.param.  Location must be writable by tcwg-buildslave.'
+    disabled: false
+    node: tcwg-x86_64-cam
+    concurrent: true
+    display-name: 'TCWG BBB Test Container'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - multijob:
+            name: 'Builds'
+            projects:
+              - name: tcwg-test-container-matrix
+                current-parameters: true
+                restrict-matrix-project: label=="$container_name"
