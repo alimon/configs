@@ -145,9 +145,14 @@
 
             case "$target_kind-$runtests-$(uname -m)" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"x86_64")
+                case "$target" in
+                  aarch64*) container_arch=arm64 ;;
+                  arm*) container_arch=armhf ;;
+                  *) echo "ERROR: Wrong target $target"; exit 1 ;;
+                esac
                 docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
                 cat > test-container.param << EOF
-            container_name=$container_name
+            container_name=docker-trusty-$container_arch-tcwg-test
             upstream_dest=$docker_host:$WORKSPACE/test-container.data
             EOF
                 ;;
