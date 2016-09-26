@@ -143,14 +143,14 @@
               exit 0
             fi
 
-            case "$runtests-$(uname -m)" in
-              "yes"-*|"x86_64-host"-x86_64)
+            case "$target_kind-$runtests-$(uname -m)" in
+              "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"x86_64")
                 docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
                 cat > test-container.param << EOF
             container_name=$container_name
             upstream_dest=$docker_host:$WORKSPACE/test-container.data
             EOF
-              ;;
+                ;;
             esac
         - conditional-step:
             condition-kind: file-exists
@@ -167,7 +167,7 @@
 
             if [ -f test-container.param ]; then
               retry=5
-              while [ ! -f test-container.data -a $retry -gt 0]; do
+              while [ ! -f test-container.data -a $retry -gt 0 ]; do
                 sleep 60
                 retry=$(($retry-1))
               done
@@ -182,6 +182,15 @@
 
               trap "ssh -o Port=$port ${user}@$machine sh -c 'echo 0 > /keep-container'" 0
               runtests_opt="--runtests --override '--testcontainer $test_container'"
+            else
+              case "$target_kind-$runtests-$(uname -m)" in
+                *-"yes"-*|*-"x86_64-host"-x86_64)
+                  runtests_opt="--runtests"
+                  ;;
+                *)
+                  runtests_opt=""
+                  ;;
+              esac
             fi
 
             case $(uname -m) in
