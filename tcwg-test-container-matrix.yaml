@@ -88,7 +88,6 @@
             echo "1" > /keep-container
 
             docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
-            docker_host="$(echo $docker_host | sed -e "s/-x86//")"
             ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
             ssh_port="$(echo $ssh_port | cut -d: -f 2)"
 
