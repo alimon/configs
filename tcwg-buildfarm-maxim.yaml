@@ -123,8 +123,7 @@
         - shell: |
             #!/bin/bash
 
-            set -e
-            set -x
+            set -ex
 
             mkdir -p artifacts/
 
@@ -144,15 +143,50 @@
               exit 0
             fi
 
+            case "$runtests-$(uname -m)" in
+              "yes"-*|"x86_64-host"-x86_64)
+                docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
+                cat > test-container.param << EOF
+            container_name=$container_name
+            upstream_dest=$docker_host:$WORKSPACE/test-container.data
+            EOF
+              ;;
+            esac
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: test-container.param
+            steps:
+                - trigger-builds:
+                    - project: tcwg-test-container-matrix
+                      property-file: test-container.param
+                      block: false
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            if [ -f test-container.param ]; then
+              retry=5
+              while [ ! -f test-container.data -a $retry -gt 0]; do
+                sleep 60
+                retry=$(($retry-1))
+              done
+              if [ ! -f test-container.data ]; then
+                echo "ERROR: Cannot start test container"
+                exit 1
+              fi
+              test_container=$(cat test-container.data)
+              user="$(echo $test_container | grep "@" | sed -e "s/@.*//")"
+              machine="$(echo $test_container | sed -e "s/.*@//g" -e "s/:.*//g")"
+              port="$(echo $test_container | grep ":" | sed -e "s/.*://")"
+
+              trap "ssh -o Port=$port ${user}@$machine sh -c 'echo 0 > /keep-container'" 0
+              runtests_opt="--runtests --override '--testcontainer $test_container'"
+            fi
+
             case $(uname -m) in
               x86_64) languages="$host_x86_64_languages" ;;
               *) languages="$host_aarchXX_languages" ;;
-            esac
-
-            case "$runtests-$(uname -m)" in
-              "yes"-*) runtests_opt="--runtests" ;;
-              "x86_64-host"-x86_64) runtests_opt="--runtests" ;;
-              *) runtests_opt="" ;;
             esac
 
             if $try_bootstrap; then
