@@ -1,0 +1,50 @@
+- job:
+    name: infrastructure-ansible-playbook
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-xenial-amd64
+    display-name: 'Infrastructure - Unit Test for the ansible-playbook repository'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            trigger-for-unreviewed-patches: true
+            readable-message: false
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'infrastructure/ansible-playbooks'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            sudo apt-get update
+            sudo apt-get install -y python-pip
+            sudo pip install ansible ansible-lint
+
+            git clone https://git.linaro.org/$GERRIT_PROJECT -b $GERRIT_BRANCH
+            cd *
+            git log -n1
+            git fetch https://review.linaro.org/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
+            ./tests/unit-test.sh
