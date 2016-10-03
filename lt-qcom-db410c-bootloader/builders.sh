@@ -124,4 +124,4 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python ${HOME}/bin/linaro-cp.py \
      --server ${PUBLISH_SERVER} \
      --link-latest \
-     out2 snapshots/dragonboard410c/linaro/rescue-ng/${BUILD_NUMBER}
+     out2 snapshots/dragonboard410c/linaro/rescue/${BUILD_NUMBER}
