@@ -95,7 +95,7 @@ EOF
 # Build information
 cat > out/HEADER.textile << EOF
 
-h4. QCOM Landing Team - Snapdragon 410 - Debian
+h4. QCOM Landing Team - $BUILD_DISPLAY_NAME
 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
@@ -110,16 +110,18 @@ EOF
 rm -f license.txt
 wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
 
-rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
-wget -q ${QCOM_FIRMWARE}
-echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
-md5sum -c MD5
-unzip $(basename ${QCOM_FIRMWARE})
-cd -
-rm -f qcom_firmware/linux-board-support-package-*/proprietary-linux/wlan/macaddr0
-rm -f qcom_firmware/linux-board-support-package-*/proprietary-linux/firmware.tar
-sudo MTOOLS_SKIP_CHECK=1 mcopy -i qcom_firmware/linux-board-support-package-*/bootloaders-linux/NON-HLOS.bin \
-     ::image/modem.* ::image/mba.mbn qcom_firmware/linux-board-support-package-*/proprietary-linux
+if [ -n "${QCOM_FIRMWARE}" ]; then
+    rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
+    wget -q ${QCOM_FIRMWARE}
+    echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
+    md5sum -c MD5
+    unzip $(basename ${QCOM_FIRMWARE})
+    cd -
+    rm -f qcom_firmware/linux-board-support-package-*/proprietary-linux/wlan/macaddr0
+    rm -f qcom_firmware/linux-board-support-package-*/proprietary-linux/firmware.tar
+    sudo MTOOLS_SKIP_CHECK=1 mcopy -i qcom_firmware/linux-board-support-package-*/bootloaders-linux/NON-HLOS.bin \
+         ::image/modem.* ::image/mba.mbn qcom_firmware/linux-board-support-package-*/proprietary-linux
+fi
 
 for rootfs in ${ROOTFS}; do
 
@@ -164,11 +166,13 @@ EOF
     # clean up fstab
     sudo sed -i '/UUID/d' rootfs/etc/fstab
 
-    # add license file in the generated rootfs
-    sudo cp -f license.txt rootfs/etc/license.txt
+    if [ -n "${QCOM_FIRMWARE}" ]; then
+        # add license file in the generated rootfs
+        sudo cp -f license.txt rootfs/etc/license.txt
 
-    # add firmware (adreno, venus and WCN)
-    sudo cp -a qcom_firmware/linux-board-support-package-*/proprietary-linux/* rootfs/lib/firmware
+        # add firmware (adreno, venus and WCN)
+        sudo cp -a qcom_firmware/linux-board-support-package-*/proprietary-linux/* rootfs/lib/firmware
+    fi
 
     if [ "${rootfs}" = "installer" ]; then
         # no need to resize rootfs for SD card boot
