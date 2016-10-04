@@ -1,0 +1,89 @@
+- job:
+    name: lt-qcom-debian-images-arm64-dragonboard820c
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: VENDOR
+            default: 'linaro'
+        - string:
+            name: OS_FLAVOUR
+            default: 'jessie'
+        - string:
+            name: PLATFORM_NAME
+            default: 'qcom-snapdragon-arm64'
+        - string:
+            name: ROOTFS
+            default: 'developer,arm64,1800M'
+        - string:
+            name: DTBS
+            default: 'msm8996-mtp.dtb apq8096-db820c.dtb'
+        - string:
+            name: SERIAL_CONSOLE
+            default: 'ttyMSM0'
+        - string:
+            name: KERNEL_BRANCH
+            default: 'release/qcomlt-4.7'
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: 'Qualcomm Debian based images for Snapdragon 820'
+    scm:
+        - git:
+            url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw: lt-qcom-debian-images-arm64/builders.sh
+        - shell: |
+            #!/bin/bash
+            set -ex
+            trap cleanup_exit INT TERM EXIT
+            cleanup_exit()
+            {
+                sudo git clean -fdxq
+            }
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+                 --server ${PUBLISH_SERVER} \
+                 --link-latest \
+                 out snapshots/dragonboard820c/${VENDOR}/debian/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
+        - email-ext:
+            recipients: 'qa-team@linaro.org'
+            always: true
+        - ircbot:
+            channels:
+                - name: '#linaro-lt-qcomm'
+                  password: ${LT_QCOM_KEY}
