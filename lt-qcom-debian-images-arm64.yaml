@@ -73,6 +73,19 @@
             host: builds.96boards.org
         - shell:
             !include-raw: lt-qcom-debian-images-arm64/builders.sh
+        - shell:
+            !include-raw: lt-qcom-debian-images-arm64/installer-dragonboard-410c.sh
+        - shell:
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+                 --server ${PUBLISH_SERVER} \
+                 --link-latest \
+                 out snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}
         - shell: |
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
 
