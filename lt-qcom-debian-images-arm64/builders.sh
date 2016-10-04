@@ -6,6 +6,9 @@ trap cleanup_exit INT TERM EXIT
 
 cleanup_exit()
 {
+    # cleanup here, only in case of error in this script
+    # normal cleanup deferred to later
+    [ $? = 0 ] && exit;
     cd ${WORKSPACE}
     sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
     sudo git clean -fdxq

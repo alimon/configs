@@ -76,6 +76,14 @@
         - shell:
             !include-raw: lt-qcom-debian-images-arm64/installer-dragonboard-410c.sh
         - shell: |
+            #!/bin/bash
+            set -ex
+            trap cleanup_exit INT TERM EXIT
+            cleanup_exit()
+            {
+                sudo git clean -fdxq
+            }
+
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
 

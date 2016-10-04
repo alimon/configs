@@ -6,6 +6,9 @@ trap cleanup_exit INT TERM EXIT
 
 cleanup_exit()
 {
+    # cleanup here, only in case of error in this script
+    # normal cleanup deferred to later
+    [ $? = 0 ] && exit;
     cd ${WORKSPACE}
     sudo git clean -fdxq
 }
