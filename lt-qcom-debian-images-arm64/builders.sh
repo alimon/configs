@@ -210,8 +210,11 @@ EOF
 EOF
 done
 
-# Move all relevant DTBs in out/
+# Move all relevant DTBs in out/, if DTBS is not specified, use all qcom DTS
+DTBS="${DTBS:-arch/arm64/boot/dts/qcom/*.dts}"
 for f in ${DTBS} ; do
+    # f is a .dtb or .dts file
+    [ -e "out/dtbs/$f" ] || f=$(basename ${f} .dts).dtb
     mv out/dtbs/${f} out/
 done
 rm -rf out/dtbs
