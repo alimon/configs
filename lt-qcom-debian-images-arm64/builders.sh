@@ -27,6 +27,9 @@ git clone git://codeaurora.org/quic/kernel/skales
 (cd skales && git log -1)
 export PATH=`pwd`/skales:$PATH
 
+# Create version string
+echo "$(date +%Y%m%d)-${BUILD_NUMBER}" > .version
+
 export LANG=C
 export make_bootwrapper=false
 export make_install=true
@@ -142,7 +145,7 @@ for rootfs in ${ROOTFS}; do
 EOF
 
     rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz`
-    VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+    VERSION=$(cat .version)
     linaro-hwpack-create --debug --backports ${VENDOR}-lt-qcom ${VERSION}
     linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
     linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
