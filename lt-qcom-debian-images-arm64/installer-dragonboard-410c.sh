@@ -27,7 +27,7 @@ mkbootimg \
     --cmdline "root=/dev/mmcblk1p8 rw rootwait console=${SERIAL_CONSOLE},115200n8"
 gzip -9 out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
 
-git clone --depth 1 -b master https://git.linaro.org/people/nicolas.dechesne/db-boot-tools.git
+git clone --depth 1 -b master https://git.linaro.org/landing-teams/working/qualcomm/db-boot-tools.git
 # record commit info in build log
 cd db-boot-tools
 git log -1
@@ -35,9 +35,9 @@ git log -1
 # Get SD and EMMC bootloader package
 BL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-db410c-bootloader/lastSuccessfulBuild/buildNumber`
 wget --progress=dot -e dotbytes=2M \
-     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue-ng/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
+     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
 wget --progress=dot -e dotbytes=2M \
-     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue-ng/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_emmc_linux-${BL_BUILD_NUMBER}.zip
+     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_emmc_linux-${BL_BUILD_NUMBER}.zip
 
 unzip -d out dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
 cp ${WORKSPACE}/out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz out/boot.img.gz
