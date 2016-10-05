@@ -14,7 +14,7 @@ cleanup_exit()
 }
 
 export PATH=`pwd`/skales:$PATH
-VERSION=$(cat .version)
+VERSION=$(cat build-version)
 
 # Create boot image for SD installer
 mkbootimg \
