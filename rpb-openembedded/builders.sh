@@ -69,9 +69,29 @@ EOF
 # add useful debug info
 cat conf/{site,auto}.conf
 
+# Split machine,machine2 and pass it to secondary image.
+IFS=',' read -ra SPLITMACHINES <<< "${MACHINE}"
+
+if [ -n ${SPLIMACHINES[1]} ] ; then
+    MACHINE="${SPLITMACHINES[0]}"
+    SECONDARYIMAGEMACHINE="${SPLITMACHINES[1]}"
+    SECONDARYIMAGE="true"
+else
+    unset SECONDARYIMAGE
+    unset SECONDARYIMAGEMACHINE
+    echo "Skip Secondary image for ${MACHINE}"
+fi
+
+unset IFS
+
+
 [ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-lava"
 [ "${DISTRO}" = "rpb-wayland" ]  && IMAGES+=" rpb-weston-image rpb-weston-image-lava"
-bitbake ${IMAGES}
+if [ -n "${SECONDARYIMAGE}" ] ; then
+    bitbake_secondary_image  --extra-machine ${SECONDARYIMAGEMACHINE} ${IMAGES}
+else
+    bitbake ${IMAGES}
+fi
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
 # Prepare files to publish
