@@ -13,6 +13,8 @@ cleanup_exit()
     sudo git clean -fdxq
 }
 
+export PATH=`pwd`/skales:$PATH
+
 # Create boot image for SD installer
 mkbootimg \
     --kernel out/Image \
