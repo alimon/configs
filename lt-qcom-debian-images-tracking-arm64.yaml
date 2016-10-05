@@ -29,13 +29,16 @@
             default: 'linaro'
         - string:
             name: OS_FLAVOUR
-            default: 'jessie'
+            default: 'stretch'
         - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon-arm64'
         - string:
             name: ROOTFS
-            default: 'developer,arm64,1800M alip,arm64,1800M'
+            default: 'developer,arm64,1800M alip,arm64,2G'
+       - string:
+            name: ROOTFS_PARTLABEL
+            default: 'rootfs'
         - string:
             name: SERIAL_CONSOLE
             default: 'ttyMSM0'
@@ -66,11 +69,30 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - linaro-publish-token
         - shell:
-            !include-raw: lt-qcom-debian-images-tracking-arm64/builders.sh
+            !include-raw: lt-qcom-debian-images-arm64/builders.sh
+        - linaro-publish-token
         - shell: |
-            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            #!/bin/bash
+            set -ex
+            trap cleanup_exit INT TERM EXIT
+            cleanup_exit()
+            {
+                sudo git clean -fdxq
+            }
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+                 --api_version 3 \
+                 --link-latest \
+                 out debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}
+        - shell: |
+            VERSION=$(cat build-version)
 
             export BOOT_URL=http://snapshots.linaro.org/debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
             export ROOTFS_BUILD_URL=http://snapshots.linaro.org/debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
@@ -91,7 +113,7 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            VERSION=$(cat build-version)
 
             export BOOT_URL=http://snapshots.linaro.org/debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
             export ROOTFS_BUILD_URL=http://snapshots.linaro.org/debian/pre-built/snapdragon-tracking-arm64/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
