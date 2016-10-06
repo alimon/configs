@@ -13,7 +13,7 @@ cleanup_exit()
 }
 
 sudo apt-get update
-sudo apt-get install -y --no-install-recommends parted kpartx pigz
+sudo apt-get install -y --no-install-recommends pigz
 
 # Get installer rootfs
 export ROOTFS_BUILD_TIMESTAMP=$(wget -q  -O - https://ci.linaro.org/job/debian-arm64-rootfs/label=docker-jessie-arm64,rootfs=installer/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
@@ -56,6 +56,9 @@ for device in $(sudo kpartx -avs hikey-sd-install.img | cut -d' ' -f3); do
 done
 
 sudo mkdir -p rootfs/mnt/debian rootfs/boot/efi/EFI/BOOT
+sudo chroot rootfs apt-get update -q=2
+sudo chroot rootfs apt-get install -q=2 -y linux-image-reference-arm64
+sudo rm rootfs/var/cache/apt/archives/*deb rootfs/var/lib/apt/lists/*
 sudo chroot rootfs /usr/sbin/grub-install-hikey -s
 sudo cp -a rootfs/boot/efi/* bootfs/
 sudo chown ${USER}:${USER} rootfs/mnt/debian
