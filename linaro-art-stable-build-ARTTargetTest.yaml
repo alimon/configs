@@ -4,7 +4,7 @@
         - git:
             url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
             branches:
-                - origin/lor_marshmallow
+                - origin/linaro-stable
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             skip-tag: true
             shallow-clone: true
@@ -15,7 +15,7 @@
         - git:
             url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/build.git
             branches:
-                - origin/lor_marshmallow
+                - origin/linaro-stable
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             skip-tag: true
             shallow-clone: true
@@ -26,21 +26,23 @@
         - git:
             url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/external/vixl.git
             branches:
-                - origin/lor_marshmallow
+                - origin/linaro-stable
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
 - job:
-    name: linaro-art-stable-m-build-MicroBenchmarks
+    name: linaro-art-stable-build-ARTTargetTest
     project-type: freestyle
     defaults: global
     description: >
       Runs  the
-      <a href="https://android-git.linaro.org/gitweb/linaro-art/art-build-scripts.git/blob/HEAD:benchmarks/benchmarks_run_target.sh">Microbenchmarks Test script</a>
-      on the stable branch.
+      <a href="https://android-git.linaro.org/gitweb/linaro-art/art-build-scripts.git/blob/HEAD:tests/test_art_target.sh">Target Tests</a>
+      on a device via adb using android root. The build slave in the cloud is
+      able to reach the physical device using port forwarding via SSH.
+      This job is for the stable branch.
 
-      The git revisions all track the lor_marshmallow branch for the following projects (in order):
+      The git revisions all track the linaro-stable branch for the following projects (in order):
         - art
         - build
         - external/vixl
@@ -60,8 +62,6 @@
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
-        - copyartifact:
-            projects: post-build-reports
     parameters:
         - string:
             name: ADB_VERSION
@@ -74,10 +74,10 @@
             default: 'master'
         - string:
             name: BUILD_CONFIG_FILENAME
-            default: 'linaro-art-stable-m'
+            default: 'linaro-art-stable'
     disabled: false
     node: docker-utopic-art
-    display-name: 'Stable: Benchmarks (Nexus 5X)'
+    display-name: 'Stable: Target Test'
     concurrent: true
     scm:
         - art
@@ -86,7 +86,7 @@
     triggers:
         - pollscm: 'H/5 * * * *'
         - gerrit:
-            server-name: dev-private-review.linaro.org
+            server-name: 'dev-private-review.linaro.org'
             override-votes: true
             gerrit-build-successful-verified-value: 1
             gerrit-build-failed-verified-value: -1
@@ -94,17 +94,17 @@
                 - patchset-created-event
             projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/build'
-                  branches:
-                      - branch-pattern: 'lor_marshmallow'
-                - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
                   branches:
-                      - branch-pattern: 'lor_marshmallow'
+                      - branch-pattern: 'linaro-stable'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/build'
+                  branches:
+                      - branch-pattern: 'linaro-stable'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/external/vixl'
                   branches:
-                      - branch-pattern: 'lor_marshmallow'
+                      - branch-pattern: 'linaro-stable'
     wrappers:
         - timestamps
         - timeout:
@@ -114,6 +114,14 @@
                 credential-id: PRIVATE_KEY
                 variable: PRIVATE_KEY
     builders:
+        - shell: |
+            CI_MAIL_RECIPIENTS="${GERRIT_CHANGE_OWNER_EMAIL},${GERRIT_EVENT_ACCOUNT_EMAIL}"
+            CI_MAIL_RECIPIENTS="${CI_MAIL_RECIPIENTS},vishal.bhoj@linaro.org"
+            CI_MAIL_RECIPIENTS="${CI_MAIL_RECIPIENTS},daniel.diaz@linaro.org"
+            CI_MAIL_RECIPIENTS="${CI_MAIL_RECIPIENTS},julien.duraj@linaro.org"
+            echo "CI_MAIL_RECIPIENTS=${CI_MAIL_RECIPIENTS}" > env_var_parameters
+        - inject:
+            properties-file: env_var_parameters
         - shell: |
             #!/bin/bash -xe
 
@@ -134,74 +142,26 @@
             ./setup_host.sh
             ./setup_android.sh
 
-            alias python=python3
             cd ${ANDROID_BUILD_DIR}
             perl scripts/jenkins/test_launcher.pl \
-              scripts/benchmarks/benchmarks_run_target.sh --default
-
-            # create parameters for post-build-reports
-            cat << EOF > ${WORKSPACE}/post_build_reports_parameters
-            SOURCE_PROJECT_NAME=${JOB_NAME}
-            SOURCE_BUILD_NUMBER=${BUILD_NUMBER}
-            SOURCE_BUILD_ID=${BUILD_NUMBER}
-            SOURCE_BUILD_URL=${BUILD_URL}
-            ART_URL=https://art-reports.linaro.org/api/
-            SOURCE_BRANCH_NAME=lor_marshmallow
-            EOF
-
-            if [[ ${GERRIT_CHANGE_NUMBER} ]]; then
-              echo SOURCE_GERRIT_CHANGE_NUMBER=${GERRIT_CHANGE_NUMBER} >> ${WORKSPACE}/post_build_reports_parameters
-            fi
-            if [[ ${GERRIT_CHANGE_ID} ]]; then
-              echo SOURCE_GERRIT_CHANGE_ID=${GERRIT_CHANGE_ID} >> ${WORKSPACE}/post_build_reports_parameters
-            fi
-            if [[ ${GERRIT_CHANGE_URL} ]]; then
-              echo SOURCE_GERRIT_CHANGE_URL=${GERRIT_CHANGE_URL} >> ${WORKSPACE}/post_build_reports_parameters
-            fi
-            if [[ ${GERRIT_PATCHSET_NUMBER} ]]; then
-              echo SOURCE_GERRIT_PATCHSET_NUMBER=${GERRIT_PATCHSET_NUMBER} >> ${WORKSPACE}/post_build_reports_parameters
-            fi
-
+              scripts/tests/test_art_target.sh --default
     publishers:
+        - email-ext:
+            recipients: '${CI_MAIL_RECIPIENTS}'
+            content-type: text
+            body: |
+                Build Triggered by: ${GERRIT_CHANGE_SUBJECT}: ${GERRIT_CHANGE_URL}
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex=".*ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
         - archive:
-            artifacts: '*.txt, *.xml, *.json'
+            artifacts: '*.txt, *.xml'
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android-art.parse'
             unstable-on-warning: false
             fail-on-error: false
         - groovy-postbuild:
-            script: |
-              import hudson.model.*
-              def currentBuild = Thread.currentThread().executable
-              def description = ""
-              def matcher = manager.getLogMatcher(".*repo sync failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("repo sync failed")
-              }
-              matcher = manager.getLogMatcher(".*patch merge failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("merge failed")
-              }
-              matcher = manager.getLogMatcher(".*error: no devices/emulators found.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("No Device Found")
-              }
-              matcher = manager.getLogMatcher(".*buildbot-build setup failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("buildbot-build setup failed.")
-              }
-              matcher = manager.getLogMatcher(".* tests have failed")
-              if (matcher?.matches()) {
-                  def test = matcher.group(0).split(" ")
-                  manager.listener.logger.println test.length
-                  i=0
-                  while( i<test.length-3) {
-                       description+="${test[i]} failed<br>"
-                       i++;
-                  }
-                  currentBuild.setDescription(description)
-                  manager.addShortText("Tests failed")
-              }
-        - trigger-parameterized-builds:
-            - project: 'post-build-reports'
-              property-file: post_build_reports_parameters
+            script: !include-raw: linaro-art/postbuild.groovy

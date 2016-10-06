@@ -4,7 +4,7 @@
         - git:
             url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
             branches:
-                - origin/lor_marshmallow
+                - origin/linaro-stable
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             skip-tag: true
             shallow-clone: true
@@ -15,7 +15,7 @@
         - git:
             url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/build.git
             branches:
-                - origin/lor_marshmallow
+                - origin/linaro-stable
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             skip-tag: true
             shallow-clone: true
@@ -26,23 +26,21 @@
         - git:
             url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/external/vixl.git
             branches:
-                - origin/lor_marshmallow
+                - origin/linaro-stable
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
 - job:
-    name: linaro-art-stable-m-build-ARTTargetTest
+    name: linaro-art-stable-build-ARTVixlTest
     project-type: freestyle
     defaults: global
     description: >
       Runs  the
-      <a href="https://android-git.linaro.org/gitweb/linaro-art/art-build-scripts.git/blob/HEAD:tests/test_art_target.sh">Target Tests</a>
-      on a device via adb using android root. The build slave in the cloud is
-      able to reach the physical device using port forwarding via SSH.
-      This job is for the stable branch.
+      <a href="https://android-git.linaro.org/gitweb/linaro-art/art-build-scripts.git/blob/HEAD:tests/test_art_vixl.sh">Vixl Tests</a>
+      on the stable branch.
 
-      The git revisions all track the lor_marshmallow branch for the following projects (in order):
+      The git revisions all track the linaro-stable branch for the following projects (in order):
         - art
         - build
         - external/vixl
@@ -64,9 +62,6 @@
             num-to-keep: 60
     parameters:
         - string:
-            name: ADB_VERSION
-            default: 'adb-stable'
-        - string:
             name: BUILD_CONFIG_REPO
             default: 'git://android.git.linaro.org/android-build-configs.git'
         - string:
@@ -74,19 +69,19 @@
             default: 'master'
         - string:
             name: BUILD_CONFIG_FILENAME
-            default: 'linaro-art-stable-m-aosp_flounder'
+            default: 'linaro-art-stable'
     disabled: false
     node: docker-utopic-art
-    display-name: 'Stable: Target Test'
+    display-name: 'Stable: VIXL Test'
     concurrent: true
     scm:
         - art
         - build
         - vixl
     triggers:
-        - pollscm: 'H/5 * * * *'
+        - timed: 'H 6 * * *'
         - gerrit:
-            server-name: 'dev-private-review.linaro.org'
+            server-name: dev-private-review.linaro.org
             override-votes: true
             gerrit-build-successful-verified-value: 1
             gerrit-build-failed-verified-value: -1
@@ -94,17 +89,17 @@
                 - patchset-created-event
             projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/art'
-                  branches:
-                      - branch-pattern: 'lor_marshmallow'
-                - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/build'
                   branches:
-                      - branch-pattern: 'lor_marshmallow'
+                      - branch-pattern: 'linaro-stable'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/art'
+                  branches:
+                      - branch-pattern: 'linaro-stable'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/external/vixl'
                   branches:
-                      - branch-pattern: 'lor_marshmallow'
+                      - branch-pattern: 'linaro-stable'
     wrappers:
         - timestamps
         - timeout:
@@ -125,6 +120,11 @@
         - shell: |
             #!/bin/bash -xe
 
+            # Some Docker instances mount ${HOME}/.ssh/config from the host.
+            mv ${HOME}/.ssh{,.not}
+            mkdir -p "${HOME}/bin"
+            export PATH="${HOME}/bin:${PATH}"
+
             # Build scripts
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
@@ -134,17 +134,24 @@
             wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
             source add-private-key.sh
 
+            # clang-format-3.6
+            wget -q http://mirrors.kernel.org/ubuntu/pool/universe/l/llvm-toolchain-3.6/clang-format-3.6_3.6-2ubuntu1~trusty1_amd64.deb \
+              http://mirrors.kernel.org/ubuntu/pool/main/l/llvm-toolchain-3.6/libllvm3.6_3.6-2ubuntu1~trusty1_amd64.deb
+            sudo dpkg -i clang-format-3.6_3.6-2ubuntu1~trusty1_amd64.deb libllvm3.6_3.6-2ubuntu1~trusty1_amd64.deb
+
             cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
-            # Port forwarding magic to have access to Nexus devices
-            source /home/buildslave/srv/nexus-config
-            export ANDROID_SERIAL=${BULLHEAD}
-            ./setup_adb.sh
             ./setup_host.sh
             ./setup_android.sh
 
+            # https://android-review.googlesource.com/223100
+            cd ${ANDROID_BUILD_DIR}/build/
+            git reset --hard
+            git fetch http://android-review.linaro.org/platform/build \
+              refs/changes/31/17031/1 && git cherry-pick FETCH_HEAD
+
             cd ${ANDROID_BUILD_DIR}
-            perl scripts/jenkins/test_launcher.pl \
-              scripts/tests/test_art_target.sh --default
+            perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
+              ${ART_BUILD_SCRIPTS_DIR}/tests/test_art_vixl.sh
     publishers:
         - email-ext:
             recipients: '${CI_MAIL_RECIPIENTS}'
@@ -164,4 +171,37 @@
             unstable-on-warning: false
             fail-on-error: false
         - groovy-postbuild:
-            script: !include-raw: linaro-art/postbuild.groovy
+            script: |
+              import hudson.model.*
+
+              def matcher = manager.getLogMatcher(".*repo sync failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("repo sync failed")
+              }
+              matcher = manager.getLogMatcher(".*patch merge failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("merge failed")
+              }
+              matcher = manager.getLogMatcher(".*make failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("make failed")
+              }
+              matcher = manager.getLogMatcher(".*images failed to boot.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("Boot test failed")
+              }
+        - plot:
+            - title: 'Sync Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_repo.txt
+                    format: properties
+            - title: 'Test Time'
+              group: 'Time Measurements'
+              yaxis: 'Seconds'
+              style: line
+              series:
+                  - file: time_test.txt
+                    format: properties
