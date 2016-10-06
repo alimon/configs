@@ -9,6 +9,9 @@
             anonymous:
                 - job-read
                 - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 10
@@ -31,6 +34,9 @@
             #!/bin/bash
 
             set -ex
+            echo Env start
+            env
+            echo Env end
 
             PERSIST=$HOME/srv/openjdk
             SCRIPT_DIR=$PERSIST/openjdk-test-scripts
