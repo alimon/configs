@@ -43,6 +43,9 @@ export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binar
 test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
 bash -x lci-build-tools/jenkins_kernel_build_inst
 
+# record kernel version
+echo "$(make kernelversion)-${VENDOR}-${kernel_flavour}" > kernel-version
+
 # Create the hardware pack
 cat << EOF > ${VENDOR}-lt-qcom.default
 format: '3.0'
@@ -108,7 +111,8 @@ Build description:
 * OS flavour: $OS_FLAVOUR
 * Kernel tree: "$GIT_URL":$GIT_URL
 * Kernel branch: $KERNEL_BRANCH
-* Kernel version: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+* Kernel version: $(cat kernel-version)
+* Kernel commit: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
 * Kernel defconfig: $kernel_config
 EOF
 
@@ -219,7 +223,7 @@ dtbTool -o out/dt.img -s 2048 out/
 # Create boot image
 mkbootimg \
     --kernel out/Image \
-    --ramdisk out/initrd.img-* \
+    --ramdisk "out/initrd.img-$(cat kernel-version)" \
     --output out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
     --dt out/dt.img \
     --pagesize "2048" \

@@ -19,7 +19,7 @@ VERSION=$(cat build-version)
 # Create boot image for SD installer
 mkbootimg \
     --kernel out/Image \
-    --ramdisk out/initrd.img-* \
+    --ramdisk "out/initrd.img-$(cat kernel-version)" \
     --output out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
     --dt out/dt.img \
     --pagesize "2048" \
