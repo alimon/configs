@@ -144,6 +144,11 @@
             cd ${ANDROID_BUILD_DIR}
             perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
               ${ART_BUILD_SCRIPTS_DIR}/tests/test_art_vixl.sh
+        - shell: |
+            echo "GERRIT_CHANGE_OWNER_EMAIL=${GERRIT_CHANGE_OWNER_EMAIL}"   >  env_var_parameters
+            echo "GERRIT_EVENT_ACCOUNT_EMAIL=${GERRIT_EVENT_ACCOUNT_EMAIL}" >> env_var_parameters
+        - inject:
+            properties-file: env_var_parameters
     publishers:
         - email-ext:
             recipients: '${GERRIT_CHANGE_OWNER_EMAIL},${GERRIT_EVENT_ACCOUNT_EMAIL},vishal.bhoj@linaro.org,daniel.diaz@linaro.org,julien.duraj@linaro.org'

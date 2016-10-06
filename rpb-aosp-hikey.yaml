@@ -337,6 +337,11 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
+        - shell: |
+            echo "GERRIT_CHANGE_OWNER_EMAIL=${GERRIT_CHANGE_OWNER_EMAIL}"   >  env_var_parameters
+            echo "GERRIT_EVENT_ACCOUNT_EMAIL=${GERRIT_EVENT_ACCOUNT_EMAIL}" >> env_var_parameters
+        - inject:
+            properties-file: env_var_parameters
     publishers:
         - email-ext:
             recipients: '${GERRIT_CHANGE_OWNER_EMAIL},${GERRIT_EVENT_ACCOUNT_EMAIL},vishal.bhoj@linaro.org,daniel.diaz@linaro.org'
