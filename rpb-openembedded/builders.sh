@@ -82,12 +82,14 @@ mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
-for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
-  gunzip -k ${rootfs}
-  sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
-  rm -f ${rootfs%.gz}
-  gzip -9 ${rootfs%.ext4.gz}.img
-done
+[ "${MACHINE}" != "stih410-b2260" ] && {
+  for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
+    gunzip -k ${rootfs}
+    sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
+    rm -f ${rootfs%.gz}
+    gzip -9 ${rootfs%.ext4.gz}.img
+  done
+}
 
 # Create MD5SUMS file
 (cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
