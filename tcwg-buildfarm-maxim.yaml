@@ -184,11 +184,6 @@
                 exit 1
               fi
               test_container=$(cat test-container.data)
-              user="$(echo $test_container | grep "@" | sed -e "s/@.*//")"
-              machine="$(echo $test_container | sed -e "s/.*@//g" -e "s/:.*//g")"
-              port="$(echo $test_container | grep ":" | sed -e "s/.*://")"
-
-              trap "ssh -o Port=$port ${user}@$machine sh -c 'echo 0 > /keep-container'" 0
               runtests_opt="--runtests"
               override="--testcontainer $test_container $override"
             else
