@@ -110,7 +110,7 @@
               "file")
                 echo "To stop container run: ssh -o Port=$ssh_port $container_user@$docker_host sh -c 'echo 0 > /keep-container'"
 
-                while [ -e /keep-container ] && [ x"$(cat /keep-container)" = x"1" ]; then
+                while [ -e /keep-container ] && [ x"$(cat /keep-container)" = x"1" ]; do
                   sleep 60
                   echo "Running processes: $(ps ax | wc -l)"
                 done
@@ -118,7 +118,7 @@
               "upstream")
                 echo "To stop container remove $upstream_dest"
 
-                while ssh -o Port=$upstream_port $upstream_machine test -e $upstream_file; then
+                while ssh -o Port=$upstream_port $upstream_machine test -e $upstream_file; do
                   sleep 60
                   echo "Running processes: $(ps ax | wc -l)"
                 done
