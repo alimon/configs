@@ -114,6 +114,8 @@
             YEAR=XXX__YEAR__XXX
             DAY_OF_YEAR=YYY__DAY_OF_YEAR__YYY
 
+            new_basedir=$PERSIST/openjdk8-jtreg-nightly-tests
+
             basedir=cron_output
             mkdir -p ${basedir}/{src,builds,reports}
 
@@ -177,6 +179,7 @@
 
             mkdir -p out
             tar -C ${basedir} --show-transformed-names -acvf out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz builds reports
+            mv -v ${basedir}/src ${new_basedir}/src
     publishers:
         - archive:
             artifacts: 'out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
