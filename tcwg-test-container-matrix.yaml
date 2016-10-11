@@ -30,6 +30,10 @@
             name: upstream_dest
             default: ''
             description: 'SSH destination to write connection parameters to, e.g., dev-01.tcwglab:/tmp/my-abe-test-container.param.'
+        - string:
+            name: watchdog
+            default: file
+            description: 'Watchdog to determine when to stop testing container: file or upstream'
     disabled: false
     node: tcwg-aarch64-test
     child-workspace: $label
@@ -93,17 +97,35 @@
 
             if [ x"$upstream_dest" != x"" ]; then
               upstream_machine="$(echo "$upstream_dest" | cut -d: -f 1)"
-              upstream_file="$(echo "$upstream_dest" | cut -d: -f 2)"
-              echo "$container_user@$docker_host:$ssh_port" | ssh $upstream_machine tee $upstream_file > /dev/null
+              upstream_port="$(echo "$upstream_dest" | cut -d: -f 2)"
+              upstream_file="$(echo "$upstream_dest" | cut -d: -f 3)"
+              echo "$container_user@$docker_host:$ssh_port" | ssh -o Port=$upstream_port $upstream_machine tee $upstream_file > /dev/null
             fi
 
             set +x
             echo "Testing container: $container_user@$docker_host:$ssh_port"
-            echo "To stop container run: ssh -o Port=$ssh_port $container_user@$docker_host sh -c 'echo 0 > /keep-container'"
-
             echo "Hosting tests"
-            while [ -e /keep-container ] && [ x"$(cat /keep-container)" = x"1" ]; do
-              sleep 60
-              echo "Running processes: $(ps ax | wc -l)"
-            done
+
+            case "$watchdog" in
+              "file")
+                echo "To stop container run: ssh -o Port=$ssh_port $container_user@$docker_host sh -c 'echo 0 > /keep-container'"
+
+                while [ -e /keep-container ] && [ x"$(cat /keep-container)" = x"1" ]; then
+                  sleep 60
+                  echo "Running processes: $(ps ax | wc -l)"
+                done
+                ;;
+              "upstream")
+                echo "To stop container make 'ssh -o Port=$upstream_port $upstream_machine true' fail"
+
+                while ssh -o Port=$upstream_port $upstream_machine true; then
+                  sleep 60
+                  echo "Running processes: $(ps ax | wc -l)"
+                done
+                ;;
+              *)
+                echo "ERROR: Wrong watchdog parameter: $watchdog"
+                ;;
+            esac
+
             echo "Exiting"

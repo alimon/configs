@@ -151,9 +151,12 @@
                   *) echo "ERROR: Wrong target $target"; exit 1 ;;
                 esac
                 docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
+                ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
+                ssh_port="$(echo $ssh_port | cut -d: -f 2)"
                 cat > test-container.param << EOF
             container_name=docker-trusty-$container_arch-tcwg-test
-            upstream_dest=$docker_host:$WORKSPACE/test-container.data
+            upstream_dest=$docker_host:$ssh_port:$WORKSPACE/test-container.data
+            watchdog=upstream
             EOF
                 ;;
             esac
