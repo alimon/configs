@@ -29,6 +29,10 @@
             # openjdk-testing user id
             users:
                 - '744cffb4-9ce1-4856-b103-9fdda06dad36'
+        - credentials-binding:
+            - text:
+                credential-id: OPENJDK_KEY
+                variable: PRIVATE_KEY
     builders:
         - copyartifact:
             project: jtreg-build
@@ -38,8 +42,53 @@
             #!/bin/bash
 
             set -ex
-            ssh-add -l
-            env | grep SSH
+
+            # Start ssh-agent workaround
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+                kill -9 ${SSH_AGENT_PID}
+            }
+
+            TMPKEYDIR=$(mktemp -d /tmp/sct.XXXXXX)
+            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
+            #!/usr/bin/python
+
+            import os
+            import sys
+
+            def main():
+                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
+                if private_key == "Undefined":
+                    sys.exit("PRIVATE_KEY is not defined.")
+
+                buffer = private_key.replace(' ','\n')
+                with open('linaro-private-key', 'w') as f:
+                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
+                    f.write(buffer)
+                    f.write('\n-----END RSA PRIVATE KEY-----\n')
+
+            if __name__ == "__main__":
+                main()
+            EOF
+            python ${TMPKEYDIR}/private-key-wrapper.py
+            chmod 0600 ${WORKSPACE}/linaro-private-key
+
+            eval `ssh-agent` >/dev/null 2>/dev/null
+            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
+            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
+
+            test -d ~/.ssh || mkdir ~/.ssh
+            ssh-keyscan people.linaro.org >> ~/.ssh/known_hosts
+            LANG=C sort -u ~/.ssh/known_hosts | sponge ~/.ssh/known_hosts
+            cat << EOF >> ~/.ssh/config
+            Host people.linaro.org
+                User stuart.monteith
+            EOF
+            chmod 0600 ~/.ssh/*
+
+            # End workload
 
             PERSIST=$HOME/srv/openjdk
             SCRIPT_DIR=$PERSIST/openjdk-test-scripts
