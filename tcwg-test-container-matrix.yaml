@@ -116,9 +116,9 @@
                 done
                 ;;
               "upstream")
-                echo "To stop container make 'ssh -o Port=$upstream_port $upstream_machine true' fail"
+                echo "To stop container remove $upstream_dest"
 
-                while ssh -o Port=$upstream_port $upstream_machine true; then
+                while ssh -o Port=$upstream_port $upstream_machine test -e $upstream_file; then
                   sleep 60
                   echo "Running processes: $(ps ax | wc -l)"
                 done
