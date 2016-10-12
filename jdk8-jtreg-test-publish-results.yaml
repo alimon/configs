@@ -95,6 +95,9 @@
 
             PERSIST=$HOME/srv/openjdk
             SCRIPT_DIR=$PERSIST/openjdk-test-scripts
+
+            tree $PERSIST >$WORKSPACE/tree.out
+
             if [ -d $SCRIPT_DIR ]; then
                 (cd $SCRIPT_DIR; git pull)
             else
@@ -106,5 +109,7 @@
             which jtdiff
             TOP_DIR=$PERSIST/openjdk8-jtreg-nightly-tests bash -x $SCRIPT_DIR/publish $PUBLISH_DEST $NODE_NAME
     publishers:
+        - archive:
+            artifacts: 'tree.out'
         - email:
             recipients: 'fathi.boudra@linaro.org stuart.monteith@linaro.org'
