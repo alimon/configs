@@ -91,14 +91,16 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
   done
 }
 
-# Create MD5SUMS file
-(cd ${DEPLOY_DIR_IMAGE} && md5sum * > MD5SUMS.txt)
-
 # Move HiKey's bootloader related files into its own subdir
 [ "${MACHINE}" = "hikey" ] && {
   mkdir -p ${DEPLOY_DIR_IMAGE}/bootloader
   (cd ${DEPLOY_DIR_IMAGE} && mv fip.bin hisi-idt.py l-loader.bin nvme.img ptable-linux-*.img bootloader/)
 }
+
+# Create MD5SUMS file
+find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
+sed -i "s|${PWD}/||" MD5SUMS.txt
+mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 
 # Build information
 cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
