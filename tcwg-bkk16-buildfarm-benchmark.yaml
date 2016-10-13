@@ -2,11 +2,6 @@
     name: tcwg-bkk16-buildfarm-benchmark
     project-type: matrix
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
-        artifactDaysToKeep: 2
-        artifactNumToKeep: 40
     properties:
         - authorization:
             anonymous:
@@ -15,6 +10,11 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-days-to-keep: 2
+            artifact-num-to-keep: 40
     parameters:
         - string:
             name: override

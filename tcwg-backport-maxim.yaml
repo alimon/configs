@@ -2,9 +2,6 @@
     name: tcwg-backport-maxim
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 60
     properties:
         - authorization:
             anonymous:
@@ -13,6 +10,9 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 60
     parameters:
         - string:
             name: GERRIT_PATCHSET_REVISION

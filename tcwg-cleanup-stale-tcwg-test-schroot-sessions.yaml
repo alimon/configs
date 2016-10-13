@@ -2,9 +2,6 @@
     name: tcwg-cleanup-stale-tcwg-test-schroot-sessions
     project-type: multijob
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -13,6 +10,9 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
     disabled: false
     node: tcwg-x86_64-cam
     display-name: 'TCWG CCC Cleanup stale tcwg-test schroot sessions'

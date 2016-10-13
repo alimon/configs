@@ -2,9 +2,6 @@
     name: tcwg-abe-manifest-test
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 10
-        numToKeep: 10
     properties:
         - authorization:
             anonymous:
@@ -13,6 +10,9 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
     parameters:
         - string:
             name: abe_branch

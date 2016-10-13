@@ -32,9 +32,6 @@
     name: tcwg-bkk16-trigger-extended
     project-type: multijob
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -43,6 +40,9 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
     parameters:
         - string:
             name: override

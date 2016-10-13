@@ -2,9 +2,6 @@
     name: tcwg-compare-results
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 300
     properties:
         - authorization:
             anonymous:
@@ -14,6 +11,9 @@
                 - job-build
                 - job-cancel
                 - job-workspace
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 300
     parameters:
         - string:
             name: ref_logs
