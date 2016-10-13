@@ -91,7 +91,6 @@ sources:
   qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${OS_FLAVOUR} main
   repo: http://repo.linaro.org/ubuntu/linaro-overlay ${OS_FLAVOUR} main
   debian: http://ftp.debian.org/debian/ ${OS_FLAVOUR} main contrib non-free
-  backports: http://ftp.debian.org/debian/ ${OS_FLAVOUR}-backports main
 packages:
 - linux-image-arm64
 - linux-headers-arm64
@@ -144,13 +143,12 @@ for rootfs in ${ROOTFS}; do
     # additional packages in desktop images
     [ "${rootfs}" = "alip" ] && cat << EOF >> ${VENDOR}-lt-qcom
 - xserver-xorg-video-freedreno
-- gstreamer1.0-plugins-v4l2
 - 96boards-artwork
 EOF
 
     rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz`
     VERSION=$(cat build-version)
-    linaro-hwpack-create --debug --backports ${VENDOR}-lt-qcom ${VERSION}
+    linaro-hwpack-create --debug ${VENDOR}-lt-qcom ${VERSION}
     linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
     linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
 
