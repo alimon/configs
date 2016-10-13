@@ -42,24 +42,10 @@
     node: tcwg-x86_64-dev-01
     concurrent: true
     display-name: 'TCWG ZZZ ABE compare two versions'
-    scm:
-        - git:
-            url: https://git-us.linaro.org/toolchain/abe.git
-            refspec: +refs/changes/*:refs/remotes/changes/*
-            branches:
-                - ${abe_ref}
-                - ${abe_new}
-            shallow-clone: true
-            skip-tag: true
-            wipe-workspace: true
     wrappers:
         - timeout:
             timeout: 3000
         - timestamps
-        - ssh-agent-credentials:
-            # tcwg-buildslave user id
-            users:
-                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
         - build-name:
             name: '#${BUILD_NUMBER}-${ENV,var="abe_ref"}-${ENV,var="abe_new"}'
     builders:
