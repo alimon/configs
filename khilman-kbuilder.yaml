@@ -11,7 +11,7 @@
             default: 'defconfig'
         - string:
             name: TREE
-            default: 'https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+            default: 'http://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
         - string:
             name: BRANCH
             default: 'master'
@@ -104,7 +104,7 @@
                 timeout --preserve-status -k 10s 5m git fetch --tags linus && \
                 timeout --preserve-status -k 10s 5m git fetch --tags ${TREE} ${REFSPEC}
             else
-              git clone -o linus --reference ${MIRROR} https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git ${TREE_NAME}
+              git clone -o linus --reference ${MIRROR} http://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git ${TREE_NAME}
               cd ${TREE_NAME} && \
               git remote add origin ${TREE} && \
               timeout --preserve-status -k 10s 5m git fetch origin
