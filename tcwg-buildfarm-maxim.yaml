@@ -270,6 +270,14 @@
               scp "$log_server/$dir/*manifest.txt" artifacts/
             fi
 
+            # Save logs and their directory structure
+            rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" ./ ./logs/
+            if which pxz; then
+              tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/
+            else
+              tar -cJf ./artifacts/logs.tar.xz ./logs/
+            fi
+
             echo "Result of jenkins.sh: $result"
             if $dont_fail; then
               result="0"
@@ -279,10 +287,3 @@
         - archive:
             artifacts: 'artifacts/*'
             latest-only: false
-        - workspace-cleanup:
-            exclude:
-              - "**/*.log"
-              - "**/*.err"
-              - "**/*.out"
-              - "**/*.txt"
-            dirmatch: true
