@@ -144,7 +144,7 @@
             fi
 
             case "$target_kind-$runtests-$(uname -m)" in
-              "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"x86_64")
+              "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"x86_64"|"cross_main"-"x86_64-host"-"i686")
                 case "$target" in
                   aarch64*) container_arch=arm64 ;;
                   arm*) container_arch=armhf ;;
@@ -188,7 +188,7 @@
               override="--testcontainer $test_container $override"
             else
               case "$target_kind-$runtests-$(uname -m)" in
-                *-"yes"-*|*-"x86_64-host"-x86_64)
+                *-"yes"-*|*-"x86_64-host"-"x86_64"|*-"x86_64-host"-"i686")
                   runtests_opt="--runtests"
                   ;;
                 *)
@@ -198,7 +198,7 @@
             fi
 
             case $(uname -m) in
-              x86_64) languages="$host_x86_64_languages" ;;
+              x86_64|i686) languages="$host_x86_64_languages" ;;
               *) languages="$host_aarchXX_languages" ;;
             esac
 
@@ -219,7 +219,7 @@
             fi
 
             case $(uname -m) in
-              x86_64) excludecheck="$host_x86_64_excludecheck" ;;
+              x86_64|i686) excludecheck="$host_x86_64_excludecheck" ;;
               *) excludecheck="$host_aarchXX_excludecheck" ;;
             esac
 
