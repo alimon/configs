@@ -87,10 +87,6 @@
               sudo chown -R $container_user /home/$container_user/.ssh/
             fi
 
-            sudo touch /keep-container
-            sudo chmod 0777 /keep-container
-            echo "1" > /keep-container
-
             docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
             ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
             ssh_port="$(echo $ssh_port | cut -d: -f 2)"
@@ -108,6 +104,10 @@
 
             case "$watchdog" in
               "file")
+                sudo touch /keep-container
+                sudo chmod 0777 /keep-container
+                echo "1" > /keep-container
+
                 echo "To stop container run: ssh -o Port=$ssh_port $container_user@$docker_host sh -c 'echo 0 > /keep-container'"
 
                 while [ -e /keep-container ] && [ x"$(cat /keep-container)" = x"1" ]; do
