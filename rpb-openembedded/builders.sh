@@ -99,7 +99,7 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
-sed -i "s|${PWD}/||" MD5SUMS.txt
+sed -i "s|${DEPLOY_DIR_IMAGE}/||" MD5SUMS.txt
 mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 
 # Build information
