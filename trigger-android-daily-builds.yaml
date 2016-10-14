@@ -1,0 +1,25 @@
+- job:
+    name: trigger-android-daily-builds
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    disabled: false
+    node: master
+    display-name: 'Trigger for daily Android builds'
+    triggers:
+        - timed: 'H 0 * * *'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project:
+                - 'linaro-art-stable-build-ARTVixlTest'
+                - 'linaro-art-tip-build-ARTVixlMasterTest'
+                - 'linaro-art-tip-build-ARTVixlTest'
