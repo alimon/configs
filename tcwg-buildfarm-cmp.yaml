@@ -19,13 +19,17 @@
             default: ''
             description: 'Components version for reference builds; e.g. gcc=gcc.git~linaro/gcc-6-branch glibc=... and/or --extraconfigdir ../config/gcc6'
         - string:
+            name: ref_log_name
+            default: '${JOB_NAME}-${BUILD_NUMBER}-REF'
+            description: 'Prefix logname for reference directory on logserver'
+        - string:
             name: eval_override
             default: ''
             description: 'Components version for evaluation builds; e.g. gcc=gcc.git~linaro/gcc-6-branch glibc=... and/or --extraconfigdir ../config/gcc6'
         - string:
-            name: log_name
-            default: '${JOB_NAME}-${BUILD_NUMBER}'
-            description: 'Prefix logname directory on logserver'
+            name: eval_log_name
+            default: '${JOB_NAME}-${BUILD_NUMBER}-EVAL'
+            description: 'Prefix logname for evalution directory on logserver'
         - string:
             name: host_x86_64_languages
             default: 'default'
@@ -76,9 +80,6 @@
 
             set -e
 
-            ref_logs=${log_name}-REF
-            eval_logs=${log_name}-EVAL
-
             cat << EOF > buildfarm_parameters
             host_x86_64_languages=$host_x86_64_languages
             host_aarchXX_languages=$host_aarchXX_languages
@@ -95,8 +96,8 @@
             cat buildfarm_parameters
 
             cat << EOF > compare_results_parameters
-            ref_logs=$ref_logs
-            new_logs=$eval_logs
+            ref_logs=$ref_log_name
+            new_logs=$eval_log_name
             log_server=$log_server
             abe_branch=$abe_branch
             EOF
@@ -111,12 +112,12 @@
               - name: tcwg-buildfarm
                 predefined-parameters: |
                   override=$ref_override
-                  log_name=$ref_logs/\$(uname -m).\$target
+                  log_name=$ref_log_name/\$(uname -m).\$target
                 property-file: buildfarm_parameters
               - name: tcwg-buildfarm
                 predefined-parameters: |
                   override=$eval_override
-                  log_name=$eval_logs/\$(uname -m).\$target
+                  log_name=$eval_log_name/\$(uname -m).\$target
                 property-file: buildfarm_parameters
         - multijob:
             name: 'Compare Results'
