@@ -1,0 +1,126 @@
+- job:
+    name: tcwg-buildfarm-cmp
+    project-type: multijob
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: ref_override
+            default: ''
+            description: 'Components version for reference builds; e.g. gcc=gcc.git~linaro/gcc-6-branch glibc=... and/or --extraconfigdir ../config/gcc6'
+        - string:
+            name: eval_override
+            default: ''
+            description: 'Components version for evaluation builds; e.g. gcc=gcc.git~linaro/gcc-6-branch glibc=... and/or --extraconfigdir ../config/gcc6'
+        - string:
+            name: log_name
+            default: '${JOB_NAME}-${BUILD_NUMBER}'
+            description: 'Prefix logname directory on logserver'
+        - string:
+            name: host_x86_64_languages
+            default: 'default'
+            description: 'Languages to build for x86_64 native toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: host_aarchXX_languages
+            default: 'c,c++'
+            description: 'Languages to build for AArchXX native toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: runtests
+            default: 'x86_64-host'
+            description: 'Run toolchain testsuites: "yes", "no", "x86_64-host"'
+        - string:
+            name: host_x86_64_excludecheck
+            default: 'gdb'
+            description: 'Do not run "make check" on these components on x86_64'
+        - string:
+            name: host_aarchXX_excludecheck
+            default: 'gcc'
+            description: 'Do not run "make check" on these components on AArchXX'
+        - string:
+            name: extraconfig
+            default: ''
+            description: 'Extra configuration files, syntax tool=path'
+        - string:
+            name: log_server
+            default: dev-01.tcwglab:/home/tcwg-buildslave/logs
+            description: 'Log_Server'
+        - string:
+            name: abe_branch
+            default: refs/remotes/origin/master
+            description: 'ABE revision to test'
+    disabled: false
+    node: tcwg-x86_64-dev-01
+    concurrent: true
+    display-name: 'TCWG ZZZ Buildfarm Compare '
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            ref_logs=${log_name}-REF
+            eval_logs=${log_name}-EVAL
+
+            cat << EOF > buildfarm_parameters
+            host_x86_64_languages=$host_x86_64_languages
+            host_aarchXX_languages=$host_aarchXX_languages
+            runtests=$runtest
+            host_x86_64_excludecheck=$host_x86_64_excludecheck
+            host_aarchXX_excludecheck=$host_aarchXX_excludecheck
+            extraconfig=$extraconfig
+            log_server=$log_server
+            targets=$target
+            abe_branch=$abe_branch
+            EOF
+
+            echo "NOTE: Buildfarm job parameters:"
+            cat buildfarm_parameters
+
+            cat << EOF > compare_results_parameters
+            ref_logs=$ref_logs
+            new_logs=$eval_logs
+            log_server=$log_server
+            abe_branch=$abe_branch
+            EOF
+
+            echo "NOTE: Compare Results job parameters:"
+            cat compare_results_parameters
+
+        - multijob:
+            name: 'Builds'
+            condition: ALWAYS
+            projects:
+              - name: tcwg-buildfarm
+                predefined-parameters: |
+                  override=$ref_override
+                  log_name=${ref_logs}/\$(uname -m).\$target
+                property-file: buildfarm_parameters
+              - name: tcwg-buildfarm
+                predefined-parameters: |
+                  override=$eval_override
+                  log_name=${eval_logs}/\$(uname -m).\$target
+                property-file: buildfarm_parameters
+        - multijob:
+            name: 'Compare Results'
+            condition: COMPLETED
+            projects:
+              - name: tcwg-compare-results
+                property-file: compare_results_parameters
+    publishers:
+        - workspace-cleanup:
+             include:
+              - "*_parameters"
