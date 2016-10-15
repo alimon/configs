@@ -168,110 +168,116 @@
                     - project: tcwg-test-container-matrix
                       property-file: test-container.param
                       block: false
-        - shell: |
-            #!/bin/bash
+        - conditional-step:
+            condition-kind: not
+            condition-operand:
+                condition-kind: file-exists
+                condition-filename: artifacts/target-skipped.txt
+            steps:
+              - shell: |
+                  #!/bin/bash
 
-            set -ex
+                  set -ex
 
-            if [ -f $WORKSPACE/test-container.data ]; then
-              runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
-            else
-              case "$target_kind-$runtests-$(uname -m)" in
-                *-"yes"-*|*-"x86_64-host"-"x86_64"|*-"x86_64-host"-"i686")
-                  runtests_opt="--runtests"
-                  ;;
-                *)
-                  runtests_opt=""
-                  ;;
-              esac
-            fi
+                  if [ -f $WORKSPACE/test-container.data ]; then
+                    runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
+                  else
+                    case "$target_kind-$runtests-$(uname -m)" in
+                      *-"yes"-*|*-"x86_64-host"-"x86_64"|*-"x86_64-host"-"i686")
+                      runtests_opt="--runtests"
+                      ;;
+                      *)
+                      runtests_opt=""
+                      ;;
+                    esac
+                  fi
 
-            case $(uname -m) in
-              x86_64|i686) languages="$host_x86_64_languages" ;;
-              *) languages="$host_aarchXX_languages" ;;
-            esac
+                  case $(uname -m) in
+                    x86_64|i686) languages="$host_x86_64_languages" ;;
+                    *) languages="$host_aarchXX_languages" ;;
+                  esac
 
-            if $try_bootstrap; then
-              bootstrap="--bootstrap"
-            else
-              bootstrap=""
-            fi
+                  if $try_bootstrap; then
+                    bootstrap="--bootstrap"
+                  else
+                    bootstrap=""
+                  fi
 
-            if [ x"$log_name" != x"" ]; then
-              eval "logname_opt=\"--logname $log_name\""
-            fi
+                  if [ x"$log_name" != x"" ]; then
+                    eval "logname_opt=\"--logname $log_name\""
+                  fi
 
-            if $rebuild; then
-              norebuild=""
-            else
-              norebuild="--norebuild"
-            fi
+                  if $rebuild; then
+                    norebuild=""
+                  else
+                    norebuild="--norebuild"
+                  fi
 
-            case $(uname -m) in
-              x86_64|i686) excludecheck="$host_x86_64_excludecheck" ;;
-              *) excludecheck="$host_aarchXX_excludecheck" ;;
-            esac
+                  case $(uname -m) in
+                    x86_64|i686) excludecheck="$host_x86_64_excludecheck" ;;
+                    *) excludecheck="$host_aarchXX_excludecheck" ;;
+                  esac
 
-            excludecheck_opt=""
-            for testsuite in $excludecheck; do
-              excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
-            done
+                  excludecheck_opt=""
+                  for testsuite in $excludecheck; do
+                    excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
+                  done
 
-            # If there were extraconfig options, extract the
-            # corresponding repo
-            if test -n "$extraconfig" ; then
-              git clone http://git.linaro.org/people/christophe.lyon/abe-extraconfigs.git
-            fi
+                  # If there were extraconfig options, extract the
+                  # corresponding repo
+                  if test -n "$extraconfig" ; then
+                    git clone http://git.linaro.org/people/christophe.lyon/abe-extraconfigs.git
+                  fi
 
-            extraconfig_opt=""
-            for config in $extraconfig; do
-              case ${extraconfig} in
-                *=*)
-                  tool=${extraconfig%=*}
-                  value=${extraconfig#*=}
-                  ;;
-                *)
-                  echo ERROR: wrong extraconfig: $extraconfig
-                  exit 1
-                  ;;
-              esac
-              extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
-            done
+                  extraconfig_opt=""
+                  for config in $extraconfig; do
+                    case ${extraconfig} in
+                      *=*)
+                        tool=${extraconfig%=*}
+                        value=${extraconfig#*=}
+                        ;;
+                      *)
+                        echo ERROR: wrong extraconfig: $extraconfig
+                        exit 1
+                        ;;
+                    esac
+                    extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
+                  done
 
-            ulimit -u 5000
+                  ulimit -u 5000
 
-            result="0"
-            /bin/bash -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
+                  result="0"
+                  /bin/bash -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
 
-            # If we actually built a toolchain, save its manifest.
-            # If the build was a no-op (results already present on log_server),
-            # copy the existing ones.
-            if [ -d _build/builds ]; then
-              manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
-            else
-              manifest=""
-            fi
-            if [ x"${manifest}" != x ]; then
-              cp ${manifest} artifacts/
-            else
-              # We need to do the same name expansion as jenkins.sh
-              eval dir="$log_name"
-              scp "$log_server/$dir/*manifest.txt" artifacts/
-            fi
+                  # If we actually built a toolchain, save its manifest.
+                  # If the build was a no-op (results already present on log_server),
+                  # copy the existing ones.
+                  if [ -d _build/builds ]; then
+                    manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
+                  else
+                    manifest=""
+                  fi
+                  if [ x"${manifest}" != x ]; then
+                    cp ${manifest} artifacts/
+                  else
+                    # We need to do the same name expansion as jenkins.sh
+                    eval dir="$log_name"
+                    scp "$log_server/$dir/*manifest.txt" artifacts/
+                  fi
 
-            # Save logs and their directory structure
-            rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" ./ ./logs/
-            if which pxz; then
-              tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/
-            else
-              tar -cJf ./artifacts/logs.tar.xz ./logs/
-            fi
+                  # Save logs and their directory structure
+                  rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" ./ ./logs/
+                  if which pxz; then
+                    tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/
+                  else
+                    tar -cJf ./artifacts/logs.tar.xz ./logs/
+                  fi
 
-            echo "Result of jenkins.sh: $result"
-            if $dont_fail; then
-              result="0"
-            fi
-            exit $result
+                  echo "Result of jenkins.sh: $result"
+                  if $dont_fail; then
+                    result="0"
+                  fi
+                  exit $result
     publishers:
         - archive:
             artifacts: 'artifacts/*'
