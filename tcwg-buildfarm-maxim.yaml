@@ -266,7 +266,7 @@
                   fi
 
                   # Save logs and their directory structure
-                  rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" ./ ./logs/
+                  rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" --prune-empty-dirs ./ ./logs/
                   if which pxz; then
                     tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/
                   else
