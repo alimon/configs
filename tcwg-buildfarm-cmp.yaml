@@ -22,6 +22,10 @@
             name: ref_log_name
             default: '${JOB_NAME}-${BUILD_NUMBER}-REF'
             description: 'Prefix logname for reference directory on logserver'
+        - bool:
+            name: ref_rebuild
+            default: true
+            description: 'Rebuild reference toolchain even if results are already on logserver'
         - string:
             name: eval_override
             default: ''
@@ -30,6 +34,10 @@
             name: eval_log_name
             default: '${JOB_NAME}-${BUILD_NUMBER}-EVAL'
             description: 'Prefix logname for evalution directory on logserver'
+        - bool:
+            name: eval_rebuild
+            default: true
+            description: 'Rebuild evaluation toolchain even if results are already on logserver'
         - string:
             name: host_x86_64_languages
             default: 'default'
@@ -113,11 +121,13 @@
                 predefined-parameters: |
                   override=$ref_override
                   log_name=$ref_log_name/\$(uname -m).\$target
+                  rebuild=$ref_rebuild
                 property-file: buildfarm_parameters
               - name: tcwg-buildfarm
                 predefined-parameters: |
                   override=$eval_override
                   log_name=$eval_log_name/\$(uname -m).\$target
+                  rebuild=$eval_rebuild
                 property-file: buildfarm_parameters
         - multijob:
             name: 'Compare Results'
