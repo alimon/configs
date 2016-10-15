@@ -267,9 +267,9 @@
 
                   # Save logs and their directory structure
                   rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" --prune-empty-dirs ./ ./logs/
-                  if which pxz; then
-                    tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/
-                  else
+                  if ! tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/; then
+                    # PXZ can [rarely] fail due to high RAM usage, so fallback to normal XZ.
+                    rm -f ./artifacts/logs.tar.xz
                     tar -cJf ./artifacts/logs.tar.xz ./logs/
                   fi
 
