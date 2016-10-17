@@ -22,24 +22,32 @@
             timeout: 500
     builders:
         - shell:
-            #!/bin/sh
-            wget -q \
-              http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
-              http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb \
-              http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb
+            wget -q http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb
+
+            wget -q http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb
+
+            wget -q  http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb
+
             sudo dpkg -i --force-all *.deb
+
             rm -f *.deb
 
             wget https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.sh
+
             chmod a+x cmake-3.5.2-Linux-x86_64.sh
+
             yes y | sh cmake-3.5.2-Linux-x86_64.sh
+
             export PATH=$PWD/cmake-3.5.2-Linux-x86_64/bin/:$PATH
+
             sudo apt-get update
+
             sudo apt-get install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk libxml2-utils rsync
 
             git clone --depth=1 http://git.linaro.org/git/people/minseong.kim/aosp_uclang.git
 
             cd aosp_uclang/
+
             bash aosp-uclang-init-and-build.sh
     publishers:
         - email-ext:
