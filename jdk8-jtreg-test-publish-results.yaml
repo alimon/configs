@@ -96,7 +96,7 @@
             PERSIST=$HOME/srv/openjdk
             SCRIPT_DIR=$PERSIST/openjdk-test-scripts
 
-            env | sort  >$WORKSPACE/env.out
+            (unset PRIVATE_KEY; env | sort  >$WORKSPACE/env.out)
             tree -fd -L 5 $PERSIST | xz >$WORKSPACE/tree.out.xz
 
             if [ -d $SCRIPT_DIR ]; then
