@@ -96,8 +96,8 @@
             PERSIST=$HOME/srv/openjdk
             SCRIPT_DIR=$PERSIST/openjdk-test-scripts
 
-            env >$WORKSPACE/env.out
-            tree -fd -L5 $PERSIST | xz >$WORKSPACE/tree.out.xz
+            env | sort  >$WORKSPACE/env.out
+            tree -fd -L 5 $PERSIST | xz >$WORKSPACE/tree.out.xz
 
             if [ -d $SCRIPT_DIR ]; then
                 (cd $SCRIPT_DIR; git pull)
