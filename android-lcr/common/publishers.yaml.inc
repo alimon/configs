@@ -1,5 +1,5 @@
         - email-ext:
-            recipients: '${GERRIT_CHANGE_OWNER_EMAIL},${GERRIT_EVENT_ACCOUNT_EMAIL},vishal.bhoj@linaro.org,daniel.diaz@linaro.org'
+            recipients: '${CI_MAIL_RECIPIENTS}'
             content-type: text
             body: |
                 Build Triggered by: ${GERRIT_CHANGE_SUBJECT}: ${GERRIT_CHANGE_URL}
