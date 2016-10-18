@@ -117,8 +117,6 @@
             YEAR=XXX__YEAR__XXX
             DAY_OF_YEAR=YYY__DAY_OF_YEAR__YYY
 
-            new_basedir=$PERSIST/openjdk8-jtreg-nightly-tests
-
             basedir=cron_output
             mkdir -p ${basedir}/{src,builds,reports}
 
@@ -182,8 +180,18 @@
 
             mkdir -p out
             tar -C ${basedir} --show-transformed-names -acvf out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz builds reports
-            rm -rf ${new_basedir}/src
-            mv -v ${basedir}/src ${new_basedir}
+
+            # Move src directory to correct location for publishing.
+            # Only needs to be done once, as this runs 3 times for each JTREG
+            # category.
+            : ${NEW_YEAR:=$(date +%Y)}
+            : ${NEW_DAY_OF_YEAR:=$(date +%j)}
+            new_basedir=$PERSIST/openjdk8-jtreg-nightly-tests
+            new_srcdir=${new_basedir}/src/${NEW_YEAR}/${NEW_DAY_OF_YEAR}
+            if [ ! -d ${new_srcdir} ]; then
+                mkdir -p ${new_srcdir}
+                mv ${src_dir} ${new_srcdir}
+            fi
     publishers:
         - archive:
             artifacts: 'out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
