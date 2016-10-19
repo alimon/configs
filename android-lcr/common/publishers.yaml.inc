@@ -12,6 +12,7 @@
         - archive:
             artifacts: '*.xml,*.json'
             latest-only: true
+            allow-empty: true
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
             unstable-on-warning: false
