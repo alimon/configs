@@ -30,12 +30,6 @@ cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.json /home/buildslave/srv/${
 # Copy dtb mlo uboot to out location
 cp /home/buildslave/srv/${BUILD_DIR}/u-boot/MLO /home/buildslave/srv/${BUILD_DIR}/u-boot/u-boot /home/buildslave/srv/${BUILD_DIR}/linux/arch/arm/boot/dts/*.dtb /home/buildslave/srv/${BUILD_DIR}/build/out/
 
-# Rebuild userdata partition
-cd build/
-rm -f out/userdata.img
-out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/root/file_contexts.bin -L data -l 2646367K -a data out/userdata.img out/data
-cd -
-
 # Publish binaries
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 time linaro-cp.py \
@@ -46,7 +40,7 @@ time linaro-cp.py \
   --split-job-owner \
   build/out \
   ${PUB_DEST} \
-  --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+  --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config|u-boot|MLO|dtb)$" \
   --include "^[BHi][^/]+txt$" \
   --include "^(MANIFEST|MD5SUMS|changelog.txt)$"
 
