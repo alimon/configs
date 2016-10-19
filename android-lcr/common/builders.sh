@@ -9,7 +9,6 @@ cleanup_exit()
 
 # Install needed packages
 sudo add-apt-repository ppa:linaro-maintainers/tools
-sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
 sudo apt-get update
 sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand rsync
 
