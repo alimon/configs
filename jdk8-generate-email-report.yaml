@@ -52,18 +52,19 @@
 
             tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
             PATH=${WORKSPACE}/jtreg/bin:${PATH}
+            PERSIST=$HOME/srv/openjdk
             which jtdiff
 
-            TOP_DIR=${HOME}/openjdk8-jtreg-nightly-tests ${HOME}/openjdk-test-scripts/openjdk-test-summary release > ${WORKSPACE}/report.txt
+            TOP_DIR=${PERSIST}/openjdk8-jtreg-nightly-tests ${PERSIST}/openjdk-test-scripts/openjdk-test-summary release > ${WORKSPACE}/report.txt
             echo "" >> ${WORKSPACE}/report.txt
 
-            ${HOME}/specjbb-test-scripts/specjbb-report >> ${WORKSPACE}/report.txt
+            ${PERSIST}/specjbb-test-scripts/specjbb-report >> ${WORKSPACE}/report.txt
             echo "" >> ${WORKSPACE}/report.txt
 
-            ${HOME}/hadoop-test-scripts/benchmark-terasort-report >> ${WORKSPACE}/report.txt
+            ${PERSIST}/hadoop-test-scripts/benchmark-terasort-report >> ${WORKSPACE}/report.txt
             echo "" >> ${WORKSPACE}/report.txt
 
-            TOP_DIR=${HOME} ${HOME}/jcstress-test-scripts/jcstress-report --url http://openjdk.linaro.org/ >> ${WORKSPACE}/report.txt
+            TOP_DIR=${PERSIST} ${PERSIST}/jcstress-test-scripts/jcstress-report --url http://openjdk.linaro.org/staging >> ${WORKSPACE}/report.txt
     publishers:
         - archive:
             artifacts: 'report.txt'
