@@ -83,6 +83,11 @@
             gccver=gcc=gcc.git~linaro-6.1-2016.08
             case "$test" in
               canadian_cross_build)
+                # Configure git user info to make git stash happy. It
+                # is used during the second build, because the sources
+                # are already present.
+                git config --global user.email "tcwg-buildslave@linaro.org"
+                git config --global user.name "TCWG BuildSlave"
                 ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --override "--extraconfigdir ../config/gcc6 $gccver"
                 ret=$?
                 if test ${ret} -eq 0; then
