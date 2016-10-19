@@ -11,7 +11,7 @@ rm -rf u-boot linux
 git clone --depth=1 git://git.ti.com/android-sdk/u-boot.git u-boot -b p-ti-u-boot-2016.05
 cd u-boot
 make am57xx_evm_nodt_defconfig
-make -j${jcpu_count}
+make -j"$(nproc)"
 cd -
 
 # Build Kernel
@@ -19,7 +19,7 @@ git clone --depth=1 git://git.ti.com/android-sdk/kernel-omap.git linux -b p-ti-l
 cd linux
 ti_config_fragments/defconfig_builder.sh -t ti_sdk_am57x_android_release
 make ti_sdk_am57x_android_release_defconfig
-make -j${jcpu_count} zImage
+make -j"$(nproc)" zImage
 make am57xx-evm-reva3.dtb
 cd -
 

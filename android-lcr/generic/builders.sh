@@ -1,9 +1,9 @@
 # Build Android
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
-repo sync -j${jcpu_count} -c
+repo sync -j"$(nproc)" -c
 source build/envsetup.sh
 lunch ${LUNCH_TARGET}
-make -j${jcpu_count}
+make -j"$(nproc)"
 
 # Publish binaries
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}/${LUNCH_TARGET}
