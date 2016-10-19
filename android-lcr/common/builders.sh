@@ -11,7 +11,7 @@ cleanup_exit()
 sudo add-apt-repository ppa:linaro-maintainers/tools
 sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
 sudo apt-get update
-sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand
+sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand rsync
 
 # Install most recent linaro-image-tools (packaged) and dependencies
 sudo apt-get install -y gdisk libyaml-0-2 python-apt python-chardet python-dbus python-dbus-dev \
