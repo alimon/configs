@@ -17,10 +17,6 @@
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
-    parameters:
-        - string:
-            name: RECIPIENTS
-            default: 'fathi.boudra@linaro.org stuart.monteith@linaro.org'
     disabled: false
     node: build
     display-name: 'OpenJDK 8 - Send e-mail report'
@@ -30,20 +26,6 @@
         - copyartifact:
             project: jdk8-generate-email-report
             filter: 'report.txt'
-        - shell: |
-            #!/bin/bash
-
-#            FROM="OpenJDK Testing <openjdk-testing@linaro.org>"
-#            SUBJECT="JTREG, SPECjbb2013 and Hadoop/Terasort results for OpenJDK 8 on AArch64"
-#            MSG=$(cat report.txt)
-#
-#            cat <<EOF | /usr/sbin/sendmail -t
-#            From: ${FROM}
-#            To: ${RECIPIENTS}
-#            Subject: ${SUBJECT}
-#
-#            ${MSG}
-#            EOF
     publishers:
         - email-ext:
             recipients: 'stuart.monteith@linaro.org, fathi.boudra@linaro.org'
