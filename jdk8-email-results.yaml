@@ -33,14 +33,21 @@
         - shell: |
             #!/bin/bash
 
-            FROM="OpenJDK Testing <openjdk-testing@linaro.org>"
-            SUBJECT="JTREG, SPECjbb2013 and Hadoop/Terasort results for OpenJDK 8 on AArch64"
-            MSG=$(cat report.txt)
-
-            cat <<EOF | /usr/sbin/sendmail -t
-            From: ${FROM}
-            To: ${RECIPIENTS}
-            Subject: ${SUBJECT}
-
-            ${MSG}
-            EOF
+#            FROM="OpenJDK Testing <openjdk-testing@linaro.org>"
+#            SUBJECT="JTREG, SPECjbb2013 and Hadoop/Terasort results for OpenJDK 8 on AArch64"
+#            MSG=$(cat report.txt)
+#
+#            cat <<EOF | /usr/sbin/sendmail -t
+#            From: ${FROM}
+#            To: ${RECIPIENTS}
+#            Subject: ${SUBJECT}
+#
+#            ${MSG}
+#            EOF
+    email-ext:
+        recipients: 'stuart.monteith@linaro.org fathi.boudra@linaro.org'
+        subject: 'JTREG, SPECjbb2013 and Hadoop/Terasort results for OpenJDK 8 on AArch64'
+        content-type: text
+        body: |
+            ${FILE,path="report.txt"}
+        success: true
