@@ -5,6 +5,8 @@ source build/envsetup.sh
 lunch ${LUNCH_TARGET}
 make -j"$(nproc)"
 
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/generic/build-info/template.txt -O ${ANDROID_PRODUCT_OUT}/BUILD-INFO.txt
+
 # Publish binaries
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}/${LUNCH_TARGET}
 time linaro-cp.py \
