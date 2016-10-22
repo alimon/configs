@@ -26,6 +26,12 @@ wget -q \
 sudo dpkg -i --force-all *.deb
 rm -f *.deb
 
+# FIXME Increase system partition for Juno
+# use android_boards.py commit 56ccf654 until next linaro-image-tools is released
+sudo wget -q \
+  https://git.linaro.org/ci/linaro-image-tools.git/blob_plain/56ccf654a56eca9b8dfbe820e2ae4dae7439975d:/linaro_image_tools/media_create/android_boards.py \
+  -O /usr/lib/python2.7/dist-packages/linaro_image_tools/media_create/android_boards.py
+
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
