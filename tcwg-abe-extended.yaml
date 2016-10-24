@@ -68,7 +68,6 @@
     builders:
         - shell: |
             #!/bin/bash
-
             schroot_arch=amd64
             schroot_image="tcwg-build-${schroot_arch}-trusty"
 
@@ -88,12 +87,26 @@
                 # are already present.
                 git config --global user.email "tcwg-buildslave@linaro.org"
                 git config --global user.name "TCWG BuildSlave"
-                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --override "--extraconfigdir ../config/gcc6 $gccver"
+                mkdir _build
+                cd _build
+                target=arm-linux-gnueabihf
+                ${BUILD_SHELL} ../configure --with-git-reference-dir=~tcwg-buildslave/snapshots-ref
                 ret=$?
-                if test ${ret} -eq 0; then
-                  cd _build
-                  ${BUILD_SHELL} -x ${WORKSPACE}/abe.sh --target arm-linux-gnueabihf --extraconfigdir ../config/gcc6 --host i686-w64-mingw32 --build all $gccver
-                  ret=$?
+                if test ${ret} -ne 0; then
+                  echo "Configure error: ${ret}"
+                  exit $ret
+                fi
+                ${BUILD_SHELL} -x ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc6 --build all $gccver
+                ret=$?
+                if test ${ret} -ne 0; then
+                  echo "First build error: ${ret}"
+                  exit $ret
+                fi
+                ${BUILD_SHELL} -x ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc6 --build all $gccver --host i686-w64-mingw32
+                ret=$?
+                if test ${ret} -ne 0; then
+                  echo "Second build error: ${ret}"
+                  exit $ret
                 fi
                 #FIXME: check what was actually built
                 #FIXME: validate the manifest
