@@ -22,7 +22,7 @@
     node: tcwg-x86_64-cam
     retry-count: 3
     concurrent: true
-    display-name: 'TCWG BBB Binutils'
+    display-name: 'TCWG BBB Binutils-GDB'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/binutils-gdb.git
@@ -119,6 +119,11 @@
             ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
             ${BUILD_SHELL} -c "make all -j$jobs"
             ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
+
+            # For the moment, only build gdb (do not run the tests).
+            # Do this in a different subdir.
+            ${BUILD_SHELL} -c "mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof --target=${target} ${bfd}"
+            ${BUILD_SHELL} -c "mkdir build-gdb && cd build-gdb && make all -j$jobs"
 
             sums=`find . -name "*.sum"`
             echo '############################################'
