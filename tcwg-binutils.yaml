@@ -123,7 +123,7 @@
             # For the moment, only build gdb (do not run the tests).
             # Do this in a different subdir.
             ${BUILD_SHELL} -c "mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof --target=${target} ${bfd}"
-            ${BUILD_SHELL} -c "mkdir build-gdb && cd build-gdb && make all -j$jobs"
+            ${BUILD_SHELL} -c "cd build-gdb && make all -j$jobs"
 
             sums=`find . -name "*.sum"`
             echo '############################################'
