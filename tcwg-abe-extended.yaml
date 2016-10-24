@@ -41,7 +41,7 @@
                 - docker-trusty-amd64-tcwg
         - axis:
             type: user-defined
-            name: test
+            name: testname
             values:
                 - canadian_cross_build
                 - cross_linux_build_check
@@ -56,7 +56,7 @@
                 - abe-tests-checkout
     execution-strategy:
         combination-filter: |
-            (label=="tcwg-x86_64-cam" && target!="canadian_cross_build") || (label=="docker-trusty-amd64-tcwg" && target=="canadian_cross_build")
+            (label=="tcwg-x86_64-cam" && testname!="canadian_cross_build") || (label=="docker-trusty-amd64-tcwg" && testname=="canadian_cross_build")
         sequential: false
     wrappers:
         - timeout:
@@ -83,7 +83,7 @@
             trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true" 0 1 2 3 5 9 13 15
 
             gccver=gcc=gcc.git~linaro-6.1-2016.08
-            case "$test" in
+            case "$testname" in
               canadian_cross_build)
                 mkdir _build
                 cd _build
