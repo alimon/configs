@@ -10,7 +10,8 @@
       The build slave in set up in the cloud and speaks with the physical device using
       adb port forwarding via SSH.
       This job is for the tip.
-      This build can only be triggered by adding the comment "IncludeVIXL32TargetTests" in your Gerrit patch.
+      This build is triggered on SCM update.
+      This build can be triggered by adding the comment "IncludeVIXL32TargetTests" in your Gerrit patch.
     properties:
         - authorization:
             anonymous:
@@ -54,6 +55,7 @@
             shallow-clone: true
             wipe-workspace: false
     triggers:
+        - pollscm: 'H/5 * * * *'
         - gerrit:
             override-votes: true
             gerrit-build-successful-verified-value: 1
