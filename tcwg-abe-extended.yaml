@@ -49,10 +49,10 @@
                 - cross_qemu_build_check
                 - native_build_check
                 - abe-testsuite
-                - abe-tests-arm-linux-gnueabihf
-                - abe-tests-arm-none-eabi
-                - abe-tests-aarch64-linux-gnu
-                - abe-tests-aarch64_be-elf
+                - abe-tests-arm-linux
+                - abe-tests-arm-bare
+                - abe-tests-aarch64-linux
+                - abe-tests-aarch64_be-bare
                 - abe-tests-checkout
     execution-strategy:
         combination-filter: |
@@ -119,26 +119,30 @@
                 #FIXME: check what was actually built
                 #FIXME: validate the manifest
                 ;;
-              *_build_check)
-                bootstrap=
-                case ${testname} in
-                  cross_linux_build_check)
-                    target=arm-linux-gnueabihf
-                    ;;
-                  cross_bare_build_check)
-                    target=aarch64-none-elf
-                    ;;
-                  cross_qemu_build_check)
-                    target=armeb-linux-gnueabihf
-                    ;;
-                  native_build_check)
-                    target=native
-                    bootstrap=--bootstrap
-                    ;;
-                esac
-
+              cross_linux_build_check)
                 # Build and check a linux target
-                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t ${target} ${bootstrap} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc6 $gccver"
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc6 $gccver"
+                ret=$?
+                #FIXME: check validation results (against a known baseline)
+                #FIXME: validate the manifest
+                ;;
+              cross_bare_build_check)
+                # Build and check a bare-metal target
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t aarch64-none-elf --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc6 $gccver"
+                ret=$?
+                #FIXME: check validation results (against a known baseline)
+                #FIXME: validate the manifest
+                ;;
+              cross_qemu_build_check)
+                # Build and check using qemu: use armeb
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t armeb-linux-gnueabihf --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc6 $gccver"
+                ret=$?
+                #FIXME: check validation results (against a known baseline)
+                #FIXME: validate the manifest
+                ;;
+              native_build_check)
+                # Build and check a native toolchain (x86_64)
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb --override "--extraconfigdir ../config/gcc6 $gccver"
                 ret=$?
                 #FIXME: check validation results (against a known baseline)
                 #FIXME: validate the manifest
@@ -147,13 +151,24 @@
                 ${BUILD_SHELL} -c "set -ex; ./configure; make check"
                 ret=$?
                 ;;
-              abe-tests-checkout)
-                ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-checkout.sh --clean-snapshots --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref"
+              abe-tests-arm-linux)
+                ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report --target arm-linux-gnueabihf"
                 ret=$?
                 ;;
-              abe-tests-*)
-                target=$(echo ${testname} | sed 's/abe-tests-//')
-                ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report --target ${target}"
+              abe-tests-arm-bare)
+                ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report --target arm-none-eabi"
+                ret=$?
+                ;;
+              abe-tests-aarch64-linux)
+                ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report --target aarch64-linux-gnu"
+                ret=$?
+                ;;
+              abe-tests-aarch64_be-bare)
+                ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report --target aarch64_be-elf"
+                ret=$?
+                ;;
+              abe-tests-checkout)
+                ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-checkout.sh --clean-snapshots --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref"
                 ret=$?
                 ;;
             esac
