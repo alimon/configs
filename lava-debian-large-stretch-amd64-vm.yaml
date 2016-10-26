@@ -38,6 +38,7 @@
             sudo mv stretch.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends vmdebootstrap grub2-common
+            sudo apt-get clean
 
             mkdir out
             sudo vmdebootstrap \
@@ -57,9 +58,11 @@
               --log-level=debug \
               --log-mode=0644
 
+            gzip -9 ${WORKSPACE}/out/large-stretch.img
+
             cat > ${WORKSPACE}/out/debian-large-stretch-amd64-readme.html <<EOF
             <html><body><pre>
-            lava-debian-large-stretch-amd64-vm build instructions"
+            lava-debian-large-stretch-amd64-vm build instructions
             =====================================================
 
             This large image can be used for any tests on stretch (django1.10).
@@ -89,8 +92,6 @@
             See vmdebootstrap.log for the full log.
             </pre></body></html>
             EOF
-
-            gzip -9 ${WORKSPACE}/out/large-stretch.img
 
             md5sum ${WORKSPACE}/out/large-stretch.img.gz > ${WORKSPACE}/out/large-stretch.img.gz.md5sum.txt
             sha256sum ${WORKSPACE}/out/large-stretch.img.gz > ${WORKSPACE}/out/large-stretch.img.gz.sha256sum.txt
