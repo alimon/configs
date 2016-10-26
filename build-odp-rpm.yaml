@@ -65,13 +65,13 @@
             pkg_version=${base_version}+git${nb_commit}+${scm_commit}
             pkg_dir=${pkg_source}-${pkg_version}
 
-            git archive --format=tar.gz --prefix=${pkg_dir}/ origin/master > ../${pkg_source}_${pkg_version}.tar.gz
+            git archive --format=tar.gz --prefix=${pkg_dir}/ origin/master > ../${pkg_dir}.tar.gz
 
             cd ..
 
             # download spec file
             mkdir -p rpmbuild/{BUILD,BUILDROOT,RPMS,SOURCES,SPECS,SRPMS}
-            cp ${pkg_source}-${pkg_version}.tar.gz rpmbuild/SOURCES/
+            cp -a ${pkg_source}*.tar.gz rpmbuild/SOURCES/
             packaging_dir=odp-packaging
             packaging_repository=https://git.linaro.org/lng/${packaging_dir}.git
             git clone -b master --depth 1 ${packaging_repository}
