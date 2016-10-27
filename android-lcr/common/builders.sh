@@ -8,14 +8,9 @@ cleanup_exit()
 }
 
 # Install needed packages
-sudo add-apt-repository ppa:linaro-maintainers/tools
 sudo apt-get update
 sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand rsync linaro-image-tools
 
-# Install most recent linaro-image-tools (packaged) and dependencies
-sudo apt-get install -y gdisk libyaml-0-2 python-apt python-chardet python-dbus python-dbus-dev \
-  python-debian python-gi python-parted python-pkg-resources python-six python-yaml u-boot-tools \
-  python-commandnotfound parted python-crypto
 wget -q \
   http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
   http://archive.ubuntu.com/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
