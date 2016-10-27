@@ -26,10 +26,6 @@
             name: ref_abe_branch
             default: refs/remotes/origin/master
             description: 'ABE revision to test for reference builds'
-        - string:
-            name: ref_buildfarm_job
-            default: tcwg-buildfarm
-            description: 'Buildfarm job to trigger for reference builds'
         - bool:
             name: ref_rebuild
             default: true
@@ -46,10 +42,6 @@
             name: eval_abe_branch
             default: refs/remotes/origin/master
             description: 'ABE revision to test for evaluation builds'
-        - string:
-            name: eval_buildfarm_job
-            default: tcwg-buildfarm
-            description: 'Buildfarm job to trigger for evaluation builds'
         - bool:
             name: eval_rebuild
             default: true
@@ -127,14 +119,14 @@
             name: 'Builds'
             condition: ALWAYS
             projects:
-              - name: $ref_buildfarm_job
+              - name: tcwg-buildfarm
                 predefined-parameters: |
                   override=$ref_override
                   log_name=$ref_log_name/\$(uname -m).\$target
                   abe_branch=$ref_abe_branch
                   rebuild=$ref_rebuild
                 property-file: buildfarm_parameters
-              - name: $eval_buildfarm_job
+              - name: tcwg-buildfarm
                 predefined-parameters: |
                   override=$eval_override
                   log_name=$eval_log_name/\$(uname -m).\$target
