@@ -22,6 +22,10 @@
             name: ref_log_name
             default: '${JOB_NAME}-${BUILD_NUMBER}-REF'
             description: 'Prefix logname for reference directory on logserver'
+        - string:
+            name: ref_abe_branch
+            default: refs/remotes/origin/master
+            description: 'ABE revision to test for reference builds'
         - bool:
             name: ref_rebuild
             default: true
@@ -34,6 +38,10 @@
             name: eval_log_name
             default: '${JOB_NAME}-${BUILD_NUMBER}-EVAL'
             description: 'Prefix logname for evalution directory on logserver'
+        - string:
+            name: eval_abe_branch
+            default: refs/remotes/origin/master
+            description: 'ABE revision to test for evaluation builds'
         - bool:
             name: eval_rebuild
             default: true
@@ -70,10 +78,6 @@
             name: targets
             default: 'cross_main cross_aux native_x86'
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
-        - string:
-            name: abe_branch
-            default: refs/remotes/origin/master
-            description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: true
@@ -97,7 +101,6 @@
             extraconfig=$extraconfig
             log_server=$log_server
             targets=$targets
-            abe_branch=$abe_branch
             EOF
 
             echo "NOTE: Buildfarm job parameters:"
@@ -107,7 +110,6 @@
             ref_logs=$ref_log_name
             new_logs=$eval_log_name
             log_server=$log_server
-            abe_branch=$abe_branch
             EOF
 
             echo "NOTE: Compare Results job parameters:"
@@ -121,12 +123,14 @@
                 predefined-parameters: |
                   override=$ref_override
                   log_name=$ref_log_name/\$(uname -m).\$target
+                  abe_branch=$ref_abe_branch
                   rebuild=$ref_rebuild
                 property-file: buildfarm_parameters
               - name: tcwg-buildfarm
                 predefined-parameters: |
                   override=$eval_override
                   log_name=$eval_log_name/\$(uname -m).\$target
+                  abe_branch=$eval_abe_branch
                   rebuild=$eval_rebuild
                 property-file: buildfarm_parameters
         - multijob:
