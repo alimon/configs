@@ -36,7 +36,7 @@ if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
 fi
 cd /home/buildslave/srv/${BUILD_DIR}
 
-if [[ -n $PRIVATE_KEY ]]; then
+if [[ -v PRIVATE_KEY ]]; then
 # Handle private key
 mkdir -p $HOME/.ssh
 
@@ -77,7 +77,7 @@ Host dev-private-git.linaro.org
 Host dev-private-review.linaro.org
     User git
 EOF
-chmod 0600 $HOME/.ssh/*
+chmod 0600 $HOME/.ssh/* ||:
 fi
 
 # Download helper scripts (repo, linaro-cp)
