@@ -71,24 +71,13 @@ cat conf/{site,auto}.conf
 
 # Split machine:machine2 and pass it to secondary image.
 IFS=':' read -ra SPLITMACHINES <<< "${MACHINE}"
-
-if [ -n ${SPLIMACHINES[1]} ] ; then
-    MACHINE="${SPLITMACHINES[0]}"
-    SECONDARYIMAGEMACHINE="${SPLITMACHINES[1]}"
-    SECONDARYIMAGE="true"
-else
-    unset SECONDARYIMAGE
-    unset SECONDARYIMAGEMACHINE
-    echo "Skip Secondary image for ${MACHINE}"
-fi
-
 unset IFS
-
 
 [ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-lava"
 [ "${DISTRO}" = "rpb-wayland" ]  && IMAGES+=" rpb-weston-image rpb-weston-image-lava"
-if [ -n "${SECONDARYIMAGE}" ] ; then
-    bitbake_secondary_image  --extra-machine ${SECONDARYIMAGEMACHINE} ${IMAGES}
+if [ ${#SPLITMACHINES[@]} -eq 2 ] ; then
+    MACHINE="${SPLITMACHINES[0]}"
+    bitbake_secondary_image  --extra-machine ${SPLITMACHINES[1]} ${IMAGES}
 else
     bitbake ${IMAGES}
 fi
