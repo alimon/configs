@@ -69,8 +69,8 @@ EOF
 # add useful debug info
 cat conf/{site,auto}.conf
 
-# Split machine,machine2 and pass it to secondary image.
-IFS=',' read -ra SPLITMACHINES <<< "${MACHINE}"
+# Split machine:machine2 and pass it to secondary image.
+IFS=':' read -ra SPLITMACHINES <<< "${MACHINE}"
 
 if [ -n ${SPLIMACHINES[1]} ] ; then
     MACHINE="${SPLITMACHINES[0]}"
