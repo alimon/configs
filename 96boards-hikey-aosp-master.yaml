@@ -83,27 +83,26 @@
             cd -
 
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-            cp /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
+            cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
 
-            cd /home/buildslave/srv/${JOB_NAME}/build/
-            source build/envsetup.sh
-            lunch hikey-userdebug
-            sed -i "s/eng.\`whoami\`/${BUILD_NUMBER}/g" device/linaro/hikey/factory-images/generate-factory-images-package.sh
+            # Create smaller userdata partition for 4gb emmc
+            cd build/
+            out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/root/file_contexts -L data -l 1342177280 -a data out/userdata-4gb.img out/data
             cd -
-            cd /home/buildslave/srv/${JOB_NAME}/build/out/dist/
-            . ../../device/linaro/hikey/factory-images/generate-factory-images-package.sh
-            cp /home/buildslave/srv/${JOB_NAME}/build/out/*.xml  /home/buildslave/srv/${JOB_NAME}/build/out/dist/
-            rm -rf pub/
-            mkdir pub/
-            cp *.zip *.xml pub/
-            cd -
-            cd /home/buildslave/srv/${JOB_NAME}/build/device/linaro/hikey/; git reset --hard; cd -;
 
             # Publish
             PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
 
-            rm -rf build/out/dist/pub/BUILD-INFO.txt
-            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/dist/pub/BUILD-INFO.txt
+            cd build/out
+            for image in "boot.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
+              echo "Compressing ${image}"
+              tar -Jcf ${image}.tar.xz ${image}
+              rm -f ${image}
+            done
+            cd -
+
+            rm -rf build/out/BUILD-INFO.txt
+            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
 
             time linaro-cp.py \
               --manifest \
@@ -111,9 +110,9 @@
               --link-latest \
               --split-job-owner \
               --server ${PUBLISH_SERVER} \
-              build/out/dist/pub \
+              build/out \
               ${PUB_DEST} \
-              --include "^[^/]+[._](img[^/]*|tar[^/]*|zip|xml|sh|config)$" \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS)$"
 
