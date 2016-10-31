@@ -6,13 +6,14 @@
         This job runs the http://openjdk.java.net/projects/code-tools/jcstress/ tests.<br>
         <b>Note:</b> this test currently takes around <b>10 hours</b> to complete<br>
         This project currently runs the "server" variant only due to the amount of time both tests would take to complete.
-    logrotate:
-        numToKeep: 10
-        artifactNumToKeep: 1
     properties:
         - authorization:
             linaro:
                 - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 9 - Run jcstress tests'
@@ -62,7 +63,7 @@
             set -eu
 
             TEST_TYPE=all
-            TEST_MODE=default
+            TEST_MODE=sanity
 
             JCSTRESS_JAR=${WORKSPACE}/incoming/tests-${TEST_TYPE}/target/jcstress.jar
             rm -rf jdk9*

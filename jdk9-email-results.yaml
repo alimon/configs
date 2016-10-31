@@ -5,17 +5,18 @@
     description: |
         * Sends the report.txt file to the aarch64-port-dev mailing list.<br>
         * The text report is copied from the jdk9-generate-text-report job.
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
-    parameters:
-        - string:
-            name: RECIPIENTS
-            default: 'fathi.boudra@linaro.org'
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: master
     display-name: 'OpenJDK 9 - Send e-mail report'
@@ -25,17 +26,11 @@
         - copyartifact:
             project: jdk9-generate-email-report
             filter: 'report.txt'
-        - shell: |
-            #!/bin/bash
-
-            FROM="OpenJDK Testing <openjdk-testing@linaro.org>"
-            SUBJECT="JTREG, SPECjbb2013 and Hadoop/Terasort results for OpenJDK 9 on AArch64"
-            MSG=$(cat report.txt)
-
-            cat <<EOF | /usr/sbin/sendmail -t
-            From: ${FROM}
-            To: ${RECIPIENTS}
-            Subject: ${SUBJECT}
-
-            ${MSG}
-            EOF
+    publishers:
+        - email-ext:
+            recipients: 'stuart.monteith@linaro.org, fathi.boudra@linaro.org'
+            subject: 'JTREG, SPECjbb2013 and Hadoop/Terasort results for OpenJDK 9 on AArch64'
+            content-type: text
+            body: |
+                ${FILE,path="report.txt"}
+            success: true

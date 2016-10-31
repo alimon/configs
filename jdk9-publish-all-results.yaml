@@ -4,13 +4,18 @@
     defaults: global
     description: |
         * Convenience job to invoke all the scripts that sync the results to openjdk.linaro.org.
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: master
     display-name: 'OpenJDK 9 - Invoke all the scripts to sync results to openjdk.linaro.org'
@@ -20,15 +25,19 @@
         - trigger-builds:
             - project: jdk9-jtreg-test-publish-results
               block: true
+              current-parameters: true
         - trigger-builds:
             - project: jdk9-specjbb2013-benchmark-publish-results
               block: true
+              current-parameters: true
         - trigger-builds:
             - project: jdk9-terasort-benchmark-publish-results
               block: true
+              current-parameters: true
         - trigger-builds:
             - project: jdk9-jcstress-test-publish-results
               block: true
+              current-parameters: true
     publishers:
         - email:
-            recipients: 'fathi.boudra@linaro.org'
+            recipients: 'fathi.boudra@linaro.org stuart.monteith@linaro.org'

@@ -4,12 +4,14 @@
     defaults: global
     description: |
         * Writes results to /work/openjdk-testing/hadoop-terasort-benchmark-results.
-    logrotate:
-        numToKeep: 10
     properties:
         - authorization:
             linaro:
                 - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 9 - Write terasort results'
@@ -19,12 +21,18 @@
             name: JVM_VARIANT
             values:
                 - server
-                - client
+# SRDM: disable client runs while waiting for LEG-347 to be fixed.
+#                - client
         - axis:
             type: user-defined
             name: BUILD_TYPE
             values:
                 - release
+        - axis:
+            type: slave
+            name: label
+            values:
+                - aarch64-06
     execution-strategy:
         sequential: true
     wrappers:
@@ -44,8 +52,25 @@
 
             set -exu
 
-            new_results=incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT}/*.csv
-            prev_results=~openjdk-testing/hadoop-terasort-benchmark-results/results.csv
+            PERSIST=$HOME/srv/openjdk9
+            export BENCHMARK_RESULTS_DIR=$PERSIST/hadoop-terasort-benchmark-results
+            new_results=incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=${label}/*.csv
+            prev_results=$BENCHMARK_RESULTS_DIR/results.csv
+
+            # Ensure persistent directory exists.
+            mkdir -p $BENCHMARK_RESULTS_DIR
+
+            # Tolerate missing results.csv file.
+            if [ ! -f $prev_results ]; then
+                touch $prev_results
+            fi
+
+            SCRIPT_DIR=$PERSIST/hadoop-test-scripts
+            if [ -d $SCRIPT_DIR ]; then
+                (cd $SCRIPT_DIR; git pull)
+            else
+                git clone https://git.linaro.org/leg/openjdk/hadoop-test-scripts.git $SCRIPT_DIR
+            fi
 
             echo "Previous Results"
             echo "----------------"
@@ -54,4 +79,4 @@
 
             cat ${new_results} >> ${prev_results}
 
-            ~openjdk-testing/hadoop-test-scripts/update-results-db
+            $SCRIPT_DIR/update-results-db
