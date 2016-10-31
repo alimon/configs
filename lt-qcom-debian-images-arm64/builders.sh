@@ -155,7 +155,7 @@ EOF
     # Get rootfs
     export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
     export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-    export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+    export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${OS_FLAVOUR}/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
     wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
     # Create pre-built image(s)
@@ -205,7 +205,7 @@ EOF
     gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
     cat >> out/HEADER.textile << EOF
-* Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER} , size: ${rootfs_sz_real}
+* Linaro Debian ${rootfs}: "http://snapshots.linaro.org/debian/images/${OS_FLAVOUR}/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}":http://snapshots.linaro.org/debian/images/${OS_FLAVOUR}/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER} , size: ${rootfs_sz_real}
 EOF
 done
 
