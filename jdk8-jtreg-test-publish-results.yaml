@@ -3,7 +3,7 @@
     project-type: freestyle
     defaults: global
     description: |
-        * Results are published to http://openjdk.linaro.org/openjdk8-jtreg-nightly-tests/
+        * Results are published to http://openjdk.linaro.org/jdk8u/openjdk-jtreg-nightly-tests/
     properties:
         - authorization:
             anonymous:
@@ -41,8 +41,9 @@
 
             set -ex
 
-            PERSIST=$HOME/srv/openjdk8
+            PERSIST=$HOME/srv/openjdk8u
             SCRIPT_DIR=$PERSIST/openjdk-test-scripts
+            JDK_VERSION=8u
 
             (unset PRIVATE_KEY; env | sort  >$WORKSPACE/env.out)
             tree -fd -L 5 $PERSIST | xz >$WORKSPACE/tree.out.xz
@@ -56,7 +57,7 @@
             tar xf jtreg-build-4.2.0-SNAPSHOT.tar.xz
             export PATH=${WORKSPACE}/jtreg/bin:$PATH
             which jtdiff
-            TOP_DIR=$PERSIST/openjdk8-jtreg-nightly-tests bash -x $SCRIPT_DIR/publish $PUBLISH_DEST $NODE_NAME
+            TOP_DIR=$PERSIST/openjdk-jtreg-nightly-tests bash -x $SCRIPT_DIR/publish $PUBLISH_DEST $NODE_NAME
     publishers:
         - archive:
             artifacts: 'tree.out.xz, env.out'

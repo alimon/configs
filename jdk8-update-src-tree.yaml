@@ -4,56 +4,56 @@
         - hg:
             url: http://hg.openjdk.java.net/aarch64-port/jdk8u
             clean: true
-            subdir: jdk8
+            subdir: jdk8u
 - scm:
     name: corba
     scm:
         - hg:
             url: http://hg.openjdk.java.net/aarch64-port/jdk8u/corba
             clean: true
-            subdir: jdk8/corba
+            subdir: jdk8u/corba
 - scm:
     name: hotspot
     scm:
         - hg:
             url: http://hg.openjdk.java.net/aarch64-port/jdk8u/hotspot
             clean: true
-            subdir: jdk8/hotspot
+            subdir: jdk8u/hotspot
 - scm:
     name: jaxp
     scm:
         - hg:
             url: http://hg.openjdk.java.net/aarch64-port/jdk8u/jaxp
             clean: true
-            subdir: jdk8/jaxp
+            subdir: jdk8u/jaxp
 - scm:
     name: jaxws
     scm:
         - hg:
             url: http://hg.openjdk.java.net/aarch64-port/jdk8u/jaxws
             clean: true
-            subdir: jdk8/jaxws
+            subdir: jdk8u/jaxws
 - scm:
     name: jdk
     scm:
         - hg:
             url: http://hg.openjdk.java.net/aarch64-port/jdk8u/jdk
             clean: true
-            subdir: jdk8/jdk
+            subdir: jdk8u/jdk
 - scm:
     name: langtools
     scm:
         - hg:
             url: http://hg.openjdk.java.net/aarch64-port/jdk8u/langtools
             clean: true
-            subdir: jdk8/langtools
+            subdir: jdk8u/langtools
 - scm:
     name: nashorn
     scm:
         - hg:
             url: http://hg.openjdk.java.net/aarch64-port/jdk8u/nashorn
             clean: true
-            subdir: jdk8/nashorn
+            subdir: jdk8u/nashorn
 - job:
     name: jdk8-update-src-tree
     project-type: freestyle
@@ -102,7 +102,7 @@
             rm -rf out
             mkdir out
 
-            pushd jdk8
+            pushd jdk8u
             find . -name BOM -exec rm {} \;
             commit_id=$(hg identify | awk '{print $1}')
             echo "jdk8-${commit_id}" | tee -a BOM
@@ -126,10 +126,10 @@
             echo "export YEAR=${YEAR}" > out/build-date.sh
             echo "export DAY_OF_YEAR=${DAY_OF_YEAR}" >> out/build-date.sh
 
-            tar --exclude=.hg -acf out/jdk8.tar.gz jdk8
+            tar --exclude=.hg -acf out/jdk8u.tar.gz jdk8u
     publishers:
         - archive:
-            artifacts: 'out/jdk8.tar.gz, out/build-date.sh'
+            artifacts: 'out/jdk8u.tar.gz, out/build-date.sh'
         - fingerprint:
             files: 'out/*'
             record-artifacts: true

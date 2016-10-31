@@ -3,7 +3,7 @@
     project-type: freestyle
     defaults: global
     description: |
-        This jobs writes the current jdk8 src tree to /work/openjdk-testing/openjdk8-jtreg-nightly-tests/...<br>
+        This jobs writes the current jdk8u src tree to /work/openjdk-testing/jdk8u/openjdk-jtreg-nightly-tests/...<br>
         It is used to report failure/errors against the jtreg results.
     properties:
         - authorization:
@@ -34,10 +34,10 @@
 
             : ${YEAR:=$(date +%Y)}
             : ${DAY_OF_YEAR:=$(date +%j)}
-            PERSIST=$HOME/srv/openjdk8
+            PERSIST=$HOME/srv/openjdk8u
 
-            TOP_DIR=$PERSIST/openjdk8-jtreg-nightly-tests
+            TOP_DIR=$PERSIST/openjdk-jtreg-nightly-tests
             src_dir=$TOP_DIR/src/$YEAR/$DAY_OF_YEAR
             mkdir -p $src_dir
             echo "Extracting tarball to $src_dir"
-            tar -C $src_dir --strip-components=1 -xf $WORKSPACE/incoming/jdk8.tar.gz
+            tar -C $src_dir --strip-components=1 -xf $WORKSPACE/incoming/jdk8u.tar.gz
