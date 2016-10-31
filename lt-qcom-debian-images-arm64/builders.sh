@@ -153,8 +153,8 @@ EOF
     linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
 
     # Get rootfs
-    export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
-    export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+    export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/${OS_FLAVOUR}-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+    export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/${OS_FLAVOUR}-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
     export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${OS_FLAVOUR}/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
     wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
