@@ -118,13 +118,14 @@
             echo "    sanitycheck"
             echo "########################################################################"
 
-            sanitycheck \
+            time sanitycheck \
               --platform ${PLATFORM} \
               --inline-logs \
               --build-only \
               --outdir ${OUTDIR} \
               --no-clean \
-              --enable-slow
+              --enable-slow \
+              --ccache
 
             cd ${WORKSPACE}
             find ${OUTDIR} -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
