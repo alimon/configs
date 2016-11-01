@@ -7,6 +7,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
             linaro:
                 - job-read
                 - job-extended-read
@@ -16,6 +17,10 @@
             days-to-keep: 30
             num-to-keep: 30
             artifact-num-to-keep: 30
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'staging.validation.linaro.org/RPC2/'
     disabled: false
     node: master
     child-workspace: .
@@ -151,6 +156,39 @@
         - build-name-setter:
             name: 'version.txt'
             file: true
+        - shell: |
+            #!/bin/bash -e
+
+            case "${PLATFORM}" in
+              qemu_cortex_m3)
+                export DEVICE_TYPE=qemu
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${PLATFORM}"
+                ;;
+            esac
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            [ -z "${DEVICE_TYPE}" ] || \
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                -e "s|\${ZEPHYR_GCC_VARIANT}|${ZEPHYR_GCC_VARIANT}|" \
+                -e "s|\${PLATFORM}|${PLATFORM}|" \
+                < configs/zephyr-upstream/lava-job-definitions/${DEVICE_TYPE}/task-api-test.yaml \
+                > custom_lava_job_definition.yaml
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - archive:
             artifacts: 'scripts/sanity_chk/last_sanity.csv'
