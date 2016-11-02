@@ -1,3 +1,24 @@
+- scm:
+    name: jmh
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/code-tools/jmh
+            clean: true
+            browser: hgweb
+            browser-url: http://hg.openjdk.java.net/code-tools/jmh
+- scm:
+    name: jmh-linaro-org
+    scm:
+        - git:
+            url: https://git.linaro.org/leg/openjdk/jmh-linaro-org
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            basedir: jmh-linaro-org
 - job:
     name: jmh-build
     project-type: freestyle
@@ -20,28 +41,37 @@
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK - Build jmh-linaro-org'
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/code-tools/jmh
-            clean: true
-            browser: hgweb
-            browser-url: http://hg.openjdk.java.net/code-tools/jmh
-    scm:
-         - git:
-            url: https://git.linaro.org/leg/openjdk/jmh-linaro-org
-            refspec: +refs/heads/master:refs/remotes/origin/master
-            name: origin
-            branches:
-                - refs/heads/master
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-            basedir: jmh-linaro-org
     triggers:
+        # We poll the JMH Mercurial repository, and get triggered by review.linaro.org
         - pollscm:
-            cron: 'H * * * *'
+            cron: 'H 3 * * *'
+        - gerrit:
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: true
+                    exclude-trivial-rebase: true
+                    exclude-no-code-change: true
+            server-name: 'review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            gerrit-build-successful-codereview-value: 1
+            gerrit-build-failed-codereview-value: -1
+            readable-message: true
+            successful-message: 'Build Successful'
+            failure-message: 'Build FAILED'
+            trigger-for-unreviewed-patches: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'leg/openjdk/jmh-linaro-org'
+                  branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: '**'
     wrappers:
         - timestamps
+    scm:
+        - jmh
+        - jmh-linaro-org
     builders:
         - maven-target:
             goals: clean install
