@@ -1,0 +1,87 @@
+- job:
+    name: jmh-build
+    project-type: freestyle
+    defaults: global
+    description: |
+        Build jmh with jmh-linaro-org benchmarks. Builds all of jmh and runs unit
+        tests before building jmh-linaro-org.
+        benchmarks.jar is published with jmh-linaro-org benchmarks.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            num-to-keep: 10
+            artifact-num-to-keep: 1
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK - Build jmh-linaro-org'
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/code-tools/jmh
+            clean: true
+            browser: hgweb
+            browser-url: http://hg.openjdk.java.net/code-tools/jmh
+    scm:
+         - git:
+            url: https://git.linaro.org/leg/openjdk/jmh-linaro-org
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            basedir: jmh-linaro-org
+    triggers:
+        - pollscm:
+            cron: 'H * * * *'
+    wrappers:
+        - timestamps
+    builders:
+        - maven-target:
+            goals: clean install
+            pom: pom.xml
+            private-repository: true
+        - maven-target:
+            goals: clean install
+            pom: jmh-linaro-org/pom.xml
+            private-repository: true
+#        - shell: |
+#            #!/bin/bash
+#
+#            set -exu
+#
+#            rm -rf jdk* apache-maven-*
+#
+#            wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL}
+#            tar -Jxf jdk*.tar.xz
+#            tar -zxf apache-maven-*.tar.gz
+#
+#            cd jdk*/lib/security/
+#            rm -f cacerts
+#            ln -s /etc/ssl/certs/java/cacerts
+#
+#            cd ${WORKSPACE}/jdk*
+#            export JAVA_HOME=${PWD}
+#
+#            cd ${WORKSPACE}/apache-maven-*
+#            export M3_HOME=${PWD}
+#
+#            # JDK 9 is needed to compile all the tests (tests-all).
+#            export PATH=${JAVA_HOME}/bin:${M3_HOME}/bin:${PATH}
+#            which java
+#            java -version
+#            mvn -version
+#
+#            cd ${WORKSPACE}
+#            mvn clean install -pl tests-all,tests-custom -am
+    publishers:
+        - archive:
+            artifacts: 'jmh-linaro-org/target/benchmarks.jar'
+        - email:
+            recipients: 'stuart.monteith@linaro.org'
