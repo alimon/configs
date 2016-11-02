@@ -52,7 +52,7 @@
     triggers:
         # We poll the JMH Mercurial repository, and get triggered by review.linaro.org
         - pollscm:
-            cron: 'H 3 * * *'
+            cron: 'H/10 * * * *'
         - gerrit:
             trigger-on:
                 - patchset-created-event:
@@ -107,8 +107,15 @@
             java -version
             mvn -version
 
-            cd ${WORKSPACE}/jmh
-            mvn clean install
+            # Only go through complete jmh build and test on periodic builds.
+            # There is a possibility of jmh being updated when patches are pushed
+            # to gerrit, but this should be triggered by the polling soon enough
+            if [ "${GERRIT_EVENT_TYPE" = ""  ]; then
+                cd ${WORKSPACE}/jmh
+                mvn clean install
+            fi
+
+            # Builds the samples and jmh, without running unit tests.
             cd ${WORKSPACE}/jmh/jmh-linaro-org
             mvn clean install
     publishers:
