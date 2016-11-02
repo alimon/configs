@@ -6,6 +6,7 @@
             clean: true
             browser: hgweb
             browser-url: http://hg.openjdk.java.net/code-tools/jmh
+            subdir: jmh
 - scm:
     name: jmh-linaro-org
     scm:
@@ -18,7 +19,7 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
-            basedir: jmh-linaro-org
+            basedir: jmh/jmh-linaro-org
 - job:
     name: jmh-build
     project-type: freestyle
@@ -38,6 +39,13 @@
         - build-discarder:
             num-to-keep: 10
             artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: JDK_URL
+            default: 'http://openjdk.linaro.org/releases/jdk8u-server-release-1609.tar.xz'
+        - string:
+            name: MAVEN_URL
+            default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK - Build jmh-linaro-org'
@@ -81,36 +89,37 @@
             goals: clean install
             pom: jmh-linaro-org/pom.xml
             private-repository: true
-#        - shell: |
-#            #!/bin/bash
-#
-#            set -exu
-#
-#            rm -rf jdk* apache-maven-*
-#
-#            wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL}
-#            tar -Jxf jdk*.tar.xz
-#            tar -zxf apache-maven-*.tar.gz
-#
-#            cd jdk*/lib/security/
-#            rm -f cacerts
-#            ln -s /etc/ssl/certs/java/cacerts
-#
-#            cd ${WORKSPACE}/jdk*
-#            export JAVA_HOME=${PWD}
-#
-#            cd ${WORKSPACE}/apache-maven-*
-#            export M3_HOME=${PWD}
-#
-#            # JDK 9 is needed to compile all the tests (tests-all).
-#            export PATH=${JAVA_HOME}/bin:${M3_HOME}/bin:${PATH}
-#            which java
-#            java -version
-#            mvn -version
-#
-#            cd ${WORKSPACE}
-#            mvn clean install -pl tests-all,tests-custom -am
-    publishers:
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            rm -rf jdk* apache-maven-*
+
+            wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL}
+            tar -Jxf jdk*.tar.xz
+            tar -zxf apache-maven-*.tar.gz
+
+            cd jdk*/lib/security/
+            rm -f cacerts
+            ln -s /etc/ssl/certs/java/cacerts
+
+            cd ${WORKSPACE}/jdk*
+            export JAVA_HOME=${PWD}
+
+            cd ${WORKSPACE}/apache-maven-*
+            export M3_HOME=${PWD}
+
+            export PATH=${JAVA_HOME}/bin:${M3_HOME}/bin:${PATH}
+            which java
+            java -version
+            mvn -version
+
+            cd ${WORKSPACE}/jmh
+            mvn clean install
+            cd ${WORKSPACE}/jmh/jmh-linaro-org
+            mvn clean install
+   publishers:
         - archive:
             artifacts: 'jmh-linaro-org/target/benchmarks.jar'
         - email:
