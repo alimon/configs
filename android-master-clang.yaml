@@ -38,8 +38,54 @@
             yes y | bash cmake-3.5.2-Linux-x86_64.sh
             export PATH=${PWD}/cmake-3.5.2-Linux-x86_64/bin/:${PATH}
 
+            # Generate fat partition hikey image for LAVA.
+            export TARGET_BOOTIMAGE_USE_FAT=true
+            mkdir -p /home/buildslave/srv/${JOB_NAME}
+            cd /home/buildslave/srv/${JOB_NAME}
             git clone --depth=1 http://git.linaro.org/git/people/minseong.kim/aosp_uclang.git
             (cd aosp_uclang && bash aosp-uclang-init-and-build.sh)
+            cd /home/buildslave/srv/${JOB_NAME}/aosp_master/out/target/product/hikey/
+            for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
+                echo "Compressing ${image}"
+                xz ${image}
+            done
+
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O BUILD-INFO.txt
+
+            # Publish binaries
+            PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
+            time linaro-cp.py \
+              --api_version 3 \
+              --manifest \
+              --no-build-info \
+              --link-latest \
+              --split-job-owner \
+              ./ \
+              ${PUB_DEST} \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+              --include "^[BHi][^/]+txt$" \
+              --include "^(MANIFEST|MD5SUMS|changelog.txt)$"
+
+             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+             DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+             TARGET_PRODUCT=${TARGET_PRODUCT}
+             MAKE_TARGETS=droidcore
+             JOB_NAME=${JOB_NAME}
+             BUILD_NUMBER=${BUILD_NUMBER}
+             IMAGE_EXTENSION=img.xz
+             BUILD_URL=${BUILD_URL}
+             LAVA_SERVER=validation.linaro.org/RPC2/
+             IMAGE_EXTENSION=img.xz
+             FRONTEND_JOB_NAME=${JOB_NAME}
+             DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
+             CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-boot.json
+             EOF
+
+             echo "Build finished"
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - email-ext:
             recipients: 'minseong.kim@linaro.org,vishal.bhoj@linaro.org,daniel.diaz@linaro.org'
