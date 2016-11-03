@@ -1,0 +1,102 @@
+- job:
+    name: 96boards-reference-platform-openembedded-morty
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'rpb-console-image rpb-console-image-lava'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'morty'
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/rpb-openembedded-${MANIFEST_BRANCH}/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+    disabled: false
+    node: master
+    display-name: 'Reference Platform - OpenEmbedded (morty)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - '96boards-64'
+                - 'bubblegum'
+                - 'dragonboard-410c'
+                - 'dragonboard-820c'
+                - 'hikey'
+                - 'hikey-32:hikey'
+                - 'sd-600eval'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+                - rpb-wayland
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-amd64
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: master
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw: rpb-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell: |
+            case "${MACHINE}" in
+              dragonboard-410c)
+                export DEVICE_TYPE=apq8016-sbc
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+            esac
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            [ -z "${DEVICE_TYPE}" ] || ./lci-build-tools/yaml-to-json.py configs/96boards-reference-platform-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+    publishers:
+# We can only archive files that are located in the workspace
+#        - archive:
+#            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
+        - email:
+            recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org nicolas.dechesne@linaro.org'
