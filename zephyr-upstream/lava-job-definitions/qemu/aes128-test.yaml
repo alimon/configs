@@ -1,6 +1,6 @@
 # Zephyr JOB definition for QEMU
 device_type: '${DEVICE_TYPE}'
-job_name: '${BUILD_URL} crypto-test-ae128'
+job_name: '${JOB_NAME} crypto-test-ae128'
 
 timeouts:
   job:
@@ -44,3 +44,11 @@ actions:
         PASS: pass
         FAIL: fail
 
+
+metadata:
+  build-url: ${BUILD_URL}
+  build-log: ${BUILD_URL}consoleText
+  zephyr-gcc-variant: ${ZEPHYR_GCC_VARIANT}
+  platform: ${PLATFORM}
+  git-url: https://git.linaro.org/zephyrproject-org/zephyr.git
+  git-commit: ${GIT_COMMIT}

@@ -4,7 +4,7 @@ set -ex
 
 git clone --depth 1 https://git.linaro.org/zephyrproject-org/zephyr.git ${WORKSPACE}
 git clean -fdx
-echo "#${BUILD_NUMBER}-$(git rev-parse --short=8 HEAD)" > version.txt
+echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 head -5 Makefile
 
