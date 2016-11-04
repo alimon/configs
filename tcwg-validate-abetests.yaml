@@ -1,0 +1,114 @@
+- job:
+    name: tcwg-validate-abetests
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    disabled: false
+    node: tcwg-x86_64-cam
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG BBB test for abe-tests.git'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/abe-tests.git
+            refspec: ${GERRIT_REFSPEC}
+            branches:
+                - ${GERRIT_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+            choosing-strategy: gerrit
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            gerrit-build-successful-codereview-value: 1
+            gerrit-build-failed-codereview-value: -1
+            readable-message: true
+            successful-message: 'Works for me'
+            failure-message: 'Well ... it worked on my machine'
+            trigger-for-unreviewed-patches: true
+            projects:
+                - project-compare-type: 'ANT'
+                  project-pattern: 'toolchain/abe-tests'
+                  branches:
+                    - branch-compare-type: 'ANT'
+                      branch-pattern: 'master'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-cam
+        - axis:
+            type: user-defined
+            name: test
+            values:
+                - abe-tests
+                - abe-tests-checkout
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            schroot_arch=amd64
+            schroot_image="tcwg-build-${schroot_arch}-trusty"
+
+            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
+            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+
+            # Sometimes /dev/pts can't get unmounted on the first try.
+            # Workaround by retrying.
+            trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true" 0 1 2 3 5 9 13 15
+
+            case "$test" in
+              abe-tests)
+                ARTIFACTS=${WORKSPACE}/artifacts
+                mkdir -p "${ARTIFACTS}"
+                ${BUILD_SHELL} -c "set -ex; ${WORKSPACE}/test-manifest2.sh --ref-snapshots /home/tcwg-buildslave/snapshots-ref --display-summary; cp full-manifest-test/*.txt ${ARTIFACTS}"
+                # full build logs are large, and not very useful, so we
+                # don't waste the disk space on them
+                rm -f ${ARTIFACTS}/test-mani-build[12].txt
+                ;;
+              abe-tests-checkout)
+                ARTIFACTS=${WORKSPACE}/artifacts
+                mkdir -p "${ARTIFACTS}"
+                ${BUILD_SHELL} -c "set -ex; ${WORKSPACE}/test-checkout.sh --clean-snapshots --ref-snapshots /home/tcwg-buildslave/snapshots-ref; cp checkout-test/workspace*/test_*.log ${ARTIFACTS}"
+                # the reports from here aren't usually needed, so are
+                # worth compressing
+                xz ${ARTIFACTS}/*
+                ;;
+            esac
+    publishers:
+        - workspace-cleanup:
+            include:
+              - "nothing"
+            dirmatch: true
+        - archive:
+            artifacts: 'artifacts/*'
+            latest-only: false
+
