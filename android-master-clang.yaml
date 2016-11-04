@@ -21,8 +21,15 @@
         - timeout:
             timeout: 500
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
+
+            # Download linaro-cp
+            mkdir -p ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
 
             sudo apt-get update
             sudo apt-get install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk libxml2-utils rsync
@@ -42,9 +49,15 @@
             export TARGET_BOOTIMAGE_USE_FAT=true
             mkdir -p /home/buildslave/srv/${JOB_NAME}
             cd /home/buildslave/srv/${JOB_NAME}
-            git clone --depth=1 http://git.linaro.org/git/people/minseong.kim/aosp_uclang.git
+            if [ -e aosp_uclang ]; then
+              cd aosp_uclang/
+              git pull origin master
+              cd -
+            else
+              git clone http://git.linaro.org/git/people/minseong.kim/aosp_uclang.git
+            fi
             (cd aosp_uclang && bash aosp-uclang-init-and-build.sh)
-            cd /home/buildslave/srv/${JOB_NAME}/aosp_master/out/target/product/hikey/
+            cd /home/buildslave/srv/${JOB_NAME}/aosp_uclang/aosp_master/out/target/product/hikey/
             for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
                 echo "Compressing ${image}"
                 xz ${image}
@@ -68,7 +81,7 @@
 
              cat << EOF > ${WORKSPACE}/post_build_lava_parameters
              DEVICE_TYPE=hikey
-             TARGET_PRODUCT=${TARGET_PRODUCT}
+             TARGET_PRODUCT=hikey
              MAKE_TARGETS=droidcore
              JOB_NAME=${JOB_NAME}
              BUILD_NUMBER=${BUILD_NUMBER}
