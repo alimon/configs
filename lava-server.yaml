@@ -38,16 +38,20 @@
                       branch-pattern: 'master'
     wrappers:
         - timestamps
-        - build-name:
-            name: '#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION,length=8}'
     builders:
-        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
             rm -rf ${WORKSPACE}/*
-            git clone https://git.linaro.org/${GERRIT_PROJECT} -b ${GERRIT_BRANCH}
+            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
+
+            git clone -b ${GERRIT_BRANCH} --depth 1 https://git.linaro.org/${GERRIT_PROJECT}
             cd *
             git log -n3
-            git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC} && git checkout FETCH_HEAD
+            git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
+            git checkout -q FETCH_HEAD
+
             ./ci-run --noinput
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
