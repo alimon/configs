@@ -12,13 +12,13 @@
     scm:
         - git:
             url: https://git.linaro.org/leg/openjdk/jmh-linaro-org
-            refspec: ${GERRIT_REFSPEC}
+            refspec: +refs/heads/master:refs/remotes/origin/master
+#            refspec: ${GERRIT_REFSPEC}
             name: origin
             branches:
-                - ${GERRIT_BRANCH}
+                 - refs/heads/master
+#                - ${GERRIT_BRANCH}
             skip-tag: true
-# Disable shallow clone for gerrit checkouts?
-# shallow-clone: true
             wipe-workspace: false
             basedir: jmh/jmh-linaro-org
             choosing-strategy: gerrit
@@ -54,13 +54,15 @@
     triggers:
         # We poll the JMH Mercurial repository, and get triggered by review.linaro.org
         - pollscm:
-            cron: 'H/10 * * * *'
+# Poll once an hour. Build if JMH changes, and not just jmh-linaro-org.
+            cron: 'H * * * *'
         - gerrit:
             trigger-on:
                 - patchset-created-event:
                     exclude-drafts: true
                     exclude-trivial-rebase: true
                     exclude-no-code-change: true
+                - change-merged-event
             server-name: 'review.linaro.org'
             override-votes: true
             gerrit-build-successful-verified-value: 1
@@ -115,6 +117,9 @@
             if [ "${GERRIT_EVENT_TYPE}" = ""  ]; then
                 cd ${WORKSPACE}/jmh
                 mvn clean install
+            else
+                cd ${WORKSPACE}/jmh/jmh-linaro-org
+                git fetch https://review.linaro.org/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
             fi
 
             # Builds the samples and jmh, without running unit tests.
