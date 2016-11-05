@@ -24,7 +24,7 @@
             name: ATF_VERSION
             default: 'v1.2'
     disabled: false
-    node: build
+    node: master
     child-workspace: .
     display-name: 'Reference Platform - UEFI'
     axes:
@@ -52,15 +52,13 @@
             values:
                 - docker-jessie-amd64
     execution-strategy:
-        sequential: true
-        touchstone:
-            expr: 'MX_PLATFORM=="hikey" && MX_TYPE=="RELEASE"'
+        sequential: false
     wrapper:
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
         - matrix-tie-parent:
-            node: build
+            node: master
     builders:
         - linaro-publish-token:
             host: builds.96boards.org
