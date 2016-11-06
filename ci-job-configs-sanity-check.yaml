@@ -54,8 +54,6 @@
             # FIXME run-jjb.py was meant to be used for deployment only
             # use JJB 'test' command instead of 'update' command
             sed -i "s|update|test|" run-jjb.py
-            # set a fake publish key as it is required by run-jjb.py
-            export PUBLISH_KEY="test"
 
             export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
             export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}

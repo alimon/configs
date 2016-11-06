@@ -69,8 +69,6 @@ for conf_filename in filelist:
         buffer = f.read()
         template = string.Template(buffer)
         buffer = template.safe_substitute(
-            PUBLISH_KEY=os.environ.get('PUBLISH_KEY') or
-                        sys.exit('Key is not defined.'),
             ART_METRICS_TOKEN=os.environ.get('ART_METRICS_TOKEN'),
             ART_TOKEN=os.environ.get('ART_TOKEN'),
             ART_TOKEN_ART_REPORTS=os.environ.get('ART_TOKEN_ART_REPORTS'),
