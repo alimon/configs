@@ -19,9 +19,9 @@
             default: true
             description: 'Regenerate snapshots'
         - string:
-            name: abe_branch
-            default: refs/remotes/origin/stable
-            description: 'ABE revision to use'
+            name: scripts_branch
+            default: refs/remotes/origin/master
+            description: 'Scripts revision to use'
     disabled: false
     node: tcwg-x86_64-dev-01
     retry-count: 3
@@ -30,10 +30,10 @@
         - timed: '@weekly'
     scm:
         - git:
-            url: https://git-us.linaro.org/toolchain/abe.git
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
             refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
-                - ${abe_branch}
+                - ${scripts_branch}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
@@ -81,7 +81,7 @@
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
 
-            ./scripts/update-snapshots-ref.sh -v $nogen_opt $master_machine
+            ./update-snapshots-ref.sh -v $nogen_opt $master_machine
             if $regenerate; then
               # Distribute Foundation Model to the builders so that containers
               # running there can access Foundation Model via a bind-mount for
@@ -89,4 +89,4 @@
               tar xzf $HOME/FM000-KT-00035-r9p5-41rel0.tgz -C $HOME/snapshots-ref-new
               chmod -R ugo+rx $HOME/snapshots-ref-new/Foundation_Platformpkg
             fi
-            ./scripts/update-snapshots-ref.sh -v -r $master_machine $machines
+            ./update-snapshots-ref.sh -v -r $master_machine $machines
