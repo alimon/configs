@@ -28,6 +28,12 @@
         - timestamps
     builders:
         - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - shell: |
             #!/bin/bash
 
             set -e
@@ -35,13 +41,12 @@
             echo ""
             echo "########################################################################"
             echo "    Gerrit Environment"
-            env |grep GERRIT
+            env |grep '^GERRIT'
             echo "########################################################################"
 
             rm -rf ${WORKSPACE}/*
-            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
 
-            git clone -b ${GERRIT_BRANCH} --depth 1 https://git.linaro.org/${GERRIT_PROJECT}
+            git clone -b ${GERRIT_BRANCH} --depth 1 https://review.linaro.org/${GERRIT_PROJECT}
             cd *
             git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
             git checkout -q FETCH_HEAD
@@ -56,9 +61,6 @@
             export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
             jenkins-job-builder --version
             python run-jjb.py
-        - build-name-setter:
-            name: 'version.txt'
-            file: true
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'
