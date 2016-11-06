@@ -81,7 +81,7 @@
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
 
-            ./update-snapshots-ref.sh -v $nogen_opt $master_machine
+            ./tcwg-update-snapshots_ref.sh -v $nogen_opt $master_machine
             if $regenerate; then
               # Distribute Foundation Model to the builders so that containers
               # running there can access Foundation Model via a bind-mount for
@@ -89,4 +89,4 @@
               tar xzf $HOME/FM000-KT-00035-r9p5-41rel0.tgz -C $HOME/snapshots-ref-new
               chmod -R ugo+rx $HOME/snapshots-ref-new/Foundation_Platformpkg
             fi
-            ./update-snapshots-ref.sh -v -r $master_machine $machines
+            ./tcwg-update-snapshots_ref.sh -v -r $master_machine $machines
