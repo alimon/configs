@@ -17,13 +17,6 @@
         - build-discarder:
             num-to-keep: 30
             days-to-keep: 30
-    parameters:
-        - password:
-            name: COVERITY_TOKEN_ODP
-            default: ${COVERITY_TOKEN_ODP}
-        - password:
-            name: COVERITY_TOKEN_ODP_NETMAP
-            default: ${COVERITY_TOKEN_ODP_NETMAP}
     disabled: false
     node: master
     child-workspace: .
@@ -44,10 +37,18 @@
                 - docker-jessie-amd64
     wrappers:
         - timestamps
-        - matrix-tie-parent:
-            node: master
         - timeout:
             timeout: 60
+        - credentials-binding:
+            - text:
+                credential-id: COVERITY_TOKEN_ODP
+                variable: COVERITY_TOKEN_ODP
+        - credentials-binding:
+            - text:
+                credential-id: COVERITY_TOKEN_ODP_NETMAP
+                variable: COVERITY_TOKEN_ODP_NETMAP
+        - matrix-tie-parent:
+            node: master
     builders:
         - shell: |
             #!/bin/bash

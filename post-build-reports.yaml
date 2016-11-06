@@ -33,13 +33,6 @@
             days-to-keep: 90
             num-to-keep: 500
             artifact-num-to-keep: 1
-    parameters:
-        - password:
-            name: ART_TOKEN_ART_REPORTS
-            default: ${ART_TOKEN_ART_REPORTS}
-        - password:
-            name: ART_TOKEN_ANDROID_REPORTS
-            default: ${ART_TOKEN_ANDROID_REPORTS}
     disabled: false
     node: master
     display-name: 'Post build reports'
@@ -47,6 +40,14 @@
         sequential: true
     wrappers:
         - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: ART_TOKEN_ART_REPORTS
+                variable: ART_TOKEN_ART_REPORTS
+        - credentials-binding:
+            - text:
+                credential-id: ART_TOKEN_ANDROID_REPORTS
+                variable: ART_TOKEN_ANDROID_REPORTS
     builders:
         - shell: |
             #!/bin/bash

@@ -69,19 +69,9 @@ for conf_filename in filelist:
         buffer = f.read()
         template = string.Template(buffer)
         buffer = template.safe_substitute(
-            ART_METRICS_TOKEN=os.environ.get('ART_METRICS_TOKEN'),
-            ART_TOKEN=os.environ.get('ART_TOKEN'),
-            ART_TOKEN_ART_REPORTS=os.environ.get('ART_TOKEN_ART_REPORTS'),
-            ART_TOKEN_ANDROID_REPORTS=os.environ.get('ART_TOKEN_ANDROID_REPORTS'),
             AUTH_TOKEN=os.environ.get('AUTH_TOKEN'),
-            DB_TOKEN=os.environ.get('DB_TOKEN'),
             PRIVATE_KEY=os.environ.get('PRIVATE_KEY'),
-            COVERITY_TOKEN_ODP=os.environ.get('COVERITY_TOKEN_ODP'),
-            COVERITY_TOKEN_ODP_DPDK=os.environ.get('COVERITY_TOKEN_ODP_DPDK'),
-            COVERITY_TOKEN_ODP_KS2=os.environ.get('COVERITY_TOKEN_ODP_KS2'),
-            COVERITY_TOKEN_ODP_NETMAP=os.environ.get('COVERITY_TOKEN_ODP_NETMAP'),
             LT_QCOM_KEY=os.environ.get('LT_QCOM_KEY'),
-            LT_QUALCOMM_PRIVATE_KEY=os.environ.get('LT_QUALCOMM_PRIVATE_KEY'),
             LAVA_USER=os.environ.get('LAVA_USER'),
             LAVA_TOKEN=os.environ.get('LAVA_TOKEN'))
         with open('template.yaml', 'w') as f:

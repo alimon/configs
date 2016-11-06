@@ -19,10 +19,6 @@
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
-    parameters:
-        - password:
-            name: TOKEN
-            default: ${ART_METRICS_TOKEN}
     disabled: false
     node: docker-utopic-art
     display-name: 'ART: Build Metrics'
@@ -31,6 +27,10 @@
         - timestamps
         - timeout:
             timeout: 200
+        - credentials-binding:
+            - text:
+                credential-id: ART_METRICS_TOKEN
+                variable: ART_METRICS_TOKEN
     builders:
         - shell: |
             #!/bin/bash
