@@ -1,12 +1,5 @@
 #!/bin/bash
 
-trap cleanup_exit INT TERM EXIT
-
-cleanup_exit()
-{
-  [[ -n ${SSH_AGENT_PID} ]] && kill -9 ${SSH_AGENT_PID} ||:
-}
-
 # Install needed packages
 sudo apt-get update
 sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand rsync linaro-image-tools
@@ -30,50 +23,6 @@ if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
   sudo chmod 777 /home/buildslave/srv/${BUILD_DIR}
 fi
 cd /home/buildslave/srv/${BUILD_DIR}
-
-if [[ -v PRIVATE_KEY ]]; then
-# Handle private key
-mkdir -p $HOME/.ssh
-
-TMPKEYDIR=$(mktemp -d /tmp/linaroandroid.XXXXXX)
-cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
-#!/usr/bin/python
-
-import os
-import sys
-
-def main():
-    private_key = os.environ.get("PRIVATE_KEY", "Undefined")
-    if private_key == "Undefined":
-        sys.exit("PRIVATE_KEY is not defined.")
-
-    buffer = private_key.replace(' ','\n')
-    with open('linaro-private-key', 'w') as f:
-        f.write('-----BEGIN RSA PRIVATE KEY-----\n')
-        f.write(buffer)
-        f.write('\n-----END RSA PRIVATE KEY-----\n')
-
-if __name__ == "__main__":
-        main()
-EOF
-python ${TMPKEYDIR}/private-key-wrapper.py
-chmod 0600 linaro-private-key
-
-eval `ssh-agent` >/dev/null 2>/dev/null
-ssh-add linaro-private-key >/dev/null 2>/dev/null
-rm -rf linaro-private-key ${TMPKEYDIR}
-
-ssh-keyscan dev-private-git.linaro.org >> $HOME/.ssh/known_hosts
-ssh-keyscan dev-private-review.linaro.org >> $HOME/.ssh/known_hosts
-[[ -n "$GERRIT_HOST" ]] && ssh-keyscan $GERRIT_HOST >> $HOME/.ssh/known_hosts
-cat << EOF >> $HOME/.ssh/config
-Host dev-private-git.linaro.org
-    User git
-Host dev-private-review.linaro.org
-    User git
-EOF
-chmod 0600 $HOME/.ssh/* ||:
-fi
 
 # Download helper scripts (repo, linaro-cp)
 mkdir -p ${HOME}/bin

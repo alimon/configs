@@ -70,7 +70,6 @@ for conf_filename in filelist:
         template = string.Template(buffer)
         buffer = template.safe_substitute(
             AUTH_TOKEN=os.environ.get('AUTH_TOKEN'),
-            PRIVATE_KEY=os.environ.get('PRIVATE_KEY'),
             LT_QCOM_KEY=os.environ.get('LT_QCOM_KEY'),
             LAVA_USER=os.environ.get('LAVA_USER'),
             LAVA_TOKEN=os.environ.get('LAVA_TOKEN'))

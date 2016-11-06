@@ -74,10 +74,9 @@
         - timestamps
         - timeout:
             timeout: 500
-        - credentials-binding:
-            - text:
-                credential-id: PRIVATE_KEY
-                variable: PRIVATE_KEY
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
         - shell: |
             CI_MAIL_RECIPIENTS="${GERRIT_CHANGE_OWNER_EMAIL},${GERRIT_EVENT_ACCOUNT_EMAIL}"
@@ -94,10 +93,6 @@
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
             git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
-
-            # Private key
-            wget https://git.linaro.org/people/daniel.diaz/ci/misc-utils.git/blob_plain/HEAD:/add-private-key.sh
-            source add-private-key.sh
 
             cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
             ./setup_host.sh
