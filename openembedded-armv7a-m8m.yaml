@@ -10,9 +10,6 @@
             linaro:
                 - job-read
     parameters:
-        - password:
-            name: PRIVATE_KEY
-            default: ${PRIVATE_KEY}
         - string:
             name: MACHINE
             default: 'm8m'
@@ -26,6 +23,10 @@
         - timed: '@weekly'
     wrappers:
         - timestamps
+        - ssh-agent-credentials:
+            users:
+            # PRIVATE_KEY user id
+                - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
         - linaro-publish-token
         - shell: |
@@ -39,48 +40,11 @@
             {
               cd ${WORKSPACE}
               rm -rf build/tmp/deploy/images/m8m
-              kill -9 ${SSH_AGENT_PID}
             }
 
             sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
             sudo apt-get install -y python-pycurl chrpath gawk texinfo libsdl1.2-dev  
-            
-            TMPKEYDIR=$(mktemp -d /tmp/m8m.XXXXXX)
-            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
-            #!/usr/bin/python
-
-            import os
-            import sys
-
-            def main():
-                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
-                if private_key == "Undefined":
-                    sys.exit("PRIVATE_KEY is not defined.")
-
-                buffer = private_key.replace(' ','\n')
-                with open('linaro-private-key', 'w') as f:
-                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
-                    f.write(buffer)
-                    f.write('\n-----END RSA PRIVATE KEY-----\n')
-
-            if __name__ == "__main__":
-                    main()
-            EOF
-            python ${TMPKEYDIR}/private-key-wrapper.py
-            chmod 0600 ${WORKSPACE}/linaro-private-key
-
-            eval `ssh-agent` >/dev/null 2>/dev/null
-            ssh-add ${WORKSPACE}/linaro-private-key >/dev/null 2>/dev/null
-            rm -rf ${WORKSPACE}/linaro-private-key ${TMPKEYDIR}
-            
-            mkdir ~/.ssh
-            ssh-keyscan socionext.git.linaro.org >> ~/.ssh/known_hosts
-            cat << EOF >> ~/.ssh/config
-            Host socionext.git.linaro.org
-                User linaro-landing-team-socionext-bot
-            EOF
-            chmod 0600 ~/.ssh/*
 
             git clone -b dizzy --depth 1 ssh://socionext.git.linaro.org/srv/landing-teams.git.linaro.org/socionext/poky.git ${WORKSPACE}
 

@@ -12,10 +12,6 @@
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
-    parameters:
-        - password:
-            name: PRIVATE_KEY
-            default: ${PRIVATE_KEY}
     disabled: true
     node: docker-utopic-aosp
     display-name: 'Versatile Express - Member LCR Android M Build'
@@ -69,20 +65,17 @@
                       - compare-type: 'PLAIN'
                         pattern: 'lcr-member-vexpress-m'
     wrappers:
-        - timestamps
         - timeout:
             timeout: 500
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+            # PRIVATE_KEY user id
+                - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
         - linaro-publish-token
         - shell: |
             #!/bin/bash
-
-            trap cleanup_exit INT TERM EXIT
-
-            cleanup_exit()
-            {
-              kill -9 ${SSH_AGENT_PID}
-            }
 
             java -version
 
@@ -113,42 +106,6 @@
 
             git config --global user.email "ci_notify@linaro.org"
             git config --global user.name "Linaro CI"
-
-            mkdir -p $HOME/.ssh
-            ssh-keyscan dev-private-git.linaro.org >> $HOME/.ssh/known_hosts
-            cat << EOF >> $HOME/.ssh/config
-            Host dev-private-git.linaro.org
-                User git
-            EOF
-            chmod 0600 $HOME/.ssh/*
-
-            TMPKEYDIR=$(mktemp -d /tmp/linaroandroid.XXXXXX)
-            cat > ${TMPKEYDIR}/private-key-wrapper.py << EOF
-            #!/usr/bin/python
-
-            import os
-            import sys
-
-            def main():
-                private_key = os.environ.get("PRIVATE_KEY", "Undefined")
-                if private_key == "Undefined":
-                    sys.exit("PRIVATE_KEY is not defined.")
-
-                buffer = private_key.replace(' ','\n')
-                with open('linaro-private-key', 'w') as f:
-                    f.write('-----BEGIN RSA PRIVATE KEY-----\n')
-                    f.write(buffer)
-                    f.write('\n-----END RSA PRIVATE KEY-----\n')
-
-            if __name__ == "__main__":
-                    main()
-            EOF
-            python ${TMPKEYDIR}/private-key-wrapper.py
-            chmod 0600 linaro-private-key
-
-            eval `ssh-agent` >/dev/null 2>/dev/null
-            ssh-add linaro-private-key >/dev/null 2>/dev/null
-            rm -rf linaro-private-key ${TMPKEYDIR}
 
             # Runs as ubuntu
             set -xe
