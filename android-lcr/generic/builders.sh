@@ -8,10 +8,18 @@ IFS='#'; for url in ${BLOBS_URL}; do
   tar -xvf $(basename ${url})
   yes "I ACCEPT"|sh *.sh
   rm *.sh
+  rm $(basename ${url})
 done
 fi
 unset IFS
 
+if [ -n "$PATCHSETS" ]; then
+    rm -rf android-patchsets
+    git clone --depth=1 https://android-git.linaro.org/git/android-patchsets.git
+    for i in $PATCHSETS; do
+        sh ./android-patchsets/$i
+    done
+fi
 source build/envsetup.sh
 lunch ${LUNCH_TARGET}
 make -j"$(nproc)"
