@@ -63,12 +63,23 @@
         - matrix-tie-parent:
             node: master
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
         - shell:
             !include-raw: rpb-openembedded/builders.sh
         - inject:
             properties-file: post_build_lava_parameters
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              ${DEPLOY_DIR_IMAGE}/ \
+              snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE0}/${DISTRO}/${BUILD_NUMBER}
         - shell: |
             case "${MACHINE}" in
               dragonboard-410c)
