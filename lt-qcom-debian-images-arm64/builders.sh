@@ -87,6 +87,7 @@ assume_installed:
 - netbase
 - udev
 - linaro-artwork
+- systemd
 sources:
   qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${OS_FLAVOUR} main
   repo: http://repo.linaro.org/ubuntu/linaro-overlay ${OS_FLAVOUR} main
