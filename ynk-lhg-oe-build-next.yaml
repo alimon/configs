@@ -71,11 +71,10 @@
             chmod a+x ${HOME}/bin/repo
             export PATH=${HOME}/bin:${PATH}
 
-            # initialize repo if not done already
-            if [ ! -e ".repo/manifest.xml" ]; then
-               repo init -u https://github.com/andrey-konovalov/oe-rpb-manifest.git -b ${MANIFEST_BRANCH} -m default.xml
-               mkdir -p build
-            fi
+            # initialize repo
+            rm -rf .repo
+            repo init -u https://github.com/andrey-konovalov/oe-rpb-manifest.git -b ${MANIFEST_BRANCH} -m default.xml
+            mkdir -p build
 
             repo sync
             cp .repo/manifest.xml source-manifest.xml
