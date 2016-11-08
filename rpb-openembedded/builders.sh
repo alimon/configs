@@ -80,16 +80,10 @@ EOF
 # add useful debug info
 cat conf/{site,auto}.conf
 
-# Split machine:machine2 and pass it to secondary image.
-IFS=':' read -ra SPLITMACHINES <<< "${MACHINE}"
-unset IFS
-MACHINE0="${SPLITMACHINES[0]}"
-
 [ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-lava"
 [ "${DISTRO}" = "rpb-wayland" ]  && IMAGES+=" rpb-weston-image rpb-weston-image-lava"
-if [ ${#SPLITMACHINES[@]} -eq 2 ] ; then
-    MACHINE="${SPLITMACHINES[0]}"
-    bitbake_secondary_image  --extra-machine ${SPLITMACHINES[1]} ${IMAGES}
+if [ "${MACHINE}" = "hikey-32" ] ; then
+    bitbake_secondary_image --extra-machine hikey ${IMAGES}
 else
     bitbake ${IMAGES}
 fi
@@ -139,9 +133,8 @@ EOF
 set +e
 
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-MACHINE0=${MACHINE0}
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
-BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE0}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/boot-*-${MACHINE0}-*-${BUILD_NUMBER}.img | xargs basename)
-ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE0}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE0}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
-SYSTEM_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE0}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE0}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
+BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/boot-*-${MACHINE}-*-${BUILD_NUMBER}.img | xargs basename)
+ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
+SYSTEM_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
 EOF
