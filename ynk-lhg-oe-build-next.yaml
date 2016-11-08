@@ -18,16 +18,16 @@
     parameters:
         - string:
             name: MANIFEST_BRANCH
-            default: 'krogoth.lhg'
+            default: 'krogoth-staging'
         - string:
             name: DISTRO
             default: 'rpb-wayland'
         - string:
             name: image_type
-            default: 'rpb-weston-image'
+            default: 'rpb-westonchromium-image'
     disabled: false
     node: lhg
-    display-name: 'LHG rpb-based build (next)'
+    display-name: 'LHG rpb-based build (staging)'
     axes:
         - axis:
             type: slave
@@ -40,6 +40,7 @@
             values:
                 - dragonboard-410c
                 - hikey
+                - am57xx-evm
     execution-strategy:
         sequential: true
     wrappers:
@@ -107,10 +108,12 @@
             # ${WORKSPACE} - copy the artifacts there before archiving.
             rm -rf ${WORKSPACE}/out
             mkdir ${WORKSPACE}/out
-            cp ${DEPLOY_DIR_IMAGE}/*rootfs.ext4.gz ${WORKSPACE}/out
+            cp ${DEPLOY_DIR_IMAGE}/*rootfs.ext4.gz ${WORKSPACE}/out || true
             cp ${DEPLOY_DIR_IMAGE}/*manifest* ${WORKSPACE}/out
             cp ${DEPLOY_DIR_IMAGE}/MD5SUMS.txt ${WORKSPACE}/out
             cp ${DEPLOY_DIR_IMAGE}/boot--*.img ${WORKSPACE}/out || true
+            cp ${DEPLOY_DIR_IMAGE}/u-boot-am57xx-evm.img ${DEPLOY_DIR_IMAGE}/MLO-am57xx-evm ${WORKSPACE}/out || true
+            cp ${DEPLOY_DIR_IMAGE}/*-am57xx-evm-*.rootfs.tar.xz ${WORKSPACE}/out || true
     publishers:
         - archive:
             artifacts: 'out/*'
