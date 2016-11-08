@@ -72,12 +72,12 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
         - shell:
             !include-raw: lt-qcom-debian-images-arm64/builders.sh
         - shell:
             !include-raw: lt-qcom-debian-images-arm64/installer-dragonboard-410c.sh
+        - linaro-publish-token:
+            host: builds.96boards.org
         - shell: |
             #!/bin/bash
             set -ex
@@ -98,7 +98,7 @@
                  --link-latest \
                  out snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}
         - shell: |
-            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            VERSION=$(cat build-version)
 
             export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
             export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
@@ -119,7 +119,7 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            VERSION=$(cat build-version)
 
             export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
             export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
