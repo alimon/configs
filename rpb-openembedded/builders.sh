@@ -1,12 +1,12 @@
 #!/bin/bash
 
+set -e
+
 # workaround EDK2 is confused by the long path used during the build
 # and truncate files name expected by VfrCompile
 sudo mkdir -p /srv/oe
 sudo chown buildslave:buildslave /srv/oe
 cd /srv/oe
-
-set -ex
 
 trap cleanup_exit INT TERM EXIT
 
@@ -15,8 +15,19 @@ cleanup_exit()
     echo "Running cleanup_exit..."
 }
 
-sudo apt-get update
-sudo apt-get install -y python-pycurl chrpath gawk texinfo libsdl1.2-dev whiptail diffstat cpio libssl-dev android-tools-fsutils
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
+  echo "INFO: apt update error - try again in a moment"
+  sleep 15
+  sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
+fi
+pkg_list="python-pycurl chrpath gawk texinfo libsdl1.2-dev whiptail diffstat cpio libssl-dev android-tools-fsutils"
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y "${pkg_list}"; then
+  echo "INFO: apt install error - try again in a moment"
+  sleep 15
+  sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y "${pkg_list}"
+fi
+
+set -ex
 
 mkdir -p ${HOME}/bin
 curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
