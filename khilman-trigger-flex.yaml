@@ -297,8 +297,12 @@
               DEFCONFIG_LIST+="defconfig+CONFIG_RANDOMIZE_BASE=y "
               # ACPI currently depends on EXPERT on arm64
               DEFCONFIG_LIST+="defconfig+CONFIG_EXPERT=y+CONFIG_ACPI=y "
-              DEFCONFIG_LIST+="defconfig+CONFIG_KASAN=y "
               DEFCONFIG_LIST+="allmodconfig "
+
+              # Enable KASAN for non-stable until image size issues are sorted out
+              if [ ${tree_name} != "stable" ] && [ ${tree_name} != "stable-rc" ]; then
+                DEFCONFIG_LIST+="defconfig+CONFIG_KASAN=y "
+              fi
             fi
 
             if [ ${ARCH} = "x86" ]; then
