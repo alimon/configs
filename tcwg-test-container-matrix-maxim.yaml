@@ -90,7 +90,7 @@
             fi
 
             docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
-            ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
+            ssh_port="$(ssh -v $docker_host docker port $DOCKER_CONTAINER_ID 22 || echo 0:22)"
             ssh_port="$(echo $ssh_port | cut -d: -f 2)"
 
             if [ x"$upstream_dest" != x"" ]; then
