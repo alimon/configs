@@ -91,8 +91,8 @@
             values:
                 - docker-trusty-amd64-tcwg-build
                 - docker-trusty-i386-tcwg-build
-                - docker-trusty-arm64-tcwg-tx1-01
-                - docker-trusty-armhf-tcwg-tx1-01
+                - docker-trusty-arm64-tcwg-build-tx1-01
+                - docker-trusty-armhf-tcwg-build-tx1-01
         - axis:
             type: user-defined
             name: target
@@ -154,7 +154,7 @@
                 ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
                 ssh_port="$(echo $ssh_port | cut -d: -f 2)"
                 cat > test-container.param << EOF
-            container_name=docker-trusty-$container_arch-tcwg-test
+            container_name=docker-trusty-$container_arch-tcwg-test-tx1-02
             upstream_dest=$docker_host:$ssh_port:$WORKSPACE/test-container.data
             watchdog=upstream
             EOF
