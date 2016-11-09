@@ -43,6 +43,10 @@
             name: abe_branch
             default: refs/heads/master
             description: 'ABE revision to test'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts revision to use'
         - choice:
             name: debug
             choices:
@@ -149,7 +153,8 @@
                 exit 1
                 ;;
             esac
-            ${shell} ${WORKSPACE}/abe/scripts/MakeRelease.job --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config}
+            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+            ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir=$WORKSPACE/abe --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config}
             if test $? -gt 0; then
               exit 1
             fi
