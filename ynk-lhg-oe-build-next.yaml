@@ -59,20 +59,13 @@
 
             set -x
 
-            trap cleanup_exit INT TERM EXIT
-
-            cleanup_exit()
-            {
-                echo "Running cleanup_exit..."
-            }
-
             mkdir -p ${HOME}/bin
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
             chmod a+x ${HOME}/bin/repo
             export PATH=${HOME}/bin:${PATH}
 
             # initialize repo
-            rm -rf .repo
+            rm -rf .repo bitbake layers
             repo init -u https://github.com/andrey-konovalov/oe-rpb-manifest.git -b ${MANIFEST_BRANCH} -m default.xml
             mkdir -p build
 
@@ -83,7 +76,7 @@
             # the setup-environment will create local.conf, make sure we get rid
             # of old config. Let's remove the previous TMPDIR as well. We want
             # to preserve build/buildhistory though.
-            rm -rf build/conf build/tmp-*glibc/
+            rm -rf conf build/conf build/tmp-*glibc/
 
             # Accept EULA if/when needed
             export EULA_dragonboard410c=1
