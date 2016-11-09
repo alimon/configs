@@ -12,7 +12,7 @@
                 - job-cancel
         - build-discarder:
             days-to-keep: 30
-            num-to-keep: 30
+            num-to-keep: 100
     parameters:
         - string:
             name: override
@@ -72,7 +72,7 @@
             description: 'ABE revision to test'
     disabled: false
     node: tcwg-x86_64-cam
-    child-workspace: $label/$target
+    child-workspace: $target
     concurrent: true
     display-name: 'TCWG ZZZ BuildFarm Maxim'
     scm:
@@ -91,8 +91,8 @@
             values:
                 - docker-trusty-amd64-tcwg-build
                 - docker-trusty-i386-tcwg-build
-                - docker-trusty-arm64-tcwg-build
-                - docker-trusty-armhf-tcwg-build
+                - docker-trusty-arm64-tcwg-tx1-01
+                - docker-trusty-armhf-tcwg-tx1-01
         - axis:
             type: user-defined
             name: target
@@ -172,7 +172,7 @@
             condition-filename: test-container.param
             steps:
                 - trigger-builds:
-                    - project: tcwg-test-container-matrix
+                    - project: tcwg-test-container-matrix-maxim
                       property-file: test-container.param
                       block: false
         - conditional-step:
