@@ -89,11 +89,13 @@
             tar -C ${basedir} \
               --transform="s/YYY__DAY_OF_YEAR__YYY/$DAY_OF_YEAR/;s/XXX__YEAR__XXX/$YEAR/" \
               --show-transformed-names \
+              --overwrite \
               -xvf ${result_tarball}
 
             tar -C ${image_dir} \
               --strip-components=1 \
               --show-transformed-names \
+              --overwrite \
               -xvf ${image_tarball}
 
             # Change location.
