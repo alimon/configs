@@ -122,6 +122,9 @@
             : ${YEAR_YESTERDAY:=$YEAR}
             : ${DAY_OF_YEAR_YESTERDAY:=$((10#$DAY_OF_YEAR - 1))}
 
+            echo "YEAR=${YEAR}" >dates.prop
+            echo "DAY_OF_YEAR=${DAY_OF_YEAR}" >>dates.prop
+
             echo "export YEAR=${YEAR}" > out/build-date.sh
             echo "export DAY_OF_YEAR=${DAY_OF_YEAR}" >> out/build-date.sh
 
@@ -135,4 +138,4 @@
         - trigger-parameterized-builds:
             - project: jdk9-build-and-test
               condition: SUCCESS
-              trigger-with-no-params: true
+              property-file: dates.prop

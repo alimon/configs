@@ -11,10 +11,18 @@
             openjdk-members:
                 - job-build
                 - job-cancel
+                - job-workspace
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
+    parameters:
+        - string:
+            name: YEAR
+            default: 'default'
+        - string:
+            name: DAY_OF_YEAR
+            default: 'default'
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 9 - Write jtreg tests results'
@@ -85,16 +93,19 @@
             report_dir=${basedir}/reports/${JVM_VARIANT}-${BUILD_TYPE}/${JTREG_CATEGORY}/$(uname -m)/${YEAR}/${DAY_OF_YEAR}/JTreport
             image_dir=${basedir}/builds/${JVM_VARIANT}-${BUILD_TYPE},label=${label}/${YEAR}/${DAY_OF_YEAR}/images/jdk
 
+            rm -rf  ${image_dir}
             mkdir -p ${image_dir}
 
             tar -C ${basedir} \
               --transform="s/YYY__DAY_OF_YEAR__YYY/$DAY_OF_YEAR/;s/XXX__YEAR__XXX/$YEAR/" \
               --show-transformed-names \
+              --overwrite \
               -xvf ${result_tarball}
 
             tar -C ${image_dir} \
               --strip-components=1 \
               --show-transformed-names \
+              --overwrite \
               -xvf ${image_tarball}
 
             # Change location.

@@ -13,6 +13,13 @@
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
+    parameters:
+        - string:
+            name: YEAR
+            default: 'default'
+        - string:
+            name: DAY_OF_YEAR
+            default: 'default'
     disabled: false
     node: master
     display-name: 'OpenJDK 9 - Persist all results'
@@ -22,15 +29,20 @@
         - trigger-builds:
             - project: jdk9-jtreg-test-persist-results
               block: true
+              current-parameters: true
         - trigger-builds:
             - project: jdk9-specjbb2013-benchmark-persist-results
               block: true
+              current-parameters: true
         - trigger-builds:
             - project: jdk9-terasort-benchmark-persist-results
               block: true
+              current-parameters: true
         - trigger-builds:
             - project: jdk9-jcstress-test-persist-results
               block: true
+              current-parameters: true
         - trigger-builds:
             - project: jdk9-update-src-tree-persist
               block: true
+              current-parameters: true
