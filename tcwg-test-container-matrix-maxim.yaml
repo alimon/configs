@@ -44,10 +44,8 @@
             type: slave
             name: label
             values:
-                - docker-trusty-arm64-tcwg-test-tx1-01
-                - docker-trusty-arm64-tcwg-test-tx1-02
-                - docker-trusty-armhf-tcwg-test-tx1-01
-                - docker-trusty-armhf-tcwg-test-tx1-02
+                - docker-trusty-arm64-tcwg-test-tx1
+                - docker-trusty-armhf-tcwg-test-tx1
     execution-strategy:
         sequential: false
         combination-filter: |
@@ -90,7 +88,7 @@
             fi
 
             docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
-            ssh_port="$(ssh -v $docker_host docker port $DOCKER_CONTAINER_ID 22 || echo 0:22)"
+            ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
             ssh_port="$(echo $ssh_port | cut -d: -f 2)"
 
             if [ x"$upstream_dest" != x"" ]; then

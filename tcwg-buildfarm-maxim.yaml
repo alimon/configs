@@ -91,8 +91,8 @@
             values:
                 - docker-trusty-amd64-tcwg-build
                 - docker-trusty-i386-tcwg-build
-                - docker-trusty-arm64-tcwg-build-tx1-01
-                - docker-trusty-armhf-tcwg-build-tx1-01
+                - docker-trusty-arm64-tcwg-build-tx1
+                - docker-trusty-armhf-tcwg-build-tx1
         - axis:
             type: user-defined
             name: target
@@ -154,19 +154,12 @@
                 ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
                 ssh_port="$(echo $ssh_port | cut -d: -f 2)"
                 cat > test-container.param << EOF
-            container_name=docker-trusty-$container_arch-tcwg-test-tx1-02
+            container_name=docker-trusty-$container_arch-tcwg-test-tx1
             upstream_dest=$docker_host:$ssh_port:$WORKSPACE/test-container.data
             watchdog=upstream
             EOF
                 ;;
             esac
-            if echo "$override" | grep -q -e "--extraconfigdir ../config/gcc5" \
-               || true \
-               && [ x"$target" = x"aarch64-linux-gnu" ]; then
-              # Sanitizers in GCC-5 and GCC-6 toolchains for aarch64-linux-gnu
-              # don't support 48-bit VA.  Therefore don't run them on Xenial tester.
-              rm -f test-container.param
-            fi
         - conditional-step:
             condition-kind: file-exists
             condition-filename: test-container.param
