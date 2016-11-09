@@ -23,13 +23,13 @@ git clone --depth 1 -b ${BRANCH} https://github.com/openembedded/bitbake oe-core
 COMMIT_OE_CORE=$(cd oe-core && git rev-parse --short HEAD)
 COMMIT_BITBAKE=$(cd oe-core/bitbake && git rev-parse --short HEAD)
 
-# build folder is outside of oe-core, so that we can clean them separately
-source oe-core/oe-init-build-env build
-
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
 # we want to preserve build/buildhistory though.
 rm -rf conf tmp-*glibc
+
+# build folder is outside of oe-core, so that we can clean them separately
+source oe-core/oe-init-build-env build
 
 # light customizations
 cat << EOF >> conf/auto.conf
