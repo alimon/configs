@@ -1,0 +1,58 @@
+- job:
+    name: android-clang-toolchain
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'Upstream Clang toolchain build for AOSP'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell:
+            !include-raw: android-clang-toolchain/builders.sh
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --manifest \
+              --link-latest \
+              --split-job-owner \
+              /home/buildslave/srv/aosp/${JOB_NAME}/ \
+              ${PUB_DEST} \
+              --include "clang-4.0.0.tar.xz"
+    publishers:
+        - email-ext:
+            recipients: 'minseong.kim@linaro.org,vishal.bhoj@linaro.org,daniel.diaz@linaro.org'
+            content-type: text
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex=".*ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
