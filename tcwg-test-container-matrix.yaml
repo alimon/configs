@@ -89,7 +89,7 @@
                 container_user_uid_opt="-u $container_user_uid"
               fi
 
-              sudo useradd -m $container_user_uid_opt $container_user
+              sudo useradd -m $container_user_uid_opt -s /bin/bash $container_user
 
               sudo rsync -a ~/.ssh/ /home/$container_user/.ssh/
               sudo chown -R $container_user /home/$container_user/.ssh/
@@ -105,6 +105,21 @@
               upstream_file="$(echo "$upstream_dest" | cut -d: -f 3)"
               echo "$container_user@$docker_host:$ssh_port" | ssh -v -o Port=$upstream_port $upstream_machine tee $upstream_file
               ssh -v -o Port=$upstream_port $upstream_machine ls -l $upstream_file
+            fi
+
+            if [ x"$container_user" != x"$USER" ]; then
+              # If the job is started with a custom $container_user,
+              # (not tcwg-buildslave), then we assume that this job is for
+              # a developer to investigate a problem.  Make sure we save
+              # the data volumes if this container is killed on the job
+              # timeout.
+              docker_image="$(ssh $docker_host docker inspect --format="{{.Image}}" $DOCKER_CONTAINER_ID)"
+              backup_container_name="$container_user-$BUILD_ID"
+              ssh $docker_host docker create --name $backup_container_name --volumes-from $DOCKER_CONTAINER_ID -P $docker_image
+              backup_container_port="$(ssh $docker_host docker port $backup_container_name 22)"
+              backup_container_port="$(echo backup_container_port | cut -d: -f 2)"
+              echo "NOTE: To restart a copy of this container run on $docker_host: sudo -u $USER docker start $backup_container_name"
+              echo "NOTE: and then: ssh -p$backup_container_port $USER@docker_host"
             fi
 
             set +x
