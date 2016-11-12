@@ -116,10 +116,9 @@
               docker_image="$(ssh $docker_host docker inspect --format="{{.Image}}" $DOCKER_CONTAINER_ID)"
               backup_container_name="$container_user-$BUILD_ID"
               ssh $docker_host docker create --name $backup_container_name --volumes-from $DOCKER_CONTAINER_ID -P $docker_image
-              backup_container_port="$(ssh $docker_host docker port $backup_container_name 22)"
-              backup_container_port="$(echo backup_container_port | cut -d: -f 2)"
               echo "NOTE: To restart a copy of this container run on $docker_host: sudo -u $USER docker start $backup_container_name"
-              echo "NOTE: and then: ssh -p$backup_container_port $USER@docker_host"
+              echo "NOTE: then get container ssh port: ssh $docker_host docker port $backup_container_name 22"
+              echo "NOTE: and then: ssh -p<PORT> $USER@docker_host"
             fi
 
             set +x
