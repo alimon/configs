@@ -1,0 +1,21 @@
+- job:
+    name: trigger-ynk-lhg-oe-build-next
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: master
+    display-name: 'Trigger for LHG rpb-based build (staging)'
+    triggers:
+        - timed: 'H H(0-6) * * 1,3,5'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'ynk-lhg-oe-build-next'
