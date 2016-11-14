@@ -113,7 +113,7 @@
               # a developer to investigate a problem.  Make sure we save
               # the data volumes if this container is killed on the job
               # timeout.
-              backup_container_image="$(ssh $docker_host docker commit -p false $DOCKER_CONTAINER_ID)"
+              backup_container_image="$(ssh $docker_host docker commit --pause=false $DOCKER_CONTAINER_ID)"
               backup_container_name="$container_user-$BUILD_ID"
               ssh $docker_host docker create --name $backup_container_name --volumes-from $DOCKER_CONTAINER_ID -P $backup_container_image
               echo "NOTE: To restart a copy of this container run on $docker_host: sudo -u $USER docker start $backup_container_name"
