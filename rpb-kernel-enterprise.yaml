@@ -98,10 +98,16 @@
             debuild -S -uc -us
             cd ..
 
-            cat > ${WORKSPACE}/build-package-params <<EOF
+            cat > ${WORKSPACE}/build-package-params-jessie <<EOF
             source=${BUILD_URL}/artifact/$(echo *.dsc)
             repo=${TARGET_REPO}
             codename=jessie
+            EOF
+
+            cat > ${WORKSPACE}/build-package-params-stretch <<EOF
+            source=${BUILD_URL}/artifact/$(echo *.dsc)
+            repo=${TARGET_REPO}
+            codename=stretch
             EOF
 
             # Final preparation for publishing
@@ -141,7 +147,10 @@
             artifacts: '*.dsc, *.xz'
         - trigger-parameterized-builds:
             - project: build-package
-              property-file: build-package-params
+              property-file: build-package-params-jessie
+              condition: SUCCESS
+            - project: build-package
+              property-file: build-package-params-stretch
               condition: SUCCESS
         - email:
             recipients: 'fathi.boudra@linaro.org ricardo.salveti@linaro.org'
