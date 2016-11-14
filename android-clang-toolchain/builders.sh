@@ -14,8 +14,8 @@ rm -f *.deb
 yes y | bash cmake-3.5.2-Linux-x86_64.sh
 export PATH=${PWD}/cmake-3.5.2-Linux-x86_64/bin/:${PATH}
 
-mkdir -p /home/buildslave/srv/aosp/${JOB_NAME}
-cd /home/buildslave/srv/aosp/${JOB_NAME}
+mkdir -p ${HOME}/srv/aosp/${JOB_NAME}
+cd ${HOME}/srv/aosp/${JOB_NAME}
 
 repo init -u https://android-git.linaro.org/git/platform/manifest.git -b clang-build
 repo sync -j16 -c
