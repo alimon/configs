@@ -53,7 +53,7 @@
             set -ex
 
             sudo apt-get update
-            sudo apt-get install -y ccache python-pycurl quilt cpio rsync rpm
+            sudo apt-get install -y ccache python-pycurl quilt cpio rsync
 
             # Checkout source code
             git clone --depth 1 https://git.linaro.org/ci/debian-kernel-packaging.git debian-pkg
@@ -104,54 +104,11 @@
             codename=jessie
             EOF
 
-            # Build rpm source package
-            rpmversion=${kernel_version//-*/}
-            git clone --depth 1 -b c7-aarch64 git://git.centos.org/rpms/kernel-aarch64.git
-            cd ${WORKSPACE}/kernel-aarch64
-            sed -i "s/\%define rpmversion.*/\%define rpmversion $rpmversion/g" SPECS/kernel-aarch64.spec
-            sed -i "s/\%define pkgrelease.*/\%define pkgrelease reference.${BUILD_NUMBER}/g" SPECS/kernel-aarch64.spec
-            sed -i "s/\%define signmodules 1/\%define signmodules 0/g" SPECS/kernel-aarch64.spec
-            sed -i "/_without_debug:/a%define with_debug 0" SPECS/kernel-aarch64.spec
-            sed -i "/_without_debuginfo:/a%define with_debuginfo 0" SPECS/kernel-aarch64.spec
-            sed -i "s/mv linux-\%{rheltarball}/mv linux-\*/g" SPECS/kernel-aarch64.spec
-            sed -i '/\%{_libexecdir}\/perf-core\/\*/a\%{_datadir}\/perf-core\/\*' SPECS/kernel-aarch64.spec
-            sed -i "s/^BuildRequires: openssl$/BuildRequires: openssl-devel/g" SPECS/kernel-aarch64.spec
-            #cp -a ../linux/arch/arm64/configs/distro.config SOURCES/config-arm64-redhat
-            wget -q https://raw.githubusercontent.com/96boards/linux/96b/releases/2016.06/arch/arm64/configs/distro.config -O SOURCES/config-arm64-redhat
-
-            # Make sure config is sane for centos
-            sed -i "s/CONFIG_ATA=.*/CONFIG_ATA=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_ATA_PIIX=.*/CONFIG_ATA_PIIX=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_AUTOFS4_FS=.*/CONFIG_AUTOFS4_FS=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_SATA_AHCI=.*/CONFIG_SATA_AHCI=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_SATA_AHCI_PLATFORM=.*/CONFIG_SATA_AHCI_PLATFORM=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_AHCI_HIP05=.*/CONFIG_AHCI_HIP05=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_AMD_XGBE=.*/CONFIG_AMD_XGBE=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_SCSI_HISI_SAS=.*/CONFIG_SCSI_HISI_SAS=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_IPV6=.*/CONFIG_IPV6=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_HNS_MDIO=.*/CONFIG_HNS_MDIO=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_HNS=.*/CONFIG_HNS=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_HNS_DSAF=.*/CONFIG_HNS_DSAF=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_HNS_ENET=.*/CONFIG_HNS_ENET=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/.*CONFIG_ARM64_4K_PAGES.*/# CONFIG_ARM64_4K_PAGES is not set/g" SOURCES/config-arm64-redhat
-            sed -i "s/.*CONFIG_ARM64_64K_PAGES.*/CONFIG_ARM64_64K_PAGES=y/g" SOURCES/config-arm64-redhat
-
-            cp -a ${WORKSPACE}/orig/*.orig.tar.xz SOURCES/linux-${rpmversion}-reference.${BUILD_NUMBER}.tar.xz
-            rpmbuild --nodeps --define "%_topdir `pwd`" -bs SPECS/kernel-aarch64.spec
-            cp -a SRPMS/*.src.rpm ${WORKSPACE}/
-            cd ..
-
-            cat > ${WORKSPACE}/build-rpm-params <<EOF
-            source=https://builds.96boards.org/snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/kernel-aarch64-${rpmversion}-reference.${BUILD_NUMBER}.src.rpm
-            repo=${TARGET_REPO}
-            codename=centos-7
-            EOF
-
             # Final preparation for publishing
             mkdir out
             rm *.orig.tar.xz
             cp -a orig/*.orig.tar.xz ${WORKSPACE}/
-            cp -a *.dsc *.changes *.debian.tar.xz *.orig.tar.xz *.src.rpm out/
+            cp -a *.dsc *.changes *.debian.tar.xz *.orig.tar.xz out/
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
@@ -170,7 +127,6 @@
             * Git commit: ${GIT_COMMIT}
             * Kernel version: ${kernel_version}
             * Kernel deb version: ${KDEB_PKGVERSION}
-            * Kernel rpm version: ${rpmversion}-reference.${BUILD_NUMBER}
             EOF
 
             # Publish
@@ -182,13 +138,10 @@
               out snapshots/reference-platform/components/linux/enterprise/${BUILD_NUMBER}/
     publishers:
         - archive:
-            artifacts: '*.dsc, *.xz, *.src.rpm'
+            artifacts: '*.dsc, *.xz'
         - trigger-parameterized-builds:
             - project: build-package
               property-file: build-package-params
-              condition: SUCCESS
-            - project: build-rpm
-              property-file: build-rpm-params
               condition: SUCCESS
         - email:
             recipients: 'fathi.boudra@linaro.org ricardo.salveti@linaro.org'
