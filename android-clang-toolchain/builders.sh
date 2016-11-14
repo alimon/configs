@@ -32,6 +32,7 @@ cmake -G "Unix Makefiles" ../ \
  -DBUILD_SHARED_LIBS=True
 make install -j"$(nproc)"
 
+rm -f clang-4.0.0.tar.xz
 tar -I pxz -cf clang-4.0.0.tar.xz clang-4.0.0
 
 echo "Build finished"
