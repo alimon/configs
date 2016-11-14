@@ -101,6 +101,14 @@
             # ${WORKSPACE} - create the link before archiving.
             rm -f ${WORKSPACE}/out
             ln -s ${DEPLOY_DIR_IMAGE} ${WORKSPACE}/out
+
+            # publishing is done in a separate build step, so $DEPLOY_DIR_IMAGE
+            # needs to be passed using "Inject environment variables"
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+            EOF
+        - inject:
+            properties-file: post_build_lava_parameters
         - linaro-publish-token
         - shell: |
             #!/bin/bash
