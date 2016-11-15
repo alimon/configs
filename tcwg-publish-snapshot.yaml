@@ -24,8 +24,8 @@
                description: 'Publish binaries'
         - string:
                 name: notes_branch
-                default: 'refs/heads/toolchain-snapshots'
-                description: 'Release notes branch name or sha1'
+                default: 'toolchain-snapshots'
+                description: 'Release notes branch name or sha1, e.g., releases/linaro-6.2-2016.11-rc2'
         - bool:
                name: notes_only
                default: false
@@ -79,8 +79,8 @@
             mkdir -p out
 
             # Release notes
-            notes_url=https://git.linaro.org/toolchain/release-notes.git/blob_plain/${notes_branch}
-            wget ${notes_url}:${notes_path}/README.textile -O out/README.textile
+            notes_url=https://git.linaro.org/toolchain/release-notes.git/plain/
+            wget ${notes_url}${notes_path}/README.textile?h=${notes_branch} -O out/README.textile
 
             if ! ${notes_only}; then
               cp ${cp_content} out/
@@ -88,7 +88,7 @@
 
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            wget https://git.linaro.org/ci/publishing-api.git/plain/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               out ${dest_dir}/${snapshot_version}/
