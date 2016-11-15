@@ -35,13 +35,13 @@ export PATH=${HOME}/bin:${PATH}
 rm -rf build-tools jenkins-tools build-configs build/out build/android-patchsets
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-android-build-tools.git build-tools
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
-git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
+git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git build-configs
 
 set -xe
 # Define job configuration's repo
 export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
 cat << EOF > config.txt
-BUILD_CONFIG_REPO=http://android.git.linaro.org/git/android-build-configs.git
+BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
 BUILD_CONFIG_BRANCH=master
 EOF
 echo config.txt

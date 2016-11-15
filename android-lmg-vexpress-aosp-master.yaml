@@ -54,13 +54,13 @@
             rm -rf build-tools jenkins-tools build-configs build/out build/android-patchsets
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-android-build-tools.git build-tools
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
-            git clone --depth 1 http://android.git.linaro.org/git/android-build-configs.git build-configs
+            git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git build-configs
 
             export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
 
             cat << EOF > config.txt
-            BUILD_CONFIG_REPO=http://android.git.linaro.org/git/android-build-configs.git
+            BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
             BUILD_CONFIG_BRANCH=master
             EOF
             echo config.txt
