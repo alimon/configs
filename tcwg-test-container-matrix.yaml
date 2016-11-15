@@ -141,9 +141,16 @@
               "upstream")
                 echo "To stop container remove $upstream_dest"
 
-                while ssh -o Port=$upstream_port $upstream_machine test -e $upstream_file; do
-                  sleep 60
-                  echo "Running processes: $(ps ax | wc -l)"
+                retry=3
+                while [ $retry -gt 0 ]; do
+                  while ssh -o Port=$upstream_port $upstream_machine test -e $upstream_file; do
+                    retry=3
+                    sleep 60
+                    echo "Running processes: $(ps ax | wc -l)"
+                  done
+                  retry=$(($retry-1))
+                  echo "Retrying check: $retry"
+                  sleep 10
                 done
                 ;;
               *)
