@@ -51,12 +51,7 @@
             }
 
             sudo apt-get update
-            sudo apt-get install -y android-tools-fsutils kpartx mtools python-pycurl
-            wget -q \
-              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
-              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb
-            sudo dpkg -i --force-all *.deb
-            rm -f *.deb
+            sudo apt-get install -y android-tools-fsutils kpartx mtools python-pycurl linaro-image-tools libssl-dev
 
             export LANG=C
             export make_bootwrapper=false
@@ -65,12 +60,11 @@
             export kernel_config=defconfig
             export MAKE_DTBS=true
             export ARCH=arm64
-            export tcbindir="${HOME}/srv/toolchain/arm64-tc-15.08/bin"
-            export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/5.1-2015.08/aarch64-linux-gnu/gcc-linaro-5.1-2015.08-x86_64_aarch64-linux-gnu.tar.xz
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-16.08/bin"
+            export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.1-2016.08/aarch64-linux-gnu/gcc-linaro-6.1.1-2016.08-x86_64_aarch64-linux-gnu.tar.xz
 
-            # FIXME workaround build failure introduced by
-            # https://github.com/96boards-hikey/linux/commit/18d938d
-            sed -i '/etnaviv/d' drivers/gpu/drm/Makefile
+            # FIXME pull the kernel config from meta-96boards
+            wget -q https://raw.githubusercontent.com/96boards/meta-96boards/master/recipes-kernel/linux/linux-hikey/defconfig -O arch/arm64/configs/defconfig
 
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
@@ -80,7 +74,7 @@
             cp -a linux-*.deb out/
 
             git clone --depth 1 https://github.com/OP-TEE/optee_linuxdriver.git
-            export PATH=${WORKSPACE}/srv/toolchain/arm64-tc-15.08/bin:${PATH}
+            export PATH=${WORKSPACE}/srv/toolchain/arm64-tc-16.08/bin:${PATH}
             export CROSS_COMPILE=aarch64-linux-gnu-
             #make -C ${KERNEL_PATH} M=${WORKSPACE}/optee_linuxdriver modules
             #make -C ${KERNEL_PATH} M=${WORKSPACE}/optee_linuxdriver INSTALL_MOD_PATH=${WORKSPACE}/build-utilites/fs modules_install
@@ -88,14 +82,15 @@
 
             # Create the hardware pack
             cp -a configs/96boards-hikey/hwpacks/linaro-hikey .
+            sed -i '/- ti-uim/d' linaro-hikey
 
             VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
             linaro-hwpack-create --debug linaro-hikey ${VERSION}
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-image-*-linaro-hikey_*.deb` -r linux-image -d -i
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
 
-            FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
-            FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
+            FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi-openplatformpkg/lastSuccessfulBuild/buildNumber`
+            FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi-openplatformpkg/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
             wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
 
             GRUB_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/grub/latest"
@@ -107,7 +102,7 @@
             * git URL: ${GIT_URL}
             * git branch: ${GIT_BRANCH}
             * git commit: ${GIT_COMMIT}
-            * uefi: http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
+            * uefi: http://builds.96boards.org/snapshots/hikey/linaro/uefi-openplatformpkg/${FASTBOOT_EFI_BUILD_NUMBER}
             EOF
 
             for rootfs in ${ROOTFS}; do
@@ -208,11 +203,10 @@
                              rootfs/etc/NetworkManager/dispatcher.d/99hikey
               sudo chown -R 1000:1000 rootfs/home/linaro
 
-              # ******** TI wl18xx R8.6 - out of tree firmware ********
-              git clone -b R8.6 --depth 1 git://git.ti.com/wilink8-wlan/wl18xx_fw.git
-              sudo cp -a ./wl18xx_fw/wl18xx-fw-4.bin rootfs/lib/firmware/ti-connectivity/
-              rm -rf wl18xx_fw
-              # ******** TI wl18xx R8.6 - out of tree firmware ********
+              # Get TI wl18xx 8.9.0.0.69 - linux-firmware tree
+              wget -q https://git.kernel.org/cgit/linux/kernel/git/firmware/linux-firmware.git/plain/ti-connectivity/wl18xx-fw-4.bin?id=dbb85a5154a5da7fa94bf9caa3658d4b6999cee6 -O wl18xx-fw-4.bin
+              sudo cp -a wl18xx-fw-4.bin rootfs/lib/firmware/ti-connectivity/
+              rm -f wl18xx-fw-4.bin
 
               sudo mkfs.ext4 -L rootfs out/hikey-jessie_${rootfs}_${VERSION}.emmc.img.ext4 2G
               mkdir rootfs-ext4
