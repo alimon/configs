@@ -39,6 +39,14 @@
               ${HOME}/srv/aosp/${JOB_NAME}/llvm/build/ \
               ${PUB_DEST} \
               --include "^(clang-4.0.0.tar.xz)$"
+
+              cat << EOF > ${WORKSPACE}/android-master-clang_parameters
+              CLANG_TOOLCHAIN_URL=http://snapshots.linaro.org/android/android-clang-toolchain/${BUILD_NUMBER}/clang-4.0.0.tar.xz
+              EOF
+        - trigger-builds:
+            - project: 'android-master-clang'
+              property-file: android-master-clang_parameters
+              block: false
     publishers:
         - email-ext:
             recipients: 'minseong.kim@linaro.org,vishal.bhoj@linaro.org,daniel.diaz@linaro.org'

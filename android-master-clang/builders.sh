@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export BUILD_CONFIG_FILENAME=hikey-aosp-master
+
 # Install needed packages
 sudo apt-get update
 sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand rsync linaro-image-tools
