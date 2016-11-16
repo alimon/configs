@@ -189,8 +189,10 @@
                 tcwg_version="${tcwg_version}.${gcc_minor}"
             fi
 
+            buildid=`printf '%04d' ${BUILD_NUMBER}`
+
             tarball_linux="`basename ${tarball_linux}`"
-            tarball_linux_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}/${target}/${tarball_linux}"
+            tarball_linux_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_linux}"
             cat << EOF > tcwg.params.linux
             tarball_url=${tarball_linux_url}
             release=${tcwg_release}
@@ -199,7 +201,7 @@
 
             if test x"${canadian}" = x"true"; then
               tarball_mingw="`basename ${tarball_mingw}`"
-              tarball_mingw_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}/${target}/${tarball_mingw}"
+              tarball_mingw_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_mingw}"
               cat << EOF > tcwg.params.mingw
             tarball_url=${tarball_mingw_url}
             release=${tcwg_release}
