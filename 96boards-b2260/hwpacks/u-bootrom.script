@@ -1,0 +1,69 @@
+# u-bootrom supports u-boot.2015 commands plus few extras.
+#
+# Extra variables:
+#   script_dev_usb    'usb X.Y'  default usb instance:partition to boot from.
+#   script_dev_mmc    'mmc X.Y'  default mmc instance:partition to boot from.
+#   script_dev        $script_usb|mmc_dev depending on media where boot script was found.
+#   script_fsload     'fatload' or 'ext2load' depending on which was used to load boot script.
+#   dram_base         DDR start address
+#   dram_size         DDR size (in bytes)
+#   load_addr         default load address (DDR start)
+#   board             board id ("b2120", "b2260", ...)
+#
+# Extra commands:
+#   hpen              holding pen reconfiguration and kick support, for SMP boot.
+#   boot_optee        OPTEE specific boot command
+#
+# >
+# > help boot_optee
+#
+#    boot_optee s_entry [s_arg0 [s_arg1 [s_arg2 [s_arg3]]]] ns_entry
+#
+#    - boot a secure and a non secure application
+#    's_entry' is the secure application entry point
+#    's_arg0-3' are the 4 parameters passed to the secure application
+#    'ns_entry' is the non-secure application entry point.
+#               ns_entry has no argument. Secure application is
+#               expected to provide args, if any. Secure expects
+#               only an physical entry point from non secure.
+# >
+# > help hpen
+#
+# hpen prepare <addr> [1stage|2stage]
+#
+#    - prepare a 1stage or a 2stage hpen sequence.
+#      <addr> specifies the address of the hpen kicker to use. hexa.
+#
+# hpen kick hpen|<entrypoint>
+#
+#    - kick the loaded hpen. returns only once cores have all left
+#      the current hpen loop.
+#
+#      <entrypoint> is the target address core shall branch to.
+#
+#      Using string "hpen" allows to enter back to the hpen sequence.
+#      It allows to reprogram a specific hpen setup.
+#
+#     At u-boot entry, secondary boot core are placed in a 1stage hpen
+#     sequence with a local ERAM cell address as hpen kicker: 0x094100A4.
+#     magic value!
+# >
+#
+# Traces considerations:
+#
+# u-bootrom enables silent console. To get some logs from this script one
+# can disable silent mode ("setenv silent;") and re-enable silent mode
+# ("setenv silent 1") in this script.
+# -----------------------------------------------------------------------
+#
+# This is the default install: by default, boot the kernel for current board
+#
+
+script_path="b2260/u-bootrom.script-kernel"
+
+setenv silent;
+echo "[bootscript] boot from $script_path"
+setenv silent 1
+
+$script_fsload $script_dev $load_addr $script_path
+source $load_addr $filesize

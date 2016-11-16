@@ -1,0 +1,42 @@
+# u-bootrom supports u-boot.2015 commands plus few extras.
+#
+# Extra variables:
+#   script_dev_usb    'usb X.Y'  default usb instance:partition to boot from.
+#   script_dev_mmc    'mmc X.Y'  default mmc instance:partition to boot from.
+#   script_dev        $script_usb|mmc_dev depending on media where boot script was found.
+#   script_fsload     'fatload' or 'ext2load' depending on which was used to load boot script.
+#   dram_base         DDR start address
+#   dram_size         DDR size (in bytes)
+#   load_addr         default load address (DDR start)
+#   board             board id ("b2120", "b2260", ...)
+#
+# Extra commands:
+#   hpen              holding pen reconfiguration and kick support, for SMP boot.
+#   boot_optee        OPTEE specific boot command
+#
+# u-bootrom enables silent console. To get some logs from this script one
+# can disable silent mode ("setenv silent;") and re-enable silent mode
+# ("setenv silent 1") in this script.
+
+# disable silent mode to log where we attemp to boot from
+setenv silent;
+
+# images location
+
+setenv serverip 'X.X.X.X'
+
+script_path="boot_network_${board}.scr"
+
+# load images
+
+echo "[bootscript] fetching $script_path from tftp:$serverip"
+
+setenv autoload no
+dhcp
+tftp $load_addr $script_path
+
+# boot images
+
+echo "[bootscript] script found, source it."
+
+source $load_addr

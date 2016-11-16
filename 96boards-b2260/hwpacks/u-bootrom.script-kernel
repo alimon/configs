@@ -1,0 +1,60 @@
+# u-bootrom supports u-boot.2015 commands plus few extras.
+#
+# Extra variables:
+#   script_dev_usb    'usb X.Y'  default usb instance:partition to boot from.
+#   script_dev_mmc    'mmc X.Y'  default mmc instance:partition to boot from.
+#   script_dev        $script_usb|mmc_dev depending on media where boot script was found.
+#   script_fsload     'fatload' or 'ext2load' depending on which was used to load boot script.
+#   dram_base         DDR start address
+#   dram_size         DDR size (in bytes)
+#   load_addr         default load address (DDR start)
+#   board             board id ("b2120", "b2260", ...)
+#
+# Extra commands:
+#   hpen              holding pen reconfiguration and kick support, for SMP boot.
+#   boot_optee        OPTEE specific boot command
+#
+# u-bootrom enables silent console. To get some logs from this script one
+# can disable silent mode ("setenv silent;") and re-enable silent mode
+# ("setenv silent 1") in this script.
+
+# disable silent mode to log kernel boot attempt
+setenv silent;
+
+# images location
+
+fdt_path="stih410-b2260.dtb"
+fdt_addr=0x47000000
+
+kernel_path="uImage"
+kernel_addr=0x60000000
+
+# load images
+echo "[bootscript] loadbooting from $script_dev using $script_fsload"
+
+$script_fsload $script_dev $fdt_addr $fdt_path
+$script_fsload $script_dev $kernel_addr $kernel_path
+
+# boot images
+
+dcache flush;
+
+echo "[bootscript] prepare secondaries in holding pen: kicker at 0x094100A4"
+
+hpen prepare 0x094100A4
+hpen kick hpen
+
+setenv bootargs_sd 'console=ttyAS1,115200 CONSOLE=/dev/ttyAS1 consoleblank=0 root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait mem=992M@0x40000000 vmalloc=256m '
+setenv bootargs_usb 'console=ttyAS1,115200 CONSOLE=/dev/ttyAS1 consoleblank=0 root=/dev/sda2 rootfstype=ext4 rw rootwait mem=992M@0x40000000 vmalloc=256m '
+
+setenv bootargs $bootargs_sd
+if test "$script_dev" = "$script_dev_usb"; then setenv bootargs $bootargs_usb; fi
+
+setenv fdt_high 0xFFFFFFFF
+
+echo "[bootscript] kernel bootargs:"
+echo $bootargs
+echo
+echo "[bootscript] booting kernel $kernel_addr, fdt $fdt_addr"
+
+bootm $kernel_addr - $fdt_addr
