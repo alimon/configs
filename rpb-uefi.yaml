@@ -114,9 +114,9 @@
             # Per board repositories overrides
             if [ "${MX_PLATFORM}" == "hikey" ]; then
                 EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
-                EDK2_GIT_VERSION=76c7cfcc22c7448638acb6f904088b2ff3f79f63
+                EDK2_GIT_VERSION="origin/hikey"
                 ATF_GIT_URL=https://github.com/96boards-hikey/arm-trusted-firmware.git
-                ATF_GIT_VERSION=bdec62eeb8f3153a4647770e08aafd56a0bcd42b
+                ATF_GIT_VERSION="origin/hikey"
                 OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
                 OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
             fi
@@ -142,7 +142,9 @@
             cd OpenPlatformPkg; OPEN_PLATFORM_PKG_GIT_VERSION=`git log --format="%H" -1`; cd ..
 
             git clone $ATF_GIT_URL arm-trusted-firmware
-            cd arm-trusted-firmware; git checkout -b stable-baseline $ATF_GIT_VERSION; cd ..
+            cd arm-trusted-firmware; git checkout -b stable-baseline $ATF_GIT_VERSION;
+            ATF_GIT_VERSION=$(git rev-parse $ATF_GIT_VERSION)
+            cd ..
 
             git clone $OPTEE_OS_GIT_URL optee_os
             cd optee_os; OPTEE_OS_GIT_VERSION=`git log --format="%H" -1`; cd ..
