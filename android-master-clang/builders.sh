@@ -3,8 +3,8 @@
 export BUILD_CONFIG_FILENAME=hikey-aosp-master
 
 # Install needed packages
-sudo apt-get update
-sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand rsync linaro-image-tools
+sudo apt-get -q=2 update
+sudo apt-get -q=2 install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand rsync linaro-image-tools pxz
 
 wget -q \
   http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
@@ -19,20 +19,12 @@ git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 java -version
 
-
 BUILD_DIR=${BUILD_DIR:-${JOB_NAME}}
-if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
-  sudo mkdir -p /home/buildslave/srv/${BUILD_DIR}
-  sudo chmod 777 /home/buildslave/srv/${BUILD_DIR}
+if [ ! -d "${HOME}/srv/${BUILD_DIR}" ]; then
+  sudo mkdir -p ${HOME}/srv/${BUILD_DIR}
+  sudo chmod 666 ${HOME}/srv/${BUILD_DIR}
 fi
-cd /home/buildslave/srv/${BUILD_DIR}
-
-# Download helper scripts (repo, linaro-cp)
-mkdir -p ${HOME}/bin
-curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-chmod a+x ${HOME}/bin/*
-export PATH=${HOME}/bin:${PATH}
+cd ${HOME}/srv/${BUILD_DIR}
 
 # Install helper packages
 rm -rf build-tools jenkins-tools build-configs build/out build/android-patchsets
@@ -48,14 +40,14 @@ BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
 BUILD_CONFIG_BRANCH=master
 EOF
 echo config.txt
-export CONFIG=`base64 -w 0 config.txt`
+export CONFIG=$(base64 -w 0 config.txt)
 export SKIP_LICENSE_CHECK=1
 
 # Build Android
 rm -rf build/out build/android-patchsets build/device/linaro/hikey
 mkdir -p build/
 cd build/
-wget https://dl.google.com/dl/android/aosp/linaro-hikey-20160226-67c37b1a.tgz
+wget -q https://dl.google.com/dl/android/aosp/linaro-hikey-20160226-67c37b1a.tgz
 tar -xvf linaro-hikey-20160226-67c37b1a.tgz
 yes "I ACCEPT" | ./extract-linaro-hikey.sh
 cd -
@@ -77,7 +69,7 @@ done
 cd -
 
 rm -rf build/out/BUILD-INFO.txt
-wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/template.txt -O build/out/BUILD-INFO.txt
+wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/template.txt -O build/out/BUILD-INFO.txt
 
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEVICE_TYPE=hikey
