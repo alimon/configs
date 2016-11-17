@@ -48,7 +48,9 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
+              sudo umount boot rootfs || true
               sudo kpartx -dv out/b2260-jessie_*.img || true
+              sudo rm -rf boot rootfs || true
               rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
@@ -130,10 +132,6 @@
 
               sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
               sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
-
-              sudo umount boot rootfs
-              sudo kpartx -dv out/b2260-jessie_${rootfs}_${VERSION}.img
-              sudo rm -rf boot rootfs
 
               # Compress image(s)
               gzip -9 out/b2260-jessie_${rootfs}_${VERSION}.img
