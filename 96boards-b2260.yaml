@@ -48,6 +48,7 @@
             cleanup_exit()
             {
               cd ${WORKSPACE}
+              sudo kpartx -dv out/b2260-jessie_*.img || true
               rm -rf lci-build-tools
               rm -rf builddir*
               rm -rf out
@@ -57,13 +58,8 @@
             #
             # Pull required tooling into Docker container
             #
-            sudo apt-get update
-            sudo apt-get install -y python-pycurl
-            wget -q \
-              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
-              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb
-            sudo dpkg -i --force-all *.deb
-            rm -f *.deb
+            sudo apt-get -q=2 update
+            sudo apt-get -q=2 install -y kpartx python-pycurl linaro-image-tools
 
             export LANG=C
             export make_bootwrapper=false
@@ -121,6 +117,20 @@
 
               # Create pre-built image(s)
               linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file b2260-jessie_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-b2260_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+              # Customize image(s)
+              mkdir boot rootfs
+              for device in $(sudo kpartx -avs out/b2260-jessie_${rootfs}_${VERSION}.img | cut -d' ' -f3); do
+                partition=$(echo ${device} | cut -d'p' -f3)
+                [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
+                [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
+              done
+
+              sudo cp -a configs/96boards-b2260/b2260 boot/
+
+              sudo umount boot rootfs
+              sudo kpartx -dv out/b2260-jessie_${rootfs}_${VERSION}.img
+              sudo rm -rf boot rootfs
 
               # Compress image(s)
               gzip -9 out/b2260-jessie_${rootfs}_${VERSION}.img
