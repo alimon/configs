@@ -10,7 +10,9 @@ cleanup_exit()
     # normal cleanup deferred to later
     [ $? = 0 ] && exit;
     cd ${WORKSPACE}
+    sudo umount rootfs rootfs2 || true
     sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
+    sudo rm -rf rootfs rootfs2 || true
     sudo git clean -fdxq
 }
 
@@ -163,7 +165,7 @@ EOF
     linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file ${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 3G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_${VENDOR}-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
 
     # Create eMMC rootfs image(s)
-    mkdir rootfs
+    mkdir -p rootfs rootfs2
     for device in $(sudo kpartx -avs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
         partition=$(echo ${device} | cut -d'p' -f3)
         [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
@@ -193,14 +195,13 @@ EOF
     fi
 
     sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
-    mkdir rootfs2
     sudo mount -o loop out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw rootfs2
     sudo cp -a rootfs/* rootfs2
     rootfs_sz_real=$(sudo du -sh rootfs2 | cut -f1)
-    sudo umount rootfs2 rootfs
+    sudo umount rootfs rootfs2
     sudo ext2simg -v out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
-    sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
-    sudo rm -rf rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img rootfs2 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw
+    sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img
+    sudo rm -f out/${VENDOR}-${OS_FLAVOUR}-*.sd.img out/${VENDOR}-${OS_FLAVOUR}-*.img.raw
 
     # Compress image(s)
     gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
