@@ -33,8 +33,6 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -47,7 +45,6 @@
               cd ${WORKSPACE}
               sudo kpartx -dv out/hikey-jessie_*.img || true
               rm -rf builddir*
-              rm -rf out
             }
 
             sudo apt-get update
@@ -236,6 +233,10 @@
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -246,6 +247,8 @@
               --build-info out/BUILD-INFO.txt \
               --link-latest \
               out snapshots/hikey/community/hikey-mainline-rebase/${BUILD_NUMBER}
+
+            rm -rf out
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org guodong.xu@linaro.org'
