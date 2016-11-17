@@ -118,7 +118,7 @@
               ssh $docker_host docker create --name $backup_container_name --volumes-from $DOCKER_CONTAINER_ID -P $backup_container_image
               set +x
               echo "NOTE: To restart a copy of this container: ssh $docker_host sudo -u $USER docker start $backup_container_name"
-              echo "NOTE: then get container ssh port: port=\$(ssh $docker_host sudo -u $USER docker port $backup_container_name 22)"
+              echo "NOTE: then get container ssh port: port=\$(ssh $docker_host sudo -u $USER docker port $backup_container_name 22 | cut -d: -f 2)"
               echo "NOTE: then (to get sudo-enabled shell): ssh -p\$port -t $USER@$docker_host /bin/bash"
               echo "NOTE: or (to get no-sudo shell): ssh -p\$port $container_user@$docker_host"
               echo "NOTE: to stop the backup container: ssh -p\$port $USER@$docker_host sudo kill 1"
