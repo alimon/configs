@@ -32,8 +32,8 @@
             description: 'SSH destination to write connection parameters to, e.g., dev-01.tcwglab:22:/tmp/my-abe-test-container.param.'
         - string:
             name: watchdog
-            default: file
-            description: 'Watchdog to determine when to stop testing container: file or upstream'
+            default: exit
+            description: 'Watchdog to determine when to stop testing container: exit, file or upstream'
     disabled: false
     node: tcwg-aarch64-test
     child-workspace: $label
@@ -130,6 +130,7 @@
             echo "Hosting tests"
 
             case "$watchdog" in
+              "exit") ;;
               "file")
                 sudo touch /keep-container
                 sudo chmod 0777 /keep-container
