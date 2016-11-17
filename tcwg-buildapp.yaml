@@ -14,13 +14,15 @@
             days-to-keep: 30
             num-to-keep: 30
     parameters:
+        - file:
+            name: buildapp.properties
         - string:
             name: toolchain_url
             default: ''
             description: 'Toolchain URL'
     disabled: false
     node: tcwg-x86_64-cam
-    child-workspace: $target
+    child-workspace: $target/$app
     concurrent: true
     display-name: 'TCWG ZZZ BuildApp'
     scm:
@@ -35,17 +37,15 @@
             values:
                 - docker-trusty-amd64-tcwg
         - axis:
-            type: user-defined
+            type: dynamic
             name: app
             values:
-                - gcc
-                - linux
+                - app_list
         - axis:
-            type: user-defined
+            type: dynamic
             name: target
             values:
-                - arm-linux-gnueabihf
-                - aarch64-linux-gnu
+                - target_list
     execution-strategy:
         sequential: false
     wrappers:
@@ -63,3 +63,6 @@
             #!/bin/bash
             set -ex
             ./tcwg-buildapp.sh ${toolchain_url} ${app} ${target}
+    publishers:
+        - email:
+            recipients: 'christophe.lyon@linaro.org'
