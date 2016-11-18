@@ -126,13 +126,11 @@
                 ATF_GIT_VERSION="origin/hikey"
                 OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
                 OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
-
-                # FIXME cap GCC build profile at GCC49
-                # workaround [GCC5] not defined. No toolchain available for build!
-                # https://git.linaro.org/uefi/uefi-tools.git/commitdiff/4ad46ab76ee2d593c665c1f6ae16162bdf5a36ac
-                sed -i 's|echo GCC5|echo GCC49|' uefi-tools/common-functions
-                export AARCH64_TOOLCHAIN=GCC49
             fi
+
+            # Force cap GCC build profile to GCC49, still preferred by upstream
+            TOOLCHAIN=GCC49
+            export AARCH64_TOOLCHAIN=GCC49
 
             git clone $EDK2_GIT_URL edk2
             cd edk2; git checkout -b stable-baseline $EDK2_GIT_VERSION
@@ -164,7 +162,7 @@
 
             # Build UEFI for the desired platform, with the specified build type
             cd ${EDK2_DIR}
-            bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -b ${MX_TYPE} -a ${ATF_DIR} -s ${OPTEE_OS_DIR} ${MX_PLATFORM}
+            bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -T ${TOOLCHAIN} -b ${MX_TYPE} -a ${ATF_DIR} -s ${OPTEE_OS_DIR} ${MX_PLATFORM}
 
             unset WORKSPACE
             export WORKSPACE=${JENKINS_WORKSPACE}
