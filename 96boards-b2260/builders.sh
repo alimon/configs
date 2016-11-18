@@ -60,7 +60,7 @@ Build description:
 * Build URL: "${BUILD_URL}":${BUILD_URL}
 * Kernel tree: "${GIT_URL}":${GIT_URL}
 * Kernel branch: ${GIT_BRANCH}
-* Kernel commit: "${GIT_COMMIT}":https://github.com/Linaro/rpk.git/commit/?id=${GIT_COMMIT}
+* Kernel commit: "${GIT_COMMIT}":https://github.com/Linaro/rpk/commit/${GIT_COMMIT}
 * Kernel config: multi_v7_defconfig
 EOF
 
