@@ -1,0 +1,62 @@
+- job:
+    name: linaro-art-vixlpresubmit-macos
+    project-type: freestyle
+    defaults: global
+    description: >
+      Runs the
+      <a href="https://git.linaro.org/arm/vixl.git/blob/HEAD:/tools/test.py">Vixl Presubmit Tests</a>
+      using the
+      <a href="https://git.linaro.org/arm/vixl.git">Linaro VIXL tree</a> on mac os.
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-vixl:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    disabled: false
+    node: macos
+    display-name: 'VIXL: Presubmit Test on mac os'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: review.linaro.org
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'arm/vixl'
+                  branches:
+                      - branch-pattern: 'master'
+            silent: false
+            silent-start: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 120
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+            rm -rf art-build-scripts
+            git clone --depth=1 https://android-git.linaro.org/git/linaro-art/art-build-scripts.git
+            (cd art-build-scripts && ./jenkins/presubmit_vixl_test_mac.sh)
+    publishers:
+        - email:
+            recipients: 'vishal.bhoj@linaro.org daniel.diaz@linaro.org julien.duraj@linaro.org'
