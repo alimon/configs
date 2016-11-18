@@ -126,6 +126,7 @@
             DAY_OF_YEAR=YYY__DAY_OF_YEAR__YYY
 
             basedir=cron_output
+            rm -r ${basedir}            # Workaround for unclean workspace
             mkdir -p ${basedir}/{src,builds,reports}
 
             src_dir=${basedir}/src/${YEAR}/${DAY_OF_YEAR}
@@ -186,6 +187,7 @@
             find ${work_dir} -type f -exec perl -p -i -e "$sed_expr" {} \;
             find ${report_dir} -type f -exec perl -p -i -e "$sed_expr" {} \;
 
+            rm -r out          # Workaround for unclean workspace
             mkdir -p out
             tar -C ${basedir} --show-transformed-names -acvf out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz builds reports
     publishers:
