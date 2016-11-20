@@ -20,10 +20,10 @@
             default: '-Xmx8G -XX:MaxPermSize=1G'
         - string:
             name: JDK_URL
-            default: 'http://openjdk.linaro.org/releases/jdk7-server-release-1605.tar.xz'
+            default: 'http://openjdk.linaro.org/releases/jdk8u-server-release-1609.tar.xz'
         - string:
             name: MAVEN_URL
-            default: 'http://www.us.apache.org/dist/maven/maven-3/3.0.5/binaries/apache-maven-3.0.5-bin.tar.gz'
+            default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz'
         - string:
             name: SCALA_URL
             default: 'http://downloads.typesafe.com/scala/2.11.7/scala-2.11.7.tgz'
@@ -82,7 +82,7 @@
               wget \
               xmlto
 
-            # download OpenJDK 7 and Maven 3.0.5 explicitely
+            # download OpenJDK and Maven explicitely
             wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL} ${SCALA_URL} ${NODE_URL} ${PROTOBUF_URL}
             tar -Jxf jdk*.tar.xz
             tar -zxf apache-maven-*.tar.gz
@@ -103,10 +103,11 @@
             cd ${WORKSPACE}/apache-maven-*
             export M3_HOME=${PWD}
 
+            # FIXME switch to nexus.linaro.org
             # hack to use archiva
-            wget -q http://people.linaro.org/~fathi.boudra/settings.xml -O conf/settings.xml
-            mkdir ~/.m2
-            cp -a conf/settings.xml ~/.m2/settings.xml
+            #wget -q http://people.linaro.org/~fathi.boudra/settings.xml -O conf/settings.xml
+            #mkdir ~/.m2
+            #cp -a conf/settings.xml ~/.m2/settings.xml
 
             # set SCALA_HOME
             cd ${WORKSPACE}/scala-*
