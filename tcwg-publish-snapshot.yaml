@@ -57,11 +57,12 @@
             version_suffix=${snapshot_version##*-}
             bin_dir=${gcc_major}-${snapshot_version#*-}
             dest_dir="components/toolchain/"
-            prefix="gcc-linaro"
 
             if [[ "$version_suffix" != rc* ]]; then
-              prefix+="-snapshot"
+              prefix="snapshot"
               bin_dir="snapshot-$bin_dir"
+            else
+              prefix="$version_suffix"
             fi
 
             [ $gcc_major -ge "5" ] && gcc_version=$gcc_major
@@ -73,7 +74,7 @@
             else
               dest_dir+="gcc-linaro"
               notes_path="/${dest_dir}/${gcc_version}"
-              cp_content="/work/space/sources/${prefix}-${snapshot_version}.tar.*"
+              cp_content="-r /work/space/sources/${prefix}-${snapshot_version}/*"
             fi
 
             mkdir -p out
