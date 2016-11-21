@@ -1,14 +1,14 @@
 - job:
-    name: android-lcr-member-hikey-n
+    name: android-lcr-member-hikey-n-premerge-ci
     project-type: freestyle
     defaults: global
     properties:
         - authorization:
             anonymous:
                 - job-read
+                - job-extended-read
             linaro:
                 - job-build
-                - job-extended-read
                 - job-cancel
         - build-discarder:
             days-to-keep: 60
@@ -19,16 +19,23 @@
             default: https://android-qa-reports.linaro.org/api/
         - string:
             name: BUILD_DIR
-            default: m-lcr-nougat
+            default: r-lcr-nougat
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: lcr-member-hikey-n
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'Member LCR Android N Build for HiKey'
+    display-name: 'Premerge CI job to test patch for hikey M-LCR'
     concurrent: true
     triggers:
         - gerrit:
-            server-name: __ANY__
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
             trigger-on:
-                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: '.*RunPremergeHikeyTests.*'
+            server-name: __ANY__
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'android/android-patchsets'
@@ -66,6 +73,6 @@
                 users:
                     - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
-        !include: android-lcr/hikey/builders.yaml.inc
+        !include: android-lcr/hikey/premerge-ci-builders.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc

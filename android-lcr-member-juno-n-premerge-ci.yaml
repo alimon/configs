@@ -1,5 +1,5 @@
 - job:
-    name: android-lcr-premerge-ci
+    name: android-lcr-member-juno-n-premerge-ci
     project-type: freestyle
     defaults: global
     properties:
@@ -19,41 +19,47 @@
             default: https://android-qa-reports.linaro.org/api/
         - string:
             name: BUILD_DIR
-            default: r-lcr-nougat
+            default: m-lcr-nougat
         - string:
             name: BUILD_CONFIG_FILENAME
-            default: lcr-reference-hikey-n
+            default: lcr-member-juno-n
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'Premerge CI job to test patch for LCR'
+    display-name: 'Premerge CI job to test patch for juno M-LCR'
     concurrent: true
     triggers:
         - gerrit:
             override-votes: true
             gerrit-build-successful-verified-value: 1
             gerrit-build-failed-verified-value: -1
+            server-name: __ANY__
             trigger-on:
                 - comment-added-contains-event:
-                    comment-contains-value: '.*RunPremergeTests.*'
+                    comment-contains-value: '.*RunPremergeJunoTests.*'
             server-name: __ANY__
             projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'android-patchsets'
+                  project-pattern: 'android/android-patchsets'
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-n-workarounds'
+                        pattern: 'juno-n-workarounds'
                       - compare-type: 'PLAIN'
-                        pattern: 'NOUGAT-RLCR-PATCHSET'
+                        pattern: 'NOUGAT-MLCR-PATCHSET'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'device/linaro/common'
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'linaro-nougat'
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'platform/manifest'
+                  project-pattern: 'android/device/linaro/juno'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-nougat'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/manifest'
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'linaro-nougat'
@@ -64,12 +70,15 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'lcr-reference-hikey-n'
+                        pattern: 'lcr-member-juno-n'
     wrappers:
         - timestamps
         - timeout:
             timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
-        !include: android-lcr/hikey/premerge-ci-builders.yaml.inc
+        !include: android-lcr/juno/premerge-ci-builders.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc
