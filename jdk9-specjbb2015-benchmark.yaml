@@ -1,5 +1,5 @@
 - job:
-    name: jdk8-specjbb2015-benchmark
+    name: jdk9-specjbb2015-benchmark
     project-type: matrix
     defaults: global
     description: |
@@ -14,7 +14,7 @@
             artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 8 - Run SPECjbb2015 benchmark'
+    display-name: 'OpenJDK 9 - Run SPECjbb2015 benchmark'
     axes:
         - axis:
             type: user-defined
@@ -86,7 +86,7 @@
             #   -Dspecjbb.controller.preset.duration=100 \
             #   -jar specjbb2015.jar -m composite)
 
-            (cd $SPECJBB_PRODUCT_HOME; java -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -m composite)
+            (cd $SPECJBB_PRODUCT_HOME; java --add-modules java.se.ee -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -m composite)
 
             mkdir -p out
 
