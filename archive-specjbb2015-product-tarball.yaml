@@ -1,0 +1,44 @@
+- job:
+    name: archive-specjbb2015-product-tarball
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job creates an archive of the SPECjbb2015 product.<br>
+          It can be copied as a *copy artifact* by other jobs.<br>
+        * <b>Note:</b> SPECjbb2015 should <b>not</b> be shared publically as there are licensing restrictions.
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    disabled: false
+    node: build
+    display-name: 'OpenJDK - Archive SPECjbb2015 product'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - SPECjbb2015.tgz
+            relative-to: 'somewhereElse'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            rm -rf out
+            mkdir out
+
+            # Use copy-to-slave instead of the file under /work/openjdk-testing/
+            #tar -xf /work/openjdk-testing/SPECjbb2015.tgz
+            tar -xf SPECjbb2015.tgz
+
+            chmod -R ug+rw SPECjbb2015
+            tar -acf out/SPECjbb2015.tgz SPECjbb2015
+            rm -rf SPECjbb2015 SPECjbb2015.tgz
+    publishers:
+        - archive:
+            artifacts: 'out/SPECjbb2015.tgz'
