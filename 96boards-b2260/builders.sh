@@ -36,6 +36,7 @@ git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 bash -x lci-build-tools/jenkins_kernel_build_inst
 rm -rf out/dtbs
 cp -a linux-*.deb out/
+cp -a configs/96boards-b2260/boot out/
 
 mkimage -A arm -O linux -C none -T kernel -a 0x40080000 -e 0x40080000 -n Linux -d out/zImage out/uImage
 
