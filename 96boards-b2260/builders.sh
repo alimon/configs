@@ -88,6 +88,7 @@ EOF
   done
 
   sudo cp -a configs/96boards-b2260/boot/b2260 boot/ || true
+  sudo cp -a configs/96boards-b2260/boot/update_default_boot.sh boot/ || true
 
   sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
   sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
