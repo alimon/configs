@@ -47,7 +47,7 @@
 
             repo init -u https://android.googlesource.com/platform/manifest
             cp -a out/R-LCR.xml .repo/manifest.xml
-            repo sync -j16 -c
+            repo sync -j16 
             repo forall -c "bash ${PWD}/tag-manifest.sh"
             sed -i "s/\"..\"/https:\/\/android.googlesource.com\//g" out/R-LCR.xml
 
@@ -58,7 +58,6 @@
             time python ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --manifest \
-              --no-build-info \
               --link-latest \
               --split-job-owner \
               --server ${PUBLISH_SERVER} \
