@@ -80,6 +80,7 @@
             # Generate files names dependent on year/month.
             RELEASE=$(date +%y%m)
             JDKDIR=jdk8u-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
+            JDK_SRCDIR=jdk8u-src-${RELEASE}
 
             ccache_build_opts=--disable-ccache
 
@@ -91,8 +92,9 @@
 
             mv jdk8u $JDKDIR
             # Tar up the source before sullying it with a build.
-            tar --exclude=.hg\* -acf out/jdk8u-src-${RELEASE}.tar.xz $JDKDIR
+            tar --exclude=.hg\* -acf out/jdk8u-src-${RELEASE}.tar.xz $JDK_SRCDIR
 
+            mv $JDK_SRCDIR $JDKDIR
             shopt -s nullglob
 
             # Extract boot jdk
@@ -135,10 +137,10 @@
             fi
 
             # Archive the result
-            artifact_name=jdk8u-${JVM_VARIANT}-${BUILD_TYPE}
+            artifact_name=jdk8u-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
 
             # This is different from ordinary builds.
-            tar -C build-stage2/images --exclude=\*.diz --transform="s!^j2sdk-image/!$artifact_name/!" -acf out/${artifact_name}.tar.xz j2sdk-image
+            tar -C build-stage2/images --exclude=\*.diz --transform="s!^j2sdk-image!$artifact_name!" -acf out/${artifact_name}.tar.xz j2sdk-image
     publishers:
         - archive:
             artifacts: 'out/*.tar.xz'
