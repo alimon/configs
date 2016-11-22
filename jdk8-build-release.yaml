@@ -77,14 +77,18 @@
             #ccache -s
             export JVM_VARIANT=server
 
+
             # Generate files names dependent on year/month.
             RELEASE=$(date +%y%m)
             JDKDIR=jdk8u-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
 
             ccache_build_opts=--disable-ccache
 
+            # Setup archive directory
+            rm -rf out
+            mkdir out
+
             # Extract sources from upstream job
-            rm -rf jdk8u
             tar xf incoming/jdk8u.tar.gz
 
             rm -rf $JDKDIR
@@ -135,8 +139,6 @@
             fi
 
             # Archive the result
-            rm -rf out
-            mkdir out
             artifact_name=jdk8u-${JVM_VARIANT}-${BUILD_TYPE}
 
             # This is different from ordinary builds.
