@@ -86,7 +86,7 @@ EOF
     [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
   done
 
-  sudo cp -a configs/96boards-b2260/b2260 boot/ || true
+  sudo cp -a configs/96boards-b2260/boot/b2260 boot/ || true
 
   sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
   sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
