@@ -1,0 +1,68 @@
+- job:
+    name: android-r-lcr-manifest
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: MANIFEST_URL
+            default: ''
+            description: "The pinned manifest URL of release candidate for which we want to generate manifest with tags for each repository"
+        - string:
+            name: RELEASE_TAG
+            default: ''
+            description: "Release tag for every untagged repository. It is  generally of the form R-LCR-YY.MM"
+        - string:
+            name: GERRIT_USER
+            default: ''
+            description: "Gerrit username to be used for pushing the tags to the git repository"
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'Job to generate R-LCR Manifest'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            mkdir -p out
+            wget -q ${MANIFEST_URL} -O out/R-LCR.xml
+            wget -q https://git.linaro.org/ci/job/configs.git/plain/android-r-lcr-manifest/tag-manifest.sh
+
+            repo init -u https://android.googlesource.com/platform/manifest
+            cp -a out/R-LCR.xml .repo/manifest.xml
+            repo sync -j16 -c
+            repo forall -c "sh ${PWD}/tag-manifest.sh"
+            sed -i "s/\"..\"/https:\/\/android.googlesource.com\//g" out/R-LCR.xml
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            PUB_DEST=/android/${JOB_NAME}/${RELEASE_TAG}-${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --manifest \
+              --no-build-info \
+              --link-latest \
+              --split-job-owner \
+              --server ${PUBLISH_SERVER} \
+              out \
+              ${PUB_DEST} \
+              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$"
+
+            echo "Build finished"
+    publishers:
+        - email:
+            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org'
