@@ -194,6 +194,16 @@ EOF
 EOF
     fi
 
+    # Disable Network Manager MAC randomization during scan
+    # https://bugs.96boards.org/show_bug.cgi?id=465
+    if [ -f rootfs/etc/NetworkManager/NetworkManager.conf ]; then
+        cat << EOF | sudo tee -a rootfs/etc/NetworkManager/NetworkManager.conf
+
+[device]
+wifi.scan-rand-mac-address=no
+EOF
+    fi
+
     sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
     sudo mount -o loop out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw rootfs2
     sudo cp -a rootfs/* rootfs2
