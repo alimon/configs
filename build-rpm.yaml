@@ -52,6 +52,13 @@
             . /etc/os-release
             dist=${ID}-${VERSION_ID}
             [ ${codename} = ${dist} ]||exit 0
+
+            sudo yum install -y wget
+            sudo wget http://repo.linaro.org/rpm/linaro-overlay/${dist}/linaro-overlay.repo -O /etc/yum.repos.d/linaro-overlay.repo
+            if [ "${repo}" != "linaro-overlay" ]; then
+                sudo wget http://repo.linaro.org/rpm/linaro-overlay/${dist}/${repo}.repo -O /etc/yum.repos.d/${repo}.repo
+            fi
+
             sudo yum install -y wget yum-utils
             sudo yum groupinstall -y "Development tools"
             wget --progress=dot -e dotbytes=2M $source
