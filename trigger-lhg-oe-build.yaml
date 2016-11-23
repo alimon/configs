@@ -1,0 +1,22 @@
+- job:
+    name: trigger-lhg-oe-build
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: master
+    display-name: 'Trigger for LHG rpb-based build'
+    triggers:
+        # Run the builds every Tuesday, Thursday, and Saturday in the morning
+        - timed: 'H H(0-6) * * 2,4,6'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'lhg-oe-build'
