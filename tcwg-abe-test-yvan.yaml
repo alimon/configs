@@ -26,7 +26,7 @@
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/abe.git
-            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/remotes/changes/*
+            refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
                 - ${GERRIT_PATCHSET_REVISION}
             skip-tag: true
@@ -82,6 +82,8 @@
     builders:
         - shell: |
             #!/bin/bash
+
+            git checkout -f ${GERRIT_PATCHSET_REVISION}
 
             schroot_arch=amd64
             schroot_image="tcwg-build-${schroot_arch}-trusty"
