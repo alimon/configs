@@ -1,0 +1,70 @@
+- job:
+    name: lt-qcom-dragonboard820c-bootloader
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: BRANCH
+            default: 'master'
+        - string:
+            name: LK_GIT_LINARO
+            default: 'https://git.linaro.org/landing-teams/working/qualcomm/lk.git'
+        - string:
+            name: LK_GCC_GIT
+            default: 'git://codeaurora.org/platform/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8.git'
+        - string:
+            name: LK_GCC_REL
+            default: 'LA.BR.1.1.3.c4-01000-8x16.0'
+        - string:
+            name: LK_GIT_REL_SD_RESCUE
+            default: 'release/LA.HB.1.3.2-19600-8x96.0+rescue'
+        - string:
+            name: LK_GIT_REL_UFS_BOOT
+            default: 'release/LA.HB.1.3.2-19600-8x96.0'
+        - string:
+            name: QCOM_LINUX_FIRMWARE
+            default: 'http://builds.96boards.org/snapshots/dragonboard820c/binaries/20161124/linux-bootloader-db820c-v0.1-linaro.zip'
+        - string:
+            name: QCOM_LINUX_FIRMWARE_MD5
+            default: 'a38e7ed58834b96c438e601bebc0a26f'
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: 'Qualcomm bootloader for DragonBoard 820c'
+    scm:
+        - git:
+            url: https://git.linaro.org/landing-teams/working/qualcomm/db-boot-tools.git
+            refspec: +refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw: lt-qcom-dragonboard820c-bootloader/builders.sh
+    publishers:
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
+        - ircbot:
+            channels:
+                - name: '#linaro-lt-qcomm'
+                  password: ${LT_QCOM_KEY}
