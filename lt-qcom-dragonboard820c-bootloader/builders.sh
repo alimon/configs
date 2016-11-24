@@ -59,7 +59,7 @@ sudo ./mksdcard -x -p dragonboard820c/sdrescue.txt \
 
 # Create MD5SUMS file
 for i in out/dragonboard820c_*; do
-    (cd out/$i && md5sum * > MD5SUMS.txt)
+    (cd $i && md5sum * > MD5SUMS.txt)
 done
 
 # Final preparation of archives for publishing
