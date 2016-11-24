@@ -1,5 +1,5 @@
 - job:
-    name: trigger-ynk-lhg-oe-build-next
+    name: trigger-lhg-oe-build-next
     project-type: freestyle
     defaults: global
     logrotate:
@@ -13,9 +13,10 @@
     node: master
     display-name: 'Trigger for LHG rpb-based build (staging)'
     triggers:
+        # Run the builds every Monday, Wednesday, and Friday in the morning
         - timed: 'H H(0-6) * * 1,3,5'
     wrappers:
         - timestamps
     builders:
         - trigger-builds:
-            - project: 'ynk-lhg-oe-build-next'
+            - project: 'lhg-oe-build-next'
