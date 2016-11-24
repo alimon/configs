@@ -21,119 +21,12 @@
     wrappers:
         - timestamps
     builders:
+        - shell:
+            !include-raw: leg-cloud-image/debian/builders.sh
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
             #!/bin/bash
-
-            export image_name=debian-cloud-image
-
-            sudo apt-get -q=2 update
-            sudo apt-get -q=2 install -y --no-install-recommends qemu-utils virtinst libguestfs-tools libvirt-bin
-
-            echo 'uri_default = "qemu+tcp://172.17.0.1/system"' | sudo tee -a /etc/libvirt/libvirt.conf
-
-            virt-host-validate
-
-            sudo virsh pool-list --all
-            sudo virsh net-list --all
-
-            set -ex
-
-            trap cleanup_exit INT TERM EXIT
-
-            cleanup_exit()
-            {
-              cd ${WORKSPACE}
-              sudo virsh destroy ${image_name} || true
-              sudo virsh undefine ${image_name} || true
-              sudo rm -f /var/lib/libvirt/images/${image_name}.qcow2 ${image_name}.qcow2
-              rm -rf out
-            }
-
-            cat > preseed.cfg << EOF
-                d-i debian-installer/locale string en_US.UTF-8
-                d-i localechooser/supported-locales multiselect en_US.UTF-8, en_GB.UTF-8
-                d-i keyboard-configuration/xkb-keymap select us
-                d-i netcfg/choose_interface select auto
-                d-i netcfg/get_hostname string unassigned-hostname
-                d-i netcfg/get_domain string unassigned-domain
-                d-i netcfg/wireless_wep string
-                d-i mirror/country string manual
-                d-i mirror/http/hostname string ftp.debian.org
-                d-i mirror/http/directory string /debian
-                d-i mirror/http/proxy string
-                d-i passwd/root-login boolean false
-                d-i passwd/user-fullname string Debian User
-                d-i passwd/username string debian
-                d-i passwd/user-password password insecure
-                d-i passwd/user-password-again password insecure
-                d-i clock-setup/utc boolean true
-                d-i time/zone string UTC
-                d-i clock-setup/ntp boolean true
-                d-i partman-auto/method string regular
-                d-i partman-lvm/device_remove_lvm boolean true
-                d-i partman-md/device_remove_md boolean true
-                d-i partman-lvm/confirm boolean true
-                d-i partman-lvm/confirm_nooverwrite boolean true
-                d-i partman-auto/choose_recipe select atomic
-                d-i partman-partitioning/confirm_write_new_label boolean true
-                d-i partman/choose_partition select finish
-                d-i partman/confirm boolean true
-                d-i partman/confirm_nooverwrite boolean true
-                d-i partman-md/confirm boolean true
-                d-i partman-partitioning/confirm_write_new_label boolean true
-                d-i partman/choose_partition select finish
-                d-i partman/confirm boolean true
-                d-i partman/confirm_nooverwrite boolean true
-                d-i apt-setup/services-select multiselect security, updates, backports
-                d-i apt-setup/local0/repository string http://repo.linaro.org/ubuntu/linaro-overlay jessie main
-                d-i apt-setup/local0/comment string Linaro Overlay
-                d-i apt-setup/local0/source boolean true
-                d-i apt-setup/local0/key string http://repo.linaro.org/ubuntu/linarorepo.key
-                d-i pkgsel/upgrade select full-upgrade
-                tasksel tasksel/first multiselect standard
-                d-i pkgsel/include string openssh-server cloud-init cloud-utils/jessie-backports cloud-initramfs-growroot linux-image-reference-arm64
-                popularity-contest popularity-contest/participate boolean false
-                d-i grub-installer/only_debian boolean true
-                d-i grub-installer/with_other_os boolean true
-                d-i grub-installer/bootdev  string default
-                d-i finish-install/reboot_in_progress note
-                d-i preseed/late_command string \
-                    mkdir -p /target/boot/efi/EFI/BOOT ; \
-                    cp /target/boot/efi/EFI/debian/grubaa64.efi /target/boot/efi/EFI/BOOT/BOOTAA64.EFI
-            EOF
-
-            sudo virt-install \
-              --name ${image_name} \
-              --initrd-inject preseed.cfg \
-              --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
-              --disk=pool=default,size=10,format=qcow2,bus=virtio \
-              --memory 2048 \
-              --location http://ftp.debian.org/debian/dists/stable/main/installer-arm64/ \
-              --noreboot
-
-            set +ex
-            while [ true ]; do
-              sleep 1
-              vm_running=$(sudo virsh list --name --state-running | grep "^${image_name}" | wc -l)
-              [ "${vm_running}" -eq "0" ] && break
-            done
-            set -ex
-
-            sudo virsh list --all
-            sudo virsh pool-list --all
-            sudo virsh net-list --all
-
-            mkdir out
-            mv preseed.cfg out/debian-jessie-arm64-preseed.cfg
-            sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
-            sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
-            # extract kernel and initramfs from image
-            # --unversioned-names may be handy to get vmlinuz/initrd.img names if needed
-            sudo LIBGUESTFS_BACKEND=direct virt-copy-out -a ${image_name}.qcow2 /boot/ .
-            sudo cp -a boot/*-arm64 out/
-            sudo chown -R buildslave:buildslave out
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -142,6 +35,8 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               out snapshots/developer-cloud/debian/cloud-image/${BUILD_NUMBER}
+
+            rm -rf out
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org marcin.juszkiewicz@linaro.org'
