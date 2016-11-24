@@ -102,4 +102,6 @@ EOF
 done
 
 # Create MD5SUMS file
-(cd out && md5sum * > MD5SUMS.txt)
+find out -type f | xargs md5sum > MD5SUMS.txt
+sed -i "s|out/||" MD5SUMS.txt
+mv MD5SUMS.txt out
