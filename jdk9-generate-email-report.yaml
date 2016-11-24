@@ -29,10 +29,10 @@
             default: '14115'
         - string:
             name: SERVER_MAX_JOPS_BASELINE
-            default: '3275'
+            default: '4090'
         - string:
             name: SERVER_CRITICAL_JOPS_BASELINE
-            default: '854'
+            default: '1015'
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 9 - Generate e-mail report'
@@ -53,6 +53,7 @@
             tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
             PATH=${WORKSPACE}/jtreg/bin:${PATH}
             PERSIST=$HOME/srv/openjdk9
+            export SPECJBB_PRODUCT_HOME=$PERSIST/SPECjbb2015
             export JDK_VERSION=9
             which jtdiff
 
