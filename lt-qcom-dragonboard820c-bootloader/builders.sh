@@ -1,8 +1,9 @@
 #!/bin/bash
-set -ex
 
 sudo apt-get update
 sudo apt-get install -y zip gdisk
+
+set -ex
 
 # download the firmware packages
 wget -q ${QCOM_LINUX_FIRMWARE}
