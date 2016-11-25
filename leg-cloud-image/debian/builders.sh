@@ -21,9 +21,10 @@ trap cleanup_exit INT TERM EXIT
 cleanup_exit()
 {
   cd ${WORKSPACE}
+  sudo virsh vol-delete --pool default ${image_name}.qcow2 || true
   sudo virsh destroy ${image_name} || true
   sudo virsh undefine ${image_name} || true
-  sudo rm -f /var/lib/libvirt/images/${image_name}.qcow2 ${image_name}.qcow2
+  sudo rm -f ${image_name}.qcow2
 }
 
 wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-cloud-image/debian/preseed.cfg -O preseed.cfg
@@ -32,7 +33,7 @@ sudo virt-install \
   --name ${image_name} \
   --initrd-inject preseed.cfg \
   --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
-  --disk=pool=default,size=10,format=qcow2,bus=virtio \
+  --disk=pool=default,bus=virtio,size=10,format=qcow2 \
   --memory 2048 \
   --location http://ftp.debian.org/debian/dists/stable/main/installer-arm64/ \
   --noreboot
@@ -51,6 +52,7 @@ sudo virsh net-list --all
 
 mkdir out
 mv preseed.cfg out/debian-jessie-arm64-preseed.cfg
+# virsh vol-download is slow - copy from a mounted volume
 sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
 sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
 # extract kernel and initramfs from image

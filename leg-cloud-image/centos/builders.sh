@@ -21,9 +21,10 @@ trap cleanup_exit INT TERM EXIT
 cleanup_exit()
 {
   cd ${WORKSPACE}
+  sudo virsh vol-delete --pool default ${image_name}.qcow2 || true
   sudo virsh destroy ${image_name} || true
   sudo virsh undefine ${image_name} || true
-  sudo rm -f /var/lib/libvirt/images/${image_name}.qcow2 ${image_name}.qcow2
+  sudo rm -f ${image_name}.qcow2
 }
 
 wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-cloud-image/centos/centos7-aarch64.ks -O centos7-aarch64.ks
@@ -51,6 +52,7 @@ sudo virsh net-list --all
 
 mkdir out
 mv centos7-aarch64.ks out/
+# virsh vol-download is slow - copy from a mounted volume
 sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
 sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
 # extract kernel and initramfs from image

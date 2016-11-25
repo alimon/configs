@@ -31,7 +31,7 @@ sudo virt-install \
   --name ${image_name} \
   --initrd-inject preseed.cfg \
   --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
-  --disk=path=/var/lib/libvirt/images/${image_name}.qcow2,bus=virtio,size=5,format=qcow2 \
+  --disk=pool=default,bus=virtio,size=5,format=qcow2 \
   --memory 512 \
   --location http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/ \
   --noreboot
