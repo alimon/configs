@@ -78,6 +78,10 @@
             name: targets
             default: 'cross_main cross_aux native_x86'
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
+        - string:
+            name: matrix_restrictions
+            default: 'label=="docker-trusty-amd64-tcwg-build" || target=="native"'
+            description: 'Builfarm matrix restriction.'
     disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: true
@@ -126,6 +130,7 @@
                   abe_branch=$ref_abe_branch
                   rebuild=$ref_rebuild
                 property-file: buildfarm_parameters
+                restrict-matrix-project: ${matrix_restrictions}
               - name: tcwg-buildfarm
                 predefined-parameters: |
                   override=$eval_override
@@ -133,6 +138,7 @@
                   abe_branch=$eval_abe_branch
                   rebuild=$eval_rebuild
                 property-file: buildfarm_parameters
+                restrict-matrix-project: ${matrix_restrictions}
         - multijob:
             name: 'Compare Results'
             condition: COMPLETED
