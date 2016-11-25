@@ -31,8 +31,7 @@
             name: JVM_VARIANT
             values:
                 - server
-# SRDM: Disable client runs while waiting for LEG-347 to be fixed.
-#                - client
+                - client
         - axis:
             type: user-defined
             name: BUILD_TYPE
@@ -90,31 +89,34 @@
             source incoming/build-date.sh
 
             export JDK_VERSION=8u
-            IMAGE_DIR=${WORKSPACE}/jdk8u-${JVM_VARIANT}-${BUILD_TYPE}
+            # client variant uses server with -XX:TieredStopAtLevel=1
+            # zero is a third possible value.
+            REAL_VARIANT=${JVM_VARIANT/client/server}
+            IMAGE_DIR=${WORKSPACE}/jdk8u-${REAL_VARIANT}-${BUILD_TYPE}
             PERSIST=$HOME/srv/openjdk8u
 
 
             # Only set =1 for debugging.
             use_subcategories=0
 
-            if [ ${use_subcategories} -eq 1 ]; then 
+            if [ ${use_subcategories} -eq 1 ]; then
               case ${JTREG_CATEGORY} in
                 langtools)
                     JTREG_SUBCATEGORIES=tools/javap/typeAnnotations
                     ;;
                 jdk)
                     JTREG_SUBCATEGORIES=jdk/net/Sockets
-                    ;; 
+                    ;;
                 hotspot)
                     JTREG_SUBCATEGORIES=runtime/CommandLine
-                    ;; 
+                    ;;
               esac
             fi
 
             : ${JTREG_SUBCATEGORIES:=.}
 
             tar xf incoming/jdk8u.tar.gz
-            tar xf ~/workspace/jdk8-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${JVM_VARIANT}/label/${NODE_NAME}/out/jdk8u-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            tar xf ~/workspace/jdk8-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk8u-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
             tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
 
             # All the output directories and general frobbing
@@ -156,7 +158,7 @@
             cat ${blacklist}
             echo "---------"
 
-            export JAVA_HOME=${WORKSPACE}/jdk8u-${JVM_VARIANT}-${BUILD_TYPE}
+            export JAVA_HOME=${WORKSPACE}/jdk8u-${REAL_VARIANT}-${BUILD_TYPE}
             export PATH=$JAVA_HOME/bin:${PATH}
 
             PATH=${WORKSPACE}/jtreg/bin:${PATH}
@@ -166,14 +168,27 @@
             # Ignore error in jtreg final result.
             set +e
 
-            java -jar jtreg/lib/jtreg.jar \
-              -dir:${src_dir}/${JTREG_CATEGORY}/test \
-              -testjdk:${IMAGE_DIR} \
-              -exclude:${blacklist} \
-              -conc:auto \
-              -r:${report_dir} \
-              -w:${work_dir} \
-              -a -agentvm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
+            if [ $JVM_VARIANT = "server" ]; then
+                java -jar jtreg/lib/jtreg.jar \
+                  -dir:${src_dir}/${JTREG_CATEGORY}/test \
+                  -testjdk:${IMAGE_DIR} \
+                  -exclude:${blacklist} \
+                  -conc:auto \
+                  -r:${report_dir} \
+                  -w:${work_dir} \
+                  -a -agentvm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
+            else
+                java -jar jtreg/lib/jtreg.jar \
+                  -dir:${src_dir}/${JTREG_CATEGORY}/test \
+                  -vmoption:-XX:+TieredCompilation \
+                  -vmoption:-XX:TieredStopAtLevel=1 \
+                  -testjdk:${IMAGE_DIR} \
+                  -exclude:${blacklist} \
+                  -conc:auto \
+                  -r:${report_dir} \
+                  -w:${work_dir} \
+                  -a -agentvm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
+            fi
 
             set -e
 

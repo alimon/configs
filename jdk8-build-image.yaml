@@ -4,7 +4,7 @@
     defaults: global
     description: |
         * Configures and builds jdk8u (ie, bin/java, bin/javac, et al) for various configurations.<br>
-        * The source tarball is copied from the jdk8-update-src-tree job.<br>
+        * The source tarball is copied from the jdk8-update-src-tree job!<br>
         * <b>Note:</b> we are no longer building -fastdebug variants as there is not enough time to test the images.
     properties:
         - authorization:
@@ -38,8 +38,7 @@
             name: JVM_VARIANT
             values:
                 - server
-# SRDM: Disabled while LEG-347 is being fixed.
-#                - client
+                - zero
         - axis:
             type: user-defined
             name: BUILD_TYPE
@@ -86,19 +85,22 @@
 
             shopt -s nullglob
 
+            # SRDM Commented out as not needed for buildng client builds, but
+            # maybe necessary in future.
+            #
             # Apply patches
             # Only apply to client builds.
-            if [ "$JVM_VARIANT" = "client" ]; then
-                OLDDIR=$PWD
-                cd $WORKSPACE/patches
-                for patch in $(find  -name '*.patch'); do
-                    patch_dir=$(dirname $patch)
-                    patch_path=$(pwd)/$patch
-                    (echo Applying $patch to $patch_dir ; cd $OLDDIR/jdk8u/$patch_dir; \
-                    patch -p1  < $patch_path)
-                done
-                cd $OLDDIR
-            fi
+            # if [ "$JVM_VARIANT" = "client" ]; then
+            #    OLDDIR=$PWD
+            #    cd $WORKSPACE/patches
+            #    for patch in $(find  -name '*.patch'); do
+            #        patch_dir=$(dirname $patch)
+            #        patch_path=$(pwd)/$patch
+            #        (echo Applying $patch to $patch_dir ; cd $OLDDIR/jdk8u/$patch_dir; \
+            #        patch -p1  < $patch_path)
+            #    done
+            #    cd $OLDDIR
+            # fi
 
             # Extract boot jdk
             rm -rf primordial-jdk7
