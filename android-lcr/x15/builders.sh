@@ -1,6 +1,6 @@
 # Build u-boot, MLO and dtb
 if [ ! -e gcc-linaro-arm-none-eabi-4.8-2014.04_linux ]; then
-  wget -q https://releases.linaro.org/14.04/components/toolchain/binaries/gcc-linaro-arm-none-eabi-4.8-2014.04_linux.tar.bz2
+  wget -q https://releases.linaro.org/archive/14.04/components/toolchain/binaries/gcc-linaro-arm-none-eabi-4.8-2014.04_linux.tar.bz2
   tar -xvf gcc-linaro-arm-none-eabi-4.8-2014.04_linux.tar.bz2
 fi
 export PATH=${PWD}/gcc-linaro-arm-none-eabi-4.8-2014.04_linux/bin/:${PATH}
