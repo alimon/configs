@@ -116,7 +116,7 @@
             # to gerrit, but this should be triggered by the polling soon enough
             if [ "${GERRIT_EVENT_TYPE:-}" = ""  ]; then
                 cd ${WORKSPACE}/jmh
-                mvn clean install
+                mvn -B clean install
             else
                 cd ${WORKSPACE}/jmh/jmh-linaro-org
                 git fetch https://review.linaro.org/$GERRIT_PROJECT $GERRIT_REFSPEC && git checkout FETCH_HEAD
@@ -124,7 +124,7 @@
 
             # Builds the samples and jmh, without running unit tests.
             cd ${WORKSPACE}/jmh/jmh-linaro-org
-            mvn clean install
+            mvn -B clean install
     publishers:
         - archive:
             artifacts: 'jmh/jmh-linaro-org/target/benchmarks.jar'
