@@ -60,7 +60,6 @@ mv preseed.cfg out/debian-jessie-arm64-preseed.cfg
 # virsh vol-download is slow - copy from a mounted volume
 sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
 # extract kernel and initramfs from image
-# --unversioned-names may be handy to get vmlinuz/initrd.img names if needed
 sudo qemu-nbd --connect=/dev/nbd0 ${image_name}.qcow2
 for device in $(sudo kpartx -avs /dev/nbd0 | cut -d' ' -f3); do
   partition=$(echo ${device} | cut -d'p' -f2)
