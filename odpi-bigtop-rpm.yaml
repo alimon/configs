@@ -136,7 +136,16 @@
             cd ${WORKSPACE}/odpi-bigtop
 
             # okay everything is in place, this build will take a while
-            ./gradlew rpm
+            ./gradlew clean hadoop-rpm spark-rpm hive-rpm \
+              -Pdist,native-win \
+              -DskipTests \
+              -Dtar \
+              -Dmaven.javadoc.skip=true \
+              -PHadoop-2.7 \
+              -Pyarn \
+              -Phadoop.version=2.7.0 \
+              -Dscala-2.11 \
+              --debug
     publishers:
         - archive:
             artifacts: 'odpi-bigtop/output/**'
