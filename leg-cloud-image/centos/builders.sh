@@ -65,6 +65,6 @@ for device in $(sudo kpartx -avs /dev/nbd0 | cut -d' ' -f3); do
   partition=$(echo ${device} | cut -d'p' -f2)
   [ "${partition}" = "2" ] && sudo mount /dev/mapper/${device} ${mountpoint}
 done
-cp -a ${mountpoint}/*.linaro.aarch64* out/
+sudo cp -a ${mountpoint}/*.linaro.aarch64* out/
 sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
 sudo chown -R buildslave:buildslave out
