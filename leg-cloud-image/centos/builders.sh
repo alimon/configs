@@ -1,9 +1,10 @@
 #!/bin/bash
 
 export image_name=centos7-cloud-image
+export mountpoint=$(mktemp -d /tmp/${image_name}.XXXXXX)
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y --no-install-recommends qemu-utils virtinst libguestfs-tools libvirt-bin
+sudo apt-get -q=2 install -y --no-install-recommends qemu-utils virtinst libvirt-bin
 
 default_gw=$(ip route show default 0.0.0.0/0 | cut -d' ' -f3)
 sudo sed -i "/^uri_default/d" /etc/libvirt/libvirt.conf
@@ -24,6 +25,10 @@ cleanup_exit()
   sudo virsh vol-delete --pool default ${image_name}.qcow2 || true
   sudo virsh destroy ${image_name} || true
   sudo virsh undefine ${image_name} || true
+  sudo umount ${mountpoint} || true
+  sudo kpartx -dv /dev/nbd0 || true
+  sudo qemu-nbd --disconnect /dev/nbd0 || true
+  sudo rm -rf ${mountpoint} || true
   sudo rm -f ${image_name}.qcow2
 }
 
@@ -54,9 +59,13 @@ mkdir out
 mv centos7-aarch64.ks out/
 # virsh vol-download is slow - copy from a mounted volume
 sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
-sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
 # extract kernel and initramfs from image
 # --unversioned-names may be handy to get vmlinuz/initrd.img names if needed
-sudo LIBGUESTFS_BACKEND=direct virt-copy-out -a ${image_name}.qcow2 /boot/ .
-sudo cp -a boot/*-reference.*.aarch64* out/
+sudo qemu-nbd --connect=/dev/nbd0 ${image_name}.qcow2
+for device in $(sudo kpartx -avs /dev/nbd0 | cut -d' ' -f3); do
+  partition=$(echo ${device} | cut -d'p' -f2)
+  [ "${partition}" = "2" ] && sudo mount /dev/mapper/${device} ${mountpoint}
+done
+cp -a ${mountpoint}/boot/*-reference.*.aarch64* out/
+sudo qemu-img convert -c -O qcow2 ${image_name}.qcow2 out/${image_name}.qcow2
 sudo chown -R buildslave:buildslave out
