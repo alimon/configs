@@ -1,0 +1,203 @@
+- job:
+    name: rpb-debian-iot
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-configure
+                - job-cancel
+    disabled: false
+    node: build
+    child-workspace: .
+    display-name: 'Reference Platform - Debian - IoT'
+    axes:
+        - axis:
+            type: user-defined
+            name: BOARD
+            values:
+                - hikey
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-rp
+    execution-strategy:
+        sequential: true
+        touchstone:
+            expr: 'BOARD=="hikey"'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              sudo kpartx -dv ${BOARD}-debian-*.img || true
+              rm -rf configs out
+            }
+
+            # Builder setup
+            sudo apt-get update
+            sudo apt-get install -y android-tools-fsutils grub-common kpartx libfdt-dev mtools python-pycurl dosfstools
+            wget -q \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
+              http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb
+            sudo dpkg -i --force-all *.deb
+            rm -f *.deb
+
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            # Create the hardware pack
+            cp -a configs/rpb-debian-iot/hwpacks/linaro-${BOARD} .
+            VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
+            linaro-hwpack-create --debug linaro-${BOARD} ${VERSION}
+
+            # Get rootfs
+            export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/stretch-arm64-rootfs/label=docker-jessie-arm64,rootfs=developer/lastSuccessfulBuild/buildNumber`
+            export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/stretch-arm64-rootfs/label=docker-jessie-arm64,rootfs=developer/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+            export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/stretch/developer-arm64/${ROOTFS_BUILD_NUMBER}/linaro-stretch-developer-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+            wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
+            ROOTFS_BUILD_TAR=linaro-stretch-developer-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz
+
+            # Create pre-built image(s)
+            linaro-media-create --dev fastmodel --output-directory ${WORKSPACE} \
+              --image-file ${BOARD}-debian-stretch-iot-sdcard-${VERSION}.img --image-size 2500M \
+              --binary ${ROOTFS_BUILD_TAR} --hwpack hwpack_linaro-${BOARD}_*.tar.gz --hwpack-force-yes --bootloader uefi
+
+            # Create eMMC rootfs image(s)
+            mkdir boot rootfs
+            for device in $(sudo kpartx -avs ${BOARD}-debian-stretch-iot-sdcard-${VERSION}.img | cut -d' ' -f3); do
+              partition=$(echo ${device} | cut -d'p' -f3)
+              [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
+              [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
+            done
+
+            KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
+
+            mkdir -p out/${BOARD}
+
+            # Build information
+            cat > out/${BOARD}/HEADER.textile << EOF
+
+            h4. Reference Platform Build - Debian - IoT
+
+            Build description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Developer Rootfs: "http://snapshots.linaro.org/debian/images/stretch/developer-arm64/$ROOTFS_BUILD_NUMBER":http://snapshots.linaro.org/debian/images/stretch/developer-arm64/$ROOTFS_BUILD_NUMBER
+            * Kernel: "linux-image-$KERNEL_VERSION":http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/l/linux/
+            EOF
+
+            # Create boot image
+            if [ "${BOARD}" == "hikey" ]; then
+                FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-uefi/MX_PLATFORM=hikey,MX_TYPE=RELEASE,label=docker-jessie-amd64/lastStableBuild/buildNumber`
+                FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/reference-platform/components/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey/AndroidFastbootApp.efi"
+                wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
+                GRUB_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-grub-efi-arm64/lastStableBuild/buildNumber`
+                GRUB_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64.efi"
+                GRUB_SD_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64-sd.efi"
+                wget --progress=dot ${GRUB_EFI_URL} -O grubaa64.efi
+                wget --progress=dot ${GRUB_SD_EFI_URL} -O grubaa64-sd.efi
+
+                /sbin/mkfs.fat -F32 -n "boot" -C out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img 65536
+                mmd -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img EFI
+                mmd -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img EFI/BOOT
+                mcopy -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img fastboot.efi ::EFI/BOOT/fastboot.efi
+                mcopy -i out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img grubaa64.efi ::EFI/BOOT/grubaa64.efi
+                chmod 644 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
+
+                # Replicate boot image into the original img file
+                sudo rm -rf boot/*
+                sudo mkdir -p boot/EFI/BOOT
+                sudo cp fastboot.efi boot/EFI/BOOT/
+                # Boot partition for SD needs a different grub (default root search)
+                sudo cp grubaa64-sd.efi boot/EFI/BOOT/grubaa64.efi
+                sudo cp grubaa64-sd.efi boot/EFI/BOOT/BOOTAA64.EFI
+
+                # Compress boot partition image
+                gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
+
+                cat >> out/${BOARD}/HEADER.textile << EOF
+            * Grub UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER":http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER
+            * ARM TF / EDK2 UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
+            EOF
+                # Grub config to be set as part of the rootfs
+                ## FIXME: Make this generic
+                sudo mkdir rootfs/boot/grub/fonts
+                sudo cp rootfs/usr/share/grub/unicode.pf2 rootfs/boot/grub/fonts
+                sudo grub-editenv rootfs/boot/grubenv create
+                sed -e "s/KERNEL_VERSION/$KERNEL_VERSION/" configs/96boards-reference-platform-debian/grub/grub-hikey.cfg.in > grub.cfg
+                sed -e "s/root=(hd0,gpt9)/root=(hd1,msdos2)/g" -e "s/mmcblk0p9/mmcblk1p2/g" grub.cfg > grub-sd.cfg
+                sudo cp configs/96boards-reference-platform-debian/grub/grub-fastboot.cfg rootfs/boot/grub/custom.cfg
+                sudo cp -a rootfs/usr/lib/grub/arm64-efi rootfs/boot/grub
+                sudo cp hi6220-hikey.dtb rootfs/boot/hi6220-hikey.dtb-${KERNEL_VERSION}
+                sudo ln -s hi6220-hikey.dtb-${KERNEL_VERSION} rootfs/boot/hi6220-hikey.dtb
+                echo "KERNEL_DEVICETREE=hi6220-hikey" | sudo tee rootfs/etc/default/kernel
+                sudo sed -i 's/^GRUB_CMDLINE_LINUX_DEFAULT.*/GRUB_CMDLINE_LINUX_DEFAULT="efi=noruntime rw quiet"/g' rootfs/etc/default/grub
+
+                # Since it uses uefi, create the boot efi fstab entry
+                sudo mkdir rootfs/boot/efi
+                cat << EOF | sudo tee rootfs/etc/fstab
+            /dev/disk/by-partlabel/boot   /boot/efi vfat defaults          0 0
+            EOF
+            fi
+
+            # Create the ext4fs (fastboot compatible)
+            sudo mkfs.ext4 -L rootfs ${BOARD}-rootfs-debian-stretch-iot-${VERSION}.emmc.img.raw 2500M
+            mkdir rootfs_ext4
+            sudo mount -o loop ${BOARD}-rootfs-debian-stretch-iot-${VERSION}.emmc.img.raw rootfs_ext4
+            sudo cp -a rootfs/* rootfs_ext4
+            ## Make grub specific to the image type (e.g. emmc, sd)
+            if [ -f grub.cfg ]; then
+                sudo cp grub.cfg rootfs_ext4/boot/grub
+                sudo cp grub-sd.cfg rootfs/boot/grub/grub.cfg
+            fi
+            sudo umount boot rootfs_ext4 rootfs
+            sudo ext2simg -v ${BOARD}-rootfs-debian-stretch-iot-${VERSION}.emmc.img.raw out/${BOARD}/${BOARD}-rootfs-debian-stretch-iot-${VERSION}.emmc.img
+
+            sudo kpartx -dv ${BOARD}-debian-stretch-iot-sdcard-${VERSION}.img
+            sudo rm -rf boot rootfs rootfs_ext4 ${BOARD}-rootfs-debian-stretch-iot-${VERSION}.emmc.img.raw
+
+            # Compress image
+            gzip -9 out/${BOARD}/${BOARD}-rootfs-debian-stretch-iot-${VERSION}.emmc.img
+            ## For SD Card or other boot medias
+            cp ${BOARD}-debian-stretch-iot-sdcard-${VERSION}.img out/${BOARD}/
+            gzip -9 out/${BOARD}/${BOARD}-debian-stretch-iot-sdcard-${VERSION}.img
+
+            # Create MD5SUMS files
+            (cd out/${BOARD} && md5sum *.gz > MD5SUMS.txt)
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              out/${BOARD} snapshots/reference-platform/debian-iot/${BUILD_NUMBER}/${BOARD}
+            python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --make-link snapshots/reference-platform/debian-iot/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'ricardo.salveti@linaro.org'
