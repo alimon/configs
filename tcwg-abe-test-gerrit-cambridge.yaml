@@ -13,6 +13,11 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 100
+    parameters:
+        - string:
+            name: GERRIT_PATCHSET_REVISION
+            default: refs/remotes/origin/master
+            description: 'Patched ABE revision'
     disabled: false
     node: tcwg-x86_64-cam
     retry-count: 3
@@ -21,9 +26,9 @@
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/abe.git
-            refspec: ${GERRIT_REFSPEC}
+            refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
-                - ${GERRIT_BRANCH}
+                - ${GERRIT_PATCHSET_REVISION}
             skip-tag: true
             shallow-clone: false
             wipe-workspace: true
@@ -77,6 +82,10 @@
     builders:
         - shell: |
             #!/bin/bash
+
+            # Explicitly checkout the branch/revision, as gerrit choosing
+            # strategy doesn't pick up the right one when manually triggered.
+            git checkout -f ${GERRIT_PATCHSET_REVISION}
 
             schroot_arch=amd64
             schroot_image="tcwg-build-${schroot_arch}-trusty"
