@@ -19,16 +19,27 @@
     parameters:
         - string:
             name: KERNEL_GIT_BRANCH
-            default: '96b-kernelci'
+            default: 'master'
         - string:
             name: KERNEL_GIT_URL
-            default: 'https://git.linaro.org/people/amit.kucheria/kernel.git'
+            default: 'https://github.com/Linaro/rpk.git'
         - string:
             name: TARGET_REPO
             default: 'linaro-staging'
-    disabled: true
-    node: docker-jessie-amd64
+    disabled: false
+    node: docker-jessie-rp
     display-name: 'Reference Platform - Linux Kernel'
+    scm:
+        - git:
+            url: ${KERNEL_GIT_URL}
+            refspec: +refs/heads/${KERNEL_GIT_BRANCH}:refs/remotes/origin/${KERNEL_GIT_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNEL_GIT_BRANCH}
+            basedir: linux
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
     wrappers:
         - timestamps
         - build-name:
@@ -42,27 +53,21 @@
             set -ex
 
             sudo apt-get update
-            sudo apt-get install -y ccache python-pycurl quilt cpio rsync rpm
+            sudo apt-get install -y ccache python-pycurl quilt cpio rsync
 
             # Checkout source code
-            git clone -b ${KERNEL_GIT_BRANCH} ${KERNEL_GIT_URL} linux
-            git clone --depth 1 https://git.linaro.org/ci/debian-kernel-packaging.git debian-pkg
+            git clone --depth 1 -b rpb-stretch https://github.com/Linaro/debian-kernel-packaging.git debian-pkg
 
             # Export the kernel packaging version
-            cd linux
+            cd ${WORKSPACE}/linux
 
-            ## To use when we switch to 4.5, since -rc is higher than the final tag
-            # kernel_version=`make kernelversion | sed -e 's/\.0-rc/~rc/'
-
-            kernel_version=`make kernelversion`
-            export KERNEL_GIT_VERSION=`git log --format="%H" -1`
-            export KDEB_PKGVERSION="${kernel_version}.linaro.${BUILD_NUMBER}-1"
-            git tag v${kernel_version}
-
-            cd ..
+            kernel_version=$(make kernelversion)
+            kernel_deb_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
+            export KDEB_PKGVERSION="${kernel_deb_pkg_version}.linaro.${BUILD_NUMBER}-1~stretch"
+            git tag v${kernel_deb_pkg_version//\~/-}
 
             # Build the debian source kernel
-            cd debian-pkg
+            cd ${WORKSPACE}/debian-pkg
 
             # Allow our own versioning scheme
             sed -i 's/dfsg/linaro/g' debian/bin/genorig.py debian/lib/python/debian_linux/debian.py
@@ -71,19 +76,16 @@
             sed -i "s/^abiname:.*/abiname: ${BUILD_NUMBER}/g" debian/config/defines
 
             cat << EOF > debian/changelog
-            linux ($KDEB_PKGVERSION) jessie; urgency=medium
+            linux ($KDEB_PKGVERSION) unstable; urgency=medium
 
               * Auto build:
-                - URL: ${KERNEL_GIT_URL}
-                - Branch: ${KERNEL_GIT_BRANCH}
-                - Hash: ${KERNEL_GIT_VERSION}
+                - URL: ${GIT_URL}
+                - Branch: ${GIT_BRANCH}
+                - Commit: ${GIT_COMMIT}
 
-             -- Ricardo Salveti de Araujo <ricardo.salveti@linaro.org>  `date "+%a, %d %b %Y %T %z"`
+             -- 96Boards Team <dev@lists.96boards.org>  $(date -R)
 
             EOF
-
-            # Use the kernel config from the kernel tree
-            cp ../linux/arch/arm64/configs/distro.config debian/config/arm64/config
 
             debian/rules clean || true
             debian/bin/genorig.py ../linux
@@ -92,55 +94,18 @@
             debuild -S -uc -us
             cd ..
 
-            cat > ${WORKSPACE}/build-package-params <<EOF
+            cat > ${WORKSPACE}/build-package-params-stretch <<EOF
             source=${BUILD_URL}/artifact/$(echo *.dsc)
             repo=${TARGET_REPO}
-            codename=jessie
-            EOF
-
-            # Build rpm source package
-            rpmversion=${kernel_version//-*/}
-            git clone --depth 1 -b c7-aarch64 git://git.centos.org/rpms/kernel-aarch64.git
-            cd kernel-aarch64
-            sed -i "s/\%define rpmversion.*/\%define rpmversion $rpmversion/g" SPECS/kernel-aarch64.spec
-            sed -i "s/\%define pkgrelease.*/\%define pkgrelease reference.${BUILD_NUMBER}/g" SPECS/kernel-aarch64.spec
-            sed -i "s/\%define signmodules 1/\%define signmodules 0/g" SPECS/kernel-aarch64.spec
-            sed -i "/_without_debug:/a%define with_debug 0" SPECS/kernel-aarch64.spec
-            sed -i "/_without_debuginfo:/a%define with_debuginfo 0" SPECS/kernel-aarch64.spec
-            sed -i "s/mv linux-\%{rheltarball}/mv linux-\*/g" SPECS/kernel-aarch64.spec
-            sed -i '/\%{_libexecdir}\/perf-core\/\*/a\%{_datadir}\/perf-core\/\*' SPECS/kernel-aarch64.spec
-            sed -i "s/^BuildRequires: openssl$/BuildRequires: openssl-devel/g" SPECS/kernel-aarch64.spec
-            cp ../linux/arch/arm64/configs/distro.config SOURCES/config-arm64-redhat
-
-            # Make sure config is sane for centos
-            sed -i "s/CONFIG_ATA=.*/CONFIG_ATA=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_ATA_PIIX=.*/CONFIG_ATA_PIIX=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_AUTOFS4_FS=.*/CONFIG_AUTOFS4_FS=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_SATA_AHCI=.*/CONFIG_SATA_AHCI=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_SATA_AHCI_PLATFORM=.*/CONFIG_SATA_AHCI_PLATFORM=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_AHCI_HIP05=.*/CONFIG_AHCI_HIP05=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_AMD_XGBE=.*/CONFIG_AMD_XGBE=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_SCSI_HISI_SAS=.*/CONFIG_SCSI_HISI_SAS=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_IPV6=.*/CONFIG_IPV6=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_HNS_MDIO=.*/CONFIG_HNS_MDIO=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_HNS=.*/CONFIG_HNS=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_HNS_DSAF=.*/CONFIG_HNS_DSAF=y/g" SOURCES/config-arm64-redhat
-            sed -i "s/CONFIG_HNS_ENET=.*/CONFIG_HNS_ENET=y/g" SOURCES/config-arm64-redhat
-
-            cp ../orig/*.orig.tar.xz SOURCES/linux-${rpmversion}-reference.${BUILD_NUMBER}.tar.xz
-            rpmbuild --nodeps --define "%_topdir `pwd`" -bs SPECS/kernel-aarch64.spec
-            cp SRPMS/*.src.rpm ${WORKSPACE}/
-            cd ..
-
-            cat > ${WORKSPACE}/build-kernel-rpm-params <<EOF
-            source=https://builds.96boards.org/snapshots/reference-platform/components/linux/common/${BUILD_NUMBER}/kernel-aarch64-${rpmversion}-reference.${BUILD_NUMBER}.src.rpm
+            codename=stretch
+            appendversion=false
             EOF
 
             # Final preparation for publishing
             mkdir out
             rm *.orig.tar.xz
-            cp orig/*.orig.tar.xz ${WORKSPACE}/
-            cp -a *.dsc *.changes *.debian.tar.xz *.orig.tar.xz *.src.rpm out/
+            cp -a orig/*.orig.tar.xz ${WORKSPACE}/
+            cp -a *.dsc *.changes *.debian.tar.xz *.orig.tar.xz out/
 
             # Create MD5SUMS file
             (cd out && md5sum * > MD5SUMS.txt)
@@ -153,13 +118,12 @@
             Linux Kernel build consumed by the Reference Platform Builds
 
             Build Description:
-            * Build URL: "$BUILD_URL":$BUILD_URL
-            * Git tree: "$KERNEL_GIT_URL":$KERNEL_GIT_URL
-            * Git branch: $KERNEL_GIT_BRANCH
-            * Git hash: $KERNEL_GIT_VERSION
-            * Kernel version: $kernel_version
-            * Kernel deb version: $KDEB_PKGVERSION
-            * Kernel rpm version: ${rpmversion}-reference.${BUILD_NUMBER}
+            * Build URL: "${BUILD_URL}":${BUILD_URL}
+            * Git tree: "${GIT_URL}":${GIT_URL}
+            * Git branch: ${GIT_BRANCH}
+            * Git commit: ${GIT_COMMIT}
+            * Kernel version: ${kernel_version}
+            * Kernel deb version: ${KDEB_PKGVERSION}
             EOF
 
             # Publish
@@ -171,13 +135,10 @@
               out snapshots/reference-platform/components/linux/common/${BUILD_NUMBER}/
     publishers:
         - archive:
-            artifacts: '*.dsc, *.xz, *.src.rpm'
+            artifacts: '*.dsc, *.xz'
         - trigger-parameterized-builds:
             - project: build-package
-              property-file: build-package-params
-              condition: SUCCESS
-            - project: build-kernel-rpm
-              property-file: build-kernel-rpm-params
+              property-file: build-package-params-stretch
               condition: SUCCESS
         - email:
-            recipients: 'fathi.boudra@linaro.org ricardo.salveti@linaro.org'
+            recipients: 'ricardo.salveti@linaro.org'
