@@ -83,6 +83,12 @@
         - shell: |
             #!/bin/bash
 
+            ARTIFACTS=${WORKSPACE}/artifacts
+            mkdir -p "${ARTIFACTS}"
+            # Create at least an (empty) artifact so that Jenkins does not complain
+            # FIXME: Create an artifact for each case below, and no empty.txt
+            echo > ${ARTIFACTS}/empty.txt
+
             # Explicitly checkout the branch/revision, as gerrit choosing
             # strategy doesn't pick up the right one when manually triggered.
             git checkout -f ${GERRIT_PATCHSET_REVISION}
@@ -98,21 +104,46 @@
             # Workaround by retrying.
             trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true" 0 1 2 3 5 9 13 15
 
+            status=0
             case "$test" in
-              cross_build) ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb --override '--extraconfigdir ../config/gcc6' ;;
-              native_build) ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb --override '--extraconfigdir ../config/gcc5' ;;
+              cross_build)
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t arm-linux-gnueabihf --runtests --excludecheck gdb --override '--extraconfigdir ../config/gcc6'
+                status=$?
+                ;;
+              native_build)
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins.sh -t native --runtests --bootstrap --excludecheck gdb --override '--extraconfigdir ../config/gcc5'
+                status=$?
+                ;;
               testsuite)
                 ${BUILD_SHELL} -c "set -ex; ./configure; make check"
+                status=$?
                 ;;
               abe-tests)
                 ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report"
+                status=$?
+                cp abe-tests/full-manifest-test/*.txt ${ARTIFACTS}
+                rm ${ARTIFACTS}/empty.txt
+                # full build logs are large, and not very useful, so we
+                # don't waste the disk space on them
+                rm -f ${ARTIFACTS}/test-mani-build[12].txt
                 ;;
               abe-tests-checkout)
                 ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-checkout.sh --clean-snapshots --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref"
+                status=$?
+                cp abe-tests/checkout-test/workspace*/test_*.log ${ARTIFACTS}
+                rm artifacts/empty.txt
+                # the reports from here aren't usually needed, so are
+                # worth compressing
+                xz ${ARTIFACTS}/*
                 ;;
             esac
+
+            exit ${status}
     publishers:
         - workspace-cleanup:
             include:
               - "nothing"
             dirmatch: true
+        - archive:
+            artifacts: 'artifacts/*'
+            latest-only: false
