@@ -327,7 +327,10 @@
                   $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
                   cat > $WORKSPACE/run.sh << EOF
-                  $WORKSPACE/jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild
+                  #!/bin/bash
+                  
+                  cd $WORKSPACE
+                  exec ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild
                   EOF
                   chmod +x $WORKSPACE/run.sh
                   result="0"
