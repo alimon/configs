@@ -326,11 +326,12 @@
 
                   $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
-                  result="0"
-                  cat > ./run.sh << EOF
+                  cat > $WORKSPACE/run.sh << EOF
                   $WORKSPACE/jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild
                   EOF
-                  $BUILD_SHELL -x ./run.sh || result=$?
+                  chmod +x $WORKSPACE/run.sh
+                  result="0"
+                  $BUILD_SHELL -x $WORKSPACE/run.sh || result=$?
 
                   #if [ x"$container" = x"docker" ]; then
                   #  rsync -az -e "ssh -p $session_port" $WORKSPACE/ localhost:$WORKSPACE/
