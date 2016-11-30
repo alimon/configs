@@ -186,7 +186,8 @@
                 ;;
               "docker")
                 session_host="$(hostname).tcwglab"
-                session_id=$(ssh $session_host docker run --name $JOB_NAME-$BUILD_ID -dtP -v $HOME/snapshots-ref:$HOME/snapshots-ref:ro -v $WORKSPACE:$WORKSPACE --memory=7500M --pids-limit=5000 linaro/trusty-$container_arch-tcwg)
+                session_name=$(echo $BUILD_NUMBER-$JOB_NAME | sed -e "s#[/=,]#-#")
+                session_id=$(ssh $session_host docker run --name $session_name -dtP -v $HOME/snapshots-ref:$HOME/snapshots-ref:ro -v $WORKSPACE:$WORKSPACE --memory=7500M --pids-limit=5000 linaro/trusty-$container_arch-tcwg)
                 trap "docker -H $session_host:2375 rm -fv $session_id" 0
                 session_port=$(ssh $session_host docker port $session_id 22 | cut -d: -f 2)
                 BUILD_SHELL="ssh -p $session_port -A localhost bash"
