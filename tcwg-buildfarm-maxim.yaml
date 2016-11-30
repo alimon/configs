@@ -151,13 +151,17 @@
               exit 0
             fi
 
-            case $(uname -m):$personality in
-              x86_64:linux64) container_arch="amd64" ;;
-              x86_64:linux32) container_arch="i386" ;;
-              aarch64:linux64) container_arch="arm64" ;;
-              aarch64:linux32) container_arch="armhf" ;;
-              armv[78]l:linux32) container_arch="armhf" ;;
-              *) echo "Unexpected uname:personality $(uname -m):$personality"; exit 1 ;;
+            case $container:$(uname -m):$personality in
+              none:x86_64:linux64) ;;
+              none:i686:linux32) ;;
+              none:aarch64:linux64) ;;
+              none:armv[78]l:linux32) ;;
+              *:x86_64:linux64) container_arch="amd64" ;;
+              *:x86_64:linux32) container_arch="i386" ;;
+              *:aarch64:linux64) container_arch="arm64" ;;
+              *:aarch64:linux32) container_arch="armhf" ;;
+              *:armv[78]l:linux32) container_arch="armhf" ;;
+              *) echo "Unexpected container:uname:personality $container:$(uname -m):$personality"; exit 1 ;;
             esac
 
             case "$container" in
@@ -170,27 +174,18 @@
                   session_port="$(ssh $session_host docker port $DOCKER_CONTAINER_ID 22)"
                   session_port="$(echo $session_port | cut -d: -f 2)"
                 fi
-                ulimit -u 5000
-                BUILD_SHELL="bash"
                 ;;
               "schroot")
                 session_host="$(hostname).tcwglab"
                 session_port="22"
                 schroot_image="tcwg-build-${container_arch}-trusty"
-                ulimit -u 5000
                 session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
-                # Sometimes /dev/pts can't get unmounted on the first try.
-                # Workaround by retrying.
-                trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true; }" 0
-                BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
                 ;;
               "docker")
                 session_host="$(hostname).tcwglab"
                 session_name=$(echo $BUILD_NUMBER-$JOB_NAME | sed -e "s#[/=,]#-#g")
                 session_id=$(ssh $session_host docker run --name $session_name -dtP -v $HOME/snapshots-ref:$HOME/snapshots-ref:ro -v $WORKSPACE:$WORKSPACE --memory=7500M --pids-limit=5000 linaro/trusty-$container_arch-tcwg)
-                trap "docker -H $session_host:2375 rm -fv $session_id" 0
                 session_port=$(ssh $session_host docker port $session_id 22 | cut -d: -f 2)
-                BUILD_SHELL="ssh -p $session_port -A localhost bash"
                 ;;
             esac
 
@@ -220,6 +215,12 @@
               # don't support 48-bit VA.  Therefore don't run them on Xenial tester.
               rm -f test-container.param
             fi
+
+            cat > env << EOF
+            session_host=$session_host
+            session_port=$session_port
+            session_id=$session_id
+            EOF
         - conditional-step:
             condition-kind: file-exists
             condition-filename: test-container.param
@@ -238,6 +239,25 @@
                   #!/bin/bash
 
                   set -ex
+
+                  . env
+                  case "$container" in
+                    "none")
+                      ulimit -u 5000
+                      BUILD_SHELL="bash"
+                      ;;
+                    "schroot")
+                      ulimit -u 5000
+                      # Sometimes /dev/pts can't get unmounted on the first try.
+                      # Workaround by retrying.
+                      trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true; }" 0
+                      BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+                      ;;
+                    "docker")
+                      trap "docker -H $session_host:2375 rm -fv $session_id" 0
+                      BUILD_SHELL="ssh -p $session_port -A $session_host bash"
+                      ;;
+                  esac
 
                   if [ -f test-container.param ]; then
                     runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
