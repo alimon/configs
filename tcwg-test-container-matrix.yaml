@@ -103,7 +103,7 @@
               upstream_machine="$(echo "$upstream_dest" | cut -d: -f 1)"
               upstream_port="$(echo "$upstream_dest" | cut -d: -f 2)"
               upstream_file="$(echo "$upstream_dest" | cut -d: -f 3)"
-              echo "$container_user@$docker_host:$ssh_port" | ssh -v -o Port=$upstream_port $upstream_machine tee $upstream_file
+              echo "$container_user@$docker_host:$ssh_port" | ssh -o Port=$upstream_port $upstream_machine tee $upstream_file
               ssh -v -o Port=$upstream_port $upstream_machine ls -l $upstream_file
             fi
 
