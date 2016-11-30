@@ -68,8 +68,12 @@
             description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
         - string:
             name: abe_branch
-            default: refs/remotes/origin/master
+            default: refs/remotes/origin/stable
             description: 'ABE revision to test'
+        - string:
+            name: container
+            default: docker
+            description: 'none schroot docker'
     disabled: false
     node: tcwg-x86_64-cam
     child-workspace: $target
@@ -89,10 +93,14 @@
             type: slave
             name: label
             values:
-                - docker-trusty-amd64-tcwg-build
-                - docker-trusty-i386-tcwg-build
-                - docker-trusty-arm64-tcwg-build-tx1
-                - docker-trusty-armhf-tcwg-build-tx1
+                - tcwg-x86_64-2-cam
+                - tcwg-aarch64-build
+        - axis:
+            type: user-defined
+            name: personality
+            values:
+                - linux64
+                - linux32
         - axis:
             type: user-defined
             name: target
@@ -107,7 +115,7 @@
                 - native
     execution-strategy:
         combination-filter: |
-            label=="docker-trusty-amd64-tcwg-build" || target=="native"
+            (label=="tcwg-x86_64-2-cam" && personality=="linux64") || target=="native"
         sequential: false
     wrappers:
         - timeout:
@@ -143,6 +151,53 @@
               exit 0
             fi
 
+            case $(uname -m):$personality in
+              x86_64:linux64) container_arch="amd64" ;;
+              x86_64:linux32) container_arch="i386" ;;
+              aarch64:linux64) container_arch="arm64" ;;
+              aarch64:linux32) container_arch="armhf" ;;
+              armv[78]l:linux32) container_arch="armhf" ;;
+              *) echo "Unexpected uname:personality $(uname -m):$personality"; exit 1 ;;
+            esac
+
+            case "$container" in
+              "none")
+                if [ x"$DOCKER_HOST" = x"" ]; then
+                  session_host="$(hostname).tcwglab"
+                  session_port="22"
+                else
+                  session_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
+                  session_port="$(ssh $session_host docker port $DOCKER_CONTAINER_ID 22)"
+                  session_port="$(echo $session_port | cut -d: -f 2)"
+                fi
+                ulimit -u 5000
+                BUILD_SHELL="bash"
+                ;;
+              "schroot")
+                session_host="$(hostname).tcwglab"
+                session_port="22"
+                schroot_image="tcwg-build-${container_arch}-trusty"
+                ulimit -u 5000
+                session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
+                # Sometimes /dev/pts can't get unmounted on the first try.
+                # Workaround by retrying.
+                trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true; }" 0
+                BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+                ;;
+              "docker")
+                session_host="$(hostname).tcwglab"
+                session_id=$(ssh $session_host docker run --name $JOB_NAME-$BUILD_ID -dtP -v $HOME/snapshots-ref:$HOME/snapshots-ref:ro -v $WORKSPACE:$WORKSPACE --memory=7.5G --pids-limit=5000 linaro/trusty-$container_arch-tcwg)
+                trap "docker -H $session_host:2375 rm -fv $session_id" 0
+                session_port=$(ssh $session_host docker port $session_id 22 | cut -d: -f 2)
+                BUILD_SHELL="ssh -p $session_port -A localhost bash"
+                ;;
+            esac
+
+            #if [ x"$container" = x"docker" ]; then
+            #  $BUILD_SHELL mkdir -p $WORKSPACE
+            #  rsync -az -e "ssh -p $session_port" $WORKSPACE/ localhost:$WORKSPACE/
+            #fi
+
             case "$target_kind-$runtests-$(uname -m)" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"x86_64"|"cross_main"-"x86_64-host"-"i686")
                 case "$target" in
@@ -150,16 +205,20 @@
                   arm*) container_arch=armhf ;;
                   *) echo "ERROR: Wrong target $target"; exit 1 ;;
                 esac
-                docker_host="$(echo $DOCKER_HOST | sed -e "s#^tcp://\(.*\):.*#\1#")"
-                ssh_port="$(ssh $docker_host docker port $DOCKER_CONTAINER_ID 22)"
-                ssh_port="$(echo $ssh_port | cut -d: -f 2)"
                 cat > test-container.param << EOF
-            container_name=docker-trusty-$container_arch-tcwg-test-tx1
-            upstream_dest=$docker_host:$ssh_port:$WORKSPACE/test-container.data
+            container_name=docker-trusty-$container_arch-tcwg-test
+            upstream_dest=$session_host:$session_port:$WORKSPACE/test-container.data
             watchdog=upstream
             EOF
                 ;;
             esac
+            if echo "$override" | grep -q -e "--extraconfigdir ../config/gcc5" \
+               || true \
+               && [ x"$target" = x"aarch64-linux-gnu" ]; then
+              # Sanitizers in GCC-5 and GCC-6 toolchains for aarch64-linux-gnu
+              # don't support 48-bit VA.  Therefore don't run them on Xenial tester.
+              rm -f test-container.param
+            fi
         - conditional-step:
             condition-kind: file-exists
             condition-filename: test-container.param
@@ -244,10 +303,14 @@
                     extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
                   done
 
-                  ulimit -u 5000
+                  $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
                   result="0"
-                  /bin/bash -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
+                  $BUILD_SHELL -x $WORKSPACE/jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
+
+                  #if [ x"$container" = x"docker" ]; then
+                  #  rsync -az -e "ssh -p $session_port" $WORKSPACE/ localhost:$WORKSPACE/
+                  #fi
 
                   # If we actually built a toolchain, save its manifest.
                   # If the build was a no-op (results already present on log_server),
@@ -267,7 +330,7 @@
 
                   # Save logs and their directory structure
                   rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" --prune-empty-dirs ./ ./logs/
-                  if ! tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/; then
+                  if ! tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/ >/dev/null 2>&1; then
                     # PXZ can [rarely] fail due to high RAM usage, so fallback to normal XZ.
                     rm -f ./artifacts/logs.tar.xz
                     tar -cJf ./artifacts/logs.tar.xz ./logs/
