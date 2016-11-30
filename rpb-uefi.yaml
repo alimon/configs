@@ -23,6 +23,9 @@
         - string:
             name: ATF_VERSION
             default: 'v1.2'
+        - string:
+            name: OPTEE_VERSION
+            default: '2.2.0'
     disabled: false
     node: master
     child-workspace: .
@@ -110,6 +113,7 @@
             OPEN_PLATFORM_PKG_GIT_URL=https://github.com/Linaro/OpenPlatformPkg.git
             OPEN_PLATFORM_PKG_GIT_BRANCH=rpb-1612
             OPTEE_OS_GIT_URL=https://github.com/OP-TEE/optee_os.git
+            OPTEE_GIT_VERSION=$OPTEE_VERSION
 
             # So we can easily identify the build number via build path
             mkdir ${BUILD_NUMBER}; cd ${BUILD_NUMBER}
@@ -147,7 +151,8 @@
             cd ..
 
             git clone $OPTEE_OS_GIT_URL optee_os
-            cd optee_os; OPTEE_OS_GIT_VERSION=`git log --format="%H" -1`; cd ..
+            cd optee_os; git checkout -b stable-baseline $OPTEE_GIT_VERSION;
+            OPTEE_OS_GIT_VERSION=`git log --format="%H" -1`; cd ..
 
             # Build setup
             export EDK2_DIR=${WORKSPACE}/${BUILD_NUMBER}/edk2
