@@ -57,8 +57,8 @@
             export kernel_config=defconfig
             export MAKE_DTBS=true
             export ARCH=arm64
-            export tcbindir="${HOME}/srv/toolchain/arm64-tc-16.08/bin"
-            export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.1-2016.08/aarch64-linux-gnu/gcc-linaro-6.1.1-2016.08-x86_64_aarch64-linux-gnu.tar.xz
+            export tcbindir="${HOME}/srv/toolchain/arm64-tc-16.11/bin"
+            export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.2-2016.11/aarch64-linux-gnu/gcc-linaro-6.2.1-2016.11-x86_64_aarch64-linux-gnu.tar.xz
 
             # FIXME pull the kernel config from meta-96boards
             wget -q https://raw.githubusercontent.com/96boards/meta-96boards/master/recipes-kernel/linux/linux-hikey/defconfig -O arch/arm64/configs/defconfig
@@ -71,7 +71,7 @@
             cp -a linux-*.deb out/
 
             git clone --depth 1 https://github.com/OP-TEE/optee_linuxdriver.git
-            export PATH=${WORKSPACE}/srv/toolchain/arm64-tc-16.08/bin:${PATH}
+            export PATH=${tcbindir}:${PATH}
             export CROSS_COMPILE=aarch64-linux-gnu-
             #make -C ${KERNEL_PATH} M=${WORKSPACE}/optee_linuxdriver modules
             #make -C ${KERNEL_PATH} M=${WORKSPACE}/optee_linuxdriver INSTALL_MOD_PATH=${WORKSPACE}/build-utilites/fs modules_install
