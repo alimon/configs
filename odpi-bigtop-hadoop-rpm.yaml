@@ -1,0 +1,48 @@
+- job:
+    name: odpi-bigtop-hadoop-rpm
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: ANT_OPTS
+            default: '-Xmx8G -XX:MaxPermSize=1G'
+        - string:
+            name: MAVEN_OPTS
+            default: '-B -Xmx8G -XX:MaxPermSize=1G'
+        - string:
+            name: JDK_URL
+            default: 'http://openjdk.linaro.org/releases/jdk8u-server-release-1609.tar.xz'
+        - string:
+            name: MAVEN_URL
+            default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz'
+        - string:
+            name: SCALA_URL
+            default: 'http://downloads.typesafe.com/scala/2.11.7/scala-2.11.7.tgz'
+        - string:
+            name: NODE_URL
+            default: 'https://nodejs.org/dist/v4.2.1/node-v4.2.1.tar.gz'
+        - string:
+            name: PROTOBUF_URL
+            default: 'https://github.com/google/protobuf/releases/download/v2.6.1/protobuf-2.6.1.tar.gz'
+    disabled: false
+    node: docker-centos7-aarch64
+    display-name: 'ODPi BigTop Hadoop (rpm)'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw:
+                - odpi-bigtop-rpm/common/builders.sh
+                - odpi-bigtop-rpm/hadoop/builders.sh
+    publishers:
+        - archive:
+            artifacts: 'odpi-bigtop/output/**'
