@@ -88,5 +88,11 @@
               # bare-metal testing.
               tar xzf $HOME/FM000-KT-00035-r9p5-41rel0.tgz -C $HOME/snapshots-ref-new
               chmod -R ugo+rx $HOME/snapshots-ref-new/Foundation_Platformpkg
+
+              # Clone the Linux kernel if not already
+              # present. Subsequent calls will update it.
+              if [ ! -d $HOME/snapshots-ref-new/linux.git ]; then
+                git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git $HOME/snapshots-ref-new/linux.git
+              fi
             fi
             ./tcwg-update-snapshots_ref.sh -v -r $master_machine $machines
