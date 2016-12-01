@@ -20,6 +20,10 @@
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 8 - Run jcstress tests'
+    parameters:
+        - string:
+            name: JCSTRESS_MODE
+            default: 'default'
     axes:
         - axis:
             type: user-defined
@@ -66,7 +70,6 @@
             set -eu
 
             TEST_TYPE=all
-            TEST_MODE=sanity
 
             # client variant uses server with -XX:TieredStopAtLevel=1
             # zero is a third possible value.
@@ -83,9 +86,9 @@
             # XXX Don't fail the job if jcstress itself fails.
             set +e
             if [ JVM_VARIANT = "server" ]; then
-                java -XX:-RestrictContended -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:-TieredCompilation -XX:ReservedCodeCacheSize=128M -jar ${JCSTRESS_JAR} -m ${TEST_MODE}
+                java -XX:-RestrictContended -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:-TieredCompilation -XX:ReservedCodeCacheSize=128M -jar ${JCSTRESS_JAR} -m ${JCSTRESS_MODE}
             else
-                java -XX:-RestrictContended -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=128M -jar ${JCSTRESS_JAR} -m ${TEST_MODE}
+                java -XX:-RestrictContended -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=128M -jar ${JCSTRESS_JAR} -m ${JCSTRESS_MODE}
             fi
 
             test_result=$?
