@@ -2,13 +2,13 @@
     name: trigger-lt-qcom-debian-images-arm64-dragonboard820c
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
                 - job-read
+        - build-discarder:
+            - days-to-keep: 30
+            - num-to-keep: 30
     parameters:
         - string:
             name: KERNEL_BRANCH
