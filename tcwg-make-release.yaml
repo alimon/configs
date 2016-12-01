@@ -54,6 +54,10 @@
             name: fileserver
             default: ex40-01.tcwglab.linaro.org
             description: 'Remote file server for logs and binaries'
+        - bool:
+            name: testrelease
+            default: 'true'
+            description: 'Run test-release if make-release is successful'
     disabled: false
     node: tcwg-x86_64-ex40build-01
     retry-count: 3
@@ -176,26 +180,29 @@
 
             buildid=`printf '%04d' ${BUILD_NUMBER}`
 
-            tarball_linux="`basename ${tarball_linux}`"
-            tarball_linux_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_linux}"
-            cat << EOF > tcwg.params.linux
+            if $testrelease; then
+              tarball_linux="`basename ${tarball_linux}`"
+              tarball_linux_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_linux}"
+              cat << EOF > tcwg.params.linux
             tarball_url=${tarball_linux_url}
             release=${tcwg_release}
             target=${host}-${target}
             EOF
 
-            if test x"${canadian}" = x"true"; then
-              tarball_mingw="`basename ${tarball_mingw}`"
-              tarball_mingw_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_mingw}"
-              cat << EOF > tcwg.params.mingw
+              if test x"${canadian}" = x"true"; then
+                tarball_mingw="`basename ${tarball_mingw}`"
+                tarball_mingw_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_mingw}"
+                cat << EOF > tcwg.params.mingw
             tarball_url=${tarball_mingw_url}
             release=${tcwg_release}
             target=mingw-${target}
             EOF
+              fi
             fi
 
       - conditional-step:
-          condition-kind: current-status
+          condition-kind: file-exists
+          condition-filename: tcwg.params.linux
           steps:
               - trigger-builds:
                   - project: 'tcwg-test-release'
