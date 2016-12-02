@@ -26,7 +26,7 @@
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
-    disabled: false
+    disabled: true
     node: build
     child-workspace: .
     display-name: 'Linux Linaro Kernel (mainline) with ILP32'
@@ -51,7 +51,7 @@
             type: slave
             name: label
             values:
-                - docker-utopic-amd64
+                - docker-xenial-amd64
     execution-strategy:
         sequential: true
     wrappers:
@@ -80,7 +80,6 @@
               rm -f linux-*.deb
             }
 
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
             sudo apt-get install -y python-pycurl python-beautifulsoup python-html2text
 
