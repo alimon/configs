@@ -1,0 +1,64 @@
+- job:
+    name: zephyr-aeolus
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'Zephyr Aeolus'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-xenial-amd64-13
+        - axis:
+            type: user-defined
+            name: ZEPHYR_GCC_VARIANT
+            values:
+#                - gccarmemb
+                - zephyr
+        - axis:
+            type: user-defined
+            name: PLATFORM
+            values:
+                - 96b_carbon
+                - cc3200_launchxl
+                - frdm_k64f
+                - nucleo_l476rg
+                - v2m_beetle
+        - axis:
+            type: user-defined
+            name: PROJECT
+            values:
+                - jerryscript
+                - micropython
+#                - zephyr.js
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw: zephyr-aeolus/builders.sh
+        - inject:
+            properties-file: env_var_parameters
+        - build-name-setter:
+            template: '#${BUILD_NUMBER}-${GIT_COMMIT}'
+            macro: true
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org kumar.gala@linaro.org paul.sokolovsky@linaro.org'
