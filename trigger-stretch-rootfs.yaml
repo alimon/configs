@@ -1,0 +1,22 @@
+- job:
+    name: trigger-stretch-rootfs
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for Debian rootfs (stretch)'
+    triggers:
+        - timed: '@weekly'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'stretch-arm64-rootfs'
+            - project: 'stretch-armhf-rootfs'
