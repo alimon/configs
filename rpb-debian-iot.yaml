@@ -95,6 +95,12 @@
               [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
             done
 
+            # Add default config file templates
+            sudo cp configs/rpb-debian-iot/conf/gateway.conf rootfs/etc/sysctl.d/
+            sudo cp configs/rpb-debian-iot/conf/bt0 rootfs/etc/network/interfaces.d/
+            sudo cp configs/rpb-debian-iot/conf/radvd.conf rootfs/etc/radvd.conf
+            sudo cp configs/rpb-debian-iot/conf/ndppd.conf rootfs/etc/ndppd.conf
+
             KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
 
             mkdir -p out/${BOARD}
