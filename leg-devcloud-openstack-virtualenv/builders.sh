@@ -11,7 +11,6 @@ cleanup_exit()
   rm -rf out
 }
 
-sudo apt-get -q=2 update
 cd ${WORKSPACE}/openstack-venvs
 sudo ./build_all.sh
 
