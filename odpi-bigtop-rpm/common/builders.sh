@@ -28,6 +28,7 @@ sudo yum install -y \
   lzo-devel \
   make \
   mariadb-devel \
+  java-1.8.0-openjdk \
   openldap-devel \
   openssl-devel \
   pkgconfig \
@@ -43,22 +44,12 @@ sudo yum install -y \
   wget \
   xmlto
 
-# download OpenJDK and Maven explicitely
-wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL} ${SCALA_URL} ${NODE_URL} ${PROTOBUF_URL}
-tar -Jxf jdk*.tar.xz
+# download some dependencies explicitely
+wget --progress=dot -e dotbytes=2M ${MAVEN_URL} ${SCALA_URL} ${NODE_URL} ${PROTOBUF_URL}
 tar -zxf apache-maven-*.tar.gz
 tar -zxf scala-*.tgz
 tar -zxf node-*.tar.gz
 tar -zxf protobuf-*.tar.gz
-
-# replace cacerts with distro-supplied
-cd jdk*/jre/lib/security/
-rm -f cacerts
-ln -s /etc/pki/java/cacerts
-
-# set JAVA_HOME
-cd ${WORKSPACE}/jdk*
-export JAVA_HOME=${PWD}
 
 # set M3_HOME
 cd ${WORKSPACE}/apache-maven-*
@@ -75,7 +66,7 @@ cd ${WORKSPACE}/scala-*
 export SCALA_HOME=${PWD}
 
 # set PATH
-export PATH=${JAVA_HOME}/bin:${M3_HOME}/bin:${PATH}
+export PATH=${M3_HOME}/bin:${PATH}
 java -version
 mvn -version
 
