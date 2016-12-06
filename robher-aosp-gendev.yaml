@@ -1,0 +1,121 @@
+- job:
+    name: robher-aosp-gendev
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            vishal.bhoj@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+            rob.herring@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'AOSP Generic Device build for Rob Herring'
+    concurrent: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - linaro-publish-token:
+            host: snapshots.linaro.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            java -version
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update || true
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools libfdt-dev python-mako gettext openjdk-8-jdk
+
+            mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
+
+            if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
+              sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+              sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            fi
+            cd /home/buildslave/srv/${JOB_NAME}
+
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+
+            # Clean any artifacts related to previous build
+            rm -rf out/target/product/*/system/ out/target/product/*/data/ out/target/product/*/*.xml out/target/product/*/obj/kernel/
+            rm -rf out/target/product/*/*.zip out/target/product/*/*.img out/target/product/*/*.xz
+
+            # Runs as ubuntu
+            repo init -u https://android.googlesource.com/platform/manifest -b master
+            cd .repo
+            rm -rf local_manifests
+            git clone https://github.com/robherring/android_manifest -b master local_manifests
+            cd ..
+            repo sync -f --force-sync -j16
+
+            mkdir -p out
+            cp .repo/manifest.xml out/source-manifest.xml
+            repo manifest -r -o out/pinned-manifest.xml
+
+            # Temporary patches
+            cd system/core
+            git fetch git://git.collabora.com/git/user/padovan/android-system-core.git && git merge FETCH_HEAD
+            cd ../..
+
+            cd frameworks/native
+            git fetch https://android.googlesource.com/platform/frameworks/native refs/changes/01/147401/4 && git cherry-pick FETCH_HEAD
+            cd ../..
+
+
+            # configure the device
+            cd device/linaro/generic
+            make defconfig all
+            cd ../../..
+
+            source build/envsetup.sh
+            for arch in arm64 arm64_only x86_64; do
+                    lunch linaro_${arch}-userdebug
+                    make -k -j8 systemimage ramdisk || { true; failed=1; }
+            done
+
+            ###### Don't care about artifacts for now ######
+            echo "Build finished - ret ${failed}"
+            exit ${failed}
+
+    publishers:
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - email:
+            recipients: 'rob.herring@linaro.org'
+        - email-ext:
+            recipients: 'rob.herring@linaro.org'
+            content-type: text
+            subject: 'errors for mesa master Android build ${BUILD_NUMBER}'
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+
+                ERRORS:
+                ${BUILD_LOG_REGEX, regex="^.*? error: .*?$", linesBefore=0, linesAfter=2, showTruncatedLines=false}
+            unstable: true
+
