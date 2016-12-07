@@ -115,7 +115,7 @@
               # timeout.
               backup_container_image="$(ssh $docker_host docker commit --pause=false $DOCKER_CONTAINER_ID)"
               backup_container_name="$container_user-$BUILD_ID"
-              ssh $docker_host docker create --name $backup_container_name --volumes-from $DOCKER_CONTAINER_ID -P $backup_container_image
+              ssh $docker_host docker create --name $backup_container_name --volumes-from $DOCKER_CONTAINER_ID -P $backup_container_image -v /home/$container_user:/home/$container_user
               set +x
               echo "NOTE: To restart a copy of this container from TCWG Lab: ssh $docker_host sudo -u $USER docker start $backup_container_name"
               echo "NOTE: then get container ssh port: port=\$(ssh $docker_host sudo -u $USER docker port $backup_container_name 22 | cut -d: -f 2)"
@@ -128,6 +128,7 @@
             set +x
             echo "Testing container: $container_user@$docker_host:$ssh_port"
             echo "Hosting tests"
+            set -x
 
             case "$watchdog" in
               "exit") ;;
