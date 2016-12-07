@@ -30,7 +30,7 @@
             type: slave
             name: label
             values:
-                - docker-xenial-amd64
+                - docker-xenial-amd64-13
         - axis:
             type: user-defined
             name: ZEPHYR_GCC_VARIANT
@@ -70,11 +70,8 @@
     execution-strategy:
         combination-filter: |
              ZEPHYR_GCC_VARIANT=="zephyr" || (ZEPHYR_GCC_VARIANT=="gccarmemb" && !(PLATFORM=="qemu_x86_iamcu" || PLATFORM=="arduino_101" || PLATFORM=="qemu_x86 minnowboard" || PLATFORM=="galileo" || PLATFORM=="quark_d2000_crb" || PLATFORM=="quark_se_c1000_devboard"))
-        sequential: false
     wrappers:
         - timestamps
-        - matrix-tie-parent:
-            node: master
     builders:
         - linaro-publish-token
         - shell:
