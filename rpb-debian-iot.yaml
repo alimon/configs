@@ -102,7 +102,9 @@
             sudo cp configs/rpb-debian-iot/conf/ndppd.conf rootfs/etc/ndppd.conf
             sudo cp configs/rpb-debian-iot/conf/nm-bt0.conf rootfs/etc/NetworkManager/conf.d/
             ## Only use wpa_supplicant via D-Bus, as it will be used by NM
-            sudo rm rootfs/etc/systemd/system/multi-user.target.wants/wpa_supplicant@.service
+            sudo ln -s /dev/null rootfs/etc/systemd/system/multi-user.target.wants/wpa_supplicant@.service
+            ## No need to wait for device to be on-line
+            sudo rm -f rootfs/etc/systemd/system/network-online.target.wants/NetworkManager-wait-online.service
 
             KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
 
