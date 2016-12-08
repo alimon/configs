@@ -25,10 +25,31 @@ export LANG=C
 export make_bootwrapper=false
 export make_install=true
 export kernel_flavour=multi-v7
-export kernel_config=multi_v7_defconfig
+export use_config_fragment=1
+export conf_filenames="arch/arm/configs/multi_v7_defconfig arch/arm/configs/bluetooth_6lowpan.conf"
 export MAKE_DTBS=true
 export tcbindir="${HOME}/srv/toolchain/arm-tc-16.02/bin"
 export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/5.3-2016.02/arm-linux-gnueabihf/gcc-linaro-5.3-2016.02-x86_64_arm-linux-gnueabihf.tar.xz
+
+# Enable bluetooth 6lowpan
+cat << EOF > arch/arm/configs/bluetooth_6lowpan.conf
+CONFIG_6LOWPAN=m
+CONFIG_6LOWPAN_DEBUGFS=y
+CONFIG_IEEE802154=m
+CONFIG_IEEE802154_NL802154_EXPERIMENTAL=y
+CONFIG_IEEE802154_6LOWPAN=m
+CONFIG_MAC802154=m
+CONFIG_BT_BNEP=m
+CONFIG_BT_BNEP_MC_FILTER=y
+CONFIG_BT_BNEP_PROTO_FILTER=y
+CONFIG_BT_6LOWPAN=m
+CONFIG_IEEE802154_FAKELB=m
+CONFIG_IEEE802154_AT86RF230=m
+CONFIG_IEEE802154_AT86RF230_DEBUGFS=y
+CONFIG_IEEE802154_MRF24J40=m
+CONFIG_IEEE802154_CC2520=m
+CONFIG_IEEE802154_ATUSB=m
+EOF
 
 rm -rf configs lci-build-tools
 git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
