@@ -101,17 +101,25 @@
             rm -rf out
             mkdir out
 
-            pushd jdk8u
-            find . -name BOM -exec rm {} \;
-            commit_id=$(hg identify | awk '{print $1}')
-            echo "jdk8-${commit_id}" | tee -a BOM
+            pushd jdk9
+            #find . -name BOM -exec rm {} \;
+            #commit_id=$(hg identify | awk '{print $1}')
+            #echo "jdk9-${commit_id}" | tee -a BOM
 
-            for i in corba jaxp jaxws langtools jdk hotspot nashorn; do
-              pushd $i
-              commit_id=$(hg identify | awk '{print $1}')
-              dir=$(basename $PWD)
-              echo "${dir}-${commit_id}" | tee -a ../BOM
-              popd
+            #for i in corba jaxp jaxws langtools jdk hotspot nashorn; do
+            #  pushd $i
+            #  commit_id=$(hg identify | awk '{print $1}')
+            #  dir=$(basename $PWD)
+            #  echo "${dir}-${commit_id}" | tee -a ../BOM
+            #  popd
+            #done
+
+            ## Pull out subdirectory HG versions
+            SUBREPOS=". corba jaxp jaxws langtools jdk hotspot nashorn"
+
+            echo -e Subdir\\tHash\\t\\tTag\\tTag hash > BOM
+            for x in $SUBREPOS; do
+                echo -e $x\\t$(cd $x; hg head --template '{node|short}\t' ; hg tags --template="{tag}\t{node|short}\n" | grep -ve '^tip' | head -n1) >>BOM
             done
 
             popd
