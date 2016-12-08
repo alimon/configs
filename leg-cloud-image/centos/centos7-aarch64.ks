@@ -20,6 +20,7 @@ clearpart --all --initlabel --drives=vda
 @core
 cloud-init
 chrony
+gdisk
 nfs-utils
 rsync
 tar
