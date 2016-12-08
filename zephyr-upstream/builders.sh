@@ -73,7 +73,10 @@ find ${OUTDIR} -type f -name 'zephyr.config' -delete
 
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
-wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+# pycurl based
+#wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+# python-requests based
+wget -q https://raw.githubusercontent.com/pfalcon/publishing-api/pfalcon/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
 time python ${HOME}/bin/linaro-cp.py \
   --api_version 3 \
   --link-latest \
