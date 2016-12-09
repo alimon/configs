@@ -32,31 +32,12 @@
     builders:
         - linaro-publish-token:
             host: snapshots.linaro.org
+        - shell:
+            !include-raw: android-lcr/common/builders.sh
         - shell: |
             #!/bin/bash
 
             set -ex
-
-            java -version
-
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-            sudo apt-get update || true
-            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools libfdt-dev python-mako gettext openjdk-8-jdk
-
-            mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
-            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            chmod a+x ${HOME}/bin/*
-            export PATH=${HOME}/bin:${PATH}
-
-            if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
-              sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
-              sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
-            fi
-            cd /home/buildslave/srv/${JOB_NAME}
-
-            git config --global user.email "ci_notify@linaro.org"
-            git config --global user.name "Linaro CI"
 
             # Clean any artifacts related to previous build
             rm -rf out/target/product/*/system/ out/target/product/*/data/ out/target/product/*/*.xml out/target/product/*/obj/kernel/
