@@ -1,0 +1,107 @@
+- job:
+    name: tcwg-test-release-matrix
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: tarball_url
+            default: ''
+            description: 'The GCC binary tarball to test'
+        - string:
+            name: abe_branch
+            default: refs/heads/test
+            description: 'ABE revision to use '
+        - string:
+            name: release
+            default:
+            description: 'Release name, only displayed in job name'
+        - bool:
+            name: debug
+            default: false
+            description: 'Whether to enable bash debugging output.'
+    disabled: false
+    node: tcwg-x86_64-ex40build-01
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG Test Release matrix'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/abe.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            branches:
+                - ${abe_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+            basedir: abe
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+               - docker-trusty-amd64-tcwg-build
+               - docker-trusty-i386-tcwg-build
+        - axis:
+            type: user-defined
+            name: target
+            values:
+                - aarch64-elf
+                - aarch64-linux-gnu
+                - aarch64_be-elf
+                - aarch64_be-linux-gnu
+                - armv8l-linux-gnueabihf
+                - arm-eabi
+                - arm-linux-gnueabi
+                - arm-linux-gnueabihf
+                - armeb-eabi
+                - armeb-linux-gnueabi
+                - armeb-linux-gnueabihf
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+              - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a' # tcwg-buildslave
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="release"}-${ENV,var="target"}'
+    builders:
+        - shell: |      
+            #!/bin/bash
+
+            if test x${debug} = x"true"; then
+              shell="/bin/bash -x"
+              set -x
+            else
+              shell="/bin/bash"
+            fi
+
+            # tarball_url is read from the tcwg.params file, which is
+            # setup by the MakeRelease job.
+            if test x"${tarball_url}" = x; then
+              echo "ERROR: no binary tarball specified!"
+              exit 1
+            fi
+
+            ${shell} ${WORKSPACE}/abe/scripts/TestRelease.job --tarball ${tarball_url}
+
+            exit $?
+    publishers:
+        - email:
+            recipients: 'ryan.arnold@linaro.org'
+        - email-ext:
+            recipients: 'christophe.lyon@linaro.org'
+            always: true
