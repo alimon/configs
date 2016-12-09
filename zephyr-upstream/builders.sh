@@ -2,7 +2,7 @@
 
 set -ex
 
-git clone --depth 1 https://git.linaro.org/zephyrproject-org/zephyr.git ${WORKSPACE}
+git clone --depth 1 -b ${BRANCH} https://git.linaro.org/zephyrproject-org/zephyr.git ${WORKSPACE}
 git clean -fdx
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
@@ -80,7 +80,7 @@ wget -q https://raw.githubusercontent.com/pfalcon/publishing-api/pfalcon/linaro-
 time python ${HOME}/bin/linaro-cp.py \
   --api_version 3 \
   --link-latest \
-  out/${PLATFORM} components/kernel/zephyr/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
+  out/${PLATFORM} components/kernel/zephyr/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
 
 CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
 CCACHE_DIR=${CCACHE_DIR} ccache -s
