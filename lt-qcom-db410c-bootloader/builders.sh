@@ -20,6 +20,9 @@ unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-
 # Get the Android compiler
 git clone ${LK_GCC_GIT} --depth 1 -b ${LK_GCC_REL} android-gcc
 
+# get the signing tools
+git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/signlk.git
+
 # Build all needed flavors of LK
 git clone --depth 1 ${LK_GIT_LINARO} -b ${LK_GIT_REL_SD_RESCUE} lk_sdrescue
 git clone --depth 1 ${LK_GIT_LINARO} -b ${LK_GIT_REL_SD_BOOT} lk_sd_boot
@@ -30,6 +33,8 @@ for lk in lk_sdrescue lk_sd_boot lk_emmc_boot; do
     cd $lk
     git log -1
     make -j4 msm8916 EMMC_BOOT=1 TOOLCHAIN_PREFIX=${WORKSPACE}/android-gcc/bin/arm-eabi-
+    mv build-msm8916/emmc_appsboot.mbn build-msm8916/emmc_appsboot_unsigned.mbn
+    ../signlk/signlk.sh -i=./build-msm8916/emmc_appsboot_unsigned.mbn -o=./build-msm8916/emmc_appsboot.mbn -d
     cd -
 done
 
