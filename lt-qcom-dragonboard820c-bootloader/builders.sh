@@ -29,9 +29,7 @@ for lk in lk_sdrescue lk_ufs_boot; do
     git log -1
     make -j4 msm8996 EMMC_BOOT=1 VERIFIED_BOOT=1 TOOLCHAIN_PREFIX=${WORKSPACE}/android-gcc/bin/arm-eabi-
     mv build-msm8996/emmc_appsboot.mbn build-msm8996/emmc_appsboot_unsigned.mbn
-    cd -
-    cd signlk
-    sh signlk.sh -i=../$lk/build-msm8996/emmc_appsboot_unsigned.mbn -o=../$lk/build-msm8996/emmc_appsboot.mbn -d
+    ../signlk/signlk.sh -i=./build-msm8996/emmc_appsboot_unsigned.mbn -o=./build-msm8996/emmc_appsboot.mbn -d
     cd -
 done
 
