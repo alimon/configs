@@ -1,5 +1,5 @@
 - job:
-    name: trigger-zephyr-upstream
+    name: trigger-zephyr-upstream-arm
     project-type: freestyle
     defaults: global
     properties:
@@ -10,15 +10,15 @@
             days-to-keep: 30
             num-to-keep: 30
     disabled: false
-    node: build
-    display-name: 'Trigger for Zephyr project (master)'
+    node: master
+    display-name: 'Trigger for Zephyr project (arm)'
     scm:
         - git:
             url: https://git.linaro.org/zephyrproject-org/zephyr.git
-            refspec: +refs/heads/master:refs/remotes/origin/master
+            refspec: +refs/heads/arm:refs/remotes/origin/arm
             name: origin
             branches:
-                - refs/heads/master
+                - refs/heads/arm
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -30,4 +30,4 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - trigger-builds:
-            - project: 'zephyr-upstream'
+            - project: 'zephyr-upstream-arm'
