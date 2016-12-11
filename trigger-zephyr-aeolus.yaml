@@ -1,0 +1,21 @@
+- job:
+    name: trigger-zephyr-aeolus
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for Zephyr Aeolus'
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'zephyr-aeolus'
