@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 -y install ccache cmake g++-multilib gcc-arm-none-eabi git libc6-dev-i386 python-pycurl python-requests python3-ply rsync
+sudo apt-get -q=2 -y install ccache cmake g++-multilib gcc-arm-none-eabi git libc6-dev-i386 python-requests python3-ply rsync
 
 set -ex
 
@@ -64,10 +64,7 @@ mv ${PROJECT}-${PLATFORM}-*.bin out/${PLATFORM}/
 
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
-# pycurl based
-#wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-# python-requests based
-wget -q https://raw.githubusercontent.com/pfalcon/publishing-api/pfalcon/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
 time python ${HOME}/bin/linaro-cp.py \
   --api_version 3 \
   --link-latest \

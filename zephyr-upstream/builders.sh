@@ -17,7 +17,7 @@ cleanup_exit()
 }
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply gcc-arm-none-eabi python-pycurl rsync
+sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply gcc-arm-none-eabi python-requests rsync
 
 # Toolchains are pre-installed and come from:
 # https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q3-update/+download/gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
@@ -73,10 +73,7 @@ find ${OUTDIR} -type f -name 'zephyr.config' -delete
 
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
-# pycurl based
-#wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-# python-requests based
-wget -q https://raw.githubusercontent.com/pfalcon/publishing-api/pfalcon/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
 time python ${HOME}/bin/linaro-cp.py \
   --api_version 3 \
   --link-latest \
