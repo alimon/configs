@@ -51,7 +51,6 @@
     wrappers:
         - timestamps
     builders:
-        - linaro-publish-token
         - shell:
             !include-raw: zephyr-aeolus/builders.sh
         - inject:
@@ -59,6 +58,19 @@
         - build-name-setter:
             template: '#${BUILD_NUMBER}-${GIT_COMMIT}'
             macro: true
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              out/${PLATFORM} components/kernel/aeolus/${ZEPHYR_GCC_VARIANT}/${PROJECT}/${PLATFORM}/${BUILD_NUMBER}
+
+            rm -rf out
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org kumar.gala@linaro.org paul.sokolovsky@linaro.org'

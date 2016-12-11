@@ -5,14 +5,6 @@ sudo apt-get -q=2 -y install ccache cmake g++-multilib gcc-arm-none-eabi git lib
 
 set -ex
 
-trap cleanup_exit INT TERM EXIT
-
-cleanup_exit()
-{
-  cd ${WORKSPACE}
-  rm -rf out
-}
-
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
 git clone --depth 1 https://git.linaro.org/lite/linaro-aeolus.git ${WORKSPACE}
@@ -61,14 +53,6 @@ bash -x ${make_wrapper} ${PROJECT} BOARD=${PLATFORM}
 cd ${WORKSPACE}
 mkdir -p out/${PLATFORM}
 mv ${PROJECT}-${PLATFORM}-*.bin out/${PLATFORM}/
-
-# Publish
-test -d ${HOME}/bin || mkdir ${HOME}/bin
-wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python ${HOME}/bin/linaro-cp.py \
-  --api_version 3 \
-  --link-latest \
-  out/${PLATFORM} components/kernel/aeolus/${ZEPHYR_GCC_VARIANT}/${PROJECT}/${PLATFORM}/${BUILD_NUMBER}
 
 CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
 CCACHE_DIR=${CCACHE_DIR} ccache -s

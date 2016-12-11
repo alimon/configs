@@ -1,5 +1,8 @@
 #!/bin/bash
 
+sudo apt-get -q=2 update
+sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply gcc-arm-none-eabi python-requests rsync
+
 set -ex
 
 git clone --depth 1 -b ${BRANCH} https://git.linaro.org/zephyrproject-org/zephyr.git ${WORKSPACE}
@@ -7,17 +10,6 @@ git clean -fdx
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 head -5 Makefile
-
-trap cleanup_exit INT TERM EXIT
-
-cleanup_exit()
-{
-  cd ${WORKSPACE}
-  rm -rf out
-}
-
-sudo apt-get -q=2 update
-sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply gcc-arm-none-eabi python-requests rsync
 
 # Toolchains are pre-installed and come from:
 # https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q3-update/+download/gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
@@ -70,14 +62,6 @@ rsync -avm \
   --exclude='*' \
   ${OUTDIR}/ out/
 find ${OUTDIR} -type f -name 'zephyr.config' -delete
-
-# Publish
-test -d ${HOME}/bin || mkdir ${HOME}/bin
-wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python ${HOME}/bin/linaro-cp.py \
-  --api_version 3 \
-  --link-latest \
-  out/${PLATFORM} components/kernel/zephyr/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
 
 CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
 CCACHE_DIR=${CCACHE_DIR} ccache -s
