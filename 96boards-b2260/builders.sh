@@ -19,7 +19,7 @@ cleanup_exit()
 # Pull required tooling into Docker container
 #
 sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y kpartx python-pycurl linaro-image-tools
+sudo apt-get -q=2 install -y kpartx python-requests linaro-image-tools
 
 export LANG=C
 export make_bootwrapper=false

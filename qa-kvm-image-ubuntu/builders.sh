@@ -16,7 +16,7 @@ cleanup_exit()
 }
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 -y install python-pycurl qemu-utils virtinst pigz
+sudo apt-get -q=2 -y install python-requests qemu-utils virtinst pigz
 
 default_gw=$(ip route show default 0.0.0.0/0 | cut -d' ' -f3)
 sudo sed -i "/^uri_default/d" /etc/libvirt/libvirt.conf

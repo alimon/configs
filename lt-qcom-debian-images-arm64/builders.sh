@@ -17,7 +17,7 @@ cleanup_exit()
 }
 
 sudo apt-get update
-sudo apt-get install -y kpartx python-pycurl device-tree-compiler zip libfdt-dev mtools android-tools-fsutils
+sudo apt-get install -y kpartx python-requests device-tree-compiler zip libfdt-dev mtools android-tools-fsutils
 wget -q \
      http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
      http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb

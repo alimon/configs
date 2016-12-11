@@ -4,7 +4,7 @@ export BUILD_CONFIG_FILENAME=hikey-aosp-master
 
 # Install needed packages
 sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y bison git gperf libxml2-utils python-mako zip time python-pycurl genisoimage patch mtools python-wand rsync linaro-image-tools pxz gawk
+sudo apt-get -q=2 install -y bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-wand rsync linaro-image-tools pxz gawk
 
 wget -q \
   http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
