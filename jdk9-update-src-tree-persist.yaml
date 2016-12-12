@@ -10,6 +10,9 @@
             anonymous:
                 - job-read
                 - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 10
@@ -48,3 +51,6 @@
             mkdir -p $src_dir
             echo "Extracting tarball to $src_dir"
             tar -C $src_dir --strip-components=1 -xf $WORKSPACE/incoming/jdk9.tar.gz
+
+            # Copy bill-of-materials to persistent area for email report.
+            cp incoming/BOM $TOP_DIR
