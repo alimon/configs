@@ -14,7 +14,7 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-utopic-amd64
+    node: docker-xenial-amd64
     display-name: 'Infrastructure - Unit Test CI for the linaro-license-protection repository'
     concurrent: true
     triggers:
@@ -41,7 +41,6 @@
 
             rm -rf ${WORKSPACE}/*
             echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
-            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
             sudo apt-get update
             sudo apt-get install -y python-virtualenv git
 
