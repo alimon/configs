@@ -108,6 +108,11 @@
             sudo ln -sf /dev/null rootfs/etc/systemd/system/network-online.target.wants/NetworkManager-wait-online.service
             ## Disable tinyproxy by default, enabled by bt0 ifdown/up
             sudo rm -f rootfs/etc/rc*.d/S03tinyproxy
+            ## Custom init scripts
+            sudo wget -q https://raw.githubusercontent.com/linaro-product/iot-gateway-files/master/bluetooth_6lowpand.sh -O rootfs/usr/bin/bluetooth_6lowpand
+            sudo chmod +x rootfs/usr/bin/bluetooth_6lowpand
+            sudo cp configs/rpb-debian-iot/conf/bluetooth_6lowpand.service rootfs/etc/systemd/system/
+            sudo cp configs/rpb-debian-iot/conf/99-bluetooth-6lowpan.rules rootfs/etc/udev/rules.d/
 
             KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
 
@@ -176,6 +181,11 @@
                 cat << EOF | sudo tee rootfs/etc/fstab
             /dev/disk/by-partlabel/boot   /boot/efi vfat defaults          0 0
             EOF
+
+                # Bluetooth init script
+                sudo wget -q https://raw.githubusercontent.com/linaro-product/iot-gateway-files/master/btsetup.sh -O rootfs/usr/bin/btsetup-hikey.sh
+                sudo chmod +x rootfs/usr/bin/btsetup-hikey.sh
+                sudo cp configs/rpb-debian-iot/conf/btsetup-hikey.service rootfs/etc/systemd/system/
             fi
 
             # Create the ext4fs (fastboot compatible)
