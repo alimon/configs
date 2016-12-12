@@ -117,7 +117,8 @@
             ## Pull out subdirectory HG versions
             SUBREPOS=". corba jaxp jaxws langtools jdk hotspot nashorn"
 
-            echo -e Subdir\\tHash\\t\\tTag\\tTag hash > BOM
+            echo BOM for $(hg paths default) > BOM
+            echo -e Subdir\\tHash\\t\\tTag\\tTag hash >> BOM
             for x in $SUBREPOS; do
                 echo -e $x\\t$(cd $x; hg head --template '{node|short}\t' ; hg tags --template="{tag}\t{node|short}\n" | grep -ve '^tip' | head -n1) >>BOM
             done
