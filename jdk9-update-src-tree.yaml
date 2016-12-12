@@ -122,6 +122,8 @@
                 echo -e $x\\t$(cd $x; hg head --template '{node|short}\t' ; hg tags --template="{tag}\t{node|short}\n" | grep -ve '^tip' | head -n1) >>BOM
             done
 
+            cp BOM $WORKSPACE/out
+
             popd
 
             : ${YEAR:=$(date +%Y)}
