@@ -40,6 +40,9 @@
             git config --global user.email "ci_notify@linaro.org"
             git config --global user.name "Linaro CI"
 
+            sudo apt-get update
+            sudo apt-get install -y python-requests
+
             mkdir -p out
             wget -q ${MANIFEST_URL} -O out/R-LCR.xml
             sed -i "s/clone-depth=\"1\"//g" out/R-LCR.xml
