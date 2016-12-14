@@ -145,7 +145,6 @@ for rootfs in ${ROOTFS}; do
 
     # additional packages in desktop images
     [ "${rootfs}" = "alip" ] && cat << EOF >> ${VENDOR}-lt-qcom
-- xserver-xorg-video-freedreno
 - 96boards-artwork
 EOF
 
