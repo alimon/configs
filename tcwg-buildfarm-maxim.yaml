@@ -95,6 +95,14 @@
             values:
                 - tcwg-x86_64-2-cam
                 - tcwg-aarch64-build
+                - tcwg-tx1-build
+                - tcwg-tk1-build
+        - axis:
+            type: user-defined
+            name: container
+            values:
+                - docker
+                - schroot
         - axis:
             type: user-defined
             name: personality
@@ -115,7 +123,7 @@
                 - native
     execution-strategy:
         combination-filter: |
-            (label=="tcwg-x86_64-2-cam" && personality=="linux64") || target=="native"
+            (label=="tcwg-x86_64-2-cam" && container=="docker" && personality="linux64") || (label!="tcwg-tk1-build" && container=="docker" && target=="native") || (label=="tcwg-tk1-build" && container=="schroot" && target=="native"))
         sequential: false
     wrappers:
         - timeout:
