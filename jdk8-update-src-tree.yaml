@@ -101,7 +101,7 @@
             rm -rf out
             mkdir out
 
-            pushd jdk9
+            pushd jdk8u
             #find . -name BOM -exec rm {} \;
             #commit_id=$(hg identify | awk '{print $1}')
             #echo "jdk9-${commit_id}" | tee -a BOM
@@ -142,7 +142,7 @@
             tar --exclude=.hg -acf out/jdk8u.tar.gz jdk8u
     publishers:
         - archive:
-            artifacts: 'out/jdk9.tar.gz, out/build-date.sh, out/BOM'
+            artifacts: 'out/jdk8u.tar.gz, out/build-date.sh, out/BOM'
         - fingerprint:
             files: 'out/*'
             record-artifacts: true
