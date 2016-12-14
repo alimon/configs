@@ -19,9 +19,9 @@
             default: ''
             description: 'The GCC binary tarball to test'
         - string:
-            name: abe_branch
-            default: refs/heads/test
-            description: 'ABE revision to use '
+            name: scripts_branch
+            default: refs/remotes/origin/master
+            description: 'Scripts revision to use '
         - string:
             name: release
             default:
@@ -37,14 +37,13 @@
     display-name: 'TCWG Test Release matrix'
     scm:
         - git:
-            url: https://git-us.linaro.org/toolchain/abe.git
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
             refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
-                - ${abe_branch}
+                - ${scripts_branch}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
-            basedir: abe
     axes:
         - axis:
             type: slave
@@ -89,19 +88,28 @@
               shell="/bin/bash"
             fi
 
-            # tarball_url is read from the tcwg.params file, which is
-            # setup by the MakeRelease job.
             if test x"${tarball_url}" = x; then
               echo "ERROR: no binary tarball specified!"
               exit 1
             fi
 
-            ${shell} ${WORKSPACE}/abe/scripts/TestRelease.job --tarball ${tarball_url}
+            fullver=`basename {$tarball_url}`
+            gccver=${fullver%%-*}
+            suffix=${fullver##*-}
+
+            case ${slave} in
+              *i386*) host=i686 ;;
+              *amd64*) host=x86_64 ;;
+              *)
+                echo "Unsupported slave type: ${slave}"
+                exit 1
+                ;;
+            esac
+
+            ${shell} ${WORKSPACE}/abe/scripts/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${suffix}-${host}_${target}.tar.xz
 
             exit $?
     publishers:
-        - email:
-            recipients: 'ryan.arnold@linaro.org'
         - email-ext:
             recipients: 'christophe.lyon@linaro.org'
             always: true
