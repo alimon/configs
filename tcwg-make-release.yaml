@@ -56,14 +56,14 @@
             description: "Level of debug information: none - No debugging information, abe - ABE debugging information, yaml - tcwg-make-release.yaml debug information (and exit)."
         - string:
             name: fileserver
-            default: ex40-01.tcwglab.linaro.org
+            default: dev-01.tcwglab
             description: 'Remote file server for logs and binaries'
         - bool:
             name: testrelease
             default: 'true'
             description: 'Run test-release if make-release is successful'
     disabled: false
-    node: tcwg-x86_64-ex40build-01
+    node: tcwg-x86_64-dev-01
     retry-count: 3
     concurrent: true
     display-name: 'TCWG Make Release'
@@ -187,7 +187,7 @@
 
             if $testrelease; then
               tarball_linux="`basename ${tarball_linux}`"
-              tarball_linux_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_linux}"
+              tarball_linux_url="http://${fileserver}/~$USER/releases/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_linux}"
               cat << EOF > tcwg.params.linux
             tarball_url=${tarball_linux_url}
             release=${tcwg_release}
@@ -196,7 +196,7 @@
 
               if test x"${canadian}" = x"true"; then
                 tarball_mingw="`basename ${tarball_mingw}`"
-                tarball_mingw_url="http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_mingw}"
+                tarball_mingw_url="http://${fileserver}/~$USER/releases/binaries/${tcwg_version}-${tcwg_release}-${buildid}/${target}/${tarball_mingw}"
                 cat << EOF > tcwg.params.mingw
             tarball_url=${tarball_mingw_url}
             release=${tcwg_release}

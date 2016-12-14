@@ -31,7 +31,7 @@
                default: false
                description: 'Publish release notes only'
     disabled: false
-    node: tcwg-x86_64-ex40build-01
+    node: tcwg-x86_64-dev-01
     display-name: 'TCWG source or binaries tarball publishing on snapshot.linaro.org'
     wrappers:
         - timestamps
@@ -70,11 +70,11 @@
             if ${binaries}; then
               dest_dir+="binaries"
               notes_path="/${dest_dir}"
-              cp_content="-r /work/space/binaries/${bin_dir}/*"
+              cp_content="-r $HOME/releases/binaries/${bin_dir}/*"
             else
               dest_dir+="gcc-linaro"
               notes_path="/${dest_dir}/${gcc_version}"
-              cp_content="-r /work/space/sources/${prefix}-${snapshot_version}/*"
+              cp_content="-r $HOME/releases/sources/${prefix}-${snapshot_version}/*"
             fi
 
             mkdir -p out
