@@ -91,12 +91,14 @@
     axes:
         - axis:
             type: slave
-            name: label
+            name: builder
             values:
-                - tcwg-x86_64-2-cam
-                - tcwg-aarch64-build
-                - tcwg-tx1-build
-                - tcwg-tk1-build
+                - tcwg-tx1-01
+        - axis:
+            type: slave
+            name: tester
+            values:
+                - tcwg-tx1-02
         - axis:
             type: user-defined
             name: container
@@ -122,8 +124,6 @@
                 - aarch64_be-none-elf
                 - native
     execution-strategy:
-        combination-filter: |
-            (label=="tcwg-x86_64-2-cam" && container=="docker" && personality="linux64") || (label!="tcwg-tk1-build" && container=="docker" && target=="native") || (label=="tcwg-tk1-build" && container=="schroot" && target=="native")
         sequential: false
     wrappers:
         - timeout:
