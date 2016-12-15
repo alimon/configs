@@ -106,7 +106,16 @@
                 ;;
             esac
 
+            # FIXME: temporary hack: hardcode the ".1" in GCC version number
             ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${suffix}-${host}_${target}.tar.xz
+
+            # Test the mingw toolchain on 32 bit host only
+            case ${label} in
+              *i386*)
+                host=i686_mingw32
+                ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${suffix}-${host}_${target}.tar.xz
+                ;;
+            esac
 
             exit $?
     publishers:
