@@ -55,6 +55,12 @@
             shell="/bin/bash"
 
             git clone --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+            # Configure git user info to make git stash happy. It is
+            # used during the second build, because the sources are
+            # already present.
+            git config --global user.email "tcwg-buildslave@linaro.org"
+            git config --global user.name "TCWG BuildSlave"
+
             # Jenkins puts the parameters in the environment
             ${shell} ${WORKSPACE}/jenkins-scripts/abe-bisect.sh
     publishers:
