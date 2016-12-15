@@ -26,6 +26,10 @@
             name: release
             default:
             description: 'Release name, only displayed in job name'
+        - string:
+           name: target_list
+           default: 'aarch64-elf aarch64-linux-gnu aarch64_be-elf aarch64_be-linux-gnu armv8l-linux-gnueabihf arm-eabi arm-linux-gnueabi arm-linux-gnueabihf armeb-eabi armeb-linux-gnueabi armeb-linux-gnueabihf'
+           description: 'List of targets to use'
         - bool:
             name: debug
             default: false
@@ -52,20 +56,10 @@
                - docker-trusty-amd64-tcwg-build
                - docker-trusty-i386-tcwg-build
         - axis:
-            type: user-defined
+            type: dynamic
             name: target
             values:
-                - aarch64-elf
-                - aarch64-linux-gnu
-                - aarch64_be-elf
-                - aarch64_be-linux-gnu
-                - armv8l-linux-gnueabihf
-                - arm-eabi
-                - arm-linux-gnueabi
-                - arm-linux-gnueabihf
-                - armeb-eabi
-                - armeb-linux-gnueabi
-                - armeb-linux-gnueabihf
+                - target_list
     execution-strategy:
         sequential: false
     wrappers:
