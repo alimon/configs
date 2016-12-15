@@ -78,6 +78,24 @@
         - shell: |
             #!/bin/bash
 
+            tcwg_release=${date}
+            # If there is no date set, extract release information from the gcc_src
+            if test "${date:+set}" != "set"; then
+                tcwg_release="`basename $gcc_src | cut -d '-' -f4-`"
+                tcwg_release=${tcwg_release%".tar.xz"}
+            fi
+
+            # Extract the gcc_version information from gcc_src to determine
+            # which directory to copy the tarballs into.
+            gcc_version="`basename $gcc_src | awk -F '-' '{ print $3 }'`"
+            gcc_major="`echo $gcc_version | awk -F '.' '{ print $1 }'`"
+            gcc_minor="`echo $gcc_version | awk -F '.' '{ print $2 }'`"
+            tcwg_version="${gcc_major}.${gcc_minor}"
+            if test ${gcc_major} -lt 5; then
+                gcc_point="`echo $gcc_version | awk -F '.' '{ print $2 }'`"
+                tcwg_version="${gcc_major}.${gcc_minor}.${gcc_point}"
+            fi
+
             buildid=`printf '%04d' ${BUILD_NUMBER}`
 
             cat << EOF > make_release_parameters
