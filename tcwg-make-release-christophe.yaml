@@ -188,7 +188,7 @@
             # depending on httpd's DocumentRoot
             case ${binariespath} in
               /work/space/*)
-                url_prefix=$(echo ${binariespath} | sed +/work/space++)
+                url_prefix=$(echo ${binariespath} | sed s+/work/space++)
                 ;;
               *)
                 echo Unsupported binariespath: ${binariespath}. Fix the job.
@@ -197,7 +197,7 @@
 
             if $testrelease; then
               tarball_linux="`basename ${tarball_linux}`"
-              tarball_linux_url="http://${fileserver}/${url_prefix}/${target}/${tarball_linux}"
+              tarball_linux_url="http://${fileserver}${url_prefix}/${target}/${tarball_linux}"
               cat << EOF > tcwg.params.linux
             tarball_url=${tarball_linux_url}
             release=${tcwg_release}
