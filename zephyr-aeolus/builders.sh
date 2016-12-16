@@ -52,7 +52,7 @@ bash -x ${make_wrapper} ${PROJECT} BOARD=${PLATFORM}
 
 cd ${WORKSPACE}
 mkdir -p out/${PLATFORM}
-mv ${PROJECT}-${PLATFORM}-*.bin out/${PLATFORM}/
+mv ${PROJECT}-${PLATFORM}-*.bin ${PROJECT}-${PLATFORM}-*.elf out/${PLATFORM}/
 
 CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
 CCACHE_DIR=${CCACHE_DIR} ccache -s
