@@ -1,0 +1,27 @@
+- job:
+    name: lite-gateway-ubuntu-core
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: docker-xenial-amd64
+    display-name: 'LITE - Ubuntu Core gateway image'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - snap.tar
+            relative-to: 'somewhereElse'
+    builders:
+        - shell:
+            !include-raw: lite-gateway-ubuntu-core/builders.sh
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org madper.xie@linaro.org'
