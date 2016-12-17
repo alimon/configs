@@ -67,30 +67,16 @@
 
             # TODO: Change fileserver and/or location to avoid mixing "real"
             # releases and regression detection builds.
-            date_rel=2016.11-regtest-${BUILD_NUMBER}
-            fileserver=ex40-01.tcwglab.linaro.org
             cat << EOF > make_release_parameters
             gcc_src=http://releases.linaro.org/components/toolchain/gcc-linaro/6.2-2016.11/gcc-linaro-6.2-2016.11.tar.xz
-            date=${date_rel}
+            date=2016.11-regtest-${BUILD_NUMBER}
             toolchain_config=gcc6
             abe_branch=$cur_abe_rev
-            fileserver=${fileserver}
+            fileserver=ex40-01.tcwglab.linaro.org
             EOF
 
             echo "NOTE: Make-release job parameters:"
             cat make_release_parameters
-
-            # Keep target_list here in sync with the
-            # restrict-matrix-project parameter for tcwg-make-release
-            # below
-            cat << EOF > test_release_parameters
-            tarball_url=http://${fileserver}/binaries/6-${date_rel}
-            release=${date_rel}
-            target_list=arm-linux-gnueabihf
-            EOF
-
-            echo "NOTE: Test-release job parameters:"
-            cat test_release_parameters
         - multijob:
             name: 'Check Manifest'
             condition: ALWAYS
@@ -110,12 +96,6 @@
               - name: tcwg-make-release
                 property-file: make_release_parameters
                 restrict-matrix-project: 'target=="arm-linux-gnueabihf"'
-        - multijob:
-            name: 'Check Test Release'
-            condition: COMPLETED
-            projects:
-              - name: tcwg-test-release-matrix
-                property-file: test_release_parameters
     publishers:
         - archive:
             artifacts: 'artifacts/*'
