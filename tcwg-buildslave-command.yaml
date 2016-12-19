@@ -69,6 +69,8 @@
 
             cat command.sh.$$$$
 
+            ssh-add -l
+            ssh -v $machine true
             scp command.sh.$$$$ $machine:/tmp/
             # Don't use ssh shared connection to reliably proxy SSH agent
             $dry_run || ssh -Snone $machine /tmp/command.sh.$$$$
