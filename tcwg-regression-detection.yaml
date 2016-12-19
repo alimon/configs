@@ -84,15 +84,11 @@
               - name: tcwg-abe-test-gerrit-cambridge
                 restrict-matrix-project: 'test=="abe-tests-checkout"'
         - multijob:
-            name: 'Check build and testsuite'
+            name: 'Check build/testsuite and releases'
             condition: COMPLETED
             projects:
               - name: tcwg-buildfarm-cmp
                 property-file: buildfarm_cmp_parameters
-        - multijob:
-            name: 'Check Make Release'
-            condition: COMPLETED
-            projects:
               - name: tcwg-make-release
                 property-file: make_release_parameters
                 restrict-matrix-project: 'target=="arm-linux-gnueabihf"'
