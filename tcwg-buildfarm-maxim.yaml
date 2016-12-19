@@ -63,17 +63,17 @@
             default: dev-01.tcwglab:/home/maxim.kuvyrkov/logs
             description: 'Log_Server'
         - string:
-            name: targets
-            default: 'cross_main cross_aux native_x86'
-            description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_armv8'
-        - string:
             name: abe_branch
             default: refs/remotes/origin/stable
             description: 'ABE revision to test'
         - string:
-            name: container
-            default: docker
-            description: 'none schroot docker'
+            name: host_list
+            default: 'linux64'
+            description: 'List of host personalities'
+        - string:
+           name: tcwg-x86_64-2-cam_target_list
+           default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf native'
+           description: 'List of targets to use'
     disabled: false
     node: tcwg-x86_64-cam
     child-workspace: $target
@@ -94,36 +94,25 @@
             name: label
             values:
                 - tcwg-x86_64-2-cam
+                - tcwg-x86_32-build
                 - tcwg-aarch64-build
+                - tcwg-aarch32-build
                 - tcwg-tx1-build
+                - tcwg-tx1_32-build
                 - tcwg-tk1-build
         - axis:
-            type: user-defined
-            name: container
+            type: dynamic
+            name: host
             values:
-                - docker
-                - schroot
+                - host_list
         - axis:
-            type: user-defined
-            name: personality
-            values:
-                - linux64
-                - linux32
-        - axis:
-            type: user-defined
+            type: dynamic
             name: target
             values:
-                - aarch64-linux-gnu
-                - armv8l-linux-gnueabihf
-                - arm-linux-gnueabi
-                - arm-linux-gnueabihf
-                - armeb-linux-gnueabihf
-                - aarch64-none-elf
-                - aarch64_be-none-elf
-                - native
+                - ${label}_target_list
     execution-strategy:
         combination-filter: |
-            (label=="tcwg-x86_64-2-cam" && container=="docker" && personality="linux64") || (label!="tcwg-tk1-build" && container=="docker" && target=="native") || (label=="tcwg-tk1-build" && container=="schroot" && target=="native")
+            (label=="tcwg-x86_64-2-cam" || target=="native")
         sequential: false
     wrappers:
         - timeout:
