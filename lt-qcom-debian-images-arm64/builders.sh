@@ -230,7 +230,7 @@ done
 rm -rf out/dtbs
 
 # Create device tree table
-dtbTool -o out/dt.img -s 2048 out/
+dtbTool -o out/dt.img -s ${BOOTIMG_PAGESIZE} out/
 
 # Create boot image
 mkbootimg \
