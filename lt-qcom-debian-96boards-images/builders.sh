@@ -81,8 +81,6 @@ sources:
 packages:
 - linux-image-armmp
 - linux-headers-armmp
-- wcnss-wlan
-- wcnss-bt
 - wcnss-start
 EOF
 

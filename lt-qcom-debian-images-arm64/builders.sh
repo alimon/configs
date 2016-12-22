@@ -98,8 +98,6 @@ packages:
 - linux-image-arm64
 - linux-headers-arm64
 - firmware-linux
-- wcnss-wlan
-- wcnss-bt
 - wcnss-start
 EOF
 
