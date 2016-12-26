@@ -61,28 +61,4 @@ time linaro-cp.py \
   --include "^[BHi][^/]+txt$" \
   --include "^(MANIFEST|MD5SUMS|changelog.txt)$"
 
-# Construct post-build-lava parameters
-if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-  source build-configs/${BUILD_CONFIG_FILENAME}
-else
-  echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-  echo "in android-build-configs.git"
-  exit 1
-fi
-
-cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
-TARGET_PRODUCT=${TARGET_PRODUCT}
-MAKE_TARGETS=${MAKE_TARGETS}
-JOB_NAME=${JOB_NAME}
-BUILD_NUMBER=${BUILD_NUMBER}
-BUILD_URL=${BUILD_URL}
-LAVA_SERVER=validation.linaro.org/RPC2/
-IMAGE_EXTENSION=img.xz
-FRONTEND_JOB_NAME=${JOB_NAME}
-DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
-CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template.json
-SKIP_REPORT=false
-EOF
-
 echo "Build finished"
