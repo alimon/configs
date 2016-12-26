@@ -24,7 +24,7 @@ git clone https://github.com/googlesamples/androidtv-sample-inputs
 cd androidtv-sample-inputs/
 sed -i "s/23.0.3/25.0.2/g" app/build.gradle library/build.gradle
 ./gradlew assembleRelease
-cp build/outputs/apk/app-release-unsigned.apk /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
+cp app/build/outputs/apk/app-release-unsigned.apk /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
 cd -
 
 git clone https://github.com/google/ExoPlayer
@@ -43,10 +43,9 @@ for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "cache.i
   echo "Compressing ${image}"
   xz ${image}
 done
-cd -
 
-rm -rf build/out/BUILD-INFO.txt
-wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/template.txt -O build/out/BUILD-INFO.txt
+rm -rf BUILD-INFO.txt
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/template.txt -O BUILD-INFO.txt
 
 # Publish binaries
 PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
@@ -56,7 +55,7 @@ time linaro-cp.py \
   --no-build-info \
   --link-latest \
   --split-job-owner \
-  build/out \
+  ./ \
   ${PUB_DEST} \
   --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
   --include "^[BHi][^/]+txt$" \
