@@ -57,7 +57,9 @@
 
             # Temporary patches
             cd system/core
-            git fetch git://git.collabora.com/git/user/padovan/android-system-core.git && git merge FETCH_HEAD
+            git reset --hard aosp/master
+            git clean -fdx
+            git fetch https://github.com/robherring/system_core.git libsync && git merge FETCH_HEAD
             cd ../..
 
             cd frameworks/native
