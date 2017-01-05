@@ -1,6 +1,6 @@
 - job:
     name: robher-aosp-gendev
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     logrotate:
         daysToKeep: 60
@@ -24,11 +24,22 @@
     disabled: false
     node: docker-xenial-aosp
     display-name: 'AOSP Generic Device build for Rob Herring'
-    concurrent: true
+    execution-strategy:
+        sequential: true
     wrappers:
         - timestamps
         - timeout:
             timeout: 500
+    axes:
+        - axis:
+            type: user-defined
+            name: ARCH
+            values:
+                - arm
+                - arm64
+                - arm64_only
+                - x86_64
+
     builders:
         - linaro-publish-token:
             host: snapshots.linaro.org
@@ -73,14 +84,8 @@
             cd ../../..
 
             source build/envsetup.sh
-            for arch in arm64 arm64_only x86_64; do
-                    lunch linaro_${arch}-userdebug
-                    make -k -j8 systemimage ramdisk || { true; failed=1; }
-            done
-
-            ###### Don't care about artifacts for now ######
-            echo "Build finished - ret ${failed}"
-            exit ${failed}
+            lunch linaro_${ARCH}-userdebug
+            make -k -j8 systemimage ramdisk
 
     publishers:
         - logparser:
