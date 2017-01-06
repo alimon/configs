@@ -231,7 +231,7 @@
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
             result="0"
-            ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --logserver $log_server $logname_opt $norebuild -o '--tarbin' || result=$?
+            ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir ${WORKSPACE} --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt --logserver $log_server $logname_opt $norebuild -o '--tarbin' || result=$?
 
             echo "Result of jenkins.sh: $result"
 
