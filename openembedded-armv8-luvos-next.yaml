@@ -10,6 +10,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
     parameters:
         - string:
             name: MACHINE
@@ -41,6 +42,28 @@
         - linaro-publish-token
         - shell:
             !include-raw: openembedded-armv8-luvos/builders.sh
+        - shell:
+            #!/bin/bash -e
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BRANCH}|${BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                < configs/openembedded-armv8-luvos/lava-job-definitions/qemu/template.yaml \
+                > custom_lava_job_definition.yaml
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=qemu
+            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org naresh.bhat@linaro.org'

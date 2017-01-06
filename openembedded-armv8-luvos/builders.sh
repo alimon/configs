@@ -17,6 +17,7 @@ bitbake luv-live-image
 
 rm -f ${WORKSPACE}/build/tmp/deploy/images/qemuarm64/*.txt
 find ${WORKSPACE}/build/tmp/deploy/images/qemuarm64 -type l -delete
+
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
