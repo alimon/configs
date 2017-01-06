@@ -1,4 +1,11 @@
-## clean android-patchsets and repositories in device
+# Early test
+if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+  echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+  echo "in android-build-configs.git"
+  exit 1
+fi
+
+# Clean android-patchsets and repositories in device
 rm -rf build/out build/android-patchsets build/device
 mkdir -p build
 
@@ -14,29 +21,15 @@ if [ ${JOB_NAME} == "android-lcr-member-x15-n" ]; then
   wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/x15/build-info/template.txt -O build/out/BUILD-INFO.txt
 fi
 
-# Publish binaries
+# Publish parameters
+cat << EOF > ${WORKSPACE}/publish_parameters
+PUB_SRC=${PWD}/build/out
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
-time linaro-cp.py \
-  --api_version 3 \
-  --manifest \
-  --no-build-info \
-  --link-latest \
-  --split-job-owner \
-  build/out \
-  ${PUB_DEST} \
-  --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config|u-boot|MLO|dtb)$" \
-  --include "^[BHi][^/]+txt$" \
-  --include "^(MANIFEST|MD5SUMS|changelog.txt)$"
+PUB_EXTRA_INC='--include "^[^/]+[._](u-boot|MLO|dtb)$"'
+EOF
 
 # Construct post-build-lava parameters
-if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-  source build-configs/${BUILD_CONFIG_FILENAME}
-else
-  echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-  echo "in android-build-configs.git"
-  exit 1
-fi
-
+source build-configs/${BUILD_CONFIG_FILENAME}
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
 TARGET_PRODUCT=${TARGET_PRODUCT}
@@ -51,5 +44,3 @@ DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
 CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/x15/template.json
 SKIP_REPORT=false
 EOF
-
-echo "Build finished"

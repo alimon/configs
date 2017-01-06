@@ -58,18 +58,8 @@ done
 rm -rf BUILD-INFO.txt
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O BUILD-INFO.txt
 
-# Publish binaries
-PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
-time linaro-cp.py \
-  --api_version 3 \
-  --manifest \
-  --no-build-info \
-  --link-latest \
-  --split-job-owner \
-  ./ \
-  ${PUB_DEST} \
-  --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
-  --include "^[BHi][^/]+txt$" \
-  --include "^(MANIFEST|MD5SUMS|changelog.txt)$"
-
-echo "Build finished"
+# Publish parameters
+cat << EOF > ${WORKSPACE}/publish_parameters
+PUB_SRC=${PWD}/build/out
+PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
+EOF

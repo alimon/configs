@@ -25,8 +25,6 @@
         - timeout:
             timeout: 500
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -38,7 +36,6 @@
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             chmod a+x ${HOME}/bin/*
             export PATH=${HOME}/bin:${PATH}
 
@@ -58,6 +55,13 @@
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
             git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git build-configs
 
+            # Early test
+            if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
             cat << EOF > config.txt
             BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
             BUILD_CONFIG_BRANCH=master
@@ -73,9 +77,6 @@
             out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/root/file_contexts -L data -l 5588893184 -a data out/userdata-8gb.img out/data
             cd -
 
-            # Publish
-            PUB_DEST=snapshots/hikey/linaro/aosp-4.4-kernel/${BUILD_NUMBER}
-
             cd build/out
             rm -f boot.img ramdisk.img
             for image in "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-8gb.img" "cache.img"; do
@@ -85,27 +86,14 @@
             done
             cd -
 
-            time linaro-cp.py \
-              --manifest \
-              --no-build-info \
-              --link-latest \
-              --split-job-owner \
-              --server ${PUBLISH_SERVER} \
-              build/out \
-              ${PUB_DEST} \
-              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
-              --include "^[BHi][^/]+txt$" \
-              --include "^(MANIFEST|MD5SUMS)$"
+            # Publish parameters
+            cat << EOF > ${WORKSPACE}/publish_parameters
+            PUB_DEST=snapshots/hikey/linaro/aosp-4.4-kernel/${BUILD_NUMBER}
+            PUB_SRC=${PWD}/build/out
+            EOF
 
             # Construct post-build-lava parameters
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-
+            source build-configs/${BUILD_CONFIG_FILENAME}
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
             DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
             TARGET_PRODUCT=${TARGET_PRODUCT}
@@ -121,13 +109,17 @@
             DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
             CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template.json
             EOF
-
-            echo "Build finished"
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
-
     publishers:
         - archive:
             artifacts: '*.xml'

@@ -25,8 +25,6 @@
         - timeout:
             timeout: 500
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -38,7 +36,6 @@
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             chmod a+x ${HOME}/bin/*
             export PATH=${HOME}/bin:${PATH}
 
@@ -64,6 +61,7 @@
             echo config.txt
             export CONFIG=`base64 -w 0 config.txt`
 
+            # Build Android
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
 
@@ -71,9 +69,6 @@
             cd build/
             out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/root/file_contexts -L data -l 5588893184 -a data out/userdata-8gb.img out/data
             cd -
-
-            # Publish
-            PUB_DEST=snapshots/hikey/linaro/aosp/${BUILD_NUMBER}
 
             cd build/out
             mv userdata.img userdata-4gb.img
@@ -85,18 +80,20 @@
             done
             cd -
 
-            time linaro-cp.py \
-              --manifest \
-              --no-build-info \
-              --link-latest \
-              --split-job-owner \
-              --server ${PUBLISH_SERVER} \
-              build/out \
-              ${PUB_DEST} \
-              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
-              --include "^[BHi][^/]+txt$" \
-              --include "^(MANIFEST|MD5SUMS)$"
-
+            # Publish parameters
+            cat << EOF > ${WORKSPACE}/publish_parameters
+            PUB_DEST=snapshots/hikey/linaro/aosp/${BUILD_NUMBER}
+            PUB_SRC=${PWD}/build/out
+            EOF
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
+        - shell:
+            cd /home/buildslave/srv/${JOB_NAME}
             build-tools/node/lava-submit "${CONFIG}"
 
             for f in $(ls -1 build/out/lava-job-info* 2>/dev/null); do

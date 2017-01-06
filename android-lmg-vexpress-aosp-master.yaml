@@ -21,7 +21,6 @@
         - timeout:
             timeout: 500
     builders:
-        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -36,7 +35,6 @@
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             chmod a+x ${HOME}/bin/*
             export PATH=${HOME}/bin:${PATH}
 
@@ -59,6 +57,13 @@
             export BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME:-/private/team/wg/wg-private/}
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
 
+            # Early test
+            if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
             cat << EOF > config.txt
             BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
             BUILD_CONFIG_BRANCH=master
@@ -66,32 +71,18 @@
             echo config.txt
             export CONFIG=`base64 -w 0 config.txt`
 
+            # Build Android
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml ${WORKSPACE}/
 
-            PUB_DEST=/android/$JOB_NAME/$BUILD_NUMBER
-
-            time linaro-cp.py \
-              --api_version 3 \
-              --manifest \
-              --no-build-info \
-              --link-latest \
-              --split-job-owner \
-              build/out \
-              ${PUB_DEST} \
-              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
-              --include "^[BHi][^/]+txt$" \
-              --include "^(MANIFEST|MD5SUMS|changelog.txt)$"
+            # Publish parameters
+            cat << EOF > ${WORKSPACE}/publish_parameters
+            PUB_SRC=${PWD}/build/out
+            PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
+            EOF
 
             # Construct post-build-lava parameters
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-
+            source build-configs/${BUILD_CONFIG_FILENAME}
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
             DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
             TARGET_PRODUCT=${TARGET_PRODUCT}
@@ -100,7 +91,6 @@
             BUILD_NUMBER=${BUILD_NUMBER}
             BUILD_URL=${BUILD_URL}
             LAVA_SERVER=validation.linaro.org/RPC2/
-
             LAVA_STREAM=${BUNDLE_STREAM_NAME}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
             FRONTEND_JOB_NAME=${JOB_NAME}
@@ -111,8 +101,12 @@
               build-configs/${BUILD_CONFIG_FILENAME} \
                 | sed -e 's:^LAVA_JOB_URL:CUSTOM_JSON_URL:g' \
                 >> ${WORKSPACE}/post_build_lava_parameters
-
-            echo "Build finished"
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters

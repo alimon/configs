@@ -30,8 +30,6 @@
                 users:
                     - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -107,24 +105,22 @@
             cp *.zip *.xml pub/
             cd -
             cd /home/buildslave/srv/${JOB_NAME}/build/device/linaro/hikey/; git reset --hard; cd -;
-            # Publish
-            PUB_DEST=snapshots/hikey960/linaro/aosp-master/${BUILD_NUMBER}
 
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/dist/pub/BUILD-INFO.txt
 
-            time linaro-cp.py \
-              --manifest \
-              --no-build-info \
-              --link-latest \
-              --split-job-owner \
-              --server ${PUBLISH_SERVER} \
-              build/out/dist/pub \
-              ${PUB_DEST} \
-              --include "^[^/]+[._](img[^/]*|tar[^/]*|zip|xml|sh|config)$" \
-              --include "^[BHi][^/]+txt$" \
-              --include "^(MANIFEST|MD5SUMS)$"
-
-            echo "Build finished"
+            # Publish parameters
+            cat << EOF > ${WORKSPACE}/publish_parameters
+            PUB_DEST=snapshots/hikey960/linaro/aosp-master/${BUILD_NUMBER}
+            PUB_SRC=${PWD}/build/out/dist/pub
+            PUB_EXTRA_INC="^[^/]+[._](zip)$"
+            EOF
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
     publishers:
         - archive:
             artifacts: '*.xml,*.json'

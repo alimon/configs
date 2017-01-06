@@ -24,10 +24,9 @@ if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
 fi
 cd /home/buildslave/srv/${BUILD_DIR}
 
-# Download helper scripts (repo, linaro-cp)
+# Download helper scripts (repo)
 mkdir -p ${HOME}/bin
 curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
 chmod a+x ${HOME}/bin/*
 export PATH=${HOME}/bin:${PATH}
 
