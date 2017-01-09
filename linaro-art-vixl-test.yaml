@@ -1,11 +1,12 @@
 - job:
-    name: linaro-art-tip-build-ARTVixlMasterTest
+    name: linaro-art-vixl-test
     project-type: freestyle
     defaults: global
     description: >
       Tests the integration of
       <a href="https://android-git.linaro.org/linaro-art/art-build-scripts.git/tree/tests/test_art_vixl.sh">VIXL Tests</a>
-      from upstream tree with the Linaro Android tip branch.<br>
+      from <a href="https://git.linaro.org/arm/vixl">upstream tree</a> with the Linaro Android tip branch.<br>
+      It includes VIXL selftests, compiles ART, runs the art-host-vixl tests.<br>
       This build is triggered nightly.<br>
       This build can also be triggered by adding the comment "IncludeUpstreamVIXLTests"
       in your Gerrit patch within the ART or upstream VIXL projects.
@@ -42,7 +43,7 @@
             default: 'linaro-art-tip-aosp_arm64'
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'VIXL: AOSP Test'
+    display-name: 'VIXL: Android Tip Test'
     concurrent: true
     triggers:
         - gerrit:
