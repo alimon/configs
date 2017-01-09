@@ -19,7 +19,7 @@
                 default: ''
                 description: 'Snapshot revision to deploy (like: 5.2-2015.10, 5.2-2015.11-rc1)'
         - string:
-                name: build_number
+                name: buildnum
                 default: ''
                 description: 'Build number to deploy, empty for latest'
         - bool:
@@ -70,8 +70,8 @@
             fi
 
             # Append build number if provided, choose the latest otherwise
-            if test x"${build_number}" != x; then
-              bin_dir+="-${build_number}"
+            if test x"${buildnum}" != x; then
+              bin_dir+="-${buildnum}"
             else
               pushd $HOME/releases/binaries/
               bin_dir=`ls -d ${bin_dir}* | tail -n 1`
