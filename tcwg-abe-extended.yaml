@@ -47,11 +47,12 @@
             type: user-defined
             name: testname
             values:
-                - canadian_cross_build
-                - cross_linux_build_check
-                - cross_bare_build_check
-                - cross_qemu_build_check
-                - native_build_check
+                - canadian_cross_build_gcc5
+                - cross_linux_build_check_gcc4_9
+                - cross_linux_build_check_gcc6
+                - cross_bare_build_check_gcc6
+                - cross_qemu_build_check_gcc6
+                - native_build_check_gcc6
                 - abe-testsuite
                 - abe-tests-arm-linux-gnueabihf
                 - abe-tests-arm-none-eabi
@@ -93,9 +94,12 @@
 
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
-            gccver=gcc=gcc.git~linaro-6.1-2016.08
+            gcc4_9ver=gcc=gcc.git~linaro-4.9-2016.02
+            gcc5ver=gcc=gcc.git~linaro-5.3-2016.05
+            gcc6ver=gcc=gcc.git~linaro-6.1-2016.08
+
             case "$testname" in
-              canadian_cross_build)
+              canadian_cross_build_gcc5)
                 # Configure git user info to make git stash happy. It
                 # is used during the second build, because the sources
                 # are already present.
@@ -110,13 +114,13 @@
                   echo "Configure error: ${ret}"
                   exit $ret
                 fi
-                ${BUILD_SHELL} ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc6 --build all $gccver
+                ${BUILD_SHELL} ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc6 --build all $gcc5ver
                 ret=$?
                 if test ${ret} -ne 0; then
                   echo "First build error: ${ret}"
                   exit $ret
                 fi
-                ${BUILD_SHELL} ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc6 --build all $gccver --host i686-w64-mingw32
+                ${BUILD_SHELL} ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc6 --build all $gc5cver --host i686-w64-mingw32
                 ret=$?
                 if test ${ret} -ne 0; then
                   echo "Second build error: ${ret}"
@@ -125,26 +129,28 @@
                 #FIXME: check what was actually built
                 #FIXME: validate the manifest
                 ;;
-              *_build_check)
+              *_build_check_gcc*)
                 bootstrap=
+                gccconfig=$(echo ${testname} | sed 's/.*_gcc//') # eg 6
+                gccversion=gcc${gccconfig}ver                    # eg gccver=gcc6ver
                 case ${testname} in
-                  cross_linux_build_check)
+                  cross_linux_*)
                     target=arm-linux-gnueabihf
                     ;;
-                  cross_bare_build_check)
+                  cross_bare_*)
                     target=aarch64-none-elf
                     ;;
-                  cross_qemu_build_check)
+                  cross_qemu_*)
                     target=armeb-linux-gnueabihf
                     ;;
-                  native_build_check)
+                  native_*)
                     target=native
                     bootstrap=--bootstrap
                     ;;
                 esac
 
                 # Build and check a linux target
-                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir `pwd` -t ${target} ${bootstrap} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc6 $gccver"
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir `pwd` -t ${target} ${bootstrap} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccconfig} $(eval echo \$$gccversion)"
                 ret=$?
                 #FIXME: check validation results (against a known baseline)
                 #FIXME: validate the manifest
