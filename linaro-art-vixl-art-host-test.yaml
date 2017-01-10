@@ -1,25 +1,19 @@
 - job:
-    name: linaro-art-vixl-test
+    name: linaro-art-vixl-art-host-test
     project-type: freestyle
     defaults: global
     description: >
-      Tests the integration of
-      <a href="https://android-git.linaro.org/linaro-art/art-build-scripts.git/tree/tests/test_art_vixl.sh">VIXL Tests</a>
-      from <a href="https://git.linaro.org/arm/vixl">upstream tree</a> with the Linaro Android tip branch.<br>
-      It includes VIXL selftests, compiles ART, runs the art-host-vixl tests.<br>
-      This build is triggered nightly.<br>
-      This build can also be triggered by adding the comment "IncludeUpstreamVIXLTests"
-      in your Gerrit patch within the ART or upstream VIXL projects.
+      Runs the ART
+      <a href="https://android-git.linaro.org/linaro-art/art-build-scripts.git/tree/tests/test_art_host.sh">Host Tests</a>
+      on the tip using the
+      <a href="https://git.linaro.org/arm/vixl.git">latest VIXL tree.</a><br>
+      This job will be launched nightly.<br>
+      This build can also be triggered by adding the comment "IncludeVixlArtTests" in your Gerrit patch.
     properties:
         - authorization:
             anonymous:
                 - job-discover
             linaro-android-builders:
-                - job-read
-                - job-extended-read
-                - job-workspace
-            linaro-vixl:
-                - job-build
                 - job-read
                 - job-extended-read
                 - job-workspace
@@ -42,9 +36,18 @@
             name: BUILD_CONFIG_FILENAME
             default: 'linaro-art-tip-aosp_arm64'
     disabled: false
-    node: docker-xenial-aosp
-    display-name: 'VIXL: Android Tip Test'
+    node: docker-utopic-art
+    display-name: 'VIXL: ART Host Tests'
     concurrent: true
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
     triggers:
         - gerrit:
             override-votes: true
@@ -53,8 +56,6 @@
             trigger-on:
                 - comment-added-contains-event:
                     comment-contains-value: '.*IncludeVixlArtTests.*'
-                - comment-added-contains-event:
-                    comment-contains-value: '.*IncludeUpstreamVIXLTests.*'
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
@@ -84,11 +85,6 @@
         - shell: |
             #!/bin/bash -xe
 
-            # Some Docker instances mount ${HOME}/.ssh/config from the host.
-            mv ${HOME}/.ssh{,.not}
-            mkdir -p "${HOME}/bin"
-            export PATH="${HOME}/bin:${PATH}"
-
             # Build scripts
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
@@ -101,8 +97,8 @@
             cd ${ANDROID_BUILD_DIR}
             rm -rf external/vixl
             git clone https://git.linaro.org/arm/vixl external/vixl
-            perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
-              ${ART_BUILD_SCRIPTS_DIR}/tests/test_art_vixl.sh
+            perl scripts/jenkins/test_launcher.pl \
+              scripts/tests/test_art_host.sh
     publishers:
         - email-ext:
             recipients: '${CI_MAIL_RECIPIENTS}'
@@ -121,6 +117,8 @@
             parse-rules: '/var/lib/jenkins/userContent/android-art.parse'
             unstable-on-warning: false
             fail-on-error: false
+        - groovy-postbuild:
+            script: !include-raw: linaro-art/postbuild.groovy
         - plot:
             - title: 'Sync Time'
               group: 'Time Measurements'
