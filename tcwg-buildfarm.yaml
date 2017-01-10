@@ -70,6 +70,10 @@
             name: abe_branch
             default: refs/remotes/origin/stable
             description: 'ABE revision to test'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts branch to use'
     disabled: false
     node: tcwg-x86_64-cam
     child-workspace: $target
@@ -255,8 +259,10 @@
 
                   ulimit -u 5000
 
+                  git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+
                   result="0"
-                  /bin/bash -x ./jenkins.sh --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
+                  /bin/bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir ${WORKSPACE} --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
 
                   # If we actually built a toolchain, save its manifest.
                   # If the build was a no-op (results already present on log_server),
