@@ -55,7 +55,7 @@
             description: "Level of debug information: none - No debugging information, abe - ABE debugging information, yaml - tcwg-make-release.yaml debug information (and exit)."
         - string:
             name: fileserver
-            default: ex40-01.tcwglab.linaro.org
+            default: dev-01.tcwglab/~tcwg-buildslave
             description: 'Remote file server for logs and binaries'
         - bool:
             name: testrelease
@@ -98,9 +98,11 @@
 
             buildid=`printf '%04d' ${BUILD_NUMBER}`
 
+            binariesdir=releases/binaries/${tcwg_version}-${tcwg_release}-${buildid}
+            logsdir=releases/logs/${tcwg_version}-${tcwg_release}-${buildid}
             cat << EOF > make_release_parameters
-            binariespath=/work/space/binaries/${tcwg_version}-${tcwg_release}-${buildid}
-            logspath=/work/space/logs/${tcwg_version}-${tcwg_release}-${buildid}
+            binariesdir=${binariesdir}
+            logsdir=${logsdir}
             EOF
 
             echo "NOTE: Make-release job parameters:"
@@ -110,13 +112,15 @@
             # restrict-matrix-project parameter for tcwg-make-release
             # below
             cat << EOF > test_release_parameters
-            tarball_url=http://${fileserver}/binaries/${tcwg_version}-${tcwg_release}-${buildid}
+            tarball_url=http://${fileserver}/${binariesdir}
             release=${date}
             target_list=arm-linux-gnueabihf
             EOF
 
             echo "NOTE: Test-release job parameters:"
             cat test_release_parameters
+
+            exit 0
         - multijob:
             name: 'Check Make Release'
             condition: COMPLETED
@@ -131,6 +135,7 @@
             projects:
               - name: tcwg-test-release-matrix
                 property-file: test_release_parameters
+                restrict-matrix-project: 'target=="arm-linux-gnueabihf"'
     publishers:
         - email-ext:
             recipients: 'christophe.lyon@linaro.org'

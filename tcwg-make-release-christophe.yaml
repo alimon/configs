@@ -56,20 +56,20 @@
             description: "Level of debug information: none - No debugging information, abe - ABE debugging information, yaml - tcwg-make-release.yaml debug information (and exit)."
         - string:
             name: fileserver
-            default: ex40-01.tcwglab.linaro.org
+            default: dev-01.tcwglab
             description: 'Remote file server for logs and binaries'
         - bool:
             name: testrelease
             default: 'true'
             description: 'Run test-release if make-release is successful'
         - string:
-            name: binariespath
-            default: 
-            description: 'Path for binaries on fileserver'
+            name: binariesdir
+            default: ''
+            description: 'Upload dir for binaries on fileserver'
         - string:
-            name: logspath
-            default: 
-            description: 'Path for logs on fileserver'
+            name: logsdir
+            default: ''
+            description: 'Upload dir for logs on fileserver'
     disabled: false
     node: tcwg-x86_64-ex40build-01
     retry-count: 3
@@ -163,7 +163,7 @@
             esac
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
-            ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariespath ${binariespath}/${target} --logspath ${logspath}/${target}
+            ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}
             if test $? -gt 0; then
               exit 1
             fi
@@ -184,14 +184,16 @@
             fi
 
             # FIXME. MakeRelease copies to a directory, while
-            # TestRelease downloads from a URL, so both paths differ
+            # TestRelease downloads from a URL, so both dirs differ
             # depending on httpd's DocumentRoot
-            case ${binariespath} in
-              /work/space/*)
-                url_prefix=$(echo ${binariespath} | sed s+/work/space++)
+            # All this can be removed once test-release is started
+            # after make-release has completed.
+            case ${binariesdir} in
+              /releases/binaries/*)
+                url_prefix=$(echo '~tcwg-buildslave/'${binariesdir})
                 ;;
               *)
-                echo Unsupported binariespath: ${binariespath}. Fix the job.
+                echo Unsupported binariesdir: ${binariesdir}. Fix the job.
                 ;;
             esac
 
@@ -238,7 +240,7 @@
             artifacts: 'MakeRelease*.log.xz'
             latest-only: false
         - email:
-            recipients: 'ryan.arnold@linaro.org'
+            recipients: 'christophe.lyon@linaro.org'
         - email-ext:
             recipients: 'christophe.lyon@linaro.org'
             always: true
