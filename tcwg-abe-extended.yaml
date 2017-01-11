@@ -132,8 +132,9 @@
                 ;;
               *_build_check_gcc*)
                 bootstrap=
-                gccconfig=$(echo ${testname} | sed 's/.*_gcc//') # eg 6
-                gccversion=gcc${gccconfig}ver                    # eg gccver=gcc6ver
+                gccnum=$(echo ${testname} | sed 's/.*_gcc//') # eg 6
+                gccversionname=gcc${gccnum}ver                # eg gccversionname=gcc6ver
+                gccversion=$(eval echo \$$gccversionname)     # eg gccversion=gcc=gcc.git~linaro-6.1-2016.08
                 case ${testname} in
                   cross_linux_*)
                     target=arm-linux-gnueabihf
@@ -151,7 +152,7 @@
                 esac
 
                 # Build and check a linux target
-                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir `pwd` -t ${target} ${bootstrap} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccconfig} $(eval echo \$$gccversion)"
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir `pwd` -t ${target} ${bootstrap} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccnum} $gccversion"
                 ret=$?
                 #FIXME: check validation results (against a known baseline)
                 #FIXME: validate the manifest
