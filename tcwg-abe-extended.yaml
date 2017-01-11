@@ -76,7 +76,6 @@
     builders:
         - shell: |
             #!/bin/bash
-            set -x
 
             if [ "x$label" = "xtcwg-x86_64-cam" ]; then
               schroot_arch=amd64
@@ -134,6 +133,7 @@
                 bootstrap=
                 gccnum=$(echo ${testname} | sed 's/.*_gcc//') # eg 6
                 gccversionname=gcc${gccnum}ver                # eg gccversionname=gcc6ver
+                # Caution: an extra '$' is needed below because of the yaml parser.
                 gccversion=$(eval echo \$$$gccversionname)     # eg gccversion=gcc=gcc.git~linaro-6.1-2016.08
                 case ${testname} in
                   cross_linux_*)
