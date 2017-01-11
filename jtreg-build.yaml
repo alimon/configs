@@ -1,3 +1,21 @@
+- scm:
+   name: jtreg
+   scm:
+    - hg:
+      url: http://hg.openjdk.java.net/code-tools/jtreg/
+      clean: true
+      browser: hgweb
+      browser-url: http://hg.openjdk.java.net/code-tools/jtreg/
+      subdir: jtreg
+- scm:
+   name: asmtools
+   scm:
+    - hg:
+      url: http://hg.openjdk.java.net/code-tools/asmtools/
+      clean: true
+      browser: hgweb
+      browser-url: http://hg.openjdk.java.net/code-tools/asmtools/
+      subdir: asmtools
 - job:
     name: jtreg-build
     project-type: freestyle
@@ -18,12 +36,6 @@
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK - Build JDK Regression Test Harness (jtreg)'
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/code-tools/jtreg/
-            clean: true
-            browser: hgweb
-            browser-url: http://hg.openjdk.java.net/code-tools/jtreg/
     triggers:
         - pollscm: 'H/5 * * * *'
     wrappers:
@@ -33,6 +45,16 @@
             #!/bin/bash
 
             set -eu
+
+            # Build asmtools for jtreg.
+            cd asmtools
+
+            ant -f build/build.xml -DbuildArea.dir=$PWD/out jar
+
+            # Tell jtreg build where to get asmtools
+            export ASMTOOLS_HOME=$WORKSPACE/asmtools/out/lib/asmtools.jar
+
+            cd jtreg
 
             if [ ! -d jh2.0 ]; then
               # no longer available from http://download.java.net/javadesktop/javahelp/javahelp2_0_05.zip
@@ -119,7 +141,7 @@
 
             cd ./dist
             tar afcv $artifact.tar.${ZIP_TYPE} jtreg
-            mv $artifact.tar.${ZIP_TYPE} ..
+            mv $artifact.tar.${ZIP_TYPE} ../..
             cd ..
             rm -fr ${artifact}
     publishers:
