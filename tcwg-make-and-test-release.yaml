@@ -55,7 +55,7 @@
             description: "Level of debug information: none - No debugging information, abe - ABE debugging information, yaml - tcwg-make-release.yaml debug information (and exit)."
         - string:
             name: fileserver
-            default: dev-01.tcwglab/~tcwg-buildslave
+            default: dev-01.tcwglab
             description: 'Remote file server for logs and binaries'
         - bool:
             name: testrelease
@@ -112,7 +112,7 @@
             # restrict-matrix-project parameter for tcwg-make-release
             # below
             cat << EOF > test_release_parameters
-            tarball_url=http://${fileserver}/${binariesdir}
+            tarball_url=http://${fileserver}/~tcwg-buildslave/${binariesdir}
             release=${date}
             target_list=arm-linux-gnueabihf
             EOF
