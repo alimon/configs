@@ -2,9 +2,6 @@
     name: robher-aosp-gendev
     project-type: matrix
     defaults: global
-    logrotate:
-        daysToKeep: 60
-        numToKeep: 60
     properties:
         - authorization:
             anonymous:
@@ -21,15 +18,12 @@
                 - job-extended-read
                 - job-configure
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
     disabled: false
     node: docker-xenial-aosp
     display-name: 'AOSP Generic Device build by Rob Herring'
-    execution-strategy:
-        sequential: true
-    wrappers:
-        - timestamps
-        - timeout:
-            timeout: 500
     axes:
         - axis:
             type: user-defined
@@ -39,7 +33,12 @@
                 - arm64
                 - arm64_only
                 - x86_64
-
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
     builders:
         - linaro-publish-token:
             host: snapshots.linaro.org
@@ -103,7 +102,6 @@
               --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
               --include "^[BHi][^/]+txt$" \
               --include "^(MANIFEST|MD5SUMS|changelog.txt)$"
-
     publishers:
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
@@ -123,4 +121,3 @@
                 ERRORS:
                 ${BUILD_LOG_REGEX, regex="^.*? error: .*?$", linesBefore=0, linesAfter=2, showTruncatedLines=false}
             unstable: true
-
