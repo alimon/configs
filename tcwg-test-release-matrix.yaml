@@ -25,7 +25,7 @@
         - string:
             name: release
             default:
-            description: 'Release name, only displayed in job name'
+            description: 'Release name'
         - string:
            name: target_list
            default: 'aarch64-elf aarch64-linux-gnu aarch64_be-elf aarch64_be-linux-gnu armv8l-linux-gnueabihf arm-eabi arm-linux-gnueabi arm-linux-gnueabihf armeb-eabi armeb-linux-gnueabi armeb-linux-gnueabihf'
@@ -90,7 +90,6 @@
 
             fullver=$(basename ${tarball_url})
             gccver=${fullver%%-*}
-            suffix=${fullver#*-}
 
             case ${label} in
               *i386*) host=i686 ;;
@@ -102,13 +101,13 @@
             esac
 
             # FIXME: temporary hack: hardcode the ".1" in GCC version number
-            ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${suffix}-${host}_${target}.tar.xz
+            ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz
 
             # Test the mingw toolchain on 32 bit host only
             case ${label} in
               *i386*)
                 host=i686-mingw32
-                ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${suffix}-${host}_${target}.tar.xz
+                ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz
                 ;;
             esac
 
