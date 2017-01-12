@@ -55,12 +55,11 @@
             # Build asmtools for jtreg.
             cd asmtools
 
-            ant -f build/build.xml -DbuildArea.dir=$PWD/out jar
-
-            # Tell jtreg build where to get asmtools
-            export ASMTOOLS_HOME=$WORKSPACE/asmtools/out/lib/asmtools.jar
+            ant -f build/build.xml -DbuildArea.dir=$PWD/out
 
             cd ../jtreg
+
+            unzip -o ../asmtools-6.0-build/dist/asmtools-6.0.zip
 
             if [ ! -d jh2.0 ]; then
               # no longer available from http://download.java.net/javadesktop/javahelp/javahelp2_0_05.zip
@@ -124,6 +123,8 @@
                 -Djavahelp.home=./jh2.0 \
                 -Djhall.jar=./jh2.0/javahelp/lib/jhall.jar \
                 -Djh.jar=./jh2.0/javahelp/lib/jh.jar \
+                -Dasmtools.home=./asmtools-6.0 \
+                -Dasmtools.jar=./asmtools-6.0/lib/asmtools.jar \
                 -Dbuild.version=$BUILD_VERSION \
                 -Dbuild.number=$BUILD_NUMBER
 
