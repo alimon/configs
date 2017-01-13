@@ -55,7 +55,7 @@
             # Build asmtools for jtreg.
             cd asmtools
 
-            ant -f build/build.xml -DbuildArea.dir=$PWD/out
+            ant -f build/build.xml
 
             cd ../jtreg
 
@@ -114,26 +114,37 @@
 
             # syntax of the -target and -source command have changed with jdk9
             sed -i 's|1.8|8|g' make/build.xml
-            ant -v -f make/build.xml \
-                -Djunit.jar=./junit/junit.jar \
-                -Dtestng.jar=./testng/testng.jar \
-                -Djavatest.home=./jh2.0 \
-                -Djavatest.home=./jtharness \
-                -Djavatest.jar=./jtharness/lib/javatest.jar \
-                -Djavahelp.home=./jh2.0 \
-                -Djhall.jar=./jh2.0/javahelp/lib/jhall.jar \
-                -Djh.jar=./jh2.0/javahelp/lib/jh.jar \
-                -Dasmtools.home=./asmtools-6.0 \
-                -Dasmtools.jar=./asmtools-6.0/lib/asmtools.jar \
-                -Dbuild.version=$BUILD_VERSION \
-                -Dbuild.number=$BUILD_NUMBER
+
+            # Parameters for makefile build, which includes asmtools.jar in
+            # classpath in manifest.
+            # java and ant's home directories are found from the commands.
+            export JDK17HOME=$(dirname $(java -XshowSettings:properties |& \
+                 grep java.home |  sed 's,^.*java.home = \(.*\),\1,'))
+            export JAVAHELP_HOME=$PWD/jh2.0/javahelp
+            export JAVATEST_HOME=$PWD/jtharness
+            export JAVATEST_JAR=$PWD/jtharness/lib/javatest.jar
+            export JAVAHARNESS_HOME=$PWD/jtharness
+            export ASMTOOLS_HOME=$PWD/asmtools-6.0
+            export TESTNG_HOME=$PWD/testng
+            export TESTNG_JAR=$PWD/testng/testng.jar
+            export JUNIT_JAR=$PWD/junit/junit.jar
+            export ANTHOME=$(ant -diagnostics | grep ant.home | \
+                sed 's,^.*: \(.*\),\1,' | uniq)
+
+            # Makefile expects files that are not supplied from the packages we
+            # are downloading. Create dummy versions to keep it happy.
+            touch $JAVAHARNESS_HOME/COPYRIGHT-javatest.html
+            mkdir -p $JAVAHARNESS_HOME/doc/javatest/
+            touch $JAVAHARNESS_HOME/doc/javatest/javatestGUI.pdf
+            touch $TESTNG_HOME/LICENSE.txt
+
+            make -C make
 
             rm -f *.zip
             rm -f *.tar.gz
 
-            cp -r ./dist/jtreg .
-            cp jcommander/jcommander.jar ./dist/jtreg/lib
-            chmod u+x ./dist/jtreg/bin/*
+            cp jcommander/jcommander.jar ./build/images/jtreg/lib
+            chmod u+x ./build/images/jtreg/bin/*
 
             ls -lash
 
@@ -146,11 +157,10 @@
 
             artifact=${JOB_NAME}-${MAJOR}.${MINOR}.${MICRO}-${VERSION_SUFFIX}
 
-            cd ./dist
+            cd ./build/images
             tar afcv $artifact.tar.${ZIP_TYPE} jtreg
-            mv $artifact.tar.${ZIP_TYPE} ../..
+            mv $artifact.tar.${ZIP_TYPE} ../../..
             cd ..
-            rm -fr ${artifact}
     publishers:
         - archive:
             artifacts: 'jtreg-build-*-SNAPSHOT.tar.xz'
