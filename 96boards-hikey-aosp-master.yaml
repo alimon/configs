@@ -27,8 +27,6 @@
         - timeout:
             timeout: 500
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -40,12 +38,11 @@
 
             wget -q http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
               http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb \
-             http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb
+              http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb
             sudo dpkg -i --force-all *.deb
 
             mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
             curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             chmod a+x ${HOME}/bin/*
             export PATH=${HOME}/bin:${PATH}
 
@@ -67,6 +64,13 @@
 
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
 
+            # Early test
+            if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
+              echo "in android-build-configs.git"
+              exit 1
+            fi
+
             cat << EOF > config.txt
             BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
             BUILD_CONFIG_BRANCH=master
@@ -82,6 +86,7 @@
             yes "I ACCEPT" | ./extract-linaro-hikey.sh
             cd -
 
+            # Build Android
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp -a /home/buildslave/srv/${JOB_NAME}/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
 
@@ -89,9 +94,6 @@
             cd build/
             out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/root/file_contexts -L data -l 1342177280 -a data out/userdata-4gb.img out/data
             cd -
-
-            # Publish
-            PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
 
             cd build/out
             rm -f ramdisk.img
@@ -104,27 +106,14 @@
             rm -rf build/out/BUILD-INFO.txt
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
 
-            time linaro-cp.py \
-              --manifest \
-              --no-build-info \
-              --link-latest \
-              --split-job-owner \
-              --server ${PUBLISH_SERVER} \
-              build/out \
-              ${PUB_DEST} \
-              --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
-              --include "^[BHi][^/]+txt$" \
-              --include "^(MANIFEST|MD5SUMS)$"
+            # Publish parameters
+            cat << EOF > ${WORKSPACE}/publish_parameters
+            PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
+            PUB_SRC=${PWD}/build/out
+            EOF
 
             # Construct post-build-lava parameters
-            if [ -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
-              source build-configs/${BUILD_CONFIG_FILENAME}
-            else
-              echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
-              echo "in android-build-configs.git"
-              exit 1
-            fi
-
+            source build-configs/${BUILD_CONFIG_FILENAME}
             cat << EOF > ${WORKSPACE}/post_build_lava_parameters
             DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
             TARGET_PRODUCT=${TARGET_PRODUCT}
@@ -138,8 +127,13 @@
             DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
             CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-boot.json
             EOF
-
-            echo "Build finished"
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
