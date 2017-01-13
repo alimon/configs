@@ -1,0 +1,102 @@
+- job:
+    name: 96boards-b2260-u-boot
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: '96boards - STiH410 B2260 U-Boot'
+    scm:
+        - git:
+            url: https://github.com/cpriouzeau/STi-U-Boot.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out
+              git clean -fdx
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y libssl-dev python-requests
+
+            # Use pre-installed linaro toolchain
+            export PATH="${HOME}/srv/toolchain/arm-tc-16.02/bin:$PATH"
+            export CROSS_COMPILE=arm-linux-gnueabihf-
+
+            make st_b2260_stxh410_sd_defconfig
+            make -j$(getconf _NPROCESSORS_ONLN) CONFIG_STM_ENV_OFFSET=0x1C0000 MEM_MAP=992MB u-boot.bin
+
+            # Publish
+            mkdir out
+
+            cat > out/README.txt << EOF
+            Build information:
+            * build: ${BUILD_URL}
+            * git URL: ${GIT_URL}
+            * git branch: ${GIT_BRANCH}
+            * git commit: ${GIT_COMMIT}
+            EOF
+
+            cp -a u-boot.bin out/
+            cp -a .config out/u-boot.config
+
+            # Create MD5SUMS file
+            (cd out && md5sum * > MD5SUMS.txt)
+
+            # Build information (textile, for the web view)
+            cat > out/HEADER.textile << EOF
+
+            h4. 96Boards - STiH410 B2260 - U-Boot
+
+            U-Boot development build for STiH410 B2260
+
+            Build Description:
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * U-Boot tree: "$GIT_URL":$GIT_URL
+            * U-Boot branch: $GIT_BRANCH
+            * U-Boot commit: $GIT_COMMIT
+            EOF
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out snapshots/b2260/linaro/u-boot/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org lee.jones@linaro.org'
