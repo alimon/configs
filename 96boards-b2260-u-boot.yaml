@@ -56,13 +56,8 @@
             export PATH="${HOME}/srv/toolchain/arm-tc-16.02/bin:$PATH"
             export CROSS_COMPILE=arm-linux-gnueabihf-
 
-            # Ignore errors otherwise we'll stop on
-            # grep: Invalid back reference
-            # include/autoconf.mk:69: *** missing separator (did you mean TAB instead of 8 spaces?).  Stop.
-            set +e
             make st_b2260_stxh410_sd_defconfig
             make -j$(getconf _NPROCESSORS_ONLN) CONFIG_STM_ENV_OFFSET=0x1C0000 MEM_MAP=992MB u-boot.bin
-            set -e
 
             # Publish
             mkdir out
