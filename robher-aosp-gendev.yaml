@@ -22,9 +22,13 @@
             days-to-keep: 60
             num-to-keep: 60
     disabled: false
-    node: docker-xenial-aosp
     display-name: 'AOSP Generic Device build by Rob Herring'
     axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-xenial-aosp
         - axis:
             type: user-defined
             name: ARCH
@@ -84,14 +88,14 @@
 
             source build/envsetup.sh
 
-            LUNCH_TARGET="linaro_${arch}-userdebug"
+            LUNCH_TARGET="linaro_${ARCH}-userdebug"
             lunch ${LUNCH_TARGET}
             make -k -j8 systemimage ramdisk
 
             # Publish binaries
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/generic/build-info/public-template.txt -O ${ANDROID_PRODUCT_OUT}/BUILD-INFO.txt
 
-            PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}/${LUNCH_TARGET}
+            PUB_DEST=/android/robher-aosp-gendev/${BUILD_NUMBER}/${LUNCH_TARGET}
             time linaro-cp.py \
               --api_version 3 \
               --manifest \
