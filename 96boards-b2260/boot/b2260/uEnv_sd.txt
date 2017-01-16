@@ -1,0 +1,31 @@
+# Init kernel and fdt config
+fdt_high=0xFFFFFFFF
+fdt_file=stih410-b2260.dtb
+fdt_load_addr=0x47000000
+kernel_file=uImage
+kernel_load_addr=0x60000000
+
+# Init device settings
+device_part=0:1
+
+# Init error message when filesystem load or read fails
+read_error_message=echo <ERROR> Unable to read \${part} filesystem on mmc at ${device_part} partition
+load_error_message=echo <ERROR> ${file} not available on mmc at ${device_part} partition
+
+# Check device interface availability and run load action if ok
+read_from_device=if \${part}ls mmc ${device_part}; then run load_kernel; else run read_error_message; fi
+
+# Load kernel and fdt, then launch boot action if ok
+load_kernel=if \${part}load mmc ${device_part} ${kernel_load_addr} ${kernel_file}; then run load_fdt ; else setenv file ${kernel_file}; run load_error_message; fi
+load_fdt=if \${part}load mmc ${device_part} ${fdt_load_addr} ${fdt_file}; then run run_boot; else setenv file ${fdt_file}; run load_error_message; fi
+
+# Check ethaddr and set it for kernel
+check_ethaddr=if test "x$ethaddr" = "x"; then echo <INFO> Set ethaddr...; readmac; if test "x$ethaddr" = "x"; then askenv ethaddr; fi; fi
+
+# Set bootargs and then boot
+run_boot=setenv bootargs console=ttyAS1,115200 CONSOLE=/dev/ttyAS1 consoleblank=0 root=/dev/mmcblk0p2 rootfstype=ext4 rw rootwait mem=992M@0x40000000 vmalloc=256m ; bootm ${kernel_load_addr} - ${fdt_load_addr}
+
+# Set boot command
+bootcmd=run check_ethaddr; echo <INFO> Load kernel and fdt to RAM...; run read_from_device
+
+boot
