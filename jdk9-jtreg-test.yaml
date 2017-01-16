@@ -99,17 +99,17 @@
             # Only set =1 for debugging.
             use_subcategories=0
 
-            if [ ${use_subcategories} -eq 1 ]; then 
+            if [ ${use_subcategories} -eq 1 ]; then
               case ${JTREG_CATEGORY} in
                 langtools)
                     JTREG_SUBCATEGORIES=tools/javap/typeAnnotations
                     ;;
                 jdk)
                     JTREG_SUBCATEGORIES=jdk/net/Sockets
-                    ;; 
+                    ;;
                 hotspot)
                     JTREG_SUBCATEGORIES=runtime/CommandLine
-                    ;; 
+                    ;;
               esac
             fi
 
@@ -118,6 +118,7 @@
             tar xf incoming/jdk9.tar.gz
             tar xf ~/workspace/jdk9-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk9-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
             tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
+            tar xf ~/workspace/jdk9-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk9-${REAL_VARIANT}-${BUILD_TYPE}-support.tar.gz
 
             # All the output directories and general frobbing
             # output is to match the existing layout as expected
@@ -161,6 +162,20 @@
             export JAVA_HOME=${WORKSPACE}/jdk9-${REAL_VARIANT}-${BUILD_TYPE}
             export PATH=$JAVA_HOME/bin:${PATH}
 
+            # For hotspot and jdk we pass a -nativepath: option to jtreg.
+            # This enables the tests needing native libraries to run.
+            NATIVEPATH=${WORKSPACE}/jdk9-${REAL_VARIANT}-${BUILD_TYPE}-support/support/test/${JTREG_CATEGORY}/jtreg/native/lib
+
+            if [ $JTREG_CATEGORY = "langtools" ]; then
+                # The nativepath option we pass must be a valid directory, or
+                # not at all.`
+                NATIVE_OPT=
+            else
+                # Test executables are expected to be in same directory as libraries
+                mv $NATIVEPATH/../bin/* $NATIVEPATH
+                NATIVE_OPT=-nativepath:$NATIVEPATH
+            fi
+
             PATH=${WORKSPACE}/jtreg/bin:${PATH}
             which java
             java -version
@@ -177,6 +192,7 @@
                   -conc:auto \
                   -r:${report_dir} \
                   -w:${work_dir} \
+                  $NATIVE_OPT \
                   -a -agentvm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
             else
                 java -jar jtreg/lib/jtreg.jar \
@@ -188,6 +204,7 @@
                   -conc:auto \
                   -r:${report_dir} \
                   -w:${work_dir} \
+                  $NATIVE_OPT \
                   -a -agentvm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
             fi
 

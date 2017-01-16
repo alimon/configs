@@ -107,17 +107,17 @@
             if [ $two_stage_build = 1 ]; then
               pushd build-stage1
               sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk8 ${ccache_build_opts}
-              make images
+              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
 
               pushd build-stage2
               sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image ${ccache_build_opts}
-              make images
+              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             else
               pushd build-stage2
               sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
-              make images
+              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             fi
 
@@ -126,6 +126,9 @@
             mkdir out
             artifact_name=jdk9-${JVM_VARIANT}-${BUILD_TYPE}
             tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
+
+            # Archive test support files.
+            tar -C build-stage2/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
     publishers:
         - archive:
             artifacts: 'out/*.tar.gz'
