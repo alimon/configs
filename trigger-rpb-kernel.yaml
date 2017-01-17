@@ -1,5 +1,5 @@
 - job:
-    name: trigger-96boards-reference-kernel
+    name: trigger-rpb-kernel
     project-type: freestyle
     defaults: global
     logrotate:
@@ -11,18 +11,21 @@
                 - job-read
     parameters:
         - string:
-            name: KERNEL_BRANCH
-            default: '96b-kernelci'
-    disabled: true
+            name: KERNEL_GIT_BRANCH
+            default: 'master'
+        - string:
+            name: KERNEL_GIT_URL
+            default: 'https://github.com/Linaro/rpk.git'
+    disabled: false
     node: build
-    display-name: 'Trigger for Reference Platform - Linux Kernel'
+    display-name: 'Trigger for Reference Platform - Linux Kernel (RPK)'
     scm:
         - git:
-            url: https://git.linaro.org/people/amit.kucheria/kernel.git
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            url: ${KERNEL_GIT_URL}
+            refspec: +refs/heads/${KERNEL_GIT_BRANCH}:refs/remotes/origin/${KERNEL_GIT_BRANCH}
             name: origin
             branches:
-                - refs/heads/${KERNEL_BRANCH}
+                - refs/heads/${KERNEL_GIT_BRANCH}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -34,4 +37,6 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - trigger-builds:
-            - project: '96boards-reference-kernel'
+            - project:
+                - '96boards-reference-kernel-enterprise'
+                - '96boards-b2260'
