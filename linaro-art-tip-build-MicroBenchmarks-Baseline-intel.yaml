@@ -1,0 +1,165 @@
+- scm:
+    name: art
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: bionic
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/bionic.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: build
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/build.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- job:
+    name: linaro-art-tip-build-MicroBenchmarks-Baseline-intel
+    project-type: freestyle
+    defaults: global
+    description: >
+      Runs the
+      <a href="https://android-git.linaro.org/linaro-art/art-build-scripts.git/tree/benchmarks/benchmarks_run_target.sh">Microbenchmarks Test script</a>
+      on the tip.<br>
+      The script is run on the intel platform (i5 NUC)<br>
+      This job is for baseline builds only.
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+        - copyartifact:
+            projects: post-build-reports
+    parameters:
+        - string:
+            name: ADB_VERSION
+            default: 'adb-tip'
+        - string:
+            name: BUILD_CONFIG_REPO
+            default: 'git://android-git.linaro.org/android-build-configs.git'
+        - string:
+            name: BUILD_CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'linaro-art-tip'
+    disabled: false
+    node: docker-utopic-art-test
+    display-name: 'Tip: Benchmarks Baseline (Intel Nuc)'
+    concurrent: true
+    scm:
+        - art
+        - bionic
+        - build
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+
+            # Build scripts
+            ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
+            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+
+            cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
+            # Get the ip address of the nuc to connect to adb over network
+            source /home/buildslave/srv/nexus-config
+            export ANDROID_SERIAL=${NUC}
+            ./setup_host.sh
+            ./setup_android.sh
+
+            cd ${ANDROID_BUILD_DIR}
+            alias python=python3
+            perl scripts/jenkins/test_launcher.pl \
+              scripts/benchmarks/benchmarks_run_target.sh --linux --x86 --sudo --ip-address ${ANDROID_SERIAL}
+
+            # create parameters for post-build-reports
+            cat << EOF > ${WORKSPACE}/post_build_reports_parameters
+            SOURCE_PROJECT_NAME=${JOB_NAME}
+            SOURCE_BUILD_NUMBER=${BUILD_NUMBER}
+            SOURCE_BUILD_ID=${BUILD_NUMBER}
+            SOURCE_BUILD_URL=${BUILD_URL}
+            ART_URL=https://art-reports.linaro.org/api/
+            SOURCE_BRANCH_NAME=master
+            EOF
+
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml, *.json'
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android-art.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - groovy-postbuild:
+            script: |
+              import hudson.model.*
+              def currentBuild = Thread.currentThread().executable
+              def description = ""
+              def matcher = manager.getLogMatcher(".*repo sync failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("repo sync failed")
+              }
+              matcher = manager.getLogMatcher(".*patch merge failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("merge failed")
+              }
+              matcher = manager.getLogMatcher(".*error: no devices/emulators found.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("No Device Found")
+              }
+              matcher = manager.getLogMatcher(".*buildbot-build setup failed.*")
+              if ( matcher?.matches()) {
+                  manager.addShortText("buildbot-build setup failed.")
+              }
+              matcher = manager.getLogMatcher(".* tests have failed")
+              if (matcher?.matches()) {
+                  def test = matcher.group(0).split(" ")
+                  manager.listener.logger.println test.length
+                  i=0
+                  while( i<test.length-3) {
+                       description+="${test[i]} failed<br>"
+                       i++;
+                  }
+                  currentBuild.setDescription(description)
+                  manager.addShortText("Tests failed")
+              }
+        - trigger-parameterized-builds:
+            - project: 'post-build-reports'
+              property-file: post_build_reports_parameters
