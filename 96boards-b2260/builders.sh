@@ -108,10 +108,9 @@ EOF
     [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
   done
 
-  wget -q http://builds.96boards.org/snapshots/b2260/linaro/u-boot/latest/u-boot.bin
+  wget -q http://builds.96boards.org/snapshots/b2260/linaro/u-boot/latest/u-boot.bin -O out/boot/b2260/u-boot.bin
   sudo cp -a configs/96boards-b2260/boot/b2260 boot/ || true
   sudo cp -a configs/96boards-b2260/boot/update_default_boot.sh boot/ || true
-  sudo cp -a u-boot.bin boot/b2260 || true
   sudo cp -a out/uImage boot/ || true
 
   sudo rm -rf rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
