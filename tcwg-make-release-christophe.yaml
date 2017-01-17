@@ -110,7 +110,7 @@
             users:
               - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a' # tcwg-buildslave
         - build-name:
-            name: '#${BUILD_NUMBER}-${ENV,var="date"}-${ENV,var="target"}'
+            name: '#${BUILD_NUMBER}-${ENV,var="date"}'
     builders:
       - shell: |
             #!/bin/bash
@@ -155,6 +155,44 @@
                 exit 1
                 ;;
             esac
+
+            # FIXME. MakeRelease copies to a directory, while
+            # TestRelease downloads from a URL, so both dirs differ
+            # depending on httpd's DocumentRoot
+            # Setting url_prefix can be removed once test-release is
+            # started after make-release has completed.
+            case ${binariesdir} in
+              releases/binaries/*)
+                url_prefix=$(echo \~${USER}/${binariesdir})
+                ;;
+              "")
+                # Compute default binariesdirs/logsdir in case they
+                # are not supplied by the user. Normally they are set
+                # by tcwg-make-and-test-release.
+
+                # Extract the gcc_version information from gcc_src to determine
+                # which directory to copy the tarballs into.
+                gcc_version="`basename $gcc_src | awk -F '-' '{ print $3 }'`"
+                gcc_major="`echo $gcc_version | awk -F '.' '{ print $1 }'`"
+                gcc_minor="`echo $gcc_version | awk -F '.' '{ print $2 }'`"
+                tcwg_version="${gcc_major}.${gcc_minor}"
+                if test ${gcc_major} -lt 5; then
+                    gcc_point="`echo $gcc_version | awk -F '.' '{ print $2 }'`"
+                    tcwg_version="${gcc_major}.${gcc_minor}.${gcc_point}"
+                fi
+
+                buildid=`printf '%04d' ${BUILD_NUMBER}`
+
+                binariesdir=releases/binaries/${tcwg_version}-${tcwg_release}-${buildid}
+                logsdir=releases/logs/${tcwg_version}-${tcwg_release}-${buildid}
+
+                url_prefix=$(echo \~${USER}/${binariesdir})
+                ;;
+              *)
+                echo Unsupported binariesdir: ${binariesdir}. Fix the job.
+                ;;
+            esac
+
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
             ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}
@@ -176,20 +214,6 @@
                 exit 1
               fi
             fi
-
-            # FIXME. MakeRelease copies to a directory, while
-            # TestRelease downloads from a URL, so both dirs differ
-            # depending on httpd's DocumentRoot
-            # All this can be removed once test-release is started
-            # after make-release has completed.
-            case ${binariesdir} in
-              releases/binaries/*)
-                url_prefix=$(echo '~tcwg-buildslave/'${binariesdir})
-                ;;
-              *)
-                echo Unsupported binariesdir: ${binariesdir}. Fix the job.
-                ;;
-            esac
 
             if $testrelease; then
               tarball_linux="`basename ${tarball_linux}`"
