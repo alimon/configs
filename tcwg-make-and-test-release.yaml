@@ -39,6 +39,10 @@
             default: 'default'
             description: 'Toolchain version config, e.g., "default", "gcc5", or "gcc6"'
         - string:
+            name: target_list
+            default: 'aarch64-elf aarch64-linux-gnu aarch64_be-elf aarch64_be-linux-gnu armv8l-linux-gnueabihf arm-eabi arm-linux-gnueabi arm-linux-gnueabihf armeb-eabi armeb-linux-gnueabi armeb-linux-gnueabihf'
+            description: 'List of targets to use'
+        - string:
             name: abe_branch
             default: refs/heads/master
             description: 'ABE revision to test'
@@ -108,13 +112,9 @@
             echo "NOTE: Make-release job parameters:"
             cat make_release_parameters
 
-            # Keep target_list here in sync with the
-            # restrict-matrix-project parameter for tcwg-make-release
-            # below
             cat << EOF > test_release_parameters
             tarball_url=http://${fileserver}/~tcwg-buildslave/${binariesdir}
             release=${date}
-            target_list=arm-linux-gnueabihf
             EOF
 
             echo "NOTE: Test-release job parameters:"
@@ -129,14 +129,13 @@
               - name: tcwg-make-release-christophe
                 current-parameters: true
                 property-file: make_release_parameters
-                restrict-matrix-project: 'target=="arm-linux-gnueabihf"'
         - multijob:
             name: 'Check Test Release'
             condition: COMPLETED
             projects:
               - name: tcwg-test-release-matrix
+                current-parameters: true
                 property-file: test_release_parameters
-                restrict-matrix-project: 'target=="arm-linux-gnueabihf"'
     publishers:
         - email-ext:
             recipients: 'christophe.lyon@linaro.org'
