@@ -1,0 +1,39 @@
+# u-bootrom supports u-boot.2015 commands plus few extras.
+#
+# Extra variables:
+#   script_dev_usb    'usb X.Y'  default usb instance:partition to boot from.
+#   script_dev_mmc    'mmc X.Y'  default mmc instance:partition to boot from.
+#   script_dev        $script_usb|mmc_dev depending on media where boot script was found.
+#   script_fsload     'fatload' or 'ext2load' depending on which was used to load boot script.
+#   dram_base         DDR start address
+#   dram_size         DDR size (in bytes)
+#   load_addr         default load address (DDR start)
+#   board             board id ("b2120", "b2260", ...)
+#
+# Extra commands:
+#   hpen              holding pen reconfiguration and kick support, for SMP boot
+#   load_optee        OPTEE specific formated image intallation command
+#   boot_optee        OPTEE specific boot command
+#
+# u-bootrom enables silent console. To get some logs from this script one
+# can disable silent mode ("setenv silent;") and re-enable silent mode
+# ("setenv silent 1") in this script.
+
+# u-boot shall be loaded 10MB before the begining of the last 32MB of the DDR.
+setexpr.l uboot_addr $dram_base + $dram_size
+setexpr.l uboot_addr $uboot_addr - 0x02000000
+setexpr.l uboot_addr $uboot_addr - 0x00A00000
+uboot_path="$board/u-boot.bin"
+
+# load images
+
+$script_fsload $script_dev $uboot_addr $uboot_path
+
+# boot images
+
+dcache flush;
+
+hpen prepare 0x094100A4
+hpen kick hpen
+
+go $uboot_addr
