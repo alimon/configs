@@ -22,6 +22,10 @@
             name: scripts_branch
             default: master
             description: 'Scripts revision to use'
+        - string:
+            name: test_list
+            default: 'cross_build native_build testsuite abe-tests abe-tests-checkout'
+            description: 'Scripts revision to use'
     disabled: false
     node: tcwg-x86_64-cam
     retry-count: 3
@@ -63,14 +67,10 @@
             values:
                 - tcwg-x86_64-cam
         - axis:
-            type: user-defined
+            type: dynamic
             name: test
             values:
-                - cross_build
-                - native_build
-                - testsuite
-                - abe-tests
-                - abe-tests-checkout
+                - test_list
     execution-strategy:
         sequential: false
     wrappers:
