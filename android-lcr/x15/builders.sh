@@ -1,3 +1,7 @@
+## clean android-patchsets and repositories in device
+rm -rf build/out build/android-patchsets build/device
+mkdir -p build
+
 # Build Android
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
 cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.json /home/buildslave/srv/${BUILD_DIR}/build/out/*.xml ${WORKSPACE}/

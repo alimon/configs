@@ -1,5 +1,7 @@
 # Build Android
-rm -rf build/out build/android-patchsets build/device/linaro/hikey
+## clean android-patchsets and repositories in device
+rm -rf build/out build/android-patchsets build/device
+
 mkdir -p build/
 cd build/
 wget https://dl.google.com/dl/android/aosp/linaro-hikey-20160226-67c37b1a.tgz
