@@ -9,6 +9,11 @@ cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.json /home/buildslave/srv/${
 # Copy dtb mlo uboot to out location
 cp /home/buildslave/srv/${BUILD_DIR}/u-boot/MLO /home/buildslave/srv/${BUILD_DIR}/u-boot/u-boot /home/buildslave/srv/${BUILD_DIR}/linux/arch/arm/boot/dts/*.dtb /home/buildslave/srv/${BUILD_DIR}/build/out/
 
+
+if [ ${JOB_NAME} == "android-lcr-member-x15-n" ]; then
+  wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/x15/build-info/template.txt -O build/out/BUILD-INFO.txt
+fi
+
 # Publish binaries
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 time linaro-cp.py \
