@@ -47,18 +47,28 @@
 
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
 
-            rm -rf art-build-scripts
-            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git
-            cd art-build-scripts
-
-            if git pull http://$GERRIT_HOST/$GERRIT_PROJECT $GERRIT_REFSPEC | grep -q "Automatic merge failed"; then
+            if [[ -e "${ART_BUILD_SCRIPTS_DIR}/.git" ]]; then
+              cd "${ART_BUILD_SCRIPTS_DIR}"
+              # We want to keep the gitignored shellcheck binary, so no -x flag
+              git clean -fd
               git reset --hard
-              echo "Error: *** Error patch merge failed"
+            else
+              # Make sure the target dir does not exist, so the clone won't fail
+              rm -rf "${ART_BUILD_SCRIPTS_DIR}"
+              git clone "https://android-git.linaro.org/git/linaro-art/art-build-scripts.git" \
+                        "${ART_BUILD_SCRIPTS_DIR}"
+              cd "${ART_BUILD_SCRIPTS_DIR}"
+            fi
+
+            if ! { git fetch "http://${GERRIT_HOST}/${GERRIT_PROJECT}" "${GERRIT_REFSPEC}" &&
+                        git checkout FETCH_HEAD; }; then
+              git reset --hard
+              echo "Error: *** Applying patch with git fetch && git checkout FAILED"
               exit 1
             fi
 
             perl ${ART_BUILD_SCRIPTS_DIR}/jenkins/test_launcher.pl \
-              ./presubmit.sh
+              ${ART_BUILD_SCRIPTS_DIR}/presubmit.sh
     publishers:
         - email:
             recipients: 'vishal.bhoj@linaro.org daniel.diaz@linaro.org julien.duraj@linaro.org'
