@@ -33,6 +33,7 @@ export PATH=${HOME}/bin:${PATH}
 
 # Install helper packages
 rm -rf build-tools jenkins-tools build-configs build/out build/android-patchsets
+shopt -s extglob
 cd build/; rm -rf !(.repo); cd -
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-android-build-tools.git build-tools
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
