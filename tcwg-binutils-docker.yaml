@@ -107,15 +107,17 @@
             echo bfd=${bfd}
             echo host=`hostname`
             uname -a
+            ${CONTAINER_SHELL} -c "echo host=`hostname`"
+            ${CONTAINER_SHELL} -c "uname -a"
             echo WORKSPACE: ${WORKSPACE}
 
             # If configure or build fails, the execution will stop
             # because of 'set -e'. But for 'make check' we want to
             # execute all the tests, and report if there were some
             # errors.
-            ${CONTAINER_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
-            ${CONTAINER_SHELL} -c "make all -j$jobs"
-            ${CONTAINER_SHELL} -c "make check -j$jobs -k" || result=1
+            ${CONTAINER_SHELL} -c "cd ${PWD} && ../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
+            ${CONTAINER_SHELL} -c "cd ${PWD} && make all -j$jobs"
+            ${CONTAINER_SHELL} -c "cd ${PWD} && make check -j$jobs -k" || result=1
 
             # For the moment, only build gdb (do not run the tests).
             # Do this in a different subdir.
@@ -123,8 +125,8 @@
             case ${target} in
               arm-vxworks) ;;
               *)
-                ${CONTAINER_SHELL} -c "mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof --target=${target} ${bfd}"
-                ${CONTAINER_SHELL} -c "cd build-gdb && make all -j$jobs"
+                ${CONTAINER_SHELL} -c "cd ${PWD} && mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof --target=${target} ${bfd}"
+                ${CONTAINER_SHELL} -c "cd ${PWD} && cd build-gdb && make all -j$jobs"
                 ;;
             esac
 
