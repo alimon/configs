@@ -42,14 +42,19 @@
             type: slave
             name: label
             values:
-                - docker-trusty-amd64-tcwg
-                - docker-trusty-i386-tcwg
+                - tcwg-x86_64-cam
         - axis:
             type: user-defined
             name: bfd
             values:
                 - --enable-64-bit-bfd=no
                 - --enable-64-bit-bfd=yes
+        - axis:
+            type: user-defined
+            name: host_arch
+            values:
+                - i386
+                - amd64
         - axis:
             type: dynamic
             name: target
@@ -72,8 +77,15 @@
             set -e
             set -x
 
-            BUILD_SHELL="bash"
-            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+            git clone http://git.linaro.org/people/christophe.lyon/container-scripts.git
+            container=docker
+
+            ./container-scripts/start-container-${container}.sh ${host_arch} trusty > container.sh
+
+            # Define session_host and session_port, install trap
+            . ./container.sh
+
+            $CONTAINER_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
             case $target in
                 arm-wince-pe)
@@ -94,15 +106,16 @@
             echo target=${target}
             echo bfd=${bfd}
             echo host=`hostname`
+            uname -a
             echo WORKSPACE: ${WORKSPACE}
 
             # If configure or build fails, the execution will stop
             # because of 'set -e'. But for 'make check' we want to
             # execute all the tests, and report if there were some
             # errors.
-            ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
-            ${BUILD_SHELL} -c "make all -j$jobs"
-            ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
+            ${CONTAINER_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
+            ${CONTAINER_SHELL} -c "make all -j$jobs"
+            ${CONTAINER_SHELL} -c "make check -j$jobs -k" || result=1
 
             # For the moment, only build gdb (do not run the tests).
             # Do this in a different subdir.
@@ -110,12 +123,13 @@
             case ${target} in
               arm-vxworks) ;;
               *)
-                ${BUILD_SHELL} -c "mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof --target=${target} ${bfd}"
-                ${BUILD_SHELL} -c "cd build-gdb && make all -j$jobs"
+                ${CONTAINER_SHELL} -c "mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof --target=${target} ${bfd}"
+                ${CONTAINER_SHELL} -c "cd build-gdb && make all -j$jobs"
                 ;;
             esac
 
             sums=`find . -name "*.sum"`
+            set +x
             echo '############################################'
             echo 'See unexpected results below:'
             echo '############################################'
@@ -127,7 +141,13 @@
 
             echo BUILD FINISHED $(date)
 
+            # Cleanup to save disk space
+            cd ..
+            du -sh build-$target
+            rm -rf build-$target || true
+
             exit $result
     publishers:
-        - email:
+        - email-ext:
             recipients: 'christophe.lyon@linaro.org'
+            matrix-trigger: only-parent
