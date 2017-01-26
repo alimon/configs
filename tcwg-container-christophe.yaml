@@ -121,8 +121,6 @@
 
             mkdir -p artifacts/
 
-            git clone http://git.linaro.org/people/christophe.lyon/container-scripts.git
-
             case "$target:$label" in
               native--aarch64) target_kind=native_aarch64 ;;
               native--arm*) target_kind=native_aarch32 ;;
@@ -145,12 +143,16 @@
             esac
 
             case "$label" in
-              tcwg-tk1_32-build) container="schroot" ;;
-              tcwg-*-build) container="docker" ;;
-              docker-*) container="none" ;;
+              tcwg-tk1_32-build) container_type="schroot" ;;
+              tcwg-*-build) container_type="docker" ;;
+              docker-*) container_type="none" ;;
             esac
 
-            ./container-scripts/start-container-${container}.sh ${container_arch} trusty > container.sh
+            rm -rf container-scripts
+            git clone http://git.linaro.org/people/christophe.lyon/container-scripts.git
+
+            ./container-scripts/start-container-${container_type}.sh ${container_arch} trusty > container.sh
+
             # Define session_host and session_port, install trap
             . ./container.sh
             # At this stage, we don't want to remove the container
@@ -200,7 +202,7 @@
 
                   set -ex
 
-                  # Define CONTAINER_SHELL, install trap
+                  # Define CONTAINER, install trap
                   . ./container.sh
 
                   if [ -f test-container.param ]; then
@@ -268,7 +270,7 @@
                     extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
                   done
 
-                  $CONTAINER_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+                  ${CONTAINER} "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
                   cat > $WORKSPACE/run.sh << EOF
                   #!/bin/bash
@@ -278,9 +280,9 @@
                   EOF
                   chmod +x $WORKSPACE/run.sh
                   result="0"
-                  $CONTAINER_SHELL -x $WORKSPACE/run.sh || result=$?
+                  ${CONTAINER} $WORKSPACE/run.sh || result=$?
 
-                  #if [ x"$container" = x"docker" ]; then
+                  #if [ x"$container_type" = x"docker" ]; then
                   #  rsync -az -e "ssh -p $session_port" $WORKSPACE/ localhost:$WORKSPACE/
                   #fi
 
