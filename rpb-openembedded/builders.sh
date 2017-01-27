@@ -102,6 +102,8 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 #        meta-ti u-boot doesn't enable fastboot support
 case "${MACHINE}" in
   am57xx-evm|stih410-b2260)
+    ;;
+  *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
       gunzip -k ${rootfs}
       sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
