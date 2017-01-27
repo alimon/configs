@@ -126,15 +126,6 @@
 
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
-            case "$target--$(uname -m)" in
-              native--aarch64) target_kind=native_aarch64 ;;
-              native--arm*) target_kind=native_aarch32 ;;
-              native--x86_64|native--i686) target_kind=native_x86 ;;
-              armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
-              *-linux-gnu*--*) target_kind=cross_main ;;
-              *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
-            esac
-
             case ${label} in
                 tcwg-x86_64-cam) host_arch=amd64 ;;
                 tcwg-x86_32-build) host_arch=i386 ;;
@@ -142,10 +133,20 @@
                 tcwg-tx1_32-build) host_arch=armhf ;;
                 *) echo "ERROR: Unsupported slave: $slave"; exit 1 ;;
             esac
+
+            case "$target--${host_arch}" in
+              native--arm64) target_kind=native_aarch64 ;;
+              native--armhf) target_kind=native_aarch32 ;;
+              native--amd64|native--i386) target_kind=native_x86 ;;
+              armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
+              *-linux-gnu*--*) target_kind=cross_main ;;
+              *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
+            esac
+
             ./jenkins-scripts/start-container-docker.sh ${host_arch} trusty > container.sh
 
-            case "$target_kind-$runtests-$(uname -m)" in
-              "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"x86_64"|"cross_main"-"x86_64-host"-"i686")
+            case "${target_kind}-$runtests-${host_arch}" in
+              "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
                 case "$target" in
                   aarch64*) test_container_arch=arm64 ;;
                   arm*) test_container_arch=armhf ;;
@@ -257,7 +258,7 @@
                   done
 
                   result="0"
-                  ${CONTAINER} ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir ${WORKSPACE} --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
+                  ${CONTAINER} bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir ${WORKSPACE} --target ${target} --override "$override" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild || result=$?
 
                   # If we actually built a toolchain, save its manifest.
                   # If the build was a no-op (results already present on log_server),
