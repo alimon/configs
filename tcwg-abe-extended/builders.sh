@@ -10,7 +10,7 @@ if [ "x$label" = "xtcwg-x86_64-cam" ]; then
 
   # Sometimes /dev/pts can't get unmounted on the first try.
   # Workaround by retrying.
-  trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true" 0 1 2 3 5 9 13 15
+  trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
 else
   BUILD_SHELL=bash
 fi
