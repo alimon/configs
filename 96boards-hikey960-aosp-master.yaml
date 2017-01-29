@@ -26,6 +26,9 @@
         - timestamps
         - timeout:
             timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
         - linaro-publish-token:
             host: builds.96boards.org
@@ -77,6 +80,7 @@
             # Download vendor binaries for hikey.
             mkdir -p build
             cd build/
+            rm -rf *.tgz
             wget http://snapshots.linaro.org/android/binaries/hikey960/01272017/arm-hikey960-NOU-5a440fb0.tgz
             tar -xvf arm-hikey960-NOU-5a440fb0.tgz
             yes "I ACCEPT" | ./extract-arm-hikey960.sh
