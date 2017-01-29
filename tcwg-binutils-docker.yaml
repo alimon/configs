@@ -47,6 +47,10 @@
             name: label
             values:
                 - tcwg-x86_64-cam
+                - tcwg-x86_32-build
+                - tcwg-tx1-build
+                - tcwg-tx1_32-build
+                - tcwg-tk1_32-build
         - axis:
             type: user-defined
             name: bfd
@@ -54,16 +58,14 @@
                 - --enable-64-bit-bfd=no
                 - --enable-64-bit-bfd=yes
         - axis:
-            type: user-defined
-            name: host_arch
-            values:
-                - i386
-                - amd64
-        - axis:
             type: dynamic
             name: target
             values:
                 - target_list
+    execution-strategy:
+        combination-filter: |
+            (label=="tcwg-x86_64-cam" && target!="native") || (label=="tcwg-x86_32-build" && target!="native") || target=="native"
+        sequential: false
     wrappers:
         - timeout:
             timeout: 600
@@ -81,10 +83,18 @@
             #set -e
             set -x
 
+            host=localhost
+            case ${label} in
+                tcwg-x86_64-cam) host_arch=amd64 ;;
+                tcwg-x86_32-build) host_arch=i386 ;;
+                tcwg-tx1-build) host_arch=arm64 ;;
+                tcwg-tx1_32-build) host_arch=armhf ;;
+                tcwg-tk1_32-build) host_arch=armhf ;;
+            esac
             rm -rf container-scripts
             git clone http://git.linaro.org/people/christophe.lyon/container-scripts.git
 
-            ./container-scripts/start-container-${container_type}.sh ${host_arch} trusty > container.sh
+            ./container-scripts/start-container-${container_type}.sh ${host} ${host_arch} trusty > container.sh
 
             # Define session_host and session_port, install trap
             . ./container.sh
@@ -116,6 +126,7 @@
             ${CONTAINER} 'uname -a'
             ${CONTAINER} 'lsb_release -a'
             echo WORKSPACE: ${WORKSPACE}
+            exit 0
 
             # If configure or build fails, the execution will stop
             # because of 'set -e'. But for 'make check' we want to
