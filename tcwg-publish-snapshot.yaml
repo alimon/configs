@@ -59,7 +59,6 @@
             gcc_version=${snapshot_version%%-*}
             gcc_major=${gcc_version%%.*}
             version_suffix=${snapshot_version##*-}
-            bin_dir=${gcc_major}-${snapshot_version#*-}
             dest_dir="components/toolchain/"
 
             if [[ "$version_suffix" != rc* ]]; then
@@ -70,6 +69,8 @@
             fi
 
             [ $gcc_major -ge 5 ] && gcc_version=$gcc_major
+
+            bin_dir=${gcc_version}-${snapshot_version#*-}
 
             # Append build number if provided, choose the latest otherwise
             if test x"${buildnum}" != x; then
