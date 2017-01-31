@@ -15,8 +15,8 @@ echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 # Toolchains are pre-installed and come from:
 # https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q3-update/+download/gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
-# https://nexus.zephyrproject.org/content/repositories/releases/org/zephyrproject/zephyr-sdk/0.8.2-i686/zephyr-sdk-0.8.2-i686-setup.run
-# To install Zephyr SDK: ./zephyr-sdk-0.8.2-i686-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.8.2"
+# https://nexus.zephyrproject.org/content/repositories/releases/org/zephyrproject/zephyr-sdk/0.9/zephyr-sdk-0.9-setup.run
+# To install Zephyr SDK: ./zephyr-sdk-0.9-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9"
 
 case "${ZEPHYR_GCC_VARIANT}" in
   gccarmemb)
@@ -24,8 +24,8 @@ case "${ZEPHYR_GCC_VARIANT}" in
   ;;
   zephyr)
     mkdir -p ${HOME}/opt
-    ln -sf ${HOME}/srv/toolchain/zephyr-sdk-0.8.2 ${HOME}/opt/zephyr-sdk-0.8.2
-    export ZEPHYR_SDK_INSTALL_DIR="${HOME}/opt/zephyr-sdk-0.8.2"
+    ln -sf ${HOME}/srv/toolchain/zephyr-sdk-0.9 ${HOME}/opt/zephyr-sdk-0.9
+    export ZEPHYR_SDK_INSTALL_DIR="${HOME}/opt/zephyr-sdk-0.9"
   ;;
 esac
 
