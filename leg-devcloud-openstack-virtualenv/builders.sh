@@ -11,6 +11,9 @@ cleanup_exit()
   rm -rf out
 }
 
+# workaround to enfoce release version to major until docker image is updated
+echo "7" | sudo tee /etc/yum/vars/releasever
+
 cd ${WORKSPACE}/openstack-venvs
 sudo ./build_all.sh
 
