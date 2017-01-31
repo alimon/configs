@@ -23,6 +23,10 @@
             default: 'aarch64-linux-gnu aarch64_be-linux-gnu aarch64-none-elf aarch64_be-none-elf arm-linux-gnueabi arm-linux-gnueabihf arm-netbsdelf arm-none-eabi arm-none-nacl arm-none-symbianelf arm-vxworks arm-wince-pe armeb-linux-gnueabihf'
             description: 'List of targets to test'
         - string:
+            name: bfd_list
+            default: '--enable-64-bit-bfd=no'
+            description: 'Type of BFD to enable: --enable-64-bit-bfd=yes --enable-64-bit-bfd=no'
+        - string:
             name: container_type
             default: 'docker'
             description: 'Type of container to use: docker, schroot, none'
@@ -52,11 +56,10 @@
                 - tcwg-tx1_32-build
                 - tcwg-tk1_32-build
         - axis:
-            type: user-defined
+            type: dynamic
             name: bfd
             values:
-                - --enable-64-bit-bfd=no
-                - --enable-64-bit-bfd=yes
+                - bfd_list
         - axis:
             type: dynamic
             name: target
