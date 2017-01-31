@@ -165,38 +165,9 @@
             unstable-on-warning: false
             fail-on-error: false
         - groovy-postbuild:
-            script: |
-              import hudson.model.*
-              def currentBuild = Thread.currentThread().executable
-              def description = ""
-              def matcher = manager.getLogMatcher(".*repo sync failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("repo sync failed")
-              }
-              matcher = manager.getLogMatcher(".*patch merge failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("merge failed")
-              }
-              matcher = manager.getLogMatcher(".*error: no devices/emulators found.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("No Device Found")
-              }
-              matcher = manager.getLogMatcher(".*buildbot-build setup failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("buildbot-build setup failed.")
-              }
-              matcher = manager.getLogMatcher(".* tests have failed")
-              if (matcher?.matches()) {
-                  def test = matcher.group(0).split(" ")
-                  manager.listener.logger.println test.length
-                  i=0
-                  while( i<test.length-3) {
-                       description+="${test[i]} failed<br>"
-                       i++;
-                  }
-                  currentBuild.setDescription(description)
-                  manager.addShortText("Tests failed")
-              }
+            script:
+              !include-raw:
+                - linaro-art/global.groovy
         - trigger-parameterized-builds:
             - project: 'post-build-reports'
               property-file: post_build_reports_parameters

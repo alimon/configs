@@ -115,25 +115,9 @@
             unstable-on-warning: false
             fail-on-error: false
         - groovy-postbuild:
-            script: |
-              import hudson.model.*
-
-              def matcher = manager.getLogMatcher(".*repo sync failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("repo sync failed")
-              }
-              matcher = manager.getLogMatcher(".*patch merge failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("merge failed")
-              }
-              matcher = manager.getLogMatcher(".*make failed.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("make failed")
-              }
-              matcher = manager.getLogMatcher(".*images failed to boot.*")
-              if ( matcher?.matches()) {
-                  manager.addShortText("Boot test failed")
-              }
+            script:
+              !include-raw:
+                - linaro-art/global.groovy
         - plot:
             - title: 'Sync Time'
               group: 'Time Measurements'

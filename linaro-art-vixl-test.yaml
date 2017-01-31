@@ -118,6 +118,10 @@
                 ${BUILD_LOG_REGEX, regex=".*ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
         - archive:
             artifacts: '*.txt, *.xml'
+        - groovy-postbuild:
+            script:
+              !include-raw:
+                - linaro-art/global.groovy
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android-art.parse'
             unstable-on-warning: false
