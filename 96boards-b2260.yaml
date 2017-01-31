@@ -54,6 +54,31 @@
               out snapshots/b2260/linaro/debian/${BUILD_NUMBER}
 
             rm -rf out
+        - shell:  |
+            #!/bin/bash -e
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            VERSION=$(date +%Y%m%d)-${BUILD_NUMBER}
+            ROOTFS="b2260-jessie_${ROOTFS}_${VERSION}.img.gz"
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${ROOTFS}|${ROOTFS}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                < configs/96boards-b2260/lava-job-definitions/b2260/template.yaml \
+                > custom_lava_job_definition.yaml
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=b2260
+            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org lee.jones@linaro.org'

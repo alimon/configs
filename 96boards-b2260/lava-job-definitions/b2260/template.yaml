@@ -1,0 +1,51 @@
+device_type: b2260
+job_name: '96boards-b2260'
+
+timeouts:
+  job:
+    minutes: 10
+  action:
+    minutes: 5
+  connection:
+    minutes: 2
+
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 4
+    to: tftp
+    os: debian
+    kernel:
+      url: 'https://builds.96boards.org/snapshots/b2260/linaro/debian/${BUILD_NUMBER}/uImage'
+    dtb:
+      url: 'https://builds.96boards.org/snapshots/b2260/linaro/debian/${BUILD_NUMBER}/stih410-b2260.dtb'
+    nfsrootfs:
+      url: 'https://builds.96boards.org/snapshots/b2260/linaro/debian/${BUILD_NUMBER}/${ROOTFS}'
+      compression: gz
+
+- boot:
+    method: u-boot
+    commands: nfs
+    type: uimage
+    prompts:
+    - 'linaro-test'
+    - 'root@debian:~#'
+    - '/ #'
+
+- test:
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: ubuntu/smoke-tests-basic.yaml
+      name: smoke-tests
+
+metadata:
+  build-url: ${BUILD_URL}
+  build-log: ${BUILD_URL}consoleText
+  git-url: https://github.com/Linaro/rpk.git
+  git-commit: ${GIT_COMMIT}
