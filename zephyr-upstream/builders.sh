@@ -5,7 +5,7 @@ sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply gcc
 
 set -ex
 
-git clone --depth 1 -b ${BRANCH} https://git.linaro.org/zephyrproject-org/zephyr.git ${WORKSPACE}
+git clone --depth 1 -b ${BRANCH} https://git.linaro.org/lite/zephyr.git ${WORKSPACE}
 git clean -fdx
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
