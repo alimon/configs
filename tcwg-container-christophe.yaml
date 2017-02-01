@@ -143,7 +143,8 @@
               *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
             esac
 
-            ./jenkins-scripts/start-container-docker.sh ${host_arch} trusty > container.sh
+            host=$(./jenkins-scripts/nodename2hostname.sh)
+            ./jenkins-scripts/start-container-docker.sh ${host_arch} trusty ${host} > container.sh
 
             case "${target_kind}-$runtests-${host_arch}" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
