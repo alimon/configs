@@ -52,7 +52,7 @@
             description: 'Rebuild the toolchain even if results are already on logserver'
         - string:
             name: log_name
-            default: '${JOB_NAME}-${BUILD_NUMBER}/$(host_arch).$target'
+            default: '${JOB_NAME}-${BUILD_NUMBER}/${host_arch}.$target'
             description: 'Logname directory on logserver'
         - bool:
             name: dont_fail
@@ -208,7 +208,7 @@
                   if [ -f test-container.param ]; then
                     runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
                   else
-                    case "$target_kind-$runtests-$(host_arch)" in
+                    case "$target_kind-$runtests-${host_arch}" in
                       *-"yes"-*|*-"x86_64-host"-"x86_64"|*-"x86_64-host"-"i386")
                         runtests_opt="--runtests"
                       ;;
@@ -218,7 +218,7 @@
                     esac
                   fi
 
-                  case $(host_arch) in
+                  case ${host_arch} in
                     x86_64|i386) languages="$host_x86_64_languages" ;;
                     *) languages="$host_aarchXX_languages" ;;
                   esac
@@ -239,7 +239,7 @@
                     norebuild="--norebuild"
                   fi
 
-                  case $(host_arch) in
+                  case ${host_arch} in
                     x86_64|i386) excludecheck="$host_x86_64_excludecheck" ;;
                     *) excludecheck="$host_aarchXX_excludecheck" ;;
                   esac
