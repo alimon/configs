@@ -97,6 +97,7 @@
                 - tcwg-x86_32-build
                 - tcwg-tx1-build
                 - tcwg-tx1_32-build
+                - tcwg-tk1_32-build
         - axis:
             type: dynamic
             name: target
@@ -143,8 +144,8 @@
               *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
             esac
 
-            host=$(./jenkins-scripts/nodename2hostname.sh)
-            ./jenkins-scripts/start-container-docker.sh ${host_arch} trusty ${host} > container.sh
+            host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            bash -x ./jenkins-scripts/start-container-docker.sh ${host_arch} trusty ${host} > container.sh
 
             case "${target_kind}-$runtests-${host_arch}" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
