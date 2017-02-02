@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 PUB_SRC=${PUB_SRC:-${HOME}/srv/${JOB_NAME}/build/out}
 PUB_DEST=${PUB_DEST:-/android/${JOB_NAME}/${BUILD_NUMBER}}
 
