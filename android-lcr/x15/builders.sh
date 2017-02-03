@@ -40,7 +40,7 @@ BUILD_URL=${BUILD_URL}
 LAVA_SERVER=validation.linaro.org/RPC2/
 IMAGE_EXTENSION=img
 FRONTEND_JOB_NAME=${JOB_NAME}
-DOWNLOAD_URL=${PUBLISH_SERVER}/${PUB_DEST}
+DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
 CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/x15/template.json
 SKIP_REPORT=false
 EOF
