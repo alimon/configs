@@ -26,6 +26,10 @@
            name: target_list
            default: 'arm-linux-gnueabihf aarch64-linux-gnu'
            description: 'List of targets to use'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Jenkins-scripts revision to use'
     disabled: false
     node: tcwg-x86_64-cam
     child-workspace: $target/$app
@@ -41,7 +45,7 @@
             type: slave
             name: label
             values:
-                - docker-trusty-amd64-tcwg
+                - tcwg-x86_64-cam
         - axis:
             type: dynamic
             name: app
@@ -69,7 +73,24 @@
         - shell: |
             #!/bin/bash
             set -ex
-            ./tcwg-buildapp.sh ${toolchain_url} ${app} ${target}
+
+            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+            case ${label} in
+                tcwg-x86_64-cam) host_arch=amd64 ;;
+                tcwg-x86_32-build) host_arch=i386 ;;
+                tcwg-tx1-build) host_arch=arm64 ;;
+                tcwg-tx1_32-build) host_arch=armhf ;;
+                tcwg-tk1_32-build) host_arch=armhf ;;
+                *) echo "ERROR: Unsupported slave: $slave"; exit 1 ;;
+            esac
+
+            host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            bash -x ./jenkins-scripts/start-container-docker.sh ${host_arch} trusty ${host} > container.sh
+
+            # Define session_host and session_port, install trap handler
+            . ./container.sh
+
+            ${CONTAINER} ./tcwg-buildapp.sh ${toolchain_url} ${app} ${target}
     publishers:
         - email:
             recipients: 'christophe.lyon@linaro.org'
