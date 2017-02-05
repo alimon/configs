@@ -1,4 +1,5 @@
 # Early test
+
 if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
   echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
   echo "in android-build-configs.git"
