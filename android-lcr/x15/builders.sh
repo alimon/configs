@@ -29,6 +29,7 @@ PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 PUB_EXTRA_INC="^[^/]+[._](u-boot|MLO|dtb)$"
 EOF
 
+PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 # Construct post-build-lava parameters
 source build-configs/${BUILD_CONFIG_FILENAME}
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters

@@ -41,6 +41,7 @@ PUB_SRC=${PWD}/build/out
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 EOF
 
+PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 # Construct post-build-lava parameters
 source build-configs/${BUILD_CONFIG_FILENAME}
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
