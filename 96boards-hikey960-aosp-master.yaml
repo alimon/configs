@@ -1,54 +1,54 @@
 - job:
-name: 96boards-hikey960-aosp-master
-project-type: freestyle
-defaults: global
-logrotate:
-daysToKeep: 60
-numToKeep: 60
-properties:
-- authorization:
-anonymous:
-- job-read
-linaro:
-- job-build
-- job-cancel
-parameters:
-- string:
-name: BUILD_CONFIG_FILENAME
-default: 'hikey960-aosp-master'
-disabled: false
-node: docker-utopic-aosp
-display-name: '96boards - AOSP Master - HiKey960'
-concurrent: true
-triggers:
-- timed : '@daily'
-wrappers:
-- timestamps
-- timeout:
-timeout: 500
-- ssh-agent-credentials:
-users:
-- '768c1ba1-6052-4b97-a531-7e4fabda6979'
-builders:
-- shell: |
-#!/bin/bash
+    name: 96boards-hikey960-aosp-master
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'hikey960-aosp-master'
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: '96boards - AOSP Master - HiKey960'
+    concurrent: true
+    triggers:
+        - timed : '@daily'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        - shell: |
+            #!/bin/bash
 
-java -version
+            java -version
 
-sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-sudo apt-get update
-sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools
 
-wget -q http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
-	     http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb \
-http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb
-sudo dpkg -i --force-all *.deb
+            wget -q http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
+              http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb \
+             http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb
+            sudo dpkg -i --force-all *.deb
 
-mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
-curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-chmod a+x ${HOME}/bin/*
-			export PATH=${HOME}/bin:${PATH}
+            mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
 
             if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
               sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
@@ -112,7 +112,7 @@ chmod a+x ${HOME}/bin/*
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=snapshots/hikey960/linaro/aosp-master/${BUILD_NUMBER}
             PUB_SRC=${PWD}/build/out/dist/pub
-            PUB_EXTRA_INC=^[^/]+zip
+            PUB_EXTRA_INC="^[^/]+zip"
             EOF
         - inject:
             properties-file: publish_parameters
