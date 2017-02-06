@@ -14,13 +14,13 @@ git clean -fdx
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 # Toolchains are pre-installed and come from:
-# https://launchpad.net/gcc-arm-embedded/5.0/5-2016-q3-update/+download/gcc-arm-none-eabi-5_4-2016q3-20160926-linux.tar.bz2
+# https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/6-2016q4/gcc-arm-none-eabi-6_2-2016q4-20161216-linux.tar.bz2
 # https://nexus.zephyrproject.org/content/repositories/releases/org/zephyrproject/zephyr-sdk/0.9/zephyr-sdk-0.9-setup.run
 # To install Zephyr SDK: ./zephyr-sdk-0.9-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9"
 
 case "${ZEPHYR_GCC_VARIANT}" in
   gccarmemb)
-    export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-5_4-2016q3"
+    export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-6_2-2016q4"
   ;;
   zephyr)
     mkdir -p ${HOME}/opt
