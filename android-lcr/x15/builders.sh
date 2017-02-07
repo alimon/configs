@@ -26,7 +26,7 @@ fi
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/build/out
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
-PUB_EXTRA_INC="^[^/]+[._](u-boot|MLO|dtb)$"
+PUB_EXTRA_INC=^[^/]+[._](u-boot|MLO|dtb)$
 EOF
 
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
