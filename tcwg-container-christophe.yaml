@@ -147,7 +147,7 @@
             esac
 
             host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-docker.sh ${host_arch} trusty ${host} > container.sh
+            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${host_arch} --distro trusty --session-host ${host} > container.sh
 
             case "${target_kind}-$runtests-${host_arch}" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
