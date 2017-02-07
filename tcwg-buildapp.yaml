@@ -20,8 +20,16 @@
             description: 'Toolchain URL'
         - string:
            name: app_list
-           default: 'gcc linux-next linux-next+all spec2k spec2k6'
-           description: 'List of apps to build (eg gcc, linux, linux-next, linux+myconfig, linux+all ["linux" means allmodconfig, "linux+all" means build all defconfigs in sequence], spec2k spec2k6)'
+           default: 'gcc linux linux+all spec2k spec2k6'
+           description: 'List of apps to build (eg gcc, linux, linux+myconfig, linux+all ["linux" means allmodconfig, "linux+all" means build all defconfigs in sequence], spec2k spec2k6)'
+        - string:
+           name: linux_repo
+           default: 'torvalds/linux'
+           description: 'Linux kernel repo name, concatenated to git://git.kernel.org/pub/scm/linux/kernel/git (eg arnd/playground)'
+        - string:
+           name: linux_branch
+           default: 'master'
+           description: 'Linux kernel branch to build (eg to-build)'
         - string:
            name: target_list
            default: 'arm-linux-gnueabihf aarch64-linux-gnu'
@@ -90,7 +98,7 @@
             # Define session_host and session_port, install trap handler
             . ./container.sh
 
-            ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target}"
+            ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${linux_repo} ${linux_branch}"
     publishers:
         - email:
             recipients: 'christophe.lyon@linaro.org'
