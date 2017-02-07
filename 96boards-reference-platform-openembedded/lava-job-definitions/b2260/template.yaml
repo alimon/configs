@@ -1,0 +1,50 @@
+device_type: b2260
+job_name: '96boards-b2260'
+
+timeouts:
+  job:
+    minutes: 10
+  action:
+    minutes: 5
+  connection:
+    minutes: 2
+
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 4
+    to: tftp
+    os: oe
+    kernel:
+      url: '${KERNEL_URL}'
+    dtb:
+      url: '${DTB_URL}'
+    nfsrootfs:
+      url: '${NFSROOTFS_URL}'
+      compression: xz
+
+- boot:
+    method: u-boot
+    commands: nfs
+    type: uimage
+    auto_login:
+      login_prompt: 'stih410-b2260 login:'
+      username: root
+    prompts:
+    - 'root@stih410-b2260:~#'
+
+- test:
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: openembedded/smoke-tests-basic.yaml
+      name: smoke-tests
+
+metadata:
+  build-url: ${BUILD_URL}
+  build-log: ${BUILD_URL}consoleText

@@ -144,4 +144,7 @@ DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/boot-*-${MACHINE}-*-${BUILD_NUMBER}.img | xargs basename)
 ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
 SYSTEM_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
+KERNEL_URL=https://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/uImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin | xargs basename)
+DTB_URL=https://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/uImage-*-${MACHINE}-*-${BUILD_NUMBER}.dtb | xargs basename)
+NFSROOTFS_URL=https://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz | xargs basename)
 EOF
