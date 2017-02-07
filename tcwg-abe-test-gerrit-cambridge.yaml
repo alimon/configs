@@ -18,6 +18,10 @@
             name: GERRIT_PATCHSET_REVISION
             default: refs/remotes/origin/master
             description: 'Patched ABE revision'
+        - string:
+            name: test_list
+            default: 'cross_build native_build testsuite abe-tests abe-tests-checkout'
+            description: 'List of tests to perform'
     disabled: false
     node: tcwg-x86_64-cam
     retry-count: 3
@@ -59,14 +63,10 @@
             values:
                 - tcwg-x86_64-cam
         - axis:
-            type: user-defined
+            type: dynamic
             name: test
             values:
-                - cross_build
-                - native_build
-                - testsuite
-                - abe-tests
-                - abe-tests-checkout
+                - test_list
     execution-strategy:
         sequential: false
     wrappers:
