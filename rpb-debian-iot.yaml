@@ -108,6 +108,17 @@
             sudo cp configs/rpb-debian-iot/conf/bluetooth_6lowpand.service rootfs/etc/systemd/system/
             sudo cp configs/rpb-debian-iot/conf/99-bluetooth-6lowpan.rules rootfs/etc/udev/rules.d/
 
+            # Make sure fsck.ext4 is available as part of the initrd
+            ## update-initrd fsck script only adds fsck.ext4 if the interface is available during runtime
+            mkdir -p initrd; cd initrd;
+            sudo sh -c 'cat ../rootfs/boot/initrd.img | gunzip | cpio -i'
+            sudo cp ../rootfs/sbin/fsck.ext4 ../rootfs/sbin/e2fsck sbin/
+            sudo cp ../rootfs/lib/aarch64-linux-gnu/libext2fs.so.2 lib/aarch64-linux-gnu/
+            sudo cp ../rootfs/lib/aarch64-linux-gnu/libcom_err.so.2 lib/aarch64-linux-gnu/
+            sudo cp ../rootfs/lib/aarch64-linux-gnu/libe2p.so.2 lib/aarch64-linux-gnu/
+            sudo sh -c 'find . | cpio -o -H newc | gzip > ../rootfs/boot/initrd.img'
+            cd ..; sudo rm -rf initrd
+
             KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
 
             mkdir -p out/${BOARD}
