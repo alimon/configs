@@ -107,6 +107,8 @@
             sudo chmod +x rootfs/usr/bin/bluetooth_6lowpand
             sudo cp configs/rpb-debian-iot/conf/bluetooth_6lowpand.service rootfs/etc/systemd/system/
             sudo cp configs/rpb-debian-iot/conf/99-bluetooth-6lowpan.rules rootfs/etc/udev/rules.d/
+            ## Disable interfaces during boot so it can ignore bt0
+            sudo sed -i 's/#CONFIGURE_INTERFACES=yes/CONFIGURE_INTERFACES=no/g' rootfs/etc/default/networking
 
             # Make sure fsck.ext4 is available as part of the initrd
             ## update-initrd fsck script only adds fsck.ext4 if the interface is available during runtime
