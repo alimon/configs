@@ -87,6 +87,8 @@
               dragonboard-410c)
                 export DEVICE_TYPE=apq8016-sbc
                 ;;
+              stih410-b2260)
+                export DEVICE_TYPE=b2260
               *)
                 echo "Skip DEVICE_TYPE for ${MACHINE}"
                 ;;
@@ -95,16 +97,35 @@
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            [ -z "${DEVICE_TYPE}" ] || \
-            ./lci-build-tools/yaml-to-json.py configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
-            > custom_lava_job_definition.json
 
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
+            # Handle LAVA v1 (json)/v2 (yaml) test definitions
+            case "${DEVICE_TYPE}" in
+              apq8016-sbc)
+                ./lci-build-tools/yaml-to-json.py configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
+                > custom_lava_job_definition.json
+
+                cat << EOF > post_build_lava_parameters
+                DEVICE_TYPE=${DEVICE_TYPE}
+                BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+                CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+                LAVA_SERVER=${LAVA_SERVER}
+                EOF
+                ;;
+              b2260)
+                sed -e "s|\${KERNEL_URL}|${KERNEL_URL}|" \
+                    -e "s|\${DTB_URL}|${DTB_URL}|" \
+                    -e "s|\${NFSROOTFS_URL}|${NFSROOTFS_URL}|" \
+                    -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                    < configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
+                    > custom_lava_job_definition.yaml
+
+                cat << EOF > post_build_lava_parameters
+                DEVICE_TYPE=${DEVICE_TYPE}
+                CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+                LAVA_SERVER=${LAVA_SERVER}
+                EOF
+                ;;
+            esac
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
