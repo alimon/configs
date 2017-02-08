@@ -95,8 +95,10 @@
             host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
             bash -x ./jenkins-scripts/start-container-docker.sh --arch ${host_arch} --distro trusty --session-host ${host} > container.sh
 
-            # Define session_host and session_port, install trap handler
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./container.sh
+
+            trap "${CONTAINER_CLEANUP}" EXIT
 
             ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${linux_repo} ${linux_branch}"
     publishers:
