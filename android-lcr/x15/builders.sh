@@ -18,7 +18,7 @@ cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.json /home/buildslave/srv/${
 cp /home/buildslave/srv/${BUILD_DIR}/u-boot/MLO /home/buildslave/srv/${BUILD_DIR}/u-boot/u-boot /home/buildslave/srv/${BUILD_DIR}/linux/arch/arm/boot/dts/*.dtb /home/buildslave/srv/${BUILD_DIR}/build/out/
 
 
-if [ ${JOB_NAME} == "android-lcr-member-x15-n" ]; then
+if [[ ${JOB_NAME} == "android-lcr-member-x15-n" || ${JOB_NAME} == "android-lcr-member-x15-n-premerge-ci" ]]; then
   wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/x15/build-info/template.txt -O build/out/BUILD-INFO.txt
 fi
 
@@ -26,7 +26,7 @@ fi
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/build/out
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
-PUB_EXTRA_INC=^[^/]+[._](u-boot|MLO|dtb)$
+PUB_EXTRA_INC=^[^/]+[._](u-boot|dtb)$|MLO
 EOF
 
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
