@@ -52,7 +52,7 @@
             description: 'Rebuild the toolchain even if results are already on logserver'
         - string:
             name: log_name
-            default: '${JOB_NAME}-${BUILD_NUMBER}/${host_arch}.$target'
+            default: '${JOB_NAME}-${BUILD_NUMBER}/${builder_arch}.$target'
             description: 'Logname directory on logserver'
         - bool:
             name: dont_fail
@@ -127,17 +127,16 @@
 
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
-            # FIXME: Avoid recomputing this, we did it already in the previous script
             case ${label} in
-                tcwg-x86_64-cam) host_arch=amd64 ;;
-                tcwg-x86_32-build) host_arch=i386 ;;
-                tcwg-tx1-build) host_arch=arm64 ;;
-                tcwg-tx1_32-build) host_arch=armhf ;;
-                tcwg-tk1_32-build) host_arch=armhf ;;
+                tcwg-x86_64-cam) builder_arch=amd64 ;;
+                tcwg-x86_32-build) builder_arch=i386 ;;
+                tcwg-tx1-build) builder_arch=arm64 ;;
+                tcwg-tx1_32-build) builder_arch=armhf ;;
+                tcwg-tk1_32-build) builder_arch=armhf ;;
                 *) echo "ERROR: Unsupported slave: $slave"; exit 1 ;;
             esac
 
-            case "$target--${host_arch}" in
+            case "$target--${builder_arch}" in
               native--arm64) target_kind=native_aarch64 ;;
               native--armhf) target_kind=native_aarch32 ;;
               native--amd64|native--i386) target_kind=native_x86 ;;
@@ -146,162 +145,154 @@
               *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
             esac
 
-            host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${host_arch} --distro trusty --session-host ${host} > container.sh
+            # Start build container
+            builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${builder_arch} --distro trusty --session-host ${builder} | tee build-container.sh
 
-            case "${target_kind}-$runtests-${host_arch}" in
+            case "${target_kind}-$runtests-${builder_arch}" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
                 case "$target" in
                   aarch64*) test_container_arch=arm64 ;;
                   arm*) test_container_arch=armhf ;;
                   *) echo "ERROR: Wrong target $target"; exit 1 ;;
                 esac
-                cat > test-container.param << EOF
-            container_name=docker-trusty-${test_container_arch}-tcwg-test
-            upstream_dest=$session_host:$session_port:$WORKSPACE/test-container.data
-            watchdog=upstream
-            EOF
+                # AArch32 and AArch64 test boards are currently:
+                # tcwg-tk1-0[34]: AArch32 (armv7)
+                # tcwg-tx1-0[34]: AArch32 (armv8) and AArch64
+                # For the moment, use only the boards with number '3'
+                # We can (should) revisit this later (eg. based on
+                # builder number, or random, ....)
+                case ${test_container_arch} in
+                    armhf)
+                        tester=$(./jenkins-scripts/nodename2hostname.sh tcwg-tk1-03)
+                        ;;
+                    arm64)
+                        tester=$(./jenkins-scripts/nodename2hostname.sh tcwg-tx1-03)
+                        ;;
+                esac
+                bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} | tee test-container.sh
                 ;;
             esac
-            if echo "$override" | grep -q -e "--extraconfigdir ../config/gcc5" \
-               || true \
-               && [ x"$target" = x"aarch64-linux-gnu" ]; then
-              # Sanitizers in GCC-5 and GCC-6 toolchains for aarch64-linux-gnu
-              # don't support 48-bit VA.  Therefore don't run them on Xenial tester.
-              rm -f test-container.param
-            fi
-            # Workaround docker service problem on test-armv8-02.tcwglab
-            rm -f test-container.param
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: test-container.param
-            steps:
-                - trigger-builds:
-                    - project: tcwg-test-container-matrix
-                      property-file: test-container.param
-                      block: false
-        - conditional-step:
-            condition-kind: not
-            condition-operand:
-                condition-kind: file-exists
-                condition-filename: artifacts/target-skipped.txt
-            steps:
-              - shell: |
-                  #!/bin/bash
 
-                  set -ex
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            . ./build-container.sh
+            BUILD_CONTAINER="${CONTAINER}"
+            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
 
-                  # Define session_host and session_port, install trap
-                  . ./container.sh
+            TEST_CONTAINER=
+            TEST_CONTAINER_CLEANUP=
+            test_session_host=
+            test_session_port=
+            # If we use a remote tester machine, tell jenkins.sh how
+            # to override abe's default
+            if [ -f test-container.sh ]; then
+                . ./test-container.sh
+                TEST_CONTAINER="${CONTAINER}"
+                TEST_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+                test_session_host=${session_host}
+                test_session_port=${session_port}
+                echo "${test_session_host}:${test_session_port}" | tee $WORKSPACE/test-container.data
 
-                  case ${label} in
-                      tcwg-x86_64-cam) host_arch=amd64 ;;
-                      tcwg-x86_32-build) host_arch=i386 ;;
-                      tcwg-tx1-build) host_arch=arm64 ;;
-                      tcwg-tx1_32-build) host_arch=armhf ;;
-                      tcwg-tk1_32-build) host_arch=armhf ;;
-                      *) echo "ERROR: Unsupported slave: $slave"; exit 1 ;;
-                  esac
-
-                  ${CONTAINER} 'echo "Build session is up; ulimit config:"; ulimit -a'
-
-                  if [ -f test-container.param ]; then
-                    runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
-                  else
-                    case "$target_kind-$runtests-${host_arch}" in
-                      *-"yes"-*|*-"x86_64-host"-"x86_64"|*-"x86_64-host"-"i386")
+                runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
+            else
+                case "$target_kind-$runtests-${builder_arch}" in
+                    *-"yes"-*|*-"x86_64-host"-"x86_64"|*-"x86_64-host"-"i386")
                         runtests_opt="--runtests"
-                      ;;
-                      *)
+                        ;;
+                    *)
                         runtests_opt=""
-                      ;;
-                    esac
-                  fi
+                        ;;
+                esac
+            fi
 
-                  case ${host_arch} in
-                    x86_64|i386) languages="$host_x86_64_languages" ;;
-                    *) languages="$host_aarchXX_languages" ;;
-                  esac
+            trap "${BUILD_CONTAINER_CLEANUP} ; ${TEST_CONTAINER_CLEANUP}" EXIT
 
-                  if $try_bootstrap; then
-                    bootstrap="--bootstrap"
-                  else
-                    bootstrap=""
-                  fi
+            ${BUILD_CONTAINER} 'echo "Build session is up; ulimit config:"; ulimit -a'
 
-                  if [ x"$log_name" != x"" ]; then
-                    eval "logname_opt=\"--logname $log_name\""
-                  fi
+            case ${builder_arch} in
+                x86_64|i386) languages="$host_x86_64_languages" ;;
+                *) languages="$host_aarchXX_languages" ;;
+            esac
 
-                  if $rebuild; then
-                    norebuild=""
-                  else
-                    norebuild="--norebuild"
-                  fi
+            if $try_bootstrap; then
+                bootstrap="--bootstrap"
+            else
+                bootstrap=""
+            fi
 
-                  case ${host_arch} in
-                    x86_64|i386) excludecheck="$host_x86_64_excludecheck" ;;
-                    *) excludecheck="$host_aarchXX_excludecheck" ;;
-                  esac
+            if [ x"$log_name" != x"" ]; then
+                eval "logname_opt=\"--logname $log_name\""
+            fi
 
-                  excludecheck_opt=""
-                  for testsuite in $excludecheck; do
-                    excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
-                  done
+            if $rebuild; then
+                norebuild=""
+            else
+                norebuild="--norebuild"
+            fi
 
-                  # If there were extraconfig options, extract the
-                  # corresponding repo
-                  if test -n "$extraconfig" ; then
-                    git clone http://git.linaro.org/toolchain/abe-extraconfigs.git
-                  fi
+            case ${builder_arch} in
+                x86_64|i386) excludecheck="$host_x86_64_excludecheck" ;;
+                *) excludecheck="$host_aarchXX_excludecheck" ;;
+            esac
 
-                  extraconfig_opt=""
-                  for config in $extraconfig; do
-                    case ${extraconfig} in
-                      *=*)
+            excludecheck_opt=""
+            for testsuite in $excludecheck; do
+                excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
+            done
+
+            # If there were extraconfig options, extract the
+            # corresponding repo
+            if test -n "$extraconfig" ; then
+                git clone http://git.linaro.org/toolchain/abe-extraconfigs.git
+            fi
+
+            extraconfig_opt=""
+            for config in $extraconfig; do
+                case ${extraconfig} in
+                    *=*)
                         tool=${extraconfig%=*}
                         value=${extraconfig#*=}
                         ;;
-                      *)
+                    *)
                         echo ERROR: wrong extraconfig: $extraconfig
                         exit 1
                         ;;
-                    esac
-                    extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
-                  done
+                esac
+                extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
+            done
 
-                  result="0"
-                  ${CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir ${WORKSPACE} --target ${target} --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
+            result="0"
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir ${WORKSPACE} --target ${target} --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
 
-                  # If we actually built a toolchain, save its manifest.
-                  # If the build was a no-op (results already present on log_server),
-                  # copy the existing ones.
-                  if [ -d _build/builds ]; then
-                    manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
-                  else
-                    manifest=""
-                  fi
-                  if [ x"${manifest}" != x ]; then
-                    cp ${manifest} artifacts/
-                  else
-                    # We need to do the same name expansion as jenkins.sh
-                    eval dir="$log_name"
-                    scp "$log_server/$dir/*manifest.txt" artifacts/
-                  fi
+            # If we actually built a toolchain, save its manifest.
+            # If the build was a no-op (results already present on log_server),
+            # copy the existing ones.
+            if [ -d _build/builds ]; then
+                manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
+            else
+                manifest=""
+            fi
+            if [ x"${manifest}" != x ]; then
+                cp ${manifest} artifacts/
+            else
+                # We need to do the same name expansion as jenkins.sh
+                eval dir="$log_name"
+                scp "$log_server/$dir/*manifest.txt" artifacts/
+            fi
 
-                  # Save logs and their directory structure
-                  rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" --prune-empty-dirs ./ ./logs/
-                  if ! tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/ >/dev/null 2>&1; then
-                    # PXZ can [rarely] fail due to high RAM usage, so fallback to normal XZ.
-                    rm -f ./artifacts/logs.tar.xz
-                    tar -cJf ./artifacts/logs.tar.xz ./logs/
-                  fi
+            # Save logs and their directory structure
+            rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" --prune-empty-dirs ./ ./logs/
+            if ! tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/ >/dev/null 2>&1; then
+                # PXZ can [rarely] fail due to high RAM usage, so fallback to normal XZ.
+                rm -f ./artifacts/logs.tar.xz
+                tar -cJf ./artifacts/logs.tar.xz ./logs/
+            fi
 
-                  echo "Result of jenkins.sh: $result"
-                  if $dont_fail; then
-                    result="0"
-                  fi
-                  exit $result
+            echo "Result of jenkins.sh: $result"
+            if $dont_fail; then
+                result="0"
+            fi
+            exit $result
     publishers:
         - archive:
             artifacts: 'artifacts/*'
