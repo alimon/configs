@@ -95,7 +95,9 @@
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            [ -z "${DEVICE_TYPE}" ] || ./lci-build-tools/yaml-to-json.py configs/96boards-reference-platform-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+            [ -z "${DEVICE_TYPE}" ] || \
+            ./lci-build-tools/yaml-to-json.py configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
+            > custom_lava_job_definition.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}

@@ -103,7 +103,8 @@
             case "${MACHINE}" in
               dragonboard-410c)
                 [ -z "${DEVICE_TYPE}" ] || \
-                ./lci-build-tools/yaml-to-json.py configs/96boards-reference-platform-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+                ./lci-build-tools/yaml-to-json.py configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
+                > custom_lava_job_definition.json
 
                 cat << EOF > post_build_lava_parameters
                 DEVICE_TYPE=${DEVICE_TYPE}
@@ -118,7 +119,7 @@
                     -e "s|\${DTB_URL}|${DTB_URL}|" \
                     -e "s|\${NFSROOTFS_URL}|${NFSROOTFS_URL}|" \
                     -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                    < configs/96boards-reference-platform-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
+                    < configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
                     > custom_lava_job_definition.yaml
 
                 cat << EOF > post_build_lava_parameters
