@@ -52,7 +52,7 @@
             description: 'Rebuild the toolchain even if results are already on logserver'
         - string:
             name: log_name
-            default: '${JOB_NAME}-${BUILD_NUMBER}/${builder_arch}.$target'
+            default: '${JOB_NAME}-${BUILD_NUMBER}/${builder_type}.$target'
             description: 'Logname directory on logserver'
         - bool:
             name: dont_fail
@@ -128,11 +128,26 @@
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
             case ${label} in
-                tcwg-x86_64-cam) builder_arch=amd64 ;;
-                tcwg-x86_32-build) builder_arch=i386 ;;
-                tcwg-tx1-build) builder_arch=arm64 ;;
-                tcwg-tx1_32-build) builder_arch=armhf ;;
-                tcwg-tk1_32-build) builder_arch=armhf ;;
+                tcwg-x86_64-cam)
+                    builder_arch=amd64
+                    builder_type=x86_64
+                    ;;
+                tcwg-x86_32-build)
+                    builder_arch=i386
+                    builder_type=i686
+                    ;;
+                tcwg-tx1-build)
+                    builder_arch=arm64
+                    builder_type=aarch64
+                    ;;
+                tcwg-tx1_32-build)
+                    builder_arch=armhf
+                    builder_type=arm
+                    ;;
+                tcwg-tk1_32-build)
+                    builder_arch=armhf
+                    builder_type=armv8
+                    ;;
                 *) echo "ERROR: Unsupported slave: $slave"; exit 1 ;;
             esac
 
