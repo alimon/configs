@@ -11,8 +11,8 @@ cleanup_exit()
   rm -rf out
 }
 
-# workaround to enfoce release version to major until docker image is updated
-echo "7" | sudo tee /etc/yum/vars/releasever
+# workaround to enforce release version to major until docker image is updated
+[ -f "/etc/yum/vars/releasever" ] && echo "7" | sudo tee /etc/yum/vars/releasever
 
 cd ${WORKSPACE}/openstack-venvs
 sudo ./build_all.sh
@@ -27,7 +27,6 @@ DEST=snapshots/developer-cloud/openstack/centos-virtualenv/${BUILD_NUMBER}
 if grep Debian /etc/issue 2>&1 >/dev/null ; then
   DEST=snapshots/developer-cloud/openstack/debian-virtualenv/${BUILD_NUMBER}
 fi
-
 
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
