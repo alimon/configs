@@ -56,7 +56,7 @@
             {
               cd ${WORKSPACE}
               sudo kpartx -dv ${BOARD}-debian-*.img || true
-              rm -rf configs out
+              rm -rf configs iot-gateway-files out
             }
 
             # Builder setup
@@ -96,19 +96,21 @@
             done
 
             # Add default config file templates
-            sudo cp configs/rpb-debian-iot/conf/gateway.conf rootfs/etc/sysctl.d/
-            sudo cp configs/rpb-debian-iot/conf/bt0 rootfs/etc/network/interfaces.d/
-            sudo cp configs/rpb-debian-iot/conf/radvd.conf rootfs/etc/radvd.conf
-            sudo cp configs/rpb-debian-iot/conf/ndppd.conf rootfs/etc/ndppd.conf
-            sudo cp configs/rpb-debian-iot/conf/nm-bt0.conf rootfs/etc/NetworkManager/conf.d/
-            sudo cp configs/rpb-debian-iot/conf/tinyproxy.conf rootfs/etc/tinyproxy/tinyproxy.conf
+            git clone --depth 1 https://github.com/linaro-technologies/iot-gateway-files.git
+            sudo cp -av iot-gateway-files/etc-sysctrl.d-gateway.conf rootfs/etc/sysctl.d/gateway.conf
+            sudo cp -av iot-gateway-files/etc-network-interface.d-bt0 rootfs/etc/network/interfaces.d/bt0
+            sudo cp -av iot-gateway-files/etc-radvd.conf rootfs/etc/radvd.conf
+            sudo cp -av iot-gateway-files/etc-NetworkManager-conf.d-nm-bt0.conf rootfs/etc/NetworkManager/conf.d/nm-bt0.conf
+            sudo cp -av iot-gateway-files/etc-udev-rules.d-99-bluetooth-6lowpan.rules rootfs/etc/udev/rules.d/99-bluetooth-6lowpan.rules
+            sudo cp -av iot-gateway-files/etc-tinyproxy.conf rootfs/etc/tinyproxy/tinyproxy.conf
             ## Custom init scripts
-            sudo wget -q https://raw.githubusercontent.com/linaro-product/iot-gateway-files/master/bluetooth_6lowpand.sh -O rootfs/usr/bin/bluetooth_6lowpand
-            sudo chmod +x rootfs/usr/bin/bluetooth_6lowpand
-            sudo cp configs/rpb-debian-iot/conf/bluetooth_6lowpand.service rootfs/etc/systemd/system/
-            sudo cp configs/rpb-debian-iot/conf/99-bluetooth-6lowpan.rules rootfs/etc/udev/rules.d/
+            sudo cp -av iot-gateway-files/bluetooth_6lowpand.sh rootfs/usr/bin/bluetooth_6lowpand
+            sudo cp -av iot-gateway-files/etc-systemd-system-bluetooth_6lowpand.service rootfs/etc/systemd/system/bluetooth_6lowpand.service
+
             ## Disable interfaces during boot so it can ignore bt0
             sudo sed -i 's/#CONFIGURE_INTERFACES=yes/CONFIGURE_INTERFACES=no/g' rootfs/etc/default/networking
+
+            KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
 
             # Make sure fsck.ext4 is available as part of the initrd
             ## update-initrd fsck script only adds fsck.ext4 if the interface is available during runtime
@@ -120,8 +122,7 @@
             sudo cp ../rootfs/lib/aarch64-linux-gnu/libe2p.so.2 lib/aarch64-linux-gnu/
             sudo sh -c 'find . | cpio -o -H newc | gzip > ../rootfs/boot/initrd.img'
             cd ..; sudo rm -rf initrd
-
-            KERNEL_VERSION=`basename rootfs/boot/vmlinuz-* | sed -e "s,^[^0-9]*-,,g"`
+            sudo sha1sum rootfs/boot/initrd.img > rootfs/var/lib/initramfs-tools/${KERNEL_VERSION}
 
             mkdir -p out/${BOARD}
 
@@ -190,9 +191,8 @@
             EOF
 
                 # Bluetooth init script
-                sudo wget -q https://raw.githubusercontent.com/linaro-product/iot-gateway-files/master/btsetup.sh -O rootfs/usr/bin/btsetup-hikey.sh
-                sudo chmod +x rootfs/usr/bin/btsetup-hikey.sh
-                sudo cp configs/rpb-debian-iot/conf/btsetup-hikey.service rootfs/etc/systemd/system/
+                sudo cp -av iot-gateway-files/usr-bin-btsetup-hikey.sh rootfs/usr/bin/btsetup-hikey.sh
+                sudo cp -av iot-gateway-files/etc-systemd-system-btsetup-hikey.service rootfs/etc/systemd/system/btsetup-hikey.service
             fi
 
             # Create the ext4fs (fastboot compatible)
