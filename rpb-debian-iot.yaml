@@ -97,6 +97,7 @@
 
             # Add default config file templates
             git clone --depth 1 https://github.com/linaro-technologies/iot-gateway-files.git
+            cd iot-gateway-files; IOT_GATEWAY_FILES_GIT_VERSION=`git log --format="%H" -1`; cd ..
             sudo cp -av iot-gateway-files/etc-sysctrl.d-gateway.conf rootfs/etc/sysctl.d/gateway.conf
             sudo cp -av iot-gateway-files/etc-network-interface.d-bt0 rootfs/etc/network/interfaces.d/bt0
             sudo cp -av iot-gateway-files/etc-radvd.conf rootfs/etc/radvd.conf
@@ -135,6 +136,7 @@
             * Build URL: "$BUILD_URL":$BUILD_URL
             * Developer Rootfs: "http://snapshots.linaro.org/debian/images/stretch/developer-arm64/$ROOTFS_BUILD_NUMBER":http://snapshots.linaro.org/debian/images/stretch/developer-arm64/$ROOTFS_BUILD_NUMBER
             * Kernel: "linux-image-$KERNEL_VERSION":http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/l/linux/
+            * IoT Gateway Files: "$IOT_GATEWAY_FILES_GIT_VERSION":https://github.com/linaro-technologies/iot-gateway-files/tree/$IOT_GATEWAY_FILES_GIT_VERSION
             EOF
 
             # Create boot image
