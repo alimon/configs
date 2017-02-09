@@ -188,17 +188,32 @@
                 # AArch32 and AArch64 test boards are currently:
                 # tcwg-tk1-0[34]: AArch32 (armv7)
                 # tcwg-tx1-0[34]: AArch32 (armv8) and AArch64
-                # For the moment, use only the boards with number '3'
-                # We can (should) revisit this later (eg. based on
-                # builder number, or random, ....)
                 case ${test_container_arch} in
                     armhf)
-                        tester=$(./jenkins-scripts/nodename2hostname.sh tcwg-tk1-03)
+                        tester_labels="tcwg-tk1_32-test tcwg-tx1_32-test"
                         ;;
                     arm64)
-                        tester=$(./jenkins-scripts/nodename2hostname.sh tcwg-tx1-03)
+                        tester_labels="tcwg-tx1-test"
                         ;;
                 esac
+                testers=$(
+                  for label in $tester_labels; do
+                    wget -O - https://ci.linaro.org/label/$label/api/json?pretty=true 2>/dev/null | grep nodeName | cut -d: -f 2 | sed -e 's/"//g' -e "s/\$/.tcwglab/"
+                  done)
+                tester_min_load_name=""
+                tester_min_load_value="999"
+                for tester in $testers; do
+                  load_value=$(docker -H $tester:2375 ps | wc -l)
+                  if [ $load_value -lt $tester_min_load_value ]; then
+                    tester_min_load_name=$tester
+                    tester_min_load_value=$load_value
+                  fi
+                done
+                if [ x"$tester_min_load_name" = x"" ]; then
+                  echo "ERROR: Cannot find tester for $test_container_arch"
+                  exit 1
+                fi
+                tester=$tester_min_load_name
                 # For the moment, support only docker containers on the tester machine
                 bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test | tee test-container.sh
                 ;;
