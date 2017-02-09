@@ -123,7 +123,7 @@
             sudo cp ../rootfs/lib/aarch64-linux-gnu/libe2p.so.2 lib/aarch64-linux-gnu/
             sudo sh -c 'find . | cpio -o -H newc | gzip > ../rootfs/boot/initrd.img'
             cd ..; sudo rm -rf initrd
-            sudo sha1sum rootfs/boot/initrd.img > rootfs/var/lib/initramfs-tools/${KERNEL_VERSION}
+            sha1sum rootfs/boot/initrd.img | sudo tee rootfs/var/lib/initramfs-tools/${KERNEL_VERSION}
 
             mkdir -p out/${BOARD}
 
