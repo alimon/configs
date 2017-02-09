@@ -20,6 +20,9 @@ cleanup_exit()
   sudo rm -f ubuntu-image_* pi-3.*
 }
 
+# sbin isn't in the PATH by default and prevent to find mkfs.vfat
+export PATH="/usr/sbin:/sbin:$PATH"
+
 tar xf snap.tar -C ${HOME}
 wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lite-gateway-ubuntu-core/pi-3.json -O pi-3.json
 cat pi-3.json | snap sign -k madper-new &> pi-3.model
