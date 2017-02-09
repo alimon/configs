@@ -6,7 +6,7 @@ echo "deb http://archive.ubuntu.com/ubuntu/ xenial-updates main universe" | sudo
 echo "deb http://archive.ubuntu.com/ubuntu/ xenial-proposed main universe" | sudo tee -a /etc/apt/sources.list
 
 sudo apt -q=2 update
-sudo apt -q=2 install -y --no-install-recommends dosfstools snapcraft snapd squashfs-tools ubuntu-image
+sudo apt -q=2 install -y --no-install-recommends dosfstools snapcraft snapd squashfs-tools ubuntu-image pxz
 
 set -ex
 
@@ -17,7 +17,7 @@ cleanup_exit()
   cd ${WORKSPACE}
   sudo umount ${SNAP} || true
   sudo rm -rf ${SNAP} || true
-  sudo rm -f ubuntu-image_* pi-3.*
+  rm -f ubuntu-image_*
 }
 
 # sbin isn't in the PATH by default and prevent to find mkfs.vfat

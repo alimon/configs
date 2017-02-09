@@ -22,6 +22,23 @@
     builders:
         - shell:
             !include-raw: lite-gateway-ubuntu-core/builders.sh
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash -e
+
+            pxz pi-3.img
+            mkdir out
+            mv pi-3.json pi-3.img.xz out/
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              out ubuntu/images/lite-gateway/${BUILD_NUMBER}
+
+            rm -rf out
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org madper.xie@linaro.org'
