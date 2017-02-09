@@ -74,6 +74,10 @@
             name: scripts_branch
             default: master
             description: 'Scripts revision to use'
+        - string:
+            name: build_container_type
+            default: 'default'
+            description: 'Type of container to use on the builder: docker, schroot, none, default. "default" means the script choose depending on the builder type'
     disabled: false
     node: tcwg-x86_64-cam
     child-workspace: $target
@@ -160,9 +164,19 @@
               *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
             esac
 
+            # Select container type. If the user chose a non-default
+            # value, then use it whatever the builder type
+            if [ "x${build_container_type}" = "xdefault" ]; then
+                case ${builder_arch} in
+                    amd64|i386) build_container_type=docker ;;
+                    arm64|armhf) build_container_type=none ;;
+                    *) echo "ERROR: Unsupported builder_arch: ${builder_arch}"; exit 1 ;;
+                esac
+            fi
+
             # Start build container
             builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${builder_arch} --distro trusty --session-host ${builder} | tee build-container.sh
+            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro trusty --session-host ${builder} | tee build-container.sh
 
             case "${target_kind}-$runtests-${builder_arch}" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
@@ -185,6 +199,7 @@
                         tester=$(./jenkins-scripts/nodename2hostname.sh tcwg-tx1-03)
                         ;;
                 esac
+                # For the moment, support only docker containers on the tester machine
                 bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test | tee test-container.sh
                 ;;
             esac
