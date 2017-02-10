@@ -56,7 +56,7 @@ for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdat
 done
 
 rm -rf BUILD-INFO.txt
-wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O BUILD-INFO.txt
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-tv/hikey/build-info/aosp-master-template.txt -O BUILD-INFO.txt
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
