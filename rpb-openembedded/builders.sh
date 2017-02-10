@@ -136,15 +136,20 @@ Build description:
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
-# Ignore error as we always want to create post_build_lava_parameters
-set +e
+# Need different files for each machine
+BASE_URL=https://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}
+BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.img" | xargs -r basename)
+ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
+KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "uImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
+DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "uImage-*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
 
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
-BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/boot-*-${MACHINE}-*-${BUILD_NUMBER}.img | xargs basename)
-ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
-SYSTEM_URL=http://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz | xargs basename)
-KERNEL_URL=https://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/uImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin | xargs basename)
-DTB_URL=https://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/uImage-*-${MACHINE}-*-${BUILD_NUMBER}.dtb | xargs basename)
-NFSROOTFS_URL=https://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}/$(ls ${DEPLOY_DIR_IMAGE}/rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz | xargs basename)
+BOOT_URL=${BASE_URL}/${BOOT_IMG}
+ROOTFS_BUILD_URL=${BASE_URL}/${ROOTFS_EXT4_IMG}
+SYSTEM_URL=${BASE_URL}/${ROOTFS_EXT4_IMG}
+KERNEL_URL=${BASE_URL}/${KERNEL_IMG}
+DTB_URL=${BASE_URL}/${DTB_IMG}
+NFSROOTFS_URL=${BASE_URL}/${ROOTFS_TARXZ_IMG}
 EOF
