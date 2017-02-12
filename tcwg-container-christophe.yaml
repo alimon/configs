@@ -168,15 +168,22 @@
             # value, then use it whatever the builder type
             if [ "x${build_container_type}" = "xdefault" ]; then
                 case ${builder_arch} in
-                    amd64|i386) build_container_type=docker ;;
-                    arm64|armhf) build_container_type=none ;;
+                    amd64|i386)
+                        build_container_type=docker
+                        build_container_distro=trusty
+                        ;;
+                    arm64|armhf)
+                        build_container_type=none
+                        # FIXME: our native aarch?? builders all run xenial, this is inconsistent with using trusty to build cross-compilers
+                        build_container_distro=xenial
+                        ;;
                     *) echo "ERROR: Unsupported builder_arch: ${builder_arch}"; exit 1 ;;
                 esac
             fi
 
             # Start build container
             builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro trusty --session-host ${builder} | tee build-container.sh
+            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} | tee build-container.sh
 
             case "${target_kind}-$runtests-${builder_arch}" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
