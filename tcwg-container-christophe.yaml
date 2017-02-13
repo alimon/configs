@@ -193,7 +193,10 @@
 
             # Start build container
             builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} | tee build-container.sh
+            (
+              set -o pipefail
+              bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} | tee build-container.sh
+            )
 
             case "${target_kind}-$runtests-${builder_arch}" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
@@ -232,7 +235,10 @@
                 fi
                 tester=$tester_min_load_name
                 # For the moment, support only docker containers on the tester machine
-                bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test | tee test-container.sh
+                (
+                  set -o pipefail
+                  bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test | tee test-container.sh
+                )
                 ;;
             esac
 
