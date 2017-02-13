@@ -198,6 +198,18 @@
               bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} | tee build-container.sh
             )
 
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            . ./build-container.sh
+            BUILD_CONTAINER="${CONTAINER}"
+            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+
+            # Make sure to cleanup build container if something goes
+            # wrong when preparing the test environment
+            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
+                trap "${CONTAINERS_CLEANUP}" EXIT
+            fi
+
             case "${target_kind}-$runtests-${builder_arch}" in
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
                 case "$target" in
@@ -242,11 +254,6 @@
                 ;;
             esac
 
-            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
-            . ./build-container.sh
-            BUILD_CONTAINER="${CONTAINER}"
-            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
-
             TEST_CONTAINER=
             TEST_CONTAINER_CLEANUP=
             test_session_host=
@@ -261,6 +268,13 @@
                 test_session_port=${session_port}
                 echo "${test_session_host}:${test_session_port}" | tee $WORKSPACE/test-container.data
 
+                if [ x"${CONTAINERS_CLEANUP}" != x ]; then
+                    CONTAINERS_CLEANUP="${CONTAINERS_CLEANUP} ; ${TEST_CONTAINER_CLEANUP}"
+                else
+                    CONTAINERS_CLEANUP="${TEST_CONTAINER_CLEANUP}"
+                fi
+                trap "${CONTAINERS_CLEANUP}" EXIT
+
                 runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
             else
                 case "$target_kind-$runtests-${builder_arch}" in
@@ -272,8 +286,6 @@
                         ;;
                 esac
             fi
-
-            trap "${BUILD_CONTAINER_CLEANUP} ; ${TEST_CONTAINER_CLEANUP}" EXIT
 
             ${BUILD_CONTAINER} 'echo "Build session is up; ulimit config:"; ulimit -a'
 
