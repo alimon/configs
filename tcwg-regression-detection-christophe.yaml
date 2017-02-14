@@ -1,4 +1,3 @@
-
 - job:
     name: tcwg-regression-detection-christophe
     project-type: multijob
@@ -48,6 +47,15 @@
                 - refs/heads/master
             wipe-workspace: false
             scm-name: jenkins-scripts
+        - git:
+            url: https://git-us.linaro.org/ci/job/configs.git
+            basedir: ci-configs
+            branches:
+                - refs/heads/master
+            wipe-workspace: false
+            scm-name: ci-configs
+            included-regions:
+                - tcwg-*
     triggers:
         - pollscm:
             cron: 'H/5 * * * *'
