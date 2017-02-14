@@ -22,11 +22,31 @@
         - git:
             url: https://git-us.linaro.org/toolchain/abe.git
             refspec: +refs/heads/master:refs/remotes/origin/master
-            name: origin
             branches:
                 - refs/heads/master
-            shallow-clone: false
             wipe-workspace: false
+            scm-name: abe
+        - git:
+            url: https://git-us.linaro.org/toolchain/abe-tests.git
+            basedir: abe-tests
+            branches:
+                - refs/heads/master
+            wipe-workspace: false
+            scm-name: abe-tests
+        - git:
+            url: https://git-us.linaro.org/toolchain/gcc-compare-results.git
+            basedir: gcc-compare-results
+            branches:
+                - refs/heads/master
+            wipe-workspace: false
+            scm-name: gcc-compare-results
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            basedir: jenkins-scripts
+            branches:
+                - refs/heads/master
+            wipe-workspace: false
+            scm-name: jenkins-scripts
     triggers:
         - pollscm:
             cron: 'H/5 * * * *'
