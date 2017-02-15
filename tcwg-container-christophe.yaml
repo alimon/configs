@@ -339,10 +339,8 @@
 
             result="0"
             echo "SSH DEBUG on HOST: $(hostname)"
-            ssh-add -l
             ssh -v dev-01.tcwglab echo OK
             ${BUILD_CONTAINER} "echo \"SSH DEBUG on CONTAINER: $(hostname)\""
-            ${BUILD_CONTAINER} "ssh-add -l"
             ${BUILD_CONTAINER} "ssh -v dev-01.tcwglab echo OK"
 
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir ${WORKSPACE} --target ${target} --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
