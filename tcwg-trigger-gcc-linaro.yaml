@@ -5,7 +5,7 @@
             url: https://git-us.linaro.org/toolchain/gcc.git
             refspec: +refs/heads/*:refs/remotes/origin/*
             branches:
-                - refs/heads/linaro/gcc-*-branch
+                - origin/linaro/gcc-6-branch
             basedir: gcc
             scm-name: GCC
             skip-tag: true
@@ -20,7 +20,7 @@
             url: https://git-us.linaro.org/toolchain/glibc.git
             refspec: +refs/heads/*:refs/remotes/origin/*
             branches:
-                - refs/heads/linaro/*/master
+                - origin/linaro/2.23/master
             basedir: glibc
             scm-name: Glibc
             skip-tag: true
@@ -35,7 +35,7 @@
             url: https://git-us.linaro.org/toolchain/binutils-gdb.git
             refspec: +refs/heads/*:refs/remotes/origin/*
             branches:
-                - refs/heads/linaro_binutils-*-branch
+                - origin/linaro_binutils-2_27-branch
             basedir: binutils
             scm-name: Binutils
             skip-tag: true
@@ -82,6 +82,7 @@
     scm:
         - gcc
         - glibc
+        - binutils
     triggers:
         - timed: '@daily'
     wrappers:
@@ -108,7 +109,7 @@
             done
 
             cat << EOF > buildfarm_parameters
-            override=$comp_list $override
+            override=$comp_list --extraconfigdir ../config/gcc6 $override
             log_name=${JOB_NAME}-${BUILD_NUMBER}/\$(uname -m).\$target
             log_server=$log_server
             abe_branch=$abe_branch
