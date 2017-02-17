@@ -207,7 +207,11 @@
             # wrong when preparing the test environment
             if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
                 CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
-                trap "${CONTAINERS_CLEANUP}" EXIT
+                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                    trap "${CONTAINERS_CLEANUP}" EXIT
+                else
+                    trap "${CONTAINERS_CLEANUP} ; eval `${SSH_AGENT_CLEANUP}`" EXIT
+                fi
             fi
 
             case "${target_kind}-$runtests-${builder_arch}" in
@@ -273,7 +277,11 @@
                 else
                     CONTAINERS_CLEANUP="${TEST_CONTAINER_CLEANUP}"
                 fi
-                trap "${CONTAINERS_CLEANUP}" EXIT
+                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                    trap "${CONTAINERS_CLEANUP}" EXIT
+                else
+                    trap "${CONTAINERS_CLEANUP} ; eval `${SSH_AGENT_CLEANUP}`" EXIT
+                fi
 
                 runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
             else
@@ -342,10 +350,6 @@
             done
 
             result="0"
-            echo "SSH DEBUG on HOST: $(hostname)"
-            ssh -v dev-01.tcwglab echo OK
-            ${BUILD_CONTAINER} "echo \"SSH DEBUG on CONTAINER: $(hostname)\""
-            ${BUILD_CONTAINER} "ssh -v dev-01.tcwglab echo OK"
 
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir ${WORKSPACE} --target ${target} --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
 
