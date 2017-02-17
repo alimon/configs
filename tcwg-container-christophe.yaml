@@ -191,7 +191,7 @@
             builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
             (
               set -o pipefail
-              bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} > build-container.sh
+              bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} | tee build-container.sh
             )
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
@@ -245,7 +245,7 @@
                 # For the moment, support only docker containers on the tester machine
                 (
                   set -o pipefail
-                  bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test > test-container.sh
+                  bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test | tee test-container.sh
                 )
                 ;;
             esac
