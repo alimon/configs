@@ -31,6 +31,11 @@ rm -rf conf build/conf build/tmp-*glibc/
 export EULA_dragonboard410c=1
 source setup-environment build
 
+# Add extra options to local.conf when needed
+if [ -e "../add2local.conf" ]; then
+    cat ../add2local.conf >> conf/local.conf
+fi
+
 bitbake ${image_type}
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
