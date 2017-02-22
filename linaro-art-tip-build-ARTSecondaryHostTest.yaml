@@ -1,13 +1,13 @@
 - job:
-    name: linaro-art-tip-build-ARTVIXL32HostTest
+    name: linaro-art-tip-build-ARTSecondaryHostTest
     project-type: freestyle
     defaults: global
     description: >
       Runs the
       <a href="https://android-git.linaro.org/linaro-art/art-build-scripts.git/tree/tests/test_art_host.sh">Host Tests</a>
-      on the tip.<br> using the VIXL32 backend.
-      This build can be triggered by adding the comment "IncludeVIXL32AllTests" in your Gerrit patch.<br>
-      This build can be triggered by adding the comment "IncludeVIXL32HostTests" in your Gerrit patch.
+      on the tip.<br> using the secondary "old" (pre-VIXL32) backend.
+      This build can be triggered by adding the comment "IncludeOldAllTests" in your Gerrit patch.<br>
+      This build can be triggered by adding the comment "IncludeOldHostTests" in your Gerrit patch.
     properties:
         - authorization:
             anonymous:
@@ -36,7 +36,7 @@
             default: 'linaro-art-tip-aosp_arm64'
     disabled: false
     node: docker-utopic-art
-    display-name: 'Tip: Host Test (VIXL32)'
+    display-name: 'Tip: Host Test (Old backend)'
     concurrent: true
     scm:
         - git:
@@ -56,9 +56,9 @@
             gerrit-build-failed-verified-value: -1
             trigger-on:
                 - comment-added-contains-event:
-                    comment-contains-value: '.*IncludeVIXL32AllTests.*'
+                    comment-contains-value: '.*IncludeOldAllTests.*'
                 - comment-added-contains-event:
-                    comment-contains-value: '.*IncludeVIXL32HostTests.*'
+                    comment-contains-value: '.*IncludeOldHostTests.*'
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/art'
@@ -101,7 +101,7 @@
             ./setup_android.sh
 
             cd ${ANDROID_BUILD_DIR}
-            export ART_USE_VIXL_ARM_BACKEND=true
+            export ART_USE_OLD_ARM_BACKEND=true
             perl scripts/jenkins/test_launcher.pl \
               scripts/tests/test_art_host.sh
     publishers:

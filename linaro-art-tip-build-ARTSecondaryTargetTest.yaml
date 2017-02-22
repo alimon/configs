@@ -1,18 +1,18 @@
 - job:
-    name: linaro-art-tip-build-ARTVIXL32TargetTest
+    name: linaro-art-tip-build-ARTSecondaryTargetTest
     project-type: freestyle
     defaults: global
     description: >
       Runs the optimizing 32bit
       <a href="https://android-git.linaro.org/linaro-art/art-build-scripts.git/tree/tests/test_art_target.sh">Target Tests</a>
       that are not blacklisted in test/Android.arm_vixl.mk
-      with the new VIXL32 based ARM backend.<br>
+      with the secondary "old" (pre-VIXL32) ARM backend.<br>
       The build slave in set up in the cloud and speaks with the physical device using
       adb port forwarding via SSH.<br>
       This job is for the tip.<br>
       This build is triggered on SCM update.<br>
-      This build can be triggered by adding the comment "IncludeVIXL32AllTests" in your Gerrit patch.<br>
-      This build can be triggered by adding the comment "IncludeVIXL32TargetTests" in your Gerrit patch.
+      This build can be triggered by adding the comment "IncludeOldAllTests" in your Gerrit patch.<br>
+      This build can be triggered by adding the comment "IncludeOldTargetTests" in your Gerrit patch.
     properties:
         - authorization:
             anonymous:
@@ -44,7 +44,7 @@
             default: 'linaro-art-tip-aosp_flounder'
     disabled: false
     node: docker-utopic-art
-    display-name: 'Tip: Target Test (VIXL32)'
+    display-name: 'Tip: Target Test (Old backend)'
     concurrent: true
     scm:
         - git:
@@ -63,9 +63,9 @@
             gerrit-build-failed-verified-value: -1
             trigger-on:
                 - comment-added-contains-event:
-                    comment-contains-value: '.*IncludeVIXL32TargetTests.*'
+                    comment-contains-value: '.*IncludeOldTargetTests.*'
                 - comment-added-contains-event:
-                    comment-contains-value: '.*IncludeVIXL32AllTests.*'
+                    comment-contains-value: '.*IncludeOldAllTests.*'
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'linaro-art/platform/build'
@@ -112,7 +112,7 @@
             ./setup_android.sh
 
             cd ${ANDROID_BUILD_DIR}
-            export ART_USE_VIXL_ARM_BACKEND=true
+            export ART_USE_OLD_ARM_BACKEND=true
             perl scripts/jenkins/test_launcher.pl \
               scripts/tests/test_art_target.sh --32bit --optimizing
     publishers:
