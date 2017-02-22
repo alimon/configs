@@ -24,13 +24,14 @@ cleanup_exit()
 export PATH="/usr/sbin:/sbin:$PATH"
 
 tar xf snap.tar -C ${HOME}
-wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lite-gateway-ubuntu-core/pi-3.json -O pi-3.json
-wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lite-gateway-ubuntu-core/pi-3.json -O pi-2.json
-cat pi-3.json | snap sign -k madper-new > pi-3.model
-cat pi-2.json | snap sign -k madper-new > pi-2.model
+for machine in ${MACHINES}; do
+  wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lite-gateway-ubuntu-core/${machine}.json -O ${machine}.json
+  cat ${machine}.json | snap sign -k madper-new > ${machine}.model
+done
 
 snap download ubuntu-image
 
 sudo mount -o loop -t squashfs ubuntu-image_*.snap ${SNAP}
-${SNAP}/command-ubuntu-image.wrapper -c beta -o ubuntu-core-16-pi3-lite.img pi-3.model
-${SNAP}/command-ubuntu-image.wrapper -c beta -o ubuntu-core-16-pi2-lite.img pi-2.model
+for machine in ${MACHINES}; do
+  ${SNAP}/command-ubuntu-image.wrapper -c beta -o ubuntu-core-16-${machine}-lite.img ${machine}.model
+done

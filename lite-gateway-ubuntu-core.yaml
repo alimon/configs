@@ -10,6 +10,10 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+    parameters:
+        - string:
+            name: MACHINES
+            default: 'dragonboard-410c pi-2 pi-3'
     disabled: false
     node: docker-xenial-amd64
     display-name: 'LITE - Ubuntu Core gateway image'
@@ -26,10 +30,11 @@
         - shell: |
             #!/bin/bash -e
 
-            pxz ubuntu-core-16-pi3-lite.img
-            pxz ubuntu-core-16-pi2-lite.img
             mkdir out
-            mv pi-3.json ubuntu-core-16-pi3-lite.img.xz ubuntu-core-16-pi2-lite.img.xz out/
+            for machine in ${MACHINES}; do
+                pxz ubuntu-core-16-${machine}-lite.img
+                mv ubuntu-core-16-${machine}-lite.img.xz out/
+            done
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
