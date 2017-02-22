@@ -228,9 +228,8 @@
                       ;;
                     "schroot")
                       ulimit -u 5000
-                      # Sometimes /dev/pts can't get unmounted on the first try.
-                      # Workaround by retrying.
-                      trap "{ schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true; }" 0
+                      # Remove schroot session on exit
+                      trap "schroot -f -e -c session:$session_id" 0
                       BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
                       ;;
                     "docker")

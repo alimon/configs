@@ -83,9 +83,8 @@
             BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
-            # Sometimes /dev/pts can't get unmounted on the first try.
-            # Workaround by retrying.
-            trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true" 0 1 2 3 5 9 13 15
+            # Remove schroot session on exit
+            trap "schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
 
             case "$test" in
               abe-tests)

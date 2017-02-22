@@ -8,9 +8,8 @@ if [ "x$label" = "xtcwg-x86_64-cam" ]; then
   BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
   $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
-  # Sometimes /dev/pts can't get unmounted on the first try.
-  # Workaround by retrying.
-  trap "schroot -f -e -c session:$session_id || { sleep 60 ; schroot -f -e -c session:$session_id; } || true" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
+  # Remove schroot session on exit.
+  trap "schroot -f -e -c session:$session_id" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
 else
   BUILD_SHELL=bash
 fi
