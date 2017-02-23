@@ -218,6 +218,7 @@
               "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
                 case "$target" in
                   aarch64*) test_container_arch=arm64 ;;
+                  armv8*) test_container_arch=armv8hf ;;
                   arm*) test_container_arch=armhf ;;
                   *) echo "ERROR: Wrong target $target"; exit 1 ;;
                 esac
@@ -226,7 +227,11 @@
                 # tcwg-tx1-0[34]: AArch32 (armv8) and AArch64
                 case ${test_container_arch} in
                     armhf)
-                        tester_labels="tcwg-tk1_32-test tcwg-tx1_32-test"
+                        tester_labels="tcwg-tk1_32-test"
+                        ;;
+                    armv8hf)
+                        tester_labels="tcwg-tx1_32-test"
+                        test_container_arch=armhf
                         ;;
                     arm64)
                         tester_labels="tcwg-tx1_64-test"
