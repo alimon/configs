@@ -20,19 +20,16 @@ cd ${HOME}/srv/aosp/${JOB_NAME}
 repo init -u https://android-git.linaro.org/git/platform/manifest.git -b clang-build
 repo sync -j16 -c
 cd llvm
-mkdir -p build/clang-4.0.0
+mkdir -p build/clang-5.0.0
 cd build
 cmake -G "Unix Makefiles" ../ \
  -DCMAKE_BUILD_TYPE=Release \
- -DLLVM_BUILD_TESTS=True \
- -DLLVM_ENABLE_ASSERTIONS=True \
  -DPYTHON_EXECUTABLE=/usr/bin/python2 \
- -DCMAKE_INSTALL_PREFIX=./clang-4.0.0 \
+ -DCMAKE_INSTALL_PREFIX=./clang-5.0.0 \
  -DLLVM_TARGETS_TO_BUILD="ARM;X86;AArch64" \
- -DBUILD_SHARED_LIBS=True
 make install -j"$(nproc)"
 
-rm -f clang-4.0.0.tar.xz
-tar -I pxz -cf clang-4.0.0.tar.xz clang-4.0.0
+rm -f clang-5.0.0.tar.xz
+tar -I pxz -cf clang-5.0.0.tar.xz clang-5.0.0
 
 echo "Build finished"
