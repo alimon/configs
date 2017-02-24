@@ -26,7 +26,7 @@ cmake -G "Unix Makefiles" ../ \
  -DCMAKE_BUILD_TYPE=Release \
  -DPYTHON_EXECUTABLE=/usr/bin/python2 \
  -DCMAKE_INSTALL_PREFIX=./clang-5.0.0 \
- -DLLVM_TARGETS_TO_BUILD="ARM;X86;AArch64" \
+ -DLLVM_TARGETS_TO_BUILD="ARM;X86;AArch64"
 make install -j"$(nproc)"
 
 rm -f clang-5.0.0.tar.xz
