@@ -61,19 +61,9 @@
 
             unzip -o ../asmtools-6.0-build/dist/asmtools-6.0.zip
 
-            if [ ! -d jh2.0 ]; then
-              # no longer available from http://download.java.net/javadesktop/javahelp/javahelp2_0_05.zip
-              # 7bd68b82a1d5d8714856f661bd4d71a3 https://github.com/glub/secureftp/raw/master/contrib/javahelp2_0_05.zip
-              wget http://ftp.internat.freebsd.org/pub/FreeBSD/distfiles/javahelp2_0_05.zip
-              unzip -o javahelp2_0_05.zip
-            fi
-
             if [ ! -d jtharness ]; then
-              wget http://download.java.net/jtharness/4.4.1/Rel/jtharness-4_4_1-MR1-bin-b13-20_dec_2011.zip
-              mkdir jtharness
-              cd jtharness
-              unzip -o ../jtharness-4_4_1-MR1-bin-b13-20_dec_2011.zip
-              cd ..
+              wget https://adopt-openjdk.ci.cloudbees.com/job/jtharness/lastSuccessfulBuild/artifact/jtharness-4.6.tar.gz
+              tar xzf jtharness-4.6.tar.gz jtharness/lib
             fi
 
             if [ ! -d junit ]; then
@@ -120,7 +110,8 @@
             # java and ant's home directories are found from the commands.
             export JDK17HOME=$(dirname $(java -XshowSettings:properties |& \
                  grep java.home |  sed 's,^.*java.home = \(.*\),\1,'))
-            export JAVAHELP_HOME=$PWD/jh2.0/javahelp
+            export JAVAHELP_HOME=$PWD/jtharness
+            export JAVAHELP_JAR=$PWD/jtharness/lib/jh.jar
             export JAVATEST_HOME=$PWD/jtharness
             export JAVATEST_JAR=$PWD/jtharness/lib/javatest.jar
             export JAVAHARNESS_HOME=$PWD/jtharness
@@ -130,6 +121,7 @@
             export JUNIT_JAR=$PWD/junit/junit.jar
             export ANTHOME=$(ant -diagnostics | grep ant.home | \
                 sed 's,^.*: \(.*\),\1,' | uniq)
+
 
             # Makefile expects files that are not supplied from the packages we
             # are downloading. Create dummy versions to keep it happy.
