@@ -1,5 +1,5 @@
 - job:
-    name: lt-qcom-db410c-bootloader
+    name: lt-qcom-bootloader-dragonboard820c
     project-type: freestyle
     defaults: global
     logrotate:
@@ -29,34 +29,19 @@
             default: 'LA.BR.1.1.3.c4-01000-8x16.0'
         - string:
             name: LK_GIT_REL_SD_RESCUE
-            default: 'release/LA.BR.1.2.7-03810-8x16.0+rescue'
+            default: 'release/LA.HB.1.3.2-19600-8x96.0+rescue'
         - string:
-            name: LK_GIT_REL_SD_BOOT
-            default: 'release/LA.BR.1.2.7-03810-8x16.0+sdboot'
-        - string:
-            name: LK_GIT_REL_EMMC_BOOT
-            default: 'release/LA.BR.1.2.7-03810-8x16.0'
+            name: LK_GIT_REL_UFS_BOOT
+            default: 'release/LA.HB.1.3.2-19600-8x96.0'
         - string:
             name: QCOM_LINUX_FIRMWARE
-            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20161003/linux-board-support-package-v1.4.zip'
+            default: 'http://builds.96boards.org/snapshots/dragonboard820c/binaries/20161124/linux-bootloader-db820c-v0.1-linaro.zip'
         - string:
             name: QCOM_LINUX_FIRMWARE_MD5
-            default: 'c93ddb1165f0e23123a02ac3c952f932'
-        - string:
-            name: QCOM_ANDROID_FIRMWARE
-            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160826/bootloaders-android-v2.zip'
-        - string:
-            name: QCOM_ANDROID_FIRMWARE_MD5
-            default: 'ffca804ba9e2fdcdddbe39d8c077684c'
-        - string:
-            name: QCOM_ANDROID_FIRMWARE_OLD
-            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160524/bootloaders-android.zip'
-        - string:
-            name: QCOM_ANDROID_FIRMWARE_OLD_MD5
-            default: 'b6fb005bc1b6b001420f3214b49bca45'
+            default: 'a38e7ed58834b96c438e601bebc0a26f'
     disabled: false
     node: docker-jessie-amd64
-    display-name: 'Qualcomm bootloader for DragonBoard 410c'
+    display-name: 'Qualcomm bootloader for DragonBoard 820c'
     scm:
         - git:
             url: https://git.linaro.org/landing-teams/working/qualcomm/db-boot-tools.git
@@ -75,7 +60,7 @@
         - linaro-publish-token:
             host: builds.96boards.org
         - shell:
-            !include-raw: lt-qcom-db410c-bootloader/builders.sh
+            !include-raw: lt-qcom-bootloader/dragonboard820c/builders.sh
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'

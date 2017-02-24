@@ -90,7 +90,7 @@ EOF
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-dragonboard820c-bootloader/build-info.txt -O BUILD-INFO.txt
+wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-bootloader/dragonboard820c/build-info.txt -O BUILD-INFO.txt
 time python ${HOME}/bin/linaro-cp.py \
      --server ${PUBLISH_SERVER} \
      --build-info BUILD-INFO.txt \

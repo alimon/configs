@@ -1,5 +1,5 @@
 - job:
-    name: lt-qcom-debian-images-arm64-dragonboard820c
+    name: lt-qcom-debian-images-dragonboard600c
     project-type: freestyle
     defaults: global
     logrotate:
@@ -16,35 +16,44 @@
                 - job-cancel
     parameters:
         - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/lt-qualcomm/'
+        - string:
+            name: DEVICE_TYPE
+            default: 'ifc6410'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
             name: VENDOR
             default: 'linaro'
         - string:
             name: OS_FLAVOUR
-            default: 'stretch'
+            default: 'jessie'
         - string:
             name: PLATFORM_NAME
-            default: 'qcom-snapdragon-arm64'
+            default: 'qcom-snapdragon'
         - string:
             name: ROOTFS
-            default: 'developer,arm64,1800M'
-        - string:
-            name: ROOTFS_PARTLABEL
-            default: 'userdata'
+            default: 'developer,armhf,1800M alip,armhf,1800M'
         - string:
             name: DTBS
-            default: 'msm8996-mtp.dtb apq8096-db820c.dtb'
+            default: 'qcom-apq8064-arrow-sd-600eval.dtb'
         - string:
             name: SERIAL_CONSOLE
             default: 'ttyMSM0'
         - string:
             name: KERNEL_BRANCH
-            default: 'db820c/qcomlt-4.9'
+            default: 'release/qcomlt-4.4'
         - string:
-            name: BOOTIMG_PAGESIZE
-            default: '4096'
+            name: QCOM_FIRMWARE
+            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160614/SD_600eval-linux_proprietary_firmware-v1.0.zip'
+        - string:
+            name: QCOM_FIRMWARE_MD5
+            default: '0903e9f656d3cea005ecc8e26f1243b2'
     disabled: false
     node: docker-jessie-amd64
-    display-name: 'Qualcomm Debian based images for Snapdragon 820'
+    display-name: 'Qualcomm Debian based images for Snapdragon 600 based 96boards'
     scm:
         - git:
             url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
@@ -60,38 +69,13 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - shell:
-            !include-raw: lt-qcom-debian-images-arm64/builders.sh
         - linaro-publish-token:
             host: builds.96boards.org
-        - shell: |
-            #!/bin/bash
-            set -ex
-            trap cleanup_exit INT TERM EXIT
-            cleanup_exit()
-            {
-                # cleanup here, only in case of error in this script
-                # normal cleanup deferred to later
-                [ $? = 0 ] && exit;
-                sudo git clean -fdxq
-            }
-
-            # Create MD5SUMS file
-            (cd out && md5sum * > MD5SUMS.txt)
-
-            # Publish to snapshots
-            test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py \
-                 --server ${PUBLISH_SERVER} \
-                 --link-latest \
-                 out snapshots/dragonboard820c/${VENDOR}/debian/${BUILD_NUMBER}
+        - shell:
+            !include-raw: lt-qcom-debian-images/builders-dragonboard600c.sh
     publishers:
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
-        - email-ext:
-            recipients: 'qa-team@linaro.org'
-            always: true
         - ircbot:
             channels:
                 - name: '#linaro-lt-qcomm'

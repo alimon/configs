@@ -76,7 +76,7 @@
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-debian-images/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
@@ -95,7 +95,7 @@
             export DATA_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
             export SYSTEM_URL=https://snapshots.linaro.org/debian/pre-built/snapdragon/${BUILD_NUMBER}/firmware-${PLATFORM_NAME}-${VERSION}.img.gz
 
-            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
+            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-debian-images/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}

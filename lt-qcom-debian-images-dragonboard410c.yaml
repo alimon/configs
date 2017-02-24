@@ -1,5 +1,5 @@
 - job:
-    name: lt-qcom-debian-images-arm64
+    name: lt-qcom-debian-images-dragonboard410c
     project-type: freestyle
     defaults: global
     logrotate:
@@ -76,9 +76,9 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell:
-            !include-raw: lt-qcom-debian-images-arm64/builders.sh
+            !include-raw: lt-qcom-debian-images/builders-arm64.sh
         - shell:
-            !include-raw: lt-qcom-debian-images-arm64/installer-dragonboard-410c.sh
+            !include-raw: lt-qcom-debian-images/installer-dragonboard-410c.sh
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
@@ -112,7 +112,7 @@
             rm -rf configs lci-build-tools
             git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
+            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-debian-images/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
@@ -130,7 +130,7 @@
             export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
             export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
 
-            ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
+            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-debian-images/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
