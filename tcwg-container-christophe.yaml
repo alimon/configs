@@ -148,7 +148,7 @@
                     ;;
                 tcwg-tx1_32-build)
                     builder_arch=armhf
-                    builder_type=arm
+                    builder_type=armv8
                     ;;
                 tcwg-tk1_32-build)
                     builder_arch=armhf
@@ -160,7 +160,7 @@
                     ;;
                 tcwg-apm_32-build)
                     builder_arch=armhf
-                    builder_type=arm
+                    builder_type=armv8
                     ;;
                 *) echo "ERROR: Unsupported slave: $slave"; exit 1 ;;
             esac
@@ -178,14 +178,9 @@
             # value, then use it whatever the builder type
             if [ "x${build_container_type}" = "xdefault" ]; then
                 case ${builder_arch} in
-                    amd64|i386)
+                    amd64|i386|arm64|armhf)
                         build_container_type=docker
                         build_container_distro=trusty
-                        ;;
-                    arm64|armhf)
-                        build_container_type=none
-                        # FIXME: our native aarch?? builders all run xenial, this is inconsistent with using trusty to build cross-compilers
-                        build_container_distro=xenial
                         ;;
                     *) echo "ERROR: Unsupported builder_arch: ${builder_arch}"; exit 1 ;;
                 esac
