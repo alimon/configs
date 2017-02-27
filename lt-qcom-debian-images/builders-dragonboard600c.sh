@@ -6,9 +6,14 @@ trap cleanup_exit INT TERM EXIT
 
 cleanup_exit()
 {
+    # cleanup here, only in case of error in this script
+    # normal cleanup deferred to later
+    [ $? = 0 ] && exit;
     cd ${WORKSPACE}
+    sudo umount rootfs rootfs2 || true
     sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img || true
-    sudo git clean -fdx
+    sudo rm -rf rootfs rootfs2 || true
+    sudo git clean -fdxq
 }
 
 sudo apt-get update
@@ -18,6 +23,9 @@ wget -q \
      http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb
 sudo dpkg -i --force-all *.deb
 rm -f *.deb
+
+# Create version string
+echo "$(date +%Y%m%d)-${BUILD_NUMBER}" > build-version
 
 export LANG=C
 export make_bootwrapper=false
@@ -30,6 +38,9 @@ export toolchain_url=http://releases.linaro.org/14.04/components/toolchain/binar
 
 test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
 bash -x lci-build-tools/jenkins_kernel_build_inst
+
+# record kernel version
+echo "$(make kernelversion)-${VENDOR}-${kernel_flavour}" > kernel-version
 
 # Create the hardware pack
 cat << EOF > ${VENDOR}-lt-qcom.default
@@ -73,11 +84,12 @@ assume_installed:
 - kmod
 - netbase
 - udev
+- linaro-artwork
+- systemd
 sources:
   qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${OS_FLAVOUR} main
   repo: http://repo.linaro.org/ubuntu/linaro-overlay ${OS_FLAVOUR} main
   debian: http://ftp.debian.org/debian/ ${OS_FLAVOUR} main contrib non-free
-  backports: http://ftp.debian.org/debian/ ${OS_FLAVOUR}-backports main
 packages:
 - linux-image-armmp
 - linux-headers-armmp
@@ -94,7 +106,8 @@ Build description:
 * OS flavour: $OS_FLAVOUR
 * Kernel tree: "$GIT_URL":$GIT_URL
 * Kernel branch: $KERNEL_BRANCH
-* Kernel version: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+* Kernel version: $(cat kernel-version)
+* Kernel commit: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
 * Kernel defconfig: $kernel_config
 EOF
 
@@ -102,13 +115,15 @@ EOF
 rm -f license.txt
 wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
 
-rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
-wget -q ${QCOM_FIRMWARE}
-echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
-md5sum -c MD5
-unzip $(basename ${QCOM_FIRMWARE})
-cd -
-rm -f qcom_firmware/SD_600eval-linux_proprietary_firmware-v1.0/license.txt
+if [ -n "${QCOM_FIRMWARE}" ]; then
+    rm -rf qcom_firmware && mkdir qcom_firmware && cd qcom_firmware
+    wget -q ${QCOM_FIRMWARE}
+    echo "${QCOM_FIRMWARE_MD5}  $(basename ${QCOM_FIRMWARE})" > MD5
+    md5sum -c MD5
+    unzip $(basename ${QCOM_FIRMWARE})
+    cd -
+    rm -f qcom_firmware/SD_600eval-linux_proprietary_firmware-v1.0/license.txt
+fi
 
 for rootfs in ${ROOTFS}; do
 
@@ -120,27 +135,26 @@ for rootfs in ${ROOTFS}; do
 
     # additional packages in desktop images
     [ "${rootfs}" = "alip" ] && cat << EOF >> ${VENDOR}-lt-qcom
-- xserver-xorg-video-freedreno
 - 96boards-artwork
 EOF
 
     rm -f `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz`
-    VERSION=`date +%Y%m%d`-${BUILD_NUMBER}
-    linaro-hwpack-create --debug --backports ${VENDOR}-lt-qcom ${VERSION}
+    VERSION=$(cat build-version)
+    linaro-hwpack-create --debug ${VENDOR}-lt-qcom ${VERSION}
     linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-image-*-${VENDOR}-lt-qcom_*.deb` -r linux-image -d -i
     linaro-hwpack-replace -t `ls hwpack_${VENDOR}-lt-qcom_*_${rootfs_arch}_supported.tar.gz` -p `ls linux-headers-*-${VENDOR}-lt-qcom_*.deb` -r linux-headers -d -i
 
     # Get rootfs
-    export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
-    export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/debian-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-    export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+    export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/${OS_FLAVOUR}-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+    export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/${OS_FLAVOUR}-${rootfs_arch}-rootfs/label=docker-jessie-${rootfs_arch},rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+    export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${OS_FLAVOUR}/${rootfs}-${rootfs_arch}/${ROOTFS_BUILD_NUMBER}/linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
     wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
     # Create pre-built image(s)
-    linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file ${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 2G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_${VENDOR}-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
+    linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file ${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img --image-size 3G --binary linaro-${OS_FLAVOUR}-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_${VENDOR}-lt-qcom_*.tar.gz --hwpack-force-yes --bootloader uefi
 
     # Create eMMC rootfs image(s)
-    mkdir rootfs
+    mkdir -p rootfs rootfs2
     for device in $(sudo kpartx -avs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img | cut -d' ' -f3); do
         partition=$(echo ${device} | cut -d'p' -f3)
         [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
@@ -159,14 +173,13 @@ EOF
     sudo cp -a qcom_firmware/SD_600eval-linux_proprietary_firmware-v1.0/* rootfs/lib/firmware
 
     sudo mkfs.ext4 -L rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw ${rootfs_sz}
-    mkdir rootfs2
     sudo mount -o loop out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw rootfs2
     sudo cp -a rootfs/* rootfs2
     rootfs_sz_real=$(sudo du -sh rootfs2 | cut -f1)
-    sudo umount rootfs2 rootfs
+    sudo umount rootfs rootfs2
     sudo ext2simg -v out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
-    sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img
-    sudo rm -rf rootfs out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.sd.img rootfs2 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw
+    sudo kpartx -dv out/${VENDOR}-${OS_FLAVOUR}-*.sd.img
+    sudo rm -f out/${VENDOR}-${OS_FLAVOUR}-*.sd.img out/${VENDOR}-${OS_FLAVOUR}-*.img.raw
 
     # Compress image(s)
     gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
@@ -200,15 +213,3 @@ rm -rf out/dtbs
 
 # Final preparation for publishing
 cp -a linux-*.deb out/
-rm -f out/vmlinuz
-
-# Create MD5SUMS file
-(cd out && md5sum * > MD5SUMS.txt)
-
-# Publish to snapshots
-test -d ${HOME}/bin || mkdir ${HOME}/bin
-wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python ${HOME}/bin/linaro-cp.py \
-     --server ${PUBLISH_SERVER} \
-     --link-latest \
-     out snapshots/sd-600eval/${VENDOR}/debian/${BUILD_NUMBER}
