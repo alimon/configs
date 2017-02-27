@@ -85,11 +85,7 @@
 
             # XXX Don't fail the job if jcstress itself fails.
             set +e
-            if [ JVM_VARIANT = "server" ]; then
-                java -XX:-RestrictContended -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:-TieredCompilation -XX:ReservedCodeCacheSize=128M -jar ${JCSTRESS_JAR} -m ${JCSTRESS_MODE}
-            else
-                java -XX:-RestrictContended -XX:+UnlockDiagnosticVMOptions -XX:+WhiteBoxAPI -XX:+TieredCompilation -XX:TieredStopAtLevel=1 -XX:ReservedCodeCacheSize=128M -jar ${JCSTRESS_JAR} -m ${JCSTRESS_MODE}
-            fi
+            java -jar ${JCSTRESS_JAR} -m ${JCSTRESS_MODE}
 
             test_result=$?
             set -e
