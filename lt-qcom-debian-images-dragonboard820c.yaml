@@ -87,6 +87,16 @@
                  --link-latest \
                  out snapshots/dragonboard820c/${VENDOR}/debian/${BUILD_NUMBER}
     publishers:
+        - groovy-postbuild:
+            script: |
+                def build_number = manager.build.number
+                def vendor = manager.build.buildVariables.get('VENDOR')
+                def url = "http://builds.96boards.org/snapshots/dragonboard820c/${vendor}/debian/${build_number}/"
+                def desc = "&nbsp;<a href='${url}'>Build location<t/a>"
+
+                if (manager.build.result == hudson.model.Result.SUCCESS) {
+                  manager.build.setDescription(desc)
+                }
         - email:
             recipients: 'nicolas.dechesne@linaro.org fathi.boudra@linaro.org'
         - email-ext:
