@@ -107,6 +107,9 @@
             ## Custom init scripts
             sudo cp -av iot-gateway-files/bluetooth_6lowpand.sh rootfs/usr/bin/bluetooth_6lowpand
             sudo cp -av iot-gateway-files/etc-systemd-system-bluetooth_6lowpand.service rootfs/etc/systemd/system/bluetooth_6lowpand.service
+            ## Mosquitto
+            sudo cp -av iot-gateway-files/etc-mosquitto-template.conf rootfs/etc/mosquitto/template.conf
+            sudo cp -av iot-gateway-files/mosquitto-conf.sh rootfs/usr/bin/mosquitto-conf
 
             ## Disable interfaces during boot so it can ignore bt0
             sudo sed -i 's/#CONFIGURE_INTERFACES=yes/CONFIGURE_INTERFACES=no/g' rootfs/etc/default/networking
