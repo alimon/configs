@@ -33,7 +33,7 @@ cd db-boot-tools
 git log -1
 
 # Get SD and EMMC bootloader package
-BL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-db410c-bootloader/lastSuccessfulBuild/buildNumber`
+BL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-bootloader-dragonboard410c/lastSuccessfulBuild/buildNumber`
 wget --progress=dot -e dotbytes=2M \
      http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
 wget --progress=dot -e dotbytes=2M \
