@@ -148,13 +148,26 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused1.json#g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s#LAVA_SERVER=.*#LAVA_SERVER=staging.linaro.org/RPC2/#g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused1-v7a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused2.json#g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused1-v8a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused2-v7a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused2-v8a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
