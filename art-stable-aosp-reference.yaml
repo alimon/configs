@@ -51,12 +51,12 @@
 
             cd /home/buildslave/srv/linaro-art-stable-aosp-reference
 
-            curl https://android-git.linaro.org/gitweb/tools/repo.git/blob_plain/refs/heads/stable:/repo > /tmp/repo
+            curl https://android-git.linaro.org/tools/repo.git/plain/repo > /tmp/repo
             chmod a+x /tmp/repo
             sudo mv /tmp/repo /usr/local/bin/repo
 
             rm -rf .repo/local_manifests
-            repo init -u https://android-git.linaro.org/git/platform/manifest  -b android-6.0.0_r26
+            repo init -u https://android-git.linaro.org/git/platform/manifest  -b android-7.1.1_r22
             sed -i "s/clone-depth=\"1\"//g" .repo/manifest.xml
             repo sync -j16 --force-sync
     publishers:
