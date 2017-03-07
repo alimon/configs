@@ -1,0 +1,47 @@
+# Zephyr JOB definition for frdm-k64f
+device_type: '${DEVICE_TYPE}'
+job_name: 'zephyr-upstream kernel-task-api-test'
+
+timeouts:
+  job:
+    minutes: 6
+  action:
+    minutes: 3
+  actions:
+    wait-usb-device:
+      seconds: 40
+
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 3
+    to: tmpfs
+    images:
+        zephyr:
+          url: 'http://snapshots.linaro.org/components/kernel/zephyr/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}/tests/legacy/kernel/test_task/test/zephyr.bin'
+
+- boot:
+    method: cmsis-dap
+    timeout:
+      minutes: 10
+
+- test:
+    monitors:
+    - name: Test Microkernel Task API
+      start: tc_start()
+      end: PROJECT EXECUTION
+      pattern: (?P<result>(PASS|FAIL))\s-\s(?P<test_case_id>\w+)
+      fixupdict:
+        PASS: pass
+        FAIL: fail
+
+metadata:
+  build-url: ${BUILD_URL}
+  build-log: ${BUILD_URL}consoleText
+  zephyr-gcc-variant: ${ZEPHYR_GCC_VARIANT}
+  platform: ${PLATFORM}
+  git-url: https://git.linaro.org/zephyrproject-org/zephyr.git
+  git-commit: ${GIT_COMMIT}
