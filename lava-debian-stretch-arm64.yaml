@@ -30,11 +30,11 @@
             sudo apt -q update
             sudo DEBIAN_FRONTEND=noninteractive apt -q -y install qemu-user-static debootstrap python-guestfs
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-nfs.sh
-            wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-image.sh
+            # wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-image.sh
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/guest-img.py
             chmod 744 ./build-foreign-nfs.sh
             sudo ./build-foreign-nfs.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d stretch
-            sudo sh ./build-foreign-image.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d stretch
+            # sudo sh ./build-foreign-image.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d stretch
             cd ..
             cat > ${WORKSPACE}/out/debian-arm64-readme.html <<EOF
             <html><body><pre>
