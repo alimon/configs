@@ -27,8 +27,11 @@
 
             mkdir out
             cd out/
-            sudo apt -q update
-            sudo DEBIAN_FRONTEND=noninteractive apt -q -y install qemu-user-static debootstrap python-guestfs
+            echo "deb http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
+            sudo mv jessie-backports.list /etc/apt/sources.list.d/
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt -q -y -t jessie-backports install qemu-user-static debootstrap
+            sudo DEBIAN_FRONTEND=noninteractive apt -q -y install python-guestfs
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-nfs.sh
             # wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-image.sh
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/guest-img.py
