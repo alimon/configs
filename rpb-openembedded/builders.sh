@@ -61,6 +61,7 @@ rm -rf conf build/conf build/tmp-*glibc/
 
 # Accept EULA if/when needed
 export EULA_dragonboard410c=1
+export EULA_stih410b2260=1
 source setup-environment build
 
 # Add job BUILD_NUMBER to output files names
