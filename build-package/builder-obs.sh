@@ -1,16 +1,14 @@
 #!/bin/bash
 
 set -e
-echo "dist: $dist"
 echo "source: $source"
 echo "repo: $repo"
 echo "appendversion: $appendversion"
-obsrepo=$repo-$dist
 rm -rf *
 
 dget -q -d -u $source
 sourcename=`basename $source|sed -e 's,_.*,,'`
-echo "will send to OBS: $obsrepo $sourcename"
+echo "will send to OBS: $repo $sourcename"
 
 if [ "$backport" = "true" ]; then
    appendversion=true
@@ -50,7 +48,7 @@ if [ "$appendversion" = "true" ]; then
             deltatype="other"
             ;;
     esac
-    dch --force-distribution -m -D $dist -llinaro$dist "Linaro CI build: $deltatype"
+    dch --force-distribution -m -llinaro "Linaro CI build: $deltatype"
     dpkg-buildpackage -S -d
     cd ..
 fi
@@ -58,17 +56,17 @@ fi
 dsc=`ls -tr *dsc`
 
 # update existing package
-if osc co $obsrepo $sourcename; then
-    rm -v $obsrepo/$sourcename/$sourcename*||true
+if osc co $repo $sourcename; then
+    rm -v $repo/$sourcename/$sourcename_*||true
 else
-    osc co $obsrepo
-    mkdir -p $obsrepo/$sourcename
-    osc add $obsrepo/$sourcename
+    osc co $repo
+    mkdir -p $repo/$sourcename
+    osc add $repo/$sourcename
 fi
 for file in `dcmd $dsc`;
 do
-    cp $file $obsrepo/$sourcename
+    cp $file $repo/$sourcename
 done
 
-osc addremove $obsrepo/$sourcename
-osc ci $obsrepo/$sourcename -m "$BUILD_URL"
+osc addremove $repo/$sourcename
+osc ci $repo/$sourcename -m "$BUILD_URL"
