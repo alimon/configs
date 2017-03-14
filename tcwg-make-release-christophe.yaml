@@ -44,6 +44,10 @@
             default: 'aarch64-elf aarch64-linux-gnu aarch64_be-elf aarch64_be-linux-gnu armv8l-linux-gnueabihf arm-eabi arm-linux-gnueabi arm-linux-gnueabihf armeb-eabi armeb-linux-gnueabi armeb-linux-gnueabihf'
             description: 'List of targets to use'
         - string:
+            name: builder_arch_list
+            default: 'i386 amd64'
+            description: 'List of builder architectures to use (i386,amd64)'
+        - string:
             name: abe_branch
             default: refs/heads/master
             description: 'ABE revision to test'
@@ -93,8 +97,12 @@
             type: slave
             name: label
             values:
-               - docker-trusty-amd64-tcwg-build
-               - docker-trusty-i386-tcwg-build
+                - tcwg-x86_64-cam
+        - axis:
+            type: dynamic
+            name: builder_arch
+            values:
+                - builder_arch_list
         - axis:
             type: dynamic
             name: target
@@ -129,8 +137,30 @@
                 exit 0
             fi
 
-            git config --global user.email "tcwg-buildslave@linaro.org"
-            git config --global user.name "TCWG BuildSlave"
+            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+
+            # Start build container
+            build_container_type=docker
+            build_container_distro=trusty
+            builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} > build-container.sh
+
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            . ./build-container.sh
+            BUILD_CONTAINER="${CONTAINER}"
+            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+
+            # Make sure to cleanup build container if something goes
+            # wrong when preparing the rest of the environment
+            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
+                trap "${CONTAINERS_CLEANUP}" EXIT
+            fi
+
+            # git config isn't stored in the (shared) workspace, so
+            # update it inside the container
+            ${BUILD_CONTAINER} "git config --global user.email tcwg-buildslave@linaro.org"
+            ${BUILD_CONTAINER} "git config --global user.name 'TCWG BuildSlave'"
 
             tcwg_release=${date}
             # If there is no date set, extract release information from the gcc_src
@@ -143,11 +173,11 @@
             # toolchains at a time when run on a amd64 slave.
             # When run on a i386 host, no need to duplicate the
             # Canadian cross build for mingw.
-            case ${label} in
-              docker-*-amd64-tcwg*)
+            case ${builder_arch} in
+              amd64)
                 host=x86_64
                 export canadian=true ;;
-              docker-*-i386-tcwg*)
+              i386)
                 host=i686
                 export canadian=no ;;
              *)
@@ -193,9 +223,7 @@
                 ;;
             esac
 
-            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
-
-            ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}"
             if test $? -gt 0; then
               exit 1
             fi
