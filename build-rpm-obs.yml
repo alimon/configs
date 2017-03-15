@@ -1,0 +1,36 @@
+- job:
+    name: build-rpm-obs
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    node: master
+    disabled: false
+    display-name: 'Build RPM packages in OBS'
+    parameters:
+        - string:
+            name: source
+            description: 'url to src.rpm'
+        - string:
+            name: repo
+            description: 'repository to upload to'
+            default: 'linaro-staging'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: build-package/builder-rpm.sh
+    publishers:
+        - email:
+            recipients: 'packages@lists.linaro.org'
