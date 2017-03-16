@@ -102,7 +102,7 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 # FIXME: am57xx-evm creates tar.xz rootfs image and
 #        meta-ti u-boot doesn't enable fastboot support
 case "${MACHINE}" in
-  am57xx-evm|stih410-b2260)
+  am57xx-evm|juno|stih410-b2260)
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
