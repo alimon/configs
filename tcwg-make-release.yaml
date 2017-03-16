@@ -44,6 +44,10 @@
             default: 'aarch64-elf aarch64-linux-gnu aarch64_be-elf aarch64_be-linux-gnu armv8l-linux-gnueabihf arm-eabi arm-linux-gnueabi arm-linux-gnueabihf armeb-eabi armeb-linux-gnueabi armeb-linux-gnueabihf'
             description: 'List of targets to use'
         - string:
+            name: builder_arch_list
+            default: 'i386 amd64'
+            description: 'List of builder architectures to use (i386,amd64)'
+        - string:
             name: abe_branch
             default: refs/heads/master
             description: 'ABE revision to test'
@@ -87,14 +91,19 @@
                 - ${abe_branch}
             skip-tag: true
             shallow-clone: true
+            wipe-workspace: true
             basedir: abe
     axes:
         - axis:
             type: slave
             name: label
             values:
-               - docker-trusty-amd64-tcwg-build
-               - docker-trusty-i386-tcwg-build
+                - tcwg-x86_64-cam
+        - axis:
+            type: dynamic
+            name: builder_arch
+            values:
+                - builder_arch_list
         - axis:
             type: dynamic
             name: target
@@ -106,14 +115,12 @@
         - timeout:
             timeout: 300
         - timestamps
-        - ssh-agent-credentials:
-            users:
-              - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a' # tcwg-buildslave
         - build-name:
             name: '#${BUILD_NUMBER}-${ENV,var="date"}'
     builders:
       - shell: |
             #!/bin/bash
+            set -e
 
             if test x"${debug}" = x"abe"; then
               shell="/bin/bash -x"
@@ -129,8 +136,29 @@
                 exit 0
             fi
 
-            git config --global user.email "tcwg-buildslave@linaro.org"
-            git config --global user.name "TCWG BuildSlave"
+            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+
+            # Start build container
+            build_container_type=docker
+            build_container_distro=trusty
+            builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} > build-container.sh
+
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            . ./build-container.sh
+            BUILD_CONTAINER="${CONTAINER}"
+            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+
+            # Make sure to cleanup build container if something goes
+            # wrong when preparing the rest of the environment
+            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
+                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                    trap "${CONTAINERS_CLEANUP}" EXIT
+                else
+                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
+                fi
+            fi
 
             tcwg_release=${date}
             # If there is no date set, extract release information from the gcc_src
@@ -161,11 +189,11 @@
             # When run on a i386 host, no need to duplicate the
             # Canadian cross build for mingw.
             canadian=
-            case ${label} in
-              docker-*-amd64-tcwg*)
+            case ${builder_arch} in
+              amd64)
                 host=x86_64
                 canadian=--canadian ;;
-              docker-*-i386-tcwg*)
+              i386)
                 host=i686
                 canadian= ;;
              *)
@@ -227,22 +255,24 @@
                 ;;
             esac
 
-            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
-
-            ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}} --buildnumber ${BUILD_NUMBER}
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER}"
             if test $? -gt 0; then
               exit 1
             fi
 
+            # tarballs are written in ${WORKSPACE}/snapshots, which is
+            # not shared between host and container. So, we need to
+            # execute the find command inside the container.
+
             # We always build a Linux tarball, even in canadian cross mode
-            tarball_linux="`find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep -v mingw`"
+            tarball_linux="$(${BUILD_CONTAINER} find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep -v mingw)"
             if test x"${tarball_linux}" = x""; then
               echo "ERROR: no binary Linux tarball found!"
               exit 1
             fi
 
             if test x"${canadian}" = x"true"; then
-              tarball_mingw="`find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep mingw`"
+              tarball_mingw="$(${BUILD_CONTAINER} find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep mingw)"
               if test x"${tarball_mingw}" = x""; then
                 echo "ERROR: no binary MingW tarball found!"
                 exit 1
