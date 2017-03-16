@@ -1,0 +1,49 @@
+- job:
+    name: tcwg-llvm-build
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    parameters:
+    disabled: false
+    node: tcwg-x86_64-cam
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG LLVM Build'
+    scm:
+        - git:
+            url: http://git.linaro.org/toolchain/jenkins.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            bash -x ${WORKSPACE}/tcwg-llvm-build.sh
+    publishers:
+        - workspace-cleanup:
+            include:
+              - "**"
+            dirmatch: true
+
