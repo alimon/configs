@@ -228,15 +228,20 @@
               exit 1
             fi
 
+            # tarballs are written in
+            # /home/tcwg-buildslave/workspace/snapshots, which is not
+            # shared between host and container. So, we need to
+            # execute the find command inside the container.
+
             # We always build a Linux tarball, even in canadian cross mode
-            tarball_linux="`find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep -v mingw`"
+            tarball_linux="$(${BUILD_CONTAINER} find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep -v mingw)"
             if test x"${tarball_linux}" = x""; then
               echo "ERROR: no binary Linux tarball found!"
               exit 1
             fi
 
             if test x"${canadian}" = x"true"; then
-              tarball_mingw="`find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep mingw`"
+              tarball_mingw="$(${BUILD_CONTAINER} find ${WORKSPACE} -name gcc-linaro\*${tcwg_release}\*${target}\*.tar.xz | grep mingw)"
               if test x"${tarball_mingw}" = x""; then
                 echo "ERROR: no binary MingW tarball found!"
                 exit 1
