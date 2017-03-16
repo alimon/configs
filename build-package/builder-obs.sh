@@ -57,7 +57,7 @@ dsc=`ls -tr *dsc`
 
 # update existing package
 if osc co $repo $sourcename; then
-    rm -v $repo/$sourcename/$sourcename_*||true
+    rm -v $repo/$sourcename/${sourcename}_*||true
 else
     osc co $repo
     mkdir -p $repo/$sourcename

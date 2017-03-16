@@ -1,7 +1,9 @@
 #!/bin/bash
 
+set -e
 echo "source: $source"
 echo "repo: $repo"
+rm -rf *
 
 wget --progress=dot -e dotbytes=2M $source
 sourcefile="*.src.rpm"
