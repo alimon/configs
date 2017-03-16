@@ -39,4 +39,9 @@
     builders:
         - shell: |
             #!/bin/bash
-            bash -x ${WORKSPACE}/tcwg-llvm-build.sh
+            set -ex
+            mkdir -p ${WORKSPACE}/llvm ${WORKSPACE}/build ${WORKSPACE}/install
+            bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
+                --srcdir=${WORKSPACE}/llvm
+                --builddir=${WORKSPACE}/build
+                --instdir=${WORKSPACE}/install
