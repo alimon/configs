@@ -224,14 +224,13 @@
                 ;;
             esac
 
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}"
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}"
             if test $? -gt 0; then
               exit 1
             fi
 
-            # tarballs are written in
-            # /home/tcwg-buildslave/workspace/snapshots, which is not
-            # shared between host and container. So, we need to
+            # tarballs are written in ${WORKSPACE}/snapshots, which is
+            # not shared between host and container. So, we need to
             # execute the find command inside the container.
 
             # We always build a Linux tarball, even in canadian cross mode
