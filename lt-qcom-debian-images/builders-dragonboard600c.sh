@@ -74,7 +74,7 @@ assume_installed:
 - apt-utils
 - debconf-i18n
 - debian-archive-keyring
-- gcc-4.9
+- gcc-6
 - gnupg
 - ifupdown
 - initramfs-tools
