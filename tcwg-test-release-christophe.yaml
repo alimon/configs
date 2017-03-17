@@ -1,0 +1,111 @@
+- job:
+    name: tcwg-test-release-christophe
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: tarball_url
+            default: ''
+            description: 'The GCC binary tarball to test'
+        - string:
+            name: scripts_branch
+            default: refs/remotes/origin/master
+            description: 'Scripts revision to use '
+        - string:
+            name: build_container_tag
+            default: 'trusty'
+            description: 'Distro to use for the container: trusty, xenial.'
+        - string:
+            name: release
+            default:
+            description: 'Release name, only displayed in job name'
+        - string:
+            name: target
+            default:
+            description: 'Target, only displayed in job name'
+        - bool:
+            name: debug
+            default: false
+            description: 'Whether to enable bash debugging output.'
+    disabled: false
+    node: tcwg-x86_64-cam
+    retry-count: 3
+    concurrent: true
+    workspace: /home/tcwg-buildslave/workspace/tcwg-test-release/$release/$target
+    display-name: 'TCWG ZZZ Test Release Christophe'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="release"}-${ENV,var="target"}'
+    builders:
+        - shell: |      
+            #!/bin/bash
+
+            if test x${debug} = x"true"; then
+              shell="/bin/bash -x"
+              set -x
+            else
+              shell="/bin/bash"
+            fi
+
+            # tarball_url is read from the tcwg.params file, which is
+            # setup by the MakeRelease job.
+            if test x"${tarball_url}" = x; then
+              echo "ERROR: no binary tarball specified!"
+              exit 1
+            fi
+
+            # Start build container
+            builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
+            build_container_type=docker
+            builder_arch=x86_64
+            bash -x ${WORKSPACE}/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
+
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            . ./build-container.sh
+            BUILD_CONTAINER="${CONTAINER}"
+            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+
+            # Make sure to cleanup build container if something goes wrong
+            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
+                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                    trap "${CONTAINERS_CLEANUP}" EXIT
+                else
+                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
+                fi
+            fi
+
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}"
+
+            exit $?
+    publishers:
+        - email:
+            recipients: 'christophe.lyon@linaro.org'
+        - email-ext:
+            recipients: 'christophe.lyon@linaro.org'
+            send-to:
+              requester
+              recipients
