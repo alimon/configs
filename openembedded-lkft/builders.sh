@@ -81,12 +81,8 @@ PREFERRED_PROVIDER_virtual/kernel = "linux-hikey-aosp"
 EOF
 
 # Include additional recipes in the image
-cat << EOF >> ../layers/meta-rpb/recipes-samples/images/${IMAGES}.bb
-CORE_IMAGE_BASE_INSTALL += " \\
-    kselftests \\
-    libhugetlbfs-tests \\
-    ltp \\
-"
+cat << EOF >> conf/local.conf
+CORE_IMAGE_BASE_INSTALL_append = " kselftests libhugetlbfs-tests ltp"
 EOF
 
 # Override cmdline
