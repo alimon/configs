@@ -89,6 +89,11 @@ CORE_IMAGE_BASE_INSTALL += " \\
 "
 EOF
 
+# Override cmdline
+cat << EOF >> conf/local.conf
+CMDLINE_remove = "quiet"
+EOF
+
 # add useful debug info
 cat conf/{site,auto}.conf
 
