@@ -143,13 +143,14 @@
             # toolchains at a time when run on a amd64 slave.
             # When run on a i386 host, no need to duplicate the
             # Canadian cross build for mingw.
+            canadian=
             case ${label} in
               docker-*-amd64-tcwg*)
                 host=x86_64
-                export canadian=true ;;
+                canadian=--canadian ;;
               docker-*-i386-tcwg*)
                 host=i686
-                export canadian=no ;;
+                canadian= ;;
              *)
                 echo "ERROR: unsupported label: ${label}"
                 exit 1
@@ -195,7 +196,7 @@
 
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
-            ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}
+            ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}} --buildnumber ${BUILD_NUMBER}
             if test $? -gt 0; then
               exit 1
             fi
