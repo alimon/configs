@@ -158,11 +158,6 @@
                 fi
             fi
 
-            # git config isn't stored in the (shared) workspace, so
-            # update it inside the container
-            ${BUILD_CONTAINER} "git config --global user.email tcwg-buildslave@linaro.org"
-            ${BUILD_CONTAINER} "git config --global user.name 'TCWG BuildSlave'"
-
             tcwg_release=${date}
             # If there is no date set, extract release information from the gcc_src
             if test "${date:+set}" != "set"; then
@@ -174,13 +169,14 @@
             # toolchains at a time when run on a amd64 slave.
             # When run on a i386 host, no need to duplicate the
             # Canadian cross build for mingw.
+            canadian=
             case ${builder_arch} in
               amd64)
                 host=x86_64
-                export canadian=true ;;
+                canadian=--canadian ;;
               i386)
                 host=i686
-                export canadian=no ;;
+                canadian= ;;
              *)
                 echo "ERROR: unsupported label: ${label}"
                 exit 1
@@ -224,7 +220,7 @@
                 ;;
             esac
 
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && canadian=${canadian} BUILD_NUMBER=${BUILD_NUMBER} ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target}"
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumder ${BUILD_NUMBER}"
             if test $? -gt 0; then
               exit 1
             fi
