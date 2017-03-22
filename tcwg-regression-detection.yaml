@@ -13,6 +13,15 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+    parameters:
+        - string:
+            name: abe_test_list
+            default: 'abe-tests-checkout'
+            description: 'List of ABE tests to perform'
+        - string:
+            name: release_target_list
+            default: 'arm-linux-gnueabihf'
+            description: 'List of release targets to use'
     disabled: false
     node: tcwg-x86_64-dev-01-short
     retry-count: 3
@@ -92,6 +101,7 @@
             toolchain_config=gcc6
             abe_branch=$cur_abe_rev
             fileserver=dev-01.tcwglab
+            target_list=$release_target_list
             EOF
 
             echo "NOTE: Make-release job parameters:"
@@ -102,7 +112,7 @@
             projects:
               - name: tcwg-abe-test-gerrit-cambridge
                 predefined-parameters: |
-                  test_list='abe-tests-checkout'
+                  test_list=$abe_test_list
         - multijob:
             name: 'Check build/testsuite and releases'
             condition: COMPLETED
