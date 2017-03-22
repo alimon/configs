@@ -27,7 +27,7 @@
             default: 'canadian_cross_build_gcc5 cross_linux_build_check_gcc4_9 cross_linux_build_check_gcc6 cross_bare_build_check_gcc6 cross_qemu_build_check_gcc6 native_build_check_gcc6 abe-testsuite abe-tests-arm-linux-gnueabihf abe-tests-arm-none-eabi abe-tests-aarch64-linux-gnu abe-tests-aarch64_be-elf abe-tests-checkout'
             description: 'List of tests to perform'
     disabled: false
-    node: tcwg-x86_64-cam
+    node: tcwg-x86_64-build
     retry-count: 3
     concurrent: true
     display-name: 'TCWG BBB ABE extended tests'
@@ -45,7 +45,7 @@
             type: slave
             name: label
             values:
-                - tcwg-x86_64-cam
+                - tcwg-x86_64-build
                 - docker-trusty-amd64-tcwg
         - axis:
             type: dynamic
@@ -54,7 +54,7 @@
                 - test_list
     execution-strategy:
         combination-filter: |
-            (label=="tcwg-x86_64-cam" && testname!="canadian_cross_build_gcc5") || (label=="docker-trusty-amd64-tcwg" && testname=="canadian_cross_build_gcc5")
+            (label=="tcwg-x86_64-build" && testname!="canadian_cross_build_gcc5") || (label=="docker-trusty-amd64-tcwg" && testname=="canadian_cross_build_gcc5")
         sequential: false
     wrappers:
         - timeout:

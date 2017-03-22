@@ -75,8 +75,8 @@
 
             shopt -s extglob
 
-            i=$(wget -q -O - https://ci.linaro.org/label/tcwg-x86_64-cam/api/xml | grep -o "<idleExecutors>.*</idleExecutors>" | grep -o "[0-9]*")
-            t=$(wget -q -O - https://ci.linaro.org/label/tcwg-x86_64-cam/api/xml | grep -o "<totalExecutors>.*</totalExecutors>" | grep -o "[0-9]*")
+            i=$(wget -q -O - https://ci.linaro.org/label/tcwg-x86_64-build/api/xml | grep -o "<idleExecutors>.*</idleExecutors>" | grep -o "[0-9]*")
+            t=$(wget -q -O - https://ci.linaro.org/label/tcwg-x86_64-build/api/xml | grep -o "<totalExecutors>.*</totalExecutors>" | grep -o "[0-9]*")
 
             if [ "$i" -gt 0 ] ; then
                 gcc_curr_rev=$(git rev-parse HEAD)

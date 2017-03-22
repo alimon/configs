@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ "x$label" = "xtcwg-x86_64-cam" ]; then
+if [ "x$label" = "xtcwg-x86_64-build" ]; then
   schroot_arch=amd64
   schroot_image="tcwg-build-${schroot_arch}-trusty"
 
