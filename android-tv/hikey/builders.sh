@@ -31,14 +31,14 @@ mkdir -p /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
 
 git clone https://github.com/googlesamples/androidtv-sample-inputs
 cd androidtv-sample-inputs/
-sed -i "s/23.0.3/25.0.2/g" app/build.gradle library/build.gradle
+sed -i "s/23.0.3/25.0.4/g" app/build.gradle library/build.gradle
 ./gradlew assembleDebug
 cp app/build/outputs/apk/app-debug.apk /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
 cd -
 
 git clone https://github.com/google/ExoPlayer
 cd ExoPlayer
-sed -i "s/23.0.3/25.0.2/g" build.gradle
+sed -i "s/23.0.3/25.0.4/g" build.gradle
 ./gradlew assembleDebug
 cp ./demo/buildout/outputs/apk/demo-withExtensions-debug.apk /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
 cd -
@@ -62,4 +62,21 @@ wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-tv/hikey
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
+EOF
+
+# Construct post-build-lava parameters
+source build-configs/${BUILD_CONFIG_FILENAME}
+cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+TARGET_PRODUCT=${TARGET_PRODUCT}
+MAKE_TARGETS=${MAKE_TARGETS}
+JOB_NAME=${JOB_NAME}
+BUILD_NUMBER=${BUILD_NUMBER}
+BUILD_URL=${BUILD_URL}
+LAVA_SERVER=validation.linaro.org/RPC2/
+IMAGE_EXTENSION=img.xz
+FRONTEND_JOB_NAME=${JOB_NAME}
+DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
+CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template.json
+SKIP_REPORT=false
 EOF

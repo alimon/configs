@@ -8,3 +8,7 @@
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh
+        - trigger-builds:
+            - project: 'post-build-lava'
+              prooperty-file: post_build_lava_parameters
+              block: true
