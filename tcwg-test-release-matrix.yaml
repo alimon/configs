@@ -53,8 +53,8 @@
             type: slave
             name: label
             values:
-               - docker-trusty-amd64-tcwg-build
-               - docker-trusty-i386-tcwg-build
+               - tcwg-x86_32-build
+               - tcwg-x86_64-build
         - axis:
             type: dynamic
             name: target
@@ -66,13 +66,10 @@
         - timeout:
             timeout: 300
         - timestamps
-        - ssh-agent-credentials:
-            users:
-              - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a' # tcwg-buildslave
         - build-name:
             name: '#${BUILD_NUMBER}-${ENV,var="release"}-${ENV,var="target"}'
     builders:
-        - shell: |      
+        - shell: |
             #!/bin/bash
             set -e
 
@@ -92,23 +89,49 @@
             gccver=${fullver%%-*}
 
             case ${label} in
-              *i386*) host=i686 ;;
-              *amd64*) host=x86_64 ;;
-              *)
-                echo "Unsupported slave type: ${label}"
-                exit 1
-                ;;
+                *32*)
+                    host=i686
+                    builder_arch=i386
+                    ;;
+                *64*)
+                    host=x86_64
+                    builder_arch=amd64
+                    ;;
+                *)
+                    echo "Unsupported slave type: ${label}"
+                    exit 1
+                    ;;
             esac
 
+            # Start build container
+            builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
+            build_container_type=docker
+            bash -x ${WORKSPACE}/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
+
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            . ./build-container.sh
+            BUILD_CONTAINER="${CONTAINER}"
+            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+
+            # Make sure to cleanup build container if something goes wrong
+            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
+                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                    trap "${CONTAINERS_CLEANUP}" EXIT
+                else
+                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
+                fi
+            fi
+
             # FIXME: temporary hack: hardcode the ".1" in GCC version number
-            ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz"
 
             # Test the mingw toolchain on 32 bit host only
             case ${label} in
-              *i386*)
-                host=i686-mingw32
-                ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz
-                ;;
+                *32*)
+                    host=i686-mingw32
+                    ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz"
+                    ;;
             esac
 
             exit $?
