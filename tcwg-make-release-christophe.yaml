@@ -92,7 +92,6 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
-            basedir: abe
     axes:
         - axis:
             type: slave
@@ -136,7 +135,6 @@
                 exit 0
             fi
 
-            rm -rf jenkins-scripts
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
             # Start build container
@@ -223,7 +221,7 @@
                 ;;
             esac
 
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER}"
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE} --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER}"
             if test $? -gt 0; then
               exit 1
             fi
