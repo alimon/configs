@@ -154,14 +154,6 @@
                   host_x86_64_languages=$native_x86_64_languages
                 property-file: buildfarm_parameters
                 restrict-matrix-project: '(label=="tcwg-x86_64-cam" || label=="tcwg-x86_32-build") && target=="native"'
-              - name: tcwg-bkk16-buildfarm-benchmark
-                condition: COMPLETED
-                predefined-parameters: |
-                  targets='cross_main'
-                  run_benchmark=true
-                  host_x86_64_languages=$cross_languages
-                property-file: buildfarm_parameters
-                restrict-matrix-project: 'label=="tcwg-x86_64-cam" && (target=="aarch64-linux-gnu" || target=="arm-linux-gnueabihf" || target=="armv8l-linux-gnueabihf")'
         - conditional-step:
             condition-kind: file-exists
             condition-filename: compare_results_parameters
