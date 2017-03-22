@@ -91,7 +91,6 @@
                 - ${abe_branch}
             skip-tag: true
             shallow-clone: true
-            wipe-workspace: true
             basedir: abe
     axes:
         - axis:
@@ -318,6 +317,10 @@
                     current-parameters: true
                     block: false
     publishers:
+        - workspace-cleanup:
+            include:
+              - "*"
+            dirmatch: true
         - archive:
             artifacts: 'MakeRelease*.log.xz'
             latest-only: false
