@@ -33,5 +33,19 @@ snap download ubuntu-image
 
 sudo mount -o loop -t squashfs ubuntu-image_*.snap ${SNAP}
 for machine in ${MACHINES}; do
-  ${SNAP}/command-ubuntu-image.wrapper -c beta -o ubuntu-core-16-${machine}-lite.img ${machine}.model
+  if [ "${machine}" == "hummingboard" ]; then
+    git clone --depth 1 https://github.com/madper/hummingboard-kernel.git
+    snapcraft --target-arch armhf snap hummingboard-kernel --output hummingboard-kernel.snap
+
+    git clone --depth 1 https://github.com/madper/hummingboard-gadget.git
+    snapcraft --target-arch armhf snap hummingboard-gadget --output hummingboard-gadget.snap
+
+    ${SNAP}/command-ubuntu-image.wrapper -c beta \
+      --extra-snaps hummingboard-kernel.snap \
+      --extra-snaps hummingboard-gadget.snap \
+      -o ubuntu-core-16-${machine}-lite.img ${machine}.model
+  else
+    ${SNAP}/command-ubuntu-image.wrapper -c beta \
+      -o ubuntu-core-16-${machine}-lite.img ${machine}.model
+  fi
 done
