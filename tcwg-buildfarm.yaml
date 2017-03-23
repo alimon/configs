@@ -377,6 +377,15 @@
 
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --target ${target} --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
 
+            # If the build failed, we want to keep the containers to investigate the problem, so remove the cleanup trap handler.
+            if [ $result -ne 0 ]; then
+                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                    trap - EXIT
+                else
+                    trap "eval \`${SSH_AGENT_CLEANUP}\`" EXIT
+                fi
+            fi
+
             # If we actually built a toolchain, save its manifest.
             # If the build was a no-op (results already present on log_server),
             # copy the existing ones.
