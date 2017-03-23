@@ -116,6 +116,10 @@
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${ENV,var="date"}'
+        - workspace-cleanup:
+            include:
+              - "*"
+            dirmatch: true
     builders:
       - shell: |
             #!/bin/bash
@@ -317,10 +321,6 @@
                     current-parameters: true
                     block: false
     publishers:
-        - workspace-cleanup:
-            include:
-              - "*"
-            dirmatch: true
         - archive:
             artifacts: 'MakeRelease*.log.xz'
             latest-only: false
