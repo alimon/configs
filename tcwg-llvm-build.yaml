@@ -13,6 +13,11 @@
         - build-discarder:
             days-to-keep: 10
             num-to-keep: 10
+    parameters:
+        - string:
+            name: toolchain
+            default: ''
+            description: 'URL of the toolchain to use. This needs to be a tarball with a /bin directory inside with either GCC or LLVM from make install'
     disabled: false
     node: tcwg-x86_64-build
     retry-count: 3
@@ -40,8 +45,13 @@
         - shell: |
             #!/bin/bash
             set -ex
+            SYN_TOOLCHAIN=
+            if [ "x${toolchain}" != "x" ]; then
+              SYN_TOOLCHAIN="--toolchain=${toolchain}"
+            fi
             mkdir -p ${WORKSPACE}/llvm ${WORKSPACE}/build ${WORKSPACE}/install
             bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --srcdir=${WORKSPACE}/llvm \
                 --builddir=${WORKSPACE}/build \
-                --instdir=${WORKSPACE}/install
+                --instdir=${WORKSPACE}/install \
+                ${SYN_TOOLCHAIN}
