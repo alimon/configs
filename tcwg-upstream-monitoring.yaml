@@ -31,10 +31,6 @@
             default: dev-01.tcwglab:logs
             description: 'Log_Server'
         - string:
-            name: abe_branch
-            default: refs/remotes/origin/master
-            description: 'ABE revision to test'
-        - string:
             name: ref_build
             default: 'previous'
             description: 'Reference build for comparison, e.g., "lastSuccess" or "previous" or job number'
@@ -88,21 +84,19 @@
 
             cat << EOF > buildfarm_cmp_parameters
             ref_override=gcc=gcc.git~$branch --extraconfigdir ../config/$config $override
-            ref_log_name=${JOB_NAME}-$branch-$ref_build_num
+            ref_log_name=${JOB_NAME}-${branch}-$ref_build_num
             ref_rebuild=false
             eval_override=gcc=gcc.git~$branch --extraconfigdir ../config/$config $override
-            eval_log_name=${JOB_NAME}-$branch-$BUILD_NUMBER
+            eval_log_name=${JOB_NAME}-${branch}-$BUILD_NUMBER
             eval_rebuild=true
             log_server=$log_server
-            abe_branch=$abe_branch
             runtests=yes
-            try_bootstrap=true
             host_x86_64_excludecheck=gdb
             host_aarchXX_excludecheck=
             host_x86_64_languages=$native_x86_64_languages
             host_aarchXX_languages=$native_aarchXX_languages
-            targets='native_aarch64 native_aarch32 native_x86'
-            matrix_restrictions='(label=="tcwg-apm_64-build" || label=="tcwg-apm_32-build" || label=="tcwg-x86_64-build" || label=="tcwg-x86_32-build") && target=="native"'
+            targets=native_aarch64 native_aarch32 native_x86
+            matrix_restrictions=(label=="tcwg-apm_64-build" || label=="tcwg-apm_32-build" || label=="tcwg-x86_64-build" || label=="tcwg-x86_32-build") && target=="native"
             EOF
         - trigger-builds:
             - project: tcwg-buildfarm-cmp
