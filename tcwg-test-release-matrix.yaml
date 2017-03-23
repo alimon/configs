@@ -128,13 +128,13 @@
             fi
 
             # FIXME: temporary hack: hardcode the ".1" in GCC version number
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz"
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz --workspace ${WORKSPACE}/linux"
 
             # Test the mingw toolchain on 32 bit host only
             case ${label} in
                 *32*)
                     host=i686-mingw32
-                    ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz"
+                    ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz --workspace ${WORKSPACE}/mingw"
                     ;;
             esac
 
