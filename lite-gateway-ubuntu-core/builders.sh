@@ -35,10 +35,8 @@ sudo mount -o loop -t squashfs ubuntu-image_*.snap ${SNAP}
 for machine in ${MACHINES}; do
   if [ "${machine}" == "hummingboard" ]; then
     git clone --depth 1 https://github.com/madper/hummingboard-kernel.git
-    cd hummingboard-kernel
-    snapcraft --target-arch armhf snap --output hummingboard-kernel.snap
-    cd -
-    
+    (cd hummingboard-kernel && snapcraft --target-arch armhf snap --output hummingboard-kernel.snap)
+
     git clone --depth 1 https://github.com/madper/hummingboard-gadget.git
     snapcraft --target-arch armhf snap hummingboard-gadget --output hummingboard-gadget.snap
 
