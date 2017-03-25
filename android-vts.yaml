@@ -1,0 +1,40 @@
+- job:
+    name: android-vts
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: ANDROID_MANIFEST_URL
+            default: https://android.googlesource.com/platform/manifest
+        - string:
+            name: MANIFEST_BRANCH
+            default: master
+        - string:
+            name: LUNCH_TARGET
+            default: hikey-userdebug
+        - string:
+            name: PATCHSETS
+            default: ''
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'Android VTS Build'
+    concurrent: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        !include: android-vts/builders.yaml.inc
+    publishers:
+        !include: android-lcr/common/publishers.yaml.inc
