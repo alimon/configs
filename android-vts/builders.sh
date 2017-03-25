@@ -13,7 +13,7 @@ fi
 
 source build/envsetup.sh
 lunch ${LUNCH_TARGET}
-make -j"$(nproc)" android-vts
+make -j"$(nproc)" vts
 
 mkdir pub
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/generic/build-info/public-template.txt -O pub/BUILD-INFO.txt
