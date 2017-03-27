@@ -52,7 +52,7 @@
             rm -rf local_manifests
             git clone https://github.com/robherring/android_manifest -b mesa-master-test local_manifests
             cd ..
-            repo sync -f --force-sync -j16
+            repo sync -f --force-sync -j"$(nproc)"
 
             mkdir -p out
             cp .repo/manifest.xml out/source-manifest.xml
@@ -75,7 +75,7 @@
             source build/envsetup.sh
             for arch in arm64 x86_64; do
                     lunch linaro_${arch}-userdebug
-                    make -k -j8 gallium_dri i915_dri i965_dri libGLES_mesa gralloc.drm || { true; failed=1; }
+                    make -k -j"$(nproc)" gallium_dri i915_dri i965_dri libGLES_mesa || { true; failed=1; }
             done
 
             ###### Don't care about artifacts for now ######
