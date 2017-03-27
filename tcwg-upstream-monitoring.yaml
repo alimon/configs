@@ -77,16 +77,15 @@
             case "$branch" in
                 master)        config=master ;;
                 gcc-6-branch)  config=latest-rel ;;
-                gcc-5-branch)  config=latest-rel ;;
                 *) echo "ERROR: Unsupported branch: $branch"; exit 1 ;;
             esac
 
             cat << EOF > buildfarm_cmp_parameters
             ref_override=gcc=gcc.git~$branch --extraconfigdir ../config/$config $override
-            ref_log_name=${JOB_NAME}-${branch}-$ref_build_num
+            ref_log_name=${JOB_NAME}-$ref_build_num
             ref_rebuild=false
             eval_override=gcc=gcc.git~$branch --extraconfigdir ../config/$config $override
-            eval_log_name=${JOB_NAME}-${branch}-$BUILD_NUMBER
+            eval_log_name=${JOB_NAME}-$BUILD_NUMBER
             eval_rebuild=true
             log_server=$log_server
             runtests=yes
