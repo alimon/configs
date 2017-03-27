@@ -39,6 +39,10 @@
             name: scripts_branch
             default: master
             description: 'Jenkins-scripts branch to use'
+        - string:
+            name: LAVA_SERVER
+            default: staging.validation.linaro.org/RPC2/
+            description: 'Jenkins-scripts branch to use'
     disabled: false
     node: tcwg-x86_64-build
     child-workspace: $target/$app
@@ -103,7 +107,6 @@
 
             #${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${linux_repo} ${linux_branch}"
 
-            LAVA_SERVER=validation.linaro.org/RPC2/
             DEVICE_TYPE=beaglebone-black
             DTB_URL=https://archive.validation.linaro.org/artifacts/team/toolchain/2017/03/20/11/47/am335x-boneblack.dtb
             KERNEL_URL=https://archive.validation.linaro.org/artifacts/team/toolchain/2017/03/20/12/17/zImage
