@@ -1,0 +1,140 @@
+- job:
+    name: tcwg-buildapp-christophe
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: toolchain_url
+            default: ''
+            description: 'Toolchain URL'
+        - string:
+           name: app_list
+           default: 'linux+multi_v7'
+           description: 'List of apps to build (eg gcc, linux, linux+myconfig, linux+all ["linux" means allmodconfig, "linux+all" means build all defconfigs in sequence], spec2k spec2k6)'
+        - string:
+           name: linux_repo
+           default: 'torvalds/linux'
+           description: 'Linux kernel repo name, concatenated to git://git.kernel.org/pub/scm/linux/kernel/git (eg arnd/playground)'
+        - string:
+           name: linux_branch
+           default: 'master'
+           description: 'Linux kernel branch to build (eg to-build)'
+        - string:
+           name: target_list
+           default: 'arm-linux-gnueabihf aarch64-linux-gnu'
+           description: 'List of targets to use'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Jenkins-scripts branch to use'
+    disabled: false
+    node: tcwg-x86_64-build
+    child-workspace: $target/$app
+    concurrent: true
+    display-name: 'TCWG ZZZ BuildApp Christophe'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/tcwg-buildapp.git
+            wipe-workspace: true
+            skip-tag: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-build
+        - axis:
+            type: dynamic
+            name: app
+            values:
+                - app_list
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'tcwg-benchmark'
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+            case ${label} in
+                tcwg-x86_64-build) host_arch=amd64 ;;
+                tcwg-x86_32-build) host_arch=i386 ;;
+                tcwg-tx1_64-build) host_arch=arm64 ;;
+                tcwg-tx1_32-build) host_arch=armhf ;;
+                tcwg-tk1_32-build) host_arch=armhf ;;
+                *) echo "ERROR: Unsupported slave: $slave"; exit 1 ;;
+            esac
+
+            host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            #bash -x ./jenkins-scripts/start-container-docker.sh --arch ${host_arch} --distro trusty --session-host ${host} > container.sh
+
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            #. ./container.sh
+
+            #trap "${CONTAINER_CLEANUP}" EXIT
+
+            #${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${linux_repo} ${linux_branch}"
+
+            LAVA_SERVER=validation.linaro.org/RPC2/
+            DEVICE_TYPE=beaglebone-black
+            DTB_URL=https://archive.validation.linaro.org/artifacts/team/toolchain/2017/03/20/11/47/am335x-boneblack.dtb
+            KERNEL_URL=https://archive.validation.linaro.org/artifacts/team/toolchain/2017/03/20/12/17/zImage
+
+            wget http://people.linaro.org/~christophe.lyon/tcwg-lava-job-definition.yaml
+            sed -e "s|\${DTB_URL}|${DTB_URL}|" \
+                -e "s|\${KERNEL_URL}|${KERNEL_URL}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                < tcwg-lava-job-definition.yaml \
+                > custom_lava_job_definition.yaml
+                                                                                                                                            
+            cat <<EOF > post_build_lava_parameters
+            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+
+            cat post_build_lava_parameters
+
+            exit 0
+
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+    publishers:
+        - email:
+            recipients: 'christophe.lyon@linaro.org'
+        - email-ext:
+            recipients: 'christophe.lyon@linaro.org'
+            send-to:
+              requester
+              recipients
+            always: true
+            matrix-trigger: only-parent
