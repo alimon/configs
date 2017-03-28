@@ -221,7 +221,7 @@
                 ;;
             esac
 
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER}"
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER} ${gcc_src:+ --gcc ${gcc_src}} ${binutils_src:+ --binutils ${binutils_src}} ${glibc_src:+ --glibc ${glibc_src}} ${manifest_src:+ --manifest ${manifest_src}}"
             if test $? -gt 0; then
               exit 1
             fi
