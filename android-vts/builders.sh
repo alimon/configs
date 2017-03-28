@@ -23,6 +23,6 @@ cp out/host/linux-x86/vts/android-vts.zip pub/
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/pub
-PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}/${LUNCH_TARGET}
+PUB_DEST=/android/${JOB_NAME}/${LUNCH_TARGET}/${BUILD_NUMBER}
 PUB_EXTRA_INC=^[^/]+zip
 EOF
