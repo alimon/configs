@@ -6,7 +6,7 @@ echo "deb http://archive.ubuntu.com/ubuntu/ xenial-updates main universe" | sudo
 echo "deb http://archive.ubuntu.com/ubuntu/ xenial-proposed main universe" | sudo tee -a /etc/apt/sources.list
 
 sudo apt -q=2 update
-sudo apt -q=2 install -y --no-install-recommends dosfstools snapcraft snapd squashfs-tools ubuntu-image pxz
+sudo apt -q=2 install -y --no-install-recommends dosfstools lzop snapcraft snapd squashfs-tools ubuntu-image pxz
 
 set -ex
 
@@ -35,7 +35,7 @@ sudo mount -o loop -t squashfs ubuntu-image_*.snap ${SNAP}
 for machine in ${MACHINES}; do
   if [ "${machine}" == "hummingboard" ]; then
     git clone --depth 1 https://github.com/madper/hummingboard-kernel.git
-    (cd hummingboard-kernel && snapcraft --target-arch armhf snap --output ${WORKSPACE}/hummingboard-kernel.snap)
+    (cd hummingboard-kernel && sudo snapcraft --target-arch armhf snap --output ${WORKSPACE}/hummingboard-kernel.snap)
 
     git clone --depth 1 https://github.com/madper/hummingboard-gadget.git
     snapcraft --target-arch armhf snap hummingboard-gadget --output ${WORKSPACE}/hummingboard-gadget.snap
