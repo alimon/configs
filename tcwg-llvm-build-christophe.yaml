@@ -15,6 +15,14 @@
             num-to-keep: 10
     parameters:
         - string:
+            name: build
+            default: 'ninja'
+            description: 'Type of build to use: make or ninja.'
+        - string:
+            name: linkjobs
+            default: '8'
+            description: 'Number of linkjobs in parallel. (Should match the available memory in GB)'
+        - string:
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
@@ -71,4 +79,6 @@
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --srcdir=${WORKSPACE}/llvm \
                 --builddir=${WORKSPACE}/build \
+                --build=${build} \
+                --linkjobs=${linkjobs} \
                 --instdir=${WORKSPACE}/install"
