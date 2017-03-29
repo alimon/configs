@@ -95,17 +95,14 @@
 
                 source edksetup.sh
 
-                # download and unpack the OpenSSL tarball
+                # download and unpack the OpenSSL sources
                 cd ${WORKSPACE}/CryptoPkg/Library/OpensslLib
 
-                # capture OpenSSL version number from the patch file against the most recent version
-                VERSION=$(ls -rv EDKII_openssl-*.patch|head -1|sed 's/^.*-\([0-9.a-z]*\).patch/\1/')
+                # capture the clone command from the HOWTO
+                CLONE_CMD=$(grep 'git clone -b' OpenSSL-HOWTO.txt |sed 's/[ >]*//')
 
-                ( wget -O - -q "http://www.openssl.org/source/openssl-${VERSION}.tar.gz" || \
-                  wget -O - -q "http://www.openssl.org/source/old/${VERSION%[a-z]*}/openssl-${VERSION}.tar.gz" ) \
-                  | tar xzf -
-                ( cd openssl-${VERSION}; patch -p1 -i ../EDKII_openssl-${VERSION}.patch )
-                ./Install.sh
+                # clone the OpenSSL repo
+                eval ${CLONE_CMD} --depth 1
 
                 cd ${WORKSPACE}
                 for type in DEBUG RELEASE
