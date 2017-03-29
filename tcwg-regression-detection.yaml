@@ -23,7 +23,7 @@
             default: 'arm-linux-gnueabihf'
             description: 'List of release targets to use'
     disabled: false
-    node: tcwg-x86_64-dev-01
+    node: flyweight
     retry-count: 3
     concurrent: true
     display-name: 'TCWG Regression Detection'
@@ -96,6 +96,9 @@
 
             # TODO: Change fileserver and/or location to avoid mixing "real"
             # releases and regression detection builds.
+            # testrelease=false means that tcwg-make-release should
+            # not spawn tcwg-test-release itself. This is taken care
+            # of by tcwg-make-and-test-release.
             cat << EOF > make_release_parameters
             gcc_src=http://releases.linaro.org/components/toolchain/gcc-linaro/6.2-2016.11/gcc-linaro-6.2-2016.11.tar.xz
             release_name=2016.11-regtest-${BUILD_NUMBER}
@@ -103,6 +106,7 @@
             abe_branch=$cur_abe_rev
             fileserver=dev-01.tcwglab
             target_list=$release_target_list
+            testrelease=false
             EOF
 
             echo "NOTE: Make-release job parameters:"
@@ -120,7 +124,7 @@
             projects:
               - name: tcwg-buildfarm-cmp
                 property-file: buildfarm_cmp_parameters
-              - name: tcwg-make-release
+              - name: tcwg-make-and-test-release
                 property-file: make_release_parameters
                 predefined-parameters: |
                   target_list='arm-linux-gnueabihf'
