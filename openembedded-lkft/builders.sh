@@ -144,6 +144,21 @@ Build description:
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
+SRCREV_kernel=$(bitbake -e linux-hikey-aosp | grep "^SRCREV_kernel="| cut -d'=' -f2 | tr -d '"')
+GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
+TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
+TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
+
+cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
+{
+  "kernel_repo" : "https://android.googlesource.com/kernel/hikey-linaro",
+  "kernel_commit_id" : "${SRCREV_kernel}",
+  "kernel_branch" : "android-hikey-linaro-4.9",
+  "build_arch" : "${TUNE_FEATURES}",
+  "compiler" : "${TARGET_SYS} ${GCCVERSION}",
+}
+EOF
+
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 EOF
