@@ -1,0 +1,59 @@
+- job:
+    name: ci-dockerfiles-deployment
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 200
+    disabled: false
+    node: master
+    display-name: 'CI Dockerfiles build/publish deployment'
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'ci/dockerfiles'
+                  branches:
+                    - branch-pattern: 'master'
+            silent-start: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build-amd64
+                - build-arm64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - shell:
+            !include-raw: ci-dockerfiles-deployment/builders.sh
+    publishers:
+        - email:
+            recipients: riku.voipio@linaro.org, fathi.boudra@linaro.org
