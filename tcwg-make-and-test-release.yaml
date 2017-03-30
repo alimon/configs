@@ -27,12 +27,9 @@
             default: ''
             description: 'An optional revision of Glibc to use for this release, e.g., "glibc.git~linaro/2.21/master"'
         - string:
-            name: date
+            name: release_name
             default: ''
-            description: 'An optional release string to use, e.g., "2016.05", "2016.05-rc3", "2016.05-1", "2016.05-1-rc2". The default is to extract the release string from the gcc_src field'
-        - string:
-            name: manifest_src
-            default: ''
+            description: 'Optional release string to use, e.g., "2016.05", "2016.05-rc3", "2016.05-1", "2016.05-1-rc2". The default is to extract the release string from the gcc_src field'
             description: 'Import a manifest file to reproduce a release'
         - string:
             name: toolchain_config
@@ -74,6 +71,8 @@
         - timeout:
             timeout: 600
         - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="release_name"}'
         - ssh-agent-credentials:
             # tcwg-buildslave user id
             users:
@@ -82,9 +81,9 @@
         - shell: |
             #!/bin/bash
 
-            tcwg_release=${date}
-            # If there is no date set, extract release information from the gcc_src
-            if test "${date:+set}" != "set"; then
+            tcwg_release=${release_name}
+            # If there is no release_name set, extract release information from the gcc_src
+            if test "${release_name:+set}" != "set"; then
                 case "$gcc_src" in
                 *.tar.xz)
                     tcwg_release="$(basename $gcc_src | cut -d '-' -f4-)"
@@ -147,7 +146,7 @@
 
             cat << EOF > test_release_parameters
             tarball_url=http://${fileserver}/~tcwg-buildslave/${binariesdir}
-            release=${date}
+            release=${release_name}
             EOF
 
             echo "NOTE: Test-release job parameters:"

@@ -18,27 +18,23 @@
         - string:
             name: gcc_src
             default: 'gcc-linaro-5.3-2016.02.tar.xz'
-            description: 'The source of GCC. Specify as it would be passed to abe.sh, either a source tarballs, git branch and revision, or a URL of a tarball e.g., "gcc-linaro-5.3-2016.02.tar.xz"'
+            description: 'The source of GCC. Specify as it would be passed to abe.sh, either a source tarball, git branch and revision, git tag, or a URL of a tarball e.g., "gcc-linaro-5.3-2016.02.tar.xz"'
         - string:
             name: binutils_src
             default: ''
-            description: 'A optional revision of binutils to use for this release, e.g., "binutils-gdb.git~linaro_binutils-2_25-branch"'
+            description: 'Optional revision of binutils to use for this release, e.g., "binutils-gdb.git~linaro_binutils-2_25-branch"'
         - string:
             name: glibc_src
             default: ''
-            description: 'An optional revision of Glibc to use for this release, e.g., "glibc.git~linaro/2.21/master"'
+            description: 'Optional revision of Glibc to use for this release, e.g., "glibc.git~linaro/2.21/master"'
         - string:
-            name: date
+            name: release_name
             default: ''
-            description: 'An optional release string to use, e.g., "2016.05", "2016.05-rc3", "2016.05-1", "2016.05-1-rc2". The default is to extract the release string from the gcc_src field'
-        - string:
-            name: manifest_src
-            default: ''
-            description: 'Import a manifest file to reproduce a release'
+            description: 'Optional release string to use, e.g., "2016.05", "2016.05-rc3", "2016.05-1", "2016.05-1-rc2". The default is to extract the release string from the gcc_src field'
         - string:
             name: toolchain_config
             default: 'default'
-            description: 'Toolchain version config, e.g., "default", "gcc5", or "gcc6"'
+            description: 'Toolchain version config, e.g., "default", "gcc5", or "gcc6". Relative to abe config/ dir'
         - string:
             name: target_list
             default: 'aarch64-elf aarch64-linux-gnu aarch64_be-elf aarch64_be-linux-gnu armv8l-linux-gnueabihf arm-eabi arm-linux-gnueabi arm-linux-gnueabihf armeb-eabi armeb-linux-gnueabi armeb-linux-gnueabihf'
@@ -73,11 +69,11 @@
         - string:
             name: binariesdir
             default: ''
-            description: 'Upload dir for binaries on fileserver'
+            description: 'Optional upload dir for binaries on fileserver. If empty, a suitable value is computed by the script'
         - string:
             name: logsdir
             default: ''
-            description: 'Upload dir for logs on fileserver'
+            description: 'Optional upload dir for logs on fileserver. If empty, a suitable value is computed by the script'
     disabled: false
     node: tcwg-x86_64-dev-01
     retry-count: 3
@@ -115,7 +111,7 @@
             timeout: 300
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${ENV,var="date"}'
+            name: '#${BUILD_NUMBER}-${ENV,var="release_name"}'
         - workspace-cleanup:
             include:
               - "*"
@@ -163,9 +159,9 @@
                 fi
             fi
 
-            tcwg_release=${date}
-            # If there is no date set, extract release information from the gcc_src
-            if test "${date:+set}" != "set"; then
+            tcwg_release=${release_name}
+            # If there is no release_name set, extract release information from the gcc_src
+            if test "${release_name:+set}" != "set"; then
                 case "$gcc_src" in
                 *.tar.xz)
                     tcwg_release="$(basename $gcc_src | cut -d '-' -f4-)"
@@ -258,7 +254,7 @@
                 ;;
             esac
 
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --date ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER} ${gcc_src:+ --gcc ${gcc_src}} ${binutils_src:+ --binutils ${binutils_src}} ${glibc_src:+ --glibc ${glibc_src}} ${manifest_src:+ --manifest ${manifest_src}}"
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --release_name ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER} ${gcc_src:+ --gcc ${gcc_src}} ${binutils_src:+ --binutils ${binutils_src}} ${glibc_src:+ --glibc ${glibc_src}}"
             if test $? -gt 0; then
               exit 1
             fi
