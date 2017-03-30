@@ -21,10 +21,6 @@
             default: 'ninja'
             description: 'Type of build to use: make or ninja.'
         - string:
-            name: linkjobs
-            default: '8'
-            description: 'Number of linkjobs in parallel. (Should match the available memory in GB)'
-        - string:
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
@@ -82,6 +78,8 @@
                 fi
             fi
 
+            # Setup job parameters and run
+            linkjobs=$((weight*7))
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --srcdir=${WORKSPACE}/llvm \
                 --builddir=${WORKSPACE}/build \
