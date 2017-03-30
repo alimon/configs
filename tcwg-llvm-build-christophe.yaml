@@ -29,9 +29,9 @@
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
         - string:
-            name: memory
-            default: '7500'
-            description: 'Memory limit of the container, in MB.'
+            name: weight
+            default: '3'
+            description: 'Container weight, controls limits on memory, pids, cpu.'
     disabled: false
     node: tcwg-x86_64-build
     retry-count: 3
@@ -64,7 +64,7 @@
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
             builder_arch=amd64
-            bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --memory ${memory} > build-container.sh
+            bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight ${weight} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./build-container.sh
