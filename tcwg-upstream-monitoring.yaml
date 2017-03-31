@@ -80,15 +80,15 @@
             case "$branch" in
                 all-master)
                     gcc_branch=master
-                    matrix_restrictions=(label=="tcwg-apm_64-build" || label=="tcwg-apm_32-build" || label=="tcwg-tk1_32-build" || label=="tcwg-x86_64-build" || label=="tcwg-x86_32-build") && target=="native"
+                    matrix_restrictions='(label=="tcwg-apm_64-build" || label=="tcwg-apm_32-build" || label=="tcwg-tk1_32-build" || label=="tcwg-x86_64-build" || label=="tcwg-x86_32-build") && target=="native"'
                     config=master
                 gcc-master)
                     gcc_branch=master
-                    matrix_restrictions=(label=="tcwg-apm_64-build" || label=="tcwg-apm_32-build" || label=="tcwg-tk1_32-build") && target=="native"
+                    matrix_restrictions='(label=="tcwg-apm_64-build" || label=="tcwg-apm_32-build" || label=="tcwg-tk1_32-build") && target=="native"'
                     config=latest-rel ;;
                 gcc-*-branch)
                     gcc_branch=$branch
-                    matrix_restrictions=(label=="tcwg-apm_64-build" || label=="tcwg-apm_32-build" || label=="tcwg-tk1_32-build") && target=="native"
+                    matrix_restrictions='(label=="tcwg-apm_64-build" || label=="tcwg-apm_32-build" || label=="tcwg-tk1_32-build") && target=="native"'
                     config=latest-rel ;;
                 *) echo "ERROR: Unsupported branch: $branch"; exit 1 ;;
             esac
