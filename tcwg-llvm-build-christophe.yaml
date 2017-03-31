@@ -14,12 +14,8 @@
             days-to-keep: 10
             num-to-keep: 10
         - heavy-job:
-            weight: ${weight}
+            weight: 3
     parameters:
-        - string:
-            name: build
-            default: 'ninja'
-            description: 'Type of build to use: make or ninja.'
         - string:
             name: build_container_tag
             default: 'xenial'
@@ -55,7 +51,6 @@
         - shell: |
             #!/bin/bash
             set -ex
-            mkdir -p ${WORKSPACE}/llvm ${WORKSPACE}/build ${WORKSPACE}/install
 
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
@@ -81,8 +76,6 @@
             # Setup job parameters and run
             linkjobs=$((weight*7))
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
-                --srcdir=${WORKSPACE}/llvm \
-                --builddir=${WORKSPACE}/build \
-                --build=${build} \
-                --linkjobs=${linkjobs} \
-                --instdir=${WORKSPACE}/install"
+                --workspace=${WORKSPACE} \
+                --buildid=${BUILD_ID} \
+                --linkjobs=${linkjobs}
