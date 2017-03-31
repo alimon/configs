@@ -111,7 +111,11 @@
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./container.sh
 
-            trap "${CONTAINER_CLEANUP}" EXIT
+            if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                trap "${CONTAINER_CLEANUP}" EXIT
+            else
+                trap "${CONTAINER_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
+            fi
 
             env | egrep 'LAVA|BUILD_NUMBER|PUBLISH_TOKEN' > .env
             ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${boot} ${linux_repo} ${linux_branch}"
