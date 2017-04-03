@@ -43,6 +43,10 @@
             default: master
             description: 'Jenkins-scripts branch to use'
         - string:
+            name: build_container_tag
+            default: 'trusty'
+            description: 'Distro to use on the builder with non-default container type: trusty, xenial.'
+        - string:
             name: LAVA_SERVER
             default: validation.linaro.org
             description: 'Lava server to use'
@@ -108,11 +112,6 @@
             esac
 
             host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            build_container_tag=trusty
-            # lava-tool is available under xenial, but not under trusty
-            if [ $boot ]; then
-                build_container_tag=xenial
-            fi
             bash -x ./jenkins-scripts/start-container-docker.sh --arch ${host_arch} --distro ${build_container_tag} --session-host ${host} > container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
