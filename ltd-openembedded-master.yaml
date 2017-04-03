@@ -1,0 +1,68 @@
+- job:
+    name: ltd-openembedded-master
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'rpb-ltd-gateway-image'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'master-upstream-dev'
+    disabled: false
+    node: master
+    display-name: 'Linaro Technologies Builds - OpenEmbedded (master)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'hikey'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ltd-openembedded/builders.sh
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              ${DEPLOY_DIR_IMAGE}/ \
+              snapshots/linaro-technologies/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'ricardo.salveti@linaro.org'
