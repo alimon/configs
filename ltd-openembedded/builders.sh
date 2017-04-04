@@ -131,3 +131,7 @@ Build description:
 * Manifest branch: ${MANIFEST_BRANCH}
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/linaro-technologies/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
+
+cat << EOF > ${WORKSPACE}/post_build_parameters
+DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+EOF
