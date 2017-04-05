@@ -1,0 +1,74 @@
+- job:
+    name: ci-dockerfiles-base
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 200
+    disabled: false
+    node: build-arm64
+    display-name: 'CI Dockerfiles build/publish base images'
+    scm:
+        - git:
+            url: https://git.linaro.org/ci/dockerfiles.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+                rm -rf ${HOME}/.docker
+            }
+
+            mkdir -p ${HOME}/.docker
+            sed -e "s|\${DOCKER_AUTH}|${DOCKER_AUTH}|" < ${WORKSPACE}/config.json > ${HOME}/.docker/config.json
+            chmod 0600 ${HOME}/.docker/config.json
+
+            # FIXME: include all the variants (centos, fedora, etc...)
+            for arch in arm64 armhf; do
+              for distro in debian ubuntu; do
+                if [ "${distro}" == "debian" ]; then
+                  suite=stretch
+                  mirror=http://deb.debian.org/debian
+                fi
+                if [ "${distro}" == "ubuntu" ]; then
+                  suite=xenial
+                  mirror=http://ports.ubuntu.com
+                fi
+                sudo debootstrap --arch=${arch} --variant=minbase ${suite} base-${arch}-${distro}-${suite} ${mirror}
+                sudo rm -rf base-arm*/var/lib/apt/lists/* base-arm*/tmp/* base-arm*/var/tmp/*
+                sudo tar -C base-${arch}-${distro}-${suite} -c . | docker import - linaro/base-${arch}-${distro}:${suite}
+                sudo rm -rf base-${arch}-${distro}-${suite}
+                docker push linaro/base-${arch}-${distro}:${suite}
+              done
+            done
