@@ -1,0 +1,63 @@
+- job:
+    name: lkft-hikey-aosp-4.9
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: REFERENCE_AOSP_BUILD
+            default: 'http://builds.96boards.org/snapshots/hikey/linaro/aosp-master/366/'
+        - string:
+            name: KERNEL_BRANCH
+            default: 'android-hikey-linaro-4.9'
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'LKFT - HiKey AOSP 4.9 Kernel test'
+    scm:
+        - git:
+            url: https://android.googlesource.com/kernel/hikey-linaro
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - origin/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - timeout:
+            timeout: 500
+    builders:
+        - shell:
+            !include-raw:
+                - lkft/hikey-aosp/builders.sh
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
+    publishers:
+        - archive:
+            artifacts: '*.xml,*.json'
+            latest-only: true
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org'
