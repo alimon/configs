@@ -64,6 +64,10 @@ for filename in data.splitlines():
 # Remove dplicate entries in the list
 filelist = list(set(filelist))
 
+jenkins_jobs_ini = '[job_builder]\nignore_cache=True\nkeep_descriptions=False\n\n[jenkins]\nuser=john.doe@linaro.org\npassword=xxx\nurl=https://ci.linaro.org/\n'
+with open('jenkins_jobs.ini', 'w') as f:
+    f.write(jenkins_jobs_ini)
+
 for conf_filename in filelist:
     with open(conf_filename) as f:
         buffer = f.read()
@@ -76,7 +80,10 @@ for conf_filename in filelist:
         with open('template.yaml', 'w') as f:
             f.write(buffer)
         try:
-            arguments = [jjb_cmd, 'update', 'template.yaml']
+            arguments = [jjb_cmd, '--conf=jenkins_jobs.ini',
+                         '--user=%s' % os.environ.get('JJB_USER'),
+                         '--password=%s' % os.environ.get('JJB_PASSWORD'),
+                         'update', 'template.yaml']
             # arguments = [jjb_cmd, 'test', conf_filename, '-o', 'out']
             proc = subprocess.Popen(arguments,
                                     stdin=subprocess.PIPE,
