@@ -32,7 +32,7 @@ def findparentfiles(fname):
     return filelist
 
 
-jjb_cmd = find_executable('jenkins-job-builder') or sys.exit('jenkins-job-builder is not found.')
+jjb_cmd = find_executable('jenkins-jobs') or sys.exit('jenkins-jobs is not found.')
 
 try:
     arguments = ['git', 'diff', '--name-only',
