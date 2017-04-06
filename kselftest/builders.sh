@@ -25,4 +25,4 @@ make -C tools/testing/selftests install
 
 mkdir -p tools/testing/selftests/out
 cd tools/testing/selftests
-tar -I pxz -cf ../out/kselftest_${deb_host_arch}_$(git describe).tar.xz kselftest
+tar -I pxz -cf out/kselftest_${deb_host_arch}_$(git describe).tar.xz kselftest
