@@ -22,6 +22,6 @@ wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/h
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
-PUB_DEST=snapshots/lkft/${JOB_NAME}/${BUILD_NUMBER}
+PUB_DEST=snapshots/android/lkft/${JOB_NAME}/${BUILD_NUMBER}
 PUB_SRC=${PWD}/out/
 EOF
