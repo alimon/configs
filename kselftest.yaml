@@ -1,0 +1,55 @@
+- job:
+    name: kselftest
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+    parameters:
+        - string:
+            name: KSELFTEST_URL
+            default: 'https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+        - string:
+            name: KSELFTEST_BRANCH
+            default: 'master'
+    disabled: false
+    node: master
+    display-name: 'Generate kselftest tarball'
+    scm:
+        - git:
+            url: ${KSELFTEST_URL}
+            refspec: +refs/heads/${KSELFTEST_BRANCH}:refs/remotes/origin/${KSELFTEST_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KSELFTEST_BRANCH}
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-xenial-amd64
+                - docker-xenial-arm64
+                - docker-xenial-armhf
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell:
+            !include-raw: kselftest/builders.sh
