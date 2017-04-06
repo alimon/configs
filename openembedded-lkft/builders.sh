@@ -91,6 +91,12 @@ cat << EOF >> conf/local.conf
 CMDLINE_remove = "quiet"
 EOF
 
+
+# Remove 96boards-tools to avoid resizing on first boot
+cat << EOF >> conf/local.conf
+RDEPENDS_packagegroup-rpb_remove = "96boards-tools"
+EOF
+
 # add useful debug info
 cat conf/{site,auto}.conf
 
