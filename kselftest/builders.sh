@@ -16,7 +16,14 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; th
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
 fi
 
+KSELFTEST_URL=${KSELFTEST_URL:-"https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git"}
+KSELFTEST_BRANCH=${KSELFTEST_BRANCH:-"master"}
+WORKSPACE=${WORKSPACE:-"${PWD}"}
+
 set -x
+
+git clone -b ${KSELFTEST_BRANCH} ${KSELFTEST_URL} ${WORKSPACE}
+echo "#${BUILD_NUMBER}-$(git rev-parse --short=8 HEAD)" > version.txt
 
 make headers_install
 export INSTALL_PATH=kselftest

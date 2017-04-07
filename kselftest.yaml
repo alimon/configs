@@ -26,16 +26,6 @@
     disabled: false
     node: master
     display-name: 'Generate kselftest tarball'
-    scm:
-        - git:
-            url: ${KSELFTEST_URL}
-            refspec: +refs/heads/${KSELFTEST_BRANCH}:refs/remotes/origin/${KSELFTEST_BRANCH}
-            name: origin
-            branches:
-                - refs/heads/${KSELFTEST_BRANCH}
-            skip-tag: true
-            shallow-clone: false
-            wipe-workspace: true
     axes:
         - axis:
             type: slave
@@ -48,8 +38,9 @@
         sequential: false
     wrappers:
         - timestamps
-        - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell:
             !include-raw: kselftest/builders.sh
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
