@@ -67,6 +67,11 @@ export EULA_dragonboard410c=1
 export EULA_stih410b2260=1
 source setup-environment build
 
+# EULA for FSL
+cat << EOF >> conf/auto.conf
+ACCEPT_FSL_EULA = "1"
+EOF
+
 # Add job BUILD_NUMBER to output files names
 cat << EOF >> conf/auto.conf
 IMAGE_NAME_append = "-${BUILD_NUMBER}"
@@ -97,7 +102,7 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  stih410-b2260)
+  cubox-i|stih410-b2260)
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
