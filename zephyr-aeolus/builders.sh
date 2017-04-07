@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 -y install ccache cmake g++-multilib gcc-arm-none-eabi git libc6-dev-i386 python-requests python-serial python3-serial python3-ply python3-yaml rsync device-tree-compiler
+sudo apt-get -q=2 -y install ccache cmake g++-multilib gcc-arm-none-eabi git libc6-dev-i386 python-requests python-serial python3-serial python3-ply python3-yaml socat rsync device-tree-compiler
 
 set -ex
 
