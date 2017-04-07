@@ -44,3 +44,15 @@
         - build-name-setter:
             name: 'version.txt'
             file: true
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              tools/testing/selftests/out/ \
+              components/kernel/${JOB_NAME}/$(dpkg-architecture -qDEB_HOST_ARCH)/${BUILD_NUMBER}
