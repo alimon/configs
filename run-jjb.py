@@ -43,14 +43,12 @@ if jjb_user is not None and jjb_password is not None:
                         'keep_descriptions=False\n'
                         '\n'
                         '[jenkins]\n'
-                        'user=john.doe@linaro.org\n'
-                        'password=xxx\n'
-                        'url=https://ci.linaro.org/\n')
+                        'user=%s\n'
+                        'password=%s\n'
+                        'url=https://ci.linaro.org/\n' % (jjb_user, jjb_password))
     with open('jenkins_jobs.ini', 'w') as f:
         f.write(jenkins_jobs_ini)
-    arguments.extend(['--conf=jenkins_jobs.ini',
-                      '--user='.join(jjb_user),
-                      '--password='.join(jjb_password)])
+    arguments.append('--conf=jenkins_jobs.ini')
 
 arguments.extend(['update', 'template.yaml'])
 
