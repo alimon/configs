@@ -15,7 +15,7 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-    node: master
+    node: docker-jessie-amd64
     disabled: false
     display-name: 'Build RPM packages in OBS'
     parameters:
@@ -28,6 +28,14 @@
             default: 'linaro-staging'
     wrappers:
         - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: OSCRC_USER
+                variable: OSCRC_USER
+        - credentials-binding:
+            - text:
+                credential-id: OSCRC_PASS
+                variable: OSCRC_PASS
     builders:
         - shell:
             !include-raw: build-package/builder-rpm.sh
