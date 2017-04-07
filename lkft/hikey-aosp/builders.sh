@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
 export PATH=${PATH}:${PWD}/aarch64-linux-android-4.9/bin/
