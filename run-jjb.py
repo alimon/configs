@@ -33,6 +33,26 @@ def findparentfiles(fname):
 
 
 jjb_cmd = find_executable('jenkins-jobs') or sys.exit('jenkins-jobs is not found.')
+arguments = [jjb_cmd]
+
+jjb_user = os.environ.get('JJB_USER')
+jjb_password = os.environ.get('JJB_PASSWORD')
+if jjb_user is not None and jjb_password is not None:
+    jenkins_jobs_ini = ('[job_builder]\n'
+                        'ignore_cache=True\n'
+                        'keep_descriptions=False\n'
+                        '\n'
+                        '[jenkins]\n'
+                        'user=john.doe@linaro.org\n'
+                        'password=xxx\n'
+                        'url=https://ci.linaro.org/\n')
+    with open('jenkins_jobs.ini', 'w') as f:
+        f.write(jenkins_jobs_ini)
+    arguments.extend(['--conf=jenkins_jobs.ini',
+                      '--user='.join(jjb_user),
+                      '--password='.join(jjb_password)])
+
+arguments.extend(['update', 'template.yaml'])
 
 try:
     arguments = ['git', 'diff', '--name-only',
@@ -64,10 +84,6 @@ for filename in data.splitlines():
 # Remove dplicate entries in the list
 filelist = list(set(filelist))
 
-jenkins_jobs_ini = '[job_builder]\nignore_cache=True\nkeep_descriptions=False\n\n[jenkins]\nuser=john.doe@linaro.org\npassword=xxx\nurl=https://ci.linaro.org/\n'
-with open('jenkins_jobs.ini', 'w') as f:
-    f.write(jenkins_jobs_ini)
-
 for conf_filename in filelist:
     with open(conf_filename) as f:
         buffer = f.read()
@@ -80,11 +96,6 @@ for conf_filename in filelist:
         with open('template.yaml', 'w') as f:
             f.write(buffer)
         try:
-            arguments = [jjb_cmd, '--conf=jenkins_jobs.ini',
-                         '--user=%s' % os.environ.get('JJB_USER'),
-                         '--password=%s' % os.environ.get('JJB_PASSWORD'),
-                         'update', 'template.yaml']
-            # arguments = [jjb_cmd, 'test', conf_filename, '-o', 'out']
             proc = subprocess.Popen(arguments,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
@@ -100,3 +111,6 @@ for conf_filename in filelist:
 
         os.remove('template.yaml')
         #shutil.rmtree('out')
+
+if os.path.exists('jenkins_jobs.ini'):
+    os.remove('jenkins_jobs.ini')
