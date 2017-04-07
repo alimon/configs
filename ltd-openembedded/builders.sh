@@ -102,7 +102,7 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  cl-som-imx7|cubox-i|stih410-b2260)
+  cl-som-imx7|cubox-i|ls1043ardb|stih410-b2260)
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
