@@ -33,7 +33,7 @@ def findparentfiles(fname):
 
 
 jjb_cmd = find_executable('jenkins-jobs') or sys.exit('jenkins-jobs is not found.')
-arguments = [jjb_cmd]
+jjb_args = [jjb_cmd]
 
 jjb_user = os.environ.get('JJB_USER')
 jjb_password = os.environ.get('JJB_PASSWORD')
@@ -48,15 +48,15 @@ if jjb_user is not None and jjb_password is not None:
                         'url=https://ci.linaro.org/\n' % (jjb_user, jjb_password))
     with open('jenkins_jobs.ini', 'w') as f:
         f.write(jenkins_jobs_ini)
-    arguments.append('--conf=jenkins_jobs.ini')
+    jjb_args.append('--conf=jenkins_jobs.ini')
 
-arguments.extend(['update', 'template.yaml'])
+jjb_args.extend(['update', 'template.yaml'])
 
 try:
-    arguments = ['git', 'diff', '--name-only',
-                 os.environ.get('GIT_PREVIOUS_COMMIT'),
-                 os.environ.get('GIT_COMMIT')]
-    proc = subprocess.Popen(arguments,
+    git_args = ['git', 'diff', '--name-only',
+                os.environ.get('GIT_PREVIOUS_COMMIT'),
+                os.environ.get('GIT_COMMIT')]
+    proc = subprocess.Popen(git_args,
                             stdin=subprocess.PIPE,
                             stdout=subprocess.PIPE,
                             universal_newlines=False,
@@ -94,7 +94,7 @@ for conf_filename in filelist:
         with open('template.yaml', 'w') as f:
             f.write(buffer)
         try:
-            proc = subprocess.Popen(arguments,
+            proc = subprocess.Popen(jjb_args,
                                     stdin=subprocess.PIPE,
                                     stdout=subprocess.PIPE,
                                     universal_newlines=False,
