@@ -8,7 +8,7 @@ fi
 
 pkg_list="git libcap-dev libcap-ng-dev libfuse-dev libmount-dev libpopt-dev pkg-config pxz rsync"
 deb_host_arch=$(dpkg-architecture -qDEB_HOST_ARCH)
-[ "deb_host_arch" != "armhf" ] &&  pkg_list+=" libnuma-dev"
+[ "${deb_host_arch}" != "armhf" ] && pkg_list+=" libnuma-dev"
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
