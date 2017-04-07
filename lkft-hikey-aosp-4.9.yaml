@@ -43,12 +43,20 @@
         - shell:
             !include-raw:
                 - lkft/hikey-aosp/builders.sh
-        - inject:
-            properties-file: publish_parameters
         - linaro-publish-token
-        - shell:
-            !include-raw:
-                - android/linaro-publisher.sh
+        - shell: |
+            #!/bin/bash
+
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O out/BUILD-INFO.txt
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info out/BUILD-INFO.txt \
+              --link-latest \
+              out/ android/lkft/${JOB_NAME}/${BUILD_NUMBER}
     publishers:
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
