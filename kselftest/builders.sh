@@ -8,7 +8,19 @@ fi
 
 pkg_list="git libcap-dev libcap-ng-dev libfuse-dev libmount-dev libpopt-dev pkg-config pxz rsync"
 deb_host_arch=$(dpkg-architecture -qDEB_HOST_ARCH)
-[ "${deb_host_arch}" != "armhf" ] && pkg_list+=" libnuma-dev"
+case "${deb_host_arch}" in
+  amd64)
+    export ARCH=x86_64
+    pkg_list+=" libnuma-dev"
+    ;;
+  arm64)
+    export ARCH=arm64
+    pkg_list+=" libnuma-dev"
+    ;;
+  armhf)
+    export ARCH=arm
+    ;;
+esac
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
@@ -23,13 +35,34 @@ WORKSPACE=${WORKSPACE:-"${PWD}"}
 set -x
 
 git clone -b ${KSELFTEST_BRANCH} ${KSELFTEST_URL} ${WORKSPACE}
-echo "#${BUILD_NUMBER}-$(git rev-parse --short=8 HEAD)" > version.txt
+git_describe=$(git describe)
+echo "#${BUILD_NUMBER}-${git_describe}" > version.txt
 
-make headers_install
+make ARCH=${ARCH} headers_install
 export INSTALL_PATH=kselftest
-make -C tools/testing/selftests
-make -C tools/testing/selftests install
+make ARCH=${ARCH} -C tools/testing/selftests
+make ARCH=${ARCH} -C tools/testing/selftests install
 
 mkdir -p tools/testing/selftests/out
 cd tools/testing/selftests
-tar -I pxz -cf out/kselftest_${deb_host_arch}_$(git describe).tar.xz kselftest
+tar -I pxz -cf out/kselftest_${ARCH}_${git_describe}.tar.xz kselftest
+
+# Build information
+cat > out/HEADER.textile << EOF
+
+h4. kselftest
+
+Build description:
+* Build URL: "${BUILD_URL}":${BUILD_URL}
+* Kernel URL: ${KSELFTEST_URL}
+* Kernel branch: ${KSELFTEST_BRANCH}
+* Kernel commit: ${git_describe}
+EOF
+
+cat > out/build_config.json <<EOF
+{
+  "kernel_repo" : "${KSELFTEST_URL}",
+  "kernel_branch" : "${KSELFTEST_BRANCH}",
+  "kernel_commit_id" : "${git_describe}"
+}
+EOF
