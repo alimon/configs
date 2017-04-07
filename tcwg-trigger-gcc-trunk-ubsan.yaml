@@ -1,0 +1,51 @@
+- job:
+    name: tcwg-trigger-gcc-trunk-ubsan
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: tcwg-x86_64-dev-01-short
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG Trigger GCC trunk bootstrap with UBSAN'
+    triggers:
+        # Every Saturday at 20:00
+        - timed: '0 20 * * 6'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            cat << EOF > buildfarm_parameters
+            override=--set buildconfig=bootstrap-ubsan
+            log_name=${JOB_NAME}-${BUILD_NUMBER}/\$builder_type.\$target
+            abe_branch=refs/remotes/origin/master
+            runtests=no
+            try_bootstrap=true
+            rebuild=yes
+            dont_fail=false
+            targets=native_aarch32 native_aarch64 native_x86
+            EOF
+        - trigger-builds:
+            - project: 'tcwg-buildfarm'
+              property-file: buildfarm_parameters
+              block: false
