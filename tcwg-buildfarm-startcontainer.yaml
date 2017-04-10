@@ -82,6 +82,10 @@
             name: build_container_distro
             default: 'trusty'
             description: 'Distro to use on the builder with non-default container type: trusty, xenial.'
+        - string:
+            name: displaytag
+            default: 'manual'
+            description: 'Tag to display in the Jenkins console, so that the build name is more helpful'
     disabled: false
     node: tcwg-x86_64-build
     child-workspace: $target
@@ -129,7 +133,7 @@
             timeout: 600
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}'
+            name: '#${BUILD_NUMBER}-${displaytag}'
     builders:
         - shell: |
             #!/bin/bash
