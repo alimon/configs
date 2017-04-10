@@ -52,12 +52,13 @@
 
             cat > kvmtool-params <<EOF
             source=$BUILD_URL/artifact/`cat kvmtool.dsc`
+            repo=Qemu
             EOF
     publishers:
         - archive:
             artifacts: '*.changes, *.dsc, *.gz, *.xz'
         - trigger-parameterized-builds:
-            - project: build-all-packages
+            - project: build-package-obs
               property-file: kvmtool-params
               condition: SUCCESS
         - email:
