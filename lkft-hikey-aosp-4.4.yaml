@@ -1,0 +1,68 @@
+- job:
+    name: lkft-hikey-aosp-4.4
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: REFERENCE_AOSP_BUILD
+            default: 'http://builds.96boards.org/snapshots/hikey/linaro/aosp-master/368/'
+        - string:
+            name: KERNEL_BRANCH
+            default: 'android-hikey-linaro-4.4'
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'LKFT - HiKey AOSP 4.4 Kernel test'
+    scm:
+        - git:
+            url: https://android.googlesource.com/kernel/hikey-linaro
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - origin/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - timeout:
+            timeout: 500
+    builders:
+        - shell:
+            !include-raw:
+                - lkft/hikey-aosp/builders.sh
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O out/BUILD-INFO.txt
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info out/BUILD-INFO.txt \
+              --link-latest \
+              out/ android/lkft/${JOB_NAME}/${BUILD_NUMBER}
+    publishers:
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org'
