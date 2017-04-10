@@ -34,10 +34,6 @@
             name: ref_build
             default: 'previous'
             description: 'Reference build for comparison, e.g., "lastSuccess" or "previous" or job number'
-        - string:
-            name: branch_list
-            default: 'all-master gcc-master'
-            description: 'List of branches to build (all-master, gcc-master, gcc-*-branch)'
     disabled: false
     node: tcwg-x86_64-dev-01
     child-workspace: $branch
@@ -45,10 +41,11 @@
     display-name: 'TCWG Upstream Monitoring'
     axes:
         - axis:
-            type: dynamic
+            type: user-defined
             name: branch
             values:
-                - branch_list
+                - all-master
+                - gcc-master
     triggers:
         # Every day at 00:20 AM
         - timed: '20 0 * * *'
