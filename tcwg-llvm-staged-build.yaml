@@ -17,6 +17,10 @@
             weight: 3
     parameters:
         - string:
+            name: toolchain
+            default: ''
+            description: 'URL of the toolchain to use. This needs to be a tarball with a /bin directory inside with either GCC or LLVM from make install'
+        - string:
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
@@ -78,4 +82,5 @@
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --workspace=${WORKSPACE} \
                 --buildid=${BUILD_ID} \
-                --linkjobs=${linkjobs}"
+                --linkjobs=${linkjobs}" \
+                --toolchain=${toolchain}
