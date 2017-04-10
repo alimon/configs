@@ -42,12 +42,6 @@
 
             set -ex
 
-            wget -qO - http://deb.opendataplane.org/odp.key | sudo apt-key add -
-            echo 'deb http://deb.opendataplane.org/ jessie main' | sudo tee /etc/apt/sources.list.d/odp.list
-
-            sudo apt-get -q=2 update
-            sudo apt-get -q=2 -y --no-install-recommends install debhelper devscripts xz-utils
-
             pkg_source=odp
             cd ${pkg_source}
 
@@ -96,25 +90,16 @@
 
             cd ..
 
-            cat > ${WORKSPACE}/build-package.jessie.properties <<EOF
-            codename=jessie
+            cat > ${WORKSPACE}/build-package.properties <<EOF
             source=${BUILD_URL}/artifact/${pkg_source}_${pkg_version}-1.dsc
-            repo=odp-staging
-            EOF
-            cat > ${WORKSPACE}/build-package.xenial.properties <<EOF
-            codename=xenial
-            source=${BUILD_URL}/artifact/${pkg_source}_${pkg_version}-1.dsc
-            repo=odp-staging
+            repo=ODP:Staging
             EOF
     publishers:
         - archive:
             artifacts: '*.dsc, *.gz, *.xz'
         - trigger-parameterized-builds:
-            - project: build-package
-              property-file: build-package.xenial.properties
-              condition: SUCCESS
-            - project: build-package
-              property-file: build-package.jessie.properties
+            - project: build-package-obs
+              property-file: build-package.properties
               condition: SUCCESS
         - email:
             recipients: 'riku.voipio@linaro.org lng-ci@lists.linaro.org'

@@ -42,10 +42,8 @@
 
             set -e
 
-            wget -qO - http://deb.opendataplane.org/odp.key|sudo apt-key add -
-
-            sudo bash -c 'echo "deb http://deb.opendataplane.org/ jessie main" > /etc/apt/sources.list.d/odp.list'
-
+            wget -O -  http://obs.linaro.org/ODP:Staging/Debian_8/Release.key|sudo apt-key add -
+            echo "deb http://obs.linaro.org/ODP:Staging/Debian_8/ ./"|sudo tee /etc/apt/sources.list.d/obs.list
             sudo apt-get update
             sudo apt-get install --no-install-recommends -q -y dh-autoreconf libcunit1-dev libpcap-dev libodphelper-linux-dev libdpdk-dev libodp-dpdk-dev doxygen ghostscript texlive-latex-recommended g++ pkg-config
 
@@ -53,7 +51,7 @@
 
             cat > ${WORKSPACE}/ofp-params <<EOF
             source=${BUILD_URL}/artifact/$(echo *.dsc)
-            repo=odp-staging
+            repo=ODP:Staging
             EOF
 
             mv *.dsc *.gz *.xz ${WORKSPACE}/
@@ -61,7 +59,7 @@
         - archive:
             artifacts: '*.dsc, *.gz, *.xz'
         - trigger-parameterized-builds:
-            - project: build-all-packages
+            - project: build-package-obs
               property-file: ofp-params
               condition: SUCCESS
         - email:

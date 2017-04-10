@@ -42,12 +42,6 @@
 
             set -ex
 
-            wget -qO - http://deb.opendataplane.org/odp.key | sudo apt-key add -
-            echo 'deb http://deb.opendataplane.org/ jessie main' | sudo tee /etc/apt/sources.list.d/odp.list
-
-            sudo apt-get -q=2 update
-            sudo apt-get -q=2 -y --no-install-recommends install debhelper devscripts xz-utils
-
             pkg_source=odp-dpdk
             cd ${pkg_source}
 
@@ -97,9 +91,8 @@
             cd ..
 
             cat > ${WORKSPACE}/build-package.properties <<EOF
-            codename=jessie
             source=${BUILD_URL}/artifact/${pkg_source}_${pkg_version}-0linaro1.dsc
-            repo=odp-staging
+            repo=ODP:Staging
             EOF
     publishers:
         - archive:
