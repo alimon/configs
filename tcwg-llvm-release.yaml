@@ -1,0 +1,117 @@
+- job:
+    name: tcwg-llvm-release
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+        - heavy-job:
+            weight: 3
+    parameters:
+        - string:
+            name: release
+            default: ''
+            description: 'Release number. Ex. 4.0.1'
+        - string:
+            name: candidate
+            default: ''
+            description: 'RC number. Ex. 1, 2, final'
+        - string:
+            name: toolchain
+            default: ''
+            description: 'URL of the toolchain to use. This needs to be a tarball with a /bin directory inside with either GCC or LLVM from make install'
+        - string:
+            name: build_container_tag
+            default: 'xenial'
+            description: 'Type of image to use in the container: trusty, xenial.'
+        - string:
+            name: weight
+            default: '3'
+            description: 'Container weight, controls limits on memory, pids, cpu.'
+    disabled: false
+    node: tcwg-x86_64-build
+    child-workspace: $label
+    concurrent: true
+    display-name: 'TCWG LLVM Release'
+    scm:
+        - git:
+            url: http://git.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-build
+                - tcwg-tk1_32-build
+                - tcwg-apm_64-build
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            # Select builder arch/type/container
+            case ${label} in
+                tcwg-x86_64-build)
+                    builder_arch=amd64
+                    ;;
+                tcwg-tk1_32-build)
+                    builder_arch=armhf
+                    ;;
+                tcwg-apm_64-build)
+                    builder_arch=arm64
+                    ;;
+                *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
+            esac
+            build_container_type=docker
+            build_container_tag=${build_container_tag}
+
+            # Start build container
+            builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight ${weight} > build-container.sh
+
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            . ./build-container.sh
+            BUILD_CONTAINER="${CONTAINER}"
+            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+
+            # Make sure to cleanup build container if something goes
+            # wrong when preparing the test environment
+            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
+                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                    trap "${CONTAINERS_CLEANUP}" EXIT
+                else
+                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
+                fi
+            fi
+
+            # Setup job parameters and run
+            buildjobs=$((weight*7))
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
+                --workspace=${WORKSPACE} \
+                --release=${release} \
+                --candidate=${candidate}" \
+                --buildjobs=${buildjobs} \
+                --toolchain=${toolchain}
