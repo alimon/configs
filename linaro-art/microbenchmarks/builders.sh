@@ -1,5 +1,6 @@
 #!/bin/bash -xe
 
+sudo apt-get update
 sudo apt-get install -y python-requests
 
 # Build scripts
