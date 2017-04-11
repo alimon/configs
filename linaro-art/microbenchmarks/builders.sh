@@ -12,7 +12,6 @@ cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
 # Port forwarding magic to have access to Nexus devices
 source /home/buildslave/srv/nexus-config
 export ANDROID_SERIAL=${BULLHEAD}
-./setup_adb.sh
 ./setup_host.sh
 ./setup_android.sh
 
