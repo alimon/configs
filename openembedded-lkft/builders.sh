@@ -97,6 +97,7 @@ RDEPENDS_packagegroup-rpb_remove = "96boards-tools"
 EOF
 
 # Remove systemd firstboot and machine-id file
+mkdir -p ../layers/meta-96boards/recipes-core/systemd
 cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd_%.bbappend
 PACKAGECONFIG_remove = "firstboot"
 
