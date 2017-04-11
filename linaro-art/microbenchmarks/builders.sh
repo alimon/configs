@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-sudo apt-get install -y pyhton-requests
+sudo apt-get install -y python-requests
 
 # Build scripts
 ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
