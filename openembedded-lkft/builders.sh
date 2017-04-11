@@ -91,10 +91,18 @@ cat << EOF >> conf/local.conf
 CMDLINE_remove = "quiet"
 EOF
 
-
 # Remove 96boards-tools to avoid resizing on first boot
 cat << EOF >> conf/local.conf
 RDEPENDS_packagegroup-rpb_remove = "96boards-tools"
+EOF
+
+ # Remove systemd firstboot and machine-id file
+cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd_%.bbappend
+PACKAGECONFIG_remove = "firstboot"
+
+do_install_append() {
+    rm -f \${D}\${sysconfdir}/machine-id
+}
 EOF
 
 # add useful debug info
