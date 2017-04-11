@@ -79,6 +79,7 @@
             fi
 
             # Setup job parameters and run
+            ${BUILD_CONTAINER} "sudo apt-get update ; sudo apt-get -y install libgmp-dev libmpfr-dev libmpc-dev"
             ${BUILD_CONTAINER} "bash -x ${WORKSPACE}/tcwg-release-tools/tcwg-release-tarball.sh -g ${WORKSPACE}/gcc_src -r ${WORKSPACE}/release_build -t ${tag}"
     publishers:
         - archive:
