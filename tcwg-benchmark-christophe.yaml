@@ -62,14 +62,14 @@
 
             set -ex
 
-            wget --no-check-certificate ${toolchain_url}
+            wget --progress=dot:giga --no-check-certificate ${toolchain_url}
             tarball=$(basename ${toolchain_url})
             tar xf ${tarball}
             toolchaindir=$(echo ${tarball} | sed 's/.tar.xz//')
 
             # Slaves for this job are virtual slaves on dev-01,
             # convert the slave name into the target board name
-            boardname=$(echo ${NODENAME} | sed 's/-bmk//').tcwglab
+            boardname=$(echo ${NODE_NAME} | sed 's/-bmk//').tcwglab
             ssh $boardname rm -rf ${HOME}/bmk-scripts
             ssh $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
             #FIXME: use master branch when ready
