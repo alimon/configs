@@ -1,5 +1,7 @@
 #!/bin/bash -xe
 
+apt-get install -y pyhton-requests
+
 # Build scripts
 ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
 ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
