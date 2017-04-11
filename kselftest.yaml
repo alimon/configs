@@ -48,6 +48,19 @@
         - shell: |
             #!/bin/bash
 
+            deb_host_arch=$(dpkg-architecture -qDEB_HOST_ARCH)
+            case "${deb_host_arch}" in
+              amd64)
+                export ARCH=x86_64
+                ;;
+              arm64)
+                export ARCH=arm64
+                ;;
+              armhf)
+                export ARCH=arm
+                ;;
+            esac
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
@@ -55,4 +68,4 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               tools/testing/selftests/out/ \
-              components/kernel/${JOB_NAME}/$(dpkg-architecture -qDEB_HOST_ARCH)/${BUILD_NUMBER}
+              components/kernel/kselftest/${ARCH}/${BUILD_NUMBER}
