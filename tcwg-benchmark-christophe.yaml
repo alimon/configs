@@ -1,0 +1,95 @@
+- job:
+    name: tcwg-benchmark-christophe
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: toolchain_url
+            default: ''
+            description: 'Toolchain URL'
+        - string:
+           name: bench_list
+           default: 'bzip2'
+           description: 'List of benchmarks to run (from spec2k6)'
+        - string:
+            name: config
+            default: 'myconfig'
+            description: 'config name'
+        - string:
+            name: cflags
+            default: ''
+            description: 'CFLAGS to use'
+        - string:
+            name: fileserver
+            default: dev-01.tcwglab
+            description: 'File Server for results'
+    disabled: false
+    node: tcwg-x86_64-build
+    child-workspace: $label
+    concurrent: true
+    display-name: 'TCWG ZZZ Benchmark Christophe'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-bmk-tx1-06
+                - tcwg-bmk-tx1-07
+                - tcwg-bmk-tx1-08
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'tcwg-benchmark'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            wget ${toolchain_url}
+            tarball=$(basename ${toolchain_url})
+            tar xf ${tarball}
+            toolchaindir=$(echo ${tarball} | sed 's/.tar.xz//')
+
+            # Slaves for this job are virtual slaves on dev-01,
+            # convert the slave name into the target board name
+            boardname=$(echo ${NODENAME} | sed 's/-bmk//').tcwglab
+            ssh $boardname rm -rf ${HOME}/bmk-scripts
+            ssh $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
+            #FIXME: use master branch when ready
+            ssh $boardname git checkout -b christophe origin/christophe
+
+            case ${label} in
+                *-tx1-*) target=aarch64-linux-gnu- ;;
+                *-tk1-*) target=arm-linux-gnueabihf- ;;
+                *)
+                    echo "ERROR: Unsupported label: ${label}"
+                    exit 1
+                    ;;
+            esac
+            
+            # FIXME: bench_list can contain more than one bench
+            # FIXME: support cflags
+            ssh $boardname bmk-scripts/run.sh \
+                --bench ${bench_list} \
+                --builder dev-01.tcwglab \
+                --config ${config} \
+                --ccprefix ${toolchaindir}/bin/${target} \
+                --toolchain gnu \
+                --fileserver ${fileserver}
