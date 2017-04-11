@@ -1,0 +1,83 @@
+- job:
+    name: tcwg-make-source-tarball
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    parameters:
+        - string:
+            name: tag
+            default: ''
+            description: 'GCC tagged version to use (like linaro-6.3-2017.03).'
+    disabled: false
+    node: tcwg-x86_64-dev-01
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG Make GCC Source Tarball'
+    scm:
+        - git:
+            url: http://git-us.linaro.org/toolchain/gcc.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            branches:
+                - refs/heads/master
+            basedir: gcc_src
+            skip-tag: false
+            shallow-clone: true
+            wipe-workspace: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            clean:
+                before: true
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${tag}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            git clone --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+
+            git clone -b automation --depth 1 https://git-us.linaro.org/toolchain/tcwg-release-tools
+
+            mkdir -p ${WORKSPACE}/release_build
+
+            # Start build container
+            host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            bash ${WORKSPACE}/start-container-docker.sh --arch amd64 --distro trusty --session-host ${host} > build-container.sh
+
+            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            . ./build-container.sh
+            BUILD_CONTAINER="${CONTAINER}"
+            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+
+            # Make sure to cleanup build container if something goes
+            # wrong when preparing the test environment
+            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
+                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
+                    trap "${CONTAINERS_CLEANUP}" EXIT
+                else
+                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
+                fi
+            fi
+
+            # Setup job parameters and run
+            ${BUILD_CONTAINER} "bash -x ${WORKSPACE}/tcwg-release-tools/tcwg-release-tarball.sh -g ${WORKSPACE}/gcc_src -r ${WORKSPACE}/release_build -t ${tag}"
+    publishers:
+        - archive:
+            artifacts: 'release_build/*.tar.*'
+            latest-only: false
