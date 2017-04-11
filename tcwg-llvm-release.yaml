@@ -88,7 +88,7 @@
             build_container_tag=${build_container_tag}
 
             # Start build container
-            builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
             bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight ${weight} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
