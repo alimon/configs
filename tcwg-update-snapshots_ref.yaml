@@ -15,9 +15,25 @@
             num-to-keep: 30
     parameters:
         - bool:
-            name: regenerate
+            name: generate_abe
             default: true
-            description: 'Regenerate snapshots'
+            description: 'Generate ABE snapshots'
+        - bool:
+            name: generate_llvm
+            default: true
+            description: 'Generate LLVM repos'
+        - bool:
+            name: generate_misc
+            default: true
+            description: 'Generate misc file'
+        - bool:
+            name: update_git
+            default: true
+            description: 'Update Git repos'
+        - bool:
+            name: verbose
+            default: true
+            description: 'Enable verbose output'
         - string:
             name: scripts_branch
             default: refs/remotes/origin/master
@@ -62,12 +78,6 @@
             set -e
             set -x
 
-            if $regenerate; then
-              nogen_opt=""
-            else
-              nogen_opt="-r"
-            fi
-
             case "$label" in
               tcwg-x86_64-dev-01)
                 machines="dev-01.tcwglab dev-02.tcwglab $(for i in `seq 1 8`; do echo build-0$i.tcwglab; done) apm-01.tcwglab apm-02.tcwglab test-armv8-01.tcwglab test-armv8-02.tcwglab $(for i in `seq 1 5`; do echo tcwg-tx1-0$i.tcwglab tcwg-tk1-0$i.tcwglab; done) ex40-01.tcwglab.linaro.org r1-a7.aus-colo r1-a12.aus-colo"
@@ -75,7 +85,7 @@
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
 
-            ./tcwg-generate-source-cache.sh -v $nogen_opt
+            ./tcwg-generate-source-cache.sh --generate-abe $generate_abe --generate-llvm $generate_llvm --generate-misc $generate_misc --update-git $update_git --verbose $verbose
             if $regenerate; then
               # Distribute Foundation Model to the builders so that containers
               # running there can access Foundation Model via a bind-mount for
