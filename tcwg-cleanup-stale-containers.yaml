@@ -26,9 +26,17 @@
             default: ''
             description: 'Additional "docker ps" options.  Use "-a" to cleanup non-running containers. Do not override unless you understand what you are doing.'
         - bool:
-            name: dry_run
+            name: cleanup_containers
+            default: 'false'
+            description: 'Whether to cleanup containers'
+        - bool:
+            name: cleanup_volumes
+            default: 'false'
+            description: 'Whether to cleanup dangling volumes'
+        - bool:
+            name: cleanup_images
             default: 'true'
-            description: 'Whether to do a dry-run'
+            description: 'Whether to cleanup images'
         - bool:
             name: verbose
             default: 'false'
@@ -85,7 +93,7 @@
             #!/bin/bash
 
             set -ex
-            ./tcwg-cleanup-stale-containers.sh --hours $hours --docker_ps_opts "$docker_ps_opts" --dry_run $dry_run --verbose $verbose
+            ./tcwg-cleanup-stale-containers.sh --hours $hours --docker_ps_opts "$docker_ps_opts" --cleanup-containers $cleanup_containers --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
     publishers:
         - email:
             recipients: 'maxim.kuvyrkov@linaro.org christophe.lyon@linaro.org'
