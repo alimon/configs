@@ -86,26 +86,6 @@
             esac
 
             ./tcwg-generate-source-cache.sh --generate-abe $generate_abe --generate-llvm $generate_llvm --generate-misc $generate_misc --update-git $update_git --verbose $verbose
-            if $regenerate; then
-              # Distribute Foundation Model to the builders so that containers
-              # running there can access Foundation Model via a bind-mount for
-              # bare-metal testing.
-              tar xf $HOME/public_html/infrastructure/FM000-KT-00035-r9p5-41rel0.tgz -C $HOME/snapshots-ref-new
-              chmod -R ugo+rx $HOME/snapshots-ref-new/Foundation_Platformpkg
-
-              # Clone the Linux kernel if not already
-              # present. Subsequent calls will update it.
-              linux_git=$HOME/snapshots-ref-new/linux.git
-              if [ ! -d ${linux_git} ]; then
-                git clone git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git ${linux_git}
-              fi
-
-              # Add a 'next' remote for linux-next, if not already present
-              count=$(git -C ${linux_git} remote | grep -c next || true)
-              if [ $count -eq 0 ]; then
-                  git -C ${linux_git} remote add next git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-              fi
-            fi
             ./tcwg-rsync-dir.sh --dir $HOME/snapshots-ref $machines
     publishers:
         - email:
