@@ -70,13 +70,12 @@
 
             case "$label" in
               tcwg-x86_64-dev-01)
-                master_machine=dev-01.tcwglab
-                machines="dev-02.tcwglab $(for i in `seq 1 8`; do echo build-0$i.tcwglab; done) apm-01.tcwglab apm-02.tcwglab test-armv8-01.tcwglab test-armv8-02.tcwglab $(for i in `seq 1 5`; do echo tcwg-tx1-0$i.tcwglab tcwg-tk1-0$i.tcwglab; done) ex40-01.tcwglab.linaro.org r1-a7.aus-colo r1-a12.aus-colo"
+                machines="dev-01.tcwglab dev-02.tcwglab $(for i in `seq 1 8`; do echo build-0$i.tcwglab; done) apm-01.tcwglab apm-02.tcwglab test-armv8-01.tcwglab test-armv8-02.tcwglab $(for i in `seq 1 5`; do echo tcwg-tx1-0$i.tcwglab tcwg-tk1-0$i.tcwglab; done) ex40-01.tcwglab.linaro.org r1-a7.aus-colo r1-a12.aus-colo"
                 ;;
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
 
-            ./tcwg-update-snapshots_ref.sh -v $nogen_opt $master_machine
+            ./tcwg-generate-source-cache.sh -v $nogen_opt
             if $regenerate; then
               # Distribute Foundation Model to the builders so that containers
               # running there can access Foundation Model via a bind-mount for
@@ -97,7 +96,7 @@
                   git -C ${linux_git} remote add next git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
               fi
             fi
-            ./tcwg-update-snapshots_ref.sh -v -r $master_machine $machines
+            ./tcwg-rsync-dir.sh --dir $HOME/snapshots-ref $machines
     publishers:
         - email:
             recipients: 'christophe.lyon@linaro.org maxim.kuvyrkov@linaro.org'
