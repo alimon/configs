@@ -76,8 +76,10 @@ INHERIT += "buildstats buildstats-summary"
 EOF
 
 # Use AOSP kernel for HiKey
+KERNEL_VERSION=$(echo ${KERNEL_BRANCH} |cut -d'-' -f4)
 cat << EOF >> conf/site.conf
 PREFERRED_PROVIDER_virtual/kernel = "linux-hikey-aosp"
+PREFERRED_VERSION_linux-hikey-aosp = "${KERNEL_VERSION}+git%"
 EOF
 
 # Include additional recipes in the image
@@ -168,7 +170,7 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 {
   "kernel_repo" : "https://android.googlesource.com/kernel/hikey-linaro",
   "kernel_commit_id" : "${SRCREV_kernel}",
-  "kernel_branch" : "android-hikey-linaro-4.9",
+  "kernel_branch" : "${KERNEL_BRANCH}",
   "build_arch" : "${TUNE_FEATURES}",
   "compiler" : "${TARGET_SYS} ${GCCVERSION}",
 }
