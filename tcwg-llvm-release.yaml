@@ -30,6 +30,10 @@
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
+        - string:
+            name: build_filter
+            default: 'label == "tcwg-tk1_32-built" || label == "tcwg-apm_64-build"'
+            description: 'execution-strategy / combination-filter: Which labels to build. Default arm32 + arm64'
     disabled: false
     node: tcwg-x86_64-build
     child-workspace: $label
@@ -53,6 +57,10 @@
                 - tcwg-x86_64-build
                 - tcwg-tk1_32-build
                 - tcwg-apm_64-build
+    execution-strategy:
+        combination-filter: |
+            ${build_filter}
+        sequential: false
     wrappers:
         - timeout:
             timeout: 600
@@ -108,7 +116,7 @@
             fi
 
             # Setup job parameters and run
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
+            echo ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
                 --workspace=${WORKSPACE} \
                 --release=${release} \
                 --candidate=${candidate}" \
