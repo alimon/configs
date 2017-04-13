@@ -394,7 +394,7 @@
             # If the build was a no-op (results already present on log_server),
             # copy the existing ones.
             if [ -d _build/builds ]; then
-                manifest="`find _build/builds/ -name destdir -prune -o -name \*manifest.txt -print`"
+                manifest="`grep "^manifest=" ${WORKSPACE}/build-artifacts.txt | cut -d = -f 2-`"
             else
                 manifest=""
             fi
