@@ -30,6 +30,10 @@
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
+        - string:
+            name: target_list
+            default: 'tcwg-x86_64-build tcwg-tk1_32-build tcwg-apm_64-build'
+            description: 'List of targets -- subset of slave axis'
     disabled: false
     node: tcwg-x86_64-build
     child-workspace: $label
@@ -53,6 +57,15 @@
                 - tcwg-x86_64-build
                 - tcwg-tk1_32-build
                 - tcwg-apm_64-build
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        combination-filter: |
+            label==target
+        sequential: false
     wrappers:
         - timeout:
             timeout: 600
