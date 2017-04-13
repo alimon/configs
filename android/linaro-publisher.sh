@@ -16,7 +16,7 @@ time python ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   ${PUB_SRC} \
   ${PUB_DEST} \
-  --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config)$" \
+  --include "^[^/]+[._](img[^/]*|tar[^/]*|xml|sh|config|json)$" \
   --include "^[BHi][^/]+txt$" \
   --include "^(MANIFEST|MD5SUMS|changelog.txt)$" \
   $([ -z "${PUB_EXTRA_INC}" ] || echo "--include ${PUB_EXTRA_INC}")
