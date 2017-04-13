@@ -1,6 +1,6 @@
 # Zephyr JOB definition for QEMU
-device_type: '${DEVICE_TYPE}'
-job_name: 'zephyr-upstream kernel-ipm-test'
+device_type: '$device_type'
+job_name: 'zephyr-upstream $test_name'
 
 timeouts:
   job:
@@ -27,7 +27,7 @@ actions:
     images:
         zephyr:
           image_arg: '-kernel {zephyr}'
-          url: 'http://snapshots.linaro.org/components/kernel/zephyr/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}/tests/kernel/test_ipm/test/zephyr.bin'
+          url: '$test_url'
 
 - boot:
     method: monitor
@@ -36,18 +36,19 @@ actions:
 
 - test:
     monitors:
-    - name: Test IPM
+    - name: '$test_name'
       start: tc_start()
       end: PROJECT EXECUTION
-      pattern: (?P<result>(PASS|FAIL))\s-\s(?P<test_case_id>\w+)
+      pattern: (?P<result>(PASS|FAIL))\s-\s(?P<test_case_id>\w+)\.
       fixupdict:
         PASS: pass
         FAIL: fail
 
 metadata:
-  build-url: ${BUILD_URL}
-  build-log: ${BUILD_URL}consoleText
-  zephyr-gcc-variant: ${ZEPHYR_GCC_VARIANT}
-  platform: ${PLATFORM}
+  build-url: $build_url
+  build-log: $build_url/consoleText
+  zephyr-gcc-variant: $gcc_variant
+  platform: $board_name
   git-url: https://git.linaro.org/zephyrproject-org/zephyr.git
-  git-commit: ${GIT_COMMIT}
+  git-commit: $git_commit
+

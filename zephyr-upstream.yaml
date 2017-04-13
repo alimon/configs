@@ -71,6 +71,14 @@
              ZEPHYR_GCC_VARIANT=="zephyr" || (ZEPHYR_GCC_VARIANT=="gccarmemb" && !(PLATFORM=="arduino_101" || PLATFORM=="qemu_x86"))
     wrappers:
         - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_USER
+                variable: LAVA_USER
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_TOKEN
+                variable: LAVA_TOKEN
     builders:
         - shell:
             !include-raw: zephyr-upstream/builders.sh
@@ -114,25 +122,15 @@
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
             [ -z "${DEVICE_TYPE}" ] || \
-            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                -e "s|\${ZEPHYR_GCC_VARIANT}|${ZEPHYR_GCC_VARIANT}|" \
-                -e "s|\${PLATFORM}|${PLATFORM}|" \
-                -e "s|\${BRANCH}|${BRANCH}|" \
-                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
-                < configs/zephyr-upstream/lava-job-definitions/${DEVICE_TYPE}/task-api-test.yaml \
-                > custom_lava_job_definition.yaml
-
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
+            python configs/zephyr-upstream/submit_to_lava.py \
+                --board-name ${PLATFORM} \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --branch-name ${BRANCH} \
+                --lava-server ${LAVA_SERVER} \
+                --gcc-variant ${ZEPHYR_GCC_VARIANT} \
+                --git-commit ${GIT_COMMIT} \
+                --build-url ${BUILD_URL}
     publishers:
         - archive:
             artifacts: 'scripts/sanity_chk/last_sanity.csv'
