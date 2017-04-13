@@ -58,6 +58,9 @@
             rm -rf release_build
             mkdir -p ${WORKSPACE}/release_build
 
+            rm -rf artifacts
+            mkdir -p ${WORKSPACE}/artifacts
+
             # Start build container
             host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
             bash ${WORKSPACE}/jenkins-scripts/start-container-docker.sh --arch amd64 --distro trusty --session-host ${host} > build-container.sh
@@ -81,7 +84,10 @@
             # Setup job parameters and run
             ${BUILD_CONTAINER} "sudo apt-get update ; sudo apt-get -y install libgmp-dev libmpfr-dev libmpc-dev"
             ${BUILD_CONTAINER} "bash -x ${WORKSPACE}/tcwg-release-tools/tcwg-release-tarball.sh -g ${WORKSPACE}/gcc_src -r ${WORKSPACE}/release_build -t ${tag}"
+
+            cp release_build/gcc-${tag}/*.tar.* artifacts/.
+            cp release_build/gcc-${tag}/gcc-${tag}/ChangeLog.linaro artifacts/.
     publishers:
         - archive:
-            artifacts: 'release_build/gcc-${tag}/*.tar.*'
+            artifacts: 'artifacts/*'
             latest-only: false
