@@ -22,7 +22,7 @@
             default: 'ls $HOME/*'
             description: 'Command to run'
         - string:
-            name: user
+            name: target_user
             default: 'tcwg-buildslave'
             description: 'User to run as: tcwg-buildslave or tcwg-benchmark'
         - bool:
@@ -73,6 +73,6 @@
 
             cat command.sh.$$$$
 
-            scp command.sh.$$$$ $user@$machine:/tmp/
+            scp command.sh.$$$$ $target_user@$machine:/tmp/
             # Don't use ssh shared connection to reliably proxy SSH agent
-            $dry_run || ssh -Snone $user@$machine /tmp/command.sh.$$$$
+            $dry_run || ssh -Snone $target_user@$machine /tmp/command.sh.$$$$
