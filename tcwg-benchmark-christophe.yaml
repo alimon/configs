@@ -77,8 +77,8 @@
             # Slaves for this job are virtual slaves on dev-01,
             # convert the slave name into the target board name
             boardname=$(echo ${NODE_NAME} | sed 's/-bmk//').tcwglab
-            boardname=tcwg-benchmark@${boardname}
-            ssh $boardname rm -rf ${HOME}/bmk-scripts
+            boardname="-o ControlMaster=no tcwg-benchmark@${boardname}"
+            ssh $boardname rm -rf bmk-scripts
             ssh $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
             #FIXME: use master branch when ready
             ssh $boardname git -C bmk-scripts checkout -b christophe origin/christophe
