@@ -112,7 +112,7 @@ Build description:
 * Kernel tree: "$GIT_URL":$GIT_URL
 * Kernel branch: $KERNEL_BRANCH
 * Kernel version: $(cat kernel-version)
-* Kernel commit: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+* Kernel commit: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
 * Kernel defconfig: $kernel_config
 EOF
 

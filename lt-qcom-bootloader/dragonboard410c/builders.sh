@@ -135,10 +135,10 @@ Build description:
 * Android proprietary bootloaders package: $(basename ${QCOM_ANDROID_FIRMWARE})
 * Linux proprietary bootloaders package: $(basename ${QCOM_LINUX_FIRMWARE})
 * Little Kernel (LK) source code:
-** "SD rescue boot":$LK_GIT_LINARO/shortlog/refs/heads/$LK_GIT_REL_SD_RESCUE
-** "SD Linux boot":$LK_GIT_LINARO/shortlog/refs/heads/$LK_GIT_REL_SD_BOOT
-** "eMMC Linux boot":$LK_GIT_LINARO/shortlog/refs/heads/$LK_GIT_REL_EMMC_BOOT
-* Tools version: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+** "SD rescue boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_SD_RESCUE  | sed -e 's/+/\%2b/g')
+** "SD Linux boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_SD_BOOT | sed -e 's/+/\%2b/g')
+** "eMMC Linux boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_EMMC_BOOT | sed -e 's/+/\%2b/g')
+* Tools version: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
 EOF
 
 # Publish

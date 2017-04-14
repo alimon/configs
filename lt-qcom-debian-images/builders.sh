@@ -95,7 +95,7 @@ Build description:
 * OS flavour: $OS_FLAVOUR
 * Kernel tree: "$GIT_URL":$GIT_URL
 * Kernel branch: $KERNEL_BRANCH
-* Kernel version: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+* Kernel version: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
 * Kernel defconfig: $kernel_config
 EOF
 

@@ -82,9 +82,9 @@ Build description:
 * Proprietary bootloaders are not published yet, and not available widely
 * Linux proprietary bootloaders package: $(basename ${QCOM_LINUX_FIRMWARE})
 * Little Kernel (LK) source code:
-** "SD rescue boot":$LK_GIT_LINARO/shortlog/refs/heads/$LK_GIT_REL_SD_RESCUE
-** "UFS Linux boot":$LK_GIT_LINARO/shortlog/refs/heads/$LK_GIT_REL_UFS_BOOT
-* Tools version: "$GIT_COMMIT":$GIT_URL/commit/$GIT_COMMIT
+** "SD rescue boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_SD_RESCUE | sed -e 's/+/\%2b/g')
+** "UFS Linux boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_UFS_BOOT | sed -e 's/+/\%2b/g')
+* Tools version: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
 EOF
 
 # Publish
