@@ -23,7 +23,6 @@ python mkbootimg \
 wget -q ${REFERENCE_AOSP_BUILD}/build_config.json -O out/build_config.json
 remote=$(git remote -v | grep push | cut -d" " -f1 | cut -f2)
 commit=$(git log | grep commit | cut -d" " -f2)
-branch=$(git branch | cut -d" " -f2)
 sed -i "s|\"kernel_repo\" : \"|\"kernel_repo\" : \"$remote|g" out/build_config.json
 sed -i "s|\"kernel_commit_id\" : \"|\"kernel_commit_id\" : \"$commit|g" out/build_config.json
-sed -i "s|\"kernel_branch\" : \"|\"kernel_branch\" : \"$branch|g" out/build_config.json
+sed -i "s|\"kernel_branch\" : \"|\"kernel_branch\" : \"$KERNEL_BRANCH|g" out/build_config.json
