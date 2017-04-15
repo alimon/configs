@@ -27,9 +27,13 @@
             default: true
             description: 'Generate misc file'
         - bool:
-            name: update_git
+            name: update_abe_git
             default: true
-            description: 'Update Git repos'
+            description: 'Update ABE Git repos'
+        - bool:
+            name: update_llvm_git
+            default: true
+            description: 'Update LLVM Git repos'
         - bool:
             name: verbose
             default: true
@@ -85,8 +89,9 @@
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
 
-            ./tcwg-generate-source-cache.sh --generate-abe $generate_abe --generate-llvm $generate_llvm --generate-misc $generate_misc --update-git $update_git --verbose $verbose
+            ./tcwg-generate-source-cache.sh --dir-abe $HOME/snapshots-ref-new --dir-llvm $HOME/llvm-reference-new --generate-abe $generate_abe --generate-llvm $generate_llvm --generate-misc $generate_misc --update-abe-git $update_abe_git --update-llvm-git $update_llvm_git --verbose $verbose
             ./tcwg-rsync-dir.sh --dir $HOME/snapshots-ref $machines
+            ./tcwg-rsync-dir.sh --dir $HOME/llvm-reference $machines
     publishers:
         - email:
             recipients: 'christophe.lyon@linaro.org maxim.kuvyrkov@linaro.org'
