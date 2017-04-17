@@ -1,0 +1,56 @@
+- job:
+    name: tcwg-abe-tested
+    project-type: multijob
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: flyweight
+    concurrent: true
+    display-name: 'TCWG CCC Trigger ABE extended validation'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/abe.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        # Every day at 1:01am
+        - pollscm: '1 1 * * *'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - multijob:
+            name: 'ABE extended tests'
+            condition: SUCCESSFUL
+            projects:
+              - name: tcwg-abe-extended
+        - shell: |
+            #!/bin/bash
+            
+            set -ex
+            git config --global user.name "TCWG Buildslave"
+            git config --global user.email tcwg-buildslave@linaro.org
+            if ! git remote | grep -q gerrit; then
+              git review -s
+            fi
+            git push gerrit origin/master:tested
