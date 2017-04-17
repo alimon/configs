@@ -240,43 +240,28 @@
                         *) echo "ERROR: Wrong target $target"; exit 1 ;;
                     esac
 
-                    if echo "$override" | grep -q -e "--extraconfigdir ../config/gcc5" \
-                            || true \
-                                && [ x"$target" = x"aarch64-linux-gnu" ]; then
-                        # Sanitizers in GCC-5 and GCC-6 toolchains for
-                        # aarch64-linux-gnu don't support 48-bit VA.
-                        # Therefore don't run them on Xenial tester: do
-                        # not start a docker container here, and use abe's
-                        # legacy schroot support on older tester boards
-                        # (tcwg-apm-0[34])
-                        :
-                    else
+                    # AArch32 and AArch64 test boards are currently:
+                    # tcwg-tk1-0[34]: AArch32 (armv7)
+                    # tcwg-tx1-0[34]: AArch32 (armv8) and AArch64
+                    case ${test_container_arch} in
+                        armhf)
+                            tester_labels="tcwg-tk1_32-test" ;;
+                        armv8hf)
+                            tester_labels="tcwg-tx1_32-test"
+                            test_container_arch=armhf
+                            ;;
+                        arm64)
+                            tester_labels="tcwg-tx1_64-test"
+                            ;;
+                    esac
 
-                        # AArch32 and AArch64 test boards are currently:
-                        # tcwg-tk1-0[34]: AArch32 (armv7)
-                        # tcwg-tx1-0[34]: AArch32 (armv8) and AArch64
-                        case ${test_container_arch} in
-                            armhf)
-                                tester_labels="tcwg-tk1_32-test"
-                                ;;
-                            armv8hf)
-                                tester_labels="tcwg-tx1_32-test"
-                                test_container_arch=armhf
-                                ;;
-                            arm64)
-                                tester_labels="tcwg-tx1_64-test"
-                                ;;
-                        esac
-
-                        test_min_load_name=$(node_with_least_containers $tester_labels)
-                        if [ x"$tester_min_load_name" = x"" ]; then
-                            echo "ERROR: Cannot find tester for $test_container_arch"
+                    test_min_load_name=$(node_with_least_containers $tester_labels)
+                    if [ x"$tester_min_load_name" = x"" ]; then
+                        echo "ERROR: Cannot find tester for $test_container_arch"
                             exit 1
-                        fi
-                        tester=$tester_min_load_name
-                        # For the moment, support only docker containers on the tester machine
-                        bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test > test-container.sh
                     fi
+                    tester=$tester_min_load_name
+                    bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test > test-container.sh
                     ;;
             esac
 
