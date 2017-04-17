@@ -145,6 +145,7 @@
             mkdir -p artifacts/
 
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+            . ./jenkins-scripts/jenkins-helpers.sh
 
             case ${label} in
                 tcwg-x86_64-build)
@@ -266,19 +267,8 @@
                                 tester_labels="tcwg-tx1_64-test"
                                 ;;
                         esac
-                        testers=$(
-                            for label in $tester_labels; do
-                                wget -O - https://ci.linaro.org/label/$label/api/json?pretty=true 2>/dev/null | grep nodeName | cut -d: -f 2 | sed -e 's/"//g' -e "s/\$/.tcwglab/"
-                            done)
-                        tester_min_load_name=""
-                        tester_min_load_value="999"
-                        for tester in $testers; do
-                            load_value=$(docker -H $tester:2375 ps | wc -l)
-                            if [ $load_value -lt $tester_min_load_value ]; then
-                                tester_min_load_name=$tester
-                                tester_min_load_value=$load_value
-                            fi
-                        done
+
+                        test_min_load_name=$(node_with_least_containers $tester_labels)
                         if [ x"$tester_min_load_name" = x"" ]; then
                             echo "ERROR: Cannot find tester for $test_container_arch"
                             exit 1
