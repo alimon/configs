@@ -18,6 +18,10 @@
             option: project
     parameters:
         - string:
+            name: slave_list
+            default: 'tcwg-aarch64-build-01 tcwg-aarch64-build-02 tcwg-aarch64-test-02 tcwg-x86_64-build-01 tcwg-x86_64-build-02 tcwg-x86_64-build-03 tcwg-x86_64-build-04 tcwg-x86_64-build-05 tcwg-x86_64-build-06 tcwg-x86_64-build-07 tcwg-x86_64-build-08'
+            description: 'List of slaves to run on -- should be a subset of slave axis'
+        - string:
             name: hours
             default: '10'
             description: 'Delete containers that are more then "hours" old.  Use "0" to disable time check.'
@@ -76,7 +80,14 @@
                 - tcwg-x86_64-build-06
                 - tcwg-x86_64-build-07
                 - tcwg-x86_64-build-08
+        - axis:
+            type: dynamic
+            name: slave
+            values:
+                - slave_list
     execution-strategy:
+        combination-filter: |
+            label==slave
         sequential: false
     wrappers:
         - timeout:
