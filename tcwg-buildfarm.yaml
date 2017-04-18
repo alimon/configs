@@ -208,7 +208,7 @@
 
             # Start build container
             builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
+            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --no-ssh-agent > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./build-container.sh
