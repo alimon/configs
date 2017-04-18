@@ -90,8 +90,10 @@
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py --api_version 3 --link-latest out debian/images/${codename}/${rootfs}-armhf/${BUILD_NUMBER}
+        - trigger-builds:
+            - project:
+                - 'lt-qcom-debian-images'
+                - 'lt-qcom-debian-images-dragonboard600c'
     publishers:
-        - trigger:
-            project: 'lt-qcom-debian-images, lt-qcom-debian-images-dragonboard600c'
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
