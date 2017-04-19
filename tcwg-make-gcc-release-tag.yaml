@@ -1,0 +1,116 @@
+- scm:
+    name: gcc
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/gcc.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            branches:
+                - refs/heads/master
+            basedir: gcc_src
+            scm-name: GCC
+            skip-tag: false
+            wipe-workspace: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            clean:
+                before: true
+- scm:
+    name: tcwg-release-tools
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/tcwg-release-tools.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            branches:
+                - refs/heads/automation
+            basedir: tcwg-release-tools
+            scm-name: tcwg-release-tools
+            skip-tag: true
+            wipe-workspace: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/tcwg-release-tools.git
+            clean:
+                before: true
+- job:
+    name: tcwg-make-gcc-release-tag
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    parameters:
+        - choice:
+            name: tag_kind
+            choices:
+                - snapshot
+                - candidate
+                - release
+            description: 'Type of release to do.'
+        - string:
+            name: spin
+            default: ''
+            description: 'Spin number'
+        - string:
+            name: gcc_ref
+            default: ''
+            description: 'GCC tag or branch name (like linaro-6.3-2017.03, linaro/gcc-6-branch)'
+        - string:
+            name: date
+            default: ''
+            description: 'Snapshot or Release date (YYYY.MM)'
+    disabled: false
+    node: tcwg-x86_64-dev-01-short
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG Tag GCC Sources'
+    scm:
+        - gcc
+        - tcwg-release-tools
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${gcc_ref}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            pushd gcc_src
+
+            git config --global user.name "TCWG Buildslave"
+            git config --global user.email tcwg-buildslave@linaro.org
+            
+            if ! git remote | grep -q gerrit; then
+              git remote add gerrit ssh://$USER@review.linaro.org:29418/toolchain/gcc
+            fi
+
+            FLAGS="-t $gcc_ref -e gerrit"
+            
+            case "$tag_kind" in
+                snapshot) FLAGS="$FLAGS -R" ;;
+                candidate) FLAGS="$FLAGS -r" ;;
+                release) FLAGS="$FLAGS -R";;
+                *) echo "ERROR: tag_king is missing"; exit 1 ;;
+            esac
+
+            if [ x"$spin" != x ]; then
+                FLAGS="$FLAGS $spin"
+            fi
+
+            if [ x"$date" != x ]; then
+                FLAGS="$FLAGS -d $date"
+            fi
+
+            ${WORKSPACE}/tcwg-release-tools/tcwg-release-tag.sh $FLAGS"
+
+            popd 1>/dev/null
+
