@@ -20,7 +20,7 @@
             description: 'binutils revision to build'
         - string:
             name: target_list
-            default: 'aarch64-linux-gnu aarch64_be-linux-gnu aarch64-none-elf aarch64_be-none-elf arm-linux-gnueabi arm-linux-gnueabihf arm-netbsdelf arm-none-eabi arm-none-nacl arm-none-symbianelf arm-vxworks arm-wince-pe armeb-linux-gnueabihf'
+            default: 'aarch64-linux-gnu aarch64_be-linux-gnu aarch64-none-elf aarch64_be-none-elf arm-aout arm-coff arm-epoc-pe arm-linux-gnueabi arm-linux-gnueabihf arm-netbsdelf arm-none-eabi arm-none-nacl arm-none-symbianelf arm-pe arm-vxworks arm-wince-pe armeb-linux-gnueabihf'
             description: 'List of targets to test'
         - string:
             name: bfd_list
@@ -39,7 +39,7 @@
             default: master
             description: 'Jenkins-scripts branch to use'
     disabled: false
-    node: tcwg-x86_64-build
+    node: tcwg-x86_64-cam
     retry-count: 3
     concurrent: true
     display-name: 'TCWG ZZZ Binutils Docker'
@@ -81,6 +81,10 @@
         - timeout:
             timeout: 600
         - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
         - build-name:
             name: '#${BUILD_NUMBER}-${ENV,var="binutils_rev"}'
     builders:
@@ -101,7 +105,7 @@
 
             rm -rf jenkins-scripts
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
-            ./jenkins-scripts/start-container-${container_type}.sh --arch ${host_arch} --distro ${container_distro} --session-host ${host} > container.sh
+            ./jenkins-scripts/start-container-${container_type}.sh --arch ${host_arch} --distro ${container_distro} --session-host ${host} --no-ssh-agent > container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./container.sh
@@ -122,7 +126,7 @@
             ${CONTAINER} 'echo "Build session is up; ulimit config:"; ulimit -a'
 
             case $target in
-                arm-wince-pe)
+                arm-wince-pe|arm-pe|arm-epoc-pe|arm-aout)
                     lto=
                     ;;
                 *)
