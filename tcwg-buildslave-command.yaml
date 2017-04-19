@@ -73,6 +73,6 @@
 
             cat command.sh.$$$$
 
-            scp command.sh.$$$$ $target_user@$machine:/tmp/
+            scp -o StrictHostKeyChecking=no command.sh.$$$$ $target_user@$machine:/tmp/
             # Don't use ssh shared connection to reliably proxy SSH agent
-            $dry_run || ssh -Snone $target_user@$machine /tmp/command.sh.$$$$
+            $dry_run || ssh -o StrictHostKeyChecking=no -Snone $target_user@$machine /tmp/command.sh.$$$$
