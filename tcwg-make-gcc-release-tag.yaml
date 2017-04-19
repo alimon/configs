@@ -1,33 +1,3 @@
-- scm:
-    name: gcc
-    scm:
-        - git:
-            url: https://git-us.linaro.org/toolchain/gcc.git
-            refspec: +refs/heads/*:refs/remotes/origin/*
-            branches:
-                - refs/heads/master
-            basedir: gcc_src
-            scm-name: GCC
-            skip-tag: false
-            wipe-workspace: false
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
-            clean:
-                before: true
-- scm:
-    name: tcwg-release-tools
-    scm:
-        - git:
-            url: https://git-us.linaro.org/toolchain/tcwg-release-tools.git
-            refspec: +refs/heads/*:refs/remotes/origin/*
-            branches:
-                - refs/heads/automation
-            basedir: tcwg-release-tools
-            scm-name: tcwg-release-tools
-            skip-tag: true
-            wipe-workspace: false
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/tcwg-release-tools.git
-            clean:
-                before: true
 - job:
     name: tcwg-make-gcc-release-tag
     project-type: freestyle
@@ -69,8 +39,18 @@
     concurrent: true
     display-name: 'TCWG Tag GCC Sources'
     scm:
-        - gcc
-        - tcwg-release-tools
+        - git:
+            url: https://git-us.linaro.org/toolchain/gcc.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            branches:
+                - refs/heads/master
+            basedir: gcc_src
+            scm-name: GCC
+            skip-tag: false
+            wipe-workspace: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            clean:
+                before: true
     execution-strategy:
         sequential: true
     wrappers:
@@ -83,6 +63,9 @@
         - shell: |
             #!/bin/bash
             set -ex
+
+            rm -rf tcwg-release-tools
+            git clone -b automation --depth 1 https://git-us.linaro.org/toolchain/tcwg-release-tools
 
             pushd gcc_src
 
