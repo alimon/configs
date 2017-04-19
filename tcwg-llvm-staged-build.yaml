@@ -17,6 +17,10 @@
             weight: 3
     parameters:
         - string:
+            name: revision
+            default: ''
+            description: 'SVN revision in the format rNNNNN. Empty string will bring trunk on all repos.'
+        - string:
             name: toolchain
             default: ''
             description: 'URL of the toolchain to use. This needs to be a tarball with a /bin directory inside with either GCC or LLVM from make install'
@@ -82,5 +86,6 @@
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --workspace=${WORKSPACE} \
                 --buildid=${BUILD_ID} \
-                --linkjobs=${linkjobs}" \
-                --toolchain=${toolchain}
+                --linkjobs=${linkjobs} \
+                --revision=${revision} \
+                --toolchain=${toolchain}"
