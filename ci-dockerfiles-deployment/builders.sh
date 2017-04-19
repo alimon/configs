@@ -67,7 +67,7 @@ for image in ${update_images}; do
       ;;
   esac
   if [ -r .docker-tag ]; then
-    echo docker push $(cat .docker-tag)
+    docker push $(cat .docker-tag)
   fi
   )
 done
