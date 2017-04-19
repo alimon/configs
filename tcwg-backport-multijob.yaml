@@ -31,9 +31,9 @@
             default: dev-01.tcwglab:/home/tcwg-buildslave/logs
             description: 'Log_Server'
         - string:
-            name: targets
-            default: 'cross_main cross_aux native_x86'
-            description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_aarch32 native_aarch64'
+            name: target_list
+            default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build'
+            description: 'List of targets -- aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build tcwg-tk1_32-build tcwg-apm_64-build tcwg-apm_32-build -- the tcwg-* targets should be a subset of slave axis'
         - string:
             name: abe_branch
             default: refs/remotes/origin/stable
@@ -121,7 +121,7 @@
             rebuild=${rebuild}
             dont_fail=false
             log_server=$log_server
-            targets=$targets
+            target_list=$target_list
             abe_branch=$abe_branch
             displaytag=backport-multijob-ref-${GERRIT_CHANGER_NUMBER}
             EOF
@@ -132,7 +132,7 @@
             rebuild=${rebuild}
             dont_fail=false
             log_server=$log_server
-            targets=$targets
+            target_list=$target_list
             abe_branch=$abe_branch
             displaytag=backport-multijob-patch-${GERRIT_CHANGER_NUMBER}
             EOF

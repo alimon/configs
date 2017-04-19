@@ -31,8 +31,8 @@
             default: dev-01.tcwglab:logs-bkk16
             description: 'Log_Server'
         - string:
-            name: targets
-            default: 'native_aarch64 native_x86'
+            name: target_list
+            default: 'tcwg-x86_64-build tcwg-x86_32-build tcwg-tk1_32-build tcwg-apm_64-build tcwg-apm_32-build'
             description: 'Which target toolchains to build'
         - string:
             name: abe_branch
@@ -87,9 +87,9 @@
             host_x86_64_languages=$host_x86_64_languages
             host_aarchXX_languages=$host_aarchXX_languages
             log_server=$log_server
-            targets=$targets
+            target_list=$target_list
             abe_branch=$abe_branch
-            runtests=yes
+            runtests=$target_list
             try_bootstrap=true
             rebuild=false
             dont_fail=true

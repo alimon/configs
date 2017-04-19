@@ -75,13 +75,9 @@
             default: dev-01.tcwglab:/home/tcwg-buildslave/logs
             description: 'Log_Server'
         - string:
-            name: targets
-            default: 'cross_main cross_aux native_x86'
-            description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_aarch32 native_aarch64'
-        - string:
-            name: matrix_restrictions
-            default: 'label=="tcwg-x86_64-build" || target=="native"'
-            description: 'Builfarm matrix restriction.'
+            name: target_list
+            default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build'
+            description: 'List of targets -- aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build tcwg-tk1_32-build tcwg-apm_64-build tcwg-apm_32-build -- the tcwg-* targets should be a subset of slave axis'
         - string:
             name: displaytag
             default: 'manual'
@@ -108,7 +104,7 @@
             host_aarchXX_excludecheck=$host_aarchXX_excludecheck
             extraconfig=$extraconfig
             log_server=$log_server
-            targets=$targets
+            target_list=$target_list
             EOF
 
             echo "NOTE: Buildfarm job parameters:"
@@ -135,7 +131,6 @@
                   rebuild=$ref_rebuild
                   displaytag=buildfarm-cmp-ref-${BUILD_NUMBER}
                 property-file: buildfarm_parameters
-                restrict-matrix-project: "${matrix_restrictions}"
               - name: tcwg-buildfarm
                 predefined-parameters: |
                   override=$eval_override
@@ -144,7 +139,6 @@
                   rebuild=$eval_rebuild
                   displaytag=buildfarm-cmp-eval-${BUILD_NUMBER}
                 property-file: buildfarm_parameters
-                restrict-matrix-project: "${matrix_restrictions}"
         - multijob:
             name: 'Compare Results'
             condition: COMPLETED

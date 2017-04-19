@@ -28,8 +28,8 @@
             description: 'Languages to build for AArchXX-hosted toolchains, e.g., "c,c++" or "all" or "default"'
         - string:
             name: runtests
-            default: 'x86_64-host'
-            description: 'Run toolchain testsuites: "yes", "no", "x86_64-host"'
+            default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build'
+            description: 'Run toolchain tests for these targets -- must be a subset of target_list'
         - bool:
             name: try_bootstrap
             default: 'true'
@@ -63,9 +63,9 @@
             default: dev-01.tcwglab:/home/tcwg-buildslave/logs
             description: 'Log_Server'
         - string:
-            name: targets
-            default: 'cross_main cross_aux native_x86'
-            description: 'Which target toolchains to build: cross_main cross_aux native_x86 native_aarch32 native_aarch64'
+            name: target_list
+            default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build tcwg-tk1_32-build tcwg-apm_64-build tcwg-apm_32-build'
+            description: 'List of targets -- aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build tcwg-tk1_32-build tcwg-apm_64-build tcwg-apm_32-build -- the tcwg-* targets should be a subset of slave axis'
         - string:
             name: abe_branch
             default: refs/remotes/origin/stable
@@ -111,20 +111,13 @@
                 - tcwg-apm_64-build
                 - tcwg-apm_32-build
         - axis:
-            type: user-defined
+            type: dynamic
             name: target
             values:
-                - aarch64-linux-gnu
-                - armv8l-linux-gnueabihf
-                - arm-linux-gnueabi
-                - arm-linux-gnueabihf
-                - armeb-linux-gnueabihf
-                - aarch64-none-elf
-                - aarch64_be-none-elf
-                - native
+                - target_list
     execution-strategy:
         combination-filter: |
-            label=="tcwg-x86_64-build" || target=="native"
+            label=="tcwg-x86_64-build" || label==target
         sequential: false
     wrappers:
         - timeout:
@@ -183,21 +176,15 @@
                 *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
             esac
 
+            real_target=$target
             case "$target--${builder_arch}" in
-                native--arm64) target_kind=native_aarch64 ;;
-                native--armhf) target_kind=native_aarch32 ;;
-                native--amd64|native--i386) target_kind=native_x86 ;;
+                *--arm64) target_kind=native_aarch64; target=native ;;
+                *--armhf) target_kind=native_aarch32; target=native ;;
+                tcwg-x86_64-build--amd64|tcwg-x86_32-build--i386) target_kind=native_x86; target=native ;;
                 armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
                 *-linux-gnu*--*) target_kind=cross_main ;;
                 *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
             esac
-
-            if ! echo "$targets" | grep -q "$target_kind"; then
-              echo "NOTE: Skipping target $target because $target_kind is not in list: $targets"
-              # Create at least an (empty) artifact so that Jenkins does not complain
-              echo > artifacts/target-skipped.txt
-              exit 0
-            fi
 
             # Select container type. If the user chose a non-default
             # value, then use it whatever the builder type
@@ -231,8 +218,7 @@
                 fi
             fi
 
-            case "${target_kind}-$runtests-${builder_arch}" in
-                "cross_main"-"yes"-*|"cross_main"-"x86_64-host"-"amd64"|"cross_main"-"x86_64-host"-"i386")
+            if echo $runtests | grep -q $real_target; then
                     case "$target" in
                         aarch64*) test_container_arch=arm64 ;;
                         armv8*) test_container_arch=armv8hf ;;
@@ -263,7 +249,7 @@
                     tester=$tester_min_load_name
                     bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test > test-container.sh
                     ;;
-            esac
+            fi
 
             TEST_CONTAINER=
             TEST_CONTAINER_CLEANUP=
