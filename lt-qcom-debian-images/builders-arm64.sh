@@ -17,12 +17,7 @@ cleanup_exit()
 }
 
 sudo apt-get update
-sudo apt-get install -y kpartx python-requests device-tree-compiler zip libfdt-dev mtools android-tools-fsutils
-wget -q \
-     http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/linaro-image-tools_2016.05-1linarojessie1_amd64.deb \
-     http://repo.linaro.org/ubuntu/linaro-tools/pool/main/l/linaro-image-tools/python-linaro-image-tools_2016.05-1linarojessie1_all.deb
-sudo dpkg -i --force-all *.deb
-rm -f *.deb
+sudo apt-get install -y kpartx python-requests device-tree-compiler zip libfdt-dev mtools android-tools-fsutils linaro-image-tools
 
 # get the boot image tools, and keep track of commit info in the traces
 git clone git://codeaurora.org/quic/kernel/skales
@@ -91,9 +86,9 @@ assume_installed:
 - linaro-artwork
 - systemd
 sources:
-  qcom: http://repo.linaro.org/ubuntu/qcom-overlay ${OS_FLAVOUR} main
-  repo: http://repo.linaro.org/ubuntu/linaro-overlay ${OS_FLAVOUR} main
-  debian: http://ftp.debian.org/debian/ ${OS_FLAVOUR} main contrib non-free
+  qcom: http://obs.linaro.org/qcom/${OS_FLAVOUR} ./
+  repo: http://obs.linaro.org/linaro-overlay-${OS_FLAVOUR}/Debian_9.0 ./
+  debian: http://deb.debian.org/debian/ ${OS_FLAVOUR} main contrib non-free
 packages:
 - linux-image-arm64
 - linux-headers-arm64
