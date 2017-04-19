@@ -76,6 +76,31 @@
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ \
               openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/$(echo ${KERNEL_BRANCH} |cut -d'-' -f4)/${BUILD_NUMBER}
+        - shell: |
+            export DEVICE_TYPE=hi6220-hikey
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            sed -e "s|\${BOOT_URL}|${BOOT_URL}|" \
+                -e "s|\${SYSTEM_URL}|${SYSTEM_URL}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+            < configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/template.json \
+            > custom_lava_job_definition.json
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'

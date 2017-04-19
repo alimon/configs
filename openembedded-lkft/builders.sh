@@ -166,6 +166,10 @@ GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 
+BASE_URL=https://snapshots.linaro.org/openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${KERNEL_VERSION}/${BUILD_NUMBER}
+BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.img" | xargs -r basename)
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
+
 cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 {
   "kernel_repo" : "https://android.googlesource.com/kernel/hikey-linaro",
@@ -178,4 +182,6 @@ EOF
 
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+BOOT_URL=${BASE_URL}/${BOOT_IMG}
+SYSTEM_URL=${BASE_URL}/${ROOTFS_IMG}
 EOF
