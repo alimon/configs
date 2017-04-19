@@ -143,15 +143,11 @@
             builder_arch=$(print_label_container_arch $label)
             builder_type=$(print_label_type $label)
 
-            real_target=$target
-            case "$target--${builder_arch}" in
-                *--arm64) target_kind=native_aarch64; target=native ;;
-                *--armhf) target_kind=native_aarch32; target=native ;;
-                tcwg-x86_64-build--amd64|tcwg-x86_32-build--i386) target_kind=native_x86; target=native ;;
-                armeb-linux-gnueabihf--*|*-none-elf--*) target_kind=cross_aux ;;
-                *-linux-gnu*--*) target_kind=cross_main ;;
-                *) echo "ERROR: Cannot handle target: $target"; exit 1 ;;
-            esac
+            if [ x"$target" = x"$label" ]; then
+              target_opt="--target native"
+            else
+              target_opt="--target $target"
+            fi
 
             # Select container type. If the user chose a non-default
             # value, then use it whatever the builder type
@@ -185,36 +181,33 @@
                 fi
             fi
 
-            if echo $runtests | grep -q $real_target; then
-                    case "$target" in
-                        aarch64*) test_container_arch=arm64 ;;
-                        armv8*) test_container_arch=armv8hf ;;
-                        arm*) test_container_arch=armhf ;;
-                        *) echo "ERROR: Wrong target $target"; exit 1 ;;
-                    esac
+            runtests_opt=""
+            if echo $runtests | grep -q $target; then
+              runtests_opt="--runtests"
 
+              case "$target" in
+                aarch64*) tester_labels="tcwg-tx1_64-test" ;;
+                armv8*) tester_labels="tcwg-tx1_32-test" ;;
+                arm*) tester_labels="tcwg-tk1_32-test" ;;
+                *) tester_labels="" ;;
+              esac
+
+              if [ x"$tester_labels" != x"" ]; then
                     # AArch32 and AArch64 test boards are currently:
                     # tcwg-tk1-0[34]: AArch32 (armv7)
                     # tcwg-tx1-0[34]: AArch32 (armv8) and AArch64
-                    case ${test_container_arch} in
-                        armhf)
-                            tester_labels="tcwg-tk1_32-test" ;;
-                        armv8hf)
-                            tester_labels="tcwg-tx1_32-test"
-                            test_container_arch=armhf
-                            ;;
-                        arm64)
-                            tester_labels="tcwg-tx1_64-test"
-                            ;;
+                    case "$tester_labels" in
+                        tcwg-t[kx]1_32-test) test_container_arch="armhf" ;;
+                        tcwg-tx1_64-test) test_container_arch="arm64" ;;
                     esac
 
-                    tester_min_load_name=$(node_with_least_containers $tester_labels)
-                    if [ x"$tester_min_load_name" = x"" ]; then
-                        echo "ERROR: Cannot find tester for $test_container_arch"
-                            exit 1
+                    tester=$(node_with_least_containers $tester_labels)
+                    if [ x"$tester" = x"" ]; then
+                        echo "ERROR: Cannot find tester for $tester_labels"
+                        exit 1
                     fi
-                    tester=$tester_min_load_name
                     bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test > test-container.sh
+              fi
             fi
 
             TEST_CONTAINER=
@@ -242,16 +235,7 @@
                     trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
                 fi
 
-                runtests_opt="--runtests --testcontainerfile $WORKSPACE/test-container.data"
-            else
-                case "$target_kind-$runtests-${builder_arch}" in
-                    *-"yes"-*|*-"x86_64-host"-"amd64"|*-"x86_64-host"-"i386")
-                        runtests_opt="--runtests"
-                        ;;
-                    *)
-                        runtests_opt=""
-                        ;;
-                esac
+                runtests_opt="$runtests_opt --testcontainerfile $WORKSPACE/test-container.data"
             fi
 
             ${BUILD_CONTAINER} 'echo "Build session is up; ulimit config:"; ulimit -a'
@@ -310,7 +294,7 @@
 
             result="0"
 
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --target ${target} --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} $target_opt --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
 
             # If the build failed, we want to keep the containers to investigate the problem, so remove the cleanup trap handler.
             if [ $result -ne 0 ]; then
