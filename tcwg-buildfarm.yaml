@@ -140,41 +140,8 @@
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
             . ./jenkins-scripts/jenkins-helpers.sh
 
-            case ${label} in
-                tcwg-x86_64-build)
-                    builder_arch=amd64
-                    builder_type=x86_64
-                    ;;
-                tcwg-x86_32-build)
-                    builder_arch=i386
-                    builder_type=i686
-                    ;;
-                tcwg-tx1_64-build)
-                    # tx1 and apm need to have different builder_type,
-                    # so that logs are stored in different directories
-                    # in case both types of boards are used in the
-                    # matrix build
-                    builder_arch=arm64
-                    builder_type=aarch64-tx1
-                    ;;
-                tcwg-tx1_32-build)
-                    builder_arch=armhf
-                    builder_type=armv8-tx1
-                    ;;
-                tcwg-tk1_32-build)
-                    builder_arch=armhf
-                    builder_type=armv7
-                    ;;
-                tcwg-apm_64-build)
-                    builder_arch=arm64
-                    builder_type=aarch64
-                    ;;
-                tcwg-apm_32-build)
-                    builder_arch=armhf
-                    builder_type=armv8
-                    ;;
-                *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
-            esac
+            builder_arch=$(print_label_container_arch $label)
+            builder_type=$(print_label_type $label)
 
             real_target=$target
             case "$target--${builder_arch}" in
