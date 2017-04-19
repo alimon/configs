@@ -22,6 +22,10 @@
             name: target_list
             default: 'aarch64-linux-gnu aarch64_be-linux-gnu aarch64-none-elf aarch64_be-none-elf arm-aout arm-coff arm-epoc-pe arm-linux-gnueabi arm-linux-gnueabihf arm-netbsdelf arm-none-eabi arm-none-nacl arm-none-symbianelf arm-pe arm-vxworks arm-wince-pe armeb-linux-gnueabihf'
             description: 'List of targets to test'
+        - string:
+            name: bfd_list
+            default: '--enable-64-bit-bfd=no --enable-64-bit-bfd=yes'
+            description: 'Type of BFD to enable: --enable-64-bit-bfd=yes --enable-64-bit-bfd=no'
     disabled: false
     node: tcwg-x86_64-cam
     retry-count: 3
@@ -44,11 +48,10 @@
             values:
                 - tcwg-x86_64-cam
         - axis:
-            type: user-defined
+            type: dynamic
             name: bfd
             values:
-                - --enable-64-bit-bfd=no
-                - --enable-64-bit-bfd=yes
+                - bfd_list
         - axis:
             type: user-defined
             name: schroot_arch
