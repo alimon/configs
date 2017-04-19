@@ -1,5 +1,5 @@
 - job:
-    name: 96boards-reference-uefi
+    name: 96boards-reference-uefi-staging
     project-type: matrix
     defaults: global
     logrotate:
@@ -29,7 +29,7 @@
     disabled: false
     node: master
     child-workspace: .
-    display-name: 'Reference Platform - UEFI'
+    display-name: 'Reference Platform - UEFI (staging)'
     axes:
         - axis:
             type: user-defined
@@ -250,10 +250,10 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --build-info out/${BUILD_TYPE}/BUILD-INFO.txt \
-              out/${BUILD_TYPE} snapshots/reference-platform/components/uefi/${BUILD_NUMBER}/${BUILD_TYPE}/${MX_PLATFORM}/
+              out/${BUILD_TYPE} snapshots/reference-platform/components/uefi-staging/${BUILD_NUMBER}/${BUILD_TYPE}/${MX_PLATFORM}/
             python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --make-link snapshots/reference-platform/components/uefi/${BUILD_NUMBER}
+              --make-link snapshots/reference-platform/components/uefi-staging/${BUILD_NUMBER}
     publishers:
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, ricardo.salveti@linaro.org, qa-team@linaro.org'
