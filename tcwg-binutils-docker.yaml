@@ -20,7 +20,7 @@
             description: 'binutils revision to build'
         - string:
             name: target_list
-            default: 'aarch64-linux-gnu aarch64_be-linux-gnu aarch64-none-elf aarch64_be-none-elf arm-aout arm-coff arm-epoc-pe arm-linux-gnueabi arm-linux-gnueabihf arm-netbsdelf arm-none-eabi arm-none-nacl arm-none-symbianelf arm-pe arm-vxworks arm-wince-pe armeb-linux-gnueabihf'
+            default: 'aarch64-linux-gnu aarch64_be-linux-gnu aarch64-none-elf aarch64_be-none-elf arm-coff arm-linux-gnueabi arm-linux-gnueabihf arm-netbsdelf arm-none-eabi arm-none-nacl arm-none-symbianelf arm-pe arm-vxworks arm-wince-pe armeb-linux-gnueabihf'
             description: 'List of targets to test'
         - string:
             name: bfd_list
@@ -126,7 +126,7 @@
             ${CONTAINER} 'echo "Build session is up; ulimit config:"; ulimit -a'
 
             case $target in
-                arm-wince-pe|arm-pe|arm-epoc-pe|arm-aout)
+                arm-wince-pe|arm-pe|arm-epoc-pe|arm-aout|arm-coff)
                     lto=
                     ;;
                 *)
