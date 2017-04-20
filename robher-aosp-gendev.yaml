@@ -75,6 +75,11 @@
             lunch ${LUNCH_TARGET}
             make -k -j8 systemimage ramdisk
 
+            # Un-sparse the image
+            mv ${ANDROID_PRODUCT_OUT}/system.img ${ANDROID_PRODUCT_OUT}/system.simg
+            simg2img ${ANDROID_PRODUCT_OUT}/system.simg ${ANDROID_PRODUCT_OUT}/system.img
+            rm ${ANDROID_PRODUCT_OUT}/system.simg
+
             # Publish binaries
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/generic/build-info/public-template.txt -O ${ANDROID_PRODUCT_OUT}/BUILD-INFO.txt
 
