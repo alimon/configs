@@ -50,9 +50,10 @@
             set -ex
             git config --global user.name "TCWG Buildslave"
             git config --global user.email tcwg-buildslave@linaro.org
-            if ! git remote | grep -q gerrit; then
-              git remote add gerrit ssh://tcwg-buildslave@review.linaro.org:29418/toolchain/abe
+            if git remote | grep -q gerrit; then
+              git remote rm gerrit
             fi
+            git remote add gerrit ssh://tcwg-buildslave@review.linaro.org:29418/toolchain/abe
             git push gerrit origin/master:tested
             wget http://192.168.17.10/~maxim.kuvyrkov/docker
             chmod +x ./docker
