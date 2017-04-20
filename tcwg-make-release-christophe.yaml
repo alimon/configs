@@ -156,11 +156,7 @@
             # wrong when preparing the rest of the environment
             if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
                 CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
-                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
-                    trap "${CONTAINERS_CLEANUP}" EXIT
-                else
-                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
-                fi
+                trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
             tcwg_release=${date}

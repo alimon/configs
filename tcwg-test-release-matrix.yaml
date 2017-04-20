@@ -120,11 +120,7 @@
             # Make sure to cleanup build container if something goes wrong
             if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
                 CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
-                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
-                    trap "${CONTAINERS_CLEANUP}" EXIT
-                else
-                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
-                fi
+                trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
             # FIXME: temporary hack: hardcode the ".1" in GCC version number

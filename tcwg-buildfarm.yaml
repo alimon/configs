@@ -163,7 +163,7 @@
 
             # Start build container
             builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --no-ssh-agent > build-container.sh
+            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./build-container.sh
@@ -174,11 +174,7 @@
             # wrong when preparing the test environment
             if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
                 CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
-                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
-                    trap "${CONTAINERS_CLEANUP}" EXIT
-                else
-                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
-                fi
+                trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
             runtests_opt=""
@@ -229,11 +225,7 @@
                 else
                     CONTAINERS_CLEANUP="${TEST_CONTAINER_CLEANUP}"
                 fi
-                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
-                    trap "${CONTAINERS_CLEANUP}" EXIT
-                else
-                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
-                fi
+                trap "${CONTAINERS_CLEANUP}" EXIT
 
                 runtests_opt="$runtests_opt --testcontainerfile $WORKSPACE/test-container.data"
             fi
@@ -298,11 +290,7 @@
 
             # If the build failed, we want to keep the containers to investigate the problem, so remove the cleanup trap handler.
             if [ $result -ne 0 ]; then
-                if [ x"${SSH_AGENT_CLEANUP}" = x ]; then
-                    trap - EXIT
-                else
-                    trap "eval \`${SSH_AGENT_CLEANUP}\`" EXIT
-                fi
+                trap - EXIT
             fi
 
             # If we actually built a toolchain, save its manifest.

@@ -66,11 +66,7 @@
             # wrong when preparing the test environment
             if [ "${BUILD_CONTAINER_CLEANUP:+set}" = "set" ]; then
                 CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
-                if [ "${SSH_AGENT_CLEANUP:+set}" != "set" ]; then
-                    trap "${CONTAINERS_CLEANUP}" EXIT
-                else
-                    trap "${CONTAINERS_CLEANUP} ; eval \`${SSH_AGENT_CLEANUP}\`" EXIT
-                fi
+                trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
             ${BUILD_CONTAINER} "bash -x ${WORKSPACE}/tcwg-llvm-testsuite.sh \
