@@ -163,19 +163,14 @@
 
             # Start build container
             builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
+            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --prefix build_ > build-container.sh
 
-            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            # Define build_CONTAINER_RSH and build_container_cleanup
             . ./build-container.sh
-            BUILD_CONTAINER="${CONTAINER}"
-            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
 
             # Make sure to cleanup build container if something goes
             # wrong when preparing the test environment
-            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
-                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
-                trap "${CONTAINERS_CLEANUP}" EXIT
-            fi
+            trap "build_container_cleanup" EXIT
 
             runtests_opt=""
             if echo $runtests | grep -q $target; then
@@ -202,35 +197,15 @@
                         echo "ERROR: Cannot find tester for $tester_labels"
                         exit 1
                     fi
-                    bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test > test-container.sh
+                    bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test --prefix test_ > test-container.sh
+                    . ./test-container.sh
+                    echo "${test_container_host}:${test_container_port}" | tee $WORKSPACE/test-container.data
+                    trap "build_container_cleanup; test_container_cleanup" EXIT
+                    runtests_opt="$runtests_opt --testcontainerfile $WORKSPACE/test-container.data"
               fi
             fi
 
-            TEST_CONTAINER=
-            TEST_CONTAINER_CLEANUP=
-            test_session_host=
-            test_session_port=
-            # If we use a remote tester machine, tell jenkins.sh how
-            # to override abe's default
-            if [ -f test-container.sh ]; then
-                . ./test-container.sh
-                TEST_CONTAINER="${CONTAINER}"
-                TEST_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
-                test_session_host=${session_host}
-                test_session_port=${session_port}
-                echo "${test_session_host}:${test_session_port}" | tee $WORKSPACE/test-container.data
-
-                if [ x"${CONTAINERS_CLEANUP}" != x ]; then
-                    CONTAINERS_CLEANUP="${CONTAINERS_CLEANUP} ; ${TEST_CONTAINER_CLEANUP}"
-                else
-                    CONTAINERS_CLEANUP="${TEST_CONTAINER_CLEANUP}"
-                fi
-                trap "${CONTAINERS_CLEANUP}" EXIT
-
-                runtests_opt="$runtests_opt --testcontainerfile $WORKSPACE/test-container.data"
-            fi
-
-            ${BUILD_CONTAINER} 'echo "Build session is up; ulimit config:"; ulimit -a'
+            ${build_CONTAINER_RSH} 'echo "Build session is up; ulimit config:"; ulimit -a'
 
             case ${builder_arch} in
                 amd64|i386) languages="$host_x86_64_languages" ;;
@@ -286,7 +261,7 @@
 
             result="0"
 
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} $target_opt --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
+            ${build_CONTAINER_RSH} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} $target_opt --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
 
             # If the build failed, we want to keep the containers to investigate the problem, so remove the cleanup trap handler.
             if [ $result -ne 0 ]; then
