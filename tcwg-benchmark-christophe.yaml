@@ -77,11 +77,12 @@
             # Slaves for this job are virtual slaves on dev-01,
             # convert the slave name into the target board name
             boardname=$(echo ${NODE_NAME} | sed 's/-bmk//').tcwglab
-            boardname="-o ControlMaster=no tcwg-benchmark@${boardname}"
-            ssh $boardname rm -rf bmk-scripts
-            ssh $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
+            boardname="tcwg-benchmark@${boardname}"
+            ssh_opts="-o StrictHostKeyChecking=no -Snone"
+            ssh ${ssh_opts} $boardname rm -rf bmk-scripts
+            ssh ${ssh_opts} $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
             #FIXME: use master branch when ready
-            ssh $boardname git -C bmk-scripts checkout -b christophe origin/christophe
+            ssh ${ssh_opts} $boardname git -C bmk-scripts checkout -b christophe origin/christophe
 
             case ${label} in
                 *-tx1-*) target=aarch64-linux-gnu- ;;
@@ -94,7 +95,7 @@
             
             # FIXME: bench_list can contain more than one bench
             # FIXME: support cflags
-            ssh -t $boardname bash -x bmk-scripts/run.sh \
+            ssh -t ${ssh_opts} $boardname bash -x bmk-scripts/run.sh \
                 --bench ${bench_list} \
                 --builder dev-01.tcwglab \
                 --config ${config} \
