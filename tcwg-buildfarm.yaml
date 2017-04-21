@@ -199,9 +199,8 @@
                     fi
                     bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test --prefix test_ > test-container.sh
                     . ./test-container.sh
-                    echo "${test_container_host}:${test_container_port}" | tee $WORKSPACE/test-container.data
                     trap "build_container_cleanup; test_container_cleanup" EXIT
-                    runtests_opt="$runtests_opt --testcontainerfile $WORKSPACE/test-container.data"
+                    runtests_opt="$runtests_opt --testcontainer ${test_container_host}:${test_container_port}"
               fi
             fi
 
