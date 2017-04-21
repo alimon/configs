@@ -34,11 +34,14 @@ export kernel_flavour=lt-qcom
 export kernel_config="defconfig distro.config"
 export MAKE_DTBS=true
 export ARCH=arm64
-export tcbindir="${HOME}/srv/toolchain/arm64-tc-14.09/bin"
-export toolchain_url=http://releases.linaro.org/14.09/components/toolchain/binaries/gcc-linaro-aarch64-linux-gnu-4.9-2014.09_linux.tar.xz
+export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
+export tcbindir="${HOME}/srv/toolchain/$(basename $toolchain_url .tar.xz)/bin"
 
 test -d lci-build-tools || git clone https://git.linaro.org/git/ci/lci-build-tools.git lci-build-tools
 bash -x lci-build-tools/jenkins_kernel_build_inst
+
+# record compiler version
+$(ls ${tcbindir}/*-gcc) -v
 
 # record kernel version
 echo "$(make kernelversion)-${VENDOR}-${kernel_flavour}" > kernel-version
@@ -109,6 +112,7 @@ Build description:
 * Kernel version: $(cat kernel-version)
 * Kernel commit: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
 * Kernel defconfig: $kernel_config
+* Kernel toolchain: "$(basename $toolchain_url)":$toolchain_url
 EOF
 
 # Download license file and firmware
