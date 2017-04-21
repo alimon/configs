@@ -114,6 +114,7 @@
             log_name=${JOB_NAME}-${BUILD_NUMBER}/\$builder_type.\$target
             log_server=$log_server
             abe_branch=$abe_branch
+            target_list=aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build
             runtests=aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build
             try_bootstrap=true
             rebuild=false
@@ -144,8 +145,6 @@
             projects:
               - name: tcwg-buildfarm
                 condition: COMPLETED
-                predefined-parameters: |
-                  target_list='aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build'
                 property-file: buildfarm_parameters
         - conditional-step:
             condition-kind: file-exists
