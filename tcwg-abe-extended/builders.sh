@@ -1,20 +1,12 @@
 #!/bin/bash
 
-if [ "x$label" = "xtcwg-x86_64-build" ]; then
-  schroot_arch=amd64
-  schroot_image="tcwg-build-${schroot_arch}-trusty"
-
-  session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
-  BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
-  $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
-
-  # Remove schroot session on exit.
-  trap "schroot -f -e -c session:$session_id" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
-else
-  BUILD_SHELL=bash
-fi
-
 git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+. ./jenkins-scripts/jenkins-helpers.sh
+
+./jenkins-scripts/start-container-docker.sh --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
+. ./build-container.sh
+trap "build_container_cleanup" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
+BUILD_SHELL="$build_CONTAINER_RSH bash"
 
 gcc4_9ver=gcc=gcc.git~linaro-4.9-2016.02
 gcc5ver=gcc=gcc.git~linaro-5.3-2016.05
@@ -57,9 +49,15 @@ case "$testname" in
     ;;
   *_build_check_gcc*)
     bootstrap=
+    testcontainer_opt=
     case ${testname} in
       cross_linux_*)
         target=arm-linux-gnueabihf
+	tester_label=$(print_tester_label_for_target $target)
+	./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
+	. ./test-container.sh
+	trap "build_container_cleanup; test_container_cleanup" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
+	testcontainer_opt="--testcontainer ${test_container_host}:${test_container_port}"
         ;;
       cross_bare_*)
         target=aarch64-none-elf
@@ -74,7 +72,7 @@ case "$testname" in
     esac
 
     # Build and check a linux target
-    ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir `pwd` --target ${target} ${bootstrap} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccnum} $gccversion"
+    ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir `pwd` --target ${target} ${bootstrap} ${testcontainer_opt} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccnum} $gccversion"
     ret=$?
     #FIXME: check validation results (against a known baseline)
     #FIXME: validate the manifest

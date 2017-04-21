@@ -46,15 +46,12 @@
             name: label
             values:
                 - tcwg-x86_64-build
-                - docker-trusty-amd64-tcwg
         - axis:
             type: dynamic
             name: testname
             values:
                 - test_list
     execution-strategy:
-        combination-filter: |
-            (label=="tcwg-x86_64-build" && testname!="canadian_cross_build_gcc5") || (label=="docker-trusty-amd64-tcwg" && testname=="canadian_cross_build_gcc5")
         sequential: false
     wrappers:
         - timeout:

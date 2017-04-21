@@ -140,8 +140,7 @@
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
             . ./jenkins-scripts/jenkins-helpers.sh
 
-            builder_arch=$(print_label_container_arch $label)
-            builder_type=$(print_label_type $label)
+            builder_type=$(print_type_for_label $label)
 
             if [ x"$target" = x"$label" ]; then
               target_opt="--target native"
@@ -152,18 +151,12 @@
             # Select container type. If the user chose a non-default
             # value, then use it whatever the builder type
             if [ "x${build_container_type}" = "xdefault" ]; then
-                case ${builder_arch} in
-                    amd64|i386|arm64|armhf)
-                        build_container_type=docker
-                        build_container_tag=trusty
-                        ;;
-                    *) echo "ERROR: Unsupported builder_arch: ${builder_arch}"; exit 1 ;;
-                esac
+              build_container_type=docker
+              build_container_tag=trusty
             fi
 
             # Start build container
-            builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --prefix build_ > build-container.sh
+            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --label $label --node $NODE_NAME --distro ${build_container_tag} --prefix build_ > build-container.sh
 
             # Define build_CONTAINER_RSH and build_container_cleanup
             . ./build-container.sh
@@ -176,38 +169,19 @@
             if echo $runtests | grep -q $target; then
               runtests_opt="--runtests"
 
-              case "$target" in
-                aarch64*) tester_labels="tcwg-tx1_64-test" ;;
-                armv8*) tester_labels="tcwg-tx1_32-test" ;;
-                arm*) tester_labels="tcwg-tk1_32-test" ;;
-                *) tester_labels="" ;;
-              esac
-
-              if [ x"$tester_labels" != x"" ]; then
-                    # AArch32 and AArch64 test boards are currently:
-                    # tcwg-tk1-0[34]: AArch32 (armv7)
-                    # tcwg-tx1-0[34]: AArch32 (armv8) and AArch64
-                    case "$tester_labels" in
-                        tcwg-t[kx]1_32-test) test_container_arch="armhf" ;;
-                        tcwg-tx1_64-test) test_container_arch="arm64" ;;
-                    esac
-
-                    tester=$(node_with_least_containers $tester_labels)
-                    if [ x"$tester" = x"" ]; then
-                        echo "ERROR: Cannot find tester for $tester_labels"
-                        exit 1
-                    fi
-                    bash -x ./jenkins-scripts/start-container-docker.sh --arch ${test_container_arch} --distro trusty --session-host ${tester} --task test --prefix test_ > test-container.sh
-                    . ./test-container.sh
-                    trap "build_container_cleanup; test_container_cleanup" EXIT
-                    runtests_opt="$runtests_opt --testcontainer ${test_container_host}:${test_container_port}"
+              tester_label=$(print_tester_label_for_target $target)
+              if [ x"$tester_label" != x"" ]; then
+                bash -x ./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
+                . ./test-container.sh
+                trap "build_container_cleanup; test_container_cleanup" EXIT
+                runtests_opt="$runtests_opt --testcontainer ${test_container_host}:${test_container_port}"
               fi
             fi
 
             ${build_CONTAINER_RSH} 'echo "Build session is up; ulimit config:"; ulimit -a'
 
-            case ${builder_arch} in
-                amd64|i386) languages="$host_x86_64_languages" ;;
+            case $label in
+                tcwg-x86_*-build) languages="$host_x86_64_languages" ;;
                 *) languages="$host_aarchXX_languages" ;;
             esac
 
@@ -227,8 +201,8 @@
                 norebuild="--norebuild"
             fi
 
-            case ${builder_arch} in
-                amd64|i386) excludecheck="$host_x86_64_excludecheck" ;;
+            case $label in
+                tcwg-x86_*-build) excludecheck="$host_x86_64_excludecheck" ;;
                 *) excludecheck="$host_aarchXX_excludecheck" ;;
             esac
 
