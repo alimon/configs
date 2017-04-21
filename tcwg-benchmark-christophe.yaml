@@ -92,6 +92,9 @@
                     exit 1
                     ;;
             esac
+
+            # Hack: populate tcwg-benchmark's known_hosts on the board
+            ssh ${ssh_opts} $boardname ssh ${ssh_opts} git@dev-private-git.linaro.org true || true
             
             # FIXME: bench_list can contain more than one bench
             # FIXME: support cflags
