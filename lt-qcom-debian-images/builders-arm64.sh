@@ -90,8 +90,6 @@ assume_installed:
 - systemd
 sources:
   qcom: http://obs.linaro.org/qcom/${OS_FLAVOUR} ./
-  repo: http://obs.linaro.org/linaro-overlay-${OS_FLAVOUR}/Debian_9.0 ./
-  debian: http://deb.debian.org/debian/ ${OS_FLAVOUR} main contrib non-free
 packages:
 - linux-image-arm64
 - linux-headers-arm64
