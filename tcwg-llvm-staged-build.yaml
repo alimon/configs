@@ -27,7 +27,7 @@
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
         - bool:
-            name: 2stage
+            name: twostage
             default: false
             description: 'Whether or not to trigger a second stage with this build.'
         - bool:
@@ -100,10 +100,10 @@
             toolchain_url="http://${fileserver}/${url_prefix}/${target}/${tarball}"
 
             # We don't want an infinite chain, so make sure the 3rd stage is off
-            if ${2stage}; then
-              cat << EOF > llvm.params.2stage
+            if ${twostage}; then
+              cat << EOF > llvm.params.twostage
               toolchain=${toolchain_url}
-              2stage=false
+              twostage=false
             EOF
 
             # If we requested 2 stages and test-suite, only test the 2nd stage
@@ -116,11 +116,11 @@
 
         - conditional-step:
             condition-kind: file-exists
-            condition-filename: llvm.params.2stage
+            condition-filename: llvm.params.twostage
             steps:
                 - trigger-builds:
                     - project: 'tcwg-llvm-staged-build'
-                      property-file: llvm.params.2stage
+                      property-file: llvm.params.twostage
                       current-parameters: true
                       block: false
 
