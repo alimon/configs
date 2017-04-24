@@ -28,6 +28,14 @@
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
+        - bool:
+            name: 2stage
+            default: false
+            description: 'Whether or not to trigger a second stage with this build.'
+        - bool:
+            name: testsuite
+            default: false
+            description: 'Whether or not to trigger a test-suite with this build.'
         - string:
             name: weight
             default: '3'
@@ -62,7 +70,7 @@
     builders:
         - shell: |
             #!/bin/bash
-            set -ex
+            set -exu
 
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
@@ -76,7 +84,7 @@
 
             # Make sure to cleanup build container if something goes
             # wrong when preparing the test environment
-            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+            if [ "${BUILD_CONTAINER_CLEANUP}" != "" ]; then
                 CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
                 trap "${CONTAINERS_CLEANUP}" EXIT
             fi
@@ -89,3 +97,45 @@
                 --linkjobs=${linkjobs} \
                 --revision=${revision} \
                 --toolchain=${toolchain}"
+
+            # Chained jobs (FIXME: handle version/targets)
+            fileserver=dev-01.tcwglab
+            url_prefix=~tcwg-buildslave/builds/binaries
+            target=clang+llvm-5.0.0-ci${BUILD_ID}-x86_64-unknown-linux-gnu
+            tarball=${target}.tar.gz
+            toolchain_url="http://${fileserver}/${url_prefix}/${target}/${tarball}"
+
+            # We don't want an infinite chain, so make sure the 3rd stage is off
+            if ${2stage}; then
+              cat << EOF > llvm.params.2stage
+              toolchain=${toolchain_url}
+              2stage=false
+            EOF
+
+            # If we requested 2 stages and test-suite, only test the 2nd stage
+            elif ${testsuite}; then
+              cat << EOF > llvm.params.testsuite
+              toolchain=${toolchain_url}
+            EOF
+
+            fi
+
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: llvm.params.2stage
+            steps:
+                - trigger-builds:
+                    - project: 'tcwg-llvm-staged-build'
+                      property-file: llvm.params.2stage
+                      current-parameters: true
+                      block: false
+
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: llvm.params.testsuite
+            steps:
+                - trigger-builds:
+                    - project: 'tcwg-llvm-testsuite'
+                      property-file: llvm.params.testsuite
+                      current-parameters: true
+                      block: false
