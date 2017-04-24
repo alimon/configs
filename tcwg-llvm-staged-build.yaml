@@ -13,8 +13,6 @@
         - build-discarder:
             days-to-keep: 10
             num-to-keep: 10
-        - heavy-job:
-            weight: 3
     parameters:
         - string:
             name: revision
@@ -36,12 +34,8 @@
             name: testsuite
             default: false
             description: 'Whether or not to trigger a test-suite with this build.'
-        - string:
-            name: weight
-            default: '3'
-            description: 'Container weight, controls limits on memory, pids, cpu.'
     disabled: false
-    node: tcwg-x86_64-build
+    node: tcwg-x86_64-cam
     retry-count: 3
     concurrent: true
     display-name: 'TCWG LLVM Staged Build'
@@ -75,7 +69,7 @@
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
             builder_arch=amd64
-            bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight ${weight} > build-container.sh
+            bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight 1 > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./build-container.sh
@@ -90,7 +84,7 @@
             fi
 
             # Setup job parameters and run
-            linkjobs=$((weight*7))
+            linkjobs=7
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --workspace=${WORKSPACE} \
                 --buildid=${BUILD_ID} \
