@@ -24,7 +24,7 @@
     display-name: 'Linaro Debian arm64 rootfs (Stretch)'
     scm:
         - git:
-            url: git://git.linaro.org/ci/ubuntu-build-service.git
+            url: https://git.linaro.org/ci/ubuntu-build-service.git
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
@@ -85,6 +85,16 @@
             cd ${WORKSPACE}
             sudo rm -rf out && mkdir out
             sudo mv builddir/${codename}-arm64-${rootfs}/linaro-${codename}-* out
+
+            # Build information
+            cat > out/HEADER.textile << EOF
+
+            h4. Build description ( $JOB_NAME )
+
+            * Job URL: "$JOB_URL":$JOB_URL
+            * Build URL: "$BUILD_URL":$BUILD_URL
+            * Commit: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
+            EOF
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
