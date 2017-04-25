@@ -22,17 +22,13 @@
             default: 'tcwg-apm-01 tcwg-apm-02 tcwg-apm-04 tcwg-tk1-01 tcwg-tk1-02 tcwg-tk1-03 tcwg-tk1-04 tcwg-tx1-01 tcwg-tx1-02 tcwg-tx1-03 tcwg-tx1-04 tcwg-x86_64-build-01 tcwg-x86_64-build-02 tcwg-x86_64-build-03 tcwg-x86_64-build-04 tcwg-x86_64-build-05 tcwg-x86_64-build-06 tcwg-x86_64-build-07 tcwg-x86_64-build-08'
             description: 'List of slaves to run on -- should be a subset of slave axis'
         - string:
-            name: hours
-            default: '10'
-            description: 'Delete containers that are more then "hours" old.  Use "0" to disable time check.'
+            name: cleanup_running_hours
+            default: '-10'
+            description: 'Delete containers that are more then "hours" old.  Use "0" to disable time check.  Use negative values for dry-run.'
         - string:
-            name: docker_ps_opts
-            default: ''
-            description: 'Additional "docker ps" options.  Use "-a" to cleanup non-running containers. Do not override unless you understand what you are doing.'
-        - bool:
-            name: cleanup_containers
-            default: 'false'
-            description: 'Whether to cleanup containers'
+            name: cleanup_stopped_hours
+            default: '240'
+            description: 'Delete containers that are more then "hours" old.  Use "0" to disable time check.  Use negative values for dry-run.'
         - bool:
             name: cleanup_volumes
             default: 'false'
@@ -47,7 +43,7 @@
             description: 'Whether to be verbose'
         - string:
             name: scripts_branch
-            default: refs/remotes/origin/master
+            default: refs/heads/master
             description: 'Scripts revision to use'
     disabled: false
     node: tcwg-x86_64-build
@@ -112,7 +108,7 @@
             #!/bin/bash
 
             set -ex
-            ./tcwg-cleanup-stale-containers.sh --hours $hours --docker_ps_opts "$docker_ps_opts" --cleanup-containers $cleanup_containers --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
+            ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
     publishers:
         - email:
             recipients: 'maxim.kuvyrkov@linaro.org christophe.lyon@linaro.org'
