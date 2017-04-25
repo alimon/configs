@@ -236,9 +236,10 @@
 
             ${build_CONTAINER_RSH} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} $target_opt --override \"$override\" --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
 
-            # If the build failed, we want to keep the containers to investigate the problem, so remove the cleanup trap handler.
+            # If the build failed, stop the containers, which will
+            # leave them as-is for ~10 days.
             if [ $result -ne 0 ]; then
-                trap - EXIT
+                trap "build_container_stop; test_container_stop" EXIT
             fi
 
             # If we actually built a toolchain, save its manifest.
