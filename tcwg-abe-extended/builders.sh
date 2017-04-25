@@ -5,7 +5,7 @@ $bashmode
 git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 . ./jenkins-scripts/jenkins-helpers.sh
 
-./jenkins-scripts/start-container-docker.sh --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
+./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
 . ./build-container.sh
 trap "build_container_cleanup" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
 BUILD_SHELL="$build_CONTAINER_RSH bash"
