@@ -85,19 +85,23 @@
 
             # Setup job parameters and run
             linkjobs=7
+            buildid="ci${BUILD_ID}"
+            if ! -z ${revision}; then
+              buildid=${revision}
+            fi
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --workspace=${WORKSPACE} \
-                --buildid=${BUILD_ID} \
+                --buildid=${buildid} \
                 --linkjobs=${linkjobs} \
                 --revision=${revision} \
                 --toolchain=${toolchain}"
 
-            # Chained jobs (FIXME: handle version/targets)
+            # Chained jobs (FIXME: handle targets)
             fileserver=dev-01.tcwglab
-            url_prefix='~tcwg-buildslave/builds/binaries'
-            target=clang+llvm-5.0.0-ci${BUILD_ID}-x86_64-unknown-linux-gnu
+            url_prefix='~tcwg-buildslave/builds/binaries/llvm'
+            target=clang+llvm-${buildid}-x86_64-unknown-linux-gnu
             tarball=${target}.tar.xz
-            toolchain_url="http://${fileserver}/${url_prefix}/${target}/${tarball}"
+            toolchain_url="http://${fileserver}/${url_prefix}/${tarball}"
 
             # We don't want an infinite chain, so make sure the 3rd stage is off
             if ${twostage}; then
