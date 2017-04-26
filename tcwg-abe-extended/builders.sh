@@ -74,7 +74,7 @@ case "$testname" in
     esac
 
     # Build and check a linux target
-    ${build_CONTAINER_RSH} "bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir `pwd` --target ${target} ${bootstrap} ${testcontainer_opt} --runtests --excludecheck gdb --override \"--extraconfigdir ../config/gcc${gccnum} $gccversion\""
+    ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --abedir `pwd` --target ${target} ${bootstrap} ${testcontainer_opt} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccnum} $gccversion"
     ret=$?
     #FIXME: check validation results (against a known baseline)
     #FIXME: validate the manifest
