@@ -8,7 +8,7 @@ git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenki
 ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
 . ./build-container.sh
 trap "build_container_cleanup" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
-BUILD_SHELL="build_container_run"
+BUILD_SHELL="build_container_run bash"
 
 gcc4_9ver=gcc=gcc.git~linaro-4.9-2016.02
 gcc5ver=gcc=gcc.git~linaro-5.3-2016.05
@@ -74,7 +74,7 @@ case "$testname" in
     esac
 
     # Build and check a linux target
-    ${BUILD_SHELL} ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir `pwd` --target ${target} ${bootstrap} ${testcontainer_opt} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccnum} $gccversion"
+    ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir `pwd` --target ${target} ${bootstrap} ${testcontainer_opt} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccnum} $gccversion"
     ret=$?
     #FIXME: check validation results (against a known baseline)
     #FIXME: validate the manifest
