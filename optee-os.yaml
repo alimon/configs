@@ -1,0 +1,38 @@
+- job:
+    name: optee-os
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            op-tee:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+                - job-configure
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+    disabled: false
+    node: docker-xenial-amd64
+    display-name: 'OP-TEE Trusted OS'
+    scm:
+        - git:
+            url: https://github.com/OP-TEE/optee_os.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell:
+            !include-raw: optee/os/builders.sh
