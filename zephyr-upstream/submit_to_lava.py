@@ -164,9 +164,9 @@ def main():
         sys.exit(1)
 
     lava_server = args.lava_server
-    if not lava_server.startswith("http://") or not lava_server.startswith("https://"):
+    if not (lava_server.startswith("http://") or lava_server.startswith("https://")):
         lava_server = "https://" + lava_server
-    lava_url_base = "https://%s/" % urlsplit(lava_server).netloc
+    lava_url_base = "%s://%s/" % (urlsplit(lava_server).scheme, urlsplit(lava_server).netloc)
     lava_url = lava_url_base + "RPC2/"
     l = LAVA(lava_url, args.lava_user, args.lava_token)
     test_url_prefix = "%s/%s/%s/%s/%s/tests/" % (
@@ -191,7 +191,7 @@ def main():
         lava_job = template.substitute(replace_dict)
         try:
             results = l.proxy.scheduler.submit_job(lava_job)
-            print("%s/scheduler/job/" % (lava_url_base, results))
+            print("%sscheduler/job/%s" % (lava_url_base, results))
         except xmlrpclib.ProtocolError as err:
             print("LAVA submission failed")
             print("offending job definition:")
