@@ -177,7 +177,7 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "kernel_commit_id" : "${SRCREV_kernel}",
   "kernel_branch" : "${KERNEL_BRANCH}",
   "build_arch" : "${TUNE_FEATURES}",
-  "compiler" : "${TARGET_SYS} ${GCCVERSION}",
+  "compiler" : "${TARGET_SYS} ${GCCVERSION}"
 }
 EOF
 
