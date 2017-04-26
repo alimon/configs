@@ -100,10 +100,11 @@
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py --api_version 3 --link-latest out debian/images/${codename}/${rootfs}-arm64/${BUILD_NUMBER}
-        - trigger-builds:
+    publishers:
+        - trigger-parameterized-builds:
             - project:
                 - 'lt-qcom-debian-images-dragonboard410c'
                 - 'lt-qcom-debian-images-dragonboard820c'
-    publishers:
+              condition: SUCCESS
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
