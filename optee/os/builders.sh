@@ -17,12 +17,11 @@ fi
 
 set -ex
 
-CC=gcc
 CCACHE_DIR="${HOME}/srv/ccache"
 CCACHE_UNIFY=1
 CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
 PATH=/usr/lib/ccache:${PATH}
-export CC CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS PATH
+export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS PATH
 
 # Install the cross compilers
 #wget -q \
@@ -58,7 +57,6 @@ mkdir ${HOME}/optee_repo
 (cd ${HOME}/optee_repo && mv optee_os optee_os_old && ln -s ${WORKSPACE} optee_os)
 cd ${WORKSPACE}
 git fetch https://github.com/OP-TEE/optee_os --tags
-unset CC
 
 export PATH=${DST_KERNEL}/scripts/:${PATH}
 source ${HOME}/optee_repo/optee_os/scripts/checkpatch_inc.sh
