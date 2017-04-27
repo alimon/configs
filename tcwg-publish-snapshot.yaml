@@ -59,36 +59,36 @@
             gcc_version=${snapshot_version%%-*}
             gcc_major=${gcc_version%%.*}
             version_suffix=${snapshot_version##*-}
-            dest_dir="components/toolchain/"
 
+            # Append suffix for snapshots
             if [[ "$version_suffix" != rc* ]]; then
-              prefix="snapshot"
-              bin_dir="snapshot-$bin_dir"
+              ldir="${snapshot_version}-snap"
             else
-              prefix="$version_suffix"
+              ldir="${snapshot_version}"
             fi
 
-            [ $gcc_major -ge 5 ] && gcc_version=$gcc_major
+            # Common parts
+            dest_dir="components/toolchain/"
+            cp_content="-r $HOME/releases/"
 
-            bin_dir=${gcc_version}-${snapshot_version#*-}
-
-            # Append build number if provided, choose the latest otherwise
-            if test x"${buildnum}" != x; then
-              bin_dir+="-${buildnum}"
-            else
-              pushd $HOME/releases/binaries/
-              bin_dir=`ls -d ${bin_dir}* | tail -n 1`
-              popd
-            fi
-
+            # Paths slightly differ between binaries and sources
             if ${binaries}; then
               dest_dir+="binaries"
-              notes_path="/${dest_dir}"
-              cp_content="-r $HOME/releases/binaries/${bin_dir}/*"
+              cp_content+="binaries/${ldir}/*"
+              notes_path="${dest_dir}"
+              # Append build number if provided, choose the latest otherwise
+              if test x"${buildnum}" != x; then
+                ldir+="-${buildnum}"
+              else
+                pushd $HOME/releases/binaries/
+                ldir=`ls -d ${ldir}* | tail -n 1`
+                popd
+              fi
             else
               dest_dir+="gcc-linaro"
-              notes_path="/${dest_dir}/${gcc_version}"
-              cp_content="-r $HOME/releases/sources/${prefix}-${snapshot_version}/*"
+              cp_content+="sources/${ldir}/*"
+              [ $gcc_major -ge 5 ] && gcc_version=$gcc_major
+              notes_path+="${dest_dir}/${gcc_version}"
             fi
 
             mkdir -p out
