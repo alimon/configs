@@ -80,24 +80,28 @@
         - shell: |
             #!/bin/bash
 
-            set -ex
+            set -exu
 
             # Until we figure out a way to use heavy-job with different weights
             # based on the builder, we hardcode to one.
             weight=1
             buildjobs=$((weight*7))
+            triple=""
 
             # Select builder arch/type/container
             case ${label} in
                 tcwg-x86_64-build)
                     builder_arch=amd64
+                    triple="x86_64-linux-gnu"
                     ;;
                 tcwg-tk1_32-build)
                     builder_arch=armhf
+                    triple="armv7-linux-gnueabihf"
                     buildjobs=4 # TK1s only have 4 cores
                     ;;
                 tcwg-apm_64-build)
                     builder_arch=arm64
+                    triple="aarch64-linux-gnu"
                     ;;
                 *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
             esac
@@ -115,15 +119,45 @@
 
             # Make sure to cleanup build container if something goes
             # wrong when preparing the test environment
-            if [ x"${BUILD_CONTAINER_CLEANUP}" != x ]; then
+            if [ "${BUILD_CONTAINER_CLEANUP}" != "" ]; then
                 CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
                 trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
             # Setup job parameters and run
+            ret=0
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
                 --workspace=${WORKSPACE} \
                 --release=${release} \
                 --candidate=${candidate} \
                 --buildjobs=${buildjobs} \
-                --toolchain=${toolchain}"
+                --toolchain=${toolchain}" || ret=$?
+
+            # Chained jobs
+            rctag="-rc${candidate}"
+            if [ "${candidate}" = "final" ]; then
+              rctag=""
+            fi
+            fileserver=dev-01.tcwglab
+            url_prefix='~tcwg-buildslave/builds/binaries/llvm'
+            target=clang+llvm-${release}${rctag}-${triple}
+            tarball=${target}.tar.xz
+            toolchain_url="http://${fileserver}/${url_prefix}/${tarball}"
+
+            if ${testsuite}; then
+              cat << EOF > llvm.params.testsuite
+              toolchain=${toolchain_url}
+            EOF
+            fi
+
+            exit $ret
+
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: llvm.params.testsuite
+            steps:
+                - trigger-builds:
+                    - project: 'tcwg-llvm-testsuite'
+                      property-file: llvm.params.testsuite
+                      current-parameters: true
+                      block: false
