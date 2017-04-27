@@ -109,6 +109,11 @@ do_install_append() {
 }
 EOF
 
+# Update kernel recipe SRCREV
+SRCREV_kernel=$(git ls-remote https://android.googlesource.com/kernel/hikey-linaro refs/heads/android-hikey-linaro-${KERNEL_VERSION})
+kernel_recipe=$(find ../layers/meta-96boards -type f -name linux-hikey-aosp_${KERNEL_VERSION}.bb)
+sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_recipe}
+
 # add useful debug info
 cat conf/{site,auto}.conf
 
