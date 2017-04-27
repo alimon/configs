@@ -1,0 +1,24 @@
+- job:
+    name: trigger-optee-daily
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+    disabled: false
+    node: master
+    display-name: 'Trigger for daily OP-TEE jobs'
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project:
+                - 'optee-client'
+                - 'optee-os'
