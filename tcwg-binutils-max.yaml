@@ -105,11 +105,16 @@
                     ;;
             esac
 
+            case $target in
+                tcwg-*) target_opt="" ;;
+                *) target_opt="--target $target" ;;
+            esac
+
             rm -rf build-$target || true
             mkdir -p build-$target
             cd build-$target
             result=0
-            jobs=$(getconf _NPROCESSORS_ONLN)
+            jobs=$(nproc --all)
             echo BUILD STARTED $(date)
             echo WORKSPACE: ${WORKSPACE}
 
@@ -117,7 +122,7 @@
             # because of 'set -e'. But for 'make check' we want to
             # execute all the tests, and report if there were some
             # errors.
-            ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install --target $target ${bfd}"
+            ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install $target_opt ${bfd}"
             ${BUILD_SHELL} -c "make all -j$jobs"
             ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
 
@@ -127,7 +132,7 @@
             case ${target} in
               arm-vxworks) ;;
               *)
-                ${BUILD_SHELL} -c "mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof --target=${target} ${bfd}"
+                ${BUILD_SHELL} -c "mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof $target_opt ${bfd}"
                 ${BUILD_SHELL} -c "cd build-gdb && make all -j$jobs"
                 ;;
             esac
