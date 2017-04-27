@@ -111,7 +111,12 @@
             status=0
             case "$test" in
               cross_build)
-                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --target arm-linux-gnueabihf --runtests --excludecheck gdb --override '--extraconfigdir ../config/gcc6'
+                tester_label=$(print_tester_label_for_target arm-linux-gnueabihf)
+                ./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
+                . ./test-container.sh
+                trap "build_container_cleanup; test_container_cleanup" 0 1 2 3 5 9 13 15
+
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --target arm-linux-gnueabihf --testcontainer ${test_container_host}:${test_container_port} --runtests --excludecheck gdb --override '--extraconfigdir ../config/gcc6'
                 status=$?
                 ;;
               native_build)
