@@ -1,6 +1,6 @@
 - job:
     name: tcwg-llvm-testsuite
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     properties:
         - authorization:
@@ -22,6 +22,10 @@
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
+        - string:
+            name: target_list
+            default: 'tcwg-tk1_32-build tcwg-apm_64-build'
+            description: 'List of targets -- tcwg-x86_64-build tcwg-tk1_32-build tcwg-apm_64-build -- should be a subset of slave axis'
     disabled: false
     node: tcwg-x86_64-cam
     retry-count: 3
@@ -37,6 +41,23 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-build
+                - tcwg-tk1_32-build
+                - tcwg-apm_64-build
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        combination-filter: |
+            label==target
+        sequential: false
     wrappers:
         - timeout:
             timeout: 300
@@ -56,9 +77,24 @@
               exit 1
             fi
 
+            # Select builder arch/type/container
+            buildjobs=7
+            case ${label} in
+                tcwg-x86_64-build)
+                    builder_arch=amd64
+                    ;;
+                tcwg-tk1_32-build)
+                    builder_arch=armhf
+                    buildjobs=4 # TK1s only have 4 cores
+                    ;;
+                tcwg-apm_64-build)
+                    builder_arch=arm64
+                    ;;
+                *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
+            esac
+
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
-            builder_arch=amd64
             bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port

@@ -1,6 +1,6 @@
 - job:
     name: tcwg-llvm-staged-build
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     properties:
         - authorization:
@@ -34,6 +34,10 @@
             name: testsuite
             default: false
             description: 'Whether or not to trigger a test-suite with this build.'
+        - string:
+            name: target_list
+            default: 'tcwg-x86_64-build'
+            description: 'List of targets -- tcwg-x86_64-build tcwg-tk1_32-build tcwg-apm_64-build -- should be a subset of slave axis'
     disabled: false
     node: tcwg-x86_64-cam
     retry-count: 3
@@ -49,6 +53,23 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-build
+                - tcwg-tk1_32-build
+                - tcwg-apm_64-build
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        combination-filter: |
+            label==target
+        sequential: false
     execution-strategy:
         sequential: false
     wrappers:
@@ -66,9 +87,28 @@
             #!/bin/bash
             set -ex
 
+            # Select builder arch/type/container
+            buildjobs=7
+            triple=""
+            case ${label} in
+                tcwg-x86_64-build)
+                    builder_arch=amd64
+                    triple="x86_64-linux-gnu"
+                    ;;
+                tcwg-tk1_32-build)
+                    builder_arch=armhf
+                    triple="armv7-linux-gnueabihf"
+                    buildjobs=4 # TK1s only have 4 cores
+                    ;;
+                tcwg-apm_64-build)
+                    builder_arch=arm64
+                    triple="aarch64-linux-gnu"
+                    ;;
+                *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
+            esac
+
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
-            builder_arch=amd64
             bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight 1 > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
@@ -99,7 +139,7 @@
             # Chained jobs (FIXME: handle targets)
             fileserver=dev-01.tcwglab
             url_prefix='~tcwg-buildslave/builds/binaries/llvm'
-            target=clang+llvm-${buildid}-x86_64-unknown-linux-gnu
+            target=clang+llvm-${buildid}-${triple}
             tarball=${target}.tar.xz
             toolchain_url="http://${fileserver}/${url_prefix}/${tarball}"
 
