@@ -101,6 +101,17 @@
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py --api_version 3 --link-latest out debian/images/${codename}/${rootfs}-armhf/${BUILD_NUMBER}
     publishers:
+        - groovy-postbuild:
+            script: |
+                def build_number = manager.build.number
+                def codename = manager.build.buildVariables.get('codename')
+                def rootfs = manager.build.buildVariables.get('rootfs')
+                def url = "http://snapshots.linaro.org/debian/images/${codename}/${rootfs}-armhf/${build_number}/"
+                def desc = "&nbsp;<a href='${url}'>Build location<t/a>"
+
+                if (manager.build.result == hudson.model.Result.SUCCESS) {
+                  manager.build.setDescription(desc)
+                }
         - trigger-parameterized-builds:
             - project:
                 - 'lt-qcom-debian-images'
