@@ -74,7 +74,6 @@
             # Paths slightly differ between binaries and sources
             if ${binaries}; then
               dest_dir+="binaries"
-              cp_content+="binaries/${ldir}/*"
               notes_path="${dest_dir}"
               # Append build number if provided, choose the latest otherwise
               if test x"${buildnum}" != x; then
@@ -84,11 +83,12 @@
                 ldir=`ls -d ${ldir}* | tail -n 1`
                 popd
               fi
+              cp_content+="binaries/${ldir}/*"
             else
               dest_dir+="gcc-linaro"
-              cp_content+="sources/${ldir}/*"
               [ $gcc_major -ge 5 ] && gcc_version=$gcc_major
               notes_path+="${dest_dir}/${gcc_version}"
+              cp_content+="sources/${ldir}/*"
             fi
 
             mkdir -p out
