@@ -65,15 +65,14 @@
             cd ..
             repo sync -f --force-sync -j16
 
-            mkdir -p out
-            cp .repo/manifest.xml out/source-manifest.xml
-            repo manifest -r -o out/pinned-manifest.xml
-
             source build/envsetup.sh
 
             LUNCH_TARGET="linaro_${ARCH}-userdebug"
             lunch ${LUNCH_TARGET}
             make -k -j8 systemimage ramdisk
+
+            cp .repo/manifest.xml out/source-manifest.xml
+            repo manifest -r -o ${ANDROID_PRODUCT_OUT}/pinned-manifest.xml
 
             # Un-sparse the image
             mv ${ANDROID_PRODUCT_OUT}/system.img ${ANDROID_PRODUCT_OUT}/system.simg
