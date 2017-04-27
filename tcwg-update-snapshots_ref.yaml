@@ -42,6 +42,10 @@
             name: scripts_branch
             default: refs/remotes/origin/master
             description: 'Scripts revision to use'
+        - string:
+            name: abe_branch
+            default: refs/remotes/origin/tested
+            description: 'Abe revision to use'
     disabled: false
     node: tcwg-x86_64-dev-01
     retry-count: 3
@@ -89,7 +93,7 @@
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
 
-            ./tcwg-generate-source-cache.sh --dir-abe $HOME/snapshots-ref-new --dir-llvm $HOME/llvm-reference-new --generate-abe $generate_abe --generate-llvm $generate_llvm --generate-misc $generate_misc --update-abe-git $update_abe_git --update-llvm-git $update_llvm_git --verbose $verbose
+            ./tcwg-generate-source-cache.sh --dir-abe $HOME/snapshots-ref-new --dir-llvm $HOME/llvm-reference-new --generate-abe $generate_abe --generate-llvm $generate_llvm --generate-misc $generate_misc --update-abe-git $update_abe_git --update-llvm-git $update_llvm_git --verbose $verbose --abe-branch $abe_branch
             ./tcwg-rsync-dir.sh --dir $HOME/snapshots-ref --verbose $verbose -- $machines
             ./tcwg-rsync-dir.sh --dir $HOME/llvm-reference --verbose $verbose -- $machines
     publishers:
