@@ -1,6 +1,6 @@
 #!/bin/bash
 
-$bashmode
+set -ex
 
 git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 . ./jenkins-scripts/jenkins-helpers.sh
