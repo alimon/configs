@@ -13,6 +13,11 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 100
+    parameters:
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Jenkins-scripts branch to use'
     disabled: false
     node: tcwg-x86_64-build
     retry-count: 3
@@ -76,15 +81,15 @@
 
             set -e
 
-            schroot_arch=amd64
-            schroot_image="tcwg-build-${schroot_arch}-trusty"
+            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
-            session_id=$(schroot -b -c chroot:$schroot_image --preserve-environment)
-            BUILD_SHELL="schroot -r -c session:$session_id --preserve-environment -- bash"
+            ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
+            . ./build-container.sh
+            BUILD_SHELL="build_container_exec bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
-            # Remove schroot session on exit
-            trap "schroot -f -e -c session:$session_id" 0 1 2 3 5 9 13 15
+            # Remove container on exit
+            trap "build_container_cleanup" 0 1 2 3 5 9 13 15
 
             case "$test" in
               abe-tests)
