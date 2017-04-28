@@ -1,5 +1,5 @@
 - job:
-    name: openembedded-lkft
+    name: openembedded-lkft-4.4-aosp
     project-type: matrix
     defaults: global
     properties:
@@ -20,7 +20,7 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: 'android-hikey-linaro-4.9'
+            default: 'android-hikey-linaro-4.4'
         - string:
             name: IMAGES
             default: 'rpb-console-image'
@@ -75,7 +75,7 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ \
-              openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/$(echo ${KERNEL_BRANCH} |cut -d'-' -f4)/${BUILD_NUMBER}
+              openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/4.4/${BUILD_NUMBER}
         - shell: |
             export DEVICE_TYPE=hi6220-hikey
 
