@@ -75,11 +75,10 @@ cat << EOF >> conf/auto.conf
 INHERIT += "buildstats buildstats-summary"
 EOF
 
-# Use AOSP kernel for HiKey
-KERNEL_VERSION=$(echo ${KERNEL_BRANCH} |cut -d'-' -f4)
+# Set the kernel to use for HiKey
 cat << EOF >> conf/site.conf
-PREFERRED_PROVIDER_virtual/kernel = "linux-hikey-aosp"
-PREFERRED_VERSION_linux-hikey-aosp = "${KERNEL_VERSION}+git%"
+PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
+PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
 
 # Include additional recipes in the image
@@ -110,8 +109,8 @@ do_install_append() {
 EOF
 
 # Update kernel recipe SRCREV
-SRCREV_kernel=$(git ls-remote https://android.googlesource.com/kernel/hikey-linaro refs/heads/android-hikey-linaro-${KERNEL_VERSION} | cut -f1)
-kernel_recipe=$(find ../layers/meta-96boards -type f -name linux-hikey-aosp_${KERNEL_VERSION}.bb)
+SRCREV_kernel=$(git ls-remote ${KERNEL_REPO} refs/heads/${KERNEL_BRANCH} | cut -f1)
+kernel_recipe=$(find ../layers/meta-96boards -type f -name ${KERNEL_RECIPE}_${KERNEL_VERSION}.bb)
 sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_recipe}
 
 # add useful debug info
@@ -167,7 +166,7 @@ Build description:
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
-SRCREV_kernel=$(bitbake -e linux-hikey-aosp | grep "^SRCREV_kernel="| cut -d'=' -f2 | tr -d '"')
+SRCREV_kernel=$(bitbake -e ${KERNEL_RECIPE} | grep "^SRCREV_kernel="| cut -d'=' -f2 | tr -d '"')
 GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
@@ -178,7 +177,7 @@ ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE
 
 cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 {
-  "kernel_repo" : "https://android.googlesource.com/kernel/hikey-linaro",
+  "kernel_repo" : "${KERNEL_REPO}",
   "kernel_commit_id" : "${SRCREV_kernel}",
   "kernel_branch" : "${KERNEL_BRANCH}",
   "build_arch" : "${TUNE_FEATURES}",
