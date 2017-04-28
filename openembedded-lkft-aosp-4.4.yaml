@@ -1,5 +1,5 @@
 - job:
-    name: openembedded-lkft-4.9-aosp
+    name: openembedded-lkft-aosp-4.4
     project-type: matrix
     defaults: global
     properties:
@@ -20,10 +20,10 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: 'android-hikey-linaro-4.9'
+            default: 'android-hikey-linaro-4.4'
         - string:
             name: KERNEL_VERSION
-            default: '4.9'
+            default: '4.4'
         - string:
             name: KERNEL_RECIPE
             default: 'linux-hikey-aosp'
@@ -44,7 +44,7 @@
             default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: master
-    display-name: 'LKFT - OpenEmbedded (morty)'
+    display-name: 'LKFT - AOSP 4.4 (OpenEmbedded/morty)'
     axes:
         - axis:
             type: user-defined
@@ -84,7 +84,7 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ \
-              openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/4.9/${BUILD_NUMBER}
+              openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/4.4/${BUILD_NUMBER}
         - shell: |
             export DEVICE_TYPE=hi6220-hikey
 
