@@ -33,12 +33,25 @@
             name: maxdepth
             default: '1'
             description: 'Depth of search for outdated directories.  Do not override unless you understand what you are doing.'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts branch to use'
     disabled: false
     node: tcwg-x86_64-build
     concurrent: false
     display-name: 'TCWG CCC Cleanup stale workspaces'
     triggers:
         - timed: '@daily'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
     axes:
         - axis:
             type: slave
@@ -74,50 +87,9 @@
         - shell: |
             #!/bin/bash
 
-            set -e
-            set -x
+            set -ex
 
-            if [ "$days" -lt "0" ]; then
-              echo "ERROR: Refusing to delete workspaces that are $days days old"
-              exit 1
-            fi
-
-            echo "Date / size report before (`date`):"
-            ls -ld $workspace_top/* || true
-            df -h $workspace_top || true
-            du -hsc $workspace_top/* || true
-
-            # Semantics of find's mtime "+N" stands for N+1 days old or older.
-            days_1=$(($days-1))
-
-            # Handle dirs with whitespaces by setting $IFS to newline.
-            SAVEIFS=$IFS
-            IFS=$'\n'
-            dirs=($(find $workspace_top/ -maxdepth $maxdepth -type d -mtime +$days_1))
-            IFS=$SAVEIFS
-
-            rm_dirs=()
-            for dir in "${dirs[@]}"; do
-              if [ x"$(find "$dir" -mtime -$days | wc -l)" = x"0" ]; then
-                rm_dirs=("${rm_dirs[@]}" "$dir")
-              fi
-            done
-
-            if [ ${#rm_dirs[@]} != 0 ]; then
-              echo "Removing directories:"
-              ls -ld "${rm_dirs[@]}"
-              du -hs "${rm_dirs[@]}"
-              if ! $dry_run; then
-                rm -rf "${rm_dirs[@]}"
-              else
-                echo "DRY_RUN: NOT REMOVING DIRECTORIES"
-              fi
-
-              echo "Date / size report after (`date`):"
-              ls -ld $workspace_top/* || true
-              df -h $workspace_top || true
-              du -hsc $workspace_top/* || true
-            fi
+            ./tcwg-cleanup-stale-workspaces.sh --days $days --dry_run $dry_run --workspace_top $workspace_top --maxdepth $maxdepth
     publishers:
         - email:
             recipients: 'maxim.kuvyrkov@linaro.org christophe.lyon@linaro.org'
