@@ -51,7 +51,7 @@
 
             rm -f params
             if ! $no_tests_just_update_tested; then
-              echo "abe_branch=$GIT_REVISION" > params
+              echo "abe_branch=$(git rev-parse HEAD)" > params
             fi
         - conditional-step:
             condition-kind: file-exists
@@ -66,10 +66,11 @@
             #!/bin/bash
             
             set -ex
+            env
             git config --global user.name "TCWG Buildslave"
             git config --global user.email tcwg-buildslave@linaro.org
             if git remote | grep -q gerrit; then
               git remote rm gerrit
             fi
             git remote add gerrit ssh://tcwg-buildslave@review.linaro.org:29418/toolchain/abe
-            git push gerrit $GIT_REVISION:tested
+            git push gerrit HEAD:tested
