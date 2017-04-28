@@ -1,0 +1,35 @@
+- job:
+    name: ci-dockerfiles-manifests
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 200
+    disabled: false
+    node: docker-stretch-amd64
+    display-name: 'CI Dockerfiles manifests update'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell:
+            !include-raw: ci-dockerfiles-manifests/builders.sh
+    publishers:
+        - email:
+            recipients: riku.voipio@linaro.org, fathi.boudra@linaro.org
