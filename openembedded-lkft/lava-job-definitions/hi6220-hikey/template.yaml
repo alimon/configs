@@ -1,52 +1,145 @@
+device_type: hi6220-hikey
+tags:
+  - oe-only
+job_name: lkft-${KERNEL_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 120
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+# run udhcpc in the test shell before accessing the internet
+
+metadata:
+  kernel-branch: ${KERNEL_BRANCH}
+  kernel-version: ${KERNEL_VERSION}
+  kernel-repo: ${KERNEL_REPO}
+  kernel-commit: ${KERNEL_COMMIT}
+  build-url: ${BUILD_URL}
+  series: lkft
+
+protocols:
+  lava-lxc:
+    name: lxc-hikey-oe
+    template: debian
+    distribution: debian
+    release: jessie
+    arch: amd64
+    mirror: http://mirror.bytemark.co.uk/debian
+
 actions:
-- command: deploy_linaro_android_image
-  parameters:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 15
+    to: lxc
+    packages:
+    - android-tools-fastboot
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'hikey:/'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: hikey-oe
+    connection: lxc
     images:
-    - partition: 'ptable'
-      url: 'http://releases.linaro.org/reference-platform/embedded/hikey/16.12/rpb/bootloader/ptable-linux-8g.img'
-    - partition: 'boot'
-      url: '${BOOT_URL}'
-    - partition: 'system'
-      url: '${SYSTEM_URL}'
-    target_type: 'ubuntu'
-    login_prompt: 'hikey login'
-    username: 'root'
-- command: boot_linaro_image
-  parameters:
-    boot_cmds:
-        - 'expect Start:'
-        - sendline 2
-        - expect CE Reference Platform
-        - sendline c
-        - expect grub>
-        - sendline search.fs_label rootfs root
-        - expect grub>
-        - sendline linux ($root)/boot/Image console=tty0 console=ttyAMA3,115200 root=/dev/mmcblk0p9 rootwait rw efi=noruntime
-        - expect grub>
-        - sendline devicetree ($root)/boot/hi6220-hikey.dtb
-        - expect grub>
-        - sendline boot
-    test_image_prompt: 'hikey:~#'
-- command: lava_test_shell
-  parameters:
-    testdef_repos:
-    - git-repo: git://git.linaro.org/qa/test-definitions.git
-      testdef: automated/linux/kselftest/kselftest.yaml
-      timeout: 3600
-- command: lava_test_shell
-  parameters:
-    testdef_repos:
-    - git-repo: git://git.linaro.org/qa/test-definitions.git
-      testdef: automated/linux/ltp/ltp.yaml
+      ptable:
+        url: ${PTABLE_URL}
+      boot:
+        url: ${BOOT_URL}
+      system:
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+        # ensure that this job raises a network interface with DHCP before relying on internet access
+    os: oe
+
+- boot:
+    namespace: hikey-oe
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    prompts:
+    - 'root@hikey:~#'
+    timeout:
+      minutes: 5
+    method: uefi-menu
+    commands: fastboot
+    protocols:
+      lava-lxc:
+      # other action could be boot-fastboot
+      - action: uefi-commands
+        request: pre-os-command
+        timeout:
+          minutes: 2
+- test:
+    namespace: hikey-oe
+    timeout:
+      minutes: 120
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: network-tests
+          description: "Basic network tests"
+        run:
+          steps:
+          # the image does not raise the interface itself
+          # force a DHCP request to avoid avahi using a zero conf address.
+          - udhcpc
+          - netstat
+          - ip a
+          - ifconfig
+          - df
+      name: network-inline
+      path: inline/network.yaml
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/kselftest/kselftest.yaml
+      name: kselftest
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/ltp/ltp.yaml
       parameters:
-        TST_CMDFILES: syscalls
-        SKIPFILE: skipfile-lsk-juno
-        SKIP_INSTALL: true
-      timeout: 7200
-- command: submit_results
-  parameters:
-    server: 'http://${LAVA_SERVER}'
-    stream: '${BUNDLE_STREAM_NAME}'
-device_type: '${DEVICE_TYPE}'
-job_name: '${BUILD_URL}'
-timeout: 9800
+        SKIP_INSTALL: 'true'
+        TST_CMDFILES: 'syscalls'
+        SKIPFILE: 'skipfile-lsk-juno'
+      name: ltp-syscalls-tests
+
+- test:
+   namespace: tlxc
+   timeout:
+     minutes: 5
+   definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: network-tests
+          description: "Basic network tests"
+        run:
+          steps:
+          # the image does not raise the interface itself
+          # force a DHCP request to avoid avahi using a zero conf address.
+          - udhcpc
+          - netstat
+          - ip a
+          - ifconfig
+          - df
+      name: network-inline
+      path: inline/network.yaml
