@@ -78,6 +78,9 @@ EOF
 # Set the kernel to use for HiKey
 cat << EOF >> conf/site.conf
 PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
+EOF
+
+[ "${KERNEL_RECIPE}" = "linux-hikey-aosp"] && cat << EOF >> conf/site.conf
 PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
 
@@ -171,13 +174,6 @@ GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 
-# FIXME handle properly the publishing URL
-[ "${KERNEL_BRANCH}" = "linux-4.9.y"] && KERNEL_VERSION="4.9-stable"
-
-BASE_URL=https://snapshots.linaro.org/openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${KERNEL_VERSION}/${BUILD_NUMBER}
-BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.uefi.img" | xargs -r basename)
-ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
-
 cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 {
   "kernel_repo" : "${KERNEL_REPO}",
@@ -188,8 +184,27 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 }
 EOF
 
+# FIXME handle properly the publishing URL
+case "${KERNEL_RECIPE}" in
+  linux-hikey-stable)
+    PUB_DEST="linux-stable-4.9"
+    ;;
+  linux-hikey-next)
+    PUB_DEST="linux-next"
+    ;;
+  *)
+    PUB_DEST="${KERNEL_VERSION}"
+    ;;
+esac
+
+SNAPSHOTS_URL=https://snapshots.linaro.org
+BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/${BUILD_NUMBER}
+BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.uefi.img" | xargs -r basename)
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
+
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
-BOOT_URL=${BASE_URL}/${BOOT_IMG}
-SYSTEM_URL=${BASE_URL}/${ROOTFS_IMG}
+BASE_URL=${BASE_URL}
+BOOT_URL=${SNAPSHOTS_URL}/${BASE_URL}/${BOOT_IMG}
+SYSTEM_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_IMG}
 EOF

@@ -1,5 +1,5 @@
 - job:
-    name: openembedded-lkft-aosp-4.9
+    name: openembedded-lkft-linux-next
     project-type: matrix
     defaults: global
     properties:
@@ -20,16 +20,16 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: 'android-hikey-linaro-4.9'
+            default: 'master'
         - string:
             name: KERNEL_VERSION
-            default: '4.9'
+            default: 'git'
         - string:
             name: KERNEL_RECIPE
-            default: 'linux-hikey-aosp'
+            default: 'linux-hikey-next'
         - string:
             name: KERNEL_REPO
-            default: 'https://android.googlesource.com/kernel/hikey-linaro'
+            default: 'https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git'
         - string:
             name: IMAGES
             default: 'rpb-console-image'
@@ -44,7 +44,7 @@
             default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: master
-    display-name: 'LKFT - AOSP 4.9 (OpenEmbedded/morty)'
+    display-name: 'LKFT - OpenEmbedded (morty)'
     axes:
         - axis:
             type: user-defined
