@@ -85,28 +85,28 @@
             # Until we figure out a way to use heavy-job with different weights
             # based on the builder, we hardcode to one.
             weight=1
-            buildjobs=$((weight*7))
+            buildjobs=1
             triple=""
 
             # Select builder arch/type/container
             case ${label} in
                 tcwg-x86_64-build)
                     builder_arch=amd64
-                    triple="x86_64-linux-gnu"
+                    triple="x86_64-unknown-linux-gnu"
+                    buildjobs=8 # 1 slot is 32/4
                     ;;
                 tcwg-tk1_32-build)
                     builder_arch=armhf
-                    triple="armv7-linux-gnueabihf"
+                    triple="armv7l-unknown-linux-gnueabihf"
                     buildjobs=4 # TK1s only have 4 cores
                     ;;
                 tcwg-apm_64-build)
                     builder_arch=arm64
-                    triple="aarch64-linux-gnu"
+                    triple="aarch64-unknown-linux-gnu"
+                    buildjobs=4 # APMs only have 8 cores
                     ;;
                 *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
             esac
-            build_container_type=docker
-            build_container_tag=${build_container_tag}
 
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
@@ -124,14 +124,15 @@
                 trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
-            # Setup job parameters and run
+            # Setup job parameters and run (for now, just pretend to run)
             ret=0
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
+            echo ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
                 --workspace=${WORKSPACE} \
                 --release=${release} \
                 --candidate=${candidate} \
                 --buildjobs=${buildjobs} \
                 --toolchain=${toolchain}" || ret=$?
+            touch clang+llvm-${release}${rctag}-${triple}.tar.xz
 
             # Chained jobs
             rctag="-rc${candidate}"
@@ -147,6 +148,7 @@
             if ${testsuite}; then
               cat << EOF > llvm.params.testsuite
               toolchain=${toolchain_url}
+              target_list=${target}
             EOF
             fi
 

@@ -78,10 +78,11 @@
             fi
 
             # Select builder arch/type/container
-            buildjobs=7
+            buildjobs=1
             case ${label} in
                 tcwg-x86_64-build)
                     builder_arch=amd64
+                    buildjobs=8 # 1 slot is 32/4
                     ;;
                 tcwg-tk1_32-build)
                     builder_arch=armhf
@@ -89,6 +90,7 @@
                     ;;
                 tcwg-apm_64-build)
                     builder_arch=arm64
+                    buildjobs=4 # APMs only have 8 cores
                     ;;
                 *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
             esac
@@ -109,6 +111,6 @@
                 trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
-            ${BUILD_CONTAINER} "bash -x ${WORKSPACE}/tcwg-llvm-testsuite.sh \
+            echo ${BUILD_CONTAINER} "bash -x ${WORKSPACE}/tcwg-llvm-testsuite.sh \
                                       --workspace=${WORKSPACE}" \
                                       --toolchain=${toolchain}
