@@ -163,7 +163,7 @@
 
             # Make sure to cleanup build container if something goes
             # wrong when preparing the test environment
-            trap "build_container_cleanup" EXIT
+            trap "cleanup_all_containers" EXIT
 
             runtests_opt=""
             if echo $runtests | grep -q $target; then
@@ -173,7 +173,6 @@
               if [ x"$tester_label" != x"" ]; then
                 bash -x ./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
                 . ./test-container.sh
-                trap "build_container_cleanup; test_container_cleanup" EXIT
                 runtests_opt="$runtests_opt --testcontainer ${test_container_host}:${test_container_port}"
               fi
             fi
@@ -239,7 +238,7 @@
             # If the build failed, stop the containers, which will
             # leave them as-is for ~10 days.
             if [ $result -ne 0 ]; then
-                trap "build_container_stop; test_container_stop" EXIT
+                trap "stop_all_containers" EXIT
             fi
 
             # If we actually built a toolchain, save its manifest.
