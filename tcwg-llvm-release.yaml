@@ -130,14 +130,12 @@
 
             # Setup job parameters and run (for now, just pretend to run)
             ret=0
-            echo ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
                 --workspace=${WORKSPACE} \
                 --release=${release} \
                 --candidate=${candidate} \
                 --buildjobs=${buildjobs} \
                 --toolchain=${toolchain}" || ret=$?
-
-            ret=$((BUILD_NUMBER % 2))
 
             if [ $ret -ne 0 ]; then
                 touch llvm.failed
