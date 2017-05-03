@@ -46,7 +46,6 @@ host_arch=$(dpkg-architecture -qDEB_HOST_ARCH)
 
 for image in ${update_images}; do
   (
-  set -e
   cd ${image}
   image_arch=$(basename ${PWD} | cut -f2 -d '-')
   case "${image_arch}" in
@@ -69,5 +68,12 @@ for image in ${update_images}; do
   if [ -r .docker-tag ]; then
     docker push $(cat .docker-tag)
   fi
-  )
+  )||echo $image failed >> ${WORKSPACE}/log
 done
+
+if [ -e ${WORKSPACE}/log ]
+then
+    echo "some images failed:"
+    cat ${WORKSPACE}/log
+    exit 1
+fi
