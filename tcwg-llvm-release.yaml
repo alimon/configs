@@ -130,12 +130,18 @@
 
             # Setup job parameters and run (for now, just pretend to run)
             ret=0
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
+            echo ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-release.sh \
                 --workspace=${WORKSPACE} \
                 --release=${release} \
                 --candidate=${candidate} \
                 --buildjobs=${buildjobs} \
                 --toolchain=${toolchain}" || ret=$?
+
+            ret=$((BUILD_NUMBER % 2))
+
+            if [ $ret -ne 0 ]; then
+                touch llvm.failed
+            fi
 
             # Chained jobs
             rctag="-rc${candidate}"
@@ -155,7 +161,9 @@
             EOF
             fi
 
-            exit $ret
+            # failure is handled by conditional step on llvm.failed
+            # so that the testsuite job is always triggered
+            exit 0
 
         - conditional-step:
             condition-kind: file-exists
@@ -166,3 +174,8 @@
                       property-file: llvm.params.testsuite
                       current-parameters: true
                       block: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: llvm.failed
+            steps:
+                - shell: "exit 1"
