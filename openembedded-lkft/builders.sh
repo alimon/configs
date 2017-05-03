@@ -80,7 +80,7 @@ cat << EOF >> conf/site.conf
 PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
 
-[ "${KERNEL_RECIPE}" = "linux-hikey-aosp"] && cat << EOF >> conf/site.conf
+[ "${KERNEL_RECIPE}" = "linux-hikey-aosp" ] && cat << EOF >> conf/site.conf
 PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
 
