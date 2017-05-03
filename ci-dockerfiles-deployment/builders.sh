@@ -52,13 +52,13 @@ for image in ${update_images}; do
     amd64|i386)
       if [ "${host_arch}" = "amd64" ]; then
         echo "=== Start build: ${image} ==="
-        ./build.sh || echo "=== FAIL: ${image} ==="
+        ./build.sh || echo "=== FAIL: ${image} ===" >> ${WORKSPACE}/log
       fi
       ;;
     arm64|armhf)
       if [ "${host_arch}" = "arm64" ]; then
         echo "=== Start build: ${image} ==="
-        ./build.sh || echo "=== FAIL: ${image} ==="
+        ./build.sh || echo "=== FAIL: ${image} ===" >> ${WORKSPACE}/log
       fi
       ;;
     *)
