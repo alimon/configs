@@ -15,7 +15,7 @@
                 - job-cancel
     parameters:
         - string:
-            name: REFERENCE_AOSP_BUILD
+            name: REFERENCE_BUILD_URL
             default: 'http://builds.96boards.org/snapshots/hikey/linaro/aosp-master/378/'
         - string:
             name: KERNEL_BRANCH
@@ -57,6 +57,28 @@
               --build-info out/BUILD-INFO.txt \
               --link-latest \
               out/ android/lkft/${JOB_NAME}/${BUILD_NUMBER}
+
+            PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
+
+            # Construct post-build-lava parameters
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            DEVICE_TYPE=hi6220-hikey
+            TARGET_PRODUCT=hikey
+            MAKE_TARGETS=droidcore
+            JOB_NAME=${JOB_NAME}
+            REFERENCE_BUILD_URL=${REFERENCE_BUILD_URL}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            BUILD_URL=${BUILD_URL}
+            LAVA_SERVER=lkft.validation.linaro.org/RPC2/
+            FRONTEND_JOB_NAME=${JOB_NAME}
+            DOWNLOAD_URL=https://snapshots.linaro.org/${PUB_DEST}
+            REFERENCE_BUILD_URL=${REFERENCE_BUILD_URL}
+            CUSTOM_JSON_URL=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lkft/lava-job-definitions/hikey-aosp/template-boot.yaml
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'

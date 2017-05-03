@@ -19,6 +19,7 @@ python mkbootimg \
   --os_patch_level 2016-11-05 \
   --ramdisk ramdisk.img \
   --output out/boot.img
+xz out/boot.img
 
 wget -q ${REFERENCE_AOSP_BUILD}/build_config.json -O out/build_config.json
 remote=$(git remote -v | grep push | cut -d" " -f1 | cut -f2)
