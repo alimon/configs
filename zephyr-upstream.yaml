@@ -24,6 +24,9 @@
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
     disabled: false
     node: master
     child-workspace: .
@@ -79,6 +82,10 @@
             - text:
                 credential-id: LAVA_TOKEN
                 variable: LAVA_TOKEN
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
     builders:
         - shell:
             !include-raw: zephyr-upstream/builders.sh
@@ -122,12 +129,16 @@
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
             [ -z "${DEVICE_TYPE}" ] || \
-            python configs/zephyr-upstream/submit_to_lava.py \
+            python configs/zephyr-upstream/submit_for_testing.py \
                 --board-name ${PLATFORM} \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
+                --build-url ${BUILD_URL} \
                 --branch-name ${BRANCH} \
                 --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team lite \
+                --qa-server-project zephyr-upstream \
                 --gcc-variant ${ZEPHYR_GCC_VARIANT} \
                 --git-commit ${GIT_COMMIT} \
                 --build-url ${BUILD_URL}
