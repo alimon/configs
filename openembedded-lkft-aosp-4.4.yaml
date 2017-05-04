@@ -130,6 +130,7 @@
             sed -i "#CUSTOM_JSON_URL=.*#d" ${WORKSPACE}/post_build_lava_parameters
             sed -i "#LAVA_SERVER=.*#d" ${WORKSPACE}/post_build_lava_parameters
             cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
             CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
             LAVA_SERVER=${LAVA_SERVER}
             EOF
