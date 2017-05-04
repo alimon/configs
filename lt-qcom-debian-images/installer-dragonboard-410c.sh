@@ -55,7 +55,7 @@ cat << EOF >> os/debian/os.json
 "url": "http://builds.96boards.org/releases/dragonboard410c",
 "version": "${VERSION}",
 "release_date": "`date +%Y-%m-%d`",
-"description": "Linaro Linux with LXDE desktop based on Debian (${OS_FLAVOUR}) for DragonBoard 410c"
+"description": "Linaro Linux with LXQt desktop based on Debian (${OS_FLAVOUR}) for DragonBoard 410c"
 }
 EOF
 
@@ -80,5 +80,5 @@ sudo umount mnt
 sudo ./mksdcard -p dragonboard410c/linux/installer.txt -s $size_img -i out -o db410c_sd_install_debian.img
 
 # create archive for publishing
-zip -j ${WORKSPACE}/out/dragonboard410c_sdcard_install_debian-${BUILD_NUMBER}.zip db410c_sd_install_debian.img ${WORKSPACE}/license.txt
+zip -j ${WORKSPACE}/out/dragonboard410c_sdcard_install_debian-${BUILD_NUMBER}.zip db410c_sd_install_debian.img out/LICENSE
 cd ..

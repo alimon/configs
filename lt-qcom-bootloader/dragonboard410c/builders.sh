@@ -15,7 +15,7 @@ md5sum -c MD5
 
 unzip -j -d bootloaders-android $(basename ${QCOM_ANDROID_FIRMWARE})
 unzip -j -d bootloaders-android-old $(basename ${QCOM_ANDROID_FIRMWARE_OLD})
-unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*"
+unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*"
 
 # Get the Android compiler
 git clone ${LK_GCC_GIT} --depth 1 -b ${LK_GCC_REL} android-gcc
@@ -44,14 +44,19 @@ mkdir -p out/dragonboard410c_sdcard_rescue \
       out/dragonboard410c_bootloader_emmc_android \
       out/dragonboard410c_bootloader_emmc_aosp
 
-# get license.txt file
+# get license.txt file (for Android BSP)
 wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
 
+# get LICENSE file (for Linux BSP)
+unzip -j $(basename ${QCOM_LINUX_FIRMWARE}) "*/LICENSE"
+echo "${QCOM_LINUX_FIRMWARE_LICENSE_MD5}  LICENSE" > MD5
+md5sum -c MD5
+
 # bootloader_emmc_linux
-cp -a license.txt \
+cp -a LICENSE \
    dragonboard410c/linux/flashall \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
-   bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,tz-psci.mbn,hyp.mbn} \
+   bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
    out/dragonboard410c_bootloader_emmc_linux
 
 # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
@@ -73,10 +78,10 @@ sudo sgdisk -bgpt.bin gpt.img
 ./mkgpt -d -i gpt.bin -o out/dragonboard410c_bootloader_emmc_android/gpt_both0.bin
 
 # bootloader_emmc_aosp
-cp -a license.txt \
+cp -a LICENSE \
    dragonboard410c/aosp/flashall \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
-   bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,tz-psci.mbn,hyp.mbn} \
+   bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
    out/dragonboard410c_bootloader_emmc_aosp
 
 # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
@@ -85,17 +90,19 @@ sudo sgdisk -bgpt.bin gpt.img
 ./mkgpt -d -i gpt.bin -o out/dragonboard410c_bootloader_emmc_aosp/gpt_both0.bin
 
 # bootloader_sd_linux
-cp -a license.txt \
+cp -a LICENSE \
    lk_sd_boot/build-msm8916/emmc_appsboot.mbn \
-   bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,tz-psci.mbn,hyp.mbn} \
+   bootloaders-linux/{NON-HLOS.bin,rpm.mbn,tz.mbn,hyp.mbn} \
    out/dragonboard410c_bootloader_sd_linux
 
+cp -a bootloaders-linux/sbl1.sd.mbn out/dragonboard410c_bootloader_sd_linux/sbl1.mbn
+
 # sdcard_rescue
-cp -a license.txt out/dragonboard410c_sdcard_rescue
+cp -a LICENSE out/dragonboard410c_sdcard_rescue
 sudo ./mksdcard -x -p dragonboard410c/linux/sdrescue.txt \
      -o out/dragonboard410c_sdcard_rescue/db410c_sd_rescue.img \
      -i lk_sdrescue/build-msm8916/ \
-     -i bootloaders-linux/
+     -i out/dragonboard410c_bootloader_sd_linux
 
 # Create MD5SUMS file
 for i in dragonboard410c_sdcard_rescue \
