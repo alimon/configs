@@ -9,7 +9,7 @@ make ARCH=arm64 hikey_defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) Image-dtb
 
 wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
-wget -q ${REFERENCE_AOSP_BUILD}/ramdisk.img -O ramdisk.img
+wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
 
 mkdir -p out
 python mkbootimg \
