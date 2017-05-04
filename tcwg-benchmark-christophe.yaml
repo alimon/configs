@@ -67,6 +67,10 @@
             set -ex
 
             ssh-add -l
+            ls -l .ssh/
+            cp /home/tcwg-buildslave/.ssh/config .ssh/
+            cp /home/tcwg-buildslave/.ssh/known_hosts .ssh/
+
             wget --progress=dot:giga --no-check-certificate ${toolchain_url}
             tarball=$(basename ${toolchain_url})
             tar xf ${tarball}
@@ -77,6 +81,10 @@
             boardname=$(echo ${NODE_NAME} | sed 's/-bmk//').tcwglab
             boardname="tcwg-benchmark@${boardname}"
             ssh_opts="-o StrictHostKeyChecking=no -Snone"
+            ssh ${ssh_opts} $boardname ls -l .ssh/
+            scp /home/tcwg-buildslave/.ssh/config $boardname:.ssh/
+            scp /home/tcwg-buildslave/.ssh/known_hosts $boardname:.ssh/
+
             ssh ${ssh_opts} $boardname rm -rf bmk-scripts
             ssh ${ssh_opts} $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
 
