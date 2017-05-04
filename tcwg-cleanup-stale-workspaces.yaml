@@ -35,10 +35,6 @@
             default: '/home/tcwg-buildslave/workspace'
             description: 'Top-level workspace directory.  Can be used to delete workspaces for specific jobs.  Do not override unless you understand what you are doing.'
         - string:
-            name: maxdepth
-            default: '1'
-            description: 'Depth of search for outdated directories.  Do not override unless you understand what you are doing.'
-        - string:
             name: scripts_branch
             default: master
             description: 'Scripts branch to use'
@@ -102,7 +98,7 @@
 
             set -ex
 
-            ./tcwg-cleanup-stale-workspaces.sh --days $days --dry_run $dry_run --workspace_top $workspace_top --maxdepth $maxdepth
+            ./tcwg-cleanup-stale-workspaces.sh --days $days --dry_run $dry_run --workspace_top $workspace_top
     publishers:
         - email:
             recipients: 'maxim.kuvyrkov@linaro.org christophe.lyon@linaro.org'
