@@ -123,7 +123,7 @@ if [ -n "${QCOM_FIRMWARE}" ]; then
     md5sum -c MD5
     unzip $(basename ${QCOM_FIRMWARE})
     # check LICENSE file (for Linux BSP)
-    echo "${QCOM_FIRMWARE_LICENSE_MD5}  LICENSE" > MD5
+    echo "${QCOM_FIRMWARE_LICENSE_MD5} " linux-board-support-package-*/LICENSE > MD5
     md5sum -c MD5
     cd -
 
