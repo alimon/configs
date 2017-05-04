@@ -102,7 +102,8 @@
 
             trap "${CONTAINER_CLEANUP}" EXIT
 
-            ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${linux_repo} ${linux_branch}"
+            boot=false # Temporarily hardcoded, until merged with the experimental job tcwg-buildapp-christophe
+            ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${boot} ${linux_repo} ${linux_branch}"
     publishers:
         - email:
             recipients: 'christophe.lyon@linaro.org'
