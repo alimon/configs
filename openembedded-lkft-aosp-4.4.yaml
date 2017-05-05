@@ -99,6 +99,8 @@
             < configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/template.json \
             > custom_lava_job_definition.json
 
+            cat custom_lava_job_definition.json
+
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
             BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
@@ -126,6 +128,8 @@
                 -e "s|\${KERNEL_COMMIT}|${SRCREV_kernel}|"
             < configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
             > custom_lava_job_definition.yaml
+
+            cat custom_lava_job_definition.yaml
 
             sed -i "#CUSTOM_JSON_URL=.*#d" ${WORKSPACE}/post_build_lava_parameters
             sed -i "#LAVA_SERVER=.*#d" ${WORKSPACE}/post_build_lava_parameters
