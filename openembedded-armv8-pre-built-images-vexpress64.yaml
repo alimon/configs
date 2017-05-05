@@ -58,7 +58,7 @@
             # Add md5sums for all build artefacts that don't have one yet.
             for f in $(find ${WORKSPACE}/out | grep -v md5) ; do
                 if [ -f "$f" ] ; then
-                    md5sum $f > ${f}.md5
+                    md5sum $f | awk -F/ '{print $1 $NF}' > ${f}.md5
                 fi
             done
 
