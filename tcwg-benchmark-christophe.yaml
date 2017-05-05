@@ -81,7 +81,7 @@
             # convert the slave name into the target board name
             boardname=$(echo ${NODE_NAME} | sed 's/-bmk//').tcwglab
             boardname="tcwg-benchmark@${boardname}"
-            ssh_opts="-o StrictHostKeyChecking=no -Snone"
+            ssh_opts=""
             ssh ${ssh_opts} $boardname ls -l .ssh/
             scp /home/tcwg-buildslave/.ssh/config $boardname:.ssh/
             scp /home/tcwg-buildslave/.ssh/known_hosts $boardname:.ssh/
@@ -99,8 +99,8 @@
             esac
 
             # Hack: populate tcwg-benchmark's known_hosts on the board
-            ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} git@dev-private-git.linaro.org true || true
-            ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} dev-01.tcwglab true || true
+            #ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} git@dev-private-git.linaro.org true || true
+            #ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} dev-01.tcwglab true || true
             
             # FIXME: bench_list can contain more than one bench
             # FIXME: support cflags
