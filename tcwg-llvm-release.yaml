@@ -90,27 +90,30 @@
             # based on the builder, we hardcode to one.
             weight=1
             buildjobs=1
-            triple=""
 
             # Select builder arch/type/container
             case ${label} in
                 tcwg-x86_64-build)
                     builder_arch=amd64
-                    triple="x86_64-linux-gnu"
                     buildjobs=8 # 1 slot is 32/4
                     ;;
                 tcwg-tk1_32-build)
                     builder_arch=armhf
-                    triple="armv7a-linux-gnueabihf"
                     buildjobs=4 # TK1s only have 4 cores
                     ;;
                 tcwg-apm_64-build)
                     builder_arch=arm64
-                    triple="aarch64-linux-gnu"
                     buildjobs=8 # APMs only have 8 cores
                     ;;
                 *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
             esac
+
+            # Trigger toolchain name
+            toolchain_file=llvm.params.toolchain
+            toolchain_file_option=""
+            if ${twostage} || ${testsuite}; then
+              toolchain_file_option="--toolchain-file=$toolchain_file"
+            fi
 
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
@@ -142,21 +145,9 @@
             fi
 
             # Chained jobs
-            rctag="-rc${candidate}"
-            if [ "${candidate}" = "final" ]; then
-              rctag=""
-            fi
-            fileserver=dev-01.tcwglab
-            url_prefix='~tcwg-buildslave/builds/releases/llvm'
-            target=clang+llvm-${release}${rctag}-${triple}
-            tarball=${target}.tar.xz
-            toolchain_url="http://${fileserver}/${url_prefix}/${tarball}"
-
             if ${testsuite}; then
-              cat << EOF > llvm.params.testsuite
-              toolchain=${toolchain_url}
-              target_list=${label}
-            EOF
+              echo "target_list=${label}" > llvm.params.testsuite
+              cat $toolchain_file >> llvm.params.testsuite
             fi
 
             # failure is handled by conditional step on llvm.failed
