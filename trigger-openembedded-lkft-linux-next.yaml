@@ -1,0 +1,39 @@
+- job:
+    name: trigger-openembedded-lkft-linux-next
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - string:
+            name: KERNEL_BRANCH
+            default: 'master'
+    disabled: false
+    node: master
+    display-name: 'Trigger for LKFT - Linux Next'
+    scm:
+        - git:
+            url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - origin/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - trigger-builds:
+            - project:
+                - 'openembedded-lkft-linux-next'
