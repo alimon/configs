@@ -102,6 +102,7 @@
                     ;;
                 *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
             esac
+            linkjobs=${buildjobs}
 
             # Trigger toolchain name
             toolchain_file=llvm.params.toolchain
@@ -127,14 +128,9 @@
             fi
 
             # Setup job parameters and run
-            linkjobs=7
-            buildid="ci${BUILD_ID}"
-            if [ ! -z ${revision} ]; then
-              buildid=${revision}
-            fi
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --workspace=${WORKSPACE} \
-                --buildid=${buildid} \
+                --buildid=${BUILDID} \
                 --linkjobs=${linkjobs} \
                 --revision=${revision} \
                 --toolchain=${toolchain}" \
