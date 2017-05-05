@@ -36,7 +36,7 @@
             description: 'File Server for results'
     disabled: false
     node: tcwg-coordinator
-    workspace: $NODE_NAME
+    workspace: workspace/$JOB_NAME/$label
     child-workspace: $label
     concurrent: true
     display-name: 'TCWG ZZZ Benchmark Christophe'
@@ -68,9 +68,9 @@
             set -ex
 
             ssh-add -l
-            ls -l .ssh/
-            cp /home/tcwg-buildslave/.ssh/config .ssh/
-            cp /home/tcwg-buildslave/.ssh/known_hosts .ssh/
+            ls -l ~/.ssh/
+            cp /home/tcwg-buildslave/.ssh/config ~/.ssh/
+            cp /home/tcwg-buildslave/.ssh/known_hosts ~/.ssh/
 
             wget --progress=dot:giga --no-check-certificate ${toolchain_url}
             tarball=$(basename ${toolchain_url})
