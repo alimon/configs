@@ -33,7 +33,7 @@
         - string:
             name: target_list
             default: 'tcwg-tk1_32-build tcwg-apm_64-build'
-            description: 'List of targets -- tcwg-x86_64-build tcwg-tk1_32-build tcwg-apm_64-build -- should be a subset of slave axis'
+            description: 'List of targets -- tcwg-x86_64-cam tcwg-tk1_32-build tcwg-apm_64-build -- should be a subset of slave axis'
         - bool:
             name: testsuite
             default: true
@@ -58,7 +58,7 @@
             type: slave
             name: label
             values:
-                - tcwg-x86_64-build
+                - tcwg-x86_64-cam
                 - tcwg-tk1_32-build
                 - tcwg-apm_64-build
         - axis:
@@ -93,7 +93,7 @@
 
             # Select builder arch/type/container
             case ${label} in
-                tcwg-x86_64-build)
+                tcwg-x86_64-build|tcwg-x86_64-cam)
                     builder_arch=amd64
                     buildjobs=8 # 1 slot is 32/4
                     ;;
