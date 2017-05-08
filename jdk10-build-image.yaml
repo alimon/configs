@@ -1,0 +1,136 @@
+- job:
+    name: jdk10-build-image
+    project-type: matrix
+    defaults: global
+    description: |
+        * Configures and builds jdk10 (ie, bin/java, bin/javac, et al) for various configurations.<br>
+        * The source tarball is copied from the jdk10-update-src-tree job.<br>
+        * <b>Note:</b> we are no longer building -fastdebug variants as there is not enough time to test the images.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    parameters:
+        - string:
+            name: JDK_URL
+            default: 'http://openjdk.linaro.org/releases/jdk8u-server-release-1708.tar.xz'
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK 10 - Configure and build OpenJDK 10'
+    axes:
+        - axis:
+            type: user-defined
+            name: JVM_VARIANT
+            values:
+                - server
+#                - zero
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+        - axis:
+            type: slave
+            name: label
+            values:
+                - aarch64-06
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: aarch64-06
+    builders:
+        - copyartifact:
+            project: jdk10-update-src-tree
+            filter: 'out/jdk10.tar.gz'
+            target: incoming
+            flatten: true
+        - copyartifact:
+            project: archive-primordial-jdk10
+            filter: 'out/primordial-jdk10.tar.gz'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            #export CCACHE_DIR=~/.ccache-${JVM_VARIANT}-${BUILD_TYPE}
+            #ccache -M 1G
+            #ccache -s
+
+            ccache_build_opts=--disable-ccache
+
+            rm -rf jdk* primordial-jdk* build*
+
+            wget --progress=dot -e dotbytes=2M ${JDK_URL}
+            tar -Jxf jdk*.tar.xz
+
+            cd jdk*/jre/lib/security/
+            rm -f cacerts
+            ln -s /etc/ssl/certs/java/cacerts
+
+            cd ${WORKSPACE}/jdk*
+            export JAVA_HOME=${PWD}
+
+            export PATH=${JAVA_HOME}/bin:${PATH}
+
+            cd ${WORKSPACE}
+
+            # Extract sources from upstream job
+            tar xf incoming/jdk10.tar.gz
+
+            shopt -s nullglob
+
+            # Extract boot jdk
+            tar xf incoming/primordial-jdk10.tar.gz
+
+            # Configure and build
+            mkdir -p build-stage1 build-stage2
+
+            two_stage_build=0
+
+            which java
+            java -version
+
+            if [ $two_stage_build = 1 ]; then
+              pushd build-stage1
+              sh ../jdk10/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk10 ${ccache_build_opts}
+              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
+              popd
+
+              pushd build-stage2
+              sh ../jdk10/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk ${ccache_build_opts}
+              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
+              popd
+            else
+              pushd build-stage2
+              sh ../jdk10/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
+              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
+              popd
+            fi
+
+            # Archive the result
+            rm -rf out
+            mkdir out
+            artifact_name=jdk10-${JVM_VARIANT}-${BUILD_TYPE}
+            tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
+
+            # Archive test support files.
+            tar -C build-stage2/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
+    publishers:
+        - archive:
+            artifacts: 'out/*.tar.gz'
+        - email:
+            recipients: 'stuart.monteith@linaro.org fathi.boudra@linaro.org'

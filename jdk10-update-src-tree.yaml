@@ -1,0 +1,153 @@
+- scm:
+    name: jdk10
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk10/hs
+            clean: true
+            subdir: jdk10
+- scm:
+    name: corba
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk10/hs/corba
+            clean: true
+            subdir: jdk10/corba
+- scm:
+    name: hotspot
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk10/hs/hotspot
+            clean: true
+            subdir: jdk10/hotspot
+- scm:
+    name: jaxp
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk10/hs/jaxp
+            clean: true
+            subdir: jdk10/jaxp
+- scm:
+    name: jaxws
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk10/hs/jaxws
+            clean: true
+            subdir: jdk10/jaxws
+- scm:
+    name: jdk
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk10/hs/jdk
+            clean: true
+            subdir: jdk10/jdk
+- scm:
+    name: langtools
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk10/hs/langtools
+            clean: true
+            subdir: jdk10/langtools
+- scm:
+    name: nashorn
+    scm:
+        - hg:
+            url: http://hg.openjdk.java.net/jdk10/hs/nashorn
+            clean: true
+            subdir: jdk10/nashorn
+- job:
+    name: jdk10-update-src-tree
+    project-type: freestyle
+    defaults: global
+    description: |
+        This job polls upstream Mercurial servers for changes and,<br>
+        if there are any, triggers "jdk10-build-and-test".<br>
+        Note: this job archives the src which is later required by the jtreg<br>
+        report and publish job. The build-date.sh artefact contains shell<br>
+        variables for the day and day-of-year the source was archived.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK 10 - Update jdk10 source tree'
+    scm:
+        - jdk10
+        - corba
+        - hotspot
+        - jaxp
+        - jaxws
+        - jdk
+        - langtools
+        - nashorn
+# SRDM Trigger manually for now.
+#    triggers:
+#        - pollscm: 'H 12 */2 * *'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -eu
+
+            rm -rf out
+            mkdir out
+
+            pushd jdk10
+            #find . -name BOM -exec rm {} \;
+            #commit_id=$(hg identify | awk '{print $1}')
+            #echo "jdk10-${commit_id}" | tee -a BOM
+
+            #for i in corba jaxp jaxws langtools jdk hotspot nashorn; do
+            #  pushd $i
+            #  commit_id=$(hg identify | awk '{print $1}')
+            #  dir=$(basename $PWD)
+            #  echo "${dir}-${commit_id}" | tee -a ../BOM
+            #  popd
+            #done
+
+            ## Pull out subdirectory HG versions
+            SUBREPOS=". corba jaxp jaxws langtools jdk hotspot nashorn"
+
+            echo BOM for $(hg paths default) > BOM
+            echo -e Subdir\\tHash\\t\\tTag\\tTag hash >> BOM
+            for x in $SUBREPOS; do
+                echo -e $x\\t$(cd $x; hg head --template '{node|short}\t' tip; hg tags --template="{tag}\t{node|short}\n" | grep -ve '^tip' | head -n1) >>BOM
+            done
+
+            cp BOM $WORKSPACE/out
+
+            popd
+
+            : ${YEAR:=$(date +%Y)}
+            : ${DAY_OF_YEAR:=$(date +%j)}
+
+            : ${YEAR_YESTERDAY:=$YEAR}
+            : ${DAY_OF_YEAR_YESTERDAY:=$((10#$DAY_OF_YEAR - 1))}
+
+            echo "YEAR=${YEAR}" >dates.prop
+            echo "DAY_OF_YEAR=${DAY_OF_YEAR}" >>dates.prop
+
+            echo "export YEAR=${YEAR}" > out/build-date.sh
+            echo "export DAY_OF_YEAR=${DAY_OF_YEAR}" >> out/build-date.sh
+
+            tar --exclude=.hg -acf out/jdk10.tar.gz jdk10
+    publishers:
+        - archive:
+            artifacts: 'out/jdk10.tar.gz, out/build-date.sh, out/BOM'
+        - fingerprint:
+            files: 'out/*'
+            record-artifacts: true
+        - trigger-parameterized-builds:
+            - project: jdk10-build-and-test
+              condition: SUCCESS
+              property-file: dates.prop
