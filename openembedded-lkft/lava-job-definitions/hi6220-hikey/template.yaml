@@ -89,7 +89,7 @@ actions:
 - test:
     namespace: hikey-oe
     timeout:
-      minutes: 120
+      minutes: 150
     definitions:
     - from: inline
       repository:
@@ -124,6 +124,12 @@ actions:
       name: ltp-syscalls-tests
       timeout:
         minutes: 90
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/libhugetlbfs/libhugetlbfs.yaml
+      name: libhugetlbfs
+      timeout:
+        minutes: 30
 
 - test:
    namespace: tlxc
