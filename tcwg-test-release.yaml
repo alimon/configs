@@ -34,6 +34,10 @@
             name: target
             default:
             description: 'Target, only displayed in job name'
+        - string:
+            name: tcwg_regression_rev
+            default: 'master'
+            description: 'tcwg-regression revision to use'
         - bool:
             name: debug
             default: false
@@ -99,7 +103,7 @@
                 trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}"
+            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url} --tcwg-regression-rev ${tcwg_regression_rev}"
 
             exit $?
     publishers:
