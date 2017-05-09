@@ -1,0 +1,76 @@
+# Debian ARMMP armhf NFS, initramfs, modules and dtbs
+
+- job:
+    name: lava-debian-armmp-armhf
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 24
+        numToKeep: 12
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            platform-leads:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: 'LAVA - Build ARMHF ARMMP Debian Stretch files'
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            mkdir out
+            cd out/
+            sudo apt -q update
+            sudo apt -q -y install qemu-user-static debootstrap
+            wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/armmp-nfs.sh
+            chmod 744 ./armmp-nfs.sh
+            sudo ./armmp-nfs.sh -d stretch
+            cd ..
+            cat > ${WORKSPACE}/out/debian-stretch-armmp-armhf-readme.html <<EOF
+            <html><body><pre>
+            lava-debian-stretch-armmp-armhf build instructions
+            ==================================================
+
+            This initramfs is built using update-initramfs inside a
+            minimal Debian Stretch debootstrap chroot.
+            The contents of the chroot is then packaged up as an NFS
+            with an empty root password.
+                auto_login:
+                    login_prompt: 'login:'
+                    username: root
+
+            apt is included in the NFS, as are bash, grep, iproute2, mawk and sed.
+            The NFS uses the default init in Stretch: systemd.
+
+            The Debian ARMMP kernel is a modular build and the modules
+            need to be available in the initramfs for the kernel to be
+            able to mount the NFS. The initramfs does not have DNS
+            support.
+
+            https://ci.linaro.org/view/lava-ci/job/lava-debian-stretch-armmp-armhf/
+
+            The script used by jenkins is available here:
+            https://git.linaro.org/lava-team/refactoring.git/blob/HEAD:/scripts/armmp-nfs.sh
+
+            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-armmp-armhf.yaml
+            The base system is a Debian Stretch VM.
+
+            The NFS rootfs uses a prompt of "root@stretch:"
+
+            </pre></body></html>
+            EOF
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py --api_version 3 out components/lava/standard/debian/stretch/armhf/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'neil.williams@linaro.org fathi.boudra@linaro.org'
