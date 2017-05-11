@@ -34,6 +34,10 @@
             name: fileserver
             default: dev-01.tcwglab
             description: 'File Server for results'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Jenkins-scripts branch to use'
     disabled: false
     node: tcwg-coordinator
     workspace: workspace/$JOB_NAME
@@ -105,9 +109,19 @@
             #ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} git@dev-private-git.linaro.org true || true
             #ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} dev-01.tcwglab true || true
             
+            rm -rf jenkins-scripts
+            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+
+            ./jenkins-scripts/start-container-docker.sh --arch amd64 --node $NODE_NAME --distro xenial --task build --prefix build_ > build-container.sh
+            . ./build-container.sh
+
+            # Make sure to cleanup build container if something goes
+            # wrong when preparing the test environment
+            trap "cleanup_all_containers" EXIT
+
             # FIXME: bench_list can contain more than one bench
             # FIXME: support cflags
-            ssh -t -A ${ssh_opts} $boardname bmk-scripts/run.sh \
+            build_container_exec ssh -t -A ${ssh_opts} $boardname bmk-scripts/run.sh \
                 --bench ${bench_list} \
                 --config ${config} \
                 --ccprefix dev-01.tcwglab:${WORKSPACE}/${toolchaindir}/bin/${target} \
