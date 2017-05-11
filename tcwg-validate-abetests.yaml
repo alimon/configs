@@ -91,11 +91,16 @@
             # Remove container on exit
             trap "build_container_cleanup" 0 1 2 3 5 9 13 15
 
+            status=0
+            touch ${ARTIFACTS}/empty.txt
+
             case "$test" in
               abe-tests)
                 ARTIFACTS=${WORKSPACE}/artifacts
                 mkdir -p "${ARTIFACTS}"
-                ${BUILD_SHELL} -c "set -ex; ${WORKSPACE}/test-manifest2.sh --ref-snapshots /home/tcwg-buildslave/snapshots-ref --display-summary; cp full-manifest-test/*.txt ${ARTIFACTS}"
+                ${BUILD_SHELL} -c "set -ex; ${WORKSPACE}/test-manifest2.sh --ref-snapshots /home/tcwg-buildslave/snapshots-ref --display-summary --quiet" || status=$?
+                cp abe-tests/full-manifest-test/*.txt "${ARTIFACTS}"
+                rm -f ${ARTIFACTS}/empty.txt
                 # full build logs are large, and not very useful, so we
                 # don't waste the disk space on them
                 rm -f ${ARTIFACTS}/test-mani-build[12].txt
@@ -103,12 +108,15 @@
               abe-tests-checkout)
                 ARTIFACTS=${WORKSPACE}/artifacts
                 mkdir -p "${ARTIFACTS}"
-                ${BUILD_SHELL} -c "set -ex; ${WORKSPACE}/test-checkout.sh --clean-snapshots --ref-snapshots /home/tcwg-buildslave/snapshots-ref; cp checkout-test/workspace*/test_*.log ${ARTIFACTS}"
+                ${BUILD_SHELL} -c "set -ex; ${WORKSPACE}/test-checkout.sh --clean-snapshots --ref-snapshots /home/tcwg-buildslave/snapshots-ref" || status=$?
+                cp abe-tests/checkout-test/workspace*/test_*.log "${ARTIFACTS}"
+                rm -f artifacts/empty.txt
                 # the reports from here aren't usually needed, so are
                 # worth compressing
                 xz ${ARTIFACTS}/*
                 ;;
             esac
+            exit $status
     publishers:
         - workspace-cleanup:
             include:
