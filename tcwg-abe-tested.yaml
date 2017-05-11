@@ -24,9 +24,8 @@
     display-name: 'TCWG CCC Trigger ABE extended validation'
     scm:
         - git:
-            url: https://git-us.linaro.org/toolchain/abe.git
-            refspec: +refs/heads/master:refs/remotes/origin/master
-            name: origin
+            url: ssh://tcwg-buildslave@review.linaro.org:29418
+            name: gerrit
             branches:
                 - refs/heads/master
             skip-tag: true
@@ -63,8 +62,4 @@
 
             git config --global user.name "TCWG Buildslave"
             git config --global user.email tcwg-buildslave@linaro.org
-            if git remote | grep -q gerrit; then
-              git remote rm gerrit
-            fi
-            git remote add gerrit ssh://tcwg-buildslave@review.linaro.org:29418/toolchain/abe
             git push gerrit $GIT_COMMIT:refs/heads/tested
