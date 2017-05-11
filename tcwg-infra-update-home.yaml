@@ -1,0 +1,60 @@
+- job:
+    name: tcwg-infra-update-home
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: machines_list
+            default: 'dev-01.tcwglab'
+            description: 'Machines to run on, see https://ci.linaro.org/job/tcwg-buildslave-command'
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG CCC Update TCWG Infra /home files'
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'ci/dockerfiles'
+                  branches:
+                    - branch-pattern: 'master'
+                  file-paths:
+                    - compare-type: ANT
+                      pattern: tcwg-base/tcwg-build/tcwg-buildslave/**
+                    - compare-type: ANT
+                      pattern: tcwg-base/tcwg-build/tcwg-benchmark/**
+            silent-start: true
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="machines_list"}'
+    builders:
+        - trigger-builds:
+            - project: 'tcwg-buildslave-command'
+              predefined-parameters: |
+                machines_list=$machines_list
+                command=ssh -o StrictHostKeyChecking=no -p29418 tcwg-buildslave@review.linaro.org true || true; git archive --remote ssh://tcwg-buildslave@review.linaro.org:29418/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-buildslave tcwg-base/tcwg-build/tcwg-buildslave
+                target_user=tcwg-buildslave
+              block: true
+            - project: 'tcwg-buildslave-command'
+              predefined-parameters: |
+                machines_list=$machines_list
+                command=ssh -o StrictHostKeyChecking=no -p29418 tcwg-benchmark@review.linaro.org true || true; git archive --remote ssh://tcwg-benchmark@review.linaro.org:29418/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-benchmark tcwg-base/tcwg-build/tcwg-benchmark
+                target_user=tcwg-benchmark
+              block: true
