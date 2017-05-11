@@ -2,6 +2,12 @@
     name: tcwg-infra-update-home
     project-type: freestyle
     defaults: global
+    description: |
+      This job tracks changes to /home/tcwg-* files in ci/dockerfiles.git
+      repository and updates machines in machine_list with new versions
+      of the files.  The files are .gitconfig, .ssh/*, etc.
+      The update is done by fetching files from the repo using git-archive,
+      and untarring them to /home directories of tcwg-infra users.
     properties:
         - authorization:
             anonymous:
