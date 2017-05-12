@@ -55,13 +55,6 @@ for repo_proj in ${supported_platforms}; do
 
   (cd ${JENKINS_WORKSPACE}/${repo_proj} && repo init -u https://github.com/OP-TEE/manifest.git -m ${repo_proj}.xml < /dev/null && repo sync --no-clone-bundle --no-tags --quiet -j$(nproc))
 
-  # FIXME grub master fails to build
-  # grub-mkimage: error: undefined symbol grub_arch_sync_dma_caches
-  # Fetch a known working grub commit revision from the stable manifests
-  if [ "${repo_proj}" == "hikey" ]; then
-    (cd ${JENKINS_WORKSPACE}/${repo_proj}/grub && git checkout 007f0b407f72314ec832d77e15b83ea40b160037)
-  fi
-
   # Fetch a local copy of dtc+libfdt to avoid issues with a possibly outdated libfdt-dev
   # DTC (libfdt) version >= 1.4.2 is required
   if [ "${repo_proj}" == "qemu_v8" ]; then
