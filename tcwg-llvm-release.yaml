@@ -31,6 +31,10 @@
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
         - string:
+            name: compiler
+            default: 'clang'
+            description: 'Override the default system compiler. Only used if "toolchain" is empty.'
+        - string:
             name: target_list
             default: 'tcwg-tk1_32-build tcwg-apm_64-build'
             description: 'List of targets -- tcwg-x86_64-cam tcwg-tk1_32-build tcwg-apm_64-build -- should be a subset of slave axis'
@@ -108,6 +112,12 @@
                 *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
             esac
 
+            # Sets the system compiler
+            compiler_option=''
+            if [ "${toolchain:+set}" != "set" ] && [ "${compiler:+set}" = "set" ]; then
+              compiler_option="--compiler=${compiler}"
+            fi
+
             # Trigger toolchain name
             toolchain_file="${WORKSPACE}/llvm.params.toolchain"
             toolchain_file_option=""
@@ -139,7 +149,7 @@
                 --candidate=${candidate} \
                 --buildjobs=${buildjobs} \
                 --toolchain=${toolchain} \
-                $toolchain_file_option" || ret=$?
+                $toolchain_file_option $compiler_option" || ret=$?
 
             if [ $ret -ne 0 ]; then
                 touch llvm.failed

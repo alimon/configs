@@ -35,6 +35,10 @@
             default: false
             description: 'Whether or not to trigger a test-suite with this build.'
         - string:
+            name: compiler
+            default: 'clang'
+            description: 'Override the default system compiler. Only used if "toolchain" is empty.'
+        - string:
             name: target_list
             default: 'tcwg-x86_64-cam'
             description: 'List of targets -- tcwg-x86_64-cam tcwg-tk1_32-build tcwg-apm_64-build -- should be a subset of slave axis'
@@ -104,6 +108,12 @@
             esac
             linkjobs=${buildjobs}
 
+            # Sets the system compiler
+            compiler_option=''
+            if [ "${toolchain:+set}" != "set" ] && [ "${compiler:+set}" = "set" ]; then
+              compiler_option="--compiler=${compiler}"
+            fi
+
             # Trigger toolchain name
             toolchain_file="${WORKSPACE}/llvm.params.toolchain"
             toolchain_file_option=""
@@ -135,7 +145,7 @@
                 --linkjobs=${linkjobs} \
                 --revision=${revision} \
                 --toolchain=${toolchain} \
-                $toolchain_file_option"
+                $toolchain_file_option $compiler_option "
 
             # Chained jobs
             if ${twostage}; then
