@@ -1,6 +1,6 @@
 - job:
     name: optee-build
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     properties:
         - authorization:
@@ -17,8 +17,25 @@
             days-to-keep: 90
             num-to-keep: 90
     disabled: false
-    node: docker-xenial-amd64
+    node: master
     display-name: 'OP-TEE Makefiles for various platforms'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-xenial-amd64
+        - axis:
+            type: user-defined
+            name: repo_proj
+            values:
+                - default
+                - fvp
+                - hikey
+                - juno
+                - mt8173-evb
+                - qemu_v8
+                - rpi3
     scm:
         - git:
             url: https://github.com/OP-TEE/build.git

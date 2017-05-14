@@ -43,23 +43,19 @@ mkdir -p ${HOME}/bin
 curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo && chmod a+x ${HOME}/bin/repo
 export PATH=${HOME}/bin:${PATH}
 
-supported_platforms="default fvp hikey juno mt8173-evb qemu_v8 rpi3"
-for repo_proj in ${supported_platforms}; do
-  echo "INFO: Building OP-TEE for ${repo_proj}"
+echo "INFO: Building OP-TEE for ${repo_proj}"
+mkdir -p ${JENKINS_WORKSPACE}/${repo_proj}
 
-  mkdir -p ${JENKINS_WORKSPACE}/${repo_proj}
+if [ "${repo_proj}" == "fvp" ]; then
+  mkdir -p ${JENKINS_WORKSPACE}/${repo_proj}/Foundation_Platformpkg
+fi
 
-  if [ "${repo_proj}" == "fvp" ]; then
-    mkdir -p ${JENKINS_WORKSPACE}/${repo_proj}/Foundation_Platformpkg
-  fi
+(cd ${JENKINS_WORKSPACE}/${repo_proj} && repo init -u https://github.com/OP-TEE/manifest.git -m ${repo_proj}.xml < /dev/null && repo sync --no-clone-bundle --no-tags --quiet -j$(nproc))
 
-  (cd ${JENKINS_WORKSPACE}/${repo_proj} && repo init -u https://github.com/OP-TEE/manifest.git -m ${repo_proj}.xml < /dev/null && repo sync --no-clone-bundle --no-tags --quiet -j$(nproc))
+# Fetch a local copy of dtc+libfdt to avoid issues with a possibly outdated libfdt-dev
+# DTC (libfdt) version >= 1.4.2 is required
+if [ "${repo_proj}" == "qemu_v8" ]; then
+  (cd ${JENKINS_WORKSPACE}/${repo_proj}/qemu && git submodule update --init dtc)
+fi
 
-  # Fetch a local copy of dtc+libfdt to avoid issues with a possibly outdated libfdt-dev
-  # DTC (libfdt) version >= 1.4.2 is required
-  if [ "${repo_proj}" == "qemu_v8" ]; then
-    (cd ${JENKINS_WORKSPACE}/${repo_proj}/qemu && git submodule update --init dtc)
-  fi
-
-  (cd ${JENKINS_WORKSPACE}/${repo_proj}/build && ${make} -f toolchain.mk toolchains && ${make} all)
-done
+(cd ${JENKINS_WORKSPACE}/${repo_proj}/build && ${make} -f toolchain.mk toolchains && ${make} all)
