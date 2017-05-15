@@ -41,6 +41,7 @@ for dir in ${changed_dirs}; do
   # Add this and all dependant images in the update.
   update_images="${update_images} $(dirname $(find ${dir} -name build.sh))"
 done
+update_images="$(echo "${update_images}" | tr " " "\n" | sort -u)"
 
 host_arch=$(dpkg-architecture -qDEB_HOST_ARCH)
 
@@ -48,21 +49,13 @@ for image in ${update_images}; do
   (
   cd ${image}
   image_arch=$(basename ${PWD} | cut -f2 -d '-')
-  case "${image_arch}" in
-    amd64|i386)
-      if [ "${host_arch}" = "amd64" ]; then
-        echo "=== Start build: ${image} ==="
-        ./build.sh || echo "=== FAIL: ${image} ===" >> ${WORKSPACE}/log
-      fi
-      ;;
-    arm64|armhf)
-      if [ "${host_arch}" = "arm64" ]; then
-        echo "=== Start build: ${image} ==="
-        ./build.sh || echo "=== FAIL: ${image} ===" >> ${WORKSPACE}/log
-      fi
+  case "${host_arch}:${image_arch}" in
+    "amd64:amd64"|"amd64:i386"|"arm64:arm64"|"arm64:armhf")
+      echo "=== Start build: ${image} ==="
+      ./build.sh || echo "=== FAIL: ${image} ===" >> ${WORKSPACE}/log
       ;;
     *)
-      echo "unknown arch: ${image_arch}"
+      echo "Skipping: can't build for ${image_arch} on ${host_arch}"
       ;;
   esac
   if [ -r .docker-tag ]; then
