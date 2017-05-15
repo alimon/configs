@@ -39,7 +39,17 @@ for dir in ${changed_dirs}; do
     dir=$(dirname ${dir})
   done
   # Add this and all dependant images in the update.
-  update_images="${update_images} $(dirname $(find ${dir} -name build.sh))"
+  dir_basename=$(basename ${dir})
+  case "${dir_basename}" in
+    "tcwg-"*)
+      # ${dir} is one of generic tcwg-base/* directories.  Add dependent
+      # images to the list.
+      update_images="${update_images} $(dirname $(find . -path "*-${dir_basename}*/build.sh"))"
+      ;;
+    *)
+      update_images="${update_images} $(dirname $(find ${dir} -name build.sh))"
+      ;;
+  esac
 done
 update_images="$(echo "${update_images}" | tr " " "\n" | sort -u)"
 
