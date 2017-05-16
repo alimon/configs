@@ -122,7 +122,7 @@
             # FIXME: bench_list can contain more than one bench
             build_container_exec ssh -t -A ${ssh_opts} $boardname bmk-scripts/run.sh \
                 --bench ${bench_list} \
-                --cflags "${cflags}" \
+                ${cflags:+--cflags "${cflags}"} \
                 --config ${config} \
                 --ccprefix $build_container_host:$build_container_port:$ccprefix \
                 --sysroot "$sysroot" \
