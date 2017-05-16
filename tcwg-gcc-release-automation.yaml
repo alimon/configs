@@ -133,10 +133,10 @@
             EOF
         - trigger-builds:
             - projects: tcwg-buildfarm
-              property-file: buildfarm-parameters
+              property-file: buildfarm_parameters
               block: true
         - inject:
-            properties-file: ${WOKSPACE}/env.properties
+            properties-file: ${WORKSPACE}/env.properties
         - shell: |
             #!/bin/bash
             set -ex
@@ -151,10 +151,10 @@
             popd 1>/dev/null
         - trigger-builds:
             - projects: tcwg-make-source-tarball
-              property-file: ${WOKSPACE}/env.properties
+              property-file: ${WORKSPACE}/env.properties
               block: true
             - projects: tcwg-make-and-test-release
-              property-file: ${WOKSPACE}/env.properties
+              property-file: ${WORKSPACE}/env.properties
               predefined-parameters: |
                   gcc_src=gcc.git~$tag
                   toolchain_config=$toolchainconf
