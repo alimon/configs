@@ -30,6 +30,10 @@
             default: ''
             description: 'CFLAGS to use'
         - string:
+            name: sysroot
+            default: ''
+            description: 'Sysroot to use'
+        - string:
             name: fileserver
             default: dev-01.tcwglab
             description: 'File Server for results'
@@ -128,6 +132,8 @@
                 --bench ${bench_list} \
                 --config ${config} \
                 --ccprefix dev-01.tcwglab:${WORKSPACE}/${toolchaindir}/bin/${target} \
+                --cflags "$cflags" \
+                --sysroot "$sysroot" \
                 --toolchain gnu \
                 --resultsdest ${fileserver}:results/${NODE_NAME}-123-0/${BUILD_NUMBER} \
                 --nodename ${NODE_NAME} \
