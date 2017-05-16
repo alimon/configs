@@ -120,9 +120,9 @@
             trap "cleanup_all_containers" EXIT
 
             # FIXME: bench_list can contain more than one bench
-            # FIXME: support cflags
             build_container_exec ssh -t -A ${ssh_opts} $boardname bmk-scripts/run.sh \
                 --bench ${bench_list} \
+                --cflags "${cflags}" \
                 --config ${config} \
                 --ccprefix $build_container_host:$build_container_port:$ccprefix \
                 --sysroot "$sysroot" \
