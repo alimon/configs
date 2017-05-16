@@ -33,6 +33,10 @@
             name: fileserver
             default: dev-01.tcwglab
             description: 'File Server for results'
+        - bool:
+            name: forceinstall
+            default: 'false'
+            description: 'Force clean re-install of benchmark sources'
         - string:
             name: scripts_branch
             default: master
@@ -127,6 +131,7 @@
                 --toolchain gnu \
                 --resultsdest ${fileserver}:results/${NODE_NAME}-123-0/${BUILD_NUMBER} \
                 --nodename ${NODE_NAME} \
+                --forceinstall ${forceinstall} \
                 --verbose true
 
             exit 0
