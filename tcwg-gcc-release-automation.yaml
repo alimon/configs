@@ -132,7 +132,7 @@
             upload_dir=$upload_dir
             EOF
         - trigger-builds:
-            - projects: tcwg-buildfarm
+            - project: tcwg-buildfarm
               property-file: buildfarm_parameters
               block: true
         - inject:
@@ -150,10 +150,10 @@
 
             popd 1>/dev/null
         - trigger-builds:
-            - projects: tcwg-make-source-tarball
+            - project: tcwg-make-source-tarball
               property-file: ${WORKSPACE}/env.properties
               block: true
-            - projects: tcwg-make-and-test-release
+            - project: tcwg-make-and-test-release
               property-file: ${WORKSPACE}/env.properties
               predefined-parameters: |
                   gcc_src=gcc.git~$tag
