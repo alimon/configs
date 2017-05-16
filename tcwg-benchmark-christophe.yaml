@@ -90,6 +90,8 @@
             tarball=$(basename ${toolchain_url})
             tar xf ${tarball}
             toolchaindir=$(echo ${tarball} | sed 's/.tar.xz//')
+            ccpath=$(find $WORKSPACE/$toolchaindir -name "*-gcc")
+            ccprefix=$(echo $ccpath | sed -e 's/-gcc$/-/')
 
             # Slaves for this job are virtual slaves on dev-01,
             # convert the slave name into the target board name
@@ -102,15 +104,6 @@
 
             ssh ${ssh_opts} $boardname rm -rf bmk-scripts
             ssh ${ssh_opts} $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
-
-            case ${label} in
-                *-tx1-*) target=aarch64-linux-gnu- ;;
-                *-tk1-*) target=arm-linux-gnueabihf- ;;
-                *)
-                    echo "ERROR: Unsupported label: ${label}"
-                    exit 1
-                    ;;
-            esac
 
             # Hack: populate tcwg-benchmark's known_hosts on the board
             #ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} git@dev-private-git.linaro.org true || true
@@ -131,7 +124,7 @@
             build_container_exec ssh -t -A ${ssh_opts} $boardname bmk-scripts/run.sh \
                 --bench ${bench_list} \
                 --config ${config} \
-                --ccprefix dev-01.tcwglab:${WORKSPACE}/${toolchaindir}/bin/${target} \
+                --ccprefix $build_container_host:$build_container_port:$ccprefix \
                 --sysroot "$sysroot" \
                 --toolchain gnu \
                 --resultsdest ${fileserver}:results/${NODE_NAME}-123-0/${BUILD_NUMBER} \
