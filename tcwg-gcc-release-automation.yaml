@@ -1,0 +1,173 @@
+- job:
+    name: tcwg-gcc-release-automation
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    parameters:
+        - choice:
+            name: tag_kind
+            choices:
+                - snapshot
+                - candidate
+                - release
+            description: 'Type of release to do.'
+        - string:
+            name: spin
+            default: ''
+            description: 'Spin number'
+        - string:
+            name: gcc_ref
+            default: ''
+            description: 'GCC tag or branch name (like linaro-6.3-2017.03, linaro/gcc-6-branch)'
+        - string:
+            name: date
+            default: ''
+            description: 'snapshot or release date (yyyy.mm)'
+        - string:
+            name: abe_branch
+            default: '/refs/heads/master'
+            description: 'ABE branch to use.'
+    disabled: false
+    node: tcwg-x86_64-dev-01
+    concurrent: true
+    display-name: 'TCWG GCC Release Automation'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/gcc.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            branches:
+                - refs/heads/master
+            basedir: gcc_src
+            per-build-tag: false
+            wipe-workspace: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            clean:
+                before: true
+        - git:
+            url: https://git-us.linaro.org/toolchain/tcwg-release-tools
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            branches:
+                - refs/heads/automation
+            basedir: tcwg-release-tools
+            per-build-tag: false
+            wipe-workspace: false
+            clean:
+                before: true
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="release_tag"}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            pushd gcc_src
+
+            # Git/Gerrit config
+            git config --local user.name "TCWG Automation"
+            git config --local user.email linaro-toolchain@lists.linaro.org
+            if git remote | grep -q gerrit; then
+              git remote rm gerrit
+            fi
+            git remote add gerrit ssh://tcwg-buildslave@review.linaro.org:29418/toolchain/gcc
+
+            FLAGS="-t $gcc_ref -e gerrit"
+            [ "${spin:+set}" = "set" ] && FLAGS+=" $spin"
+            [ "${date:+set}" = "set" ] && FLAGS+=" -d $date"
+
+            case "$tag_kind" in
+                snapshot)  FLAGS+=" -S" ; dir_suffix="-snap";;
+                candidate) FLAGS+=" -r" ;;
+                release)   FLAGS+=" -R" ;;
+                *) echo "ERROR: tag_king is missing"; exit 1 ;;
+            esac
+
+            ${WORKSPACE}/tcwg-release-tools/tcwg-release-tag.sh $FLAGS
+
+            # Pick up the created tag.
+            tag=$(git describe --abbrev=0)
+
+            case ${tag} in
+              *-4\.*) toolchainconf="gcc4_9" ;;
+              *-5\.*) toolchainconf="gcc5" ;;
+              *-6\.*) toolchainconf="gcc6" ;;
+              *-7\.*) toolchainconf="gcc7" ;;
+              *) echo "ERROR: Bad tag: ${tag}"; exit 1 ;;
+            esac
+
+            # Remove linaro-[snapshot-] prefix
+            upload_dir=${tag#*ro-}
+            upload_dir=${upload_dir#*ot-}$dir_suffix
+
+            popd 1>/dev/null
+
+            cat << EOF > ${WORKSPACE}/buildfarm_parameters
+            override=gcc=gcc.git~$tag --extraconfigdir ../config/$toolchainconf
+            log_name=${JOB_NAME}-${tag}-${BUILD_NUMBER}/\${builder_type}.\$target
+            abe_branch=$abe_branch
+            EOF
+
+            cat << EOF > ${WORKSPACE}/env.properties
+            tag=$tag
+            toolchainconf=$toolchainconf
+            upload_dir=$upload_dir
+            EOF
+        - trigger-builds:
+            - projects: tcwg-buildfarm
+              property-file: buildfarm-parameters
+              block: true
+        - inject:
+            properties-file: ${WOKSPACE}/env.properties
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            pushd /home/tcwg-buildslave/logs/${JOB_NAME}-${tag}-${BUILD_NUMBER}
+
+            mkdir -p /home/tcwg-buildslave/sources/$upload_dir
+            for i in * ; do
+                cp ${i}/gcc-linaro-*-manifest.txt /home/tcwg-buildslave/sources/${upload_dir}/${i}-gcc-${tag}-manifest.txt
+            done
+
+            popd 1>/dev/null
+        - trigger-builds:
+            - projects: tcwg-make-source-tarball
+              property-file: ${WOKSPACE}/env.properties
+              block: true
+            - projects: tcwg-make-and-test-release
+              property-file: ${WOKSPACE}/env.properties
+              predefined-parameters: |
+                  gcc_src=gcc.git~$tag
+                  toolchain_config=$toolchainconf
+                  abe_branch=$abe_branch
+              block: true
+    publishers:
+        - email:
+            recipients: 'yvan.roux@linaro.org'
+        - workspace-cleanup:
+            clean-if:
+                - success: true
+                - unstable: false
+                - failure: false
+                - aborted: false
+                - not-built: false
+
