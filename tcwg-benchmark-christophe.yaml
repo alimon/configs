@@ -120,12 +120,14 @@
             trap "cleanup_all_containers" EXIT
 
             # FIXME: bench_list can contain more than one bench
+            #        similarly, cflags can contain several flags.
+            #        The double ssh command breaks white space quoting
             build_container_exec ssh -t -A ${ssh_opts} $boardname bmk-scripts/run.sh \
                 --bench ${bench_list} \
                 ${cflags:+--cflags "${cflags}"} \
                 --config ${config} \
                 --ccprefix $build_container_host:$build_container_port:$ccprefix \
-                --sysroot "$sysroot" \
+                ${sysroot:+--sysroot "$sysroot"} \
                 --toolchain gnu \
                 --resultsdest ${fileserver}:results/${NODE_NAME}-123-0/${BUILD_NUMBER} \
                 --nodename ${NODE_NAME} \
