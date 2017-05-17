@@ -119,13 +119,10 @@
             # wrong when preparing the test environment
             trap "cleanup_all_containers" EXIT
 
-            # FIXME: bench_list can contain more than one bench
-            #        similarly, cflags can contain several flags.
-            #        The double ssh command breaks white space quoting
             build_container_exec ssh -t -A ${ssh_opts} $boardname bmk-scripts/run.sh \
-                --bench ${bench_list} \
-                ${cflags:+--cflags "${cflags}"} \
+                --bench $(printf '%q' "$bench_list") \
                 --config ${config} \
+                --cflags $(printf '%q' "$cflags") \
                 --ccprefix $build_container_host:$build_container_port:$ccprefix \
                 ${sysroot:+--sysroot "$sysroot"} \
                 --toolchain gnu \
