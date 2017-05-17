@@ -30,6 +30,21 @@
             default: ''
             description: 'CFLAGS to use'
         - string:
+            name: extension
+            default: 'O2g'
+            description: 'Compilation profile'
+        - choice:
+            name: testmode
+            choices:
+              - build
+              - verify
+              - benchmark
+            description: 'Whether to just build or run full benchmarks'
+        - string:
+            name: iterations
+            default: '1'
+            description: 'Number of benchmark iterations'
+        - string:
             name: sysroot
             default: ''
             description: 'Sysroot to use'
@@ -100,4 +115,4 @@
             #!/bin/bash
 
             set -ex
-            exec ./tcwg-benchmark.sh --toolchain_url "$toolchain_url" --bench_list "$bench_list" --config "$config" --cflags "$cflags" --sysroot "$sysroot" --fileserver "$fileserver" --forceinstall "$forceinstall" --scripts_branch "$scripts_branch" --label "$label" --build_number "$BUILD_NUMBER" --node_name "$NODE_NAME" --workspace "$WORKSPACE"
+            exec ./tcwg-benchmark.sh --toolchain_url "$toolchain_url" --bench_list "$bench_list" --config "$config" --cflags "$cflags" --extension "$extension" --testmode "$testmode" --iterations "$iterations" --sysroot "$sysroot" --fileserver "$fileserver" --forceinstall "$forceinstall" --scripts_branch "$scripts_branch" --label "$label" --build_number "$BUILD_NUMBER" --node_name "$NODE_NAME" --workspace "$WORKSPACE"
