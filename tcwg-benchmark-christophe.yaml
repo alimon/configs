@@ -51,6 +51,15 @@
     child-workspace: $label
     concurrent: true
     display-name: 'TCWG ZZZ Benchmark Christophe'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
     axes:
         - axis:
             type: slave
@@ -79,43 +88,4 @@
         - shell: |
             #!/bin/bash
 
-            set -ex
-
-            wget --progress=dot:giga --no-check-certificate ${toolchain_url}
-            tarball=$(basename ${toolchain_url})
-            tar xf ${tarball}
-            toolchaindir=$(echo ${tarball} | sed 's/.tar.xz//')
-            ccpath=$(find $WORKSPACE/$toolchaindir -name "*-gcc")
-            ccprefix=$(echo $ccpath | sed -e 's/-gcc$/-/')
-
-            # Slaves for this job are virtual slaves on dev-01,
-            # convert the slave name into the target board name
-            boardname=$(echo ${NODE_NAME} | sed 's/-bmk//').tcwglab
-            boardname="tcwg-benchmark@${boardname}"
-
-            ssh $boardname rm -rf bmk-scripts
-            ssh $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
-
-            rm -rf jenkins-scripts
-            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
-
-            ./jenkins-scripts/start-container-docker.sh --arch amd64 --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
-            . ./build-container.sh
-
-            # Make sure to cleanup build container if something goes
-            # wrong when preparing the test environment
-            trap "cleanup_all_containers" EXIT
-
-            build_container_exec ssh -t $boardname bmk-scripts/run.sh \
-                --bench $(printf '%q' "$bench_list") \
-                --config ${config} \
-                --cflags $(printf '%q' "$cflags") \
-                --ccprefix $build_container_host:$build_container_port:$ccprefix \
-                ${sysroot:+--sysroot "$sysroot"} \
-                --toolchain gnu \
-                --resultsdest ${fileserver}:results/${NODE_NAME}-123-0/${BUILD_NUMBER} \
-                --nodename ${NODE_NAME} \
-                --forceinstall ${forceinstall} \
-                --verbose true
-
-            exit 0
+            exec ./tcwg-benchmark.sh --toolchain_url "$toolchain_url" --bench_list "$bench_list" --config "$config" --cflags "$cflags" --sysroot "$sysroot" --fileserver "$fileserver" --forceinstall "$forceinstall" --scripts_branch "$scripts_branch" --label "$label"
