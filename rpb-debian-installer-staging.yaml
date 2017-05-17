@@ -31,8 +31,8 @@
 
             set -ex
 
-            echo "deb http://repo.linaro.org/debian/erp-16.12-stable jessie main" > local.list
-            echo "deb http://repo.linaro.org/debian/erp-16.12-staging jessie main" >> local.list
+            echo "deb http://repo.linaro.org/debian/erp-17.08-stable jessie main" > local.list
+            echo "deb http://repo.linaro.org/debian/erp-17.08-staging jessie main" >> local.list
             sudo cp local.list /etc/apt/sources.list.d/
 
             sudo apt-get update
@@ -72,8 +72,8 @@
 
             # Set up local repo
             cat <<EOF > sources.list.udeb
-            deb [trusted=yes] http://repo.linaro.org/debian/erp-16.12-stable jessie main/debian-installer
-            deb [trusted=yes] http://repo.linaro.org/debian/erp-16.12-staging jessie main/debian-installer
+            deb [trusted=yes] http://repo.linaro.org/debian/erp-17.08-stable jessie main/debian-installer
+            deb [trusted=yes] http://repo.linaro.org/debian/erp-17.08-staging jessie main/debian-installer
             deb http://httpredir.debian.org/debian jessie main/debian-installer
             EOF
 
@@ -89,14 +89,14 @@
             # Adding security, updates and backports by default
             d-i apt-setup/services-select multiselect security, updates, backports
 
-            # Adding erp-16.12-stable by default, so it can find the kernel and extra packages
-            d-i apt-setup/local0/repository string http://repo.linaro.org/debian/erp-16.12-stable jessie main
-            d-i apt-setup/local0/comment string ERP 16.12 Stable Overlay
+            # Adding erp-17.08-stable by default, so it can find the kernel and extra packages
+            d-i apt-setup/local0/repository string http://repo.linaro.org/debian/erp-17.08-stable jessie main
+            d-i apt-setup/local0/comment string ERP 17.08 Stable Overlay
             d-i apt-setup/local0/source boolean true
             d-i apt-setup/local0/key string http://repo.linaro.org/debian/linarorepo.key
 
-            d-i apt-setup/local1/repository string http://repo.linaro.org/debian/erp-16.12-staging jessie main
-            d-i apt-setup/local1/comment string ERP 16.12 Staging Overlay
+            d-i apt-setup/local1/repository string http://repo.linaro.org/debian/erp-17.08-staging jessie main
+            d-i apt-setup/local1/comment string ERP 17.08 Staging Overlay
             d-i apt-setup/local1/source boolean true
             d-i apt-setup/local1/key string http://repo.linaro.org/debian/linarorepo.key
 
