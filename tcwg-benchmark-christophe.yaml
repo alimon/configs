@@ -42,6 +42,10 @@
             default: 'false'
             description: 'Force clean re-install of benchmark sources'
         - string:
+            name: target_list
+            default: 'tx1'
+            description: 'List of targets -- tk1 tx1'
+        - string:
             name: scripts_branch
             default: master
             description: 'Jenkins-scripts branch to use'
@@ -54,7 +58,7 @@
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
-            refspec: +refs/changes/*:refs/remotes/changes/*
+            refspec: +refs/changes/*:refs/changes/*
             branches:
                 - ${scripts_branch}
             skip-tag: true
@@ -71,7 +75,14 @@
                 - tcwg-bmk-tx1-06
                 - tcwg-bmk-tx1-07
                 - tcwg-bmk-tx1-08
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
     execution-strategy:
+        combination-filter: |
+            (target=="tk1" && label==~/tcwg-bmk-tk1-.*/) || (target=="tx1" && label==~/tcwg-bmk-tx1-.*/)
         sequential: false
     wrappers:
         - timeout:
