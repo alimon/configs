@@ -143,9 +143,10 @@
 
             pushd /home/tcwg-buildslave/logs/${JOB_NAME}-${tag}-${BUILD_NUMBER}
 
-            mkdir -p /home/tcwg-buildslave/sources/$upload_dir
+            upload_path=/home/tcwg-buildslave/releases/sources
+            mkdir -p ${upload_path}/$upload_dir
             for i in * ; do
-                cp ${i}/gcc-linaro-*-manifest.txt /home/tcwg-buildslave/sources/${upload_dir}/${i}-gcc-${tag}-manifest.txt
+                cp ${i}/gcc-linaro-*-manifest.txt ${upload_path}/${upload_dir}/${i}-gcc-${tag}-manifest.txt
             done
 
             popd 1>/dev/null
