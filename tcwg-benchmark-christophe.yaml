@@ -81,11 +81,6 @@
 
             set -ex
 
-            ssh-add -l
-            ls -l ~/.ssh/
-            cp /home/tcwg-buildslave/.ssh/config ~/.ssh/
-            cp /home/tcwg-buildslave/.ssh/known_hosts ~/.ssh/
-
             wget --progress=dot:giga --no-check-certificate ${toolchain_url}
             tarball=$(basename ${toolchain_url})
             tar xf ${tarball}
@@ -97,18 +92,10 @@
             # convert the slave name into the target board name
             boardname=$(echo ${NODE_NAME} | sed 's/-bmk//').tcwglab
             boardname="tcwg-benchmark@${boardname}"
-            ssh_opts=""
-            ssh ${ssh_opts} $boardname ls -l .ssh/
-            scp /home/tcwg-buildslave/.ssh/config $boardname:.ssh/
-            scp /home/tcwg-buildslave/.ssh/known_hosts $boardname:.ssh/
 
-            ssh ${ssh_opts} $boardname rm -rf bmk-scripts
-            ssh ${ssh_opts} $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
+            ssh $boardname rm -rf bmk-scripts
+            ssh $boardname git clone https://git-us.linaro.org/toolchain/bmk-scripts
 
-            # Hack: populate tcwg-benchmark's known_hosts on the board
-            #ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} git@dev-private-git.linaro.org true || true
-            #ssh -A ${ssh_opts} $boardname ssh ${ssh_opts} dev-01.tcwglab true || true
-            
             rm -rf jenkins-scripts
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
@@ -119,7 +106,7 @@
             # wrong when preparing the test environment
             trap "cleanup_all_containers" EXIT
 
-            build_container_exec ssh -t -A ${ssh_opts} $boardname bmk-scripts/run.sh \
+            build_container_exec ssh -t $boardname bmk-scripts/run.sh \
                 --bench $(printf '%q' "$bench_list") \
                 --config ${config} \
                 --cflags $(printf '%q' "$cflags") \
