@@ -64,3 +64,6 @@
                 command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-benchmark tcwg-base/tcwg-build/tcwg-benchmark
                 target_user=tcwg-benchmark
               block: true
+    publishers:
+        - email:
+            recipients: tcwg@linaro.org
