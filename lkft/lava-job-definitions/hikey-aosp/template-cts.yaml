@@ -1,0 +1,102 @@
+device_type: hi6220-hikey
+tags:
+  - aosp-only
+job_name: "%%JOB_NAME%%-%%ANDROID_META_BUILD%%-%%CTS_MODULE_NAME%%"
+timeouts:
+  job:
+    minutes: 360
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility:
+  group:
+    - lkft
+
+secrets:
+  ARTIFACTORIAL_TOKEN: "%%ARTIFACTORIAL_TOKEN%%"
+
+metadata:
+  android.build: "%%ANDROID_META_BUILD%%"
+  android.name: "%%ANDROID_META_NAME%%"
+  android.url: "%%ANDROID_META_URL%%"
+
+protocols:
+  lava-lxc:
+    name: lxc-hikey-test
+    distribution: ubuntu
+    release: xenial
+    arch: amd64
+    verbose: true
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 5
+    to: lxc
+    packages:
+    - android-tools-adb
+    - android-tools-fastboot
+    - systemd
+    - systemd-sysv
+    - ca-certificates
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'hikey:/'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- deploy:
+    timeout:
+      minutes: 30
+    to: fastboot
+    namespace: droid
+    connection: lxc
+    images:
+      ptable:
+        url: http://builds.96boards.org/snapshots/reference-platform/components/uefi/latest/release/hikey/ptable-aosp-8g.img
+      boot:
+        url: "%%DOWNLOAD_URL%%/boot.img.xz"
+        compression: xz
+      cache:
+        url: "%%ANDROID_CACHE%%"
+        compression: xz
+      userdata:
+        url: "%%ANDROID_DATA%%"
+        compression: xz
+      system:
+        url: "%%ANDROID_SYSTEM%%"
+        compression: xz
+    os: debian
+
+- boot:
+    namespace: droid
+    connection: serial
+    prompts:
+    - 'root@(.*):/#'
+    - 'hikey:/'
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+    namespace: tlxc
+    connection: lxc
+    timeout:
+      minutes: 300
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/android/tradefed/tradefed.yaml
+      params:
+        TEST_PARAMS: "run cts --include-filter %%CTS_MODULE_NAME%% --disable-reboot --skip-preconditions --skip-device-info"
+        TEST_URL: "http://snapshots.linaro.org/android/android-cts/hikey-userdebug/1/android-cts.zip"
+        TEST_PATH: "android-cts"
+      name: "%%CTS_MODULE_NAME%%"

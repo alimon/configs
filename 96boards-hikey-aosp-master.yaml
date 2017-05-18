@@ -124,10 +124,11 @@
             BUILD_NUMBER=${BUILD_NUMBER}
             IMAGE_EXTENSION=img.xz
             BUILD_URL=${BUILD_URL}
-            LAVA_SERVER=validation.linaro.org/RPC2/
+            LAVA_SERVER=lkft.validation.linaro.org/RPC2/
             FRONTEND_JOB_NAME=${JOB_NAME}
             DOWNLOAD_URL=https://builds.96boards.org/${PUB_DEST}
-            CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-boot.json
+            CTS_MODULE_NAME=CtsBionicTestCases
+            CUSTOM_JSON_URL=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lkft/lava-job-definitions/hikey-aosp/template-boot.yaml
             EOF
         - inject:
             properties-file: publish_parameters
@@ -141,32 +142,79 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-boottime.json#g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lkft/lava-job-definitions/hikey-aosp/template-cts.yaml#" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            sed -i "s#LAVA_SERVER=.*#LAVA_SERVER=staging.validation.linaro.org/RPC2/#g" ${WORKSPACE}/post_build_lava_parameters
-            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused1-v7a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsVmTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused1-v8a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsCompilationTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused2-v7a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsDramTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey/template-cts-focused2-v8a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsHardwareTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsJobSchedulerTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsOsTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsPermissionTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsPermission2TestCases#" >> ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsSecurityTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsUsbTests#" >> ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsFileSystemTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
+            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsLibcoreTestCases#" >> ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
