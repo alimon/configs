@@ -16,7 +16,7 @@
     parameters:
         - string:
             name: tarball_url
-            default: ''
+            default: 'http://releases.linaro.org/components/toolchain/binaries/latest'
             description: 'The GCC binary tarball to test'
         - string:
             name: scripts_branch
@@ -70,6 +70,17 @@
                 - target_list
     execution-strategy:
         sequential: false
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            gerrit-build-successful-codereview-value: 1
+            gerrit-build-failed-codereview-value: -1
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'toolchain/tcwg-regression'
+                  branches:
+                    - branch-pattern: 'master'
+            silent-start: true
     wrappers:
         - timeout:
             timeout: 300
