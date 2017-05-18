@@ -60,10 +60,33 @@
             wipe-workspace: false
             scm-name: jenkins-scripts
             skip-tag: true
-            excluded-regions: tcwg-llvm*
     triggers:
-        - pollscm:
-            cron: 'H/5 * * * *'
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'toolchain/jenkins-scripts'
+                  branches:
+                    - branch-pattern: 'master'
+                  forbidden-file-paths:
+                    - compare-type: REG_EXP
+                      pattern: jenkins-scripts/tcwg-llvm-*
+                    - compare-type: PLAIN
+                      pattern: jenkins-scripts/tcwg-benchmark.sh
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'toolchain/abe'
+                  branches:
+                    - branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'toolchain/abe-tests'
+                  branches:
+                    - branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'toolchain/gcc-compare-results'
+                  branches:
+                    - branch-pattern: 'master'
     wrappers:
         - timeout:
             timeout: 600
