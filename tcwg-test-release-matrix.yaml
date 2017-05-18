@@ -112,9 +112,6 @@
               exit 1
             fi
 
-            fullver=$(basename ${tarball_url})
-            gccver=${fullver%%-*}
-
             case ${label} in
                 *32*)
                     host=i686
@@ -146,14 +143,13 @@
                 trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
-            # FIXME: temporary hack: hardcode the ".1" in GCC version number
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz --workspace ${WORKSPACE}/linux --tcwg-regression-rev ${tcwg_regression_rev}"
+            container_exec ${shell} ${WORKSPACE}/TestRelease.job --tarball "${tarball_url}/${target}/gcc-linaro-*-*-${host}_${target}.tar.xz" --workspace ${WORKSPACE}/linux --tcwg-regression-rev ${tcwg_regression_rev}
 
             # Test the mingw toolchain on 32 bit host only
             case ${label} in
                 *32*)
                     host=i686-mingw32
-                    ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/TestRelease.job --tarball ${tarball_url}/${target}/gcc-linaro-${gccver}.1-${release}-${host}_${target}.tar.xz --workspace ${WORKSPACE}/mingw --tcwg-regression-rev ${tcwg_regression_rev}"
+                    container_exec ${shell} ${WORKSPACE}/TestRelease.job --tarball "${tarball_url}/${target}/gcc-linaro-*-*-${host}_${target}.tar.xz" --workspace ${WORKSPACE}/mingw --tcwg-regression-rev ${tcwg_regression_rev}
                     ;;
             esac
 
