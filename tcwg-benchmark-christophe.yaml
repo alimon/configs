@@ -64,6 +64,10 @@
             name: scripts_branch
             default: master
             description: 'Jenkins-scripts branch to use'
+        - string:
+            name: bmk_branch
+            default: master
+            description: 'Bmk-scripts branch to use'
     disabled: false
     node: tcwg-coordinator
     workspace: workspace/$JOB_NAME
@@ -78,7 +82,20 @@
                 - ${scripts_branch}
             skip-tag: true
             shallow-clone: true
-            wipe-workspace: true
+            wipe-workspace: false
+            clean:
+                before: true
+        - git:
+            url: https://git-us.linaro.org/toolchain/bmk-scripts.git
+            refspec: +refs/changes/*:refs/changes/*
+            branches:
+                - ${bmk_branch}
+            basedir: bmk-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
     axes:
         - axis:
             type: slave
@@ -106,10 +123,6 @@
         - ssh-agent-credentials:
             users:
                 - 'tcwg-benchmark'
-        - workspace-cleanup:
-            include:
-              - "*"
-            dirmatch: true
     builders:
         - shell: |
             #!/bin/bash
