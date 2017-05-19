@@ -167,7 +167,8 @@
             basedir="${log_server#*:}"
             log_server="${log_server%:*}"
             eval dir=${log_name}
-            rsync -av ${sums} ${log_server}:${basedir=}/$dir/
+            ssh ${log_server} mkdir -p ${basedir}/${dir}
+            rsync -av ${sums} ${log_server}:${basedir}/${dir}/
 
             echo BUILD FINISHED $(date)
 
