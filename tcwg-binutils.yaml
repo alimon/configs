@@ -30,6 +30,18 @@
             name: scripts_branch
             default: master
             description: 'Jenkins-scripts branch to use'
+        - bool:
+            name: dont_fail
+            default: false
+            description: 'Do not fail the build'
+        - string:
+            name: log_name
+            default: '${JOB_NAME}-${BUILD_NUMBER}/${builder_type}.$target'
+            description: 'Logname directory on logserver'
+        - string:
+            name: log_server
+            default: dev-01.tcwglab:/home/tcwg-buildslave/logs
+            description: 'Log_Server'
     disabled: false
     node: tcwg-coordinator
     retry-count: 3
@@ -93,6 +105,8 @@
             BUILD_SHELL="build_container_exec bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
 
+            builder_type=$(print_type_for_label $label)
+
             # Remove schroot session on exit
             trap "build_container_cleanup" 0 1 2 3 5 9 13 15
 
@@ -148,6 +162,8 @@
             echo '############################################'
             [ x"$sums" != x ] && tail $sums
 
+            echo rsync -av ${sums} log_server:$log_name/
+
             echo BUILD FINISHED $(date)
 
             # Cleanup to save disk space
@@ -155,6 +171,9 @@
             du -sh build-$target
             rm -rf build-$target || true
 
+            if $dont_fail; then
+                result="0"
+            fi
             exit $result
     publishers:
         - email-ext:
