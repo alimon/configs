@@ -53,7 +53,7 @@
 
             cat << EOF > binutils_parameters
             log_name=${JOB_NAME}-${BUILD_NUMBER}/\$builder_type.\$target
-            dont_fail=false
+            dont_fail=true
             EOF
 
             if [ x"$ref_build" != x ] ; then
@@ -69,6 +69,8 @@
             ref_logs=${JOB_NAME}-{$ref_build_num}
             new_logs=${JOB_NAME}-${BUILD_NUMBER}
             EOF
+            else
+                rm -f compare_results_parameters
             fi
         - trigger-builds:
             - project: tcwg-binutils
