@@ -162,7 +162,8 @@
             echo '############################################'
             [ x"$sums" != x ] && tail $sums
 
-            rsync -av ${sums} $log_server:$(eval $log_name)/
+            eval dir=${log_name}
+            rsync -av ${sums} $log_server:$dir/
 
             echo BUILD FINISHED $(date)
 
