@@ -162,8 +162,12 @@
             echo '############################################'
             [ x"$sums" != x ] && tail $sums
 
+            set -x
+            # Split $logserver into "server:path".
+            basedir="${log_server#*:}"
+            log_server="${log_server%:*}"
             eval dir=${log_name}
-            rsync -av ${sums} $log_server:$dir/
+            rsync -av ${sums} ${log_server}:${basedir=}/$dir/
 
             echo BUILD FINISHED $(date)
 
