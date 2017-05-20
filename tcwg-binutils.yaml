@@ -168,13 +168,16 @@
             log_server="${log_server%:*}"
             eval dir=${log_name}
             ssh ${log_server} mkdir -p ${basedir}/${dir}
-            for sum in ${sums}
-            do
-                # gcc-compare-results handles only .xz files, so
-                # compress them before upload
-                xz $sum
-                scp ${sum}.xz ${log_server}:${basedir}/${dir}/
-            done
+            # gcc-compare-results handles only .xz files, so compress
+            # them before upload. Since the file are created inside a
+            # container, the uid/gid may differ from the host's and
+            # cause permission errors during compression. Copy them,
+            # so that xz can operate.
+            rm -rf artifacts
+            mkdir -p artifacts
+            cp ${sums} artifacts
+            xz artifacts/*.sum
+            scp artifacts/*.sum.xz ${log_server}:${basedir}/${dir}/
 
             echo BUILD FINISHED $(date)
 
