@@ -168,7 +168,13 @@
             log_server="${log_server%:*}"
             eval dir=${log_name}
             ssh ${log_server} mkdir -p ${basedir}/${dir}
-            rsync -av ${sums} ${log_server}:${basedir}/${dir}/
+            for sum in ${sums}
+            do
+                # gcc-compare-results handles only .xz files, so
+                # compress them before upload
+                xz $sum
+                scp ${sum}.xz ${log_server}:${basedir}/${dir}/
+            done
 
             echo BUILD FINISHED $(date)
 
