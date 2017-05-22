@@ -175,9 +175,14 @@
             # so that xz can operate.
             rm -rf artifacts
             mkdir -p artifacts
-            cp ${sums} artifacts
-            xz artifacts/*.sum
-            scp artifacts/*.sum.xz ${log_server}:${basedir}/${dir}/
+            cp ${sums} artifacts/
+            for sum in ${sums}
+            do
+                log=$(echo $sum | sed '/.sum/.log/')
+                cp $log artifacts/
+            done
+            xz artifacts/*.sum artifacts/*.log
+            scp artifacts/*.sum.xz artifacts/*.log.xz ${log_server}:${basedir}/${dir}/
 
             echo BUILD FINISHED $(date)
 
