@@ -38,6 +38,10 @@
             name: target_list
             default: 'tcwg-x86_64-cam tcwg-tk1_32-build tcwg-apm_64-build'
             description: 'List of targets should be a subset of slave axis'
+        - string:
+            name: scripts_branch
+            default: 'refs/remotes/origin/llvmprod'
+            description: 'Branch to pull jenkins-script from'
         - bool:
             name: testsuite
             default: true
@@ -49,11 +53,11 @@
     display-name: 'TCWG LLVM Release'
     scm:
         - git:
-            url: http://git.linaro.org/toolchain/jenkins-scripts.git
-            refspec: +refs/heads/master:refs/remotes/origin/master
+            url: http://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             name: origin
             branches:
-                - refs/heads/master
+                - ${scripts_branch}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
