@@ -1,0 +1,68 @@
+- job:
+    name: tcwg-benchmark-release
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: release_url
+            default: 'http://releases.linaro.org/components/toolchain/binaries/latest'
+            description: 'Release URL'
+        - string:
+            name: target_list
+            default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf'
+            description: 'List of targets'
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: true
+    display-name: 'TCWG ZZZ Benchmark Release'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-coordinator
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'tcwg-benchmark'
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          set -ex
+
+          # Note that armv8l-linux-gnueabihf will not match "arm-"*, and will run on tx1.
+          case "$target" in
+            "arm-"*) board="tk1" ;;
+            *) board="tx1" ;;
+          esac
+
+          cat > params <<EOF
+          target_list=$board
+          EOF
+      - trigger-builds:
+          - project: 'tcwg-benchmark-christophe'
+            predefined-parameters: |
+              toolchain_url=$release_url/gcc-*-x86_64_$target.tar.xz
+            property-file: params
+            block: true
