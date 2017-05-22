@@ -99,6 +99,12 @@ packages:
 - wcnss-start
 EOF
 
+if [ -n "${EXTRA_PACKAGES}" ]; then
+    for i in ${EXTRA_PACKAGES}; do
+        echo "- $i" >> ${VENDOR}-lt-qcom.default
+    done
+fi
+
 # Build information
 cat > out/HEADER.textile << EOF
 
