@@ -37,6 +37,9 @@
             name: ROOTFS
             default: 'developer,arm64,1800M alip,arm64,2500M installer,arm64,1024M'
         - string:
+            name: SDCARD
+            default: 'developer,4G'
+        - string:
             name: ROOTFS_PARTLABEL
             default: 'rootfs'
         - string:
@@ -82,6 +85,8 @@
             !include-raw: lt-qcom-debian-images/builders-arm64.sh
         - shell:
             !include-raw: lt-qcom-debian-images/installer-dragonboard-410c.sh
+        - shell:
+            !include-raw: lt-qcom-debian-images/sdcard-dragonboard-410c.sh
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
