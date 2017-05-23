@@ -23,6 +23,14 @@
             default: ''
             description: 'URL of the toolchain to use. This needs to be a tarball with a /bin directory inside with either GCC or LLVM from make install'
         - string:
+            name: build_type
+            default: 'Release'
+            description: 'Release, RelWithDebInfo, Debug, MinSizeRel'
+        - string:
+            name: cmake_flags
+            default: ''
+            description: 'Additional CMake flags, ex. CMAKE_CXX_FLAGS, etc.'
+        - string:
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
@@ -131,31 +139,28 @@
 
             # Start build container
             builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
-            bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight 1 > build-container.sh
+            bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight 1 --prefix run_ > build-container.sh
 
-            # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
+            # Source container logic, set cleanup job
             . ./build-container.sh
-            BUILD_CONTAINER="${CONTAINER}"
-            BUILD_CONTAINER_CLEANUP="${CONTAINER_CLEANUP}"
+            trap "cleanup_all_containers" EXIT
 
-            # Make sure to cleanup build container if something goes
-            # wrong when preparing the test environment
-            if [ "${BUILD_CONTAINER_CLEANUP}" != "" ]; then
-                CONTAINERS_CLEANUP="${BUILD_CONTAINER_CLEANUP}"
-                trap "${CONTAINERS_CLEANUP}" EXIT
-            fi
-
-            # Setup job parameters and run
-            ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
+            # Setup job parameters
+            RUN=(bash -x ${WORKSPACE}/tcwg-llvm-build.sh \
                 --workspace=${WORKSPACE} \
                 --buildid=${BUILD_ID} \
                 --buildjobs=${buildjobs} \
                 --linkjobs=${linkjobs} \
                 --revision=${revision} \
                 --toolchain=${toolchain} \
+                --buildtype=${build_type} \
                 --repository=${repository} \
                 --branch=${branch} \
-                $toolchain_file_option $compiler_option "
+                --cmakeflags="${cmake_flags}" \
+                $toolchain_file_option $compiler_option)
+
+            # Run the job
+            run_container_exec "${RUN[@]}"
 
             # Chained jobs
             if ${twostage}; then
