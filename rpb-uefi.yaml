@@ -103,6 +103,7 @@
 
             # Common git repositories to fetch
             UEFI_TOOLS_GIT_URL=https://git.linaro.org/uefi/uefi-tools.git
+            UEFI_TOOLS_GIT_BRANCH=master
             EDK2_GIT_URL=https://github.com/tianocore/edk2.git
             EDK2_GIT_VERSION=$EDK2_VERSION
             ATF_GIT_URL=https://github.com/ARM-software/arm-trusted-firmware.git
@@ -115,10 +116,6 @@
 
             # So we can easily identify the build number via build path
             mkdir ${BUILD_NUMBER}; cd ${BUILD_NUMBER}
-
-            # Clone the repos
-            git clone $UEFI_TOOLS_GIT_URL uefi-tools
-            cd uefi-tools; UEFI_TOOLS_GIT_VERSION=`git log --format="%H" -1`; cd ..
 
             # Per board repositories overrides
             if [ "${MX_PLATFORM}" == "hikey" ]; then
@@ -133,6 +130,10 @@
             # Force cap GCC build profile to GCC49, still preferred by upstream
             TOOLCHAIN=GCC49
             export AARCH64_TOOLCHAIN=GCC49
+
+            # Clone the repos
+            git clone -b $UEFI_TOOLS_GIT_BRANCH $UEFI_TOOLS_GIT_URL uefi-tools
+            cd uefi-tools; UEFI_TOOLS_GIT_VERSION=`git log --format="%H" -1`; cd ..
 
             git clone $EDK2_GIT_URL edk2
             cd edk2; git checkout -b stable-baseline $EDK2_GIT_VERSION
