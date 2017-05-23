@@ -59,6 +59,18 @@ if [ "${MX_PLATFORM}" == "hikey" ]; then
     OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
     OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
 fi
+if [ "${MX_PLATFORM}" == "hikey960" ]; then
+    UEFI_TOOLS_GIT_URL=https://github.com/96boards-hikey/uefi-tools.git
+    UEFI_TOOLS_GIT_BRANCH=testing/hikey960_v1
+    EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
+    EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
+    ATF_GIT_URL=https://github.com/96boards-hikey/arm-trusted-firmware.git
+    ATF_GIT_VERSION="origin/testing/hikey960_v1.1"
+    OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
+    OPEN_PLATFORM_PKG_GIT_BRANCH="testing/hikey960_v1.3.4"
+    L_LOADER_GIT_URL=https://github.com/96boards-hikey/l-loader.git
+    L_LOADER_GIT_BRANCH="testing/hikey960_v1.2"
+fi
 
 # Force cap GCC build profile to GCC49, still preferred by upstream
 TOOLCHAIN=GCC49
@@ -140,6 +152,20 @@ if [ "${MX_PLATFORM}" == "hikey" ]; then
     tar -C ${OPTEE_OS_DIR}/out -acvf \
       ${WORKSPACE}/out/${BUILD_TYPE}/optee-arm-plat-hikey.tar.xz \
       arm-plat-hikey/export-ta_arm64 arm-plat-hikey/export-ta_arm32
+fi
+if [ "${MX_PLATFORM}" == "hikey960" ]; then
+    # Additional components for hikey960, such as fastboot and l-loader
+    cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
+    cd ${WORKSPACE}/${BUILD_NUMBER}
+    git clone --depth 1 -b ${L_LOADER_GIT_BRANCH} ${L_LOADER_GIT_URL} l-loader
+    cd l-loader
+    ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
+    ln -s ${WORKSPACE}/out/${BUILD_TYPE}/fip.bin
+    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/BL33_AP_UEFI.fd
+    sudo PTABLE=aosp-32g SECTOR_SIZE=4096 bash -x generate_ptable.sh
+    python gen_loader_hikey960.py -o l-loader.bin --img_bl1=bl1.bin --img_ns_bl1u=BL33_AP_UEFI.fd
+    cp -a l-loader.bin *ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
+    wget https://raw.githubusercontent.com/96boards-hikey/tools-images-hikey960/master/hikey_idt -O ${WORKSPACE}/out/${BUILD_TYPE}/hikey_idt
 fi
 cd ${WORKSPACE}
 
