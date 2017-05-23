@@ -22,7 +22,7 @@ mkbootimg \
     --ramdisk "out/initrd.img-$(cat kernel-version)" \
     --output out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
     --dt out/dt.img \
-    --pagesize "2048" \
+    --pagesize "${BOOTIMG_PAGESIZE}" \
     --base "0x80000000" \
     --cmdline "root=/dev/mmcblk1p8 rw rootwait console=${SERIAL_CONSOLE},115200n8"
 gzip -9 out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
