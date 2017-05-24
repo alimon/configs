@@ -44,6 +44,7 @@
             readable-message: true
             successful-message: 'Works for me'
             failure-message: 'Well ... it worked on my machine'
+            failure-message-file: jenkins-results.txt
             trigger-for-unreviewed-patches: true
             projects:
                 - project-compare-type: 'ANT'
@@ -111,6 +112,7 @@
                 xz ${ARTIFACTS}/*
                 ;;
             esac
+            echo "$test result: $status" >> "${WORKSPACE}"/jenkins-results.txt
             exit $status
     publishers:
         - workspace-cleanup:
