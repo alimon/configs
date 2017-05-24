@@ -27,6 +27,7 @@ mkbootimg \
     --cmdline "root=/dev/mmcblk1p8 rw rootwait console=${SERIAL_CONSOLE},115200n8"
 gzip -9 out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
 
+rm -rf db-boot-tools
 git clone --depth 1 -b master https://git.linaro.org/landing-teams/working/qualcomm/db-boot-tools.git
 # record commit info in build log
 cd db-boot-tools
