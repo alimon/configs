@@ -98,14 +98,14 @@
             case "$test" in
               abe-tests)
                 ${BUILD_SHELL} -c "set -ex; ${WORKSPACE}/test-manifest2.sh --ref-snapshots /home/tcwg-buildslave/snapshots-ref --display-summary --quiet" || status=$?
-                cp abe-tests/full-manifest-test/*.txt "${ARTIFACTS}"
+                cp full-manifest-test/*.txt "${ARTIFACTS}"
                 # full build logs are large, and not very useful, so we
                 # don't waste the disk space on them
                 rm -f ${ARTIFACTS}/test-mani-build[12].txt
                 ;;
               abe-tests-checkout)
                 ${BUILD_SHELL} -c "set -ex; ${WORKSPACE}/test-checkout.sh --clean-snapshots --ref-snapshots /home/tcwg-buildslave/snapshots-ref" || status=$?
-                cp abe-tests/checkout-test/workspace*/test_*.log "${ARTIFACTS}"
+                cp checkout-test/workspace*/test_*.log "${ARTIFACTS}"
                 # the reports from here aren't usually needed, so are
                 # worth compressing
                 xz ${ARTIFACTS}/*
