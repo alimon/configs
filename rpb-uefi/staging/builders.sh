@@ -164,8 +164,11 @@ if [ "${MX_PLATFORM}" == "hikey960" ]; then
     ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/BL33_AP_UEFI.fd
     sudo PTABLE=aosp-32g SECTOR_SIZE=4096 bash -x generate_ptable.sh
     python gen_loader_hikey960.py -o l-loader.bin --img_bl1=bl1.bin --img_ns_bl1u=BL33_AP_UEFI.fd
-    cp -a l-loader.bin *ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
-    wget https://raw.githubusercontent.com/96boards-hikey/tools-images-hikey960/master/hikey_idt -O ${WORKSPACE}/out/${BUILD_TYPE}/hikey_idt
+    cp -a l-loader.bin prm_ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
+    cd ${WORKSPACE}/${BUILD_NUMBER}
+    git clone --depth 1 https://github.com/96boards-hikey/tools-images-hikey960.git
+    cd tools-images-hikey960
+    cp -a config hikey_idt sec_*.img ${WORKSPACE}/out/${BUILD_TYPE}/
 fi
 cd ${WORKSPACE}
 
