@@ -51,9 +51,13 @@
             default: 'https://git-us.linaro.org/toolchain/llvm'
             description: 'Repository to pull changes from.'
         - string:
+            name: projects
+            default: ''
+            description: 'Which projects to build - llvm clang compiler-rt lld libcxx libcxxabi libunwind.'
+        - string:
             name: branch
             default: 'master'
-            description: 'Which branch to pull from.'
+            description: 'Which branch to pull from. Need to exist in all projects above, if any selected.'
         - string:
             name: target_list
             default: 'tcwg-x86_64-cam'
@@ -156,6 +160,7 @@
                 --buildtype=${build_type} \
                 --repository=${repository} \
                 --branch=${branch} \
+                --projects="${projects}" \
                 --cmakeflags="${cmake_flags}" \
                 $toolchain_file_option $compiler_option)
 
