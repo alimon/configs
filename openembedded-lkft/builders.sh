@@ -192,6 +192,9 @@ case "${KERNEL_RECIPE}" in
   linux-hikey-next)
     PUB_DEST="linux-next"
     ;;
+  linux-hikey-lt)
+    PUB_DEST="linux-lt-4.4"
+    ;;
   *)
     PUB_DEST="${KERNEL_VERSION}"
     ;;
