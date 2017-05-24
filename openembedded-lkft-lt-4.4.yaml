@@ -42,6 +42,9 @@
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
     disabled: false
     node: master
     display-name: 'LKFT - HiSilicon LT 4.4 (OpenEmbedded/morty)'
@@ -68,6 +71,10 @@
         - ssh-agent-credentials:
             users:
                 - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
     builders:
         - shell:
             !include-raw: openembedded-lkft/builders.sh
@@ -143,6 +150,23 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
+        - shell: |
+            export DEVICE_TYPE=hi6220-hikey
+            export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            [ -z "${DEVICE_TYPE}" ] || \
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --build-url ${BUILD_URL} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team lkft \
+                --qa-server-project ${KERNEL_BRANCH} \
+                --git-commit ${KERNEL_COMMIT}
     publishers:
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, milosz.wasilewski@linaro.org, naresh.kamboju@linaro.org'
