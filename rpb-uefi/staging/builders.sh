@@ -174,7 +174,6 @@ sec_uce_boot.img 0x6A908000
 l-loader.bin 0x1AC00000
 EOF
     cp -a config hikey_idt sec_uce_boot.img sec_usb_xloader.img sec_xloader.img ${WORKSPACE}/out/${BUILD_TYPE}/
-    create config
 fi
 cd ${WORKSPACE}
 
