@@ -80,9 +80,12 @@
             !include-raw: openembedded-lkft/builders.sh
         - inject:
             properties-file: post_build_lava_parameters
+        - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${KERNEL_COMMIT:0:8}" > ${WORKSPACE}/version.txt
         - build-name-setter:
-            template: '#${BUILD_NUMBER}-${KERNEL_COMMIT,length=8}'
-            macro: true
+            name: 'version.txt'
+            file: true
         - linaro-publish-token
         - shell: |
             #!/bin/bash
