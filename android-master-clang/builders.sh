@@ -47,8 +47,8 @@ export SKIP_LICENSE_CHECK=1
 rm -rf build/out build/android-patchsets build/device/linaro/hikey
 mkdir -p build/
 cd build/
-wget -q https://dl.google.com/dl/android/aosp/linaro-hikey-20160226-67c37b1a.tgz
-tar -xvf linaro-hikey-20160226-67c37b1a.tgz
+wget -q https://dl.google.com/dl/android/aosp/linaro-hikey-20170523-4b9ebaff.tgz
+tar -xvf linaro-hikey-20170523-4b9ebaff.tgz
 yes "I ACCEPT" | ./extract-linaro-hikey.sh
 cd -
 
