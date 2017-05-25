@@ -168,7 +168,13 @@ if [ "${MX_PLATFORM}" == "hikey960" ]; then
     cd ${WORKSPACE}/${BUILD_NUMBER}
     git clone --depth 1 https://github.com/96boards-hikey/tools-images-hikey960.git
     cd tools-images-hikey960
-    cp -a config hikey_idt sec_*.img ${WORKSPACE}/out/${BUILD_TYPE}/
+    cat > config << EOF
+sec_usb_xloader.img 0x00020000
+sec_uce_boot.img 0x6A908000
+l-loader.bin 0x1AC00000
+EOF
+    cp -a config hikey_idt sec_uce_boot.img sec_usb_xloader.img sec_xloader.img ${WORKSPACE}/out/${BUILD_TYPE}/
+    create config
 fi
 cd ${WORKSPACE}
 
