@@ -21,12 +21,15 @@
             name: target_list
             default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf'
             description: 'List of targets'
+        - string:
+            name: extension_list
+            default: 'O2g'
+            description: 'List of build profiles'
         - text:
             name: benchmark_params
             default: |
               bench_list=bzip2
               cflags=
-              extension=O2g
               testmode=verify
               iterations=1
               sysroot=tarball
@@ -51,6 +54,11 @@
             name: target
             values:
                 - target_list
+        - axis:
+            type: dynamic
+            name: extension
+            values:
+                - extension_list
     execution-strategy:
         sequential: false
     wrappers:
@@ -80,5 +88,6 @@
           - project: 'tcwg-benchmark-christophe'
             predefined-parameters: |
               toolchain_url=$release_url/$target/gcc-*-x86_64_$target.tar.xz
+              extension=$extension
             property-file: params
             block: true
