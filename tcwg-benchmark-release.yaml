@@ -81,13 +81,12 @@
           esac
 
           cat > params <<EOF
+          toolchain_url=$release_url/$target/gcc-*-x86_64_$target.tar.xz
           target_list=$board
+          extension=$extension
           EOF
           echo "$benchmark_params" >> params
       - trigger-builds:
           - project: 'tcwg-benchmark-christophe'
-            predefined-parameters: |
-              toolchain_url=$release_url/$target/gcc-*-x86_64_$target.tar.xz
-              extension=$extension
             property-file: params
             block: true
