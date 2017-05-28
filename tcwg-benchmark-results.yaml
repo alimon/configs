@@ -1,0 +1,62 @@
+- job:
+    name: tcwg-benchmark-results
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: resultsdest
+            default: dev-01.tcwglab:results/$BUILD_TAG
+            description: 'Rsync-friendly destination for results'
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: true
+    display-name: 'TCWG ZZZ Benchmark Results'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+        - git:
+            url: https://git-us.linaro.org/toolchain/bmk-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - ${bmk_branch}
+            basedir: bmk-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'tcwg-benchmark'
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          set -ex
+          exec ./tcwg-benchmark-results.sh
+    publishers:
+        - archive:
+            artifacts: 'artifacts/*'
+            latest-only: false
