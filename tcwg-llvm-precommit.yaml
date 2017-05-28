@@ -1,0 +1,127 @@
+- job:
+    name: tcwg-llvm-precommit
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    parameters:
+        - choice:
+            name: build_type
+            choices:
+              - Release
+              - RelWithDebInfo
+              - Debug
+              - MinSizeRel
+            default: 'Release'
+            description: 'Release, RelWithDebInfo, Debug, MinSizeRel'
+        - string:
+            name: cmake_flags
+            default: ''
+            description: 'Additional CMake flags, ex. CMAKE_CXX_FLAGS, etc.'
+        - bool:
+            name: twostage
+            default: false
+            description: 'Whether or not to trigger a second stage with this build.'
+        - bool:
+            name: testsuite
+            default: false
+            description: 'Whether or not to trigger a test-suite with this build.'
+        - choice:
+            name: compiler
+            choices:
+             - clang
+             - gcc
+            default: 'clang'
+            description: 'Override the default system compiler.'
+        - string:
+            name: branch
+            default: ''
+            description: 'Which branch to validate (should not be master).'
+    disabled: false
+    node: tcwg-coordinator
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG LLVM Pre-Commit'
+    scm:
+        - git:
+            url: http://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-cam
+                - tcwg-tk1_32-build
+                - tcwg-apm_64-build
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            # We should not need to pre-commit validate master/empty
+            if [ "${branch:+set}" != "set" ] || [ "${branch}" = "master" ] then
+              echo "ERROR: Branch not set or set to master. Cannot validate."
+              exit 1
+            fi
+
+            # Default values, only add them to parameters if really needed
+            repository="https://git-us.linaro.org/toolchain/llvm"
+            build_container_tag="xenial"
+
+            # Find projects from branch
+            . "${workspace}/tcwg-llvm-common.sh"
+            projects="$(list_branch_projects ${branch})"
+
+            # TODO: Find revision, to start the base job on master
+
+            # Setup job parameters (in staged build order)
+            cat << EOF > llvm.params.precommit
+            build_type="${build_type}"
+            cmake_flags="${cmake_flags}"
+            build_container_tag="${build_container_tag}"
+            twostage="${twostage}"
+            testsuite="${testsuite}"
+            compiler="${compiler}"
+            repository="${repository}"
+            projects="${projects}"
+            branch="${branch}"
+            target_list="${label}"
+            EOF
+
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: llvm.params.precommit
+            steps:
+                - trigger-builds:
+                    - project: 'tcwg-llvm-staged-build'
+                      property-file: llvm.params.precommit
+                      current-parameters: true
+                      block: true
