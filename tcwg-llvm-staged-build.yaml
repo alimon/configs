@@ -22,15 +22,10 @@
             name: toolchain
             default: ''
             description: 'URL of the toolchain to use. This needs to be a tarball with a /bin directory inside with either GCC or LLVM from make install'
-        - choice:
+        - string:
             name: build_type
-            choices:
-              - Release
-              - RelWithDebInfo
-              - Debug
-              - MinSizeRel
             default: 'Release'
-            description: 'Build type'
+            description: 'Build type. Accepts: Release, RelWithDebInfo, Debug, MinSizeRel'
         - string:
             name: cmake_flags
             default: ''
@@ -47,13 +42,10 @@
             name: testsuite
             default: false
             description: 'Whether or not to trigger a test-suite with this build.'
-        - choice:
+        - string:
             name: compiler
-            choices:
-              - clang
-              - gcc
             default: 'clang'
-            description: 'Override the default system compiler. Only used if "toolchain" is empty.'
+            description: 'Override the default system compiler. Only used if "toolchain" is empty. Accepts: clang, gcc.'
         - string:
             name: repository
             default: 'https://git-us.linaro.org/toolchain/llvm'
