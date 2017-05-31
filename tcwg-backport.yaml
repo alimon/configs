@@ -50,12 +50,22 @@
         - git:
             url: https://git-us.linaro.org/toolchain/gcc.git
             refspec: +refs/changes/*:refs/remotes/changes/*
+            basedir: gcc
             branches:
                 - ${GERRIT_PATCHSET_REVISION}
             skip-tag: true
             wipe-workspace: false
             reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
             choosing-strategy: gerrit
+        - git:
+            url: https://git-us.linaro.org/toolchain/abe.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            basedir: abe
+            branches:
+                - $abe_branch
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
     triggers:
         - gerrit:
             server-name: 'review.linaro.org'
@@ -91,11 +101,12 @@
             set -e
             set -x
 
-            gcc_patch_rev=$(git rev-parse $GERRIT_PATCHSET_REVISION)
+            abe_rev=$(git -C abe rev-parse --short $abe_branch)
+            gcc_patch_rev=$(git -C gcc rev-parse $GERRIT_PATCHSET_REVISION)
             if [ x"$gcc_orig" = x"gcc_patch_prev" ]; then
               gcc_orig="$gcc_patch_rev^"
             fi
-            gcc_orig_rev=$(git rev-parse $gcc_orig)
+            gcc_orig_rev=$(git -C gcc rev-parse $gcc_orig)
 
             case ${GERRIT_BRANCH} in
               *gcc-4_9*)
@@ -117,31 +128,30 @@
 
             cat <<EOF > gcc_orig_parameters
             override=$toolchainconf gcc=gcc.git@$gcc_orig_rev
-            log_name=tcwg-backport-$gcc_orig_rev/\$builder_type.\$target
+            log_name=tcwg-backport-$gcc_orig_rev/$abe_rev/\$builder_type.\$target
             rebuild=${rebuild}
             dont_fail=true
             log_server=$log_server
             target_list=$target_list
-            abe_branch=$abe_branch
+            abe_branch=$abe_rev
             displaytag=backport-ref-${GERRIT_CHANGE_NUMBER}
             EOF
 
             cat <<EOF > gcc_patch_parameters
             override=$toolchainconf gcc=gcc.git@$gcc_patch_rev
-            log_name=tcwg-backport-$gcc_patch_rev/\$builder_type.\$target
+            log_name=tcwg-backport-$gcc_patch_rev/$abe_rev/\$builder_type.\$target
             rebuild=${rebuild}
             dont_fail=true
             log_server=$log_server
             target_list=$target_list
-            abe_branch=$abe_branch
+            abe_branch=$abe_rev
             displaytag=backport-patch-${GERRIT_CHANGE_NUMBER}
             EOF
 
             cat <<EOF > compare_results_parameters
-            ref_logs=tcwg-backport-$gcc_orig_rev
-            new_logs=tcwg-backport-$gcc_patch_rev
+            ref_logs=tcwg-backport-$gcc_orig_rev/$abe_rev
+            new_logs=tcwg-backport-$gcc_patch_rev/$abe_rev
             log_server=$log_server
-            abe_branch=$abe_branch
             EOF
         - trigger-builds:
             - project: tcwg-buildfarm
