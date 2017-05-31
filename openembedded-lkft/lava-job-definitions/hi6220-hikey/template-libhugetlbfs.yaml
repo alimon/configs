@@ -1,7 +1,7 @@
 device_type: hi6220-hikey
 tags:
   - oe-only
-job_name: lkft-${KERNEL_BRANCH}-${BUILD_NUMBER}
+job_name: lkft-libhugetlbfs-${KERNEL_BRANCH}-${BUILD_NUMBER}
 timeouts:
   job:
     minutes: 120
@@ -19,6 +19,7 @@ metadata:
   kernel-version: ${KERNEL_VERSION}
   kernel-repo: ${KERNEL_REPO}
   kernel-commit: ${KERNEL_COMMIT}
+  kernel-describe: ${KERNEL_DESCRIBE}
   build-url: ${BUILD_URL}
   series: lkft
 
@@ -108,23 +109,6 @@ actions:
           - df
       name: network-inline
       path: inline/network.yaml
-    - repository: git://git.linaro.org/qa/test-definitions.git
-      from: git
-      path: automated/linux/kselftest/kselftest.yaml
-      name: kselftest
-      timeout:
-        minutes: 30
-    - repository: git://git.linaro.org/qa/test-definitions.git
-      from: git
-      path: automated/linux/ltp/ltp.yaml
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'syscalls'
-        SKIPFILE: 'skipfile-lsk-juno'
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-syscalls-tests
-      timeout:
-        minutes: 90
     - repository: git://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/libhugetlbfs/libhugetlbfs.yaml

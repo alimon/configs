@@ -126,36 +126,8 @@
               block: true
         - shell: |
             export DEVICE_TYPE=hi6220-hikey
-            export LAVA_SERVER=lkft.validation.linaro.org/RPC2/
-
-            sed -e "s|\${BOOT_URL}|${BOOT_URL}|" \
-                -e "s|\${SYSTEM_URL}|${SYSTEM_URL}|" \
-                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                -e "s|\${KERNEL_BRANCH}|${KERNEL_BRANCH}|" \
-                -e "s|\${KERNEL_VERSION}|${KERNEL_VERSION}|" \
-                -e "s|\${KERNEL_REPO}|${KERNEL_REPO}|" \
-                -e "s|\${KERNEL_COMMIT}|${KERNEL_COMMIT}|" \
-            < configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
-            > custom_lava_job_definition.yaml
-
-            cat custom_lava_job_definition.yaml
-
-            sed -i "#CUSTOM_JSON_URL=.*#d" ${WORKSPACE}/post_build_lava_parameters
-            sed -i "#LAVA_SERVER=.*#d" ${WORKSPACE}/post_build_lava_parameters
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            export DEVICE_TYPE=hi6220-hikey
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
+            export KSELFTEST_SKIPLIST=""
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
@@ -167,7 +139,8 @@
                 --qa-server ${QA_SERVER} \
                 --qa-server-team lkft \
                 --qa-server-project ${KERNEL_BRANCH} \
-                --git-commit ${KERNEL_COMMIT}
+                --git-commit ${KERNEL_COMMIT} \
+                --template-names template-kselftest.yaml template-ltp.yaml template-libhugetlbfs.yaml
     publishers:
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, milosz.wasilewski@linaro.org, naresh.kamboju@linaro.org'

@@ -1,0 +1,142 @@
+device_type: hi6220-hikey
+tags:
+  - oe-only
+job_name: lkft-kselftest-${KERNEL_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 120
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+# run udhcpc in the test shell before accessing the internet
+
+metadata:
+  kernel-branch: ${KERNEL_BRANCH}
+  kernel-version: ${KERNEL_VERSION}
+  kernel-repo: ${KERNEL_REPO}
+  kernel-commit: ${KERNEL_COMMIT}
+  kernel-describe: ${KERNEL_DESCRIBE}
+  build-url: ${BUILD_URL}
+  series: lkft
+
+protocols:
+  lava-lxc:
+    name: lxc-hikey-oe
+    template: debian
+    distribution: debian
+    release: jessie
+    arch: amd64
+    mirror: http://mirror.bytemark.co.uk/debian
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 15
+    to: lxc
+    packages:
+    - android-tools-fastboot
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'hikey:/'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: hikey-oe
+    connection: lxc
+    images:
+      ptable:
+        url: http://releases.linaro.org/reference-platform/embedded/hikey/16.12/rpb/bootloader/ptable-linux-8g.img
+      boot:
+        url: ${BOOT_URL}
+      system:
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+        # ensure that this job raises a network interface with DHCP before relying on internet access
+    os: oe
+
+- boot:
+    namespace: hikey-oe
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    prompts:
+    - 'root@hikey:~#'
+    timeout:
+      minutes: 5
+    method: uefi-menu
+    commands: fastboot
+    protocols:
+      lava-lxc:
+      # other action could be boot-fastboot
+      - action: uefi-commands
+        request: pre-os-command
+        timeout:
+          minutes: 2
+- test:
+    namespace: hikey-oe
+    timeout:
+      minutes: 150
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: network-tests
+          description: "Basic network tests"
+        run:
+          steps:
+          # the image does not raise the interface itself
+          # force a DHCP request to avoid avahi using a zero conf address.
+          - udhcpc
+          - netstat
+          - ip a
+          - ifconfig
+          - df
+      name: network-inline
+      path: inline/network.yaml
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/kselftest/kselftest.yaml
+      name: kselftest
+      parameters:
+        SKIPLIST: ${KSELFTEST_SKIPLIST}
+      timeout:
+        minutes: 30
+
+- test:
+   namespace: tlxc
+   timeout:
+     minutes: 5
+   definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: network-tests
+          description: "Basic network tests"
+        run:
+          steps:
+          # the image does not raise the interface itself
+          # force a DHCP request to avoid avahi using a zero conf address.
+          - udhcpc
+          - netstat
+          - ip a
+          - ifconfig
+          - df
+      name: network-inline
+      path: inline/network.yaml
