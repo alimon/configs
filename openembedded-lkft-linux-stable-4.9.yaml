@@ -140,5 +140,8 @@
                 --git-commit ${KERNEL_COMMIT} \
                 --template-names template-kselftest.yaml template-ltp.yaml template-libhugetlbfs.yaml
     publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'fathi.boudra@linaro.org'
