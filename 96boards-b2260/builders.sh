@@ -8,7 +8,7 @@ cleanup_exit()
 {
   cd ${WORKSPACE}
   sudo umount boot rootfs || true
-  sudo kpartx -dv out/b2260-jessie_*.img || true
+  sudo kpartx -dv out/b2260-stretch_*.img || true
   sudo rm -rf boot rootfs || true
   rm -rf lci-build-tools
   rm -rf builddir*
@@ -90,21 +90,21 @@ EOF
 
 for rootfs in ${ROOTFS}; do
   # Get rootfs
-  export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-armhf-rootfs/label=docker-jessie-armhf,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
-  export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/debian-armhf-rootfs/label=docker-jessie-armhf,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
-  export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}/linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
+  export ROOTFS_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/stretch-armhf-rootfs/label=docker-jessie-armhf,rootfs=${rootfs}/lastSuccessfulBuild/buildNumber`
+  export ROOTFS_BUILD_TIMESTAMP=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/stretch-armhf-rootfs/label=docker-jessie-armhf,rootfs=${rootfs}/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd`
+  export ROOTFS_BUILD_URL="http://snapshots.linaro.org/debian/images/stretch/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}/linaro-stretch-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz"
   wget --progress=dot -e dotbytes=2M ${ROOTFS_BUILD_URL}
 
   cat >> out/HEADER.textile << EOF
-* Rootfs (${rootfs}): "${rootfs}":http://snapshots.linaro.org/debian/images/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}
+* Rootfs (${rootfs}): "${rootfs}":http://snapshots.linaro.org/debian/images/stretch/${rootfs}-armhf/${ROOTFS_BUILD_NUMBER}
 EOF
 
   # Create pre-built image(s)
-  linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file b2260-jessie_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-jessie-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-b2260_*.tar.gz --hwpack-force-yes --bootloader uefi
+  linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file b2260-stretch_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-stretch-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-b2260_*.tar.gz --hwpack-force-yes --bootloader uefi
 
   # Customize image(s)
   mkdir -p boot rootfs
-  for device in $(sudo kpartx -avs out/b2260-jessie_${rootfs}_${VERSION}.img | cut -d' ' -f3); do
+  for device in $(sudo kpartx -avs out/b2260-stretch_${rootfs}_${VERSION}.img | cut -d' ' -f3); do
     partition=$(echo ${device} | cut -d'p' -f3)
     [ "${partition}" = "1" ] && sudo mount -o loop /dev/mapper/${device} boot
     [ "${partition}" = "2" ] && sudo mount -o loop /dev/mapper/${device} rootfs
@@ -118,10 +118,10 @@ EOF
   sudo mkdir rootfs/dev rootfs/boot rootfs/var/lib/apt/lists
 
   sudo umount boot rootfs
-  sudo kpartx -dv out/b2260-jessie_*.img
+  sudo kpartx -dv out/b2260-stretch_*.img
 
   # Compress image(s)
-  gzip -9 out/b2260-jessie_${rootfs}_${VERSION}.img
+  gzip -9 out/b2260-stretch_${rootfs}_${VERSION}.img
 done
 
 # Create MD5SUMS file
