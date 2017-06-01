@@ -60,8 +60,6 @@ if [ "${MX_PLATFORM}" == "hikey" ]; then
     OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
 fi
 if [ "${MX_PLATFORM}" == "hikey960" ]; then
-    UEFI_TOOLS_GIT_URL=https://github.com/96boards-hikey/uefi-tools.git
-    UEFI_TOOLS_GIT_BRANCH=testing/hikey960_v1
     EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
     EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
     ATF_GIT_URL=https://github.com/96boards-hikey/arm-trusted-firmware.git
