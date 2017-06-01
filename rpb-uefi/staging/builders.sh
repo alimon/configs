@@ -80,6 +80,7 @@ cd uefi-tools; UEFI_TOOLS_GIT_VERSION=`git log --format="%H" -1`; cd ..
 
 git clone $EDK2_GIT_URL edk2
 cd edk2; git checkout -b stable-baseline $EDK2_GIT_VERSION
+git submodule update --init --recursive
 EDK2_GIT_VERSION=$(git rev-parse $EDK2_GIT_VERSION)
 cd ..
 
