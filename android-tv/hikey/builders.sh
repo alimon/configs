@@ -49,8 +49,10 @@ host/linux-x86/bin/make_ext4fs -s -T -1 -S root/file_contexts -L data -l 5588893
 host/linux-x86/bin/make_ext4fs -s -T -1 -S root/file_contexts.bin -L system -l 1610612736 -a system system.img system system
 host/linux-x86/bin/make_ext4fs -s -T -1 -S root/file_contexts -L data -l 1342177280 -a data userdata-4gb.img data
 
+# publish fip.bin and l-loader.bin
+cp ../dist/fip.bin ../dist/l-loader.bin .
 rm -f ramdisk.img
-for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
+for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img" "fip.bin" "l-loader.bin"; do
   echo "Compressing ${image}"
   xz ${image}
 done
