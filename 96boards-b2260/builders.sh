@@ -100,7 +100,7 @@ for rootfs in ${ROOTFS}; do
 EOF
 
   # Create pre-built image(s)
-  linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file b2260-stretch_${rootfs}_${VERSION}.img --image-size 2G --binary linaro-stretch-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-b2260_*.tar.gz --hwpack-force-yes --bootloader uefi
+  linaro-media-create --dev fastmodel --output-directory ${WORKSPACE}/out --image-file b2260-stretch_${rootfs}_${VERSION}.img --image-size 3G --binary linaro-stretch-${rootfs}-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.tar.gz --hwpack hwpack_linaro-b2260_*.tar.gz --hwpack-force-yes --bootloader uefi
 
   # Customize image(s)
   mkdir -p boot rootfs
