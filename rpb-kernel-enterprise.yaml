@@ -64,13 +64,11 @@
             kernel_version=$(make kernelversion)
             kernel_deb_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
             export KDEB_PKGVERSION="${kernel_deb_pkg_version}.linaro.${BUILD_NUMBER}-1"
+            git tag -d v${kernel_deb_pkg_version//\~/-}
             git tag v${kernel_deb_pkg_version//\~/-}
 
             # Build the debian source kernel
             cd ${WORKSPACE}/debian-pkg
-
-            # Allow our own versioning scheme
-            sed -i 's/dfsg/linaro/g' debian/bin/genorig.py debian/lib/python/debian_linux/debian.py
 
             # Use build number as ABI
             sed -i "s/^abiname:.*/abiname: ${BUILD_NUMBER}/g" debian/config/defines
@@ -86,10 +84,6 @@
              -- Fathi Boudra <fathi.boudra@linaro.org>  $(date -R)
 
             EOF
-
-            # Use the kernel config from the kernel tree
-            #cp -a ../linux/arch/arm64/configs/distro.config debian/config/arm64/config
-            #wget -q https://raw.githubusercontent.com/96boards/linux/96b/releases/2016.06/arch/arm64/configs/distro.config -O debian/config/arm64/config
 
             debian/rules clean || true
             debian/bin/genorig.py ../linux
