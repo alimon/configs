@@ -18,9 +18,13 @@
             default: ''
             description: 'Toolchain URL'
         - string:
+            name: sysroot
+            default: 'tarball'
+            description: 'Rsync-friendly path to the sysroot to run against; use libs from toolchain_url tarball/rsync if "tarball"; use system libs if empty'
+        - string:
            name: bench_list
            default: 'bzip2'
-           description: 'List of benchmarks to run (from spec2k6)'
+           description: 'List of benchmarks to run (from spec2k6). Use "all" to run all of them.'
         - string:
             name: cflags
             default: ''
@@ -49,10 +53,6 @@
             name: iterations
             default: '1'
             description: 'Number of benchmark iterations'
-        - string:
-            name: sysroot
-            default: 'tarball'
-            description: 'Rsync-friendly path to the sysroot to run against; use libs from toolchain_url tarball if "tarball"; use system libs if empty'
         - string:
             name: resultsdest
             default: dev-01.tcwglab:results/$BUILD_TAG
