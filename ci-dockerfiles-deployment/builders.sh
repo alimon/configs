@@ -23,11 +23,10 @@ rm -rf ${WORKSPACE}/*
 
 git clone -b ${GERRIT_BRANCH} --depth 2 https://review.linaro.org/${GERRIT_PROJECT}
 cd *
-git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
-git checkout -q FETCH_HEAD
 
 git_previous_commit=$(git rev-parse HEAD~1)
-files=$(git diff --name-only ${git_previous_commit} ${GERRIT_PATCHSET_REVISION})
+git_commit=$(git rev-parse HEAD)
+files=$(git diff --name-only ${git_previous_commit} ${git_commit})
 echo Changes in: ${files}
 changed_dirs=$(dirname ${files})
 
