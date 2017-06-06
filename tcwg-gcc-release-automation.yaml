@@ -117,7 +117,7 @@
 
             # Remove linaro-[snapshot-] prefix
             upload_dir=${tag#*ro-}
-            upload_dir=${upload_dir#*ot-}$dir_suffix
+            upload_dir="/home/tcwg-buildslave/releases/sources/${upload_dir#*ot-}$dir_suffix"
 
             popd 1>/dev/null
 
@@ -144,10 +144,9 @@
 
             pushd /home/tcwg-buildslave/logs/${JOB_NAME}-${tag}-${BUILD_NUMBER}
 
-            upload_path=/home/tcwg-buildslave/releases/sources
-            mkdir -p ${upload_path}/$upload_dir
+            mkdir -p $upload_dir
             for i in * ; do
-                cp ${i}/gcc-linaro-*-manifest.txt ${upload_path}/${upload_dir}/${i}-gcc-${tag}-manifest.txt
+                cp ${i}/gcc-linaro-*-manifest.txt ${upload_dir}/${i}-gcc-${tag}-manifest.txt
             done
 
             popd 1>/dev/null
