@@ -18,6 +18,10 @@
             name: tag
             default: ''
             description: 'GCC tagged version to use (like linaro-6.3-2017.03).'
+        - string:
+            name: upload_dir
+            default: ''
+            description: 'Destination directory on dev-01 (Artifacts only when empty).'
     disabled: false
     node: tcwg-x86_64-dev-01
     retry-count: 3
@@ -87,6 +91,11 @@
 
             cp release_build/gcc-${tag}/*.tar.* artifacts/.
             cp release_build/gcc-${tag}/gcc-${tag}/ChangeLog.linaro artifacts/.
+
+            if [ "${upload_dir:+set}" = "set" ]; then
+                mkdir -p "$upload_dir"
+                rsync -a artifacts/ "$upload_dir"
+            fi
     publishers:
         - archive:
             artifacts: 'artifacts/*'
