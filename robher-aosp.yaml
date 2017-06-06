@@ -21,6 +21,13 @@
                 - job-extended-read
                 - job-configure
                 - job-cancel
+    parameters:
+        - string:
+            name: MESA_GIT_TREE
+            default:
+        - string:
+            name: MESA_EMAIL_RECIPIENTS
+            default:
     disabled: false
     node: docker-xenial-aosp
     display-name: 'AOSP build playground for Rob Herring'
@@ -59,11 +66,11 @@
             repo manifest -r -o out/pinned-manifest.xml
 
             cd external/mesa3d
-            rev=$(git rev-parse freedesktop/master)
 
-            # temporary until upstream can build
-            #git reset --hard ${rev}
-            git pull --no-edit https://github.com/robherring/mesa.git android-build-test
+            if [ -n "${MESA_GIT_TREE}" ]; then
+                git fetch ${MESA_GIT_TREE}
+                git checkout FETCH_HEAD
+            fi
 
             # Enable gpu drivers
             echo 'BOARD_GPU_DRIVERS := "i915 i965 i915g r300g r600g nouveau swrast vc4 virgl"' > Android.mk.new
@@ -92,7 +99,7 @@
         - email:
             recipients: 'rob.herring@linaro.org vishal.bhoj@linaro.org'
         - email-ext:
-            recipients: 'rob.herring@linaro.org'
+            recipients: 'rob.herring@linaro.org ${MESA_EMAIL_RECIPIENTS}'
             content-type: text
             subject: 'errors for mesa master Android build ${BUILD_NUMBER}'
             body: |
