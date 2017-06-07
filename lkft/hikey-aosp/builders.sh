@@ -21,7 +21,7 @@ python mkbootimg \
   --output out/boot.img
 xz out/boot.img
 
-wget -q ${REFERENCE_AOSP_BUILD}/build_config.json -O out/build_config.json
+wget -q ${REFERENCE_BUILD_URL}/build_config.json -O out/build_config.json
 remote=$(git remote -v | grep push | cut -d" " -f1 | cut -f2)
 commit=$(git log | grep commit | cut -d" " -f2)
 sed -i "s|\"kernel_repo\" : \"|\"kernel_repo\" : \"$remote|g" out/build_config.json
