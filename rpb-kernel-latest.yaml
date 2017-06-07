@@ -1,0 +1,65 @@
+- job:
+    name: rpb-kernel-latest
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: TARGET_REPO
+            default: 'erp-17.08-staging'
+    disabled: false
+    node: docker-jessie-rp
+    display-name: 'Reference Platform - kernel metapackage'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            echo deb http://repo.linaro.org/debian/${TARGET_REPO} jessie main | sudo tee /etc/apt/sources.list.d/${TARGET_REPO}.list
+            echo deb-src http://repo.linaro.org/debian/${TARGET_REPO} jessie main | sudo tee -a /etc/apt/sources.list.d/${TARGET_REPO}.list
+            sudo apt-get update -q=2
+
+            kernel_abi_version=$(apt-cache search linux-support|sed -e 's,-rc,~rc,' -e 's, .*,,' -e 's,linux-support-,,'|sort --version-sort|tail -1|sed -e 's,~rc,-rc,')
+            package_version=$(apt-cache showsrc linux-reference-source|awk '/^Version/ { print ($2)+1 }')
+            sudo apt-get install -y linux-support-${kernel_abi_version}
+
+            git clone --depth=1 https://github.com/Linaro/debian-linux-latest-reference
+            cd debian-linux-latest-reference
+            sed -i "s/KERNELVERSION :=.*/KERNELVERSION := ${kernel_abi_version}/" debian/rules.defs
+            ./debian/rules debian/control || true
+            EMAIL=packages@lists.linaro.org dch -v "${package_version}" -D jessie --force-distribution "bump ABI to ${kernel_abi_version}"
+            ./debian/rules debian/control || true
+            dpkg-buildpackage -S
+            cd ..
+
+            cat > ${WORKSPACE}/build-package-params-jessie <<EOF
+            source=${BUILD_URL}/artifact/$(echo *.dsc)
+            repo=${TARGET_REPO}
+            codename=jessie
+            appendversion=false
+            EOF
+    publishers:
+        - archive:
+            artifacts: '*.dsc, *.xz'
+        - trigger-parameterized-builds:
+            - project: build-package
+              property-file: build-package-params-jessie
+              condition: SUCCESS
+        - email:
+            recipients: 'packages@lists.linaro.org '
