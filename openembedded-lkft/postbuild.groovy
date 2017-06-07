@@ -1,4 +1,4 @@
-if (manager.getResult() == "SUCCESS") {
+if (manager.build.result == hudson.model.Result.SUCCESS) {
   def qa_server = manager.build.buildVariables.get('QA_SERVER')
   def desc = manager.build.getDescription()
   if (desc == null) {
