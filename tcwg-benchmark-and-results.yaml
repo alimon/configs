@@ -1,0 +1,60 @@
+- job:
+    name: tcwg-benchmark-and-results
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    parameters:
+        - text:
+            name: benchmark_params
+            default: |
+              toolchain_url=http://releases.linaro.org/components/toolchain/binaries/latest/arm-linux-gnueabihf/gcc-linaro-*-x86_64_arm-linux-gnueabihf.tar.xz
+              sysroot=tarball
+              bench_list=all
+              cflags=
+              testmode=benchmark
+              iterations=1
+              forceinstall=false
+              run_profile=parallel3x1
+              scripts_branch=master
+              bmk_branch=master
+            description: 'Benchmark parameters, see tcwg-benchmark job'
+    disabled: false
+    node: tcwg-bmk-coordinator
+    concurrent: true
+    display-name: 'TCWG ZZZ Benchmark and Results'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'tcwg-benchmark'
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          set -ex
+
+          echo "results_id=hw_type/tcwg-benchmark-and-results-$BUILD_NUM" > benchmark_params
+          echo "$benchmark_params" >> benchmark_params
+          . benchmark_params
+          cat > results_params <<EOF
+          results_id=$results_id
+          EOF
+      - trigger-builds:
+          - project: 'tcwg-benchmark-christophe'
+            property-file: benchmark_params
+            block: true
+      - trigger-builds:
+          - project: 'tcwg-benchmark-results'
+            property-file: results_params
+            block: true
