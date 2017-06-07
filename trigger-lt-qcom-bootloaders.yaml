@@ -1,0 +1,22 @@
+- job:
+    name: trigger-lt-qcom-bootloaders
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for Qualcomm Bootloader builds'
+    triggers:
+        - timed: '@monthly'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'lt-qcom-bootloader-dragonboard410c'
+            - project: 'lt-qcom-bootloader-dragonboard820c'
