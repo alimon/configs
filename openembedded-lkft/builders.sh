@@ -86,7 +86,7 @@ EOF
 
 # Include additional recipes in the image
 cat << EOF >> conf/local.conf
-CORE_IMAGE_BASE_INSTALL_append = " kselftests libhugetlbfs-tests ltp"
+CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests libhugetlbfs-tests ltp"
 CORE_IMAGE_BASE_INSTALL_append = " acl attr numactl"
 CORE_IMAGE_BASE_INSTALL_append = " python python-misc python-modules python-numpy python-pexpect python-pyyaml"
 EOF
