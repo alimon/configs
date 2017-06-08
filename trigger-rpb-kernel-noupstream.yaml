@@ -1,5 +1,5 @@
 - job:
-    name: trigger-rpb-kernel
+    name: trigger-rpb-kernel-noupstream
     project-type: freestyle
     defaults: global
     logrotate:
@@ -12,13 +12,13 @@
     parameters:
         - string:
             name: KERNEL_GIT_BRANCH
-            default: 'master'
+            default: 'rpk-noupstream'
         - string:
             name: KERNEL_GIT_URL
             default: 'https://github.com/Linaro/rpk.git'
     disabled: false
     node: build
-    display-name: 'Trigger for Reference Platform - Linux Kernel (RPK master branch)'
+    display-name: 'Trigger for Reference Platform - Linux Kernel (RPK rpk-noupstream branch)'
     scm:
         - git:
             url: ${KERNEL_GIT_URL}
@@ -38,4 +38,4 @@
     builders:
         - trigger-builds:
             - project:
-                - '96boards-b2260'
+                - '96boards-reference-kernel-enterprise'
