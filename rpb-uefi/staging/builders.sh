@@ -62,8 +62,7 @@ fi
 if [ "${MX_PLATFORM}" == "hikey960" ]; then
     EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
     EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
-    ATF_GIT_URL=https://github.com/96boards-hikey/arm-trusted-firmware.git
-    ATF_GIT_VERSION="origin/testing/hikey960_v1.1"
+    ATF_GIT_VERSION="origin/integration"
     OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
     OPEN_PLATFORM_PKG_GIT_BRANCH="testing/hikey960_v1.3.4"
     L_LOADER_GIT_URL=https://github.com/96boards-hikey/l-loader.git
