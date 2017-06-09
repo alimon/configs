@@ -1,0 +1,70 @@
+- job:
+    name: android-lcr-member-hikey-master-premerge-ci
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: ART_URL
+            default: https://android-qa-reports.linaro.org/api/
+        - string:
+            name: BUILD_DIR
+            default: aosp-master
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: lcr-member-hikey-master
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'Premerge  CI job to test patch for HiKey AOSP Master build'
+    concurrent: true
+    triggers:
+        - gerrit:
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
+            trigger-on:
+                - comment-added-contains-event:
+                    comment-contains-value: '.*RunMasterPremergeHikeyTests.*'
+            server-name: __ANY__
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android/android-patchsets'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-o-preview'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        !include: android-lcr/hikey/premerge-ci-builders.yaml.inc
+    publishers:
+        !include: android-lcr/common/publishers.yaml.inc

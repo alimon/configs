@@ -1,0 +1,80 @@
+- job:
+    name: android-lcr-member-x15-master
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: ART_URL
+            default: https://android-qa-reports.linaro.org/api/
+        - string:
+            name: BUILD_DIR
+            default: aosp-master
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'AOSP master build for X15'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: __ANY__
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android/android-patchsets'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'x15-o-workarounds'
+                      - compare-type: 'PLAIN'
+                        pattern: 'MASTER-MLCR-PATCHSET'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-o-preview'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'linaro-art/platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'x15.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'linaro-pm-extras.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'linaro.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'update-externals.xml'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'lcr-member-x15-master'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        !include: android-lcr/x15/builders.yaml.inc
+    publishers:
+        !include: android-lcr/common/publishers.yaml.inc
