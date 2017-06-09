@@ -18,13 +18,16 @@
                 - job-configure
     parameters:
         - string:
+            name: MANIFEST_REPO
+            default: 'https://github.com/linaro-home/lhg-oe-manifests.git'
+        - string:
             name: MANIFEST_BRANCH
             default: 'morty-staging'
         - string:
             name: DISTRO
             default: 'rpb-wayland'
         - string:
-            name: image_type
+            name: IMAGES
             default: 'rpb-westonchromium-image'
     disabled: false
     node: lhg
@@ -34,7 +37,7 @@
             type: slave
             name: label
             values:
-                - lhg
+                - docker-jessie-amd64-lhg
         - axis:
             type: user-defined
             name: MACHINE
@@ -46,11 +49,9 @@
         sequential: true
     wrappers:
         - timestamps
-        - matrix-tie-parent:
-            node: lhg
     builders:
         - shell:
-            !include-raw: lhg-oe-build/builders.sh
+            !include-raw: lhg-oe-build/builders-docker.sh
         - inject:
             properties-file: post_build_lava_parameters
         - linaro-publish-token
@@ -66,7 +67,8 @@
               ${DEPLOY_DIR_IMAGE}/ \
               openembedded/pre-built/lhg/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}
     publishers:
-        - archive:
-            artifacts: 'out/*'
+# We can only archive files that are located in the workspace
+#        - archive:
+#            artifacts: 'out/*'
         - email:
             recipients: 'andrey.konovalov@linaro.org'
