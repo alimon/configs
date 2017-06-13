@@ -4,7 +4,7 @@ export image_name=debian-cloud-image
 export mountpoint=$(mktemp -d /tmp/${image_name}.XXXXXX)
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y --no-install-recommends qemu-utils virtinst libvirt-bin
+sudo apt-get -q=2 install -y --no-install-recommends cpio qemu-utils virtinst libvirt-bin
 
 default_gw=$(ip route show default 0.0.0.0/0 | cut -d' ' -f3)
 sudo sed -i "/^uri_default/d" /etc/libvirt/libvirt.conf
