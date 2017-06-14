@@ -22,6 +22,10 @@ def main():
                         help="Device type in LAVA",
                         dest="device_type",
                         required=True)
+    parser.add_argument("--env-prefix",
+                        help="Prefix for the environment name",
+                        dest="env_prefix",
+                        default="")
     parser.add_argument("--build-number",
                         help="Build number",
                         dest="build_number",
@@ -50,23 +54,32 @@ def main():
                         help="git commit ID",
                         dest="git_commit",
                         required=True)
+    parser.add_argument("--template-path",
+                        help="Path to LAVA job templates",
+                        dest="template_path",
+                        default=template_base_path)
     parser.add_argument("--template-names",
                         help="list of the templates to submit for testing",
                         dest="template_names",
                         nargs="+",
                         default=["template.yaml"])
+    parser.add_argument("--quiet",
+                        help="Only output the final qa-reports URL",
+                        action='store_true',
+                        dest="quiet")
 
     args, _ = parser.parse_known_args()
 
 
-    print(os.environ)
+    if not args.quiet:
+        print(os.environ)
     qa_server_base = args.qa_server
     if not (qa_server_base.startswith("http://") or qa_server_base.startswith("https://")):
         qa_server_base = "https://" + qa_server_base
     qa_server_team = args.qa_server_team
     qa_server_project = args.qa_server_project
     qa_server_build = args.git_commit
-    qa_server_env = args.device_type
+    qa_server_env = args.env_prefix + args.device_type
     qa_server_api = "%s/api/submitjob/%s/%s/%s/%s" % (
         qa_server_base,
         qa_server_team,
@@ -82,7 +95,7 @@ def main():
         "Auth-Token": args.qa_token
     }
     for test in args.template_names:
-        template_file_name = "%s/%s/%s" % (template_base_path, args.device_type, test)
+        template_file_name = "%s/%s/%s" % (args.template_path, args.device_type, test)
         test_template = None
         if os.path.exists(template_file_name):
             test_template_file = open(template_file_name, "r")
@@ -92,25 +105,27 @@ def main():
             sys.exit(1)
 
         template = Template(test_template)
+        print("using template: %s" % template_file_name)
         lava_job = template.substitute(os.environ)
-        print(lava_job)
+        if not args.quiet:
+            print(lava_job)
         try:
             data = {
                 "definition": lava_job,
                 "backend": urlsplit(lava_url_base).netloc  # qa-reports backends are named as lava instances
             }
+            print("Submit to: %s" % qa_server_api)
             results = requests.post(qa_server_api, data=data, headers=headers)
             if results.status_code < 300:
                 print("%s/testjob/%s" % (qa_server_base, results.text))
             else:
                 print(results.status_code)
                 print(results.text)
-        except xmlrpclib.ProtocolError as err:
+        except requests.exceptions.RequestException as err:
             print("QA Reports submission failed")
-            print("offending job definition:")
-            print(lava_job)
-            print("Error code: %d" % err.errcode)
-            print("Error message: %s" % err.errmsg)
+            if not args.quiet:
+                print("offending job definition:")
+                print(lava_job)
 
 
 if __name__ == "__main__":

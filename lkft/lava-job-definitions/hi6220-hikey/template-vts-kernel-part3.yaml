@@ -1,5 +1,5 @@
 device_type: hi6220-hikey
-job_name: "%%JOB_NAME%%-%%ANDROID_META_BUILD%%-basic"
+job_name: "lkft-android-${KERNEL_BRANCH}-${BUILD_NUMBER}-vts-kernel-kselftest"
 
 tags:
 - aosp-only
@@ -15,8 +15,15 @@ priority: medium
 visibility: personal
 
 metadata:
-  source: https://git.linaro.org/lava-team/refactoring.git
-  path: hi6220-hikey.yaml
+  android.build: "${BUILD_NUMBER}"
+  android.name: "${JOB_NAME}"
+  android.url: "${BUILD_URL}"
+  kernel-branch: "${KERNEL_BRANCH}"
+  kernel-repo: "${KERNEL_REPO}"
+  kernel-commit: "${KERNEL_COMMIT}"
+  kernel-describe: "${KERNEL_DESCRIBE}"
+  build-url: "${BUILD_URL}"
+  series: lkft
 
 protocols:
   lava-lxc:
@@ -26,11 +33,14 @@ protocols:
     arch: amd64
     verbose: true
 
+secrets:
+   ARTIFACTORIAL_TOKEN: "${ARTIFACTORIAL_TOKEN}"
+
 actions:
 - deploy:
     namespace: tlxc
     timeout:
-      minutes: 5
+      minutes: 15
     to: lxc
     packages:
     - android-tools-adb
@@ -55,16 +65,16 @@ actions:
       ptable:
         url: http://builds.96boards.org/snapshots/reference-platform/components/uefi/latest/release/hikey/ptable-aosp-8g.img
       boot:
-        url: "%%DOWNLOAD_URL%%/boot.img.xz"
+        url: "${DOWNLOAD_URL}/boot.img.xz"
         compression: xz
       cache:
-        url: "%%REFERENCE_BUILD_URL%%/cache.img.xz"
+        url: "${REFERENCE_BUILD_URL}/cache.img.xz"
         compression: xz
       userdata:
-        url: "%%REFERENCE_BUILD_URL%%/userdata.img.xz"
+        url: "${REFERENCE_BUILD_URL}/userdata.img.xz"
         compression: xz
       system:
-        url: "%%REFERENCE_BUILD_URL%%/system.img.xz"
+        url: "${REFERENCE_BUILD_URL}/system.img.xz"
         compression: xz
     os: debian
 
@@ -85,6 +95,9 @@ actions:
       definitions:
         - repository: https://git.linaro.org/qa/test-definitions.git
           from: git
-          path: automated/android/boottime/boottime.yaml
-          name: boottime-test
-
+          path: automated/android/tradefed/tradefed.yaml
+          params:
+                TEST_URL: "http://snapshots.linaro.org/android/android-vts/hikey-userdebug/23/android-vts.zip"
+                TEST_PARAMS: "run vts-kernel --module LinuxKselftestTest --skip-device-info"
+                TEST_PATH: "android-vts"
+          name: vts-test

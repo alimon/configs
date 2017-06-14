@@ -1,7 +1,7 @@
 device_type: hi6220-hikey
 tags:
   - aosp-only
-job_name: "%%JOB_NAME%%-%%ANDROID_META_BUILD%%-%%CTS_MODULE_NAME%%"
+job_name: "lkft-android-${KERNEL_BRANCH}-${BUILD_NUMBER}-cts-${CTS_MODULE_NAME}"
 timeouts:
   job:
     minutes: 360
@@ -15,12 +15,19 @@ visibility:
     - lkft
 
 secrets:
-  ARTIFACTORIAL_TOKEN: "%%ARTIFACTORIAL_TOKEN%%"
+  ARTIFACTORIAL_TOKEN: "${ARTIFACTORIAL_TOKEN}"
 
 metadata:
-  android.build: "%%ANDROID_META_BUILD%%"
-  android.name: "%%ANDROID_META_NAME%%"
-  android.url: "%%ANDROID_META_URL%%"
+  android.build: "${BUILD_NUMBER}"
+  android.name: "${JOB_NAME}"
+  android.url: "${BUILD_URL}"
+  kernel-branch: "${KERNEL_BRANCH}"
+  kernel-version: "${KERNEL_VERSION}"
+  kernel-repo: "${KERNEL_REPO}"
+  kernel-commit: "${KERNEL_COMMIT}"
+  kernel-describe: "${KERNEL_DESCRIBE}"
+  build-url: "${BUILD_URL}"
+  series: lkft
 
 protocols:
   lava-lxc:
@@ -63,16 +70,16 @@ actions:
       ptable:
         url: http://builds.96boards.org/snapshots/reference-platform/components/uefi/latest/release/hikey/ptable-aosp-8g.img
       boot:
-        url: "%%DOWNLOAD_URL%%/boot.img.xz"
+        url: "${DOWNLOAD_URL}/boot.img.xz"
         compression: xz
       cache:
-        url: "%%REFERENCE_BUILD_URL%%/cache.img.xz"
+        url: "${REFERENCE_BUILD_URL}/cache.img.xz"
         compression: xz
       userdata:
-        url: "%%REFERENCE_BUILD_URL%%/userdata.img.xz"
+        url: "${REFERENCE_BUILD_URL}/userdata.img.xz"
         compression: xz
       system:
-        url: "%%REFERENCE_BUILD_URL%%/system.img.xz"
+        url: "${REFERENCE_BUILD_URL}/system.img.xz"
         compression: xz
     os: debian
 
@@ -96,7 +103,7 @@ actions:
       from: git
       path: automated/android/tradefed/tradefed.yaml
       params:
-        TEST_PARAMS: "run cts --include-filter %%CTS_MODULE_NAME%% --disable-reboot --skip-preconditions --skip-device-info"
+        TEST_PARAMS: "run cts --include-filter ${CTS_MODULE_NAME} --disable-reboot --skip-preconditions --skip-device-info"
         TEST_URL: "http://snapshots.linaro.org/android/android-cts/hikey-userdebug/1/android-cts.zip"
         TEST_PATH: "android-cts"
-      name: "%%CTS_MODULE_NAME%%"
+      name: "${CTS_MODULE_NAME}"
