@@ -1,0 +1,87 @@
+- job:
+    name: lt-qcom-openembedded-rpb-morty
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'rpb-console-image rpb-console-image-lava'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'qcom/morty'
+    disabled: false
+    node: master
+    display-name: 'Qualcomm OpenEmbedded RPB (morty)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'dragonboard-410c'
+                - 'dragonboard-820c'
+                - 'sd-600eval'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+                - rpb-wayland
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+    builders:
+        - shell:
+            !include-raw: rpb-openembedded/builders.sh
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell: |
+            #!/bin/bash
+
+            # some machine names we use on 96boards are slightly different
+            case "${MACHINE}" in
+              dragonboard-410c)
+                MACHINE=dragonboard410c
+                ;;
+              dragonboard-820c)
+                MACHINE=dragonboard820c
+                ;;
+            esac
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              ${DEPLOY_DIR_IMAGE}/ \
+              snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${DISTRO}/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org'
+            always: true

@@ -1,0 +1,21 @@
+- job:
+    name: trigger-lt-qcom-openembedded-images
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: build
+    display-name: 'Trigger for Qualcomm OE builds'
+    triggers:
+        - timed: '@weekly'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'lt-qcom-openembedded-rpb-morty'
