@@ -85,16 +85,11 @@
             env
             ssh-add -l
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
-            case ${label} in
-                tcwg-x86_64-build) host_arch=amd64 ;;
-                tcwg-x86_32-build) host_arch=i386 ;;
-                tcwg-tx1_64-build) host_arch=arm64 ;;
-                tcwg-tx1_32-build) host_arch=armhf ;;
-                tcwg-tk1_32-build) host_arch=armhf ;;
-                *) echo "ERROR: Unsupported slave: $slave"; exit 1 ;;
-            esac
 
-            host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            . jenkins-scripts/jenkins-helpers.sh
+            host_arch=$(print_arch_for_label "${label}")
+            host=$(print_host_for_node $NODE_NAME)
+
             bash -x ./jenkins-scripts/start-container-docker.sh --arch ${host_arch} --distro trusty --session-host ${host} > container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
