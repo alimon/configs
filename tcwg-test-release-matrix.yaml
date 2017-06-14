@@ -103,6 +103,8 @@
               shell="/bin/bash"
             fi
 
+            . jenkins-helpers.sh
+
             if [ x"$GERRIT_REFSPEC" != x"" ]; then
               tcwg_regression_rev="$GERRIT_REFSPEC"
             fi
@@ -128,7 +130,7 @@
             esac
 
             # Start build container
-            builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
+            builder=$(print_host_for_node $NODE_NAME)
             build_container_type=docker
             bash -x ${WORKSPACE}/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
 

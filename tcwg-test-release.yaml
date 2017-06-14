@@ -71,6 +71,8 @@
         - shell: |      
             #!/bin/bash
 
+            . jenkins-helpers.sh
+
             if test x${debug} = x"true"; then
               shell="/bin/bash -x"
               set -x
@@ -86,7 +88,7 @@
             fi
 
             # Start build container
-            builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
+            builder=$(print_host_for_node $NODE_NAME)
             build_container_type=docker
             # We currently test i686 releases on x86_64 hosts
             builder_arch=amd64

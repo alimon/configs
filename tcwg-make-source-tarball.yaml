@@ -59,6 +59,7 @@
 
             rm -rf jenkins-scripts
             git clone --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+            . jenkins-scripts/jenkins-helpers.sh
 
             rm -rf tcwg-release-tools
             git clone -b automation --depth 1 https://git-us.linaro.org/toolchain/tcwg-release-tools
@@ -70,7 +71,7 @@
             mkdir -p ${WORKSPACE}/artifacts
 
             # Start build container
-            host=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            host=$(print_host_for_node $NODE_NAME)
             bash ${WORKSPACE}/jenkins-scripts/start-container-docker.sh --arch amd64 --distro trusty --session-host ${host} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port

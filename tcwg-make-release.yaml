@@ -144,11 +144,12 @@
             fi
 
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+            . jenkins-scripts/jenkins-helpers.sh
 
             # Start build container
             build_container_type=docker
             build_container_distro=trusty
-            builder=$(./jenkins-scripts/nodename2hostname.sh $NODE_NAME)
+            builder=$(print_host_for_node $NODE_NAME)
             bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
