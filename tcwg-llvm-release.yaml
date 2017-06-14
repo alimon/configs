@@ -94,6 +94,8 @@
 
             set -ex
 
+            . jenkins-helpers.sh
+
             # Until we figure out a way to use heavy-job with different weights
             # based on the builder, we hardcode to one.
             weight=1
@@ -130,7 +132,7 @@
             fi
 
             # Start build container
-            builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
+            builder=$(print_host_for_node $NODE_NAME)
             bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight ${weight} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port

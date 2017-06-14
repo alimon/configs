@@ -72,6 +72,9 @@
         - shell: |
             #!/bin/bash
             set -exu
+
+            . jenkins-helpers.sh
+
             if [ "${toolchain:+set}" != "set" ]; then
               echo "Test-suite needs a toolchain to test"
               exit 1
@@ -92,7 +95,7 @@
             esac
 
             # Start build container
-            builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
+            builder=$(print_host_for_node $NODE_NAME)
             bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port

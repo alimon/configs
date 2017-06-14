@@ -109,6 +109,8 @@
             #!/bin/bash
             set -ex
 
+            . jenkins-helpers.sh
+
             # Select builder arch/type/container
             buildjobs=1
             case ${label} in
@@ -142,7 +144,7 @@
             fi
 
             # Start build container
-            builder=$(${WORKSPACE}/nodename2hostname.sh $NODE_NAME)
+            builder=$(print_host_for_node $NODE_NAME)
             bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --weight 1 --prefix run_ > build-container.sh
 
             # Source container logic, set cleanup job
