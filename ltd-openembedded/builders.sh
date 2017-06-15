@@ -79,6 +79,7 @@ KERNEL_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
 MODULE_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
 DT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
 BOOT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
+DISTRO_VERSION_append = "-${BUILD_NUMBER}"
 EOF
 
 # get build stats to make sure that we use sstate properly
