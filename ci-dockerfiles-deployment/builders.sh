@@ -58,8 +58,21 @@ for image in ${update_images}; do
   (
   cd ${image}
   image_arch=$(basename ${PWD} | cut -f2 -d '-')
-  case "${host_arch}:${image_arch}" in
-    "amd64:amd64"|"amd64:i386"|"arm64:arm64"|"arm64:armhf")
+  skip="skip"
+  if [ -f gerrit-branch ]; then
+    # Build only from branches mentioned in gerrit-branches
+    if grep -q "^${GERRIT_BRANCH}\$" gerrit-branches; then
+      skip="no"
+    fi
+  elif [ x"${GERRIT_BRANCH}" = x"master" ]; then
+    # No gerrit-branch file, so build only from "master" branch.
+    skip="no"
+  fi
+  case "${skip}:${host_arch}:${image_arch}" in
+    "skip:*")
+      echo "Skipping: don't need to build ${image} on branch ${GERRIT_BRANCH}"
+      ;;
+    "no:amd64:amd64"|"no:amd64:i386"|"no:arm64:arm64"|"no:arm64:armhf")
       echo "=== Start build: ${image} ==="
       ./build.sh || echo "=== FAIL: ${image} ===" >> ${WORKSPACE}/log
       ;;
@@ -68,7 +81,13 @@ for image in ${update_images}; do
       ;;
   esac
   if [ -r .docker-tag ]; then
-    docker push $(cat .docker-tag)
+    docker_tag=$(cat .docker-tag)
+    if [ x"${GERRIT_BRANCH}" != x"master" ]; then
+      new_tag=${docker_tag}-${GERRIT_BRANCH}
+      docker image tag ${docker_tag} ${new_tag}
+      docker_tag=${new_tag}
+    fi
+    docker push ${docker_tag}
   fi
   )||echo $image failed >> ${WORKSPACE}/log
 done
