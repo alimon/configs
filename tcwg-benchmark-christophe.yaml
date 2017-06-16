@@ -74,6 +74,10 @@
             default: 'tx1'
             description: 'List of targets -- tk1 tx1'
         - string:
+            name: displaytag
+            default: ''
+            description: 'Tag to display in the Jenkins console, so that the build name is more meaningful'
+        - string:
             name: builder
             default: 'tcwg-x86_64-build'
             description: 'Builder -- jenkins label or node'
@@ -139,6 +143,8 @@
         - ssh-agent-credentials:
             users:
                 - 'tcwg-benchmark'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${displaytag}'
     builders:
         - shell: |
             #!/bin/bash
