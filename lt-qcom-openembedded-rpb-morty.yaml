@@ -22,8 +22,14 @@
             name: IMAGES
             default: 'rpb-console-image rpb-console-image-lava'
         - string:
+            name: MANIFEST_BRANCH_PREFIX
+            default: 'qcom/'
+        - string:
             name: MANIFEST_BRANCH
-            default: 'qcom/morty'
+            default: 'morty'
+        - string:
+            name: BASE_URL
+            default: 'https://builds.96boards.org/snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${DISTRO}/${BUILD_NUMBER}'
     disabled: false
     node: master
     display-name: 'Qualcomm OpenEmbedded RPB (morty)'
@@ -80,7 +86,7 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ \
-              snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH#qcom/}/${DISTRO}/${BUILD_NUMBER}
+              snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${DISTRO}/${BUILD_NUMBER}
     publishers:
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, nicolas.dechesne@linaro.org'
