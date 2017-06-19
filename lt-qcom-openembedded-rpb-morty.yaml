@@ -56,6 +56,8 @@
     builders:
         - shell:
             !include-raw: rpb-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
@@ -78,7 +80,7 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ \
-              snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${DISTRO}/${BUILD_NUMBER}
+              snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH#qcom/}/${DISTRO}/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org'
