@@ -6,7 +6,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
 
-pkg_list="git libcap-dev libcap-ng-dev libfuse-dev libmount-dev libpopt-dev pkg-config pxz rsync"
+pkg_list="git libcap-dev libcap-ng-dev libelf-dev libfuse-dev libmount-dev libpopt-dev pkg-config pxz rsync"
 deb_host_arch=$(dpkg-architecture -qDEB_HOST_ARCH)
 case "${deb_host_arch}" in
   amd64)
