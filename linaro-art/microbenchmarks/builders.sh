@@ -58,5 +58,6 @@ FRONTEND_JOB_NAME=${JOB_NAME}
 DOWNLOAD_URL=http://snapshots.linaro.org/android/$JOB_NAME/$BUILD_NUMBER
 CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/plain/android/nexus5x/microbenchmarks_32.yaml
 SKIP_REPORT=true
+QA_REPORTS_TOKEN=${QA_REPORTS_TOKEN}
 EOF
 
