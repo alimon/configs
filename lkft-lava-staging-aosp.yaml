@@ -1,0 +1,104 @@
+- job:
+    name: lkft-lava-staging-oe
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'https://staging.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: REFERENCE_BUILD_URL
+            default: 'http://builds.96boards.org/snapshots/hikey/linaro/aosp-master/432/'
+    disabled: false
+    node: master
+    display-name: 'LKFT - LAVA staging submit OE'
+    triggers:
+        - timed: 'H 0 * * *'
+    axes:
+        - axis:
+            type: user-defined
+            name: BUILD_NAME
+            values:
+                - 'lkft-hikey-aosp-4.4'
+                - 'lkft-hikey-aosp-4.9'
+        - axis:
+            type: user-defined
+            name: DEVICE_TYPE
+            values:
+                - 'hi6220-hikey'
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
+    builders:
+        - shell: |
+            export KSELFTEST_SKIPLIST=""
+            export DOWNLOAD_URL="https://snapshots.linaro.org/android/lkft/${BUILD_NAME}/latest/"
+            export KERNEL_BRANCH=${BUILD_NAME}
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team staging-lkft \
+                --qa-server-project "aosp-${KERNEL_BRANCH}" \
+                --git-commit ${BUILD_NUMBER} \
+                --template-path configs/lkft/lava-job-definitions \
+                --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml \
+                --quiet
+
+            for CTS_MODULE_NAME in CtsVmTestCases CtsLibcoreTiestCases CtsBionicTestCases \
+                    CtsCompilationTestCases CtsDramTestCases CtsFileSystemTestCases \
+                    CtsHardwareTestCases CtsJobSchedulerTestCases CtsOsTestCases \
+                    CtsPermissionTestCases CtsPermission2TestCases CtsSecurityTestCases \
+                    CtsUsbTests
+            do
+                export CTS_MODULE_NAME=${CTS_MODULE_NAME}
+                python configs/openembedded-lkft/submit_for_testing.py \
+                    --device-type ${DEVICE_TYPE} \
+                    --build-number ${BUILD_NUMBER} \
+                    --lava-server ${LAVA_SERVER} \
+                    --qa-server ${QA_SERVER} \
+                    --qa-server-team staging-lkft \
+                    --qa-server-project "aosp-${KERNEL_BRANCH}" \
+                    --git-commit ${BUILD_NUMBER} \
+                    --template-path configs/lkft/lava-job-definitions \
+                    --template-names template-cts.yaml \
+                    --quiet
+            done
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw: openembedded-lkft/postbuild.groovy
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, milosz.wasilewski@linaro.org, naresh.kamboju@linaro.org'
+            always: true
