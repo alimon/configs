@@ -1,7 +1,8 @@
 #!/bin/bash
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler
+sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply \
+    python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler
 
 set -ex
 
