@@ -192,6 +192,9 @@ case "${KERNEL_RECIPE}" in
   linux-hikey-stable)
     PUB_DEST="linux-stable-4.9"
     ;;
+  linux-hikey-mainline)
+    PUB_DEST="linux-mainline"
+    ;;
   linux-hikey-next)
     PUB_DEST="linux-next"
     ;;
