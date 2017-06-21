@@ -7,7 +7,7 @@ set -ex
 
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
-git clone --depth 1 https://github.com/01org/zephyr.js ${WORKSPACE}
+git clone --depth 1 ${GIT_URL} ${WORKSPACE}
 git-retry submodule sync --recursive
 git-retry submodule update --init --recursive --checkout
 git clean -fdx
