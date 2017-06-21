@@ -1,5 +1,5 @@
 device_type: '$DEVICE_TYPE'
-job_name: '$JOB_NAME $BUILD_DISPLAY_NAME'
+job_name: '$JOB_NAME_SHORT $BUILD_DISPLAY_NAME'
 
 timeouts:
   job:
@@ -31,9 +31,9 @@ actions:
 $TEST_SPEC
 
 metadata:
-  build-url: $build_url
-  build-log: $build_url/consoleText
-  zephyr-gcc-variant: $gcc_variant
-  platform: $board_name
+  build-url: $BUILD_URL
+  build-log: ${BUILD_URL}consoleText
+  zephyr-gcc-variant: $ZEPHYR_GCC_VARIANT
+  platform: $PLATFORM
   git-url: $GIT_URL
-  git-commit: $git_commit
+  git-commit: $GIT_COMMIT

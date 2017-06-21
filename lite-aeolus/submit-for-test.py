@@ -6,7 +6,7 @@ from string import Template
 ENV = os.environ
 expect = sys.argv[1]
 
-ENV["DEVICE_TYPE"] = "frdm-k64f"
+ENV["JOB_NAME_SHORT"] = ENV["JOB_NAME"].split("/", 1)[0]
 
 with open("lava-job-definitions/%s/template.yaml" % ENV["DEVICE_TYPE"]) as f:
     tpl = f.read()
