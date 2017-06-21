@@ -1,5 +1,5 @@
 - job:
-    name: lkft-lava-staging-oe
+    name: lkft-lava-staging-aosp
     project-type: matrix
     defaults: global
     properties:
@@ -60,6 +60,10 @@
             export KSELFTEST_SKIPLIST=""
             export DOWNLOAD_URL="https://snapshots.linaro.org/android/lkft/${BUILD_NAME}/latest/"
             export KERNEL_BRANCH=${BUILD_NAME}
+            export KERNEL_VERSION=${BUILD_NAME}
+            export KERNEL_REPO="https://android.googlesource.com/kernel/hikey-linaro"
+            export KERNEL_COMMIT=${BUILD_NUMBER}
+            export KERNEL_DESCRIBE="Kernel Describe"
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
