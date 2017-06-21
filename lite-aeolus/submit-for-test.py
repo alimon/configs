@@ -1,7 +1,10 @@
 import os
 import sys
 from string import Template
+import xmlrpclib
 
+# Actually submit job to LAVA
+SUBMIT = 1
 
 ENV = os.environ
 expect = sys.argv[1]
@@ -24,3 +27,12 @@ tpl = Template(tpl)
 jobdef = tpl.safe_substitute(ENV, TEST_SPEC=TEST_SPEC)
 
 print(jobdef)
+
+if SUBMIT:
+    username = os.getenv("LAVA_USER")
+    token = os.getenv("LAVA_TOKEN")
+    uri = os.getenv("LAVA_SERVER")
+    server = xmlrpclib.ServerProxy("http://%s:%s@%s" % (username, token, uri))
+
+    job_id = server.scheduler.submit_job(jobdef)
+    print("http://%s../scheduler/job/%s" % (uri, job_id))
