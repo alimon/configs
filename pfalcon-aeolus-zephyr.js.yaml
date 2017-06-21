@@ -113,20 +113,9 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            [ -z "${DEVICE_TYPE_}" ] || \
-            python configs/zephyr-upstream/submit_for_testing.py \
-                --board-name ${PLATFORM} \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --build-url ${BUILD_URL} \
-                --branch-name ${BRANCH} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team lite \
-                --qa-server-project lite-aeolus \
-                --gcc-variant ${ZEPHYR_GCC_VARIANT} \
-                --git-commit ${GIT_COMMIT} \
-                --build-url ${BUILD_URL}
+            [ -z "${DEVICE_TYPE}" ] || \
+            python submit-for-test.py "Hello, ZJS world!"
+
     publishers:
         - email:
             recipients: 'paul.sokolovsky@linaro.org'
