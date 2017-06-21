@@ -1,0 +1,39 @@
+device_type: '$DEVICE_TYPE'
+job_name: '$JOB_NAME $BUILD_DISPLAY_NAME'
+
+timeouts:
+  job:
+    minutes: 6
+  action:
+    minutes: 3
+  actions:
+    wait-usb-device:
+      seconds: 40
+
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 3
+    to: tmpfs
+    images:
+        zephyr:
+          url: '$IMAGE_URL'
+
+- boot:
+    method: cmsis-dap
+    timeout:
+      minutes: 10
+
+- test:
+$TEST_SPEC
+
+metadata:
+  build-url: $build_url
+  build-log: $build_url/consoleText
+  zephyr-gcc-variant: $gcc_variant
+  platform: $board_name
+  git-url: $GIT_URL
+  git-commit: $git_commit
