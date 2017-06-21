@@ -112,7 +112,14 @@ do_install_append() {
 EOF
 
 # Update kernel recipe SRCREV
-SRCREV_kernel=$(git ls-remote ${KERNEL_REPO} refs/heads/${KERNEL_BRANCH} | cut -f1)
+case "${KERNEL_RECIPE}" in
+  linux-hikey-lts)
+    SRCREV_kernel=$(git ls-remote ${KERNEL_REPO} refs/tags/${KERNEL_BRANCH} | cut -f1)
+    ;;
+  *)
+    SRCREV_kernel=$(git ls-remote ${KERNEL_REPO} refs/heads/${KERNEL_BRANCH} | cut -f1)
+    ;;
+esac
 kernel_recipe=$(find ../layers/meta-96boards -type f -name ${KERNEL_RECIPE}_${KERNEL_VERSION}.bb)
 sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_recipe}
 
@@ -192,6 +199,9 @@ case "${KERNEL_RECIPE}" in
   linux-hikey-stable)
     PUB_DEST="linux-stable-4.9"
     ;;
+  linux-hikey-stable-rc)
+    PUB_DEST="linux-stable-rc-4.9"
+    ;;
   linux-hikey-mainline)
     PUB_DEST="linux-mainline"
     ;;
@@ -200,6 +210,9 @@ case "${KERNEL_RECIPE}" in
     ;;
   linux-hikey-lt)
     PUB_DEST="linux-lt-4.4"
+    ;;
+  linux-hikey-lts)
+    PUB_DEST="linux-lts-4.4"
     ;;
   *)
     PUB_DEST="${KERNEL_VERSION}"

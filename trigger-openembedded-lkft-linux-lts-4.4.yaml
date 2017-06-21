@@ -1,0 +1,54 @@
+- job:
+    name: trigger-openembedded-lkft-linux-lts-4.4
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for LKFT - Linux LTS 4.4 + HiKey'
+    scm:
+        - git:
+            url: https://git.linaro.org/people/sumit.semwal/linux-lts.git
+            refspec: +refs/tags/*:refs/remotes/origin/tags/*
+            name: origin
+            branches:
+                - refs/tags/4.4-*-rc-hikey-*
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo KERNEL_BRANCH=$(git describe --tags --abbrev=0) > lkft_parameters
+            cat lkft_parameters
+    publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'openembedded-lkft-linux-lts-4.4'
+              condition: SUCCESS
+              property-file: lkft_parameters
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org'
+            body: |
+                Project: ${PROJECT_NAME}
+                Build number: ${BUILD_NUMBER}
+                Build status: ${BUILD_STATUS}
+                Build URL: ${BUILD_URL}
+
+                New upstream tag:
+                https://git.linaro.org/people/sumit.semwal/linux-lts.git ${GIT_BRANCH} ${GIT_COMMIT}
+            always: true
