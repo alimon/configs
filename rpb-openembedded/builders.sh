@@ -137,8 +137,7 @@ Build description:
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
-# Set base url, and allow the main job script to override the default value, typically used for OE RPB builds
-BASE_URL=${BASE_URL:-https://builds.96boards.org/snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}}
+# Need different files for each machine
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.img" | xargs -r basename)
 ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
@@ -152,12 +151,14 @@ case "${MACHINE}" in
     ;;
 esac
 
+# Note: the main job script allows to override the default value for
+#       BASE_URL and PUB_DEST, typically used for OE RPB builds
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
-BOOT_URL=${BASE_URL}/${BOOT_IMG}
-ROOTFS_BUILD_URL=${BASE_URL}/${ROOTFS_EXT4_IMG}
-SYSTEM_URL=${BASE_URL}/${ROOTFS_EXT4_IMG}
-KERNEL_URL=${BASE_URL}/${KERNEL_IMG}
-DTB_URL=${BASE_URL}/${DTB_IMG}
-NFSROOTFS_URL=${BASE_URL}/${ROOTFS_TARXZ_IMG}
+BOOT_URL=${BASE_URL}${PUB_DEST}/${BOOT_IMG}
+ROOTFS_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
+SYSTEM_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
+KERNEL_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
+DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
+NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TARXZ_IMG}
 EOF

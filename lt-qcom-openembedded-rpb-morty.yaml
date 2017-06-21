@@ -29,7 +29,7 @@
             default: 'morty'
         - string:
             name: BASE_URL
-            default: 'https://builds.96boards.org/snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${DISTRO}/${BUILD_NUMBER}'
+            default: 'https://builds.96boards.org/'
     disabled: false
     node: master
     display-name: 'Qualcomm OpenEmbedded RPB (morty)'
@@ -60,12 +60,6 @@
             users:
                 - 'OE_COMMIT_BOT_KEY'
     builders:
-        - shell:
-            !include-raw: rpb-openembedded/builders.sh
-        - inject:
-            properties-file: post_build_lava_parameters
-        - linaro-publish-token:
-            host: builds.96boards.org
         - shell: |
             #!/bin/bash
 
@@ -79,14 +73,17 @@
                 ;;
             esac
 
-            # Publish
-            test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py \
-              --server ${PUBLISH_SERVER} \
-              --link-latest \
-              ${DEPLOY_DIR_IMAGE}/ \
-              snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${DISTRO}/${BUILD_NUMBER}
+            echo "PUB_DEST=snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${DISTRO}/${BUILD_NUMBER}" > pub_dest_parameters
+        - inject:
+            properties-file: pub_dest_parameters
+        - shell:
+            !include-raw: rpb-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token:
+            host: builds.96boards.org
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
     publishers:
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, nicolas.dechesne@linaro.org'

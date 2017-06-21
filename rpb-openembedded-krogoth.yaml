@@ -25,6 +25,12 @@
             name: MANIFEST_BRANCH
             default: 'krogoth'
         - string:
+            name: BASE_URL
+            default: 'https://builds.96boards.org/'
+        - string:
+            name: PUB_DEST
+            default: 'snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}'
+        - string:
             name: BUNDLE_STREAM_NAME
             default: '/public/team/linaro/rpb-openembedded-${MANIFEST_BRANCH}/'
         - string:
@@ -71,17 +77,8 @@
             properties-file: post_build_lava_parameters
         - linaro-publish-token:
             host: builds.96boards.org
-        - shell: |
-            #!/bin/bash
-
-            # Publish
-            test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py \
-              --server ${PUBLISH_SERVER} \
-              --link-latest \
-              ${DEPLOY_DIR_IMAGE}/ \
-              snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
         - shell: |
             case "${MACHINE}" in
               dragonboard-410c)
