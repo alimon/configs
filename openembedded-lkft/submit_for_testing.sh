@@ -4,7 +4,7 @@ set -e
 
 export KSELFTEST_SKIPLIST=""
 
-if [ -z "${KERNEL_DESCRIBE}" ]; then
+if [ ! -z "${KERNEL_DESCRIBE}" ]; then
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
 else
     export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
