@@ -84,7 +84,7 @@
 
             if [ ! -d jcommander ]; then
               mkdir jcommander
-              wget http://repo1.maven.org/maven2/com/beust/jcommander/1.48/jcommander-1.48.jar -O jcommander/jcommander.jar
+              wget http://repo1.maven.org/maven2/com/beust/jcommander/1.72/jcommander-1.72.jar -O jcommander/jcommander.jar
             fi
 
             ls -lash
@@ -127,7 +127,7 @@
             export JUNIT_JAR=$PWD/junit/junit.jar
             export ANTHOME=$(ant -diagnostics | grep ant.home | \
                 sed 's,^.*: \(.*\),\1,' | uniq)
-
+            export JCOMMANDER_JAR=$PWD/jcommander/jcommander.jar
 
             # Makefile expects files that are not supplied from the packages we
             # are downloading. Create dummy versions to keep it happy.
@@ -141,7 +141,6 @@
             rm -f *.zip
             rm -f *.tar.gz
 
-            cp jcommander/jcommander.jar ./build/images/jtreg/lib
             chmod u+x ./build/images/jtreg/bin/*
 
             ls -lash
