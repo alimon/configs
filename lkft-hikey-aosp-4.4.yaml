@@ -81,7 +81,7 @@
             export DOWNLOAD_URL=https://snapshots.linaro.org/${PUB_DEST}
 
             if [ -z "${KERNEL_DESCRIBE}" ]; then
-                export QA_BUILD_VERSION="${KERNEL_DESCRIBE}"
+                export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
             else
                 export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
             fi
@@ -95,7 +95,7 @@
                 --lava-server ${LAVA_SERVER} \
                 --qa-server ${QA_SERVER} \
                 --qa-server-team lkft \
-                --qa-server-project "aosp-${KERNEL_BRANCH}" \
+                --qa-server-project aosp-${KERNEL_BRANCH} \
                 --git-commit ${QA_BUILD_VERSION} \
                 --template-path configs/lkft/lava-job-definitions \
                 --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml \
@@ -114,7 +114,7 @@
                     --lava-server ${LAVA_SERVER} \
                     --qa-server ${QA_SERVER} \
                     --qa-server-team lkft \
-                    --qa-server-project "aosp-${KERNEL_BRANCH}" \
+                    --qa-server-project aosp-${KERNEL_BRANCH} \
                     --git-commit ${QA_BUILD_VERSION} \
                     --template-path configs/lkft/lava-job-definitions \
                     --template-names template-cts.yaml \
