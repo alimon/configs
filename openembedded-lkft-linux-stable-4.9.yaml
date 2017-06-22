@@ -76,6 +76,19 @@
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
     builders:
+        - shell: |
+            #!/bin/bash
+
+            # Mapping for MACHINE -> DEVICE_TYPE
+            case "${MACHINE}" in
+              hikey)
+                DEVICE_TYPE=hi6220-hikey
+                ;;
+            esac
+
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
         - shell:
             !include-raw: openembedded-lkft/builders.sh
         - inject:
@@ -98,8 +111,6 @@
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ ${BASE_URL}
         - shell: |
-            export DEVICE_TYPE=hi6220-hikey
-
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
@@ -123,7 +134,6 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            export DEVICE_TYPE=hi6220-hikey
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
             export KSELFTEST_SKIPLIST=""
 
