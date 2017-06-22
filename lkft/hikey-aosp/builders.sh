@@ -31,5 +31,5 @@ sed -i "s|\"kernel_branch\" : \"|\"kernel_branch\" : \"$KERNEL_BRANCH|g" out/bui
 
 cat << EOF > ${WORKSPACE}/injected_build_variables
 KERNEL_COMMIT=${commit}
-KERNEL_DESCRIBE="${describe}"
+KERNEL_DESCRIBE=${describe}
 EOF
