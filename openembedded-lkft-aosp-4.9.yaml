@@ -45,6 +45,9 @@
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: '${KERNEL_BRANCH}'
     disabled: false
     node: master
     display-name: 'LKFT - AOSP 4.9 (OpenEmbedded/morty)'
@@ -136,7 +139,6 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
-            export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
             export KSELFTEST_SKIPLIST=""
 
             rm -rf configs
@@ -145,10 +147,10 @@
             python configs/openembedded-lkft/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
-                --lava-server ${LAVA_SERVER} \
+                --lava-server https://lkft.${LAVA_SERVER} \
                 --qa-server ${QA_SERVER} \
                 --qa-server-team lkft \
-                --qa-server-project ${KERNEL_BRANCH} \
+                --qa-server-project ${QA_SERVER_PROJECT} \
                 --git-commit ${KERNEL_COMMIT} \
                 --template-names template-kselftest.yaml template-ltp.yaml template-libhugetlbfs.yaml
     publishers:
