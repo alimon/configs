@@ -66,6 +66,12 @@
               tar xzf jtharness-5.0.tar.gz jtharness/lib
             fi
 
+            if [ ! -d javahelp ]; then
+                mkdir -p javahelp/lib
+                wget http://central.maven.org/maven2/javax/help/javahelp/2.0.05/javahelp-2.0.05.jar
+                mv javahelp-2.0.05.jar javahelp/lib/jh.jar
+            fi
+
             if [ ! -d junit ]; then
               mkdir junit
               wget http://repo1.maven.org/maven2/junit/junit/4.8.2/junit-4.8.2.jar -O junit/junit.jar
@@ -111,7 +117,7 @@
             export JDK17HOME=$(dirname $(java -XshowSettings:properties |& \
                  grep java.home |  sed 's,^.*java.home = \(.*\),\1,'))
             export JAVAHELP_HOME=$PWD/jtharness
-            export JAVAHELP_JAR=$PWD/jtharness/lib/jh.jar
+            export JAVAHELP_JAR=$PWD/javahelp/lib/jh.jar
             export JAVATEST_HOME=$PWD/jtharness
             export JAVATEST_JAR=$PWD/jtharness/lib/javatest.jar
             export JAVAHARNESS_HOME=$PWD/jtharness
