@@ -69,7 +69,10 @@
                 variable: QA_REPORTS_TOKEN
     builders:
         - shell:
-            !include-raw: lite-aeolus/builders.sh
+            !include-raw:
+                - lite-aeolus/build-init.sh
+                - lite-aeolus/build-zephyr.js.sh
+                - lite-aeolus/build-finalize.sh
         - inject:
             properties-file: env_var_parameters
         - build-name-setter:

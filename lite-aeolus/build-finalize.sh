@@ -1,0 +1,3 @@
+
+CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
+CCACHE_DIR=${CCACHE_DIR} ccache -s

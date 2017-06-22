@@ -45,13 +45,3 @@ echo "########################################################################"
 echo "    Build"
 echo "########################################################################"
 
-. deps/zephyr/zephyr-env.sh
-. ./zjs-env.sh
-make BOARD=${PLATFORM}
-
-cd ${WORKSPACE}
-mkdir -p out/${PLATFORM}
-cp outdir/${PLATFORM}/zephyr.bin out/${PLATFORM}/
-
-CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
-CCACHE_DIR=${CCACHE_DIR} ccache -s
