@@ -4,11 +4,11 @@ git clone --depth 1 https://git.linaro.org/lite/zephyr.git zephyr-rtos
 
 
 small_rom() {
-    echo "arduino_101 foo_bar" | grep -F -w -q "$1"
+    echo "arduino_101" | grep -F -w -q "$1"
 }
 
 cd zephyr
-if small_rom $1; then
+if small_rom ${PLATFORM}; then
     ./make-minimal BOARD=${PLATFORM}
 else
     make BOARD=${PLATFORM}
