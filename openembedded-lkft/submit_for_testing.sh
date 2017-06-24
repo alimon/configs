@@ -2,6 +2,8 @@
 
 set -e
 
+[ -z "${KSELFTEST_SKIPLIST}" ] && export KSELFTEST_SKIPLIST=""
+
 if [ ! -z "${KERNEL_DESCRIBE}" ]; then
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
 else
