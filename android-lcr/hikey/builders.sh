@@ -19,6 +19,10 @@ cd -
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
 cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.json /home/buildslave/srv/${BUILD_DIR}/build/out/*.xml ${WORKSPACE}/
 
+# publish fip.bin and l-loader.bin
+cp -v /home/buildslave/srv/${BUILD_DIR}/build/out/dist/fip.bin \
+      /home/buildslave/srv/${BUILD_DIR}/build/out/dist/l-loader.bin build/out/ || true
+
 # Compress images
 cd build/
 out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/root/file_contexts -L data -l 1342177280 -a data out/userdata-4gb.img out/data
@@ -26,9 +30,13 @@ cd -
 
 cd build/out
 rm -f ramdisk.img
-for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img"; do
-  echo "Compressing ${image}"
-  xz ${image}
+for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img" "fip.bin" "l-loader.bin"; do
+  ## there are the cases that fip.bin and l-loader.bin not generated
+  ## so we add the check before run xz command
+  if [ -f ${image} ]; then
+    echo "Compressing ${image}"
+    xz ${image}
+  fi
 done
 cd -
 
