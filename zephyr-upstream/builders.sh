@@ -54,15 +54,19 @@ time sanitycheck \
   --ccache
 
 cd ${WORKSPACE}
-find ${OUTDIR} -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
+# OUTDIR is already per-platform, but it may get contaminated with unrelated
+# builds e.g. due to bugs in sanitycheck script. It however stores builds in
+# per-platform named subdirs under its --outdir (${OUTDIR} in our case), so
+# we use ${OUTDIR}/${PLATFORM} paths below.
+find ${OUTDIR}/${PLATFORM} -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
 rsync -avm \
   --include=zephyr.bin \
   --include=zephyr.config \
   --include=zephyr.elf \
   --include='*/' \
   --exclude='*' \
-  ${OUTDIR}/ out/
-find ${OUTDIR} -type f -name 'zephyr.config' -delete
+  ${OUTDIR}/${PLATFORM} out/
+find ${OUTDIR}/${PLATFORM} -type f -name 'zephyr.config' -delete
 
 CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
 CCACHE_DIR=${CCACHE_DIR} ccache -s
