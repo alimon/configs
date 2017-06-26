@@ -88,7 +88,10 @@
 
             case "$label" in
               tcwg-x86_64-dev-01)
-                machines="dev-01.tcwglab dev-02.tcwglab $(for i in `seq 1 8`; do echo build-0$i.tcwglab; done) apm-01.tcwglab apm-02.tcwglab test-armv8-01.tcwglab test-armv8-02.tcwglab $(for i in `seq 1 5`; do echo tcwg-tx1-0$i.tcwglab tcwg-tk1-0$i.tcwglab; done) ex40-01.tcwglab.linaro.org r1-a7.aus-colo r1-a12.aus-colo"
+                machines="ex40-01.tcwglab.linaro.org r1-a7.aus-colo r1-a12.aus-colo"
+                for node in $(print_nodes_in_labels tcwg-apm_64-build tcwg-tk1 tcwg-tx1 tcwg-x86_64-1-cam tcwg-x86_64-build tcwg-coordinator); do
+                  machines="$machines $(print_host_for_node $node)"
+                done
                 ;;
               *) echo "ERROR: Unknown host: $label"; exit 1 ;;
             esac
