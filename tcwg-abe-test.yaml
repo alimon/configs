@@ -119,11 +119,11 @@
                 . ./test-container.sh
                 trap "build_container_cleanup; test_container_cleanup" 0 1 2 3 5 9 13 15
 
-                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --target arm-linux-gnueabihf --testcontainer ${test_container_host}:${test_container_port} --runtests --excludecheck gdb --override '--extraconfigdir ../config/gcc6'
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --target arm-linux-gnueabihf --testcontainer ${test_container_host}:${test_container_port} --runtests --excludecheck gdb --override '--extraconfigdir ../config/gcc7'
                 status=$?
                 ;;
               native_build)
-                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --target native --runtests --bootstrap --excludecheck gdb --override '--extraconfigdir ../config/gcc5'
+                ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --target native --runtests --bootstrap --excludecheck gdb --override '--extraconfigdir ../config/gcc6'
                 status=$?
                 ;;
               testsuite)
