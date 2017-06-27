@@ -71,7 +71,7 @@
 
             MD5_FILENAME="MD5SUMS.txt"
             wget -O "${MD5_FILENAME}" "${SNAPSHOTS_BASE_URL}${MD5_FILENAME}"
-            ROOTFS_FILENAME=$(grep -E "rpb-console-image-hikey-[0-9]{14}-[0-9]{2}\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
+            ROOTFS_FILENAME=$(grep -E "rpb-console-image-hikey-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
             BOOT_FILENAME=$(grep -E "boot\S*uefi\.img" "${MD5_FILENAME}" | awk '{print $2}')
             export BOOT_URL="${SNAPSHOTS_BASE_URL}${BOOT_FILENAME}"
             export SYSTEM_URL="${SNAPSHOTS_BASE_URL}${ROOTFS_FILENAME}"
