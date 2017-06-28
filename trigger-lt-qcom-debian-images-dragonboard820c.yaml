@@ -11,20 +11,15 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    parameters:
-        - string:
-            name: KERNEL_BRANCH
-            default: 'release/db820c/qcomlt-4.11'
     disabled: false
     node: build
     display-name: 'Trigger for Qualcomm Debian based images for Snapdragon 820'
     scm:
         - git:
             url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
             name: origin
             branches:
-                - refs/heads/${KERNEL_BRANCH}
+                - refs/heads/release/db820c/qcomlt-4.11
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
