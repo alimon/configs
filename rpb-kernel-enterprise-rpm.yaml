@@ -1,0 +1,97 @@
+- job:
+    name: rpb-reference-kernel-rpm
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: KERNEL_GIT_BRANCH
+            default: 'erp-noupstream'
+        - string:
+            name: KERNEL_GIT_URL
+            default: 'https://github.com/Linaro/rpk.git'
+        - string:
+            name: TARGET_REPO
+            default: 'ERP-RPM:17.08:Staging'
+    disabled: false
+    node: docker-jessie-rp
+    display-name: 'Reference Platform - Linux Kernel (EE) for RPM'
+    scm:
+        - git:
+            url: ${KERNEL_GIT_URL}
+            refspec: +refs/heads/${KERNEL_GIT_BRANCH}:refs/remotes/origin/${KERNEL_GIT_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNEL_GIT_BRANCH}
+            basedir: linux
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: OSCRC_USER
+                variable: OSCRC_USER
+        - credentials-binding:
+            - text:
+                credential-id: OSCRC_PASS
+                variable: OSCRC_PASS
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+            sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y -q osc xz
+
+            cat > $HOME/.oscrc <<EOF
+            [general]
+            apiurl = https://obs.linaro.org
+
+            [https://obs.linaro.org]
+            user=$OSCRC_USER
+            pass=$OSCRC_PASS
+            EOF
+
+            # Checkout packaging
+            #
+            osc co $TARGET_REPO kernel-aarch64
+            rm $TARGET_REPO/kernel-aarch64/linux-*.tar.xz
+
+            # Export the kernel packaging version
+            cd ${WORKSPACE}/linux
+
+            kernel_version=$(make kernelversion)
+            kernel_rpm_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
+            kernel_git=$(git rev-parse --short=7 HEAD)
+            pname=linux-${kernel_rpm_pkg_version}-${kernel_git}
+            git archive --prefix=${pname}/ --format=tar ${kernel_git}|xz -c > ~/${WORKSPACE}/$TARGET_REPO/kernel-aarch64/${pname}.tar.xz
+
+            # Update OBS checkout
+            cd ${WORKSPACE}/$TARGET_REPO/kernel-aarch64
+
+            sed -i -e "s/^%define rpmversion .*/%define rpmversion ${kernel_rpm_pkg_version}/" \
+                   -e "s/^%define gitrelease .*/%define gitrelease ${kernel_git}/" \
+                kernel-aarch64.spec
+            osc addremove .
+            osc ci . -m "Update to ${pname}"
+
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
