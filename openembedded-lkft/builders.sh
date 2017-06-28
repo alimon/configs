@@ -213,7 +213,7 @@ case "${KERNEL_RECIPE}" in
     PUB_DEST="linux-lt-4.4"
     ;;
   linux-hikey-lts)
-    PUB_DEST="linux-lts-4.4"
+    PUB_DEST="linux-stable-rc-4.4"
     ;;
   *)
     PUB_DEST="${KERNEL_VERSION}"

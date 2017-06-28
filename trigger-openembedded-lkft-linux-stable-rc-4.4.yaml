@@ -1,5 +1,5 @@
 - job:
-    name: trigger-openembedded-lkft-linux-lts-4.4
+    name: trigger-openembedded-lkft-linux-stable-rc-4.4
     project-type: freestyle
     defaults: global
     properties:
@@ -12,10 +12,10 @@
             num-to-keep: 30
     disabled: false
     node: master
-    display-name: 'Trigger for LKFT - Linux LTS 4.4 + HiKey'
+    display-name: 'Trigger for LKFT - Linux Stable RC 4.4 + HiKey'
     scm:
         - git:
-            url: https://git.linaro.org/people/sumit.semwal/linux-lts.git
+            url: https://git.linaro.org/people/sumit.semwal/arm64-stable-rc.git
             refspec: +refs/tags/*:refs/remotes/origin/tags/*
             name: origin
             branches:
@@ -38,7 +38,7 @@
     publishers:
         - trigger-parameterized-builds:
             - project:
-                - 'openembedded-lkft-linux-lts-4.4'
+                - 'openembedded-lkft-linux-stable-rc-4.4'
               condition: SUCCESS
               property-file: lkft_parameters
         - email-ext:
@@ -50,5 +50,5 @@
                 Build URL: ${BUILD_URL}
 
                 New upstream tag:
-                https://git.linaro.org/people/sumit.semwal/linux-lts.git ${GIT_BRANCH} ${GIT_COMMIT}
+                https://git.linaro.org/people/sumit.semwal/arm64-stable-rc.git ${GIT_BRANCH} ${GIT_COMMIT}
             always: true
