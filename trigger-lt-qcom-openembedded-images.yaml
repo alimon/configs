@@ -14,8 +14,18 @@
     disabled: false
     node: build
     display-name: 'Trigger for Qualcomm OE builds'
+    scm:
+        - git:
+            url: https://github.com/ndechesne/meta-qcom.git
+            name: origin
+            branches:
+                - refs/heads/morty
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
     triggers:
         - timed: '@weekly'
+        - pollscm: 'H/5 * * * *'
     wrappers:
         - timestamps
     builders:
