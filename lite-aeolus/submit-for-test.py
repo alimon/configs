@@ -32,7 +32,7 @@ if SUBMIT:
     username = os.getenv("LAVA_USER")
     token = os.getenv("LAVA_TOKEN")
     uri = os.getenv("LAVA_SERVER")
-    server = xmlrpclib.ServerProxy("http://%s:%s@%s" % (username, token, uri))
+    server = xmlrpclib.ServerProxy("https://%s:%s@%s" % (username, token, uri))
 
     job_id = server.scheduler.submit_job(jobdef)
-    print("http://%s../scheduler/job/%s" % (uri, job_id))
+    print("https://%s../scheduler/job/%s" % (uri, job_id))
