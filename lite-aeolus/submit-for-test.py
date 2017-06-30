@@ -35,4 +35,4 @@ if SUBMIT:
     server = xmlrpclib.ServerProxy("https://%s:%s@%s" % (username, token, uri))
 
     job_id = server.scheduler.submit_job(jobdef)
-    print("https://%s../scheduler/job/%s" % (uri, job_id))
+    print("LAVA: https://%s../scheduler/job/%s" % (uri, job_id))
