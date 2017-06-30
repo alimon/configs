@@ -186,6 +186,7 @@ TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 KERNEL_DESCRIBE=$(cd ${STAGING_KERNEL_DIR} && git describe --always)
+KSELFTEST_VERSION=$(bitbake -e kselftests | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
 
 cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 {
@@ -193,6 +194,7 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "kernel_commit_id" : "${SRCREV_kernel}",
   "kernel_branch" : "${KERNEL_BRANCH}",
   "kernel_describe" : "${KERNEL_DESCRIBE}",
+  "kselftest_version" : "${KSELFTEST_VERSION}",
   "build_arch" : "${TUNE_FEATURES}",
   "compiler" : "${TARGET_SYS} ${GCCVERSION}"
 }
@@ -235,4 +237,5 @@ BOOT_URL=${SNAPSHOTS_URL}/${BASE_URL}/${BOOT_IMG}
 SYSTEM_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_IMG}
 KERNEL_COMMIT=${SRCREV_kernel}
 KERNEL_DESCRIBE=${KERNEL_DESCRIBE}
+KSELFTEST_VERSION=${KSELFTEST_VERSION}
 EOF
