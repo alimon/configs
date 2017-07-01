@@ -90,6 +90,7 @@ CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests libhugetlbfs-test
 CORE_IMAGE_BASE_INSTALL_append = " acl attr numactl"
 CORE_IMAGE_BASE_INSTALL_append = " python python-misc python-modules python-numpy python-pexpect python-pyyaml"
 CORE_IMAGE_BASE_INSTALL_append = " packagegroup-core-buildessential packagegroup-core-tools-debug"
+CORE_IMAGE_BASE_INSTALL_append = " curl git util-linux"
 EOF
 
 # Override cmdline
