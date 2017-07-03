@@ -132,13 +132,21 @@
             echo BUILD STARTED $(date)
             echo WORKSPACE: ${WORKSPACE}
 
+            # Build our own version of dejagnu, using abe to try to
+            # avoid problems with the system's version
+            ${BUILD_SHELL} -c "git clone https://git.linaro.org/toolchain/abe.git"
+            ${BUILD_SHELL} -c "cd abe && ./configure --with-git-reference-dir=/home/tcwg-buildslave/snapshots-ref"
+            ${BUILD_SHELL} -c "cd abe && ./abe.sh --build dejagnu"
+            djpath=$(${BUILD_SHELL} -c "ls -d $PWD/abe/./builds/destdir/*/bin")
+            [ -x $djpath/runtest ] || (echo "DejaGnu not built in the expected location: $djpath/runtest" && exit 1)
+
             # If configure or build fails, the execution will stop
             # because of 'set -e'. But for 'make check' we want to
             # execute all the tests, and report if there were some
             # errors.
             ${BUILD_SHELL} -c "../configure $lto --enable-plugins --disable-gprof --disable-gdb --disable-sim --disable-libdecnumber --disable-readline --prefix=`pwd`/install $target_opt ${bfd}"
             ${BUILD_SHELL} -c "make all -j$jobs"
-            ${BUILD_SHELL} -c "make check -j$jobs -k" || result=1
+            ${BUILD_SHELL} -c "PATH=$djpath:$PATH make check -j$jobs -k" || result=1
 
             # For the moment, only build gdb (do not run the tests).
             # Do this in a different subdir.
