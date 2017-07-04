@@ -115,14 +115,6 @@ do_install_append() {
 EOF
 
 # Update kernel recipe SRCREV
-case "${KERNEL_RECIPE}" in
-  linux-hikey-lts)
-    SRCREV_kernel=$(git ls-remote ${KERNEL_REPO} refs/tags/${KERNEL_BRANCH} | cut -f1)
-    ;;
-  *)
-    SRCREV_kernel=$(git ls-remote ${KERNEL_REPO} refs/heads/${KERNEL_BRANCH} | cut -f1)
-    ;;
-esac
 kernel_recipe=$(find ../layers/meta-96boards -type f -name ${KERNEL_RECIPE}_${KERNEL_VERSION}.bb)
 sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_recipe}
 
@@ -179,12 +171,10 @@ Build description:
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
-SRCREV_kernel=$(bitbake -e ${KERNEL_RECIPE} | grep "^SRCREV_kernel="| cut -d'=' -f2 | tr -d '"')
 GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
-[ -z "${KERNEL_DESCRIBE}" ] && KERNEL_DESCRIBE=$(cd ${STAGING_KERNEL_DIR} && git describe --always)
 KSELFTEST_VERSION=$(bitbake -e kselftests | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
 
 cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
@@ -235,7 +225,6 @@ BASE_URL=${BASE_URL}
 BOOT_URL=${SNAPSHOTS_URL}/${BASE_URL}/${BOOT_IMG}
 SYSTEM_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_IMG}
 KERNEL_COMMIT=${SRCREV_kernel}
-KERNEL_DESCRIBE=${KERNEL_DESCRIBE}
 KERNEL_CONFIG_URL=${SNAPSHOTS_URL}/${BASE_URL}/defconfig
 KSELFTEST_VERSION=${KSELFTEST_VERSION}
 EOF

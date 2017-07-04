@@ -41,6 +41,7 @@
         - shell: |
             #!/bin/bash -e
             echo KERNEL_DESCRIBE=$(git describe --always) > lkft_parameters
+            echo SRCREV_kernel=${GIT_COMMIT} >> lkft_parameters
             cat lkft_parameters
         - trigger-builds:
             - project:

@@ -31,6 +31,10 @@
             name: KERNEL_REPO
             default: 'https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git'
         - string:
+            name: KERNEL_DESCRIBE
+        - string:
+            name: SRCREV_kernel
+        - string:
             name: IMAGES
             default: 'rpb-console-image'
         - string:
@@ -92,18 +96,16 @@
             esac
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+            echo "#${BUILD_NUMBER}-${SRCREV_kernel:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
         - inject:
             properties-file: device_type_parameters
         - shell:
             !include-raw: openembedded-lkft/builders.sh
         - inject:
             properties-file: post_build_lava_parameters
-        - shell: |
-            #!/bin/bash -e
-            echo "#${BUILD_NUMBER}-${KERNEL_COMMIT:0:8}" > ${WORKSPACE}/version.txt
-        - build-name-setter:
-            name: 'version.txt'
-            file: true
         - linaro-publish-token
         - shell: |
             #!/bin/bash
