@@ -184,7 +184,7 @@ GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
-KERNEL_DESCRIBE=$(cd ${STAGING_KERNEL_DIR} && git describe --always)
+[ -z "${KERNEL_DESCRIBE}" ] && KERNEL_DESCRIBE=$(cd ${STAGING_KERNEL_DIR} && git describe --always)
 KSELFTEST_VERSION=$(bitbake -e kselftests | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
 
 cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
