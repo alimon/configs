@@ -26,10 +26,10 @@
             default: 'master'
         - string:
             name: BASE_URL
-            default: 'https://builds.96boards.org/'
+            default: 'https://snapshots.linaro.org/'
         - string:
             name: PUB_DEST
-            default: 'snapshots/reference-platform/openembedded/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NUMBER}'
+            default: 'reference-platform/embedded/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
         - string:
             name: BUNDLE_STREAM_NAME
             default: '/public/team/linaro/rpb-openembedded-${MANIFEST_BRANCH}/'
@@ -78,8 +78,7 @@
             !include-raw: rpb-openembedded/builders.sh
         - inject:
             properties-file: post_build_lava_parameters
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
         - shell: |
