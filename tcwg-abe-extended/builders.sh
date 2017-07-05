@@ -7,7 +7,7 @@ git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenki
 
 ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
 . ./build-container.sh
-trap "build_container_cleanup" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
+trap "build_container_cleanup" EXIT HUP INT QUIT TRAP PIPE TERM
 BUILD_SHELL="build_container_exec bash"
 
 gcc4_9ver=gcc=gcc.git~linaro-4.9-2016.02
@@ -58,7 +58,7 @@ case "$testname" in
 	tester_label=$(print_tester_label_for_target $target)
 	./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
 	. ./test-container.sh
-	trap "build_container_cleanup; test_container_cleanup" 0 SIGHUP SIGINT SIGQUIT SIGTRAP SIGPIPE SIGTERM
+	trap "build_container_cleanup; test_container_cleanup" EXIT HUP INT QUIT TRAP PIPE TERM
 	testcontainer_opt="--testcontainer ${test_container_host}:${test_container_port}"
         ;;
       cross_bare_*)
