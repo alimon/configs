@@ -25,7 +25,7 @@
             default: 'https://github.com/Linaro/rpk.git'
         - string:
             name: TARGET_REPO
-            default: 'ERP-RPM:17.08:Staging'
+            default: 'ERP-RPM:17.08:staging'
     disabled: false
     node: docker-jessie-rp
     display-name: 'Reference Platform - Linux Kernel (EE) for RPM'
@@ -72,8 +72,8 @@
 
             # Checkout packaging
             #
-            osc co $TARGET_REPO kernel-aarch64
-            rm $TARGET_REPO/kernel-aarch64/linux-*.tar.xz
+            osc co ${TARGET_REPO} kernel-aarch64
+            rm ${TARGET_REPO}/kernel-aarch64/linux-*.tar.xz
 
             # Export the kernel packaging version
             cd ${WORKSPACE}/linux
@@ -82,10 +82,10 @@
             kernel_rpm_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
             kernel_git=$(git rev-parse --short=7 HEAD)
             pname=linux-${kernel_rpm_pkg_version}-${kernel_git}
-            git archive --prefix=${pname}/ --format=tar ${kernel_git} | xz -c > ~/${WORKSPACE}/$TARGET_REPO/kernel-aarch64/${pname}.tar.xz
+            git archive --prefix=${pname}/ --format=tar ${kernel_git} | xz -c > ~/${WORKSPACE}/${TARGET_REPO}/kernel-aarch64/${pname}.tar.xz
 
             # Update OBS checkout
-            cd ${WORKSPACE}/$TARGET_REPO/kernel-aarch64
+            cd ${WORKSPACE}/${TARGET_REPO}/kernel-aarch64
 
             sed -i -e "s/^%define rpmversion .*/%define rpmversion ${kernel_rpm_pkg_version}/" \
                    -e "s/^%define gitrelease .*/%define gitrelease ${kernel_git}/" \
