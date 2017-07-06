@@ -31,15 +31,15 @@
 
             set -ex
 
-            # Make sure the base image is updated to 7.2.1603
-            sudo sed -i 's/\$releasever/7.2.1603/g' /etc/yum.repos.d/CentOS-Base.repo
+            # Make sure the base image is updated to 7.3.1611
+            sudo sed -i 's/\$releasever/7.3.1611/g' /etc/yum.repos.d/CentOS-Base.repo
 
             sudo yum update -y
             sudo yum install -y cpio lorax python-requests wget xz
 
             # Call lorax to create the netinstall image
             sudo rm -rf netinstall
-            sudo lorax '--product=CentOS Linux' --version=7 --release=7.2.1603 \
+            sudo lorax '--product=CentOS Linux' --version=7 --release=7.3.1611 \
               --source=http://mirror.centos.org/altarch/7/os/aarch64/ \
               --source=http://repo.linaro.org/rpm/linaro-overlay/centos-7/repo/ \
               --isfinal --nomacboot --noupgrade --buildarch=aarch64 '--volid=CentOS 7 aarch64' netinstall/
