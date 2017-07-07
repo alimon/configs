@@ -20,11 +20,22 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail"
+pkg_list="android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libssl-dev python-requests texinfo vim-tiny whiptail"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
+fi
+# Temporary workaround - install packages from jessie-backports
+# The following packages have unmet dependencies:
+#  libsdl1.2-dev : Depends: libglu1-mesa-dev but it is not going to be installed or
+#                           libglu-dev
+#                  Depends: libpulse-dev but it is not going to be installed
+pkg_list="libsdl1.2-dev"
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y -t jessie-backports ${pkg_list}; then
+  echo "INFO: apt install error - try again in a moment"
+  sleep 15
+  sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y -t jessie-backports ${pkg_list}
 fi
 
 set -ex
