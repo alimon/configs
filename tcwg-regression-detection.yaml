@@ -111,8 +111,8 @@
             echo "abe_revision=$cur_abe_rev" > artifacts/infos.txt
 
             cat << EOF > buildfarm_cmp_parameters
-            ref_override=--extraconfigdir ../config/gcc6 gcc=gcc.git~linaro/gcc-6-branch
-            eval_override=--extraconfigdir ../config/gcc6 gcc=gcc.git~linaro/gcc-6-branch
+            ref_override=--extraconfigdir ../config/gcc7 gcc=gcc.git~linaro/gcc-7-branch
+            eval_override=--extraconfigdir ../config/gcc7 gcc=gcc.git~linaro/gcc-7-branch
             ref_abe_branch=$ref_abe_rev
             eval_abe_branch=$cur_abe_rev
             target_list=aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf
@@ -127,10 +127,11 @@
             # testrelease=false means that tcwg-make-release should
             # not spawn tcwg-test-release itself. This is taken care
             # of by tcwg-make-and-test-release.
+            # keep 6.2-2016.11 regtest tag until we make one for 7.1
             cat << EOF > make_release_parameters
-            gcc_src=http://releases.linaro.org/components/toolchain/gcc-linaro/6.2-2016.11/gcc-linaro-6.2-2016.11.tar.xz
-            release_name=2016.11-regtest-${BUILD_NUMBER}
-            toolchain_config=gcc6
+            gcc_src=http://releases.linaro.org/components/toolchain/gcc-linaro/7.1-2017.05/gcc-linaro-7.1-2017.05.tar.xz
+            release_name=2017.05-regtest-${BUILD_NUMBER}
+            toolchain_config=gcc7
             abe_branch=$cur_abe_rev
             fileserver=dev-01.tcwglab
             target_list=$release_target_list
