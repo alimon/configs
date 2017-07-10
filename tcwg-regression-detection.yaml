@@ -22,6 +22,10 @@
             name: release_target_list
             default: 'arm-linux-gnueabihf'
             description: 'List of release targets to use'
+        - string:
+            name: ref_abe_rev
+            default: ''
+            description: 'Reference ABE revision to use. Empty (default) means previous revision'
     disabled: false
     node: tcwg-coordinator
     retry-count: 3
@@ -106,7 +110,9 @@
             # Abe's revisions to test
             # TODO: gather reference from previous build instead of using N-1.
             cur_abe_rev=$(git rev-parse HEAD)
-            ref_abe_rev=$(git rev-parse HEAD~)
+            if [ "xref_abe_rev" = "x" ]; then
+              ref_abe_rev=$(git rev-parse HEAD~)
+            fi
 
             echo "abe_revision=$cur_abe_rev" > artifacts/infos.txt
 
