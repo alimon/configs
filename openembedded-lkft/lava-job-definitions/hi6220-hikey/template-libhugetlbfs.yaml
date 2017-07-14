@@ -108,7 +108,7 @@ actions:
       repository:
         metadata:
           format: Lava-Test Test Definition 1.0
-          name: network-tests
+          name: prep-tests
           description: "Basic network tests"
         run:
           steps:
@@ -119,8 +119,11 @@ actions:
           - ip a
           - ifconfig
           - df
-      name: network-inline
-      path: inline/network.yaml
+          - cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor || true
+          - echo "powersave" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor || true
+          - cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor || true
+      name: prep-inline
+      path: inline/prep.yaml
     - repository: git://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/libhugetlbfs/libhugetlbfs.yaml
