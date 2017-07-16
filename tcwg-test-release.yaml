@@ -90,8 +90,16 @@
             # Start build container
             builder=$(print_host_for_node $NODE_NAME)
             build_container_type=docker
-            # We currently test i686 releases on x86_64 hosts
-            builder_arch=amd64
+            # Use tarball name to decide if we use an i386 container or an amd64 one
+            tarball_file=$(basename ${tarball_url})
+            case ${tarball_file} in
+                *-i686*) builder_arch=i386 ;;
+                *-x86_64*) builder_arch=amd64 ;;
+                *)
+                    echo "ERROR: could not determine container type from tarball ${tarball_file}"
+                    exit 1
+                    ;;
+            esac
             bash -x ${WORKSPACE}/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
