@@ -268,7 +268,7 @@
             # not shared between host and container. So, we need to
             # execute the find command inside the container.
 
-            if test x"${canadian}" = x"true"; then
+            if test x"${canadian}" = x"--canadian"; then
                 linux_artifacts=artifacts1.txt
                 mingw_artifacts=artifacts2.txt
             else
@@ -282,7 +282,7 @@
               exit 1
             fi
 
-            if test x"${canadian}" = x"true"; then
+            if test x"${canadian}" = x"--canadian"; then
               tarball_mingw=$(grep "^toolchain=" ${WORKSPACE}/${mingw_artifacts} | cut -d = -f 2-)
               if test x"${tarball_mingw}" = x"" -o ! -f "${tarball_mingw}"; then
                 echo "ERROR: no binary MingW tarball found!"
@@ -295,16 +295,16 @@
               tarball_linux_url="http://${fileserver}/${url_prefix}/${target}/${tarball_linux}"
               cat << EOF > tcwg.params.linux
             tarball_url=${tarball_linux_url}
-            release=${tcwg_release}
+            release=${tcwg_version}-${tcwg_release}
             target=${host}-${target}
             EOF
 
-              if test x"${canadian}" = x"true"; then
+              if test x"${canadian}" = x"--canadian"; then
                 tarball_mingw="`basename ${tarball_mingw}`"
                 tarball_mingw_url="http://${fileserver}/${url_prefix}/${target}/${tarball_mingw}"
                 cat << EOF > tcwg.params.mingw
             tarball_url=${tarball_mingw_url}
-            release=${tcwg_release}
+            release=${tcwg_version}-${tcwg_release}
             target=mingw-${target}
             EOF
               fi
