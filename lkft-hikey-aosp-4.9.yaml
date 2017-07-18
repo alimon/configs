@@ -26,6 +26,10 @@
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
+        - string:
+            name: KERNEL_DESCRIBE
+        - string:
+            name: SRCREV_kernel
     disabled: false
     node: docker-xenial-aosp
     display-name: 'LKFT - AOSP 4.9 (Android)'
@@ -56,8 +60,6 @@
         - shell:
             !include-raw:
                 - lkft/hikey-aosp/builders.sh
-        - inject:
-            properties-file: injected_build_variables
         - linaro-publish-token
         - shell: |
             #!/bin/bash
@@ -81,6 +83,7 @@
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
             export PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
             export DOWNLOAD_URL=https://snapshots.linaro.org/${PUB_DEST}
+            export KERNEL_COMMIT=${SRCREV_kernel}
 
             if [ ! -z "${KERNEL_DESCRIBE}" ]; then
                 export QA_BUILD_VERSION=${KERNEL_DESCRIBE}

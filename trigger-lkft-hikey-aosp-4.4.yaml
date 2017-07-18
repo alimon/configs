@@ -43,12 +43,13 @@
             echo KERNEL_DESCRIBE=$(git describe --always) > lkft_parameters
             echo SRCREV_kernel=${GIT_COMMIT} >> lkft_parameters
             cat lkft_parameters
-        - trigger-builds:
-            - project:
-                - 'lkft-hikey-aosp-4.4'
     publishers:
         - trigger-parameterized-builds:
             - project:
                 - 'openembedded-lkft-aosp-4.4'
+              condition: SUCCESS
+              property-file: lkft_parameters
+            - project:
+                - 'lkft-hikey-aosp-4.4'
               condition: SUCCESS
               property-file: lkft_parameters
