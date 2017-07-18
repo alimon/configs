@@ -109,7 +109,7 @@ actions:
         metadata:
           format: Lava-Test Test Definition 1.0
           name: prep-tests
-          description: "Basic network tests"
+          description: "Device preparation"
         run:
           steps:
           # the image does not raise the interface itself
@@ -119,9 +119,9 @@ actions:
           - ip a
           - ifconfig
           - df
-          - cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor || true
-          - echo "powersave" > /sys/devices/system/cpu/cpufreq/policy0/scaling_governor || true
-          - cat /sys/devices/system/cpu/cpufreq/policy0/scaling_governor || true
+          - cat /sys/class/thermal/thermal_zone0/policy || true
+          - echo "power_allocator" > /sys/class/thermal/thermal_zone0/policy || true
+          - cat /sys/class/thermal/thermal_zone0/policy || true
       name: prep-inline
       path: inline/prep.yaml
     - repository: git://git.linaro.org/qa/test-definitions.git

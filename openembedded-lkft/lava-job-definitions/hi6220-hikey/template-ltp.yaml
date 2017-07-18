@@ -108,8 +108,8 @@ actions:
       repository:
         metadata:
           format: Lava-Test Test Definition 1.0
-          name: network-tests
-          description: "Basic network tests"
+          name: prep-tests
+          description: "Device preparation"
         run:
           steps:
           # the image does not raise the interface itself
@@ -119,8 +119,11 @@ actions:
           - ip a
           - ifconfig
           - df
-      name: network-inline
-      path: inline/network.yaml
+          - cat /sys/class/thermal/thermal_zone0/policy || true
+          - echo "power_allocator" > /sys/class/thermal/thermal_zone0/policy || true
+          - cat /sys/class/thermal/thermal_zone0/policy || true
+      name: prep-inline
+      path: inline/prep.yaml
     - repository: git://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/ltp/ltp.yaml
