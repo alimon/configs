@@ -39,12 +39,15 @@
 
             set -e
 
+            sudo apt-get update -q
+            sudo apt-get install -q -y --no-install-recommends quilt
+
             cd openstack-venvs/packages/debian
+
             ./_update-venvs.sh
+            ls -l
             ./_changelog-bump
-            #
-            # here we need a way to "git commit ." and merge
-            #
+
             ./_build-all.sh source
 
             mv *.changes *.dsc *.gz *.xz params-* $WORKSPACE
@@ -75,7 +78,7 @@
               property-file: params-nova
               condition: SUCCESS
             - project: build-package
-              property-file: params-openstack-clie
+              property-file: params-openstack-cli
               condition: SUCCESS
             - project: build-package
               property-file: params-swift
