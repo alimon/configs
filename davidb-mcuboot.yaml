@@ -1,0 +1,70 @@
+- job:
+    name: davidb-mcuboot
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'Zephyr mcuboot'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-xenial-amd64-13
+        - axis:
+            type: user-defined
+            name: ZEPHYR_GCC_VARIANT
+            values:
+#                - gccarmemb
+                - zephyr
+        - axis:
+            type: user-defined
+            name: PLATFORM
+            values:
+                - frdm_k64f
+        - axis:
+            type: user-defined
+            name: PROJECT
+            values:
+                - mcuboot
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: davidb-mcuboot/builders.sh
+        - inject:
+            properties-file: env_var_parameters
+        - build-name-setter:
+            template: '#${BUILD_NUMBER}-${GIT_COMMIT}'
+            macro: true
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              out/${PLATFORM} components/kernel/mcuboot/${ZEPHYR_GCC_VARIANT}/${PROJECT}/${PLATFORM}/${BUILD_NUMBER}
+
+            rm -rf out
+    publishers:
+        - email:
+            recipients: 'david.brown@linaro.org'
