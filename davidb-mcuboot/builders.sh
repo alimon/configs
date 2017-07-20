@@ -12,13 +12,16 @@ pwd
 echo "Environment"
 env
 
+# Build starts out in ${WORKSPACE}
+# Clean any previous runs.
+rm -rf ${WORKSPACE}/zephyr
+rm -rf ${WORKSPACE}/mcuboot
+
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
-mkdir ${WORKSPACE}
 git clone --depth 1 https://github.com/zephyrproject-rtos/zephyr ${WORKSPACE}/zephyr
 git clone --depth 1 https://github.com/runtimeco/mcuboot ${WORKSPACE}/mcuboot
 (cd ${WORKSPACE}/mcuboot; git fetch origin pull/85/head; git checkout -b pull85 FETCH_HEAD)
-git clone --depth 1 https://git.linaro.org/lite/linaro-aeolus.git ${WORKSPACE}
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 # Toolchains are pre-installed and come from:
