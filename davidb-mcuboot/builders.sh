@@ -22,7 +22,7 @@ git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
 git clone --depth 1 https://github.com/zephyrproject-rtos/zephyr ${WORKSPACE}/zephyr
 git clone --depth 1 https://github.com/runtimeco/mcuboot ${WORKSPACE}/mcuboot
-(cd ${WORKSPACE}/mcuboot; git fetch origin pull/85/head; git checkout -b pull85 FETCH_HEAD)
+# (cd ${WORKSPACE}/mcuboot; git fetch origin pull/85/head; git checkout -b pull85 FETCH_HEAD)
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 # Toolchains are pre-installed and come from:
