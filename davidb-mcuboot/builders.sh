@@ -65,7 +65,7 @@ echo "########################################################################"
 cd ${WORKSPACE}
 source zephyr/zephyr-env.sh
 cd ${WORKSPACE}/mcuboot/samples/zephyr
-make full.bin
+make full.bin BOARD=${PLATFORM}
 
 cd ${WORKSPACE}
 mkdir -p out/${PLATFORM}
