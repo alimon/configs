@@ -34,13 +34,18 @@ cleanup_exit()
 
 wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-cloud-image/debian/preseed.cfg -O preseed.cfg
 
+#
+# address.type=virtio-mmio forces all devices (storage, network) to be mmio instead of pci
+# Debian/jessie 3.16 kernel does not recognize virtio pci network card
+#
 sudo virt-install \
   --name ${image_name} \
   --initrd-inject preseed.cfg \
   --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
   --disk=pool=default,bus=virtio,size=10,format=qcow2 \
+  --network=network=default,address.type=virtio-mmio \
   --memory 2048 \
-  --location http://ftp.debian.org/debian/dists/stable/main/installer-arm64/ \
+  --location http://ftp.debian.org/debian/dists/oldstable/main/installer-arm64/ \
   --noreboot
 
 set +ex
