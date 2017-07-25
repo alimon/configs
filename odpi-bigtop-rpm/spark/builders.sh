@@ -6,6 +6,6 @@
   -Dmaven.javadoc.skip=true \
   -PHadoop-2.7 \
   -Pyarn \
-  -Phadoop.version=2.7.2 \
+  -Phadoop.version=2.7.3 \
   -Dscala-2.11 \
   --debug

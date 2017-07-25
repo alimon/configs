@@ -1,0 +1,70 @@
+- job:
+    name: bd-kibana-deb
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            leg-developers:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: ANT_OPTS
+            default: '-Xmx8G'
+        - string:
+            name: MAVEN_OPTS
+            default: '-Xmx8G'
+    disabled: false
+    node: docker-jessie-arm64
+    display-name: 'Kibana (deb)'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            # install prerequisites
+
+            sudo apt-get update -y
+            sudo apt-get install -y -t jessie-backports openjdk-8-jdk ruby-dev rpm npm
+
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+            source ~/.bashrc
+            gem install fpm -v 1.5.0
+            gem install pleaserun -v 0.0.24
+ 
+            # setup JAVA_HOME
+            export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+ 
+            # setup environments
+            export LANG="en_US.UTF-8"
+            
+            
+            # clone the Kibana definitions
+            git clone --depth 1 https://git.linaro.org/leg/bigdata/kibana.git -b v5.4.1 ${WORKSPACE}/kibana
+            cd ${WORKSPACE}/kibana
+            
+            #Install the version of node.js listed in the .node-version file (this can be easily automated with tools such as nvm and avn)
+            nvm install "$(cat .node-version)"
+            
+            #Install npm dependencies
+            npm install
+            
+            npm run build -- --skip-os-packages --release
+
+    publishers:
+        - archive:
+            artifacts: 'kibana/output/**'
+        - email-ext:
+            recipients: 'naresh.bhat@linaro.org, ganesh.raju@linaro.org, fathi.boudra@linaro.org'

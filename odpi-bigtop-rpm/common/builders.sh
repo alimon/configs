@@ -84,7 +84,7 @@ export PATH=${WORKSPACE}/protobuf/bin:${PATH}
 export PKG_CONFIG_PATH=${WORKSPACE}/protobuf/lib/pkgconfig
 
 # clone the ODPi BigTop definitions
-git clone --depth 1 https://git.linaro.org/leg/bigdata/bigtop-odpi.git ${WORKSPACE}/odpi-bigtop
+git clone --depth 1 https://git.linaro.org/leg/bigdata/bigtop-trunk.git -b erp17.08 ${WORKSPACE}/odpi-bigtop
 cd ${WORKSPACE}/odpi-bigtop
 
 # FIXME Upstream protobuf version 2.5.0 does not support AArch64. Bump up to 2.6.1.

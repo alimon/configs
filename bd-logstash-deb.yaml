@@ -1,0 +1,58 @@
+- job:
+    name: bd-logstash-deb
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            leg-developers:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+
+    disabled: false
+    node: docker-jessie-arm64
+    display-name: 'Logstash (deb)'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+            
+            set -ex
+            
+            # install prerequisites
+           
+            # install openjdk-8-jdk from distro repo
+            sudo apt-get update -y
+            sudo apt-get install -y -t jessie-backports openjdk-8-jdk rake
+ 
+            # setup JAVA_HOME
+            export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+ 
+            # setup environments
+            export LANG="en_US.UTF-8"
+ 
+            # clone the Logstash definitions
+            git clone --depth 1 https://git.linaro.org/leg/bigdata/logstash.git -b v5.4.1 ${WORKSPACE}/logstash
+            cd ${WORKSPACE}/logstash
+            
+            # okay everything is in place
+            rake bootstrap
+            rake plugin:install-default
+            
+            rake artifact:tar
+            rake artifact:deb
+
+    publishers:
+        - archive:
+            artifacts: 'logstash/output/**'
+        - email-ext:
+            recipients: 'naresh.bhat@linaro.org, ganesh.raju@linaro.org, fathi.boudra@linaro.org'

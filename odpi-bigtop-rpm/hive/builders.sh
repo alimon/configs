@@ -5,5 +5,5 @@
   -Dtar \
   -Dmaven.javadoc.skip=true \
   -PHadoop-2.7 \
-  -Phadoop.version=2.7.2 \
+  -Phadoop.version=2.7.3 \
   --debug
