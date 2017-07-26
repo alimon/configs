@@ -62,8 +62,12 @@ sudo virsh net-list --all
 
 mkdir out
 mv preseed.cfg out/debian-jessie-arm64-preseed.cfg
-# virsh vol-download is slow - copy from a mounted volume
-sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
+
+# https://bugs.linaro.org/show_bug.cgi?id=3164
+#sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
+
+virsh vol-download --pool default --vol ${image_name}.qcow2 --file ${image_name}.qcow2
+
 # extract kernel and initramfs from image
 sudo qemu-nbd --connect=/dev/nbd0 ${image_name}.qcow2
 for device in $(sudo kpartx -avs /dev/nbd0 | cut -d' ' -f3); do
