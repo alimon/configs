@@ -46,6 +46,10 @@
             name: branch
             default: ''
             description: 'Which branch to validate (should not be master).'
+        - string:
+            name: scripts_branch
+            default: 'refs/remotes/origin/llvmprod'
+            description: 'Branch to pull jenkins-script from'
     disabled: false
     node: tcwg-coordinator
     retry-count: 3
@@ -57,7 +61,7 @@
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
-                - refs/heads/master
+                - ${scripts_branch}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true

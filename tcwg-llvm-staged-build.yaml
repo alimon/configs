@@ -59,6 +59,10 @@
             default: 'master'
             description: 'Which branch to pull from. Need to exist in all projects above, if any selected.'
         - string:
+            name: scripts_branch
+            default: 'refs/remotes/origin/llvmprod'
+            description: 'Branch to pull jenkins-script from'
+        - string:
             name: target_list
             default: 'tcwg-x86_64-cam'
             description: 'List of targets -- tcwg-x86_64-cam tcwg-tk1_32-build tcwg-apm_64-build -- should be a subset of slave axis'
@@ -73,7 +77,7 @@
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
-                - refs/heads/master
+                - ${scripts_branch}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
