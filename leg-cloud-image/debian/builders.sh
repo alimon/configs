@@ -46,7 +46,8 @@ sudo virt-install \
   --network=network=default,address.type=virtio-mmio \
   --memory 2048 \
   --location http://ftp.debian.org/debian/dists/oldstable/main/installer-arm64/ \
-  --noreboot
+  --noreboot \
+  --debug
 
 set +ex
 while [ true ]; do
