@@ -19,6 +19,10 @@
             default: ''
             description: 'URL of the toolchain to use. This needs to be a tarball with a /bin directory inside with either GCC or LLVM from make install'
         - string:
+            name: nt_flags
+            default: ''
+            description: 'Flags to pass to the LNT nt producer (e.g. --threads=8 --cflag -O0)'
+        - string:
             name: build_container_tag
             default: 'xenial'
             description: 'Type of image to use in the container: trusty, xenial.'
@@ -117,4 +121,5 @@
             # Setup job parameters and run
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/tcwg-llvm-testsuite.sh \
                                       --workspace=${WORKSPACE} \
-                                      --toolchain=${toolchain}"
+                                      --toolchain=${toolchain} \
+                                      --nt-flags=\"${nt_flags}\""
