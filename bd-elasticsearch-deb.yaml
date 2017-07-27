@@ -25,33 +25,36 @@
     builders:
         - shell: |
             #!/bin/bash
-
             set -ex
+
+            # setup environments 
+            export LANG="en_US.UTF-8"
 
             # install prerequisites
             sudo apt-get update -y
-            sudo apt-get install -y -t jessie-backports openjdk-8-jdk texinfo locales-all automake autoconf libtool tar wget unzip curl
+            sudo apt-get install -y -t jessie-backports openjdk-8-jdk
+            sudo apt-get install -y git build-essential automake autoconf libtool
+            sudo apt-get install -y curl unzip rpm texinfo locales-all tar wget
+
             wget https://services.gradle.org/distributions/gradle-3.5.1-bin.zip -O /tmp/gradle-3.5.1-bin.zip
-            cd /opt && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip
+            cd ${WORKSPACE} && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip
             ln -s gradle-3.5.1 gradle
            
             # setup environments 
-            export PATH=/opt/gradle/bin:$PATH
+            export PATH=${WORKSPACE}/gradle/bin:$PATH
             export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
  
             # setup JAVA_HOME
             export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
- 
-            export LANG="en_US.UTF-8"
- 
+
             # clone the ElasticSearch definitions
             git clone --depth 1 https://git.linaro.org/leg/bigdata/elasticsearch.git -b v5.4.1 ${WORKSPACE}/elasticsearch
             cd ${WORKSPACE}/elasticsearch
 
             # okay everything is in place
-            ./gradle assemble --debug
+            gradle assemble -Dbuild.snapshot=false
     publishers:
         - archive:
             artifacts: 'elasticsearch/output/**'
         - email-ext:
-            recipients: 'naresh.bhat@linaro.org, ganesh.raju@linaro.org, fathi.boudra@linaro.org'
+            recipients: 'jun.he@linaro.org, eugene.xie@linaro.org, yuqi.gu@linaro.org, naresh.bhat@linaro.org, ganesh.raju@linaro.org, fathi.boudra@linaro.org'
