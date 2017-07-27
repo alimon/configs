@@ -11,7 +11,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
-            leg-developers:
+            linaro:
                 - job-read
                 - job-extended-read
                 - job-build
@@ -25,7 +25,7 @@
     builders:
         - shell: |
             #!/bin/bash
-            
+
             set -ex
             # setup environments
             export LANG="en_US.UTF-8"
@@ -35,7 +35,7 @@
             sudo apt-get install -y -t jessie-backports openjdk-8-jdk build-essential maven ant texinfo locales-all automake autoconf libtool rubygems tar wget unzip curl
 
             wget https://services.gradle.org/distributions/gradle-3.5.1-bin.zip -O /tmp/gradle-3.5.1-bin.zip
-            cd ${WORKSPACE} && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip 
+            cd ${WORKSPACE} && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip
             ln -s gradle-3.5.1 gradle
 
             sudo gem install rake
@@ -61,4 +61,4 @@
         - archive:
             artifacts: 'logstash/output/**'
         - email-ext:
-            recipients: 'eugene.xie@linaro.org, jun.he@linaro.org, yuqi.gu@linaro.org, naresh.bhat@linaro.org, ganesh.raju@linaro.org, fathi.boudra@linaro.org'
+            recipients: 'leg-bigdata@linaro.org, fathi.boudra@linaro.org'

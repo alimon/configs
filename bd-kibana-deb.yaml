@@ -11,7 +11,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
-            leg-developers:
+            linaro:
                 - job-read
                 - job-extended-read
                 - job-build
@@ -41,22 +41,22 @@
 
             curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
             source ${HOME}/.bashrc
- 
+
             # clone the Kibana definitions
             git clone --depth 1 https://git.linaro.org/leg/bigdata/kibana.git -b v5.4.1 ${WORKSPACE}/kibana
             cd ${WORKSPACE}/kibana
-            
+
             # Install the version of node.js listed in the .node-version file (this can be easily automated with tools such as nvm and avn)
             nvm install "$(cat .node-version)"
-            
+
             # Install npm dependencies
             npm install
             npm rebuild node-sass
-            
+
             npm run build -- --deb --release
 
     publishers:
         - archive:
             artifacts: 'kibana/output/**'
         - email-ext:
-            recipients: 'jun.he@linaro.org, eugene.xie@linaro.org, yuqi.gu@linaro.org, naresh.bhat@linaro.org, ganesh.raju@linaro.org, fathi.boudra@linaro.org'
+            recipients: 'leg-bigdata@linaro.org, fathi.boudra@linaro.org'

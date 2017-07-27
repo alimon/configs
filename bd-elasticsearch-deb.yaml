@@ -11,7 +11,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
-            leg-developers:
+            linaro:
                 - job-read
                 - job-extended-read
                 - job-build
@@ -27,7 +27,7 @@
             #!/bin/bash
             set -ex
 
-            # setup environments 
+            # setup environments
             export LANG="en_US.UTF-8"
 
             # install prerequisites
@@ -39,11 +39,11 @@
             wget https://services.gradle.org/distributions/gradle-3.5.1-bin.zip -O /tmp/gradle-3.5.1-bin.zip
             cd ${WORKSPACE} && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip
             ln -s gradle-3.5.1 gradle
-           
-            # setup environments 
+
+            # setup environments
             export PATH=${WORKSPACE}/gradle/bin:$PATH
             export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
- 
+
             # setup JAVA_HOME
             export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
 
@@ -57,4 +57,4 @@
         - archive:
             artifacts: 'elasticsearch/output/**'
         - email-ext:
-            recipients: 'jun.he@linaro.org, eugene.xie@linaro.org, yuqi.gu@linaro.org, naresh.bhat@linaro.org, ganesh.raju@linaro.org, fathi.boudra@linaro.org'
+            recipients: 'leg-bigdata@linaro.org, fathi.boudra@linaro.org'
