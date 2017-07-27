@@ -18,7 +18,7 @@
     disabled: false
     node: build
     child-workspace: .
-    display-name: 'QEMU - build and run LAVA based RISU tests'
+    display-name: 'QEMU - run LAVA based RISU tests against OBS build'
     axes:
         - axis:
             type: user-defined
@@ -27,6 +27,14 @@
                 - aarch64
     execution-strategy:
         sequential: true
+    triggers:
+        - pollurl:
+            cron: '@hourly'
+            polling-node: build
+            urls:
+              - url: 'http://obs.linaro.org/linaro-staging-stretch/Debian_9.0/Release'
+                check-content:
+                  - simple: true
     wrappers:
         - timestamps
         - matrix-tie-parent:
@@ -37,7 +45,7 @@
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=kvm
-            CUSTOM_JSON_URL=https://git.linaro.org/people/alex.bennee/test-runners.git/blob_plain/HEAD:/qemu-master-${TARGET}-user-risu.json
+            CUSTOM_JSON_URL=https://git.linaro.org/people/alex.bennee/test-runners.git/blob_plain/HEAD:/qemu-master-${TARGET}-user-risu.yaml
             EOF
         - trigger-builds:
             - project: 'post-build-lava'
