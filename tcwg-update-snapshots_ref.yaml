@@ -86,10 +86,13 @@
             set -e
             set -x
 
+            . jenkins-helpers.sh
+
             case "$label" in
               tcwg-x86_64-dev-01)
                 machines="ex40-01.tcwglab.linaro.org r1-a7.aus-colo r1-a12.aus-colo"
-                for node in $(print_nodes_in_labels tcwg-apm_64-build tcwg-tk1 tcwg-tx1 tcwg-x86_64-1-cam tcwg-x86_64-build tcwg-coordinator); do
+                nodes_list=($(print_nodes_in_labels tcwg-apm_64-build tcwg-tk1 tcwg-tx1 tcwg-x86_64-1-cam tcwg-x86_64-build tcwg-coordinator))
+                for node in "${nodes_list[@]}"; do
                   machines="$machines $(print_host_for_node $node)"
                 done
                 ;;
