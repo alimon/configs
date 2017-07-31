@@ -66,7 +66,7 @@ mv preseed.cfg out/debian-jessie-arm64-preseed.cfg
 # https://bugs.linaro.org/show_bug.cgi?id=3164
 #sudo cp -a /var/lib/libvirt/images/${image_name}.qcow2 .
 
-virsh vol-download --pool default --vol ${image_name}.qcow2 --file ${image_name}.qcow2
+sudo virsh vol-download --pool default --vol ${image_name}.qcow2 --file ${image_name}.qcow2
 
 # extract kernel and initramfs from image
 sudo qemu-nbd --connect=/dev/nbd0 ${image_name}.qcow2
