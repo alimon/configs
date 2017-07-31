@@ -1,10 +1,11 @@
 #!/bin/bash
-
-#sudo apt-get -q=2 update
-#sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler
-sudo apt-get -q=2 -y install python3-pyelftools python-serial python3-serial socat
-
 set -ex
+
+sudo apt-get -q=2 update
+#sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler
+sudo apt-get -q=2 -y install python3-pip python-serial python3-serial socat
+
+sudo pip3 install pyelftools
 
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
