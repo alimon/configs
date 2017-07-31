@@ -91,40 +91,42 @@
                 export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
             fi
 
-            rm -rf configs
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            echo "Testing is disabled!"
+            echo "Check https://projects.linaro.org/browse/CTT-441 for details"
+            #rm -rf configs
+            #git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            python configs/openembedded-lkft/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team lkft \
-                --qa-server-project "aosp-${KERNEL_BRANCH}" \
-                --git-commit ${QA_BUILD_VERSION} \
-                --template-path configs/lkft/lava-job-definitions \
-                --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml \
-                --quiet
+            #python configs/openembedded-lkft/submit_for_testing.py \
+            #    --device-type ${DEVICE_TYPE} \
+            #    --build-number ${BUILD_NUMBER} \
+            #    --lava-server ${LAVA_SERVER} \
+            #    --qa-server ${QA_SERVER} \
+            #    --qa-server-team lkft \
+            #    --qa-server-project "aosp-${KERNEL_BRANCH}" \
+            #    --git-commit ${QA_BUILD_VERSION} \
+            #    --template-path configs/lkft/lava-job-definitions \
+            #    --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml \
+            #    --quiet
 
-            for CTS_MODULE_NAME in CtsVmTestCases CtsLibcoreTiestCases CtsBionicTestCases \
-                    CtsCompilationTestCases CtsDramTestCases CtsFileSystemTestCases \
-                    CtsHardwareTestCases CtsJobSchedulerTestCases CtsOsTestCases \
-                    CtsPermissionTestCases CtsPermission2TestCases CtsSecurityTestCases \
-                    CtsUsbTests
-            do
-                export CTS_MODULE_NAME=${CTS_MODULE_NAME}
-                python configs/openembedded-lkft/submit_for_testing.py \
-                    --device-type ${DEVICE_TYPE} \
-                    --build-number ${BUILD_NUMBER} \
-                    --lava-server ${LAVA_SERVER} \
-                    --qa-server ${QA_SERVER} \
-                    --qa-server-team lkft \
-                    --qa-server-project "aosp-${KERNEL_BRANCH}" \
-                    --git-commit ${QA_BUILD_VERSION} \
-                    --template-path configs/lkft/lava-job-definitions \
-                    --template-names template-cts.yaml \
-                    --quiet
-            done
+            #for CTS_MODULE_NAME in CtsVmTestCases CtsLibcoreTiestCases CtsBionicTestCases \
+            #        CtsCompilationTestCases CtsDramTestCases CtsFileSystemTestCases \
+            #        CtsHardwareTestCases CtsJobSchedulerTestCases CtsOsTestCases \
+            #        CtsPermissionTestCases CtsPermission2TestCases CtsSecurityTestCases \
+            #        CtsUsbTests
+            #do
+            #    export CTS_MODULE_NAME=${CTS_MODULE_NAME}
+            #    python configs/openembedded-lkft/submit_for_testing.py \
+            #        --device-type ${DEVICE_TYPE} \
+            #        --build-number ${BUILD_NUMBER} \
+            #        --lava-server ${LAVA_SERVER} \
+            #        --qa-server ${QA_SERVER} \
+            #        --qa-server-team lkft \
+            #        --qa-server-project "aosp-${KERNEL_BRANCH}" \
+            #        --git-commit ${QA_BUILD_VERSION} \
+            #        --template-path configs/lkft/lava-job-definitions \
+            #        --template-names template-cts.yaml \
+            #        --quiet
+            #done
     publishers:
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
