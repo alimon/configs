@@ -1,11 +1,14 @@
 #!/bin/bash
 
+set -ex
+
 sudo apt-get -q=2 update
 sudo apt-get -q=2 -y install git g++ g++-multilib python3-ply \
     python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler \
-    python3-pyelftools
+    python3-pip
 
-set -ex
+# Distro package is too old for Zephyr
+sudo pip3 install pyelftools
 
 git clone --depth 1 -b ${BRANCH} https://git.linaro.org/lite/zephyr.git ${WORKSPACE}
 git clean -fdx
