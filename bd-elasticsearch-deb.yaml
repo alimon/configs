@@ -37,7 +37,7 @@
                 curl unzip rpm texinfo locales-all tar wget python-requests
 
             wget -q https://services.gradle.org/distributions/gradle-3.5.1-bin.zip -O /tmp/gradle-3.5.1-bin.zip
-            cd ${WORKSPACE} && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip
+            unzip /tmp/gradle-3.5.1-bin.zip
             ln -s gradle-3.5.1 gradle
 
             # setup environments
@@ -45,7 +45,8 @@
             export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
             # setup JAVA_HOME
-            export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
+            cd /usr/lib/jvm/java-8-openjdk-*
+            export JAVA_HOME=${PWD}
 
             # clone the ElasticSearch definitions
             git clone --depth 1 https://git.linaro.org/leg/bigdata/elasticsearch.git -b v5.4.1 ${WORKSPACE}/elasticsearch
