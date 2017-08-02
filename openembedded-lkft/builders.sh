@@ -59,6 +59,8 @@ MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 # we want to preserve build/buildhistory though.
 rm -rf conf build/conf build/tmp-*glibc/
 
+# Accept EULA if/when needed
+export EULA_dragonboard410c=1
 source setup-environment build
 
 # Add job BUILD_NUMBER to output files names
@@ -75,7 +77,7 @@ cat << EOF >> conf/auto.conf
 INHERIT += "buildstats buildstats-summary"
 EOF
 
-# Set the kernel to use for HiKey
+# Set the kernel to use
 cat << EOF >> conf/site.conf
 PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
