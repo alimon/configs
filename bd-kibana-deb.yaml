@@ -34,7 +34,7 @@
             sudo apt-get -q=2 update
             sudo apt-get -q=2 -y install \
                 git build-essential automake autoconf libtool libffi-dev \
-                ruby-dev rubygems python curl zip rpm
+                ruby-dev rubygems python curl zip rpm python-requests
             sudo gem install fpm -v 1.5.0
             sudo gem install pleaserun -v 0.0.24
 
@@ -53,8 +53,16 @@
             npm install
             npm rebuild node-sass
             npm run build -- --deb --release
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              ${WORKSPACE}/kibana/target components/bigdata/elk/kibana/${BUILD_NUMBER}
     publishers:
-        - archive:
-            artifacts: 'kibana/target/**'
         - email-ext:
             recipients: 'leg-bigdata@linaro.org, fathi.boudra@linaro.org'
