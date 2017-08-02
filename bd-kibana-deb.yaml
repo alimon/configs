@@ -47,11 +47,11 @@
             # Install the version of node.js listed in the .node-version file (this can be easily automated with tools such as nvm and avn)
             nvm install $(cat ${WORKSPACE}/kibana/.node-version)
 
+            cd ${WORKSPACE}/kibana
+
             # Install npm dependencies
             npm install
             npm rebuild node-sass
-
-            cd ${WORKSPACE}/kibana
             npm run build -- --deb --release
     publishers:
         - archive:
