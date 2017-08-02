@@ -2,10 +2,6 @@
     name: bd-logstash-deb
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
-        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
@@ -16,7 +12,10 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
     disabled: false
     node: docker-jessie-arm64
     display-name: 'Bigdata ELK - Logstash'
@@ -27,14 +26,17 @@
             #!/bin/bash
 
             set -ex
+
             # setup environments
             export LANG="en_US.UTF-8"
 
             # install prerequisites
-            sudo apt-get update -y
-            sudo apt-get install -y -t jessie-backports openjdk-8-jdk build-essential maven ant texinfo locales-all automake autoconf libtool rubygems tar wget unzip curl
+            sudo apt-get -q=2 update
+            sudo apt-get -q=2 -y install -t jessie-backports \
+                openjdk-8-jdk build-essential maven ant texinfo locales-all \
+                automake autoconf libtool rubygems tar wget unzip curl
 
-            wget https://services.gradle.org/distributions/gradle-3.5.1-bin.zip -O /tmp/gradle-3.5.1-bin.zip
+            wget -q https://services.gradle.org/distributions/gradle-3.5.1-bin.zip -O /tmp/gradle-3.5.1-bin.zip
             cd ${WORKSPACE} && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip
             ln -s gradle-3.5.1 gradle
 
@@ -56,7 +58,6 @@
             rake plugin:install-default
 
             rake artifact:deb
-
     publishers:
         - archive:
             artifacts: 'logstash/build/**'
