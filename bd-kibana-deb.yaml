@@ -38,20 +38,20 @@
             sudo gem install fpm -v 1.5.0
             sudo gem install pleaserun -v 0.0.24
 
-            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
-            source ${HOME}/.bashrc
-
             # clone the Kibana definitions
             git clone --depth 1 https://git.linaro.org/leg/bigdata/kibana.git -b v5.4.1 ${WORKSPACE}/kibana
-            cd ${WORKSPACE}/kibana
+
+            curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
+            source ${HOME}/.profile
 
             # Install the version of node.js listed in the .node-version file (this can be easily automated with tools such as nvm and avn)
-            nvm install "$(cat .node-version)"
+            nvm install $(cat ${WORKSPACE}/kibana/.node-version)
 
             # Install npm dependencies
             npm install
             npm rebuild node-sass
 
+            cd ${WORKSPACE}/kibana
             npm run build -- --deb --release
     publishers:
         - archive:
