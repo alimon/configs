@@ -57,12 +57,15 @@
         - shell: |
             #!/bin/bash
 
+            mkdir -p out
+            cp -a ${WORKSPACE}/kibana/kibana-*-arm64.deb* out/
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --link-latest \
-              ${WORKSPACE}/kibana/target components/bigdata/elk/kibana/${BUILD_NUMBER}
+              out components/bigdata/elk/kibana/${BUILD_NUMBER}
     publishers:
         - email-ext:
             recipients: 'leg-bigdata@linaro.org, fathi.boudra@linaro.org'
