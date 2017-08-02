@@ -203,9 +203,6 @@ case "${KERNEL_RECIPE}" in
   linux-hikey-next)
     PUB_DEST="linux-next"
     ;;
-  linux-hikey-lt)
-    PUB_DEST="linux-lt-4.4"
-    ;;
   linux-hikey-lts)
     PUB_DEST="linaro-hikey-stable-4.4"
     ;;
