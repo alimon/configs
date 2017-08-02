@@ -34,7 +34,7 @@
             sudo apt-get -q=2 update
             sudo apt-get -q=2 -y install -t jessie-backports \
                 openjdk-8-jdk git build-essential automake autoconf libtool \
-                curl unzip rpm texinfo locales-all tar wget
+                curl unzip rpm texinfo locales-all tar wget python-requests
 
             wget -q https://services.gradle.org/distributions/gradle-3.5.1-bin.zip -O /tmp/gradle-3.5.1-bin.zip
             cd ${WORKSPACE} && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip
@@ -53,8 +53,17 @@
 
             # okay everything is in place
             gradle assemble -Dbuild.snapshot=false
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              ${WORKSPACE}/elasticsearch/distribution/deb/build/distributions \
+              components/bigdata/elk/elasticsearch/${BUILD_NUMBER}
     publishers:
-        - archive:
-            artifacts: 'elasticsearch/distribution/**'
         - email-ext:
             recipients: 'leg-bigdata@linaro.org, fathi.boudra@linaro.org'
