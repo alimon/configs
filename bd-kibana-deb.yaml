@@ -2,10 +2,6 @@
     name: bd-kibana-deb
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
-        artifactNumToKeep: 1
     properties:
         - authorization:
             anonymous:
@@ -16,7 +12,10 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
-    parameters:
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
     disabled: false
     node: docker-jessie-arm64
     display-name: 'Kibana (deb)'
@@ -27,17 +26,17 @@
             #!/bin/bash
 
             set -ex
+
             # setup environments
             export LANG="en_US.UTF-8"
 
             # install prerequisites
-            sudo apt-get update -y
-            sudo apt-get install -y git build-essential automake autoconf libtool
-            sudo apt-get install -y libffi-dev ruby-dev rubygems python2.7
-            sudo apt-get install -y curl zip rpm
+            sudo apt-get -q=2 update
+            sudo apt-get -q=2 -y install \
+                git build-essential automake autoconf libtool libffi-dev \
+                ruby-dev rubygems python curl zip rpm
             sudo gem install fpm -v 1.5.0
             sudo gem install pleaserun -v 0.0.24
-            sudo ln -s /usr/bin/python2.7 /usr/bin/python
 
             curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.2/install.sh | bash
             source ${HOME}/.bashrc
@@ -54,7 +53,6 @@
             npm rebuild node-sass
 
             npm run build -- --deb --release
-
     publishers:
         - archive:
             artifacts: 'kibana/target/**'
