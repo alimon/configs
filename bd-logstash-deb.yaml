@@ -24,7 +24,6 @@
     builders:
         - shell: |
             #!/bin/bash
-
             set -ex
 
             # setup environments
@@ -35,18 +34,11 @@
             sudo apt-get -q=2 -y install -t jessie-backports \
                 openjdk-8-jdk build-essential maven ant texinfo locales-all \
                 automake autoconf libtool rubygems tar wget unzip curl
-
-            wget -q https://services.gradle.org/distributions/gradle-3.5.1-bin.zip -O /tmp/gradle-3.5.1-bin.zip
-            cd ${WORKSPACE} && unzip /tmp/gradle-3.5.1-bin.zip && rm /tmp/gradle-3.5.1-bin.zip
-            ln -s gradle-3.5.1 gradle
-
             sudo gem install rake
             sudo gem install bundler
 
             # setup environments
             export RELEASE=1
-            export PATH=${WORKSPACE}/gradle/bin:$PATH
-            export JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
             export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-arm64
 
             # clone the Logstash definitions
