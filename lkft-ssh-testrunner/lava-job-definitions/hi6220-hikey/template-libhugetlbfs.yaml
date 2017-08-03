@@ -1,0 +1,159 @@
+context:
+  test_character_delay: 10
+
+device_type: hi6220-hikey
+tags:
+  - oe-only
+job_name: lkft-libhugetlbfs-${KERNEL_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+# run udhcpc in the test shell before accessing the internet
+
+metadata:
+  kernel-branch: ${KERNEL_BRANCH}
+  kernel-repo: ${KERNEL_REPO}
+  kernel-commit: ${KERNEL_COMMIT}
+  kernel-describe: ${KERNEL_DESCRIBE}
+  kernel-config: ${KERNEL_CONFIG_URL}
+  build-url: ${BUILD_URL}
+  series: lkft
+
+protocols:
+  lava-lxc:
+    name: lxc-hikey-oe
+    template: debian
+    distribution: debian
+    release: jessie
+    arch: amd64
+    mirror: http://mirror.bytemark.co.uk/debian
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 15
+    to: lxc
+    packages:
+    - android-tools-fastboot
+    - python
+    - python-pip
+    - python-pexpect
+    - python-requests
+    - python-yaml
+    - git
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'hikey:/'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: hikey-oe
+    connection: lxc
+    images:
+      ptable:
+        url: http://releases.linaro.org/reference-platform/embedded/hikey/16.12/rpb/bootloader/ptable-linux-8g.img
+        reboot: hard-reset
+      boot:
+        url: ${BOOT_URL}
+        reboot: hard-reset
+      system:
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+        # ensure that this job raises a network interface with DHCP before relying on internet access
+    os: oe
+    protocols:
+      lava-lxc:
+      - action: fastboot-deploy
+        request: pre-power-command
+        timeout:
+          minutes: 2
+
+- boot:
+    namespace: hikey-oe
+    auto_login:
+      login_prompt: 'login:'
+      username: linaro
+      login_commands:
+        # Become super user to run tests
+        - su
+    prompts:
+    - 'hikey:~'
+    - 'root@(.*):/#'
+    timeout:
+      minutes: 5
+    method: uefi-menu
+    commands: fastboot
+    protocols:
+      lava-lxc:
+      # other action could be boot-fastboot
+      - action: uefi-commands
+        request: pre-os-command
+        timeout:
+          minutes: 2
+- test:
+    namespace: hikey-oe
+    timeout:
+      minutes: 60
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: prep-tests
+          description: "Device preparation"
+        run:
+          steps:
+          # the image does not raise the interface itself
+          # force a DHCP request to avoid avahi using a zero conf address.
+          - udhcpc
+          - netstat
+          - ip a
+          - ifconfig
+          - df
+          - cat /sys/class/thermal/thermal_zone0/policy || true
+          - echo "power_allocator" > /sys/class/thermal/thermal_zone0/policy || true
+          - cat /sys/class/thermal/thermal_zone0/policy || true
+      name: prep-inline
+      path: inline/prep.yaml
+
+- test:
+   namespace: tlxc
+   timeout:
+     minutes: 45
+   definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: libhugetlbfs
+          description: "Libhugetlbfs"
+        run:
+          steps:
+            - git clone git://git.linaro.org/qa/test-definitions.git
+            - cd test-definitions
+            - . ./automated/bin/setenv.sh
+            - export TARGET_IP=$(lava-target-ip)
+            - echo $TARGET_IP
+            - python automated/utils/test-runner.py -d automated/linux/libhugetlbfs/libhugetlbfs.yaml -g root@$TARGET_IP
+      name: libhugetlbfs
+      path: inline/libhugetlbfs.yaml
+      timeout:
+        minutes: 30

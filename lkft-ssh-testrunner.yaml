@@ -1,0 +1,119 @@
+- job:
+    name: lkft-ssh-testrunner
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    disabled: false
+    node: master
+    display-name: 'LKFT - Submit SSH based test jobs (for evaluation purpose only)'
+    triggers:
+        # run at noon every day
+        - timed: 'H 12 * * *'
+    axes:
+        - axis:
+            type: user-defined
+            name: BUILD_NAME
+            values:
+                - '4.4'
+                - '4.9'
+                - 'linux-lt-4.4'
+                - 'linux-lts-4.4'
+                - 'linux-next'
+                - 'linux-mainline'
+                - 'linux-stable-4.9'
+                - 'linux-stable-rc-4.9'
+        - axis:
+            type: user-defined
+            name: QA_SERVER
+            values:
+                #- 'https://qa-reports.linaro.org'
+                - 'https://staging-qa-reports.linaro.org'
+        - axis:
+            type: user-defined
+            name: DEVICE_TYPE
+            values:
+                - 'hi6220-hikey'
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash
+            if [ ${QA_SERVER} = "https://staging-qa-reports.linaro.org" ]; then
+                export LAVA_SERVER=https://staging.validation.linaro.org/RPC2/
+            elif [ ${QA_SERVER} = "https://qa-reports.linaro.org" ]; then
+                export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
+            fi
+
+            # set kselftest skiplist depending on the kernel used
+            case ${BUILD_NAME} in
+              4.9)
+                export KSELFTEST_SKIPLIST="ftracetest default_file_splice_read.sh default_file_splice_read"
+                ;;
+              linux-lt-4.4)
+                export KSELFTEST_SKIPLIST="step_after_suspend_test default_file_splice_read.sh default_file_splice_read"
+                ;;
+              *)
+                export KSELFTEST_SKIPLIST="default_file_splice_read.sh default_file_splice_read"
+                ;;
+            esac
+
+            export SNAPSHOTS_BASE_URL="https://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/${BUILD_NAME}/latest/"
+
+            MD5_FILENAME="MD5SUMS.txt"
+            wget -O "${MD5_FILENAME}" "${SNAPSHOTS_BASE_URL}${MD5_FILENAME}"
+            ROOTFS_FILENAME=$(grep -E "rpb-console-image-hikey-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
+            BOOT_FILENAME=$(grep -E "boot\S*uefi\.img" "${MD5_FILENAME}" | awk '{print $2}')
+            export BOOT_URL="${SNAPSHOTS_BASE_URL}${BOOT_FILENAME}"
+            export SYSTEM_URL="${SNAPSHOTS_BASE_URL}${ROOTFS_FILENAME}"
+            export KERNEL_BRANCH="lkft-lava-staging-${BUILD_NAME}"
+            export KERNEL_VERSION="lkft-lava-staging-${BUILD_NAME}"
+            export KERNEL_REPO="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/"
+            export KERNEL_COMMIT="lkft-lava-staging-${BUILD_NUMBER}"
+            export KERNEL_DESCRIBE="Kernel Describe"
+            export KERNEL_CONFIG_URL="${SNAPSHOTS_BASE_URL}/defconfig"
+            export KSELFTEST_VERSION="kselftest_version"
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team staging-lkft \
+                --qa-server-project ${BUILD_NAME} \
+                --git-commit ${BUILD_NUMBER} \
+                --template-path configs/lkft-ssh-testrunner/lava-job-definitions \
+                --template-names template-kselftest.yaml template-ltp.yaml template-libhugetlbfs.yaml
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw: openembedded-lkft/postbuild.groovy
+        - email-ext:
+            recipients: 'milosz.wasilewski@linaro.org'
+            always: true
+            matrix-trigger: only-parent
