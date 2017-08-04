@@ -63,8 +63,8 @@
             type: user-defined
             name: MACHINE
             values:
+                - 'dragonboard-410c'
                 - 'hikey'
-#                - 'dragonboard-410c'
 #                - 'intel-corei7-64'
         - axis:
             type: user-defined
@@ -126,6 +126,7 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
+            [ -z "${DEVICE_TYPE}" ] || \
             sed -e "s|\${BOOT_URL}|${BOOT_URL}|" \
                 -e "s|\${SYSTEM_URL}|${SYSTEM_URL}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
@@ -150,6 +151,7 @@
 
             export PTABLE_URL=${SNAPSHOTS_URL}/${BASE_URL}/bootloader/ptable-linux-8g.img
 
+            [ -z "${DEVICE_TYPE}" ] || \
             sed -e "s|\${BOOT_URL}|${BOOT_URL}|" \
                 -e "s|\${SYSTEM_URL}|${SYSTEM_URL}|" \
                 -e "s|\${PTABLE_URL}|${PTABLE_URL}|" \
