@@ -42,7 +42,7 @@ sudo virt-install \
   --name ${image_name} \
   --initrd-inject preseed.cfg \
   --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
-  --disk=pool=default,bus=virtio,size=10,format=qcow2 \
+  --disk=pool=default,bus=virtio,size=1.5,format=qcow2 \
   --network=network=default,address.type=virtio-mmio \
   --memory 2048 \
   --location http://ftp.debian.org/debian/dists/oldstable/main/installer-arm64/ \
