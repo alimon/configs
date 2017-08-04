@@ -117,7 +117,7 @@ do_install_append() {
 EOF
 
 # Update kernel recipe SRCREV
-kernel_recipe=$(find ../layers/meta-96boards -type f -name ${KERNEL_RECIPE}_${KERNEL_VERSION}.bb)
+kernel_recipe=$(find ../layers/meta-96boards -name ${KERNEL_RECIPE}_${KERNEL_VERSION}.bb)
 sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_recipe}
 
 # add useful debug info
