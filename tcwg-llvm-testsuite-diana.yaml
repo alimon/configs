@@ -88,23 +88,8 @@
               exit 1
             fi
 
-            # Select builder arch/type/container
-            case ${label} in
-                tcwg-x86_64-build|tcwg-x86_64-cam)
-                    builder_arch=amd64
-                    ;;
-                tcwg-tk1_32-build)
-                    builder_arch=armhf
-                    ;;
-                tcwg-apm_64-build)
-                    builder_arch=arm64
-                    ;;
-                *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
-            esac
-
             # Start build container
-            builder=$(print_host_for_node $NODE_NAME)
-            bash ${WORKSPACE}/start-container-docker.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --prefix build_ > build-container.sh
+            ${WORKSPACE}/start-container-docker.sh --label ${label} --node ${NODE_NAME} --distro ${build_container_tag} --prefix build_ > build-container.sh
 
             # Define build_CONTAINER_RSH and build_container_cleanup
             . ./build-container.sh
