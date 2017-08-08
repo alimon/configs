@@ -63,7 +63,9 @@
             type: user-defined
             name: MACHINE
             values:
+                - 'dragonboard-410c'
                 - 'hikey'
+                - 'intel-corei7-64'
         - axis:
             type: user-defined
             name: DISTRO
@@ -119,9 +121,12 @@
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ ${BASE_URL}
         - shell: |
+            #!/bin/bash
+
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
+            [ -z "${DEVICE_TYPE}" ] || \
             sed -e "s|\${BOOT_URL}|${BOOT_URL}|" \
                 -e "s|\${SYSTEM_URL}|${SYSTEM_URL}|" \
                 -e "s|\${BUILD_URL}|${BUILD_URL}|" \
