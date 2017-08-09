@@ -78,11 +78,12 @@ INHERIT += "buildstats buildstats-summary"
 EOF
 
 # Set the kernel to use
-cat << EOF >> conf/site.conf
+distro_conf=$(find ../layers/meta-rpb -name rpb.conf)
+cat << EOF >> ${distro_conf}
 PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
 
-[ "${KERNEL_RECIPE}" = "linux-hikey-aosp" ] && cat << EOF >> conf/site.conf
+[ "${KERNEL_RECIPE}" = "linux-hikey-aosp" ] && cat << EOF >> ${distro_conf}
 PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
 
@@ -122,6 +123,7 @@ sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_re
 
 # add useful debug info
 cat conf/{site,auto}.conf
+cat ${distro_conf}
 
 bitbake ${IMAGES}
 
