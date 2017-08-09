@@ -1,0 +1,41 @@
+- job:
+    name: trigger-ofp-perf-tests
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            num-to-keep: 30
+            days-to-keep: 30
+    disabled: false
+    node: build
+    display-name: 'Trigger for OFP performance tests'
+    scm:
+        - git:
+            url: https://github.com/OpenFastPath/ofp.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: "*/5 * * * *"
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_VERSION,length=8}'
+    builders:
+        - trigger-builds:
+            - project:
+                - ofp-perf-tests
