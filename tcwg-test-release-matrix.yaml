@@ -32,7 +32,7 @@
             description: 'Release name'
         - string:
            name: target_list
-           default: 'aarch64-elf aarch64-linux-gnu aarch64_be-elf aarch64_be-linux-gnu armv8l-linux-gnueabihf arm-eabi arm-linux-gnueabi arm-linux-gnueabihf armeb-eabi armeb-linux-gnueabi armeb-linux-gnueabihf'
+           default: 'aarch64-elf aarch64-linux-gnu aarch64-linux-gnu_ilp32 aarch64_be-elf aarch64_be-linux-gnu armv8l-linux-gnueabihf arm-eabi arm-linux-gnueabi arm-linux-gnueabihf armeb-eabi armeb-linux-gnueabi armeb-linux-gnueabihf'
            description: 'List of targets to use'
         - string:
             name: tcwg_regression_rev
@@ -113,6 +113,16 @@
               echo "ERROR: no binary tarball specified!"
               exit 1
             fi
+
+            case "$target:$toolchain_config:release" in
+              aarch64-linux-gnu_ilp32:gcc7:*-rc*)
+                # Building ILP32 toolchain as release candidate of gcc7.
+                ;;
+              aarch64-linux-gnu_ilp32:*)
+                echo "SKIPPING ILP32 TOOLCHAIN IN NON-RC/NON-GCC7 BUILD"
+                exit 0
+                ;;
+            esac
 
             case ${label} in
                 *32*)
