@@ -88,7 +88,7 @@ PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
 
 # Include additional recipes in the image
-[ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs+="numactl"
+[ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
 cat << EOF >> conf/local.conf
 CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests libhugetlbfs-tests ltp ${extra_pkgs}"
 CORE_IMAGE_BASE_INSTALL_append = " python python-misc python-modules python-numpy python-pexpect python-pyyaml"
