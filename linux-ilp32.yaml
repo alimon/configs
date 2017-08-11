@@ -1,0 +1,49 @@
+- job:
+    name: linux-ilp32
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+    disabled: false
+    node: docker-jessie-arm64
+    display-name: 'Linux ARM64 (ilp32)'
+    scm:
+        - git:
+            url: https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git
+            refspec: +refs/heads/staging/ilp32-4.12:refs/remotes/origin/staging/ilp32-4.12
+            name: origin
+            branches:
+                - refs/heads/staging/ilp32-4.12
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            make defconfig
+            make -j10 deb-pkg
+            cat > params <<EOF
+            source=$BUILD_URL/artifact/`echo *.dsc`
+            repo=TCWG:ilp32
+            EOF
+    publishers:
+        - archive:
+            artifacts: '*.changes, *.dsc, *.gz, *.deb'
+        - trigger-parameterized-builds:
+            - project: build-package-obs
+              property-file: params
+              condition: SUCCESS
