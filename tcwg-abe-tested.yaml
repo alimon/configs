@@ -29,7 +29,19 @@
             credentials-id: 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
             name: gerrit
             branches:
-                - refs/heads/master
+                - refs/remotes/gerrit/master
+            basedir: abe
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+        - git:
+            url: ssh://tcwg-buildslave@review.linaro.org:29418/toolchain/jenkins-scripts.git
+            # tcwg-buildslave user id
+            credentials-id: 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+            name: gerrit
+            branches:
+                - refs/remotes/gerrit/master
+            basedir: jenkins-scripts
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -45,6 +57,10 @@
             users:
                 - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
     builders:
+        - shell: |
+            #!/bin/bash
+            env
+            exit 1
         - conditional-step:
             condition-kind: strings-match
             condition-string1: '${ENV,var="no_tests_just_update_tested"}'
@@ -57,6 +73,7 @@
                     - name: tcwg-abe-extended
                       predefined-parameters: |
                         abe_branch=$GIT_COMMIT
+                        scripts_branch=$GIT_COMMIT
         - shell: |
             #!/bin/bash
             
