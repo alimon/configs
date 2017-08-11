@@ -108,6 +108,10 @@ RDEPENDS_packagegroup-rpb_remove = "96boards-tools"
 RDEPENDS_packagegroup-rpb_remove = "docker"
 EOF
 
+[ "${MACHINE}" = "intel-core2-32" ] && cat << EOF >> conf/local.conf
+DEFAULTTUNE = "core2-64"
+EOF
+
 # Remove systemd firstboot and machine-id file
 mkdir -p ../layers/meta-96boards/recipes-core/systemd
 cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd_%.bbappend
@@ -141,7 +145,7 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 # FIXME: am57xx-evm creates tar.xz rootfs image and
 #        meta-ti u-boot doesn't enable fastboot support
 case "${MACHINE}" in
-  am57xx-evm|stih410-b2260|intel-corei7-64)
+  am57xx-evm|stih410-b2260|intel-core2-32|intel-corei7-64)
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
