@@ -97,6 +97,9 @@
               hikey)
                 DEVICE_TYPE=hi6220-hikey
                 ;;
+              intel-core2-32)
+                DEVICE_TYPE=x86
+                ;;
             esac
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
@@ -127,6 +130,10 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
+            # Unset device type for all machines except hikey
+            # We submit with post-build-lava only for Hikey
+            [ "${MACHINE}" != "hikey" ] && unset DEVICE_TYPE
+
             [ -z "${DEVICE_TYPE}" ] || \
             sed -e "s|\${BOOT_URL}|${BOOT_URL}|" \
                 -e "s|\${SYSTEM_URL}|${SYSTEM_URL}|" \
@@ -151,6 +158,10 @@
             #!/bin/bash
 
             export PTABLE_URL=${SNAPSHOTS_URL}/${BASE_URL}/bootloader/ptable-linux-8g.img
+
+            # Unset device type for all machines except hikey
+            # We submit with post-build-lava only for Hikey
+            [ "${MACHINE}" != "hikey" ] && unset DEVICE_TYPE
 
             [ -z "${DEVICE_TYPE}" ] || \
             sed -e "s|\${BOOT_URL}|${BOOT_URL}|" \
