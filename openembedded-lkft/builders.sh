@@ -227,6 +227,7 @@ SNAPSHOTS_URL=https://snapshots.linaro.org
 BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/${BUILD_NUMBER}
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.uefi.img" | xargs -r basename)
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
 
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
@@ -235,6 +236,7 @@ BASE_URL=${BASE_URL}
 BOOT_URL=${SNAPSHOTS_URL}/${BASE_URL}/${BOOT_IMG}
 SYSTEM_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_IMG}
 KERNEL_URL=${SNAPSHOTS_URL}/${BASE_URL}/${KERNEL_IMG}
+NFSROOTFS_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_TARXZ_IMG}
 KERNEL_COMMIT=${SRCREV_kernel}
 KERNEL_CONFIG_URL=${SNAPSHOTS_URL}/${BASE_URL}/defconfig
 KSELFTEST_VERSION=${KSELFTEST_VERSION}
