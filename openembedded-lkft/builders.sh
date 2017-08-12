@@ -78,7 +78,7 @@ INHERIT += "buildstats buildstats-summary"
 EOF
 
 # Set the kernel to use
-distro_conf=$(find ../layers/meta-rpb -name rpb.conf)
+distro_conf=$(find ../layers/meta-rpb/conf/distro -name rpb.inc)
 cat << EOF >> ${distro_conf}
 PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
