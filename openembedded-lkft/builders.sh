@@ -87,6 +87,13 @@ EOF
 PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
 
+# By default, meta-ti and TI SDK ship tar.xz rootfs tarball for SD card deployment
+# fastboot is preferred for deployment in LAVA
+# FIXME: pending on https://github.com/96boards/meta-rpb/pull/102
+cat << EOF >> ${distro_conf}
+IMAGE_FSTYPES_append_omap-a15 = " ext4.gz"
+EOF
+
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
 cat << EOF >> conf/local.conf
