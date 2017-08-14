@@ -99,10 +99,8 @@ mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
-# FIXME: am57xx-evm creates tar.xz rootfs image and
-#        meta-ti u-boot doesn't enable fastboot support
 case "${MACHINE}" in
-  am57xx-evm|juno|stih410-b2260)
+  juno|stih410-b2260)
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
