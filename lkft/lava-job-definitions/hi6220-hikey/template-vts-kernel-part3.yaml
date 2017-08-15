@@ -12,7 +12,9 @@ timeouts:
   connection:
     minutes: 2
 priority: medium
-visibility: personal
+visibility:
+  group:
+    - lkft
 
 metadata:
   android.build: "${BUILD_NUMBER}"
@@ -105,7 +107,7 @@ actions:
           from: git
           path: automated/android/tradefed/tradefed.yaml
           params:
-                TEST_URL: "http://snapshots.linaro.org/android/android-vts/hikey-userdebug/23/android-vts.zip"
+                TEST_URL: "http://testdata.validation.linaro.org/vts/30/android-vts.zip"
                 TEST_PARAMS: "run vts-kernel --module LinuxKselftestTest --skip-device-info"
                 TEST_PATH: "android-vts"
                 RESULTS_FORMAT: "atomic"
