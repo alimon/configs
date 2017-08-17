@@ -98,6 +98,7 @@
                 ;;
               intel-core2-32)
                 DEVICE_TYPE=x86
+                ;;
             esac
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
@@ -123,6 +124,8 @@
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ ${BASE_URL}
         - shell: |
+            #!/bin/bash
+
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
@@ -139,8 +142,6 @@
                 -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
             < configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/template.json \
             > custom_lava_job_definition.json
-
-            cat custom_lava_job_definition.json
 
             cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
