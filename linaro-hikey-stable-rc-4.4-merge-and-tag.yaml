@@ -1,0 +1,74 @@
+- job:
+    name: linaro-hikey-stable-rc-4.4-merge-and-tag
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Linaro HiKey Stable RC 4.4 Merge-and-Tag'
+    scm:
+        - git:
+            remotes:
+                - linux-stable-rc-4.4:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
+                    refspec: +refs/heads/linux-4.4.y:refs/remotes/linux-stable-rc-4.4/linux-4.4.y
+                    credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+                - arm64-stable-rc-4.4:
+                    url: https://git.linaro.org/lkft/arm64-stable-rc.git
+                    refspec: +refs/heads/4.4.y-rc-hikey:refs/remotes/arm64-stable-rc-4.4/4.4.y-rc-hikey
+            branches:
+                - linux-stable-rc-4.4/linux-4.4.y
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            # Find out the kernel version and bail out if it is not a RC
+            git checkout -B linux-4.4.y linux-stable-rc-4.4/linux-4.4.y
+            kernel_version=$(make kernelversion)
+            case "${kernel_version}" in
+              4.4.*-rc*)
+                echo "Kernel version: ${kernel_version}"
+                ;;
+              *)
+                echo "Kernel version ${kernel_version} is not a 4.4.y RC."
+                exit 0
+                ;;
+            esac
+
+            # Merge previous tag into stable 4.4.y
+            git merge -Xours --no-edit $(git tag -l 4.4*rc*-hikey-* | tail -n1)
+
+            # Apply tag
+            tag=${kernel_version}-hikey-$(date +"%Y%m%d")
+            git tag ${tag}
+
+            # Push tag
+            git push arm64-stable-rc-4.4 ${tag}
+    publishers:
+        - email-ext:
+            recipients: 'sumit.semwal@linaro.org, fathi.boudra@linaro.org'
+            body: |
+                Project: ${PROJECT_NAME}
+                Build number: ${BUILD_NUMBER}
+                Build status: ${BUILD_STATUS}
+                Build URL: ${BUILD_URL}
+            always: true
