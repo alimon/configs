@@ -83,9 +83,13 @@ cat << EOF >> ${distro_conf}
 PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
 
-[ "${KERNEL_RECIPE}" = "linux-hikey-aosp" ] && cat << EOF >> ${distro_conf}
+case "${KERNEL_RECIPE}" in
+  linux-hikey-aosp|linux-hikey-stable|linux-hikey-stable-rc)
+    cat << EOF >> ${distro_conf}
 PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
+    ;;
+esac
 
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
@@ -199,10 +203,10 @@ EOF
 # FIXME handle properly the publishing URL
 case "${KERNEL_RECIPE}" in
   linux-hikey-stable)
-    PUB_DEST="linux-stable-4.9"
+    PUB_DEST="linux-stable-${KERNEL_VERSION}"
     ;;
   linux-hikey-stable-rc)
-    PUB_DEST="linux-stable-rc-4.9"
+    PUB_DEST="linux-stable-rc-${KERNEL_VERSION}"
     ;;
   linux-hikey-mainline)
     PUB_DEST="linux-mainline"
