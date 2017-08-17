@@ -34,10 +34,12 @@
     builders:
         - shell: |
             #!/bin/bash
+
             make defconfig
             make -j10 deb-pkg
+
             cat > params <<EOF
-            source=$BUILD_URL/artifact/`echo *.dsc`
+            source=${BUILD_URL}/artifact/$(echo *.dsc)
             repo=TCWG:ilp32
             EOF
     publishers:
