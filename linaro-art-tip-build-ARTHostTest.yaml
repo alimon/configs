@@ -96,6 +96,7 @@
             #!/bin/bash -xe
 
             # Build scripts
+            export LC_ALL=C.UTF-8
             ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
             ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
             git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
@@ -103,6 +104,9 @@
             cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
             ./setup_host.sh
             ./setup_android.sh
+
+            # print environment
+            env
 
             cd ${ANDROID_BUILD_DIR}
             perl scripts/jenkins/test_launcher.pl \
