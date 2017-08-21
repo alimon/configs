@@ -1,0 +1,35 @@
+- job:
+    name: leg-kolla
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build-arm64
+    concurrent: false
+    display-name: 'LEG Kolla images build/publish'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw: leg-kolla/build.sh
+    publishers:
+        - email:
+            recipients: 'marcin.juszkiewicz@linaro.org riku.voipio@linaro.org fathi.boudra@linaro.org gema.gomez-solano@linaro.org'
