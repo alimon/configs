@@ -2,7 +2,6 @@
 
 set -ex
 
-git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 . ./jenkins-scripts/jenkins-helpers.sh
 
 ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh

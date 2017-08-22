@@ -16,11 +16,11 @@
     parameters:
         - string:
             name: abe_branch
-            default: refs/heads/master
+            default: refs/remotes/origin/master
             description: 'ABE revision to test'
         - string:
             name: scripts_branch
-            default: master
+            default: refs/remotes/origin/master
             description: 'scripts branch to use'
         - string:
             name: test_list
@@ -34,9 +34,18 @@
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/abe.git
-            refspec: +refs/changes/*:refs/remotes/changes/*
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             branches:
                 - ${abe_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - ${scripts_branch}
+            basedir: jenkins-scripts
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
