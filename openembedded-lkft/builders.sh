@@ -182,24 +182,6 @@ Build description:
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
-GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
-TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
-TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
-STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
-KSELFTEST_VERSION=$(bitbake -e kselftests | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
-
-cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
-{
-  "kernel_repo" : "${KERNEL_REPO}",
-  "kernel_commit_id" : "${SRCREV_kernel}",
-  "kernel_branch" : "${KERNEL_BRANCH}",
-  "kernel_describe" : "${KERNEL_DESCRIBE}",
-  "kselftest_version" : "${KSELFTEST_VERSION}",
-  "build_arch" : "${TUNE_FEATURES}",
-  "compiler" : "${TARGET_SYS} ${GCCVERSION}"
-}
-EOF
-
 # FIXME handle properly the publishing URL
 case "${KERNEL_RECIPE}" in
   linux-hikey-stable)
@@ -225,6 +207,12 @@ case "${KERNEL_RECIPE}" in
     ;;
 esac
 
+GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
+TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
+TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
+STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
+KSELFTEST_VERSION=$(bitbake -e kselftests | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
+
 SNAPSHOTS_URL=https://snapshots.linaro.org
 BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/${BUILD_NUMBER}
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.uefi.img" | xargs -r basename)
@@ -232,8 +220,22 @@ ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
 
+cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
+{
+  "kernel_repo" : "${KERNEL_REPO}",
+  "kernel_commit_id" : "${SRCREV_kernel}",
+  "kernel_branch" : "${KERNEL_BRANCH}",
+  "kernel_describe" : "${KERNEL_DESCRIBE}",
+  "kselftest_version" : "${KSELFTEST_VERSION}",
+  "build_arch" : "${TUNE_FEATURES}",
+  "compiler" : "${TARGET_SYS} ${GCCVERSION}",
+  "build_location" : "${SNAPSHOTS_URL}/${BASE_URL}"
+}
+EOF
+
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+SNAPSHOTS_URL=${SNAPSHOTS_URL}
 BASE_URL=${BASE_URL}
 BOOT_URL=${SNAPSHOTS_URL}/${BASE_URL}/${BOOT_IMG}
 SYSTEM_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_IMG}
