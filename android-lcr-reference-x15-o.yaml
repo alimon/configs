@@ -1,25 +1,5 @@
-- scm:
-    name: kernel
-    scm:
-        - git:
-            url: git://git.linaro.org/landing-teams/working/arm/kernel-release.git
-            branches:
-                - origin/lsk-3.18-armlt
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-- scm:
-    name: firmware
-    scm:
-        - git:
-            url: git://git.linaro.org/arm/vexpress-firmware.git
-            branches:
-                - origin/juno-recovery-tarball
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
 - job:
-    name: android-lcr-reference-juno-n
+    name: android-lcr-reference-x15-o
     project-type: freestyle
     defaults: global
     properties:
@@ -39,16 +19,12 @@
             default: https://android-qa-reports.linaro.org/api/
         - string:
             name: BUILD_DIR
-            default: r-lcr-nougat
-    disabled: true
+            default: r-lcr-oreo
+    disabled: false
     node: docker-xenial-aosp
-    display-name: 'Reference LCR Android N Build for Juno'
+    display-name: 'Reference LCR Android O build for X15'
     concurrent: true
-    scm:
-        - kernel
-        - firmware
     triggers:
-        - pollscm: "H/5 * * * *"
         - gerrit:
             server-name: __ANY__
             trigger-on:
@@ -61,29 +37,24 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'juno-n-workarounds'
+                        pattern: 'x15-o-workarounds'
                       - compare-type: 'PLAIN'
-                        pattern: 'NOUGAT-RLCR-PATCHSET'
+                        pattern: 'O-RLCR-PATCHSET'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'device/linaro/common'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-nougat'
+                        branch-pattern: 'linaro-oreo'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'platform/manifest'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-nougat'
+                        branch-pattern: 'linaro-oreo'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'arm.xml'
+                        pattern: 'x15.xml'
                       - compare-type: 'PLAIN'
                         pattern: 'linaro.xml'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'android/device/linaro/juno'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-nougat'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'android-build-configs'
                   branches:
@@ -91,12 +62,12 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'lcr-reference-juno-n'
+                        pattern: 'lcr-reference-x15-o'
     wrappers:
         - timestamps
         - timeout:
             timeout: 500
     builders:
-        !include: android-lcr/juno/builders.yaml.inc
+        !include: android-lcr/x15/builders.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc
