@@ -31,6 +31,10 @@
             name: log_server
             default: dev-01.tcwglab:/home/tcwg-buildslave/logs
             description: 'Log_Server'
+        - bool:
+            name: show_results
+            default: true
+            description: 'Show results in the console'
         - string:
             name: cmp_version
             default: refs/heads/master
@@ -92,7 +96,9 @@
             scp ${log_server}:${dest}/\*.html report.css ${LOGSDIR} || true
 
             # Print results in console
-            cat ${LOGSDIR}/*.txt
+            if $show_results; then
+                cat ${LOGSDIR}/*.txt
+            fi
 
             exit $status
     publishers:
