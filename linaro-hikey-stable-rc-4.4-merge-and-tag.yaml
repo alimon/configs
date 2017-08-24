@@ -69,6 +69,11 @@
             # Push tag
             git push arm64-stable-rc-4.4 ${tag}
     publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'trigger-openembedded-lkft-linaro-hikey-stable-rc-4.4'
+              condition: SUCCESS
+              trigger-with-no-params: true
         - email-ext:
             recipients: 'sumit.semwal@linaro.org, fathi.boudra@linaro.org'
             body: |

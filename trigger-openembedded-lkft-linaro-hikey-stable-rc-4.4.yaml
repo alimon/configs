@@ -15,17 +15,14 @@
     display-name: 'Trigger for LKFT - Linux Stable RC 4.4 + HiKey'
     scm:
         - git:
-            url: https://git.linaro.org/people/sumit.semwal/arm64-stable-rc.git
+            url: https://git.linaro.org/lkft/arm64-stable-rc.git
             refspec: +refs/tags/4.*:refs/remotes/origin/tags/4.*
             name: origin
             branches:
-                - refs/tags/4.4-*-rc-hikey-*
+                - refs/tags/4.4.*-rc*-hikey-*
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
-    triggers:
-        - pollscm:
-            cron: 'H/5 * * * *'
     wrappers:
         - timestamps
         - build-name:
@@ -52,5 +49,5 @@
                 Build URL: ${BUILD_URL}
 
                 New upstream tag:
-                https://git.linaro.org/people/sumit.semwal/arm64-stable-rc.git ${GIT_BRANCH} ${GIT_COMMIT}
+                https://git.linaro.org/lkft/arm64-stable-rc.git ${GIT_BRANCH} ${GIT_COMMIT}
             always: true
