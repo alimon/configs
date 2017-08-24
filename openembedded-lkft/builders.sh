@@ -212,6 +212,8 @@ TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 KSELFTEST_VERSION=$(bitbake -e kselftests | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
+LTP_VERSION=$(bitbake -e ltp | grep "^PV=" | cut -d'=' -f2 | tr -d '"')ltp
+LIBHUGETLBFS_VERSION=$(bitbake -e libhugetlbfs | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
 
 SNAPSHOTS_URL=https://snapshots.linaro.org
 BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/${BUILD_NUMBER}
@@ -227,6 +229,8 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "kernel_branch" : "${KERNEL_BRANCH}",
   "kernel_describe" : "${KERNEL_DESCRIBE}",
   "kselftest_version" : "${KSELFTEST_VERSION}",
+  "ltp_version" : "${LTP_VERSION}",
+  "libhugetlbfs_version" : "${LIBHUGETLBFS_VERSION}",
   "build_arch" : "${TUNE_FEATURES}",
   "compiler" : "${TARGET_SYS} ${GCCVERSION}",
   "build_location" : "${SNAPSHOTS_URL}/${BASE_URL}"
