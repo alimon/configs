@@ -80,9 +80,6 @@
             #!/bin/bash
             set -ex
 
-            echo "* SSH public key used:"
-            ssh-add -L
-
             pushd gcc_src
 
             # Git/Gerrit config
@@ -105,7 +102,7 @@
                 *) echo "ERROR: tag_king is missing"; exit 1 ;;
             esac
 
-            ${WORKSPACE}/tcwg-release-tools/tcwg-release-tag.sh $FLAGS -v -v -v
+            ${WORKSPACE}/tcwg-release-tools/tcwg-release-tag.sh $FLAGS
 
             # Pick up the created tag.
             tag=$(git describe --abbrev=0)
