@@ -1,0 +1,35 @@
+- job:
+    name: k8s-auxiliary
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build-arm64
+    concurrent: false
+    display-name: 'Kubernetes auxiliary images build/publish'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw: k8s/builders.sh
+    publishers:
+        - email:
+            recipients: 'yibo.cai@linaro.org riku.voipio@linaro.org fathi.boudra@linaro.org'
