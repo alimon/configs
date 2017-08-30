@@ -19,6 +19,9 @@
                 - linux-stable-rc-4.4:
                     url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
                     refspec: +refs/heads/linux-4.4.y:refs/remotes/linux-stable-rc-4.4/linux-4.4.y
+                - sumit-lts:
+                    url: https://git.linaro.org/people/sumit.semwal/linux-lts.git
+                    refspec: +refs/heads/lts-4.4.y-hikey:refs/remotes/sumit-lts/lts-4.4.y-hikey
                 - arm64-stable-rc-4.4:
                     url: ssh://git@git.linaro.org/lkft/arm64-stable-rc.git
                     refspec: +refs/heads/4.4.y-rc-hikey:refs/remotes/arm64-stable-rc-4.4/4.4.y-rc-hikey
@@ -59,8 +62,8 @@
                 ;;
             esac
 
-            # Merge previous tag into stable 4.4.y
-            git merge -Xours --no-edit $(git tag -l 4.4*rc*-hikey-* | tail -n1)
+            # Merge HiKey rebased branch into stable 4.4.y
+            git merge --no-edit sumit-lts/lts-4.4.y-hikey
 
             # Apply tag
             tag=${kernel_version}-hikey-$(date +"%Y%m%d")
@@ -75,7 +78,7 @@
               condition: SUCCESS
               trigger-with-no-params: true
         - email-ext:
-            recipients: 'sumit.semwal@linaro.org, fathi.boudra@linaro.org'
+            recipients: 'sumit.semwal@linaro.org, fathi.boudra@linaro.org, daniel.diaz@linaro.org'
             body: |
                 Project: ${PROJECT_NAME}
                 Build number: ${BUILD_NUMBER}
