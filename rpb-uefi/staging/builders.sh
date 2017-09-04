@@ -51,7 +51,7 @@ OPTEE_GIT_VERSION=$OPTEE_VERSION
 mkdir ${BUILD_NUMBER}; cd ${BUILD_NUMBER}
 
 # Per board repositories overrides
-if [ "${MX_PLATFORM}" == "hikey" ]; then
+if [ "${MX_PLATFORM}" = "hikey" ]; then
     EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
     EDK2_GIT_VERSION="origin/hikey-aosp"
     ATF_GIT_URL=https://github.com/96boards-hikey/arm-trusted-firmware.git
@@ -59,7 +59,7 @@ if [ "${MX_PLATFORM}" == "hikey" ]; then
     OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
     OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
 fi
-if [ "${MX_PLATFORM}" == "hikey960" ]; then
+if [ "${MX_PLATFORM}" = "hikey960" ]; then
     EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
     EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
     ATF_GIT_VERSION="origin/integration"
@@ -133,7 +133,7 @@ Files-Pattern: *
 License-Type: open
 EOF
 
-if [ "${MX_PLATFORM}" == "hikey" ]; then
+if [ "${MX_PLATFORM}" = "hikey" ]; then
     # Additional components for hikey, such as fastboot and l-loader
     cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
     cd ${WORKSPACE}/${BUILD_NUMBER}
@@ -151,7 +151,7 @@ if [ "${MX_PLATFORM}" == "hikey" ]; then
       ${WORKSPACE}/out/${BUILD_TYPE}/optee-arm-plat-hikey.tar.xz \
       arm-plat-hikey/export-ta_arm64 arm-plat-hikey/export-ta_arm32
 fi
-if [ "${MX_PLATFORM}" == "hikey960" ]; then
+if [ "${MX_PLATFORM}" = "hikey960" ]; then
     # Additional components for hikey960, such as fastboot and l-loader
     cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
     cd ${WORKSPACE}/${BUILD_NUMBER}
@@ -196,14 +196,14 @@ Build Description:
 * OpenPlatformPkg head: $OPEN_PLATFORM_PKG_GIT_VERSION
 EOF
 
-if [ "$BUILD_ATF" == "yes" ]; then
+if [ "$BUILD_ATF" = "yes" ]; then
     cat >> out/${BUILD_TYPE}/HEADER.textile << EOF
 * ARM Trusted Firmware: "$ATF_GIT_URL":$ATF_GIT_URL
 * ARM Trusted Firmware head: $ATF_GIT_VERSION
 EOF
 fi
 
-if [ "$BUILD_TOS" == "yes" ]; then
+if [ "$BUILD_TOS" = "yes" ]; then
     cat >> out/${BUILD_TYPE}/HEADER.textile << EOF
 * OP-TEE OS: "$OPTEE_OS_GIT_URL":$OPTEE_OS_GIT_URL
 * OP-TEE OS head: $OPTEE_OS_GIT_VERSION
