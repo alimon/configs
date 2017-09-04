@@ -27,10 +27,7 @@
             type: user-defined
             name: BUILD_NAME
             values:
-                - '4.4'
                 - '4.9'
-                - 'linux-lt-4.4'
-                - 'linux-lts-4.4'
                 - 'linux-next'
                 - 'linux-mainline'
                 - 'linux-stable-4.9'
@@ -46,6 +43,7 @@
             name: DEVICE_TYPE
             values:
                 - 'hi6220-hikey'
+                - 'x86'
     execution-strategy:
         sequential: false
     wrappers:
@@ -67,22 +65,51 @@
             fi
 
             # set kselftest skiplist depending on the kernel used
+            # set proper variables depending on the kernel used
             case ${BUILD_NAME} in
               4.9)
                 export KSELFTEST_SKIPLIST="ftracetest"
+                export PUB_DEST=4.9
                 ;;
-              linux-lt-4.4)
-                export KSELFTEST_SKIPLIST="step_after_suspend_test"
+              linux-next)
+                export KSELFTEST_SKIPLIST=""
+                export PUB_DEST=linux-next
+                ;;
+              linux-mainline)
+                export KSELFTEST_SKIPLIST=""
+                export PUB_DEST=linux-mainline
+                ;;
+              linux-stable-4.9)
+                export KSELFTEST_SKIPLIST=""
+                export PUB_DEST=linux-stable-4.9
+                ;;
+              linux-stable-rc-4.9)
+                export KSELFTEST_SKIPLIST=""
+                export PUB_DEST=linux-stable-rc-4.9
                 ;;
               *)
                 export KSELFTEST_SKIPLIST=""
                 ;;
             esac
+            case ${DEVICE_TYPE} in
+              hi6220-hikey(
+                MACHINE=hikey
+                ;;
+              x86)
+                MACHINE=x86
+                ;;
+              *)
+                ;;
+            esac
+            export DISTRO=rpb
+            export MANIFEST_BRANCH=morty
+            export SNAPSHOTS_URL=https://snapshots.linaro.org
+            export BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/latest
 
-            export SNAPSHOTS_BASE_URL="https://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/${BUILD_NAME}/latest/"
+            export SNAPSHOTS_BASE_URL=${SNAPSHOTS_URL}/${BASE_URL}
 
             MD5_FILENAME="MD5SUMS.txt"
-            wget -O "${MD5_FILENAME}" "${SNAPSHOTS_BASE_URL}${MD5_FILENAME}"
+            wget -O "${MD5_FILENAME}" "${SNAPSHOTS_BASE_URL}/${MD5_FILENAME}"
             ROOTFS_FILENAME=$(grep -E "rpb-console-image-hikey-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
             BOOT_FILENAME=$(grep -E "boot\S*uefi\.img" "${MD5_FILENAME}" | awk '{print $2}')
             export BOOT_URL="${SNAPSHOTS_BASE_URL}${BOOT_FILENAME}"
