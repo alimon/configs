@@ -116,6 +116,12 @@ EOF
 DEFAULTTUNE = "core2-64"
 EOF
 
+# Enable lkft-metadata class
+cat << EOF >> conf/local.conf
+INHERIT += "lkft-metadata"
+LKFTMETADATA_COMMIT = "1"
+EOF
+
 # Remove systemd firstboot and machine-id file
 mkdir -p ../layers/meta-96boards/recipes-core/systemd
 cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd_%.bbappend
