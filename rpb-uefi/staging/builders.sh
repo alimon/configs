@@ -30,8 +30,9 @@ cleanup_exit()
 # sbin isn't in the PATH by default and prevent to find sgdisk
 export PATH="/usr/sbin:/sbin:$PATH"
 
-# Use pre-installed linaro toolchain (GCC 5.3)
-export PATH="${HOME}/srv/toolchain/arm-tc-16.02/bin:${HOME}/srv/toolchain/arm64-tc-16.02/bin:$PATH"
+# Use pre-installed linaro toolchain
+export PATH="${HOME}/srv/toolchain/gcc-linaro-6.4.1-2017.08-x86_64_aarch64-linux-gnu/bin:$PATH"
+export PATH="${HOME}/srv/toolchain/gcc-linaro-6.4.1-2017.08-x86_64_arm-linux-gnueabihf/bin:$PATH"
 
 # Common git repositories to fetch
 UEFI_TOOLS_GIT_URL=https://git.linaro.org/uefi/uefi-tools.git

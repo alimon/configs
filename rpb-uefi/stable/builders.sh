@@ -30,8 +30,9 @@ cleanup_exit()
 # sbin isn't in the PATH by default and prevent to find sgdisk
 export PATH="/usr/sbin:/sbin:$PATH"
 
-# Use pre-installed linaro toolchain (GCC 5.3)
-export PATH="${HOME}/srv/toolchain/arm-tc-16.02/bin:${HOME}/srv/toolchain/arm64-tc-16.02/bin:$PATH"
+# Use pre-installed linaro toolchain
+export PATH="${HOME}/srv/toolchain/gcc-linaro-6.4.1-2017.08-x86_64_aarch64-linux-gnu/bin:$PATH"
+export PATH="${HOME}/srv/toolchain/gcc-linaro-6.4.1-2017.08-x86_64_arm-linux-gnueabihf/bin:$PATH"
 
 # Common git repositories to fetch
 UEFI_TOOLS_GIT_URL=https://git.linaro.org/uefi/uefi-tools.git
@@ -59,9 +60,9 @@ if [ "${MX_PLATFORM}" = "hikey" ]; then
     OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
 fi
 
-# Force cap GCC build profile to GCC49, still preferred by upstream
-TOOLCHAIN=GCC49
-export AARCH64_TOOLCHAIN=GCC49
+# Force cap GCC build profile to GCC5
+TOOLCHAIN=GCC5
+export AARCH64_TOOLCHAIN=GCC5
 
 # Clone the repos
 git clone -b $UEFI_TOOLS_GIT_BRANCH $UEFI_TOOLS_GIT_URL uefi-tools
