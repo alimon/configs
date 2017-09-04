@@ -94,7 +94,7 @@ esac
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
 cat << EOF >> conf/local.conf
-CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests libhugetlbfs-tests ltp ${extra_pkgs}"
+CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests-mainline kselftests-next libhugetlbfs-tests ltp ${extra_pkgs}"
 CORE_IMAGE_BASE_INSTALL_append = " python python-misc python-modules python-numpy python-pexpect python-pyyaml"
 CORE_IMAGE_BASE_INSTALL_append = " git packagegroup-core-buildessential packagegroup-core-tools-debug"
 EOF
@@ -211,7 +211,7 @@ GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
-KSELFTEST_VERSION=$(bitbake -e kselftests | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
+KSELFTEST_VERSION=$(bitbake -e kselftests-mainline | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
 LTP_VERSION=$(bitbake -e ltp | grep "^PV=" | cut -d'=' -f2 | tr -d '"')ltp
 LIBHUGETLBFS_VERSION=$(bitbake -e libhugetlbfs | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
 
