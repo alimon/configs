@@ -96,7 +96,7 @@
                 MACHINE=hikey
                 ;;
               x86)
-                MACHINE=x86
+                MACHINE=intel-core2-32
                 ;;
               *)
                 ;;
@@ -110,10 +110,14 @@
 
             MD5_FILENAME="MD5SUMS.txt"
             wget -O "${MD5_FILENAME}" "${SNAPSHOTS_BASE_URL}/${MD5_FILENAME}"
-            ROOTFS_FILENAME=$(grep -E "rpb-console-image-hikey-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
+            ROOTFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
+            NFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.tar\.xz" "${MD5_FILENAME}" | awk '{print $2}')
             BOOT_FILENAME=$(grep -E "boot\S*uefi\.img" "${MD5_FILENAME}" | awk '{print $2}')
-            export BOOT_URL="${SNAPSHOTS_BASE_URL}${BOOT_FILENAME}"
-            export SYSTEM_URL="${SNAPSHOTS_BASE_URL}${ROOTFS_FILENAME}"
+            KERNEL_FILENAME=$(grep -E "bzImage" "${MD5_FILENAME}" | awk '{print $2}')
+            export KERNEL_URL="${SNAPSHOTS_BASE_URL}/${KERNEL_FILENAME}"
+            export NFSROOTFS_URL="${SNAPSHOTS_BASE_URL}/${NFS_FILENAME}"
+            export BOOT_URL="${SNAPSHOTS_BASE_URL}/${BOOT_FILENAME}"
+            export SYSTEM_URL="${SNAPSHOTS_BASE_URL}/${ROOTFS_FILENAME}"
             export KERNEL_BRANCH="lkft-lava-staging-${BUILD_NAME}"
             export KERNEL_VERSION="lkft-lava-staging-${BUILD_NAME}"
             export KERNEL_REPO="https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/"
