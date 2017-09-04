@@ -65,6 +65,17 @@
     builders:
       - shell: |
           #!/bin/bash
+          set -e -u -o pipefail
+          refboard=$(dirname ${resultsref})
+          evalboard=$(dirname ${resultseval})
+          refnumber=$(basename ${resultsref} | sed 's/tcwg-benchmark-christophe-//')
+          evalnumber=$(basename ${resultseval} | sed 's/tcwg-benchmark-christophe-//')
+          echo "#${BUILD_NUMBER}-${refboard}-${refnumber}-${evalboard}-${evalnumber}" > ${WORKSPACE}/version.txt
+      - build-name-setter:
+          name: 'version.txt'
+          file: true
+      - shell: |
+          #!/bin/bash
 
           set -ex
           exec ./tcwg-benchmark-results-compare.sh
