@@ -239,8 +239,8 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "kernel_commit_id" : "${SRCREV_kernel}",
   "kernel_branch" : "${KERNEL_BRANCH}",
   "kernel_describe" : "${KERNEL_DESCRIBE}",
-  "kselftest_url" : "${KSELFTESTS_MAINLINE_URL}",
-  "kselftest_version" : "${KSELFTESTS_MAINLINE_VERSION}",
+  "kselftest_mainline_url" : "${KSELFTESTS_MAINLINE_URL}",
+  "kselftest_mainline_version" : "${KSELFTESTS_MAINLINE_VERSION}",
   "ltp_url" : "${LTP_URL}",
   "ltp_version" : "${LTP_VERSION}",
   "ltp_revision" : "${LTP_REVISION}",
@@ -263,7 +263,6 @@ KERNEL_URL=${SNAPSHOTS_URL}/${BASE_URL}/${KERNEL_IMG}
 NFSROOTFS_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_TARXZ_IMG}
 KERNEL_COMMIT=${SRCREV_kernel}
 KERNEL_CONFIG_URL=${SNAPSHOTS_URL}/${BASE_URL}/defconfig
-KSELFTEST_VERSION=${KSELFTESTS_MAINLINE_VERSION}
 KSELFTESTS_MAINLINE_URL=${KSELFTESTS_MAINLINE_URL}
 KSELFTESTS_MAINLINE_VERSION=${KSELFTESTS_MAINLINE_VERSION}
 LTP_URL=${LTP_URL}
