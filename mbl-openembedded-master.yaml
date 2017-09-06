@@ -1,0 +1,93 @@
+- job:
+    name: mbl-reference-platform-openembedded-master
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+            mbl-ci-users:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'rpb-console-image rpb-console-image-lava'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'linaro-ci'
+        - string:
+            name: BASE_URL
+            default: 'https://snapshots.linaro.org/'
+        - string:
+            name: PUB_DEST
+            default: 'openembedded/mbl/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
+    disabled: false
+    node: master
+    display-name: 'MBL - OpenEmbedded'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'imx7s-warp'
+                - 'raspberrypi3'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'MBL'
+    builders:
+        - shell:
+            !include-raw: mbl-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            cat > ${WORKSPACE}/BUILD-INFO.txt << EOF
+            Format-Version: 0.5
+
+            Files-Pattern: *
+            License-Type: protected
+            Auth-Groups: mbl-ci-users
+            EOF
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info ${WORKSPACE}/BUILD-INFO.txt \
+              ${DEPLOY_DIR_IMAGE}/ ${PUB_DEST}
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --make-link \
+              $(dirname ${PUB_DEST})
+    publishers:
+# We can only archive files that are located in the workspace
+#        - archive:
+#            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, ryan.harkin@linaro.org, paul.liu@linaro.org'
+            always: true
+            matrix-trigger: only-parent
