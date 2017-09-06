@@ -74,7 +74,9 @@
           evalboard=$(dirname ${resultseval})
           refnumber=$(basename ${resultsref} | sed 's/tcwg-benchmark-christophe-//')
           evalnumber=$(basename ${resultseval} | sed 's/tcwg-benchmark-christophe-//')
-          echo "#${BUILD_NUMBER}-${refboard}-${refnumber}-${evalboard}-${evalnumber}" > ${WORKSPACE}/version.txt
+          peakstr=""
+          $peak && peakstr=-peak
+          echo "#${BUILD_NUMBER}-${refboard}-${refnumber}-${evalboard}-${evalnumber}${peakstr}" > ${WORKSPACE}/version.txt
       - build-name-setter:
           name: 'version.txt'
           file: true
