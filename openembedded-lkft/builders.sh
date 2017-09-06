@@ -140,6 +140,9 @@ sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_re
 cat conf/{site,auto}.conf
 cat ${distro_conf}
 
+# Temporary sstate cleanup to get lkft metadata generated
+bitbake -c cleansstate kselftests-mainline kselftests-next ltp libhugetlbfs
+
 bitbake ${IMAGES}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
@@ -217,9 +220,11 @@ GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
-KSELFTEST_VERSION=$(bitbake -e kselftests-mainline | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
-LTP_VERSION=$(bitbake -e ltp | grep "^PV=" | cut -d'=' -f2 | tr -d '"')ltp
-LIBHUGETLBFS_VERSION=$(bitbake -e libhugetlbfs | grep "^PV=" | cut -d'=' -f2 | tr -d '"')
+
+# lkft-metadata class generates metadata file, which can be sourced
+for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
+  source lkftmetadata/packages/*/${recipe}/metadata
+done
 
 SNAPSHOTS_URL=https://snapshots.linaro.org
 BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/${BUILD_NUMBER}
@@ -234,9 +239,14 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "kernel_commit_id" : "${SRCREV_kernel}",
   "kernel_branch" : "${KERNEL_BRANCH}",
   "kernel_describe" : "${KERNEL_DESCRIBE}",
-  "kselftest_version" : "${KSELFTEST_VERSION}",
+  "kselftest_url" : "${KSELFTESTS_MAINLINE_URL}",
+  "kselftest_version" : "${KSELFTESTS_MAINLINE_VERSION}",
+  "ltp_url" : "${LTP_URL}",
   "ltp_version" : "${LTP_VERSION}",
+  "ltp_revision" : "${LTP_REVISION}",
+  "libhugetlbfs_url" : "${LIBHUGETLBFS_URL}",
   "libhugetlbfs_version" : "${LIBHUGETLBFS_VERSION}",
+  "libhugetlbfs_revision" : "${LIBHUGETLBFS_REVISION}",
   "build_arch" : "${TUNE_FEATURES}",
   "compiler" : "${TARGET_SYS} ${GCCVERSION}",
   "build_location" : "${SNAPSHOTS_URL}/${BASE_URL}"
@@ -253,5 +263,5 @@ KERNEL_URL=${SNAPSHOTS_URL}/${BASE_URL}/${KERNEL_IMG}
 NFSROOTFS_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_TARXZ_IMG}
 KERNEL_COMMIT=${SRCREV_kernel}
 KERNEL_CONFIG_URL=${SNAPSHOTS_URL}/${BASE_URL}/defconfig
-KSELFTEST_VERSION=${KSELFTEST_VERSION}
+KSELFTEST_VERSION=${KSELFTESTS_MAINLINE_VERSION}
 EOF
