@@ -15,9 +15,13 @@
     display-name: 'Trigger for LKFT - Linux Stable RC 4.4 + HiKey'
     scm:
         - git:
-            url: https://git.linaro.org/lkft/arm64-stable-rc.git
-            refspec: +refs/tags/4.*:refs/remotes/origin/tags/4.*
-            name: origin
+            remotes:
+                - origin:
+                    url: https://git.linaro.org/lkft/arm64-stable-rc.git
+                    refspec: +refs/tags/4.*:refs/tags/4.*
+                - linux-stable-4.4:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                    refspec: +refs/tags/v4.*:refs/tags/v4.*
             branches:
                 - refs/tags/4.4.*-rc*-hikey-*
             skip-tag: true
