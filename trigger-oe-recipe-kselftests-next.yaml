@@ -1,0 +1,68 @@
+- job:
+    name: trigger-oe-recipe-kselftests-next
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for kselftests-next (new update notification)'
+    scm:
+        - git:
+            url: https://git.kernel.org/pub/scm/linux/kernel/git/shuah/linux-kselftest.git
+            refspec: +refs/heads/next:refs/remotes/origin/next
+            name: origin
+            branches:
+                - refs/heads/next
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash -x
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf meta-rpb
+            }
+
+            tag=$(git describe --tags --abbrev=0)
+            version=$(echo ${tag} | cut -d'-' -f3)
+
+            git clone -b morty --depth 1 https://github.com/96boards/meta-rpb.git
+            recipe=$(find meta-rpb -type f -name 'kselftests-next_git.bb')
+            sed -i "s|^SRCREV = .*|SRCREV = \"${GIT_COMMIT}\"|" ${recipe}
+            sed -i "s|^PV = .*|PV = \"${version}+git\${SRCPV}\"|" ${recipe}
+
+            cd meta-rpb && git diff > ${WORKSPACE}/kselftests-next-recipe-update.patch
+    publishers:
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org'
+            body: |
+                Project: ${PROJECT_NAME}
+                Build number: ${BUILD_NUMBER}
+                Build status: ${BUILD_STATUS}
+                Build URL: ${BUILD_URL}
+                Build summary:
+
+                New upstream commit: ${GIT_URL} ${GIT_BRANCH}
+
+                Please, update OpenEmbedded recipe to ${GIT_COMMIT}.
+            attachments: '*.patch'
+            always: true
