@@ -127,13 +127,13 @@ mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 # Build information
 cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
 
-h4. Reference Platform Build - CE OpenEmbedded
+h4. MBL Build - OpenEmbedded
 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
-* Manifest URL: "https://github.com/96boards/oe-rpb-manifest.git":https://github.com/96boards/oe-rpb-manifest.git
+* Manifest URL: "https://github.com/ARMmbed/mbl-manifest.git":https://github.com/ARMmbed/mbl-manifest.git
 * Manifest branch: ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}
-* Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
+* Manifest commit: "${MANIFEST_COMMIT}":https://github.com/ARMmbed/mbl-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
 # Note: the main job script allows to override the default value for
