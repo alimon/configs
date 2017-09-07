@@ -226,7 +226,7 @@ for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
   source lkftmetadata/packages/*/${recipe}/metadata
 done
 
-SNAPSHOTS_URL=https://snapshots.linaro.org
+SNAPSHOTS_URL=http://snapshots.linaro.org
 BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/${BUILD_NUMBER}
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.uefi.img" | xargs -r basename)
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
