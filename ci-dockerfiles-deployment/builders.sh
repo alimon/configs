@@ -43,7 +43,7 @@ for dir in ${changed_dirs}; do
     "tcwg-"*)
       # ${dir} is one of generic tcwg-base/* directories.  Add dependent
       # images to the list.
-      update_images="${update_images} $(dirname $(find . -path "*-${dir_basename}*/build.sh"))"
+      update_images="${update_images} $(dirname $(find . -path "*-${dir_basename}*/build.sh" | sed -e "s#^\./##g"))"
       ;;
     *)
       update_images="${update_images} $(dirname $(find ${dir} -name build.sh))"
