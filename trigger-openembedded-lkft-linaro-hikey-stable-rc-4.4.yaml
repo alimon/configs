@@ -31,12 +31,12 @@
             tag=$(git tag -l 4.4.*-rc*-hikey-* | sort -V | tail -n1)
             git checkout ${tag}
 
-            echo KERNEL_BRANCH=$(git describe --tags --abbrev=0) > lkft_parameters
-            echo KERNEL_DESCRIBE=$(git describe --always) >> lkft_parameters
-            echo SRCREV_kernel=$(git rev-parse HEAD) >> lkft_parameters
-            cat lkft_parameters
+            echo KERNEL_BRANCH=$(git describe --tags --abbrev=0) > ${WORKSPACE}/lkft_parameters
+            echo KERNEL_DESCRIBE=$(git describe --always) >> ${WORKSPACE}/lkft_parameters
+            echo SRCREV_kernel=$(git rev-parse HEAD) >> ${WORKSPACE}/lkft_parameters
+            cat ${WORKSPACE}/lkft_parameters
 
-            . lkft_parameters
+            . ${WORKSPACE}/lkft_parameters
             echo "#${BUILD_NUMBER}-${SRCREV_kernel:0:8}" > ${WORKSPACE}/version.txt
         - build-name-setter:
             name: 'version.txt'
