@@ -121,6 +121,12 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/hikey-v2/template-andebenchpro2015.yaml#g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
             if [ -n "$GERRIT_PROJECT" ]; then
                 echo "SKIP_LAVA=1" >> ${WORKSPACE}/post_build_lava_parameters
             fi
