@@ -7,7 +7,7 @@ small_rom() {
     echo "arduino_101" | grep -F -w -q "$1"
 }
 
-cd zephyr
+cd ports/zephyr
 if small_rom ${PLATFORM}; then
     ./make-minimal BOARD=${PLATFORM}
 else
@@ -22,4 +22,4 @@ fi
 
 cd ${WORKSPACE}
 mkdir -p out/${PLATFORM}
-cp zephyr/outdir/${PLATFORM}/zephyr.bin out/${PLATFORM}/
+cp ports/zephyr/outdir/${PLATFORM}/zephyr.bin out/${PLATFORM}/
