@@ -16,6 +16,16 @@
     node: build-arm64
     concurrent: false
     display-name: 'Kubernetes auxiliary images build/publish'
+    scm:
+        - git:
+            url: https://github.com/yibo-cai/autoscaler.git
+            branches:
+                - origin/arm64
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H * * * *'
     wrappers:
         - timestamps
         - copy-to-slave:
