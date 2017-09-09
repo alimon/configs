@@ -176,7 +176,8 @@
                 if [ x"$target" != x"aarch64-linux-gnu_ilp32" ]; then
                   bash -x ./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
                 else
-                  bash -x ./jenkins-scripts/start-container-qemu.sh --label $tester_label --distro xenial --task test --prefix test_ --kernel_url https://dev-01.tcwglab/~tcwg-buildslave/images/ilp32/norov-Image --initrd_url https://cloud-images.ubuntu.com/releases/16.04/release/unpacked/ubuntu-16.04-server-cloudimg-arm64-initrd-generic > test-container.sh
+                  # Set weight to "2" to give VM decent amount of RAM.
+                  bash -x ./jenkins-scripts/start-container-qemu.sh --weight 2 --label $tester_label --distro xenial --task test --prefix test_ --kernel_url https://dev-01.tcwglab/~tcwg-buildslave/images/ilp32/norov-Image --initrd_url https://cloud-images.ubuntu.com/releases/16.04/release/unpacked/ubuntu-16.04-server-cloudimg-arm64-initrd-generic > test-container.sh
                 fi
                 . ./test-container.sh
                 runtests_opt="$runtests_opt --testcontainer ${test_container_host}:${test_container_port}"
