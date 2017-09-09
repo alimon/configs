@@ -100,6 +100,15 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - $scripts_branch
+            basedir: jenkins-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
     axes:
         - axis:
             type: slave
@@ -137,7 +146,6 @@
 
             mkdir -p artifacts/
 
-            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
             . ./jenkins-scripts/jenkins-helpers.sh
 
             builder_type=$(print_type_for_label $label)
