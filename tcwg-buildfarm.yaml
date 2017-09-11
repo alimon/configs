@@ -75,10 +75,6 @@
             default: master
             description: 'Scripts branch to use'
         - string:
-            name: build_container_type
-            default: 'default'
-            description: 'Type of container to use on the builder: docker, schroot, none, default. "default" means the script choose depending on the builder type'
-        - string:
             name: build_container_tag
             default: 'trusty'
             description: 'Distro to use on the builder with non-default container type: trusty, xenial.'
@@ -158,15 +154,8 @@
               target_opt="--target $target"
             fi
 
-            # Select container type. If the user chose a non-default
-            # value, then use it whatever the builder type
-            if [ "x${build_container_type}" = "xdefault" ]; then
-              build_container_type=docker
-              build_container_tag=trusty
-            fi
-
             # Start build container
-            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --label $label --node $NODE_NAME --distro ${build_container_tag} --prefix build_ > build-container.sh
+            bash -x ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro ${build_container_tag} --prefix build_ > build-container.sh
 
             # Define build_CONTAINER_RSH and build_container_cleanup
             . ./build-container.sh
