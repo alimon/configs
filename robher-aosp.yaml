@@ -101,6 +101,9 @@
             lunch linaro_x86_64-userdebug
             make -k -j"$(nproc)" gallium_dri i915_dri i965_dri libGLES_mesa || { true; failed=1; }
 
+            # Delete sources after build to save space
+            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
+
             ###### Don't care about artifacts for now ######
             echo "Build for mesa rev ${rev} finished - ret ${failed}"
             exit ${failed}
