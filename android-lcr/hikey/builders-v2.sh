@@ -44,6 +44,11 @@ cd -
 rm -rf build/out/BUILD-INFO.txt
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/template.txt -O build/out/BUILD-INFO.txt
 
+# Delete sources after build to save space
+cd build
+rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
+cd -
+
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/build/out

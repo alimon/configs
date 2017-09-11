@@ -18,6 +18,11 @@ if [[ ${JOB_NAME} == "android-lcr-member-x15-n" || ${JOB_NAME} == "android-lcr-m
   wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/x15/build-info/template.txt -O build/out/BUILD-INFO.txt
 fi
 
+# Delete sources after build to save space
+cd build
+rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
+cd -
+
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/build/out
