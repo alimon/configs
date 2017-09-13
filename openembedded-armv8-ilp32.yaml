@@ -1,0 +1,100 @@
+- job:
+    name: openembedded-armv8-ilp32
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build
+    display-name: 'OpenEmbedded ARMv8 ILP32'
+    scm:
+        - git:
+            url: https://git.linaro.org/openembedded/jenkins-setup.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - build
+        - axis:
+            type: user-defined
+            name: gcc_version
+            values:
+                - 7.1
+        - axis:
+            type: user-defined
+            name: rootfs
+            values:
+                - minimal
+                - minimal-initramfs
+                - minimal-ltp
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'hikey-ilp32'
+    execution-strategy:
+        sequential: true
+        touchstone:
+            expr: 'rootfs=="minimal"'
+    wrappers:
+        - timestamps
+        - matrix-tie-parent:
+            node: build
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            export PATH="$HOME/bin:$PATH"
+
+            # we clean build and populate it from cache
+            bash -x pre-build-do-cleanup.sh
+
+            if [ `date +%u` = "6" ] && [ "${rootfs}" = "minimal" ]
+            then
+              echo "manual hard cleanup on day 6"
+              bash periodic-cleanup.sh hard
+            fi
+
+            # do a build
+            bash -x init-and-build.sh -a armv8 -g ${gcc_version} linaro-image-${rootfs}
+
+            cd ${WORKSPACE}
+
+            bash -x post-build-create-image-manifest.sh
+            bash -x post-build-sort-out-downloads.sh
+
+            # Capture what we're building in the build output.
+            repo manifest -r
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              out/ openembedded/images/${rootfs}-armv8-ilp32-gcc-${gcc_version}/${MACHINE}/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org'
