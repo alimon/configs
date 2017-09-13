@@ -81,6 +81,11 @@
             filter: 'out/jdk10.tar.gz, out/build-date.sh'
             target: incoming
             flatten: true
+        - copyartifact:
+            project: jcstress-build
+            filter: 'tests-all/target/jcstress.jar'
+            target: incoming
+            flatten: true
         - shell: |
             #!/bin/bash
 
@@ -97,6 +102,7 @@
             IMAGE_DIR=${WORKSPACE}/jdk10-${REAL_VARIANT}-${BUILD_TYPE}
             PERSIST=$HOME/srv/openjdk10
 
+            JCSTRESS=$PWD/incoming/jcstress.jar
 
             # Only set =1 for debugging.
             use_subcategories=0
@@ -188,6 +194,7 @@
             if [ $JVM_VARIANT = "server" ]; then
                 java -jar jtreg/lib/jtreg.jar \
                   -dir:${src_dir}/${JTREG_CATEGORY}/test \
+                  -vmoption:-Djdk.test.lib.artifacts.jcstress-tests-all=$JCSTRESS \
                   -vmoption:-XX:-TieredCompilation \
                   -testjdk:${IMAGE_DIR} \
                   -exclude:${blacklist} \
@@ -200,6 +207,7 @@
             else
                 java -jar jtreg/lib/jtreg.jar \
                   -dir:${src_dir}/${JTREG_CATEGORY}/test \
+                  -vmoption:-Djdk.test.lib.artifacts.jcstress-tests-all=$JCSTRESS \
                   -vmoption:-XX:+TieredCompilation \
                   -vmoption:-XX:TieredStopAtLevel=1 \
                   -testjdk:${IMAGE_DIR} \
