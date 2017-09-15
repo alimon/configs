@@ -7,9 +7,17 @@
             anonymous:
                 - job-read
                 - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+    parameters:
+        - string:
+            name: LINUX_TAG_PATTERN
+            default: "4.4.*-rc*-hikey-*"
+            description: "Linux tag to build (from lkft/arm64-stable-rc and linux-stable trees)."
     disabled: false
     node: master
     display-name: 'Trigger for LKFT - Linux Stable RC 4.4 + HiKey'
@@ -28,7 +36,7 @@
             git fetch --no-tags arm64-stable-rc  +refs/tags/4.4.*:refs/tags/4.4.*
             git fetch --no-tags linux-stable-4.4 +refs/tags/v4.4.*:refs/tags/v4.4.*
 
-            tag=$(git tag -l 4.4.*-rc*-hikey-* | sort -V | tail -n1)
+            tag=$(git tag -l "${LINUX_TAG_PATTERN}" | sort -V | tail -n1)
             git checkout ${tag}
 
             echo KERNEL_BRANCH=$(git describe --tags --abbrev=0) > ${WORKSPACE}/lkft_parameters
