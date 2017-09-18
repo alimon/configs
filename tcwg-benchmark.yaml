@@ -1,0 +1,166 @@
+- job:
+    name: tcwg-benchmark
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: toolchain_url
+            default: ''
+            description: 'Toolchain URL'
+        - string:
+            name: sysroot
+            default: 'tarball'
+            description: 'Rsync-friendly path to the sysroot to run against; use libs from toolchain_url tarball/rsync if "tarball"; use system libs if empty'
+        - string:
+           name: bench_list
+           default: 'bzip2'
+           description: 'List of benchmarks to run (from spec2k6). Use "all" to run all of them.'
+        - string:
+            name: cflags
+            default: ''
+            description: 'CFLAGS to use'
+        - choice:
+            name: extension
+            choices:
+              - default
+              - O2
+              - O3
+              - O2g
+              - O3g
+              - Ofast
+              - Os
+            default: 'O2g'
+            description: 'Compilation profile'
+        - choice:
+            name: testmode
+            choices:
+              - build
+              - verify
+              - benchmark
+            default: 'verify'
+            description: 'Whether to just build or run full benchmarks'
+        - string:
+            name: iterations
+            default: '1'
+            description: 'Number of benchmark iterations'
+        - string:
+            name: results_id
+            default: <hw_type>/tcwg-benchmark-<build_num>
+            description: 'ID for benchmarking results; results will appear in dev-01.tcwglab:/home/tcwg-benchmark/results-$results_id/'
+        - bool:
+            name: forceinstall
+            default: 'false'
+            description: 'Force clean re-install of benchmark sources'
+        - choice:
+            name: run_profile
+            choices:
+              - parallel3x3
+              - parallel3x1
+              - serial1
+            default: 'parallel3x1'
+            description: 'Benchmark profile to use: parallel3x3 runs on 3 boards and 3 CPUs in parallel; parallel3x1 runs on 3 boards on 1 CPU in parallel; serial1 runs on a single board on 1 CPU.'
+        - string:
+            name: target_list
+            default: 'tx1'
+            description: 'List of targets -- tk1 tx1'
+        - bool:
+            name: reboot
+            default: 'false'
+            description: 'Reboot the board before building and running the benchmarks.'
+        - string:
+            name: displaytag
+            default: ''
+            description: 'Tag to display in the Jenkins console, so that the build name is more meaningful'
+        - bool:
+            name: ignore_errors
+            default: 'false'
+            description: 'Ignore build errors as much as possible'
+        - string:
+            name: builder
+            default: 'tcwg-x86_64-build'
+            description: 'Builder -- jenkins label or node'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Jenkins-scripts branch to use'
+        - string:
+            name: bmk_branch
+            default: master
+            description: 'Bmk-scripts branch to use'
+    disabled: false
+    node: tcwg-bmk-coordinator
+    child-workspace: $label
+    concurrent: true
+    display-name: 'TCWG BBB Benchmark'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+        - git:
+            url: https://git-us.linaro.org/toolchain/bmk-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - ${bmk_branch}
+            basedir: bmk-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-bmk-tk1-06
+                - tcwg-bmk-tk1-07
+                - tcwg-bmk-tk1-08
+                - tcwg-bmk-tx1-06
+                - tcwg-bmk-tx1-07
+                - tcwg-bmk-tx1-08
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        combination-filter: |
+            (target=="tk1" && label==~/tcwg-bmk-tk1-.*/) || (target=="tx1" && label==~/tcwg-bmk-tx1-.*/)
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 900
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'tcwg-benchmark'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${displaytag}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+            exec ./tcwg-benchmark.sh
+    publishers:
+        - email-ext:
+            always: true
+            send-to:
+                - requester

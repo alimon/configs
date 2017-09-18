@@ -1,5 +1,5 @@
 - job:
-    name: tcwg-benchmark-results
+    name: tcwg-benchmark-compare
     project-type: freestyle
     defaults: global
     properties:
@@ -14,13 +14,17 @@
             num-to-keep: 100
     parameters:
         - string:
-            name: results_id
+            name: resultsref
             default: <hw_type>/tcwg-benchmark-<build_num>
-            description: 'ID for benchmarking results; results should be in dev-01.tcwglab:/home/tcwg-benchmark/results-$results_id/'
+            description: 'Rsync-friendly for reference results. Use the results_id value of the reference build.'
         - string:
-            name: results_ref
+            name: resultseval
             default: <hw_type>/tcwg-benchmark-<build_num>
-            description: 'ID for benchmarking reference results; should be in dev-01.tcwglab:/home/tcwg-benchmark/results-$results_ref/'
+            description: 'Rsync-friendly for results to compare to reference.  Use the results_id value of the build.'
+        - bool:
+            name: peak
+            default: false
+            description: 'Use peak performance instead of median'
         - string:
             name: scripts_branch
             default: master
@@ -30,9 +34,9 @@
             default: master
             description: 'Bmk-scripts branch to use'
     disabled: false
-    node: tcwg-bmk-coordinator
+    node: tcwg-bmk-dev-01
     concurrent: true
-    display-name: 'TCWG ZZZ Benchmark Results'
+    display-name: 'TCWG BBB Benchmark Compare'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
@@ -65,9 +69,22 @@
     builders:
       - shell: |
           #!/bin/bash
+          set -e -u -o pipefail
+          refboard=$(dirname ${resultsref})
+          evalboard=$(dirname ${resultseval})
+          refnumber=$(basename ${resultsref} | sed 's/tcwg-benchmark-//')
+          evalnumber=$(basename ${resultseval} | sed 's/tcwg-benchmark-//')
+          peakstr=""
+          $peak && peakstr=-peak
+          echo "#${BUILD_NUMBER}-${refboard}-${refnumber}-${evalboard}-${evalnumber}${peakstr}" > ${WORKSPACE}/version.txt
+      - build-name-setter:
+          name: 'version.txt'
+          file: true
+      - shell: |
+          #!/bin/bash
 
           set -ex
-          exec ./tcwg-benchmark-results.sh
+          exec ./tcwg-benchmark-results-compare.sh
     publishers:
         - archive:
             artifacts: 'artifacts/*'
