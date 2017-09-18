@@ -1,0 +1,103 @@
+- job:
+    name: tcwg-benchmark-sfo17
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: toolchain_list
+            default: 'gnu:aarch64 gnu:armv7 gnu:armv8 llvm:aarch64 llvm:armv7'
+            description: 'List of toolchains'
+        - string:
+            name: config_list
+            default: 'O2g-lto'
+            description: 'List of configs: O2g, O3g, O2g-lto, O3g-lto'
+        - text:
+            name: benchmark_params
+            default: |
+              bench_list=456.hmmer 483.xalancbmk 453.povray
+              testmode=benchmark
+              run_profile=parallel3x1
+              target_list=tx1
+              scripts_branch=refs/changes/63/21463/8
+              bmk_branch=refs/changes/59/21459/1
+            description: 'Benchmark parameters, see tcwg-benchmark job'
+    disabled: false
+    node: tcwg-bmk-coordinator
+    concurrent: true
+    display-name: 'TCWG SFO17 Benchmark'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-coordinator
+        - axis:
+            type: dynamic
+            name: toolchain
+            values:
+                - toolchain_list
+        - axis:
+            type: dynamic
+            name: config
+            values:
+                - config_list
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'tcwg-benchmark'
+    builders:
+      - shell: |
+          #!/bin/bash
+
+          set -ex
+
+          base_url="https://dev-01.tcwglab/~maxim.kuvyrkov/sfo17"
+
+          case "$toolchain" in
+            "gnu:aarch64") tarball=gcc-linaro-7.1.1-2017.08-x86_64_aarch64-linux-gnu.tar.xz ;;
+            "gnu:armv7") tarball=gcc-linaro-7.1.1-2017.08-x86_64_arm-linux-gnueabihf.tar.xz ;;
+            "gnu:armv8") tarball=gcc-linaro-7.1.1-2017.08-x86_64_armv8l-linux-gnueabihf.tar.xz ;;
+            "llvm:aarch64") tarball=clang+llvm-5.0.0-aarch64-linux-gnu.tar.xz ;;
+            "llvm:armv7") tarball=clang+llvm-5.0.0-armv7a-linux-gnueabihf.tar.xz ;;
+            *) exit 1 ;;
+          esac
+
+          case "$toolchain" in
+            "gnu:"*) sysroot="tarball" ;;
+            "llvm:aarch64") sysroot="$base_url/sysroot-glibc-linaro-2.25-2017.08-aarch64-linux-gnu.tar.xz" ;;
+            "llvm:armv7") sysroot="$base_url/sysroot-glibc-linaro-2.25-2017.08-arm-linux-gnueabihf.tar.xz" ;;
+            *) exit 1 ;;
+          esac
+
+          extension=$(echo "$config" | sed -e "s/-lto//")
+          case "$config" in
+            *"-lto") cflags="-flto" ;;
+            *) cflags="" ;;
+          esac
+
+          cat > params <<EOF
+          toolchain_url=$base_url/$tarball
+          sysroot=$sysroot
+          extension=$extension
+          cflags=$cflags
+          EOF
+          echo "$benchmark_params" >> params
+      - trigger-builds:
+          - project: 'tcwg-benchmark-christophe'
+            property-file: params
+            block: true
