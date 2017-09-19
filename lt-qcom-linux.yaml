@@ -1,0 +1,47 @@
+- job:
+    name: lt-qcom-linux
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-jessie-amd64
+    display-name: 'Qualcomm LT Linux kernel build'
+    scm:
+        - git:
+            url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
+            refspec: +refs/heads/${KERNELBRANCH}:refs/remotes/origin/${KERNELBRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNELBRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            echo "Starting ${JOB_NAME} with the following parameters:"
+            echo "KERNELRELEASE: ${KERNELRELEASE}"
+            echo "KERNELVERSION: ${KERNELVERSION}"
+            echo "KERNELBRANCH: ${KERNELBRANCH}"
+            echo "GIT_COMMIT: ${GIT_COMMIT}"
+            echo "GIT_BRANCH: ${GIT_BRANCH}"
+    publishers:
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org'
+            always: true
