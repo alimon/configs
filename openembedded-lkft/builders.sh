@@ -156,7 +156,7 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  stih410-b2260|intel-core2-32)
+  juno|stih410-b2260|intel-core2-32)
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
