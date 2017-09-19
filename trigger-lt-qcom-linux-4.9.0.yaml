@@ -36,6 +36,11 @@
     builders:
         - shell: |
             #!/bin/bash -e
+
+            # bring in stable and mainline tags
+            git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
+            git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable.git
+
             echo KERNELRELEASE=$(git describe --always) > qcomlt_parameters
             echo KERNELVERSION=$(make kernelversion | sed 's/\(.*\)\..*/\1.0/') >> qcomlt_parameters
             echo KERNELBRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||') >> qcomlt_parameters
