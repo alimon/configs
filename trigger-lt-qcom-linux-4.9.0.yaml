@@ -23,7 +23,7 @@
             name: origin
             branches:
                 - refs/heads/release/qcomlt-4.9
-            skip-tag: true
+            skip-tag: false
             shallow-clone: true
             wipe-workspace: false
     triggers:
@@ -36,8 +36,8 @@
         - shell: |
             #!/bin/bash -e
             echo KERNELRELEASE=$(git describe --always) > qcomlt_parameters
-            echo KERNELVERSION=$(make kernelversion) >> qcomlt_parameters
-            echo KERNELBRANCH=${GIT_BRANCH} >> qcomlt_parameters
+            echo KERNELVERSION=$(make kernelversion | sed 's/\(.*\)\..*/\1.0/') >> qcomlt_parameters
+            echo KERNELBRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||') >> qcomlt_parameters
             cat qcomlt_parameters
     publishers:
         - trigger-parameterized-builds:

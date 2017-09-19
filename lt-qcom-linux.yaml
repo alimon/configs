@@ -14,12 +14,22 @@
             linaro-landing-team-qualcomm-personnel:
                 - job-build
                 - job-cancel
+    parameters:
+        - string:
+            name: KERNELREPO
+            default: 'https://git.linaro.org/landing-teams/working/qualcomm/kernel.git'
+        - string:
+            name: KERNELRELEASE
+        - string:
+            name: KERNELVERSION
+        - string:
+            name: KERNELBRANCH
     disabled: false
     node: docker-jessie-amd64
     display-name: 'Qualcomm LT Linux kernel build'
     scm:
         - git:
-            url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
+            url: ${KERNELREPO}
             refspec: +refs/heads/${KERNELBRANCH}:refs/remotes/origin/${KERNELBRANCH}
             name: origin
             branches:
