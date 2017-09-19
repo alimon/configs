@@ -240,6 +240,7 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 {
   "kernel_repo" : "${KERNEL_REPO}",
   "kernel_commit_id" : "${SRCREV_kernel}",
+  "make_kernelversion" : "${MAKE_KERNELVERSION}",
   "kernel_branch" : "${KERNEL_BRANCH}",
   "kernel_describe" : "${KERNEL_DESCRIBE}",
   "kselftest_mainline_url" : "${KSELFTESTS_MAINLINE_URL}",
@@ -274,4 +275,5 @@ LTP_REVISION=${LTP_REVISION}
 LIBHUGETLBFS_URL=${LIBHUGETLBFS_URL}
 LIBHUGETLBFS_VERSION=${LIBHUGETLBFS_VERSION}
 LIBHUGETLBFS_REVISION=${LIBHUGETLBFS_REVISION}
+MAKE_KERNELVERSION=${MAKE_KERNELVERSION}
 EOF

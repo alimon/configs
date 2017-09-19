@@ -38,6 +38,7 @@
             #!/bin/bash -e
             echo KERNEL_DESCRIBE=$(git describe --always) > lkft_parameters
             echo SRCREV_kernel=${GIT_COMMIT} >> lkft_parameters
+            echo MAKE_KERNELVERSION=$(make kernelversion) >> lkft_paremeters
             cat lkft_parameters
     publishers:
         - trigger-parameterized-builds:
