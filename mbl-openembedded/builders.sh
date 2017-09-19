@@ -103,6 +103,9 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
+# FIXME: IMAGE_FSTYPES_remove doesn't work
+rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext?
+
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
   juno|stih410-b2260|imx7s-warp|raspberrypi3)
