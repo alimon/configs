@@ -40,8 +40,8 @@ actions:
       minutes: 5
     to: lxc
     packages:
-    - android-tools-adb
-    - android-tools-fastboot
+    - wget
+    - unzip
     os: debian
 
 - boot:
@@ -52,6 +52,27 @@ actions:
     timeout:
       minutes: 5
     method: lxc
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - from: inline
+      name: install-google-fastboot
+      path: inline/install-google-fastboot.yaml
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: install-fastboot
+          description: "Install fastboot provided by google"
+        run:
+          steps:
+          - wget https://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip
+          - unzip platform-tools_r26.0.0-linux.zip
+          - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
+          - ln -s `pwd`/platform-tools/adb /usr/bin/adb
+          - fastboot --version
 
 - deploy:
     timeout:
