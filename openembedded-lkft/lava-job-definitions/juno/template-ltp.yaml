@@ -1,0 +1,94 @@
+context:
+ bootloader_prompt: juno#
+
+device_type: juno-r2
+tags:
+  - oe-only
+job_name: lkft-ltp-${KERNEL_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 10
+  actions:
+    u-boot-interrupt:
+      seconds: 120
+    u-boot-commands:
+      seconds: 120
+    uboot-retry:
+      seconds: 180
+  connections:
+    u-boot-interrupt:
+      seconds: 120
+    u-boot-commands:
+      seconds: 120
+    uboot-retry:
+      seconds: 180
+priority: medium
+visibility: public
+
+metadata:
+  git branch: ${KERNEL_BRANCH}
+  git repo: ${KERNEL_REPO}
+  git commit: ${KERNEL_COMMIT}
+  git describe: ${KERNEL_DESCRIBE}
+  make_kernelversion: "${MAKE_KERNELVERSION}"
+  kernel-config: ${KERNEL_CONFIG_URL}
+  kselftest__url: ${KSELFTESTS_MAINLINE_URL}
+  kselftest__version: "${KSELFTESTS_MAINLINE_VERSION}"
+  libhugetlbfs__url: ${LIBHUGETLBFS_URL}
+  libhugetlbfs__version: "${LIBHUGETLBFS_VERSION}"
+  libhugetlbfs__revision: "${LIBHUGETLBFS_REVISION}"
+  ltp-syscalls-tests__url: ${LTP_URL}
+  ltp-syscalls-tests__version: "${LTP_VERSION}"
+  ltp-syscalls-tests__revision: "${LTP_REVISION}"
+  build-url: ${BUILD_URL}
+  build-location: ${SNAPSHOTS_URL}/${BASE_URL}
+  series: lkft
+
+actions:
+- deploy:
+    namespace: recovery
+    timeout:
+      minutes: 10
+    to: vemsd
+    recovery_image:
+      url:  ${RECOVERY_IMAGE_URL}
+      compression: zip
+
+- deploy:
+    namespace: oe
+    timeout:
+      minutes: 2
+    to: nfs
+    os: oe
+    nfsrootfs:
+      url: ${NFSROOTFS_URL}
+      compression: xz
+
+- boot:
+    namespace: oe
+    connection-namespace: recovery
+    method: u-boot
+    commands: norflash
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    prompts:
+    - root@(.*):~#
+
+- test:
+    namespace: oe
+    timeout:
+      minutes: 60
+    definitions:
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/ltp/ltp.yaml
+      parameters:
+        SKIP_INSTALL: 'true'
+        TST_CMDFILES: 'syscalls'
+        TIMEOUT_MULTIPLIER: 3
+      name: ltp-syscalls-tests
+      timeout:
+        minutes: 60
