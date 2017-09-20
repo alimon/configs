@@ -16,24 +16,28 @@
                 - job-cancel
     parameters:
         - string:
-            name: KERNELREPO
+            name: KERNEL_REPO_URL
             default: 'https://git.linaro.org/landing-teams/working/qualcomm/kernel.git'
         - string:
-            name: KERNELRELEASE
+            name: KERNEL_CONFIGS
+            default: 'defconfig distro.config'
         - string:
-            name: KERNELVERSION
+            name: KERNEL_DESCRIBE
         - string:
-            name: KERNELBRANCH
+            name: KERNEL_VERSION
+        - string:
+            name: KERNEL_BRANCH
     disabled: false
     node: docker-jessie-amd64
     display-name: 'Qualcomm LT Linux kernel build'
     scm:
         - git:
-            url: ${KERNELREPO}
-            refspec: +refs/heads/${KERNELBRANCH}:refs/remotes/origin/${KERNELBRANCH}
+            url: ${KERNEL_REPO_URL}
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
             name: origin
             branches:
-                - refs/heads/${KERNELBRANCH}
+                - refs/heads/${KERNEL_BRANCH}
+            basedir: linux
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -45,12 +49,10 @@
         - shell: |
             #!/bin/bash
             set -ex
-            echo "Starting ${JOB_NAME} with the following parameters:"
-            echo "KERNELRELEASE: ${KERNELRELEASE}"
-            echo "KERNELVERSION: ${KERNELVERSION}"
-            echo "KERNELBRANCH: ${KERNELBRANCH}"
-            echo "GIT_COMMIT: ${GIT_COMMIT}"
-            echo "GIT_BRANCH: ${GIT_BRANCH}"
+            sudo apt-get update
+            sudo apt-get install -y ccache
+        - shell:
+            !include-raw: lt-qcom-linux/builders.sh
     publishers:
         - email-ext:
             recipients: 'nicolas.dechesne@linaro.org'

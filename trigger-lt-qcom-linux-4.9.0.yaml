@@ -41,9 +41,9 @@
             git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
             git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable.git
 
-            echo KERNELRELEASE=$(git describe --always) > qcomlt_parameters
-            echo KERNELVERSION=$(make kernelversion | sed 's/\(.*\)\..*/\1.0/') >> qcomlt_parameters
-            echo KERNELBRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||') >> qcomlt_parameters
+            echo KERNEL_VERSION=$(make kernelversion) > qcomlt_parameters
+            echo KERNEL_DESCRIBE=$(git describe --always) >> qcomlt_parameters
+            echo KERNEL_BRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||') >> qcomlt_parameters
             cat qcomlt_parameters
     publishers:
         - trigger-parameterized-builds:
