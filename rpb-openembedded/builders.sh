@@ -113,10 +113,16 @@ case "${MACHINE}" in
 esac
 
 # Move HiKey's bootloader related files into its own subdir
-[ "${MACHINE}" = "hikey" ] && {
-  mkdir -p ${DEPLOY_DIR_IMAGE}/bootloader
-  (cd ${DEPLOY_DIR_IMAGE} && mv fip.bin hisi-idt.py l-loader.bin nvme.img ptable-linux-*.img bootloader/)
-}
+case "${MACHINE}" in
+  hikey)
+    mkdir -p ${DEPLOY_DIR_IMAGE}/bootloader
+    (cd ${DEPLOY_DIR_IMAGE} && mv fip.bin hisi-idt.py l-loader.bin nvme.img ptable-linux-*.img bootloader/)
+    ;;
+  hikey960)
+    mkdir -p ${DEPLOY_DIR_IMAGE}/bootloader
+    (cd ${DEPLOY_DIR_IMAGE} && mv config fip.bin hikey_idt l-loader.bin prm_ptable.img sec_uce_boot.img sec_usb_xloader.img sec_xloader.img bootloader/)
+    ;;
+esac
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
