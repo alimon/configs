@@ -16,18 +16,26 @@
         - string:
             name: toolchain_list
             default: 'gnu-aarch64 gnu-armv7 gnu-armv8 llvm-aarch64 llvm-armv7'
-            description: 'List of toolchains'
+            description: 'List of toolchains: gnu-aarch64 gnu-armv7 gnu-armv8 llvm-aarch64 llvm-armv7'
         - string:
-            name: config_list
+            name: extension_list
             default: 'O2g O3g'
-            description: 'List of configs: O2g O3g O2g-lto O3g-lto O2 O3'
+            description: 'List of extensions: O2g O3g O2 O3'
+        - string:
+            name: cflags
+            default: ''
+            description: 'Compiler flags'
+        - string:
+            name: bench_list
+            default: 'fast'
+            description: 'List of benchmarks: fast nofortran all'
         - text:
             name: benchmark_params
             default: |
-              bench_list=456.hmmer 483.xalancbmk 453.povray
               testmode=benchmark
               run_profile=parallel3x1
               target_list=tx1
+              reboot=true
               scripts_branch=refs/changes/63/21463/8
               bmk_branch=refs/changes/59/21459/1
             description: 'Benchmark parameters, see tcwg-benchmark job'
@@ -48,9 +56,9 @@
                 - toolchain_list
         - axis:
             type: dynamic
-            name: config
+            name: extension
             values:
-                - config_list
+                - extension_list
     execution-strategy:
         sequential: false
     wrappers:
@@ -78,7 +86,7 @@
           esac
 
           case "$toolchain" in
-            "gnu-"*)
+            "gnu"*)
               sysroot="tarball"
               builder="tcwg-x86_64-build"
               ;;
@@ -93,22 +101,22 @@
             *) exit 1 ;;
           esac
 
-          extension=$(echo "$config" | sed -e "s/-lto//")
-          case "$config" in
-            *"-lto") cflags="-flto" ;;
-            *) cflags="" ;;
+          case "$toolchain:$bench_list" in
+            "llvm"*:"all") bench_list="nofortran" ;;
+            *:"fast") bench_list="456.hmmer 483.xalancbmk 453.povray" ;;
           esac
 
           cat > params <<EOF
           toolchain_url=$base_url/$tarball
+          bench_list=$bench_list
           sysroot=$sysroot
           builder=$builder
           extension=$extension
           cflags=$cflags
-          displaytag=sfo17-$toolchain-$config
+          displaytag=sfo17-$bench_list-$toolchain-$extension$cflags
           EOF
           echo "$benchmark_params" >> params
       - trigger-builds:
-          - project: 'tcwg-benchmark-christophe'
+          - project: 'tcwg-benchmark'
             property-file: params
             block: true
