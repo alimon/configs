@@ -91,6 +91,13 @@ EOF
     ;;
 esac
 
+# Set the image types to use
+cat << EOF >> ${distro_conf}
+IMAGE_FSTYPES_remove_intel-core2-32 = "ext4"
+IMAGE_FSTYPES_remove_intel-core2-32 = "iso"
+IMAGE_FSTYPES_remove_intel-core2-32 = "wic"
+EOF
+
 case "${KERNEL_RECIPE}" in
   linux-*-aosp|linux-*-android-*)
     cat << EOF >> ${distro_conf}
