@@ -83,7 +83,7 @@
             wget --progress=dot -e dotbytes=2M ${JDK_URL}
             tar -Jxf jdk*.tar.xz
 
-            cd jdk*/jre/lib/security/
+            cd jdk*/lib/security/
             rm -f cacerts
             ln -s /etc/ssl/certs/java/cacerts
 
@@ -124,7 +124,7 @@
               pushd build-stage2
               sh ../$JDKDIR/configure --with-jvm-variants=${JVM_VARIANT} \
                                         --with-debug-level=${BUILD_TYPE} \
-                                        --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image \
+                                        --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk \
                                         ${ccache_build_opts} \
                                         --with-version-opt="Linaro-$RELEASE" \
                                         --with-version-pre="release"
