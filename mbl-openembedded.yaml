@@ -20,14 +20,11 @@
             name: IMAGES
             default: 'rpb-console-image'
         - string:
-            name: MANIFEST_BRANCH
-            default: 'linaro-ci'
-        - string:
             name: BASE_URL
             default: 'https://snapshots.linaro.org/'
         - string:
             name: PUB_DEST
-            default: 'openembedded/mbl/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
+            default: 'openembedded/mbl/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
     disabled: false
     node: master
     display-name: 'MBL - OpenEmbedded'
@@ -48,6 +45,11 @@
             name: label
             values:
                 - docker-jessie-amd64
+        - axis:
+            type: user-defined
+            name: MANIFEST_BRANCH
+                - 'linaro'
+                - 'linaro-release'
     execution-strategy:
         sequential: false
     wrappers:

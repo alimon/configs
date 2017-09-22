@@ -37,7 +37,12 @@ export PATH=${HOME}/bin:${PATH}
 # initialize repo if not done already
 if [ ! -e ".repo/manifest.xml" ]; then
    ssh-keyscan github.com >> ${HOME}/.ssh/known_hosts
-   repo init -u git@github.com:ARMmbed/mbl-manifest.git -b ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH} -m pinned-manifest.xml
+   if [ "${MANIFEST_BRANCH}" == "linaro-release" ]; then
+      MANIFEST_FILE=pinned-manifest.xml
+   else
+      MANIFEST_FILE=default.xml
+   fi
+   repo init -u git@github.com:ARMmbed/mbl-manifest.git -b ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH} -m ${MANIFEST_FILE}
 
    # link to shared downloads on persistent disk
    # our builds config is expecting downloads and sstate-cache, here.
