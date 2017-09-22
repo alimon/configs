@@ -1,5 +1,5 @@
 - job:
-    name: android-lcr-member-juno-n-premerge-ci
+    name: android-lcr-reference-x15-o-premerge-ci
     project-type: freestyle
     defaults: global
     properties:
@@ -19,27 +19,26 @@
             default: https://android-qa-reports.linaro.org/api/
         - string:
             name: BUILD_DIR
-            default: m-lcr-nougat
+            default: r-lcr-oreo
         - string:
             name: BUILD_CONFIG_FILENAME
-            default: lcr-member-juno-n
+            default: lcr-reference-x15-o
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'Premerge  CI job to test patch for juno M-LCR'
+    display-name: 'Premerge CI job to test patch for X15 R-LCR'
     concurrent: true
     triggers:
         - gerrit:
             override-votes: true
             gerrit-build-successful-verified-value: 1
             gerrit-build-failed-verified-value: -1
-            server-name: __ANY__
             trigger-on:
                 - comment-added-contains-event:
-                    comment-contains-value: '.*RunPremergeJunoTests.*'
+                    comment-contains-value: '.*RunPremergeX15Tests.*'
             server-name: __ANY__
             projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'android/android-patchsets'
+                  project-pattern: 'android-patchsets'
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'master'
@@ -47,17 +46,12 @@
                   project-pattern: 'device/linaro/common'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-nougat'
+                        branch-pattern: 'linaro-oreo'
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'android/device/linaro/juno'
+                  project-pattern: 'platform/manifest'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-nougat'
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/manifest'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-nougat'
+                        branch-pattern: 'linaro-oreo'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'android-build-configs'
                   branches:
@@ -71,6 +65,6 @@
                 users:
                     - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
-        !include: android-lcr/juno/premerge-ci-builders.yaml.inc
+        !include: android-lcr/x15/builders.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc

@@ -1,0 +1,88 @@
+- job:
+    name: android-lcr-reference-hikey-master
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-extended-read
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: ART_URL
+            default: https://android-qa-reports.linaro.org/api/
+        - string:
+            name: BUILD_DIR
+            default: aosp-master
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'AOSP master build for HiKey'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: __ANY__
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-patchsets'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-o-workarounds'
+                      - compare-type: 'PLAIN'
+                        pattern: 'MASTER-RLCR-PATCHSET'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-master'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-4.9'
+                      - compare-type: 'PLAIN'
+                        pattern: 'optee-master-workarounds'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-oreo'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'linaro-pm-extras.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'linaro.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'optee.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'update-externals.xml'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'lcr-member-hikey-master'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        !include: android-lcr/hikey/builders-v2.yaml.inc
+    publishers:
+        !include: android-lcr/common/publishers.yaml.inc

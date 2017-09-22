@@ -1,14 +1,14 @@
 - job:
-    name: android-lcr-member-hikey-master
+    name: android-lcr-reference-hikey-master-premerge-ci
     project-type: freestyle
     defaults: global
     properties:
         - authorization:
             anonymous:
                 - job-read
+                - job-extended-read
             linaro:
                 - job-build
-                - job-extended-read
                 - job-cancel
         - build-discarder:
             days-to-keep: 60
@@ -20,32 +20,28 @@
         - string:
             name: BUILD_DIR
             default: aosp-master
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: lcr-reference-hikey-master
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'AOSP master build for HiKey'
+    display-name: 'Premerge  CI job to test patch for HiKey AOSP Master build'
     concurrent: true
     triggers:
         - gerrit:
-            server-name: __ANY__
+            override-votes: true
+            gerrit-build-successful-verified-value: 1
+            gerrit-build-failed-verified-value: -1
             trigger-on:
-                - change-merged-event
+                - comment-added-contains-event:
+                    comment-contains-value: '.*RunMasterPremergeHikeyTests.*'
+            server-name: __ANY__
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'android-patchsets'
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'master'
-                  file-paths:
-                      - compare-type: 'PLAIN'
-                        pattern: 'hikey-o-workarounds'
-                      - compare-type: 'PLAIN'
-                        pattern: 'MASTER-RLCR-PATCHSET'
-                      - compare-type: 'PLAIN'
-                        pattern: 'hikey-optee-master'
-                      - compare-type: 'PLAIN'
-                        pattern: 'hikey-optee-4.9'
-                      - compare-type: 'PLAIN'
-                        pattern: 'optee-master-workarounds'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'device/linaro/common'
                   branches:
@@ -56,25 +52,11 @@
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'linaro-master'
-                  file-paths:
-                      - compare-type: 'PLAIN'
-                        pattern: 'hikey.xml'
-                      - compare-type: 'PLAIN'
-                        pattern: 'linaro-pm-extras.xml'
-                      - compare-type: 'PLAIN'
-                        pattern: 'linaro.xml'
-                      - compare-type: 'PLAIN'
-                        pattern: 'optee.xml'
-                      - compare-type: 'PLAIN'
-                        pattern: 'update-externals.xml'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'android-build-configs'
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'master'
-                  file-paths:
-                      - compare-type: 'PLAIN'
-                        pattern: 'lcr-member-hikey-master'
     wrappers:
         - timestamps
         - timeout:
