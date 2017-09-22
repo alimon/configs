@@ -91,6 +91,14 @@ EOF
     ;;
 esac
 
+case "${KERNEL_RECIPE}" in
+  linux-*-aosp|linux-*-android-*)
+    cat << EOF >> ${distro_conf}
+CONSOLE = "ttyFIQ0"
+EOF
+    ;;
+esac
+
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
 cat << EOF >> conf/local.conf
