@@ -68,6 +68,8 @@ if [ "${MX_PLATFORM}" = "hikey960" ]; then
     OPEN_PLATFORM_PKG_GIT_BRANCH="testing/hikey960_v1.3.4"
     L_LOADER_GIT_URL=https://github.com/96boards-hikey/l-loader.git
     L_LOADER_GIT_BRANCH="testing/hikey960_v1.2"
+    # HiKey960 support is added in OPTEE_OS > 2.5.0
+    OPTEE_GIT_VERSION=3ff350a12d634bd7c4375ff347254977e9fb5a52
 fi
 
 # Force cap GCC build profile to GCC49, still preferred by upstream
