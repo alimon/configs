@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 [ -z "${KSELFTEST_SKIPLIST}" ] && export KSELFTEST_SKIPLIST=""
 
