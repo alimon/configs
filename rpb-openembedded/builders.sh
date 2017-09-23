@@ -85,9 +85,9 @@ cat conf/{site,auto}.conf
 [ "${DISTRO}" = "rpb-wayland" ] && IMAGES+=" rpb-weston-image rpb-weston-image-lava"
 [ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image"
 if [ "${MACHINE}" = "hikey-32" ] ; then
-    bitbake_secondary_image --extra-machine hikey ${IMAGES}
+    time bitbake_secondary_image --extra-machine hikey ${IMAGES}
 else
-    bitbake ${IMAGES}
+    time bitbake ${IMAGES}
 fi
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
