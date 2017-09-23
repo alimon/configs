@@ -43,11 +43,8 @@
             name: MANIFEST_BRANCH
             default: 'morty'
         - string:
-            name: BUNDLE_STREAM_NAME
-            default: '/public/team/linaro/openembedded-lkft-${MANIFEST_BRANCH}/'
-        - string:
             name: LAVA_SERVER
-            default: 'validation.linaro.org/RPC2/'
+            default: 'https://lkft.validation.linaro.org/RPC2/'
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
@@ -130,36 +127,6 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               ${DEPLOY_DIR_IMAGE}/ ${BASE_URL}
-        - shell: |
-            #!/bin/bash
-
-            rm -rf configs
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            # Unset device type for all machines except hikey
-            # We submit with post-build-lava only for Hikey
-            [ "${MACHINE}" != "hikey" ] && unset DEVICE_TYPE
-
-            [ -z "${DEVICE_TYPE}" ] || \
-            sed -e "s|\${BOOT_URL}|${BOOT_URL}|" \
-                -e "s|\${SYSTEM_URL}|${SYSTEM_URL}|" \
-                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-            < configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/template.json \
-            > custom_lava_job_definition.json
-
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
         - shell:
             !include-raw: openembedded-lkft/submit_for_testing.sh
     publishers:
