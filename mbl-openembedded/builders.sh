@@ -36,22 +36,25 @@ export PATH=${HOME}/bin:${PATH}
 
 # initialize repo if not done already
 if [ ! -e ".repo/manifest.xml" ]; then
-   ssh-keyscan github.com >> ${HOME}/.ssh/known_hosts
-   if [ "${MANIFEST_BRANCH}" == "linaro-release" ]; then
-      MANIFEST_FILE=pinned-manifest.xml
-   else
-      MANIFEST_FILE=default.xml
-   fi
-   repo init -u git@github.com:ARMmbed/mbl-manifest.git -b ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH} -m ${MANIFEST_FILE}
+  ssh-keyscan github.com >> ${HOME}/.ssh/known_hosts
 
-   # link to shared downloads on persistent disk
-   # our builds config is expecting downloads and sstate-cache, here.
-   # DL_DIR = "${OEROOT}/sources/downloads"
-   # SSTATE_DIR = "${OEROOT}/build/sstate-cache"
-   mkdir -p ${HOME}/srv/oe/downloads ${HOME}/srv/oe/sstate-cache-${DISTRO}
-   mkdir -p build
-   ln -s ${HOME}/srv/oe/downloads
-   ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO} sstate-cache
+  MANIFEST_FILE=default.xml
+  case "${MANIFEST_BRANCH}" in
+    linaro-*-pinned)
+      MANIFEST_FILE=pinned-manifest.xml
+      ;;
+  esac
+
+  repo init -u git@github.com:ARMmbed/mbl-manifest.git -b ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH} -m ${MANIFEST_FILE}
+
+  # link to shared downloads on persistent disk
+  # our builds config is expecting downloads and sstate-cache, here.
+  # DL_DIR = "${OEROOT}/sources/downloads"
+  # SSTATE_DIR = "${OEROOT}/build/sstate-cache"
+  mkdir -p ${HOME}/srv/oe/downloads ${HOME}/srv/oe/sstate-cache-${DISTRO}
+  mkdir -p build
+  ln -s ${HOME}/srv/oe/downloads
+  ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO} sstate-cache
 fi
 
 repo sync
