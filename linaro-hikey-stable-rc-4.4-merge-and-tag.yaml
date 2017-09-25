@@ -52,31 +52,34 @@
             # Find out the kernel version and bail out if it is not a RC
             git checkout -B linux-4.4.y linux-stable-rc-4.4/linux-4.4.y
             kernel_version=$(make kernelversion)
+            rm -f stable-rc-detected
             case "${kernel_version}" in
               4.4.*-rc*)
                 echo "Kernel version: ${kernel_version}"
+
+                # Merge HiKey rebased branch into stable 4.4.y
+                git merge --no-edit sumit-lts/lts-4.4.y-hikey
+
+                # Apply tag
+                tag=${kernel_version}-hikey-$(date +"%Y%m%d")-${BUILD_NUMBER}
+                git tag ${tag}
+
+                # Push tag
+                git push arm64-stable-rc-4.4 ${tag}
+
+                touch stable-rc-detected
                 ;;
               *)
                 echo "Kernel version ${kernel_version} is not a 4.4.y RC."
-                exit 0
                 ;;
             esac
-
-            # Merge HiKey rebased branch into stable 4.4.y
-            git merge --no-edit sumit-lts/lts-4.4.y-hikey
-
-            # Apply tag
-            tag=${kernel_version}-hikey-$(date +"%Y%m%d")-${BUILD_NUMBER}
-            git tag ${tag}
-
-            # Push tag
-            git push arm64-stable-rc-4.4 ${tag}
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: stable-rc-detected
+            steps:
+                - trigger-builds:
+                    - project: 'trigger-openembedded-lkft-linaro-hikey-stable-rc-4.4'
     publishers:
-        - trigger-parameterized-builds:
-            - project:
-                - 'trigger-openembedded-lkft-linaro-hikey-stable-rc-4.4'
-              condition: SUCCESS
-              trigger-with-no-params: true
         - email-ext:
             recipients: 'sumit.semwal@linaro.org, fathi.boudra@linaro.org, daniel.diaz@linaro.org'
             body: |
