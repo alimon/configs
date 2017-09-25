@@ -19,6 +19,7 @@ actions:
     to: tftp
     os: debian
     kernel:
+      type: uimage
       url: 'https://builds.96boards.org/snapshots/b2260/linaro/debian/${BUILD_NUMBER}/uImage'
     dtb:
       url: 'https://builds.96boards.org/snapshots/b2260/linaro/debian/${BUILD_NUMBER}/stih410-b2260.dtb'
@@ -29,7 +30,6 @@ actions:
 - boot:
     method: u-boot
     commands: nfs
-    type: uimage
     prompts:
     - 'linaro-test'
     - 'root@debian:~#'
@@ -39,9 +39,9 @@ actions:
     timeout:
       minutes: 5
     definitions:
-    - repository: git://git.linaro.org/qa/test-definitions.git
+    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
       from: git
-      path: ubuntu/smoke-tests-basic.yaml
+      path: lava-test-shell/smoke-tests-basic.yaml
       name: smoke-tests
 
 metadata:
