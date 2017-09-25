@@ -53,6 +53,15 @@ cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
+# FIXME workaround systemd race condition
+[ "${MACHINE}" = "am57xx-evm" ] && {
+cd layers/meta-backports/
+git reset --hard
+wget -q http://people.linaro.org/~fathi.boudra/0001-meta-backports-backport-systemd-234-recipe.patch -O 0001-meta-backports-backport-systemd-234-recipe.patch
+patch -p1 < 0001-meta-backports-backport-systemd-234-recipe.patch
+cd ../../
+}
+
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
