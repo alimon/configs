@@ -44,6 +44,11 @@
                 - 'https://staging-qa-reports.linaro.org'
         - axis:
             type: user-defined
+            name: LAVA_SERVER
+            values:
+                - 'https://lkft.validation.linaro.org/RPC2/'
+        - axis:
+            type: user-defined
             name: DEVICE_TYPE
             values:
                 - 'hi6220-hikey'
@@ -61,12 +66,6 @@
     builders:
         - shell: |
             #!/bin/bash
-            if [ ${QA_SERVER} = "https://staging-qa-reports.linaro.org" ]; then
-                export LAVA_SERVER=https://staging.validation.linaro.org/RPC2/
-            elif [ ${QA_SERVER} = "https://qa-reports.linaro.org" ]; then
-                export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
-            fi
-
             # set kselftest skiplist depending on the kernel used
             case ${BUILD_NAME} in
               4.9)
@@ -80,11 +79,13 @@
                 ;;
             esac
 
-            export SNAPSHOTS_BASE_URL="https://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/${BUILD_NAME}/latest/"
+            export SNAPSHOTS_BASE_URL="http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/${BUILD_NAME}/latest/"
 
             MD5_FILENAME="MD5SUMS.txt"
             wget -O "${MD5_FILENAME}" "${SNAPSHOTS_BASE_URL}${MD5_FILENAME}"
             ROOTFS_FILENAME=$(grep -E "rpb-console-image-hikey-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
+            OE_BUILD_NUMBER="$(echo "${ROOTFS_FILENAME}" | awk -F'-' '{print $NF}' | awk -F'.' '{print $1}')"
+            export SNAPSHOTS_BASE_URL="http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/${BUILD_NAME}/${OE_BUILD_NUMBER}/"
             BOOT_FILENAME=$(grep -E "boot\S*uefi\.img" "${MD5_FILENAME}" | awk '{print $2}')
             export BOOT_URL="${SNAPSHOTS_BASE_URL}${BOOT_FILENAME}"
             export SYSTEM_URL="${SNAPSHOTS_BASE_URL}${ROOTFS_FILENAME}"
@@ -112,7 +113,7 @@
                 --build-number ${BUILD_NUMBER} \
                 --lava-server ${LAVA_SERVER} \
                 --qa-server ${QA_SERVER} \
-                --qa-server-team staging-lkft \
+                --qa-server-team staging-lkft-ssh \
                 --qa-server-project ${BUILD_NAME} \
                 --git-commit ${BUILD_NUMBER} \
                 --template-path configs/lkft-ssh-testrunner/lava-job-definitions \
