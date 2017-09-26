@@ -102,8 +102,8 @@ esac
 
 # Use meta-oe version, required for mosh
 cat << EOF >> ${distro_conf}
-PREFERRED_PROVIDER_protobuf = "2.6.1+git%"
-PREFERRED_PROVIDER_protobuf-native = "2.6.1+git%"
+PREFERRED_VERSION_protobuf = "2.6.1+git%"
+PREFERRED_VERSION_protobuf-native = "2.6.1+git%"
 EOF
 
 # Set the image types to use
