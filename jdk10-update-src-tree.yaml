@@ -5,55 +5,6 @@
             url: http://hg.openjdk.java.net/jdk10/hs
             clean: true
             subdir: jdk10
-- scm:
-    name: corba
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs/corba
-            clean: true
-            subdir: jdk10/corba
-- scm:
-    name: hotspot
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs/hotspot
-            clean: true
-            subdir: jdk10/hotspot
-- scm:
-    name: jaxp
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs/jaxp
-            clean: true
-            subdir: jdk10/jaxp
-- scm:
-    name: jaxws
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs/jaxws
-            clean: true
-            subdir: jdk10/jaxws
-- scm:
-    name: jdk
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs/jdk
-            clean: true
-            subdir: jdk10/jdk
-- scm:
-    name: langtools
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs/langtools
-            clean: true
-            subdir: jdk10/langtools
-- scm:
-    name: nashorn
-    scm:
-        - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs/nashorn
-            clean: true
-            subdir: jdk10/nashorn
 - job:
     name: jdk10-update-src-tree
     project-type: freestyle
@@ -81,13 +32,6 @@
     display-name: 'OpenJDK 10 - Update jdk10 source tree'
     scm:
         - jdk10
-        - corba
-        - hotspot
-        - jaxp
-        - jaxws
-        - jdk
-        - langtools
-        - nashorn
 # SRDM Trigger manually for now.
 #    triggers:
 #        - pollscm: 'H 12 */2 * *'
@@ -116,13 +60,9 @@
             #done
 
             ## Pull out subdirectory HG versions
-            SUBREPOS=". corba jaxp jaxws langtools jdk hotspot nashorn"
-
             echo BOM for $(hg paths default) > BOM
             echo -e Subdir\\tHash\\t\\tTag\\tTag hash >> BOM
-            for x in $SUBREPOS; do
-                echo -e $x\\t$(cd $x; hg head --template '{node|short}\t' tip; hg tags --template="{tag}\t{node|short}\n" | grep -ve '^tip' | head -n1) >>BOM
-            done
+            echo -e .\\t$(hg head --template '{node|short}\t' tip; hg tags --template="{tag}\t{node|short}\n" | grep -ve '^tip' | head -n1) >>BOM
 
             cp BOM $WORKSPACE/out
 
