@@ -100,6 +100,12 @@ EOF
     ;;
 esac
 
+# Use meta-oe version, required for mosh
+cat << EOF >> ${distro_conf}
+PREFERRED_PROVIDER_protobuf = "2.6.1+git%"
+PREFERRED_PROVIDER_protobuf-native = "2.6.1+git%"
+EOF
+
 # Set the image types to use
 cat << EOF >> ${distro_conf}
 IMAGE_FSTYPES_remove_intel-core2-32 = "ext4"
@@ -121,7 +127,7 @@ esac
 cat << EOF >> conf/local.conf
 CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests-mainline kselftests-next libhugetlbfs-tests ltp ${extra_pkgs}"
 CORE_IMAGE_BASE_INSTALL_append = " python python-misc python-modules python-numpy python-pexpect python-pyyaml"
-CORE_IMAGE_BASE_INSTALL_append = " git packagegroup-core-buildessential packagegroup-core-tools-debug"
+CORE_IMAGE_BASE_INSTALL_append = " git mosh-server packagegroup-core-buildessential packagegroup-core-tools-debug"
 EOF
 
 # Override cmdline
