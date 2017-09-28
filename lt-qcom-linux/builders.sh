@@ -35,3 +35,8 @@ make KERNELRELEASE=${SRCVERSION}-qcomlt-${BUILD_NUMBER} \
      DEBEMAIL="dragonboard@lists.96boards.org" \
      DEBFULLNAME="Linaro Qualcomm Landing Team" \
      -j`nproc` deb-pkg
+
+cat > params <<EOF
+source=${BUILD_URL}/artifact/$(echo *.dsc)
+repo=${TARGET_REPO}
+EOF

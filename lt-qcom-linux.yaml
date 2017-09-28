@@ -27,6 +27,9 @@
             name: KERNEL_VERSION
         - string:
             name: KERNEL_BRANCH
+        - string:
+            name: TARGET_REPO
+            default: 'linaro-overlay-sid'
     disabled: false
     node: docker-jessie-amd64
     display-name: 'Qualcomm LT Linux kernel build'
@@ -57,3 +60,9 @@
         - email-ext:
             recipients: 'nicolas.dechesne@linaro.org'
             always: true
+        - archive:
+            artifacts: '*.changes, *.dsc, *.gz'
+        - trigger-parameterized-builds:
+            - project: build-package-obs
+              property-file: params
+              condition: SUCCESS
