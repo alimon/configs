@@ -22,6 +22,7 @@
             url: https://git.kernel.org/pub/scm/linux/kernel/git/arm64/linux.git
             refspec: +refs/heads/staging/ilp32-4.12:refs/remotes/origin/staging/ilp32-4.12
             name: origin
+            basedir: linux
             branches:
                 - refs/heads/staging/ilp32-4.12
             skip-tag: true
@@ -34,9 +35,10 @@
     builders:
         - shell: |
             #!/bin/bash
-
+            cd linux
             make defconfig
             make -j10 deb-pkg
+            cd ..
 
             cat > params <<EOF
             source=${BUILD_URL}/artifact/$(echo *.dsc)
@@ -44,7 +46,7 @@
             EOF
     publishers:
         - archive:
-            artifacts: '*.changes, *.dsc, *.gz, *.deb'
+            artifacts: '*.dsc, *.gz, *.deb'
         - trigger-parameterized-builds:
             - project: build-package-obs
               property-file: params
