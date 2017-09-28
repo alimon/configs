@@ -2,7 +2,7 @@ context:
   test_character_delay: 10
 
 device_type: x86
-job_name: lkft-ltp-${KERNEL_BRANCH}-${BUILD_NUMBER}
+job_name: lkft-ltp-{{testname}}-${KERNEL_BRANCH}-${BUILD_NUMBER}
 timeouts:
   job:
     minutes: 90
@@ -20,14 +20,9 @@ metadata:
   git describe: ${KERNEL_DESCRIBE}
   make_kernelversion: "${MAKE_KERNELVERSION}"
   kernel-config: ${KERNEL_CONFIG_URL}
-  kselftest__url: ${KSELFTESTS_MAINLINE_URL}
-  kselftest__version: "${KSELFTESTS_MAINLINE_VERSION}"
-  libhugetlbfs__url: ${LIBHUGETLBFS_URL}
-  libhugetlbfs__version: "${LIBHUGETLBFS_VERSION}"
-  libhugetlbfs__revision: "${LIBHUGETLBFS_REVISION}"
-  ltp-syscalls-tests__url: ${LTP_URL}
-  ltp-syscalls-tests__version: "${LTP_VERSION}"
-  ltp-syscalls-tests__revision: "${LTP_REVISION}"
+  ltp-{{testname}}-tests__url: ${LTP_URL}
+  ltp-{{testname}}-tests__version: "${LTP_VERSION}"
+  ltp-{{testname}}-tests__revision: "${LTP_REVISION}"
   build-url: ${BUILD_URL}
   build-location: ${SNAPSHOTS_URL}/${BASE_URL}
   series: lkft
@@ -68,8 +63,8 @@ actions:
       path: automated/linux/ltp/ltp.yaml
       parameters:
         SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'syscalls'
+        TST_CMDFILES: '{{testname}}'
         TIMEOUT_MULTIPLIER: 3
-      name: ltp-syscalls-tests
+      name: ltp-{{testname}}-tests
       timeout:
         minutes: 90

@@ -137,6 +137,15 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
+            # Pre install jinja2-cli
+            # Create LTP sub test suite templates
+            pip install jinja2-cli
+            LTP_TESTS="syscalls"
+            for ltptest in ${LTP_TESTS}; do
+                jinja2 -D testname=${ltptest} configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/master-template-ltp.yaml.jinja2 > configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/template-ltp-${ltptest}.yaml
+                LTP_TEMPLATES="${LTP_TEMPLATES} template-ltp-${ltptest}.yaml"
+            done
+
             python configs/openembedded-lkft/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
@@ -145,7 +154,7 @@
                 --qa-server-team staging-lkft \
                 --qa-server-project ${BUILD_NAME} \
                 --git-commit ${BUILD_NUMBER} \
-                --template-names template-kselftest.yaml template-ltp.yaml template-libhugetlbfs.yaml
+                --template-names template-kselftest.yaml template-libhugetlbfs.yaml ${LTP_TEMPLATES}
     publishers:
         - groovy-postbuild:
             script:
