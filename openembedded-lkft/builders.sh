@@ -136,10 +136,8 @@ CMDLINE_remove = "quiet"
 EOF
 
 # Remove recipes:
-# - 96boards-tools to avoid resizing on first boot
 # - docker to reduce image size
 cat << EOF >> conf/local.conf
-RDEPENDS_packagegroup-rpb_remove = "96boards-tools"
 RDEPENDS_packagegroup-rpb_remove = "docker"
 EOF
 
