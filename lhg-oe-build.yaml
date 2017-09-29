@@ -33,6 +33,16 @@
         - string:
             name: PUB_DEST
             default: 'openembedded/pre-built/lhg/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
+        - string:
+            name: LAVA_SERVER
+            default: 'https://staging.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'openembedded-morty'
+
     disabled: false
     node: lhg
     display-name: 'LHG - OpenEmbedded (morty)'
@@ -59,6 +69,22 @@
     wrappers:
         - timestamps
     builders:
+        - shell: |
+            #!/bin/bash
+
+            # Mapping for MACHINE -> DEVICE_TYPE
+            case "${MACHINE}" in
+              hikey)
+                DEVICE_TYPE=hi6220-hikey
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+            esac
+
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
         - shell:
             !include-raw: lhg-oe-build/builders.sh
         - inject:
@@ -66,6 +92,8 @@
         - linaro-publish-token
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
+        - shell:
+            !include-raw: lhg-oe-build/submit_for_testing.sh
     publishers:
         - archive:
             artifacts: 'out/*'

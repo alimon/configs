@@ -83,9 +83,8 @@ cat conf/{site,auto}.conf
 
 # if ${IMAGES} is not set or empty, set it to default
 if [ "x${IMAGES}" = "x" ]; then
-    [ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-lava"
-    [ "${DISTRO}" = "rpb-wayland" ] && IMAGES+=" rpb-weston-image rpb-weston-image-lava"
-    [ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image"
+    [ "${DISTRO}" = "rpb" ] && IMAGES="rpb-desktop-image"
+    [ "${DISTRO}" = "rpb-wayland" ] && IMAGES="rpb-weston-image"
 fi
 
 if [ "${MACHINE}" = "hikey-32" ] ; then
@@ -145,10 +144,13 @@ rm -f ${WORKSPACE}/out
 ln -s ${DEPLOY_DIR_IMAGE} ${WORKSPACE}/out
 
 # Need different files for each machine
-BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.img" | xargs -r basename)
-ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
-ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
+BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.uefi.img" | xargs -r basename)
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-westonchromium-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
+ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-westonchromium-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-westonchromium-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "uImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
+PTABLE_IMG=$(find ${DEPLOY_DIR_IMAGE}/bootloader -type f -name "ptable-linux-8g.img" | xargs -r basename)
+FIP_IMG=$(find ${DEPLOY_DIR_IMAGE}/bootloader -type f -name "fip.bin" | xargs -r basename)
 case "${MACHINE}" in
   am57xx-evm|juno)
     # FIXME: several dtb files case
@@ -164,8 +166,10 @@ cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 BOOT_URL=${BASE_URL}${PUB_DEST}/${BOOT_IMG}
 ROOTFS_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
-SYSTEM_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
+SYSTEM_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_IMG}
 KERNEL_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
 NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TARXZ_IMG}
+PTABLE_URL=${BASE_URL}${PUB_DEST}/bootloader/${PTABLE_IMG}
+FIP_URL=${BASE_URL}${PUB_DEST}/bootloader/${FIP_IMG}
 EOF

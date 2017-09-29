@@ -1,0 +1,153 @@
+device_type: hi6220-hikey
+tags:
+  - static-ip
+  - 4k-hdmi-dongle
+job_name: lhg-oe-eme-clearkey-test-${MANIFEST_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 20
+  action:
+    minutes: 20
+  connection:
+    minutes: 5
+priority: high
+visibility: public
+
+metadata:
+  manifest branch: ${MANIFEST_BRANCH}
+  build-url: ${BUILD_URL}
+  build-location: ${BASE_URL}/${PUB_DEST}
+
+protocols:
+  lava-lxc:
+    name: lxc-hikey-test
+    distribution: ubuntu
+    release: xenial
+    arch: amd64
+    verbose: true
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 20
+    to: lxc
+    packages:
+    - python-opencv
+    - python-pip
+    - libffi-dev
+    - libssl-dev
+    - python-lxml
+    - git
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - "root@(.*):/#"
+    - "hikey:/"
+    timeout:
+      minutes: 5
+    method: lxc
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - from: inline
+      name: install-google-fastboot
+      path: inline/install-google-fastboot.yaml
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: install-fastboot
+          description: "Install fastboot provided by google"
+        run:
+          steps:
+          - wget https://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip
+          - unzip platform-tools_r26.0.0-linux.zip
+          - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
+          - ln -s `pwd`/platform-tools/adb /usr/bin/adb
+          - fastboot --version
+
+- deploy:
+    timeout:
+      minutes: 20
+    to: fastboot
+    namespace: hikey-oe
+    connection: lxc
+    images:
+      ptable:
+        url: ${PTABLE_URL}
+        reboot: hard-reset
+      fastboot:
+        url: ${FIP_URL}
+        reboot: hard-reset
+      boot:
+        url: ${BOOT_URL}
+        reboot: hard-reset
+      system:
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+    os: oe
+    protocols:
+       lava-lxc:
+       - action: fastboot-deploy
+         request: pre-power-command
+         timeout:
+           minutes: 2
+
+- boot:
+    namespace: hikey-oe
+    auto_login:
+      login_prompt: "login:"
+      username: root
+    prompts:
+    - "root@hikey:~#"
+    timeout:
+      minutes: 5
+    method: uefi-menu
+    commands: fastboot
+    protocols:
+      lava-lxc:
+      # other action could be boot-fastboot
+      - action: uefi-commands
+        request: pre-os-command
+        timeout:
+          minutes: 5
+
+- test:
+   namespace: hikey-oe
+   timeout:
+     minutes: 20
+   definitions:
+   - from: inline
+     repository:
+       metadata:
+         format: Lava-Test Test Definition 1.0
+         name: insmod-vmouse
+         description: "Load virtual mouser driver"
+       run:
+         steps:
+         - lava-test-case ps --shell ps aux
+         - lava-test-case hikey-dmesg --shell dmesg
+         - lava-test-case weston-status --shell test -f /run/user/1000/weston.log
+         - lava-test-case scp-vmouse --shell wget -O /home/root/vmouse.ko http://people.linaro.org/~arthur.she/images/hikey/oe/rpb-wayland/vmouse.ko
+         - lava-test-case insmod-vmouse --shell insmod /home/root/vmouse.ko
+     name: insmod-vmouse
+     path: inline/insmod-vmouse.yaml
+
+- test:
+   namespace: tlxc
+   timeout:
+     minutes: 20
+   definitions:
+   - repository: https://git.linaro.org/people/arthur.she/test-definitions.git
+     from: git
+     path: openembedded/robotframework-lxc.yaml
+     name: robotframework-lxc
+     params:
+       RF_TEST_CASE: "eme-test/eme-clearkey-test.robot"
+       RF_TEST_CASES_REPO: "https://git.linaro.org/people/arthur.she/lhg-robotframework-test.git"
