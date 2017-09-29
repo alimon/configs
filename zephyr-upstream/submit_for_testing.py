@@ -11,7 +11,6 @@ except ImportError:
 
 
 tests = [
-    "drivers/spi/spi_basic_api/test_spi",
     "kernel/alert/test_alert_api/test",
     "kernel/lifo/test_lifo_api/test",
     "kernel/multilib/test",
@@ -39,7 +38,6 @@ tests = [
     "kernel/errno/test",
     "kernel/threads_customdata/cdata_api/test",
     "kernel/stack/stack_api/test",
-    "kernel/fp_sharing/test_arm",
     "kernel/profiling/profiling_api/test",
     "kernel/irq_offload/test",
     "kernel/stackprot/test",
@@ -72,7 +70,7 @@ tests = [
     "crypto/test_ecc_dh/test",
     "crypto/test_sha256/test",
     "crypto/test_mbedtls/test",
-    "bluetooth/test_bluetooth/test",
+    "bluetooth/bluetooth/test",
 ]
 
 # Templates base path
