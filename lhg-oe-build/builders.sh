@@ -139,6 +139,11 @@ mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 #* Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 #EOF
 
+# The archive publisher can't handle files located outside
+# ${WORKSPACE} - create the link before archiving.
+rm -f ${WORKSPACE}/out
+ln -s ${DEPLOY_DIR_IMAGE} ${WORKSPACE}/out
+
 # Need different files for each machine
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.img" | xargs -r basename)
 ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
