@@ -169,6 +169,9 @@ sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_re
 cat conf/{site,auto}.conf
 cat ${distro_conf}
 
+# Temporary sstate cleanup to get lkft metadata generated
+bitbake -c cleansstate kselftests-mainline kselftests-next ltp libhugetlbfs
+
 time bitbake ${IMAGES}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
