@@ -36,6 +36,7 @@ make KERNELRELEASE=${SRCVERSION}-qcomlt \
      DEBFULLNAME="Linaro Qualcomm Landing Team" \
      -j`nproc` deb-pkg
 
+cd ..
 cat > params <<EOF
 source=${BUILD_URL}/artifact/$(echo *.dsc)
 repo=${TARGET_REPO}
