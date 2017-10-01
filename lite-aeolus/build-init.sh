@@ -41,6 +41,7 @@ CCACHE_SLOPPINESS=file_macro,include_file_mtime,time_macros
 USE_CCACHE=1
 export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS USE_CCACHE
 env |grep '^ZEPHYR'
+python3 -c "import sys; print(sys.getdefaultencoding())"
 
 echo ""
 echo "########################################################################"
