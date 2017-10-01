@@ -1,4 +1,4 @@
-git clone --depth 1 https://git.linaro.org/lite/zephyr.git zephyr-rtos
+git clone --depth 1 ${ZEPHYR_GIT_URL} -b ${ZEPHYR_BRANCH} zephyr-rtos
 (cd zephyr-rtos; git clean -fdx)
 . zephyr-rtos/zephyr-env.sh
 
