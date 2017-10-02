@@ -17,7 +17,7 @@ cleanup_exit()
 }
 
 sudo apt-get update
-sudo apt-get install -y kpartx python-requests device-tree-compiler zip libfdt-dev mtools android-tools-fsutils linaro-image-tools
+sudo apt-get install -y kpartx python-requests device-tree-compiler zip libfdt-dev mtools android-tools-fsutils linaro-image-tools bc kmod cpio
 
 # get the boot image tools, and keep track of commit info in the traces
 git clone git://codeaurora.org/quic/kernel/skales
