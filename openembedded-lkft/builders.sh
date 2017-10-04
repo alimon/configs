@@ -259,7 +259,7 @@ TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 
 # lkft-metadata class generates metadata file, which can be sourced
-for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
+for recipe in kselftests kselftests-mainline kselftests-next ltp libhugetlbfs; do
   source lkftmetadata/packages/*/${recipe}/metadata
 done
 
@@ -279,6 +279,10 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "kernel_describe" : "${KERNEL_DESCRIBE}",
   "kselftest_mainline_url" : "${KSELFTESTS_MAINLINE_URL}",
   "kselftest_mainline_version" : "${KSELFTESTS_MAINLINE_VERSION}",
+  "kselftest_current_url" : "${KSELFTESTS_URL}",
+  "kselftest_current_version" : "${KSELFTESTS_VERSION}",
+  "kselftest_next_url" : "${KSELFTESTS_NEXT_URL}",
+  "kselftest_next_version" : "${KSELFTESTS_NEXT_VERSION}",
   "ltp_url" : "${LTP_URL}",
   "ltp_version" : "${LTP_VERSION}",
   "ltp_revision" : "${LTP_REVISION}",
@@ -304,6 +308,10 @@ KERNEL_COMMIT=${SRCREV_kernel}
 KERNEL_CONFIG_URL=${SNAPSHOTS_URL}/${BASE_URL}/defconfig
 KSELFTESTS_MAINLINE_URL=${KSELFTESTS_MAINLINE_URL}
 KSELFTESTS_MAINLINE_VERSION=${KSELFTESTS_MAINLINE_VERSION}
+KSELFTESTS_CURRENT_URL=${KSELFTESTS_URL}
+KSELFTESTS_CURRENT_VERSION=${KSELFTESTS_VERSION}
+KSELFTESTS_NEXT_URL=${KSELFTESTS_NEXT_URL}
+KSELFTESTS_NEXT_VERSION=${KSELFTESTS_NEXT_VERSION}
 LTP_URL=${LTP_URL}
 LTP_VERSION=${LTP_VERSION}
 LTP_REVISION=${LTP_REVISION}
