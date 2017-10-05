@@ -28,7 +28,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; th
 fi
 
 # Install jinja2-cli
-pip install jinja2-cli
+pip install --user --force-reinstall jinja2-cli
 
 set -ex
 
