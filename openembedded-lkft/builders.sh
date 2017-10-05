@@ -56,15 +56,6 @@ cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
-# FIXME workaround systemd race condition
-[ "${MACHINE}" = "am57xx-evm" ] && {
-cd layers/meta-backports/
-git reset --hard
-wget -q http://people.linaro.org/~fathi.boudra/0001-meta-backports-backport-systemd-234-recipe.patch -O 0001-meta-backports-backport-systemd-234-recipe.patch
-patch -p1 < 0001-meta-backports-backport-systemd-234-recipe.patch
-cd ../../
-}
-
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
@@ -155,13 +146,33 @@ LKFTMETADATA_COMMIT = "1"
 EOF
 
 # Remove systemd firstboot and machine-id file
-mkdir -p ../layers/meta-96boards/recipes-core/systemd
+# Backport serialization change from v234 to avoid systemd tty race condition
+mkdir -p ../layers/meta-96boards/recipes-core/systemd/systemd
+wget -q http://people.linaro.org/~fathi.boudra/backport-v234-e266c06-v230.patch \
+  -O ../layers/meta-96boards/recipes-core/systemd/systemd/backport-v234-e266c06-v230.patch
+cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd/e2fsck.conf
+[options]
+# This will prevent e2fsck from stopping boot just because the clock is wrong
+broken_system_clock = 1
+EOF
 cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd_%.bbappend
+FILESEXTRAPATHS_prepend := "\${THISDIR}/\${PN}:"
+
+SRC_URI += "\\
+    file://backport-v234-e266c06-v230.patch \\
+    file://e2fsck.conf \\
+"
+
 PACKAGECONFIG_remove = "firstboot"
 
 do_install_append() {
+    # Install /etc/e2fsck.conf to avoid boot stuck by wrong clock time
+    install -m 644 -p -D \${WORKDIR}/e2fsck.conf \${D}\${sysconfdir}/e2fsck.conf
+
     rm -f \${D}\${sysconfdir}/machine-id
 }
+
+FILES_\${PN} += "\${sysconfdir}/e2fsck.conf "
 EOF
 
 # Update kernel recipe SRCREV
