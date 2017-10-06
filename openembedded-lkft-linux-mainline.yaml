@@ -109,10 +109,13 @@
                 ;;
               am57xx-evm)
                 DEVICE_TYPE=x15
+                # Override the default skip list
+                KSELFTEST_SKIPLIST="ftracetest"
                 ;;
             esac
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+            echo "KSELFTEST_SKIPLIST=${KSELFTEST_SKIPLIST}" > device_type_parameters
             echo "#${BUILD_NUMBER}-${SRCREV_kernel:0:8}" > ${WORKSPACE}/version.txt
         - build-name-setter:
             name: 'version.txt'
