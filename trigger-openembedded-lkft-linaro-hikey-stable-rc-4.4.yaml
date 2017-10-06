@@ -40,7 +40,7 @@
             git checkout ${tag}
 
             echo KERNEL_BRANCH=$(git describe --tags --abbrev=0) > ${WORKSPACE}/lkft_parameters
-            echo KERNEL_DESCRIBE=$(git describe --always) >> ${WORKSPACE}/lkft_parameters
+            echo KERNEL_DESCRIBE=$(git describe --always --tags) >> ${WORKSPACE}/lkft_parameters
             echo SRCREV_kernel=$(git rev-parse HEAD) >> ${WORKSPACE}/lkft_parameters
             echo MAKE_KERNELVERSION=$(make kernelversion) >> ${WORKSPACE}/lkft_parameters
             cat ${WORKSPACE}/lkft_parameters
