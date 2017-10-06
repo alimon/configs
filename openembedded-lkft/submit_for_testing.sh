@@ -3,6 +3,7 @@
 set -ex
 
 [ -z "${KSELFTEST_SKIPLIST}" ] && export KSELFTEST_SKIPLIST=""
+[ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="medium"
 
 if [ ! -z "${KERNEL_DESCRIBE}" ]; then
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
