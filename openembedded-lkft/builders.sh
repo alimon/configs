@@ -64,6 +64,7 @@ rm -rf conf build/conf build/tmp-*glibc/
 
 # Accept EULA if/when needed
 export EULA_dragonboard410c=1
+export EULA_stih410b2260=1
 source setup-environment build
 
 # Add job BUILD_NUMBER to output files names
@@ -102,9 +103,9 @@ EOF
 
 # Set the image types to use
 cat << EOF >> ${distro_conf}
-IMAGE_FSTYPES_remove_intel-core2-32 = "ext4"
-IMAGE_FSTYPES_remove_intel-core2-32 = "iso"
-IMAGE_FSTYPES_remove_intel-core2-32 = "wic"
+IMAGE_FSTYPES_remove = "ext4"
+IMAGE_FSTYPES_remove = "iso"
+IMAGE_FSTYPES_remove = "wic"
 EOF
 
 case "${KERNEL_RECIPE}" in
@@ -114,6 +115,10 @@ CONSOLE = "ttyFIQ0"
 EOF
     ;;
 esac
+
+cat << EOF >> ${distro_conf}
+KERNEL_ALT_IMAGETYPE_remove_stih410-b2260 = "vmlinux"
+EOF
 
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
@@ -201,7 +206,8 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 # FIXME: IMAGE_FSTYPES_remove doesn't work
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
-      ${DEPLOY_DIR_IMAGE}/*.rootfs.wic
+      ${DEPLOY_DIR_IMAGE}/*.rootfs.wic \
+      ${DEPLOY_DIR_IMAGE}/*.stimg
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
