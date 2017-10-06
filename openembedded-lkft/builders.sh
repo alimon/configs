@@ -135,8 +135,9 @@ cat << EOF >> conf/local.conf
 RDEPENDS_packagegroup-rpb_remove = "docker"
 EOF
 
-[ "${MACHINE}" = "intel-core2-32" ] && cat << EOF >> conf/local.conf
-DEFAULTTUNE = "core2-64"
+cat << EOF >> conf/local.conf
+DEFAULTTUNE_intel-core2-32 = "core2-64"
+SERIAL_CONSOLES_remove_intel-core2-32 = "115200;ttyPCH0"
 EOF
 
 # Enable lkft-metadata class
