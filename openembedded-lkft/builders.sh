@@ -103,9 +103,7 @@ EOF
 
 # Set the image types to use
 cat << EOF >> ${distro_conf}
-IMAGE_FSTYPES_remove = "ext4"
-IMAGE_FSTYPES_remove = "iso"
-IMAGE_FSTYPES_remove = "wic"
+IMAGE_FSTYPES_remove = "ext4 iso wic"
 EOF
 
 case "${KERNEL_RECIPE}" in
