@@ -118,6 +118,13 @@ cat << EOF >> ${distro_conf}
 KERNEL_ALT_IMAGETYPE_remove_stih410-b2260 = "vmlinux"
 EOF
 
+# Make sure to remove opengl and x11 from DISTRO_FEATURES.
+# It's the default on RPB distro, even for the console image and
+# triggers unnecessary additional features.
+cat << EOF >> ${distro_conf}
+DISTRO_FEATURES_remove = "x11 opengl"
+EOF
+
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
 [ "${MACHINE}" = "intel-core2-32" ] || extra_pkgs="cpupower"
