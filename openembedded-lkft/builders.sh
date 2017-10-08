@@ -118,6 +118,13 @@ cat << EOF >> ${distro_conf}
 KERNEL_ALT_IMAGETYPE_remove_stih410-b2260 = "vmlinux"
 EOF
 
+# Mali GPU driver fails to build
+# error: implicit declaration of function 'copy_from_user'
+# [-Werror=implicit-function-declaration]
+# Ignore the whole gpu MACHINE_FEATURES mechanism
+stih410_b2260_conf=$(find ../layers/meta-st-cannes2/conf/machine -name stih410-b2260.conf)
+sed -i -e '/gpu/d' ${stih410_b2260_conf}
+
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
 [ "${MACHINE}" = "intel-core2-32" ] || extra_pkgs="cpupower"
