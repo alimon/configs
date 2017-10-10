@@ -155,6 +155,8 @@ actions:
           - cat /sys/class/thermal/thermal_zone0/policy || true
           - echo "power_allocator" > /sys/class/thermal/thermal_zone0/policy || true
           - cat /sys/class/thermal/thermal_zone0/policy || true
+          - cat /sys/devices/system/cpu/cpufreq/policy0/scaling_available_frequencies  | awk '{ print $(NF-1) }'  > /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq
+          - cat /sys/devices/system/cpu/cpufreq/policy0/scaling_max_freq || true
           - systemctl stop systemd-timesyncd || true
       name: prep-inline
       path: inline/prep.yaml
