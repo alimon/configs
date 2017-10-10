@@ -75,7 +75,7 @@
             fi
 
             # temporary clean-up for glibc
-            find build/sstate-cache -type f -name "sstate:*:*:*:*:aarch64_ilp32:*" -exec rm -f {} + || true
+            find /mnt/ci_build/workspace/sstate-cache -type f -name "sstate:*:*:*:*:aarch64_ilp32:*" -exec rm -f {} + || true
 
             # do a build
             bash -x init-and-build.sh -a armv8 -g ${gcc_version} linaro-image-${rootfs}
