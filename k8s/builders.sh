@@ -14,7 +14,7 @@ sed -e "s|\${DOCKER_AUTH}|${DOCKER_AUTH}|" < ${WORKSPACE}/config.json > ${HOME}/
 chmod 0600 ${HOME}/.docker/config.json
 
 # Build addon-resizer
-pushd autoscaler/addon-resizer
+pushd git-autoscaler/addon-resizer
 rm -f .docker-tag
 make container ARCH=arm64
 # push to linaro/addon-resizer-arm64:2.1
