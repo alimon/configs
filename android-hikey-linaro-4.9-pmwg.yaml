@@ -2,9 +2,6 @@
     name: android-hikey-linaro-4.9-pmwg
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 60
-        numToKeep: 60
     properties:
         - authorization:
             anonymous:
@@ -15,6 +12,9 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
     parameters:
         - string:
             name: KERNEL_BRANCH
