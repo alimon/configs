@@ -2,9 +2,6 @@
     name: lt-qcom-debian-images-dragonboard820c
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -14,50 +11,47 @@
             linaro-landing-team-qualcomm-personnel:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
     parameters:
         - string:
             name: VENDOR
             default: 'linaro'
         - string:
             name: OS_FLAVOUR
-            default: 'stretch'
-        - string:
-            name: LINARO_OVERLAY
-            default: 'linaro-overlay-stretch/Debian_9.0'
+            default: 'sid'
         - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon-arm64'
         - string:
+            name: FAI_BOARD_CLASS
+            default: 'DB410C'
+        - string:
             name: ROOTFS
-            default: 'developer,arm64,1800M'
+            default: 'developer,1800M alip,2500M'
         - string:
             name: ROOTFS_PARTLABEL
             default: 'userdata'
         - string:
             name: DTBS
-            default: 'msm8996-mtp.dtb apq8096-db820c.dtb'
+            default: 'qcom/apq8096-db820c.dtb'
         - string:
             name: SERIAL_CONSOLE
             default: 'ttyMSM0'
         - string:
-            name: KERNEL_BRANCH
-            default: 'release/db820c/qcomlt-4.11'
-        - string:
             name: BOOTIMG_PAGESIZE
             default: '4096'
-        - string:
-            name: EXTRA_PACKAGES
-            default: 'firmware-atheros'
     disabled: false
-    node: docker-jessie-amd64
+    node: docker-stretch-arm64
     display-name: 'Qualcomm Debian based images for Snapdragon 820'
     scm:
         - git:
-            url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            url: https://git.linaro.org/ci/fai.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
-                - refs/heads/${KERNEL_BRANCH}
+                - refs/heads/master
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -67,7 +61,7 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell:
-            !include-raw: lt-qcom-debian-images/builders-arm64.sh
+            !include-raw: lt-qcom-debian-images/builders-fai.sh
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
