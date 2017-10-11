@@ -148,7 +148,7 @@ def main():
     qa_server_team = args.qa_server_team
     qa_server_project = args.qa_server_project
     qa_server_build = args.git_commit
-    qa_server_env = args.board_name
+    qa_server_env = '{0}-{1}'.format(args.board_name, args.gcc_variant)
     qa_server_api = "%s/api/submitjob/%s/%s/%s/%s" % (
         qa_server_base,
         qa_server_team,
