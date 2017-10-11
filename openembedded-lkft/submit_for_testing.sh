@@ -17,7 +17,7 @@ git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
 # Pre install jinja2-cli
 # Create LTP sub test suite templates
-LTP_TESTS="cap_bounds commands containers fcntl-locktests filecaps fs fs_bind fs_perms_simple fsx hugetlb io ipc math nptl pty sched securebits syscalls timers"
+LTP_TESTS="cap_bounds containers fcntl-locktests filecaps fs fs_bind fs_perms_simple fsx hugetlb io ipc math nptl pty sched securebits syscalls timers"
 [ -z "${DEVICE_TYPE}" ] || \
 for ltptest in ${LTP_TESTS}; do
     ${HOME}/.local/bin/jinja2 -D testname=${ltptest} configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/master-template-ltp.yaml.jinja2 > configs/openembedded-lkft/lava-job-definitions/${DEVICE_TYPE}/template-ltp-${ltptest}.yaml
