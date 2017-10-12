@@ -6,6 +6,13 @@ set -ex
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="medium"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
 
+# Override the default skip list
+# FIXME envinject plugin has a regression fixed in 2.1.4
+# https://issues.jenkins-ci.org/browse/JENKINS-26583
+if [ "${KERNEL_RECIPE}" = "linux-hikey-mainline" && "${DEVICE_TYPE}" = "x15" ]; then
+  export KSELFTEST_SKIPLIST="ftracetest"
+fi
+
 if [ ! -z "${KERNEL_DESCRIBE}" ]; then
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
 else
