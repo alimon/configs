@@ -36,6 +36,7 @@ for rootfs in ${ROOTFS}; do
 
     rootfs_sz=$(echo $rootfs | cut -f2 -d,)
     rootfs=$(echo $rootfs | cut -f1 -d,)
+    VERSION=$(cat build-version)
 
     sudo fai-diskimage -v --cspace $(pwd) \
          --hostname linaro-${rootfs} \
@@ -43,11 +44,13 @@ for rootfs in ${ROOTFS}; do
          --class $(echo SAVECACHE,${OS_FLAVOUR},DEBIAN,LINARO,QCOM,${rootfs},${FAI_BOARD_CLASS},RAW | tr '[:lower:]' '[:upper:]') \
          out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw
 
+    rootfs_sz_real=$(du -h out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw | cut -f1)
+
     # make sure that there are the same for all images, in case we build more than 1 image
     if [ -f MD5SUM ]; then
         md5sum -c MD5SUM
     else
-        md5sum out/{Image.gz,initrd.img,$(basename ${DTBS})} > MD5SUM
+        md5sum out/{Image.gz,$(basename ${DTBS})} > MD5SUM
     fi
 
     img2simg out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
