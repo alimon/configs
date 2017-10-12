@@ -31,11 +31,8 @@
             name: BASE_URL
             default: 'https://builds.96boards.org/'
         - string:
-            name: BUNDLE_STREAM_NAME
-            default: '/public/team/linaro/lt-qualcomm-oe-morty/'
-        - string:
             name: LAVA_SERVER
-            default: 'validation.linaro.org/RPC2/'
+            default: 'staging.validation.linaro.org/RPC2/'
     disabled: false
     node: master
     display-name: 'Qualcomm OpenEmbedded RPB (morty)'
@@ -93,27 +90,31 @@
         - shell: |
             case "${MACHINE}" in
               dragonboard-410c)
-                export DEVICE_TYPE=apq8016-sbc
+                export DEVICE_TYPE=dragonboard410c
                 ;;
               *)
                 echo "Skip DEVICE_TYPE for ${MACHINE}"
                 ;;
             esac
 
-            rm -rf configs lci-build-tools
-            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
             # Handle LAVA v1 (json)/v2 (yaml) test definitions
             case "${DEVICE_TYPE}" in
-              apq8016-sbc)
-                ./lci-build-tools/yaml-to-json.py configs/lt-qcom-openembedded-rpb/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
-                > custom_lava_job_definition.json
+              dragonboard410c)
+                sed -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
+                    -e "s|\${DISTRO}|${DISTRO}|" \
+                    -e "s|\${MANIFEST_BRANCH}|${MANIFEST_BRANCH}|" \
+                    -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                    -e "s|\${BOOT_URL}|${BOOT_URL}|" \
+                    -e "s|\${ROOTFS_SPARSE_BUILD_URL}|${ROOTFS_SPARSE_BUILD_URL}|" \
+                    < configs/lt-qcom-openembedded-rpb/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
+                    > custom_lava_job_definition.yaml
 
                 cat << EOF > post_build_lava_parameters
             DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
             LAVA_SERVER=${LAVA_SERVER}
             EOF
                 ;;
