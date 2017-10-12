@@ -2,16 +2,6 @@
 
 set -e
 
-trap cleanup_exit INT TERM EXIT
-
-cleanup_exit()
-{
-    # cleanup here, only in case of error in this script
-    # normal cleanup deferred to later
-    [ $? = 0 ] && exit;
-    sudo umount -f ${WORKSPACE}/rootfs || true
-}
-
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   echo "INFO: apt update error - try again in a moment"
   sleep 15
@@ -30,7 +20,7 @@ set -ex
 echo "$(date +%Y%m%d)-${BUILD_NUMBER}" > build-version
 
 # Build information
-mkdir -p out rootfs
+mkdir -p out
 cat > out/HEADER.textile << EOF
 
 h4. QCOM Landing Team - $BUILD_DISPLAY_NAME
@@ -57,7 +47,7 @@ for rootfs in ${ROOTFS}; do
     if [ -f MD5SUM ]; then
         md5sum -c MD5SUM
     else
-        md5sum out/{vmlinuz,initrd.img,$(basename ${DTBS})} > MD5SUM
+        md5sum out/{Image.gz,initrd.img,$(basename ${DTBS})} > MD5SUM
     fi
 
     img2simg out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
@@ -72,7 +62,7 @@ EOF
 done
 
 # Create boot image
-cat out/vmlinuz out/$(basename ${DTBS}) > out/Image.gz+dtb
+cat out/Image.gz out/$(basename ${DTBS}) > out/Image.gz+dtb
 mkbootimg \
     --kernel out/Image.gz+dtb \
     --ramdisk "out/initrd.img" \
