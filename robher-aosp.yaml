@@ -21,6 +21,16 @@
                 - job-extended-read
                 - job-configure
                 - job-cancel
+    scm:
+        - git:
+            url: git://anongit.freedesktop.org/mesa/mesa
+            branches:
+                - origin/master
+                - origin/android/*
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            subdir: external/mesa3d
     parameters:
         - string:
             name: MESA_GIT_TREE
@@ -31,8 +41,6 @@
     disabled: false
     node: docker-xenial-aosp
     display-name: 'AOSP build playground for Rob Herring'
-    triggers:
-        - timed: 'H H * * *'
     concurrent: true
     wrappers:
         - timestamps
@@ -51,10 +59,9 @@
             # Clean any artifacts related to previous build
             rm -rf out/target/product/*/system/ out/target/product/*/data/ out/target/product/*/*.xml out/target/product/*/obj/kernel/
             rm -rf out/target/product/*/*.zip out/target/product/*/*.img out/target/product/*/*.xz
-            rm -rf external/mesa3d/
 
             # Runs as ubuntu
-            repo init -u https://android.googlesource.com/platform/manifest -b master
+            repo init -u https://android-git.linaro.org/platform/manifest -b master
             cd .repo
             rm -rf local_manifests
             git clone https://github.com/robherring/android_manifest -b mesa-master-test local_manifests
@@ -90,7 +97,6 @@
             ###### Don't care about artifacts for now ######
             echo "Build for mesa rev ${rev} finished - ret ${failed}"
             exit ${failed}
-
     publishers:
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
@@ -107,7 +113,9 @@
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
                 Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
 
+                branch: ${GIT_BRANCH}
+                commit: ${GIT_COMMIT}
+
                 ERRORS:
                 ${BUILD_LOG_REGEX, regex="^.*? error: .*?$", linesBefore=0, linesAfter=2, showTruncatedLines=false}
             unstable: true
-
