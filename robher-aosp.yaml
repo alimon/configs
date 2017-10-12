@@ -94,10 +94,12 @@
             cd ../..
 
             source build/envsetup.sh
-            for arch in arm64 x86_64; do
-                    lunch linaro_${arch}-userdebug
-                    make -k -j"$(nproc)" gallium_dri i915_dri i965_dri libGLES_mesa || { true; failed=1; }
-            done
+
+            lunch linaro_arm64-userdebug
+            make -k -j"$(nproc)" gallium_dri libGLES_mesa || { true; failed=1; }
+
+            lunch linaro_x86_64-userdebug
+            make -k -j"$(nproc)" gallium_dri i915_dri i965_dri libGLES_mesa || { true; failed=1; }
 
             ###### Don't care about artifacts for now ######
             echo "Build for mesa rev ${rev} finished - ret ${failed}"
