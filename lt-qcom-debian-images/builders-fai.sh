@@ -32,7 +32,7 @@ Build description:
 * FAI commit: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
 EOF
 
-sudo mount -o tmpfs tmpfs /tmp
+sudo mount -t tmpfs tmpfs /tmp
 
 for rootfs in ${ROOTFS}; do
 
