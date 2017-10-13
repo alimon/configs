@@ -71,7 +71,7 @@ done
 cat out/vmlinuz-* out/$(basename ${DTBS}) > Image.gz+dtb
 mkbootimg \
     --kernel Image.gz+dtb \
-    --ramdisk "out/initrd-*.img" \
+    --ramdisk "out/initrd.img-*" \
     --output out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
     --pagesize "${BOOTIMG_PAGESIZE}" \
     --base "0x80000000" \
