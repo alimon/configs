@@ -51,6 +51,11 @@
             host: snapshots.linaro.org
         - shell:
             !include-raw: android-lcr/common/builders.sh
+        - shell:
+            cd external/mesa3d
+            echo "CI_MAIL_RECIPIENTS=$(git --no-pager log -1 --pretty='%cE,%aE')" > ${WORKSPACE}/env_var_parameters
+        - inject:
+            properties-file: env_var_parameters
         - shell: |
             #!/bin/bash
 
@@ -105,7 +110,7 @@
         - email:
             recipients: 'rob.herring@linaro.org vishal.bhoj@linaro.org'
         - email-ext:
-            recipients: 'rob.herring@linaro.org ${MESA_EMAIL_RECIPIENTS}'
+            recipients: 'rob.herring@linaro.org, ${CI_MAIL_RECIPIENTS}, ${MESA_EMAIL_RECIPIENTS}'
             content-type: text
             subject: 'errors for mesa master Android build ${BUILD_NUMBER}'
             body: |
@@ -118,4 +123,4 @@
 
                 ERRORS:
                 ${BUILD_LOG_REGEX, regex="^.*? error: .*?$", linesBefore=0, linesAfter=2, showTruncatedLines=false}
-            unstable: true
+            first-failure: true
