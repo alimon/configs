@@ -50,7 +50,7 @@ for rootfs in ${ROOTFS}; do
     if [ -f MD5SUM ]; then
         md5sum -c MD5SUM
     else
-        md5sum out/{Image.gz,$(basename ${DTBS})} > MD5SUM
+        md5sum out/{vmlinuz-*,config-*,$(basename ${DTBS})} > MD5SUM
     fi
 
     img2simg out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.raw out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
@@ -59,16 +59,19 @@ for rootfs in ${ROOTFS}; do
     # Compress image(s)
     gzip -9 out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img
 
+    # dpkg -l output
+    mv out/packages.txt out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.packages
+
     cat >> out/HEADER.textile << EOF
 * Linaro Debian ${rootfs}: size: ${rootfs_sz_real}
 EOF
 done
 
 # Create boot image
-cat out/Image.gz out/$(basename ${DTBS}) > out/Image.gz+dtb
+cat out/vmlinuz-* out/$(basename ${DTBS}) > Image.gz+dtb
 mkbootimg \
-    --kernel out/Image.gz+dtb \
-    --ramdisk "out/initrd.img" \
+    --kernel Image.gz+dtb \
+    --ramdisk "out/initrd-*.img" \
     --output out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
     --pagesize "${BOOTIMG_PAGESIZE}" \
     --base "0x80000000" \
