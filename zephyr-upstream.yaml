@@ -113,7 +113,6 @@
               --link-latest \
               out/${PLATFORM} components/kernel/zephyr/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
 
-            rm -rf out
         - shell: |
             #!/bin/bash -e
 
@@ -152,6 +151,9 @@
                 --gcc-variant ${ZEPHYR_GCC_VARIANT} \
                 --git-commit ${GIT_COMMIT} \
                 --build-url ${BUILD_URL}
+                --test-list "$(find out/${PLATFORM}/tests -type f -name zephyr.bin)"
+
+            rm -rf out
     publishers:
         - archive:
             artifacts: 'scripts/sanity_chk/last_sanity.csv'

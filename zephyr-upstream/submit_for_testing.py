@@ -9,68 +9,32 @@ try:
 except ImportError:
     from urlparse import urlsplit
 
-
-tests = [
-    "kernel/alert/test_alert_api/test",
-    "kernel/lifo/test_lifo_api/test",
-    "kernel/multilib/test",
-    "kernel/critical/test",
-    "kernel/sprintf/test",
-    "kernel/ipm/test",
-    "kernel/context/test",
-    "kernel/fifo/test_fifo_api/test",
-    "kernel/mem_pool/test_mpool_options/test_mpool_split_defrag",
-    "kernel/mem_pool/test_mpool_options/test_mpool_split_only",
-    "kernel/mem_pool/test_mpool_options/test_mpool_defrag_split",
-    "kernel/mem_pool/test_mpool/test",
-    "kernel/mem_pool/test_mpool_concept/test",
-    "kernel/mem_pool/test_mpool_threadsafe/test",
-    "kernel/mem_pool/test_mpool_api/test",
-    "kernel/timer/timer_monotonic/test",
-    "kernel/timer/timer_api/test",
-    "kernel/msgq/msgq_api/test",
-    "kernel/threads_lifecycle/thread_init/test",
-    "kernel/threads_lifecycle/lifecycle_api/test",
-    "kernel/common/test",
-    "kernel/queue/test",
-    "kernel/libs/test",
-    "kernel/workq/workq_api/test",
-    "kernel/errno/test",
-    "kernel/threads_customdata/cdata_api/test",
-    "kernel/stack/stack_api/test",
-    "kernel/profiling/profiling_api/test",
-    "kernel/irq_offload/test",
-    "kernel/stackprot/test",
-    "kernel/systhreads/test",
-    "kernel/mbox/mbox_api/test",
-    "kernel/gen_isr_table/test",
-    "kernel/xip/test",
-    "kernel/semaphore/sema_api/test",
-    "kernel/mem_heap/mheap_api_concept/test",
-    "kernel/mem_slab/test_mslab/test",
-    "kernel/mem_slab/test_mslab_threadsafe/test",
-    "kernel/mem_slab/test_mslab_api/test",
-    "kernel/mem_slab/test_mslab_concept/test",
-    "kernel/threads_scheduling/schedule_api/test",
-    "kernel/mutex/mutex_api/test",
-    "kernel/mutex/mutex/test",
-    "kernel/poll/test",
-    "kernel/pipe/test_pipe_api/test",
-    "kernel/arm_irq_vector_table/test",
-    "kernel/arm_runtime_nmi/test",
-    "net/buf/test",
-    "net/lib/mqtt_packet/test",
-    "net/lib/dns_packet/test",
-    "net/lib/http_header_fields/test",
-    "ztest/test/base/test_verbose_0",
-    "ztest/test/base/test_verbose_1",
-    "ztest/test/base/test_verbose_2",
-    "crypto/test_ctr_prng/test",
-    "crypto/test_aes/test",
-    "crypto/test_ecc_dh/test",
-    "crypto/test_sha256/test",
-    "crypto/test_mbedtls/test",
-    "bluetooth/bluetooth/test",
+excluded_tests = [
+    'tests/drivers/spi_test/test/zephyr.bin',
+    'tests/drivers/build_all/test_build_sensors_n_z/zephyr.bin',
+    'tests/drivers/build_all/test_build_sensors_a_m/zephyr.bin',
+    'tests/drivers/build_all/test_build_ethernet/zephyr.bin',
+    'tests/drivers/build_all/test_build_drivers/zephyr.bin',
+    'tests/drivers/build_all/test_build_sensor_triggers/zephyr.bin',
+    'tests/net/route/test/zephyr.bin',
+    'tests/net/trickle/test/zephyr.bin',
+    'tests/net/context/test/zephyr.bin',
+    'tests/net/rpl/test/zephyr.bin',
+    'tests/net/all/test/zephyr.bin',
+    'tests/net/socket/udp/test/zephyr.bin',
+    'tests/net/socket/udp/test/zephyr.bin',
+    'tests/kernel/fp_sharing/test_arm/zephyr.bin',
+    'tests/kernel/test_tickless/test/zephyr.bin',
+    'tests/kernel/tickless/tickless/test/zephyr.bin',
+    'tests/kernel/test_sleep/test/zephyr.bin',
+    'tests/kernel/sleep/test/zephyr.bin',
+    'tests/kernel/timer/timer_monotonic/test/zephyr.bin',
+    'tests/kernel/pthread/test/zephyr.bin',
+    'tests/kernel/test_build/test_newlib/zephyr.bin',
+    'tests/kernel/test_build/test_debug/zephyr.bin',
+    'tests/kernel/test_build/test_runtime_nmi/zephyr.bin',
+    'tests/legacy/kernel/test_critical/test/zephyr.bin',
+    'tests/legacy/kernel/test_sleep/test/zephyr.bin',
 ]
 
 # Templates base path
@@ -129,10 +93,13 @@ def main():
                         help="Jenkins build url",
                         dest="build_url",
                         required=True)
+    parser.add_argument("--test-list",
+                        help="test list",
+                        dest="test_list",
+                        required=True)
 
     args = parser.parse_args()
 
-    test_url_suffix = "/zephyr.bin"
     template_file_name = "%s/%s/template.yaml" % (template_base_path, args.device_type)
     test_template = None
     if os.path.exists(template_file_name):
@@ -165,21 +132,27 @@ def main():
     headers = {
         "Auth-Token": args.qa_token
     }
-    for test in tests:
+    test_list = args.test_list.split()
+    # Raw test path example: 'out/qemu_cortex_m3/tests/unit/bluetooth/at/test/zephyr.bin'
+    # Desired relative test path example: 'kernel/pthread/test/zephyr.bin'
+    test_list = [test.split('/', 3)[-1] for test in test_list]
+    test_list = [test for test in test_list if test not in excluded_tests]
+    # Exclude benchmarks which require different parse pattern by test.
+    test_list = [test for test in test_list if 'benchmarks' not in test]
+    # Don't run bluetooth test on qemu device.
+    if args.device_type == 'qemu':
+        test_list = [test for test in test_list if 'bluetooth' not in test]
+    for test in test_list:
         replace_dict = dict(
-            test_name=test,
-            test_url="%s%s%s" % (test_url_prefix, test, test_url_suffix),
+            # Test name example: kernel-pthread-test
+            test_name=test.rsplit('/zephyr.bin')[0].replace('/', '-'),
+            test_url="%s%s" % (test_url_prefix, test),
             build_url=args.build_url,
             gcc_variant=args.gcc_variant,
             git_commit=args.git_commit,
             device_type=args.device_type,
             board_name=args.board_name
         )
-        if replace_dict['test_name'].endswith("/test"):
-            replace_dict.update(
-                {'test_name': "".join(replace_dict['test_name'].rsplit("/test", 1))}
-            )
-        replace_dict['test_name'] = replace_dict['test_name'].replace("/", "_")
         template = Template(test_template)
         lava_job = template.substitute(replace_dict)
         try:
