@@ -3,8 +3,14 @@
 # Prepare files to publish
 mkdir -p ${WORKSPACE}/out-publish
 cp -a \
+  ${HOME}/optee_repo/gen_rootfs/filesystem.cpio.gz \
+  ${HOME}/optee_repo/linux/arch/arm/boot/zImage \
   ${HOME}/optee_repo/out/bios-qemu/bios.bin \
   ${HOME}/optee_repo/qemu/arm-softmmu/qemu-system-arm \
+  ${HOME}/optee_repo/qemu/pc-bios/efi-virtio.rom \
+  ${WORKSPACE}/out/arm/core/tee-header_v2.bin \
+  ${WORKSPACE}/out/arm/core/tee-pageable_v2.bin \
+  ${WORKSPACE}/out/arm/core/tee-pager_v2.bin \
   ${WORKSPACE}/out-publish/
 
 # Publish
