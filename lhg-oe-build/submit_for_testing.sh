@@ -2,8 +2,6 @@
 
 set -ex
 
-MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
-
 rm -rf configs
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
