@@ -19,7 +19,10 @@
     parameters:
         - string:
             name: TARGET_REPO
-            default: 'ERP:17.12:staging'
+            default: 'ERP:staging'
+        - string:
+            name: OBS_RELEASE
+            default: 'Debian_9'
     disabled: false
     node: docker-stretch-amd64
     display-name: 'Reference Platform - kernel metapackage'
@@ -32,8 +35,8 @@
             set -ex
 
             TR=$(echo ${TARGET_REPO} | sed -e 's,:,:/,g')
-            echo deb http://obs.linaro.org/${TR}/Debian_9.0/ ./ | sudo tee /etc/apt/sources.list.d/${TARGET_REPO}.list
-            echo deb-src http://obs.linaro.org/${TR}/Debian_9.0/ ./ | sudo tee -a /etc/apt/sources.list.d/${TARGET_REPO}.list
+            echo deb http://obs.linaro.org/${TR}/${OBS_RELEASE}/ ./ | sudo tee /etc/apt/sources.list.d/${TARGET_REPO}.list
+            echo deb-src http://obs.linaro.org/${TR}/${OBS_RELEASE}/ ./ | sudo tee -a /etc/apt/sources.list.d/${TARGET_REPO}.list
             sudo apt-get update -q=2
 
             kernel_abi_version=$(apt-cache search linux-support|sed -e 's,-rc,~rc,' -e 's, .*,,' -e 's,linux-support-,,'|sort --version-sort|tail -1|sed -e 's,~rc,-rc,')

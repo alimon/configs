@@ -17,7 +17,7 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-jessie-arm64
+    node: docker-stretch-arm64
     display-name: 'Reference Platform - Debian Installer (staging)'
     wrappers:
         - timestamps
@@ -31,21 +31,20 @@
 
             set -ex
 
-            echo "deb http://repo.linaro.org/debian/erp-17.08-stable jessie main" > local.list
-            echo "deb http://repo.linaro.org/debian/erp-17.08-staging jessie main" >> local.list
+            echo "deb http://obs.linaro.org/ERP/Debian_9/ ./" > local.list
+            echo "deb http://obs.linaro.org/ERP:/staging/Debian_9/ ./" >> local.list
             sudo cp local.list /etc/apt/sources.list.d/
 
-            sudo apt-get update
-            sudo apt-get install -y debian-archive-keyring gnupg dctrl-tools bc debiandoc-sgml xsltproc libbogl-dev glibc-pic libslang2-pic libnewt-pic genext2fs e2fsprogs mklibs genisoimage dosfstools
-            sudo apt-get install -y grub-efi-arm64-bin mtools module-init-tools openssl xorriso bf-utf-source docbook-xml docbook-xsl cpio python-requests
 
             # Find kernel abi
             KERNEL_ABI=`apt-cache show linux-image-reference-arm64 | grep -m 1 Depends | sed -e "s/.*linux-image-//g" -e "s/-arm64//g"`
 
             # Build the installer
-            DEB_INSTALLER_VERSION="20150422+deb8u4"
-            dget http://ftp.us.debian.org/debian/pool/main/d/debian-installer/debian-installer_${DEB_INSTALLER_VERSION}.dsc
+            DEB_INSTALLER_VERSION="20170615+deb9u2"
+            dget https://deb.debian.org/debian/pool/main/d/debian-installer/debian-installer_${DEB_INSTALLER_VERSION}.dsc
             cd debian-installer-*
+            sudo apt-get update -q
+            sudo apt-get build-dep -q --no-install-recommends -y .
             ## https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=810654, so lava can use grub to load grub.cfg from the local disk
             sed -i 's/fshelp|//g' build/util/grub-cpmodules
 
@@ -53,7 +52,7 @@
             cd build
             sed -i "s/LINUX_KERNEL_ABI.*/LINUX_KERNEL_ABI = $KERNEL_ABI/g" config/common
             sed -i "s/PRESEED.*/PRESEED = default-preseed/g" config/common
-            sed -i "s/USE_UDEBS_FROM.*/USE_UDEBS_FROM = jessie/g" config/common
+            sed -i "s/USE_UDEBS_FROM.*/USE_UDEBS_FROM = stretch/g" config/common
 
             # Local pkg-list (to include all udebs)
             cat <<EOF > pkg-lists/local
@@ -74,9 +73,9 @@
 
             # Set up local repo
             cat <<EOF > sources.list.udeb
-            deb [trusted=yes] http://repo.linaro.org/debian/erp-17.08-stable jessie main/debian-installer
-            deb [trusted=yes] http://repo.linaro.org/debian/erp-17.08-staging jessie main/debian-installer
-            deb http://httpredir.debian.org/debian jessie main/debian-installer
+            deb [trusted=yes] http://obs.linaro.org/ERP/Debian_9/debian-installer ./
+            deb [trusted=yes] http://obs.linaro.org/ERP:/staging/Debian_9/debian-installer ./
+            deb http://deb.debian.org/debian stretch main/debian-installer
             EOF
 
             # Default preseed to add the overlay and kernel
@@ -103,9 +102,9 @@
 
             h4. Reference Platform - Debian Installer (staging)
 
-            Debian Installer (Jessie) produced with the Reference Platform Kernel package.
+            Debian Installer (Stretch) produced with the Reference Platform Kernel package.
 
-            Check "https://github.com/Linaro/documentation/blob/master/Reference-Platform/EECommon/Install-Debian-Jessie.md":https://github.com/Linaro/documentation/blob/master/Reference-Platform/EECommon/Install-Debian-Jessie.md for the install instructions.
+            Check "https://github.com/Linaro/documentation/blob/master/Reference-Platform/EECommon/Install-Debian-Stretch.md":https://github.com/Linaro/documentation/blob/master/Reference-Platform/EECommon/Install-Debian-Stretch.md for the install instructions.
 
             Build Description:
             * Build URL: "$BUILD_URL":$BUILD_URL
