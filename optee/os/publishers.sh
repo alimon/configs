@@ -13,6 +13,10 @@ cp -a \
   ${WORKSPACE}/out/arm/core/tee-pager_v2.bin \
   ${WORKSPACE}/out-publish/
 
+# FIXME: tee-pageable_v2.bin file size is 0
+# It triggers an error 501 on LLP
+rm -f  ${WORKSPACE}/out-publish/tee-pageable_v2.bin
+
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
