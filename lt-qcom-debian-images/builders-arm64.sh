@@ -32,6 +32,7 @@ export make_bootwrapper=false
 export make_install=true
 export kernel_flavour=lt-qcom
 export kernel_config="defconfig distro.config"
+export kernel_img_cmd=Image.gz
 export MAKE_DTBS=true
 export ARCH=arm64
 export toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
@@ -236,7 +237,7 @@ dtbTool -o out/dt.img -s ${BOOTIMG_PAGESIZE} out/
 
 # Create boot image
 mkbootimg \
-    --kernel out/Image \
+    --kernel out/Image.gz \
     --ramdisk "out/initrd.img-$(cat kernel-version)" \
     --output out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
     --dt out/dt.img \
