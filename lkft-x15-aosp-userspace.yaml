@@ -1,0 +1,98 @@
+- job:
+    name: lkft-x15-aosp-userspace
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-configure
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 30
+    parameters:
+        - string:
+            name: ANDROID_BRANCH
+            default: 'android-8.0.0_r17'
+    disabled: false
+    node: docker-utopic-aosp
+    display-name: 'X15 aosp userspace build for LKFT'
+    concurrent: true
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            java -version
+
+            sudo sed -i -e 's/archive.ubuntu.com\|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+            sudo apt-get update
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils rsync python-mako zip time python-requests genisoimage patch mtools
+
+            wget -q http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
+              http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb \
+              http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u45-b14-1_amd64.deb
+            sudo dpkg -i --force-all *.deb
+
+            mkdir -p ${HOME}/bin ${WORKSPACE}/build/out
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            chmod a+x ${HOME}/bin/*
+            export PATH=${HOME}/bin:${PATH}
+
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+
+            # Runs as ubuntu
+            set -xe
+            rm -rf build-tools jenkins-tools build/out build/android-patchsets build-configs
+            repo init -u https://android.googlesource.com/platform/manifest -b android-8.0.0_r17
+            cd .repo
+            git clone https://android-git.linaro.org/git/platform/manifest.git -b lkft local_manifests
+            cd -
+            repo sync -j16
+
+            export PATH=$PATH:$PWD/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin
+
+            git clone --depth=1 git://git.ti.com/android/kernel.git -b p-ti-android-linux-4.4.y x15-kernel
+            pushd x15-kernel
+            ./ti_config_fragments/defconfig_builder.sh -t ti_sdk_am57x_android_release
+            make ARCH=arm CROSS_COMPILE=arm-linux-androideabi- ti_sdk_am57x_android_release_defconfig
+            make ARCH=arm CROSS_COMPILE=arm-linux-androideabi- zImage dtbs modules -j"$(nproc)"
+            export KERNELDIR=${PWD}
+            popd
+
+            source build/envsetup.sh
+            lunch full_am57xevm-userdebug
+            make -j"$(nproc)"
+
+            # Publish parameters
+            cat << EOF > ${WORKSPACE}/publish_parameters
+            PUB_DEST=snapshots/android/lkft/x15-userspace/${BUILD_NUMBER}
+            PUB_SRC=${PWD}/out/target/product/am57xevm
+            EOF
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
+    publishers:
+        - archive:
+            artifacts: '*.xml,*.json'
+            latest-only: true
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org'
