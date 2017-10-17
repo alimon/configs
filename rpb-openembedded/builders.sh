@@ -139,6 +139,7 @@ EOF
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.img" | xargs -r basename)
 ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
+ROOTFS_SPARSE_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "uImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
 case "${MACHINE}" in
   am57xx-evm|juno)
@@ -155,6 +156,7 @@ cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 BOOT_URL=${BASE_URL}${PUB_DEST}/${BOOT_IMG}
 ROOTFS_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
+ROOTFS_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_SPARSE_IMG}
 SYSTEM_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
 KERNEL_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
