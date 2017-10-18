@@ -28,4 +28,4 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
-  ${WORKSPACE}/out-publish components/optee/os/${BUILD_NUMBER}
+  ${WORKSPACE}/out-publish ${PUB_DEST}

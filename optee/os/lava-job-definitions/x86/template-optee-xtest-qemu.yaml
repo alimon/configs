@@ -1,0 +1,78 @@
+context:
+  test_character_delay: 10
+
+device_type: x86
+job_name: optee-xtest-qemu-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 30
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  git branch: ${GIT_BRANCH}
+  git repo: ${GIT_URL}
+  git commit: ${GIT_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+actions:
+- deploy:
+    timeout:
+      minutes: 15
+    to: tftp
+    kernel:
+      url: http://snapshots.linaro.org/openembedded/lkft/morty/intel-core2-32/rpb/linux-mainline/355/bzImage--4.13+git0+33d930e59a-r0-intel-core2-32-20171016062623-355.bin
+    modules:
+      url: http://snapshots.linaro.org/openembedded/lkft/morty/intel-core2-32/rpb/linux-mainline/355/modules--4.13+git0+33d930e59a-r0-intel-core2-32-20171016062623-355.tgz
+      compression: gz
+    nfsrootfs:
+      url: http://snapshots.linaro.org/openembedded/lkft/morty/intel-core2-32/rpb/linux-mainline/355/rpb-console-image-intel-core2-32-20171016062623-355.rootfs.tar.xz
+      compression: xz
+    os: oe
+
+- boot:
+    timeout:
+      minutes: 10
+    method: ipxe
+    commands: nfs
+    parameters:
+      shutdown-message: "reboot: Restarting system"
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      login_commands:
+        - su
+    prompts:
+    - 'root@intel-core2-32:'
+
+# FIXME until it's merged in https://review.linaro.org/#/c/21855
+- test:
+    timeout:
+      minutes: 30
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: optee-xtest-qemu
+          description: "OP-TEE sanity test suite using QEMU"
+        run:
+          steps:
+            - FILES="bios.bin efi-virtio.rom rootfs.cpio.gz qemu-system-arm tee-header_v2.bin tee-pager_v2.bin zImage"
+            - QEMU_BIN="qemu-system-arm"
+            - QEMU_SMP="4"
+            - dhcp_client=$(which udhcpc) && udhcpc
+            - for file in ${FILES}; do curl -sLSO ${PUBLISH_SERVER}${PUB_DEST}/${file}; done
+            - touch tee-pageable_v2.bin
+            - chmod +x ${QEMU_BIN}
+            - ${PWD}/${QEMU_BIN} -version
+            - curl -sLSO https://raw.githubusercontent.com/OP-TEE/build/master/qemu-check.exp
+            - sed -i -e 's/^log_user.*/log_user 1/' qemu-check.exp
+            - QEMU=${PWD}/${QEMU_BIN} QEMU_SMP=${QEMU_SMP} expect qemu-check.exp -- --bios bios.bin
+      name: optee-xtest
+      path: inline/optee-xtest-qemu.yaml

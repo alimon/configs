@@ -7,6 +7,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
             op-tee:
                 - job-read
                 - job-extended-read
@@ -16,6 +17,13 @@
         - build-discarder:
             days-to-keep: 90
             num-to-keep: 90
+    parameters:
+        - string:
+            name: PUB_DEST
+            default: 'components/optee/os/${BUILD_NUMBER}'
+        - string:
+            name: LAVA_SERVER
+            default: 'staging.validation.linaro.org/RPC2/'
     disabled: false
     node: docker-xenial-amd64
     display-name: 'OP-TEE Trusted OS'
@@ -39,3 +47,32 @@
         - linaro-publish-token
         - shell:
             !include-raw: optee/os/publishers.sh
+        - shell:  |
+            #!/bin/bash
+
+            set -e
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            DEVICE_TYPE=x86
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${PUBLISH_SERVER}|${PUBLISH_SERVER}|" \
+                -e "s|\${PUB_DEST}|${PUB_DEST}|" \
+                < configs/optee/os/lava-job-definitions/${DEVICE_TYPE}/template-optee-xtest-qemu.yaml \
+                > custom_lava_job_definition.yaml
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
