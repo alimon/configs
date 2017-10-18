@@ -55,8 +55,6 @@ mkdir ${BUILD_NUMBER}; cd ${BUILD_NUMBER}
 if [ "${MX_PLATFORM}" = "hikey" ]; then
     EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
     EDK2_GIT_VERSION="origin/hikey-aosp"
-    ATF_GIT_URL=https://github.com/96boards-hikey/arm-trusted-firmware.git
-    ATF_GIT_VERSION="origin/hikey"
     OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
     OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
 fi
