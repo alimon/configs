@@ -16,6 +16,8 @@ cp -a \
 mv ${WORKSPACE}/out-publish/filesystem.cpio.gz \
   ${WORKSPACE}/out-publish/rootfs.cpio.gz
 
+strip ${WORKSPACE}/out-publish/qemu-system-arm
+
 # FIXME: tee-pageable_v2.bin file size is 0
 # It triggers an error 501 on LLP
 rm -f  ${WORKSPACE}/out-publish/tee-pageable_v2.bin
