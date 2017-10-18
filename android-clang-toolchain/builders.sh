@@ -19,17 +19,23 @@ cd ${HOME}/srv/aosp/${JOB_NAME}
 
 repo init -u https://android-git.linaro.org/git/platform/manifest.git -b clang-build
 repo sync -j16 -c
+
+# For building LLVMgold.so using -DLLVM_BINUTILS_INCDIR flag
+git clone https://android.googlesource.com/toolchain/binutils
+
 cd llvm
-mkdir -p build/clang-5.0.0
+mkdir -p build/clang-master
 cd build
 cmake -G "Unix Makefiles" ../ \
  -DCMAKE_BUILD_TYPE=Release \
  -DPYTHON_EXECUTABLE=/usr/bin/python2 \
- -DCMAKE_INSTALL_PREFIX=./clang-5.0.0 \
- -DLLVM_TARGETS_TO_BUILD="ARM;X86;AArch64"
+ -DCMAKE_INSTALL_PREFIX=./clang-master \
+ -DLLVM_TARGETS_TO_BUILD="ARM;X86;AArch64" \
+ -DLLVM_ENABLE_ASSERTIONS=false \
+ -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include \
 make install -j"$(nproc)"
 
-rm -f clang-5.0.0.tar.xz
-tar -I pxz -cf clang-5.0.0.tar.xz clang-5.0.0
+rm -f clang-master.tar.xz
+tar -I pxz -cf clang-master.tar.xz clang-master
 
 echo "Build finished"
