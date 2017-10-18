@@ -86,6 +86,11 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
   fi
 fi
 
+# FIXME temporary workaround to get a statically built QEMU
+# https://github.com/OP-TEE/build/pull/203
+(cd ${HOME}/optee_repo/build && sed -i -e 's/target-list=arm-softmmu/target-list=arm-softmmu --static/g' qemu.mk)
+(cd ${HOME}/optee_repo/build && sed -i -e 's/target-list=aarch64-softmmu/target-list=aarch64-softmmu --static/g' qemu_v8.mk)
+
 # b2260
 ${make} PLATFORM=stm-b2260
 ${make} PLATFORM=stm-b2260 CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1
