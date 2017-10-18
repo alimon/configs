@@ -52,7 +52,7 @@ repo sync
 cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
-echo "MANIFEST_COMMIT=${MANIFEST_COMMIT}" > submit_for_testing_parameters
+echo "MANIFEST_COMMIT=${MANIFEST_COMMIT}" > ${WORKSPACE}/submit_for_testing_parameters
 
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
