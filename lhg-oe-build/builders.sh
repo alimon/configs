@@ -51,7 +51,8 @@ fi
 repo sync
 cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
-export MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
+MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
+echo "MANIFEST_COMMIT=${MANIFEST_COMMIT}" > submit_for_testing_parameters
 
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
@@ -133,9 +134,9 @@ mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 #
 #Build description:
 #* Build URL: "$BUILD_URL":$BUILD_URL
-#* Manifest URL: "https://github.com/96boards/oe-rpb-manifest.git":https://github.com/96boards/oe-rpb-manifest.git
+#* Manifest URL: "https://github.com/linaro-home/lhg-oe-manifests.git":https://github.com/linaro-home/lhg-oe-manifests.git
 #* Manifest branch: ${MANIFEST_BRANCH}
-#* Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
+#* Manifest commit: "${MANIFEST_COMMIT}":https://github.com/linaro-home/lhg-oe-manifests/commit/${MANIFEST_COMMIT}
 #EOF
 
 # The archive publisher can't handle files located outside
