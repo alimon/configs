@@ -1,0 +1,60 @@
+- job:
+    name: erp-firmware
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    parameters:
+        - string:
+            name: FIRMWARE_VER
+            default: '17.10-rc1'
+            description: 'target firmware version'
+    disabled: false
+    node: docker-stretch-arm64
+    display-name: 'ERP firmware'
+    scm:
+        - git:
+            url: https://git.linaro.org/people/leif.lindholm/rpf.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            sudo apt-get -q=2 update
+            sudo apt-get -q=2 install -y --no-install-recommends acpica-tools gcc-arm-linux-gnueabihf
+
+            ./build.sh -D FIRMWARE_VER=${FIRMWARE_VER}
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out reference-platform/enterprise/firmware/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'leif.lindholm@linaro.org marcin.juszkiewicz@linaro.org'
