@@ -32,7 +32,10 @@
             default: 'https://builds.96boards.org/'
         - string:
             name: LAVA_SERVER
-            default: 'staging.validation.linaro.org/RPC2/'
+            default: 'https://staging.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
     disabled: false
     node: master
     display-name: 'Qualcomm OpenEmbedded RPB (morty)'
@@ -88,42 +91,32 @@
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
         - shell: |
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
             case "${MACHINE}" in
               dragonboard-410c)
                 export DEVICE_TYPE=dragonboard410c
+
+                python configs/openembedded-lkft/submit_for_testing.py \
+                    --device-type ${DEVICE_TYPE} \
+                    --build-number ${BUILD_NUMBER} \
+                    --lava-server ${LAVA_SERVER} \
+                    --qa-server ${QA_SERVER} \
+                    --qa-server-team qcomlt \
+                    --qa-server-project openembedded-rpb-morty \
+                    --git-commit ${BUILD_NUMBER} \
+                    --template-path configs/lt-qcom-openembedded-rpb/lava-job-definitions \
+                    --template-names template.yaml
                 ;;
               *)
                 echo "Skip DEVICE_TYPE for ${MACHINE}"
                 ;;
             esac
-
-            rm -rf configs
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            # Handle LAVA v1 (json)/v2 (yaml) test definitions
-            case "${DEVICE_TYPE}" in
-              dragonboard410c)
-                sed -e "s|\${DEVICE_TYPE}|${DEVICE_TYPE}|" \
-                    -e "s|\${DISTRO}|${DISTRO}|" \
-                    -e "s|\${MANIFEST_BRANCH}|${MANIFEST_BRANCH}|" \
-                    -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                    -e "s|\${BOOT_URL}|${BOOT_URL}|" \
-                    -e "s|\${ROOTFS_SPARSE_BUILD_URL}|${ROOTFS_SPARSE_BUILD_URL}|" \
-                    < configs/lt-qcom-openembedded-rpb/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
-                    > custom_lava_job_definition.yaml
-
-                cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-                ;;
-            esac
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
     publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw: openembedded-lkft/postbuild.groovy
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, nicolas.dechesne@linaro.org, anibal.limon@linaro.org'
             always: true
