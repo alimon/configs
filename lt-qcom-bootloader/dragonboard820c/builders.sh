@@ -10,8 +10,7 @@ wget -q ${QCOM_LINUX_FIRMWARE}
 echo "${QCOM_LINUX_FIRMWARE_MD5}  $(basename ${QCOM_LINUX_FIRMWARE})" > MD5
 md5sum -c MD5
 
-unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*"
-unzip -j -d bootloaders-sdboot $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-sdboot/*"
+unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*"
 
 # Get the Android compiler
 git clone ${LK_GCC_GIT} --depth 1 -b ${LK_GCC_REL} android-gcc
@@ -36,19 +35,21 @@ done
 mkdir -p out/dragonboard820c_sdcard_rescue \
       out/dragonboard820c_bootloader_ufs_linux
 
-# get license.txt file
-wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
+# get LICENSE file (for Linux BSP)
+unzip -j $(basename ${QCOM_LINUX_FIRMWARE}) "*/LICENSE"
+echo "${QCOM_LINUX_FIRMWARE_LICENSE_MD5}  LICENSE" > MD5
+md5sum -c MD5
 
 # bootloader_ufs_linux
-cp -a license.txt \
+cp -a LICENSE \
    dragonboard820c/linux/flashall \
    lk_ufs_boot/build-msm8996/emmc_appsboot.mbn \
    bootloaders-linux/gpt_both*.bin \
-   bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0.bin,tz.mbn,xbl.elf} \
+   bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0_8096.bin,tz.mbn,xbl.elf} \
    out/dragonboard820c_bootloader_ufs_linux
 
 # sdcard_rescue
-cp -a license.txt out/dragonboard820c_sdcard_rescue
+cp -a LICENSE out/dragonboard820c_sdcard_rescue
 sudo ./mksdcard -x -p dragonboard820c/sdrescue.txt \
      -o out/dragonboard820c_sdcard_rescue/db820c_sd_rescue.img \
      -i lk_sdrescue/build-msm8996/ \
@@ -90,9 +91,7 @@ EOF
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-bootloader/dragonboard820c/build-info.txt -O BUILD-INFO.txt
 time python ${HOME}/bin/linaro-cp.py \
      --server ${PUBLISH_SERVER} \
-     --build-info BUILD-INFO.txt \
      --link-latest \
      out2 snapshots/dragonboard820c/linaro/rescue/${BUILD_NUMBER}
