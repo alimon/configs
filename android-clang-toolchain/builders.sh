@@ -32,7 +32,8 @@ cmake -G "Unix Makefiles" ../ \
  -DCMAKE_INSTALL_PREFIX=./clang-master \
  -DLLVM_TARGETS_TO_BUILD="ARM;X86;AArch64" \
  -DLLVM_ENABLE_ASSERTIONS=false \
- -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include \
+ -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include
+
 make install -j"$(nproc)"
 
 rm -f clang-master.tar.xz
