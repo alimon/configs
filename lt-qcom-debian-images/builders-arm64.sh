@@ -185,6 +185,10 @@ EOF
 
         # add firmware (adreno, dsp, venus and WCN)
         sudo cp -a qcom_firmware/linux-board-support-package-*/proprietary-linux/* rootfs/lib/firmware
+        sudo mkdir -p rootfs/lib/firmware/qcom/venus-1.8
+        for i in $(basename -a rootfs/lib/firmware/venus.*); do
+            sudo ln -s /lib/firmware/$i rootfs/lib/firmware/qcom/venus-1.8/$i
+        done
     fi
 
     if [ "${rootfs}" = "installer" ]; then
