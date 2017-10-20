@@ -77,8 +77,15 @@
             # temporary clean-up for glibc
             find /mnt/ci_build/workspace/sstate-cache -type f -name "sstate:*:*:*:*:aarch64_ilp32:*" -exec rm -f {} + || true
 
+            # verbose kernel, add resize-helper
+            cat << EOF >> local-init-env.sh
+            init_env
+            echo 'CMDLINE_remove = "quiet"' >> conf/local.conf
+            echo 'IMAGE_INSTALL_append = "96boards-tools"' >> conf/local.conf
+            EOF
+
             # do a build
-            bash -x init-and-build.sh -a armv8 -g ${gcc_version} linaro-image-${rootfs}
+            bash -x init-and-build.sh -a armv8 -g ${gcc_version} -i "source ./local-init-env.sh" linaro-image-${rootfs}
 
             cd ${WORKSPACE}
 
