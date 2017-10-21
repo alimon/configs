@@ -26,6 +26,10 @@ def main():
                         help="Prefix for the environment name",
                         dest="env_prefix",
                         default="")
+    parser.add_argument("--env-suffix",
+                        help="Suffix for the environment name",
+                        dest="env_suffix",
+                        default="")
     parser.add_argument("--build-number",
                         help="Build number",
                         dest="build_number",
@@ -80,7 +84,7 @@ def main():
     qa_server_team = args.qa_server_team
     qa_server_project = args.qa_server_project
     qa_server_build = args.git_commit
-    qa_server_env = args.env_prefix + args.device_type
+    qa_server_env = args.env_prefix + args.device_type + args.env_suffix
     qa_server_api = "%s/api/submitjob/%s/%s/%s/%s" % (
         qa_server_base,
         qa_server_team,
