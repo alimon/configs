@@ -11,7 +11,7 @@ set -ex
 # https://issues.jenkins-ci.org/browse/JENKINS-26583
 # https://bugs.linaro.org/show_bug.cgi?id=3297
 if [ "${DEVICE_TYPE}" = "x15" ]; then
-  export KSELFTEST_SKIPLIST="ftracetest"
+  export KSELFTEST_SKIPLIST="${KSELFTEST_SKIPLIST} ftracetest"
 fi
 
 if [ ! -z "${KERNEL_DESCRIBE}" ]; then
