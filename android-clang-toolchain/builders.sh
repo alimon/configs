@@ -17,22 +17,37 @@ export PATH=${PWD}/cmake-3.5.2-Linux-x86_64/bin/:${PATH}
 mkdir -p ${HOME}/srv/aosp/${JOB_NAME}
 cd ${HOME}/srv/aosp/${JOB_NAME}
 
+# Toolchain src downloads
 repo init -u https://android-git.linaro.org/git/platform/manifest.git -b clang-build
 repo sync -j16 -c
 
 # For building LLVMgold.so using -DLLVM_BINUTILS_INCDIR flag
-git clone https://android.googlesource.com/toolchain/binutils
+if [ ! -d binutils ]; then
+    git clone https://android.googlesource.com/toolchain/binutils
+else
+    cd binutils
+    git pull
+    cd ..
+fi
+
+# Toolchain download
+if [ ! -d clang+llvm-5.0.0-linux-x86_64-ubuntu14.04 ]; then
+    wget http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
+    tar xvfJ clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
+fi
 
 cd llvm
 mkdir -p build/clang-master
 cd build
 cmake -G "Unix Makefiles" ../ \
- -DCMAKE_BUILD_TYPE=Release \
- -DPYTHON_EXECUTABLE=/usr/bin/python2 \
- -DCMAKE_INSTALL_PREFIX=./clang-master \
- -DLLVM_TARGETS_TO_BUILD="ARM;X86;AArch64" \
- -DLLVM_ENABLE_ASSERTIONS=false \
- -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include
+	 -DCMAKE_BUILD_TYPE=Release \
+	 -DPYTHON_EXECUTABLE=/usr/bin/python2 \
+	 -DCMAKE_INSTALL_PREFIX=./clang-master \
+	 -DLLVM_TARGETS_TO_BUILD="host;ARM;X86;AArch64" \
+	 -DLLVM_ENABLE_ASSERTIONS=false \
+	 -DCMAKE_C_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04/bin/clang \
+	 -DCMAKE_CXX_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04/bin/clang++ \
+	 -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include
 
 make install VERBOSE=1 -j"$(nproc)"
 
