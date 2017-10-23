@@ -34,7 +34,7 @@ cmake -G "Unix Makefiles" ../ \
  -DLLVM_ENABLE_ASSERTIONS=false \
  -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include
 
-make install -j"$(nproc)"
+make install VERBOSE=1 -j"$(nproc)"
 
 rm -f clang-master.tar.xz
 tar -I pxz -cf clang-master.tar.xz clang-master
