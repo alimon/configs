@@ -18,6 +18,9 @@ mkdir -p ${HOME}/srv/aosp/${JOB_NAME}
 cd ${HOME}/srv/aosp/${JOB_NAME}
 
 # Toolchain src downloads
+if [ -d llvm ]; then
+    rm llvm -rf
+fi
 repo init -u https://android-git.linaro.org/git/platform/manifest.git -b clang-build
 repo sync -j16 -c
 
@@ -47,6 +50,8 @@ cmake -G "Unix Makefiles" ../ \
 	 -DLLVM_ENABLE_ASSERTIONS=false \
 	 -DCMAKE_C_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04/bin/clang \
 	 -DCMAKE_CXX_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04/bin/clang++ \
+	 -DLIBCXXABI_LIBCXX_INCLUDES=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxx/include \
+	 -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxxabi/include \
 	 -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include
 
 make install VERBOSE=1 -j"$(nproc)"
