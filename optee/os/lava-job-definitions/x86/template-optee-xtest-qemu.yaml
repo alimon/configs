@@ -50,29 +50,13 @@ actions:
     prompts:
     - 'root@intel-core2-32:'
 
-# FIXME until it's merged in https://review.linaro.org/#/c/21855
 - test:
     timeout:
       minutes: 30
     definitions:
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: optee-xtest-qemu
-          description: "OP-TEE sanity test suite using QEMU"
-        run:
-          steps:
-            - FILES="bios.bin efi-virtio.rom rootfs.cpio.gz qemu-system-arm tee-header_v2.bin tee-pager_v2.bin zImage"
-            - QEMU_BIN="qemu-system-arm"
-            - QEMU_SMP="4"
-            - dhcp_client=$(which udhcpc) && udhcpc
-            - for file in ${FILES}; do curl -sLSO ${PUBLISH_SERVER}${PUB_DEST}/${file}; done
-            - touch tee-pageable_v2.bin
-            - chmod +x ${QEMU_BIN}
-            - ${PWD}/${QEMU_BIN} -version
-            - curl -sLSO https://raw.githubusercontent.com/OP-TEE/build/master/qemu-check.exp
-            - sed -i -e 's/^log_user.*/log_user 1/' qemu-check.exp
-            - QEMU=${PWD}/${QEMU_BIN} QEMU_SMP=${QEMU_SMP} expect qemu-check.exp -- --bios bios.bin
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/optee/optee-xtest-qemu.yaml
       name: optee-xtest
-      path: inline/optee-xtest-qemu.yaml
+      parameters:
+        PUBLISH_DEST: ${PUBLISH_SERVER}${PUB_DEST}
