@@ -77,6 +77,7 @@
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=snapshots/android/lkft/x15-userspace/${BUILD_NUMBER}
             PUB_SRC=${PWD}/out/target/product/am57xevm
+            PUB_EXTRA_INC=^[^/]+img
             EOF
         - inject:
             properties-file: publish_parameters
@@ -85,9 +86,6 @@
             !include-raw:
                 - android/linaro-publisher.sh
     publishers:
-        - archive:
-            artifacts: '*.xml,*.json'
-            latest-only: true
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
             unstable-on-warning: false
