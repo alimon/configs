@@ -30,7 +30,7 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
-            basedir: external/mesa3d
+            basedir: /home/buildslave/srv/${JOB_NAME}/external/mesa3d
     parameters:
         - string:
             name: MESA_GIT_TREE
@@ -60,6 +60,13 @@
             #!/bin/bash
 
             set -ex
+
+            if [ ! -d "/home/buildslave/srv/${JOB_NAME}" ]; then
+              sudo mkdir -p /home/buildslave/srv/${JOB_NAME}
+              sudo chmod 777 /home/buildslave/srv/${JOB_NAME}
+            fi
+
+            cd /home/buildslave/srv/${JOB_NAME}
 
             # Clean any artifacts related to previous build
             rm -rf out/target/product/*/system/ out/target/product/*/data/ out/target/product/*/*.xml out/target/product/*/obj/kernel/
