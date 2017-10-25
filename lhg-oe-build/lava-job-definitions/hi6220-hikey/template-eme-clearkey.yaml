@@ -129,17 +129,15 @@ actions:
      repository:
        metadata:
          format: Lava-Test Test Definition 1.0
-         name: insmod-vmouse
-         description: "Load virtual mouser driver"
+         name: basic-tests
+         description: "Basic tests after hikey boots to the shell prompt"
        run:
          steps:
          - lava-test-case ps --shell ps aux
          - lava-test-case hikey-dmesg --shell dmesg
          - lava-test-case weston-status --shell test -f /run/user/1000/weston.log
-         - lava-test-case scp-vmouse --shell wget -O /home/root/vmouse.ko http://people.linaro.org/~arthur.she/images/hikey/oe/rpb-wayland/vmouse.ko
-         - lava-test-case insmod-vmouse --shell insmod /home/root/vmouse.ko
-     name: insmod-vmouse
-     path: inline/insmod-vmouse.yaml
+     name: basic-tests
+     path: inline/basic-tests.yaml
 
 - test:
    namespace: tlxc
