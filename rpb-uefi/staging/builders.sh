@@ -111,6 +111,11 @@ export JENKINS_WORKSPACE=${WORKSPACE}
 # WORKSPACE is used by uefi-build.sh
 unset WORKSPACE
 
+# NOTE: If using upstream ATF, we should set TOS_BIN to tee-pager.bin
+if [ "${MX_PLATFORM}" = "hikey" ]; then
+    sed -i "s|^TOS_BIN=tee.bin|TOS_BIN=tee-pager.bin|" ${UEFI_TOOLS_DIR}/platforms.config
+fi
+
 # Build UEFI for the desired platform, with the specified build type
 cd ${EDK2_DIR}
 bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -T ${TOOLCHAIN} -b ${MX_TYPE} -a ${ATF_DIR} -s ${OPTEE_OS_DIR} ${MX_PLATFORM}
