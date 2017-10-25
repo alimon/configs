@@ -54,9 +54,12 @@ mkdir ${BUILD_NUMBER}; cd ${BUILD_NUMBER}
 # Per board repositories overrides
 if [ "${MX_PLATFORM}" = "hikey" ]; then
     EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
-    EDK2_GIT_VERSION="origin/hikey-aosp"
+    EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
+    ATF_GIT_VERSION="origin/integration"
     OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
-    OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
+    OPEN_PLATFORM_PKG_GIT_BRANCH="testing/hikey960_v1.3.4"
+    L_LOADER_GIT_URL=https://github.com/96boards-hikey/l-loader.git
+    L_LOADER_GIT_BRANCH="testing/hikey960_v1.2"
 fi
 if [ "${MX_PLATFORM}" = "hikey960" ]; then
     EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
@@ -135,13 +138,23 @@ License-Type: open
 EOF
 
 if [ "${MX_PLATFORM}" = "hikey" ]; then
+    # HiKey requires an ATF fork for the recovery mode
+    git clone --depth 1 https://github.com/96boards-hikey/atf-fastboot.git
+    DEBUG=0; [ "${BUILD_TYPE}" = "debug" ] && DEBUG=1
+    cd atf-fastboot; CROSS_COMPILE=aarch64-linux-gnu- make PLAT=${MX_PLATFORM} DEBUG=${DEBUG}; cd ..
+
     # Additional components for hikey, such as fastboot and l-loader
     cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
     cd ${WORKSPACE}/${BUILD_NUMBER}
-    git clone --depth 1 https://github.com/96boards-hikey/l-loader.git
+    git clone --depth 1 -b ${L_LOADER_GIT_BRANCH} ${L_LOADER_GIT_URL} l-loader
     cd l-loader
     ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
-    make
+    ln -s ${WORKSPACE}/atf-fastboot/build/${MX_PLATFORM}/${BUILD_TYPE}/bl1.bin fastboot.bin
+    make -f ${MX_PLATFORM}.mk l-loader.bin
+    for ptable in aosp-4g aosp-8g linux-4g linux-8g; do
+        PTABLE=${ptable} SECTOR_SIZE=512 bash -x generate_ptable.sh
+        mv prm_ptable.img ptable-${ptable}.img
+    done
     cp -a l-loader.bin ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
     wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
     # Ship nvme.img with UEFI binaries for convenience
@@ -161,8 +174,8 @@ if [ "${MX_PLATFORM}" = "hikey960" ]; then
     ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
     ln -s ${WORKSPACE}/out/${BUILD_TYPE}/fip.bin
     ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/BL33_AP_UEFI.fd
+    make -f ${MX_PLATFORM}.mk l-loader.bin
     PTABLE=aosp-32g SECTOR_SIZE=4096 SGDISK=./sgdisk bash -x generate_ptable.sh
-    python gen_loader_hikey960.py -o l-loader.bin --img_bl1=bl1.bin --img_ns_bl1u=BL33_AP_UEFI.fd
     cp -a l-loader.bin prm_ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
     cd ${WORKSPACE}/${BUILD_NUMBER}
     git clone --depth 1 https://github.com/96boards-hikey/tools-images-hikey960.git
