@@ -60,9 +60,9 @@ if [ "${MX_PLATFORM}" = "hikey" ]; then
     OPEN_PLATFORM_PKG_GIT_BRANCH=hikey-aosp
 fi
 
-# Force cap GCC build profile to GCC5
-TOOLCHAIN=GCC5
-export AARCH64_TOOLCHAIN=GCC5
+# Force cap GCC build profile to GCC49, still preferred by upstream
+TOOLCHAIN=GCC49
+export AARCH64_TOOLCHAIN=GCC49
 
 # Clone the repos
 git clone -b $UEFI_TOOLS_GIT_BRANCH $UEFI_TOOLS_GIT_URL uefi-tools
