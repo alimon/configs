@@ -51,11 +51,10 @@
             git checkout -q FETCH_HEAD
             git log -n3
             set -e
-            ./ci-run
             echo
-            echo Starting python3 unit tests for V2 only.
+            echo "Running test for python2 and 3"
             echo
-            python3 -m unittest discover -v lava_dispatcher.pipeline
+            ./ci-run -a
         - build-name-setter:
             name: 'version.txt'
             file: true
