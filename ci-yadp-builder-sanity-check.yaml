@@ -1,0 +1,64 @@
+- job:
+    name: ci-yadp-builder-sanity
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'CI YADP config builder sanity check'
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'infrastructure/ci-yadp-builder'
+                  branches:
+                    - branch-pattern: 'master'
+            silent-start: true
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: JENKINS_API_USER
+                variable: JENKINS_API_USER
+            - text:
+                credential-id: JENKINS_API_PASSWORD
+                variable: JENKINS_API_PASSWORD
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            echo ""
+            echo "########################################################################"
+            echo "    Gerrit Environment"
+            env |grep '^GERRIT'
+            echo "########################################################################"
+
+            rm -rf ${WORKSPACE}/*
+
+            git clone -b ${GERRIT_BRANCH} --depth 2 https://review.linaro.org/${GERRIT_PROJECT}
+            cd *
+            git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
+            git checkout -q FETCH_HEAD
+
+            python yadp_builder_v2.py -u ${JENKINS_API_USER} -p ${JENKINS_API_PASSWORD} --dryrun
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org ben.copeland@linaro.org'
