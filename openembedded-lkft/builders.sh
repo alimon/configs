@@ -297,6 +297,11 @@ BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_N
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
+case "${MACHINE}" in
+  juno)
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-r2-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
+    ;;
+esac
 
 cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 {
@@ -328,6 +333,7 @@ BASE_URL=${BASE_URL}
 BOOT_URL=${SNAPSHOTS_URL}/${BASE_URL}/${BOOT_IMG}
 SYSTEM_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_IMG}
 KERNEL_URL=${SNAPSHOTS_URL}/${BASE_URL}/${KERNEL_IMG}
+DTB_URL=${SNAPSHOTS_URL}/${BASE_URL}/${DTB_IMG}
 RECOVERY_IMAGE_URL=${SNAPSHOTS_URL}/${BASE_URL}/juno-oe-uboot.zip
 NFSROOTFS_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_TARXZ_IMG}
 KERNEL_COMMIT=${SRCREV_kernel}

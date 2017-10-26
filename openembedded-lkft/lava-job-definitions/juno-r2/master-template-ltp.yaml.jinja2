@@ -53,8 +53,13 @@ actions:
     namespace: oe
     timeout:
       minutes: 2
-    to: nfs
+    to: tftp
     os: oe
+    kernel:
+      url: ${KERNEL_URL}
+      type: image
+    dtb:
+      url: ${DTB_URL}
     nfsrootfs:
       url: ${NFSROOTFS_URL}
       compression: xz
@@ -63,7 +68,7 @@ actions:
     namespace: oe
     connection-namespace: recovery
     method: u-boot
-    commands: norflash
+    commands: nfs
     auto_login:
       login_prompt: 'login:'
       username: root
