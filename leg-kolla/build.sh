@@ -26,18 +26,15 @@ pip install -r requirements.txt
 
 mkdir -p logs/debian-source
 
-kolla_namespace=linaro-sdi # not yet chosen
+kolla_namespace=linaro
 ./tools/build.py --base debian \
-                 --base-image arm64v8/debian \
                  --format none \
                  --logs-dir logs/debian-source \
                  --pull \
+                 --push \
                  --retries 0 \
                  --type source \
                  --namespace ${kolla_namespace}
-#
-# Here need to add code to push images to hub.docker.com
-#
 
 docker images | grep ${kolla_namespace} | sort
 
