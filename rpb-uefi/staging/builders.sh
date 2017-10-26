@@ -52,26 +52,17 @@ OPTEE_GIT_VERSION=$OPTEE_VERSION
 mkdir ${BUILD_NUMBER}; cd ${BUILD_NUMBER}
 
 # Per board repositories overrides
-if [ "${MX_PLATFORM}" = "hikey" ]; then
-    EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
-    EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
-    ATF_GIT_VERSION="origin/integration"
-    OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
-    OPEN_PLATFORM_PKG_GIT_BRANCH="testing/hikey960_v1.3.4"
-    L_LOADER_GIT_URL=https://github.com/96boards-hikey/l-loader.git
-    L_LOADER_GIT_BRANCH="testing/hikey960_v1.2"
-fi
-if [ "${MX_PLATFORM}" = "hikey960" ]; then
-    EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
-    EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
-    ATF_GIT_VERSION="origin/integration"
-    OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
-    OPEN_PLATFORM_PKG_GIT_BRANCH="testing/hikey960_v1.3.4"
-    L_LOADER_GIT_URL=https://github.com/96boards-hikey/l-loader.git
-    L_LOADER_GIT_BRANCH="testing/hikey960_v1.2"
-    # HiKey960 support is added in OPTEE_OS > 2.5.0
-    OPTEE_GIT_VERSION=3ff350a12d634bd7c4375ff347254977e9fb5a52
-fi
+case "${MX_PLATFORM}" in
+    hikey|hikey960)
+        EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
+        EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
+        ATF_GIT_VERSION="origin/integration"
+        OPEN_PLATFORM_PKG_GIT_URL=https://github.com/96boards-hikey/OpenPlatformPkg.git
+        OPEN_PLATFORM_PKG_GIT_BRANCH="testing/hikey960_v1.3.4"
+        L_LOADER_GIT_URL=https://github.com/96boards-hikey/l-loader.git
+        L_LOADER_GIT_BRANCH="testing/hikey960_v1.2"
+        ;;
+esac
 
 # Force cap GCC build profile to GCC49, still preferred by upstream
 TOOLCHAIN=GCC49
