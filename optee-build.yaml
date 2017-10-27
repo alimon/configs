@@ -16,6 +16,10 @@
         - build-discarder:
             days-to-keep: 90
             num-to-keep: 90
+    parameters:
+        - string:
+            name: PUB_DEST
+            default: 'components/optee/build/${repo_proj}/${BUILD_NUMBER}'
     disabled: false
     node: master
     child-workspace: .
@@ -54,3 +58,11 @@
     builders:
         - shell:
             !include-raw: optee/build/builders.sh
+        - linaro-publish-token
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="repo_proj"}'
+            condition-string2: 'juno'
+            steps:
+                - shell:
+                    !include-raw: optee/build/publishers.sh
