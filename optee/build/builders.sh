@@ -15,7 +15,7 @@ pkg_list+=" ftp-upload gdisk git iasl libattr1-dev libc6:i386 libcap-dev"
 pkg_list+=" libfdt-dev libftdi-dev libglib2.0-dev libhidapi-dev libncurses5-dev"
 pkg_list+=" libpixman-1-dev libssl-dev libstdc++6:i386 libtool libz1:i386"
 pkg_list+=" mtools netcat python-crypto python-requests python-serial"
-pkg_list+=" python-wand unzip uuid-dev xdg-utils xterm xz-utils zlib1g-dev"
+pkg_list+=" unzip uuid-dev xdg-utils xterm xz-utils zlib1g-dev"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15

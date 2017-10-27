@@ -7,7 +7,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="bc ccache git expect pkg-config python-requests python-crypto python-wand wget zlib1g-dev"
+pkg_list="bc ccache git expect pkg-config python-requests python-crypto wget zlib1g-dev"
 pkg_list+=" libglib2.0-dev libpixman-1-dev"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
