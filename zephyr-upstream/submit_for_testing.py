@@ -126,7 +126,7 @@ def main():
     if not (lava_server.startswith("http://") or lava_server.startswith("https://")):
         lava_server = "https://" + lava_server
     lava_url_base = "%s://%s/" % (urlsplit(lava_server).scheme, urlsplit(lava_server).netloc)
-    test_url_prefix = "%s/%s/%s/%s/%s/tests/" % (
+    test_url_prefix = "%s/%s/%s/%s/%s/" % (
         snapshots_url, args.branch_name, args.gcc_variant, args.board_name, args.build_number)
 
     headers = {
@@ -134,8 +134,8 @@ def main():
     }
     test_list = args.test_list.split()
     # Raw test path example: 'out/qemu_cortex_m3/tests/unit/bluetooth/at/test/zephyr.bin'
-    # Desired relative test path example: 'kernel/pthread/test/zephyr.bin'
-    test_list = [test.split('/', 3)[-1] for test in test_list]
+    # Desired relative test path example: 'tests/kernel/pthread/test/zephyr.bin'
+    test_list = [test.split('/', 2)[-1] for test in test_list]
     test_list = [test for test in test_list if test not in excluded_tests]
     # Exclude benchmarks which require different parse pattern by test.
     test_list = [test for test in test_list if 'benchmarks' not in test]
