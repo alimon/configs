@@ -8,7 +8,6 @@ cp -a \
   ${WORKSPACE}/${repo_proj}/gen_rootfs/ramdisk.img \
   ${WORKSPACE}/${repo_proj}/linux/arch/arm64/boot/Image \
   ${WORKSPACE}/${repo_proj}/linux/arch/arm64/boot/dts/arm/juno*.dtb \
-  ${WORKSPACE}/${repo_proj}/vexpress-firmware/SOFTWARE/bl0.bin \
   ${WORKSPACE}/out-publish/
 
 # Create new recovery image

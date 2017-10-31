@@ -1,0 +1,87 @@
+context:
+  # Override for Juno device type. SWG build is using VExpress64#
+  bootloader_prompt: VExpress64#
+
+device_type: juno
+job_name: optee-xtest-juno-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 30
+  action:
+    minutes: 10
+priority: medium
+visibility: public
+
+metadata:
+  git branch: ${GIT_BRANCH}
+  git repo: ${GIT_URL}
+  git commit: ${GIT_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+actions:
+# Deploy the recovery image
+- deploy:
+    namespace: recovery
+    timeout:
+      minutes: 10
+    to: vemsd
+    recovery_image:
+      # Use a modified version based on ARM LT release
+      url: ${PUBLISH_SERVER}${PUB_DEST}/juno-oe-uboot.zip
+      compression: zip
+
+# Deploy the kernel/dtb/ramdisk for TFTP boot
+- deploy:
+    namespace: busybox
+    timeout:
+      minutes: 2
+    to: tftp
+    os: oe
+    kernel:
+      url: ${PUBLISH_SERVER}${PUB_DEST}/Image
+      type: image
+    dtb:
+      url: ${PUBLISH_SERVER}${PUB_DEST}/juno.dtb
+    ramdisk:
+      url: ${PUBLISH_SERVER}${PUB_DEST}/ramdisk.img
+      compression: gz
+      header: u-boot
+
+- boot:
+    namespace: busybox
+    connection-namespace: recovery
+    method: u-boot
+    # Boot from ramdisk instead of NOR flash (norflash)
+    # because it's the one modified with lava-overlay installed
+    commands: ramdisk
+    auto_login:
+      login_prompt: 'Please press Enter to activate this console.'
+      # Simulate pressing enter because username is required by lava
+      username: ''
+    prompts:
+    - root@(.*):/
+
+- test:
+    namespace: busybox
+    connection-namespace: recovery
+    timeout:
+      minutes: 30
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: optee-xtest-juno
+          description: "OP-TEE sanity test suite using Juno"
+        run:
+          steps:
+            - xtest
+        parse:
+          pattern: "(?P<test_case_id>regression_[0-9.]+)\\s+(?P<result>(OK|FAILED|SKIPPED))"
+          fixupdict:
+            OK: pass
+            FAILED: fail
+            SKIPPED: skip
+      name: optee-xtest
+      path: inline/optee-xtest-juno.yaml
