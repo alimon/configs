@@ -7,12 +7,20 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
             linaro:
                 - job-build
                 - job-cancel
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+    parameters:
+        - string:
+            name: PUB_DEST
+            default: 'openembedded/images/${rootfs}-armv8-ilp32-gcc-${gcc_version}/${MACHINE}/${BUILD_NUMBER}'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: build
     display-name: 'OpenEmbedded ARMv8 ILP32'
@@ -98,13 +106,55 @@
         - shell: |
             #!/bin/bash
 
+            # Create sparse image
+            # Only the LTP image is sent to LAVA, hence it is the only one
+            # needing a sparse image to be published.
+            if [ "${rootfs}" = "minimal-ltp" ]; then
+              cd out/
+              rootfsext=$(ls -1 linaro-image-${rootfs}-${MACHINE}-*.rootfs.ext4.gz
+              gunzip -k ${rootfsext}
+              sudo ext2simg -v ${rootfsext%.gz} ${rootfsext%.ext4.gz}.img
+              rm -f ${rootfsext%.gz}
+              gzip -9 ${rootfsext%.ext4.gz}.img
+              cd -
+            fi
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
-              out/ openembedded/images/${rootfs}-armv8-ilp32-gcc-${gcc_version}/${MACHINE}/${BUILD_NUMBER}
+              out/ ${PUB_DEST}
+        - conditional-step:
+            condition-kind: strings-match
+            condition-string1: '${ENV,var="rootfs"}'
+            condition-string2: 'minimal-ltp'
+            steps:
+                - shell: |
+                    #!/bin/bash -x
+
+                    rm -rf configs
+                    git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+                    export DEVICE_TYPE=hi6220-hikey
+                    export BOOT_URL=${PUBLISH_SERVER}/${PUB_DEST}/$(ls out/boot-0.0*.img | xargs basename)
+                    export SYSTEM_URL=${PUBLISH_SERVER}/${PUB_DEST}/$(ls out/linaro-image-${rootfs}-${MACHINE}-*.rootfs.img.gz | xargs basename)
+
+                    pip install --force-reinstall --user jinja2-cli
+                    ${HOME}/.local/bin/jinja2 -D testname=syscalls \
+                        configs/openembedded-armv8/lava-job-definitions/${DEVICE_TYPE}/master-template-ltp.yaml.jinja2 \
+                        > custom_lava_job_definition.yaml
+
+                    cat << EOF > post_build_lava_parameters
+                    DEVICE_TYPE=${DEVICE_TYPE}
+                    CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+                    LAVA_SERVER=${LAVA_SERVER}
+                    EOF
+                - trigger-builds:
+                    - project: 'post-build-lava'
+                      property-file: post_build_lava_parameters
+                      block: true
     publishers:
         - email:
-            recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org'
+            recipients: 'fathi.boudra@linaro.org koen.kooi@linaro.org daniel.diaz@linaro.org'
