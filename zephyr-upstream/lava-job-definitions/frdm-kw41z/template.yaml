@@ -4,7 +4,7 @@ job_name: 'zephyr-upstream $test_name'
 
 timeouts:
   job:
-    minutes: 6
+    minutes: 30
   action:
     minutes: 3
   actions:
@@ -29,9 +29,11 @@ actions:
       minutes: 10
 
 - test:
+    timeout:
+      minutes: 10
     monitors:
     - name: '$test_name'
-      start: (tc_start\(\)|starting test)
+      start: (tc_start\(\)|starting .*test|BOOTING ZEPHYR OS)
       end: PROJECT EXECUTION
       pattern: (?P<result>(PASS|FAIL))\s-\s(?P<test_case_id>\w+)\.
       fixupdict:
