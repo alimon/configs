@@ -141,54 +141,56 @@
               --api_version 3 \
               --link-latest \
               out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
-        - shell: |
-            KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-xen/hwpack=mustang,label=docker-vivid-amd64/lastSuccessfulBuild/buildNumber)
-            DEVICE_TYPE=mustang
-            XEN_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/XEN-AARCH64/RELEASE_GCC49/XEN_EFI.fd
-            TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
-
-            wget -O - -q --no-check-certificate $TEMPLATE | \
-            sed -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                -e "s|\${XEN_EFI_URL}|${XEN_EFI_URL}|" \
-                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                -e "s|\${KERNEL_BUILD_NUM}|${KERNEL_BUILD_NUM}|" \
-                > custom_lava_job_definition_xen_aarch64_uefi.json
-
-            cat << EOF > post_build_lava_parameters_xen_aarch64_uefi
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_xen_aarch64_uefi.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters_xen_aarch64_uefi
-              block: true
-        - shell: |
-            KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-mainline/ARCH=arm64,defconfig=defconfig,label=linaro-kernel-ci/lastSuccessfulBuild/buildNumber)
-            DEVICE_TYPE=kvm-aarch64
-            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}
-            TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
-
-            wget -O - -q --no-check-certificate $TEMPLATE | \
-            sed -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
-                -e "s|\${QEMU_EFI_URL}|${QEMU_EFI_URL}|" \
-                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
-                -e "s|\${KERNEL_BUILD_NUM}|${KERNEL_BUILD_NUM}|" \
-                > custom_lava_job_definition_qemu_aarch64_uefi.json
-
-            cat << EOF > post_build_lava_parameters_qemu_aarch64_uefi
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_qemu_aarch64_uefi.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters_qemu_aarch64_uefi
-              block: true
+# Disable v1 job submissions. LAVA 2017.10 release **disables ALL V1 test job submissions**
+# https://lists.linaro.org/pipermail/lava-announce/2017-October/000039.html
+#        - shell: |
+#            KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-xen/hwpack=mustang,label=docker-vivid-amd64/lastSuccessfulBuild/buildNumber)
+#            DEVICE_TYPE=mustang
+#            XEN_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}/XEN-AARCH64/RELEASE_GCC49/XEN_EFI.fd
+#            TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
+#
+#            wget -O - -q --no-check-certificate $TEMPLATE | \
+#            sed -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+#                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+#                -e "s|\${XEN_EFI_URL}|${XEN_EFI_URL}|" \
+#                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+#                -e "s|\${KERNEL_BUILD_NUM}|${KERNEL_BUILD_NUM}|" \
+#                > custom_lava_job_definition_xen_aarch64_uefi.json
+#
+#            cat << EOF > post_build_lava_parameters_xen_aarch64_uefi
+#            DEVICE_TYPE=${DEVICE_TYPE}
+#            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+#            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_xen_aarch64_uefi.json
+#            LAVA_SERVER=${LAVA_SERVER}
+#            EOF
+#        - trigger-builds:
+#            - project: 'post-build-lava'
+#              property-file: post_build_lava_parameters_xen_aarch64_uefi
+#              block: true
+#        - shell: |
+#            KERNEL_BUILD_NUM=$(wget -q --no-check-certificate -O - https://ci.linaro.org/job/linux-mainline/ARCH=arm64,defconfig=defconfig,label=linaro-kernel-ci/lastSuccessfulBuild/buildNumber)
+#            DEVICE_TYPE=kvm-aarch64
+#            QEMU_EFI_URL=https://snapshots.linaro.org/components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+#            TEMPLATE=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/leg-virt-tiancore-edk2-upstream/lava-job-definitions/${DEVICE_TYPE}/template.json
+#
+#            wget -O - -q --no-check-certificate $TEMPLATE | \
+#            sed -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+#                -e "s|\${BUNDLE_STREAM_NAME}|${BUNDLE_STREAM_NAME}|" \
+#                -e "s|\${QEMU_EFI_URL}|${QEMU_EFI_URL}|" \
+#                -e "s|\${LAVA_SERVER}|${LAVA_SERVER}|" \
+#                -e "s|\${KERNEL_BUILD_NUM}|${KERNEL_BUILD_NUM}|" \
+#                > custom_lava_job_definition_qemu_aarch64_uefi.json
+#
+#            cat << EOF > post_build_lava_parameters_qemu_aarch64_uefi
+#            DEVICE_TYPE=${DEVICE_TYPE}
+#            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+#            CUSTOM_JSON_URL=${JOB_URL}ws/custom_lava_job_definition_qemu_aarch64_uefi.json
+#            LAVA_SERVER=${LAVA_SERVER}
+#            EOF
+#        - trigger-builds:
+#            - project: 'post-build-lava'
+#              property-file: post_build_lava_parameters_qemu_aarch64_uefi
+#              block: true
     publishers:
         - email:
             recipients: 'ard.biesheuvel@linaro.org eugene@hp.com'
