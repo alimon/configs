@@ -35,6 +35,16 @@ excluded_tests = [
     'tests/kernel/test_build/test_runtime_nmi/zephyr.bin',
     'tests/legacy/kernel/test_critical/test/zephyr.bin',
     'tests/legacy/kernel/test_sleep/test/zephyr.bin',
+    'tests/ztest/test/base/test_verbose_1/zephyr.bin',
+    'tests/drivers/quark_clock/test_quark_clock_build/zephyr.bin',
+    'tests/drivers/dma/test_loop_transfer/test/zephyr.bin',
+    'tests/drivers/dma/test_chan_blen_transfer/test_dma_shell/zephyr.bin',
+    'tests/power/power_states/test_socwatch/zephyr.bin',
+    'tests/kernel/mem_protect/app_memory/test/zephyr.bin',
+    'tests/kernel/fatal/test/zephyr.bin',
+    'tests/bluetooth/shell/test_br/zephyr.bin',
+    'tests/bluetooth/shell/test_nble/zephyr.bin',
+    'tests/bluetooth/shell/test/zephyr.bin'
 ]
 
 # Templates base path
@@ -138,10 +148,13 @@ def main():
     test_list = [test.split('/', 2)[-1] for test in test_list]
     test_list = [test for test in test_list if test not in excluded_tests]
     # Exclude benchmarks which require different parse pattern by test.
-    test_list = [test for test in test_list if 'benchmarks' not in test]
+    test_list = [test for test in test_list if 'benchmark' not in test]
     # Don't run bluetooth test on qemu device.
     if args.device_type == 'qemu':
         test_list = [test for test in test_list if 'bluetooth' not in test]
+    # net test is broken on frdm-kw41z.
+    if args.device_type == 'frdm-kw41z':
+        test_list = [test for test in test_list if 'tests/net' not in test]
     for test in test_list:
         replace_dict = dict(
             # Test name example: kernel-pthread-test
