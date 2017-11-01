@@ -58,7 +58,10 @@
             echo
             echo "Running package test build"
             echo
+            git checkout -b ${GERRIT_BRANCH}
             /usr/share/lava-server/debian-dev-build.sh -p lava-dispatcher
+            git checkout master
+            git branch -D ${GERRIT_BRANCH}
         - build-name-setter:
             name: 'version.txt'
             file: true
