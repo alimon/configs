@@ -1,0 +1,136 @@
+- job:
+    name: 96boards-reference-platform-openembedded-rocko
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'rpb-console-image rpb-console-image-lava'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'rocko'
+        - string:
+            name: BASE_URL
+            default: 'https://snapshots.linaro.org/'
+        - string:
+            name: PUB_DEST
+            default: 'reference-platform/embedded/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
+        - string:
+            name: BUNDLE_STREAM_NAME
+            default: '/public/team/linaro/rpb-openembedded-${MANIFEST_BRANCH}/'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+    disabled: false
+    node: master
+    display-name: 'Reference Platform - OpenEmbedded (rocko)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'am57xx-evm'
+                - 'bubblegum'
+                - 'dragonboard-410c'
+                - 'dragonboard-820c'
+                - 'juno'
+                - 'hikey960'
+                - 'hikey'
+                - 'orangepi-i96'
+                - 'poplar'
+                - 'sd-600eval'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+                - rpb-wayland
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+    builders:
+        - shell:
+            !include-raw: rpb-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
+        - shell: |
+            case "${MACHINE}" in
+              dragonboard-410c)
+                export DEVICE_TYPE=apq8016-sbc
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+            esac
+
+            rm -rf configs lci-build-tools
+            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            # Handle LAVA v1 (json)/v2 (yaml) test definitions
+            case "${DEVICE_TYPE}" in
+              apq8016-sbc)
+                ./lci-build-tools/yaml-to-json.py configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
+                > custom_lava_job_definition.json
+
+                cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
+            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+                ;;
+              b2260)
+                sed -e "s|\${KERNEL_URL}|${KERNEL_URL}|" \
+                    -e "s|\${DTB_URL}|${DTB_URL}|" \
+                    -e "s|\${NFSROOTFS_URL}|${NFSROOTFS_URL}|" \
+                    -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                    < configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
+                    > custom_lava_job_definition.yaml
+
+                cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+                ;;
+            esac
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+    publishers:
+# We can only archive files that are located in the workspace
+#        - archive:
+#            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, koen.kooi@linaro.org, nicolas.dechesne@linaro.org'
+            always: true
+            matrix-trigger: only-parent
