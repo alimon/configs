@@ -45,3 +45,19 @@
                 - 'android-hikey-linaro-4.9-pmwg'
               condition: SUCCESS
               property-file: lkft_parameters
+        - email-ext:
+            recipients: 'private-pmwg@lists.linaro.org, vishal.bhoj@linaro.org, fathi.boudra@linaro.org'
+            content-type: text
+            subject: '[Jenkins] Trigger: ${GIT_BRANCH} ${GIT_COMMIT}'
+            body: |
+                Project: ${PROJECT_NAME}
+                Build number: ${BUILD_NUMBER}
+                Build status: ${BUILD_STATUS}
+                Build URL: ${BUILD_URL}
+                Console output: ${BUILD_URL}consoleText
+                Git branch:  ${GIT_BRANCH}
+                Git commit: ${GIT_COMMIT}
+
+                https://git.linaro.org/power/android.git/commit/?h=${KERNEL_BRANCH}&id=${GIT_COMMIT}
+            attach-build-log: true
+            always: true
