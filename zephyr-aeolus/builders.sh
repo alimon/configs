@@ -7,6 +7,9 @@ sudo apt-get -q=2 -y install ccache cmake g++-multilib gcc-arm-none-eabi git \
 
 set -ex
 
+# Distro package is too old for Zephyr
+sudo pip3 install pyelftools pykwalify
+
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
 git clone --depth 1 https://git.linaro.org/lite/linaro-aeolus.git ${WORKSPACE}
@@ -17,8 +20,8 @@ echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 # Toolchains are pre-installed and come from:
 # https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
-# https://github.com/zephyrproject-rtos/meta-zephyr-sdk/releases/download/0.9.1/zephyr-sdk-0.9.1-setup.run
-# To install Zephyr SDK: ./zephyr-sdk-0.9.1-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9.1"
+# https://github.com/zephyrproject-rtos/meta-zephyr-sdk/releases/download/0.9.2/zephyr-sdk-0.9.2-setup.run
+# To install Zephyr SDK: ./zephyr-sdk-0.9.2-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
 
 case "${ZEPHYR_GCC_VARIANT}" in
   gccarmemb)
@@ -26,8 +29,8 @@ case "${ZEPHYR_GCC_VARIANT}" in
   ;;
   zephyr)
     mkdir -p ${HOME}/opt
-    ln -sf ${HOME}/srv/toolchain/zephyr-sdk-0.9.1 ${HOME}/opt/zephyr-sdk-0.9.1
-    export ZEPHYR_SDK_INSTALL_DIR="${HOME}/opt/zephyr-sdk-0.9.1"
+    ln -sf ${HOME}/srv/toolchain/zephyr-sdk-0.9.2 ${HOME}/opt/zephyr-sdk-0.9.2
+    export ZEPHYR_SDK_INSTALL_DIR="${HOME}/opt/zephyr-sdk-0.9.2"
   ;;
 esac
 

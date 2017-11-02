@@ -1,11 +1,11 @@
 #!/bin/bash
 
-set -ex
-
 sudo apt-get -q=2 update
 sudo apt-get -q=2 -y install git g++ g++-multilib gperf python3-ply \
     python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler \
     python3-pip
+
+set -ex
 
 # Distro package is too old for Zephyr
 sudo pip3 install pyelftools pykwalify
@@ -18,15 +18,15 @@ head -5 Makefile
 
 # Toolchains are pre-installed and come from:
 # https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/6-2017q2/gcc-arm-none-eabi-6-2017-q2-update-linux.tar.bz2
-# https://github.com/zephyrproject-rtos/meta-zephyr-sdk/releases/download/0.9.1/zephyr-sdk-0.9.1-setup.run
-# To install Zephyr SDK: ./zephyr-sdk-0.9.1-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9.1"
+# https://github.com/zephyrproject-rtos/meta-zephyr-sdk/releases/download/0.9.2/zephyr-sdk-0.9.2-setup.run
+# To install Zephyr SDK: ./zephyr-sdk-0.9.2-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
 
 case "${ZEPHYR_GCC_VARIANT}" in
   gccarmemb)
     export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-6-2017-q2-update"
   ;;
   zephyr)
-    export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.9.1"
+    export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
   ;;
 esac
 
