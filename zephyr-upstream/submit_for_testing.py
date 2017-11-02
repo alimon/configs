@@ -10,6 +10,8 @@ except ImportError:
     from urlparse import urlsplit
 
 excluded_tests = [
+# Exclude adc_simple as the test is specific to Arduino 101 board.
+    'tests/drivers/adc/adc_simple/test/zephyr.bin',
     'tests/drivers/spi_test/test/zephyr.bin',
     'tests/drivers/build_all/test_build_sensors_n_z/zephyr.bin',
     'tests/drivers/build_all/test_build_sensors_a_m/zephyr.bin',
