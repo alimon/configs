@@ -1,0 +1,46 @@
+- job:
+    name: compass-mq
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build-arm64
+    concurrent: false
+    display-name: 'Compass4NFV amqp image build/publish'
+    scm:
+        - git:
+            url: https://github.com/yibo-cai/compass-mq.git
+            branches:
+                - origin/arm64
+            basedir: compass-mq
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/30 * * * *'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw: compass/compass-mq.sh
+    publishers:
+        - email:
+            recipients: 'yibo.cai@linaro.org di.xu@arm.com'
