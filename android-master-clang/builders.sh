@@ -26,6 +26,9 @@ if [ ! -d "${HOME}/srv/${BUILD_DIR}" ]; then
 fi
 cd ${HOME}/srv/${BUILD_DIR}
 
+# clean up files from old build
+rm -rf build/prebuilts/clang
+
 # Install helper packages
 rm -rf build-tools jenkins-tools build-configs build/out build/android-patchsets
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-android-build-tools.git build-tools
