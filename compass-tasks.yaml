@@ -1,0 +1,64 @@
+- scm:
+    name: compass-tasks
+    scm:
+        - git:
+            url: https://github.com/yibo-cai/compass-tasks.git
+            branches:
+                - origin/arm64
+            basedir: compass-tasks
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+
+- scm:
+    name: compass-tasks-k8s
+    scm:
+        - git:
+            url: https://github.com/yibo-cai/compass-tasks-k8s.git
+            branches:
+                - origin/arm64
+            basedir: compass-tasks-k8s
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+
+- job:
+    name: compass-tasks
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build-arm64
+    concurrent: false
+    display-name: 'Compass4NFV deployment task image build/publish'
+    scm:
+        - compass-tasks
+        - compass-tasks-k8s
+    triggers:
+        - pollscm: 'H/30 * * * *'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw: compass/compass-tasks.sh
+    publishers:
+        - email:
+            recipients: 'yibo.cai@linaro.org di.xu@arm.com'
