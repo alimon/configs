@@ -1,0 +1,37 @@
+- job:
+    name: jdkX-email-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Sends the report.txt file to the aarch64-port-dev mailing list.<br>
+        * The text report is copied from the jdkX-generate-text-report job.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    disabled: false
+    node: master
+    display-name: 'OpenJDK JDK - Send e-mail report'
+
+    wrappers:
+        - timestamps
+    builders:
+        - copyartifact:
+            project: jdkX-generate-email-report
+            filter: 'report.txt'
+    publishers:
+        - email-ext:
+            recipients: 'stuart.monteith@linaro.org, fathi.boudra@linaro.org, aarch64-port-dev@openjdk.java.net'
+            subject: 'JTREG, JCStress, SPECjbb2015 and Hadoop/Terasort results for OpenJDK X on AArch64'
+            content-type: text
+            body: |
+                ${FILE,path="report.txt"}
+            success: true

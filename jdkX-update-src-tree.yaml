@@ -1,17 +1,17 @@
 - scm:
-    name: jdk10
+    name: jdkX
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs
+            url: http://hg.openjdk.java.net/jdk/hs
             clean: true
-            subdir: jdk10
+            subdir: jdkX
 - job:
-    name: jdk10-update-src-tree
+    name: jdkX-update-src-tree
     project-type: freestyle
     defaults: global
     description: |
         This job polls upstream Mercurial servers for changes and,<br>
-        if there are any, triggers "jdk10-build-and-test".<br>
+        if there are any, triggers "jdkX-build-and-test".<br>
         Note: this job archives the src which is later required by the jtreg<br>
         report and publish job. The build-date.sh artefact contains shell<br>
         variables for the day and day-of-year the source was archived.
@@ -29,12 +29,11 @@
             artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 10 - Update jdk10 source tree'
+    display-name: 'OpenJDK X - Update jdkX source tree'
     scm:
-        - jdk10
+        - jdkX
     triggers:
-# Disabled. Repo is not going to change.
-#        - pollscm: 'H 2 */2 * *'
+        - pollscm: 'H 2 */2 * *'
     wrappers:
         - timestamps
     builders:
@@ -46,10 +45,10 @@
             rm -rf out
             mkdir out
 
-            pushd jdk10
+            pushd jdkX
             #find . -name BOM -exec rm {} \;
             #commit_id=$(hg identify | awk '{print $1}')
-            #echo "jdk10-${commit_id}" | tee -a BOM
+            #echo "jdkX-${commit_id}" | tee -a BOM
 
             #for i in corba jaxp jaxws langtools jdk hotspot nashorn; do
             #  pushd $i
@@ -80,14 +79,14 @@
             echo "export YEAR=${YEAR}" > out/build-date.sh
             echo "export DAY_OF_YEAR=${DAY_OF_YEAR}" >> out/build-date.sh
 
-            tar --exclude=.hg -acf out/jdk10.tar.gz jdk10
+            tar --exclude=.hg -acf out/jdkX.tar.gz jdkX
     publishers:
         - archive:
-            artifacts: 'out/jdk10.tar.gz, out/build-date.sh, out/BOM'
+            artifacts: 'out/jdkX.tar.gz, out/build-date.sh, out/BOM'
         - fingerprint:
             files: 'out/*'
             record-artifacts: true
         - trigger-parameterized-builds:
-            - project: jdk10-build-and-test
+            - project: jdkX-build-and-test
               condition: SUCCESS
               property-file: dates.prop
