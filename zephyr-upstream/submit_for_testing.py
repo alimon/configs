@@ -10,6 +10,10 @@ except ImportError:
     from urlparse import urlsplit
 
 excluded_tests = [
+# Exclude mqtt_publisher/mqtt_subscriber - need a server running to connect to
+    'tests/net/lib/mqtt_publisher/test/zephyr.bin',
+    'tests/net/lib/mqtt_publisher/test_tls/zephyr.bin',
+    'tests/net/lib/mqtt_subscriber/test/zephyr.bin',
 # Exclude adc_simple as the test is specific to Arduino 101 board.
     'tests/drivers/adc/adc_simple/test/zephyr.bin',
     'tests/drivers/spi_test/test/zephyr.bin',
