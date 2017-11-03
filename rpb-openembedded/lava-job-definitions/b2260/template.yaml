@@ -20,6 +20,7 @@ actions:
     os: oe
     kernel:
       url: '${KERNEL_URL}'
+      type: uimage
     dtb:
       url: '${DTB_URL}'
     nfsrootfs:
@@ -29,7 +30,6 @@ actions:
 - boot:
     method: u-boot
     commands: nfs
-    type: uimage
     auto_login:
       login_prompt: 'stih410-b2260 login:'
       username: root
@@ -40,9 +40,9 @@ actions:
     timeout:
       minutes: 5
     definitions:
-    - repository: git://git.linaro.org/qa/test-definitions.git
+    - repository: http://git.linaro.org/qa/test-definitions.git
       from: git
-      path: openembedded/smoke-tests-basic.yaml
+      path: automated/linux/smoke/smoke.yaml
       name: smoke-tests
 
 metadata:
