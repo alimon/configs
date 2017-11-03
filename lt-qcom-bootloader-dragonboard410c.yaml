@@ -80,6 +80,15 @@
         - shell:
             !include-raw: lt-qcom-bootloader/dragonboard410c/builders.sh
     publishers:
+        - groovy-postbuild:
+            script: |
+                def build_number = manager.build.number
+                def url = "http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${build_number}/"
+                def desc = "&nbsp;<a href='${url}'>Build location<t/a>"
+
+                if (manager.build.result == hudson.model.Result.SUCCESS) {
+                  manager.build.setDescription(desc)
+                }
         - email:
             recipients: 'fathi.boudra@linaro.org'
         - email-ext:
