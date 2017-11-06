@@ -44,6 +44,8 @@
             echo KERNEL_VERSION=$(make kernelversion) > qcomlt_parameters
             echo KERNEL_DESCRIBE=$(git describe --always) >> qcomlt_parameters
             echo KERNEL_BRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||') >> qcomlt_parameters
+            echo TARGET_REPO=linaro-overlay-buster >> qcomlt_parameters
+            echo KDEB_CHANGELOG_DIST=buster >> qcomlt_parameters
             cat qcomlt_parameters
     publishers:
         - trigger-parameterized-builds:
