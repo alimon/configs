@@ -12,6 +12,9 @@ sudo pip3 install pyelftools pykwalify
 
 git clone --depth 1 -b ${BRANCH} https://git.linaro.org/lite/zephyr.git ${WORKSPACE}
 git clean -fdx
+if [ -n "${GIT_REVISION}" ]; then
+  git reset --hard ${GIT_REVISION}
+fi
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 head -5 Makefile
