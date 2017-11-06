@@ -31,7 +31,7 @@ cp defconfig arch/${ARCH}/configs
 
 make KERNELRELEASE=${SRCVERSION}-qcomlt \
      KDEB_PKGVERSION=${PKGVERSION}-${BUILD_NUMBER} \
-     KDEB_CHANGELOG_DIST=sid \
+     KDEB_CHANGELOG_DIST=${KDEB_CHANGELOG_DIST} \
      DEBEMAIL="dragonboard@lists.96boards.org" \
      DEBFULLNAME="Linaro Qualcomm Landing Team" \
      -j`nproc` deb-pkg
