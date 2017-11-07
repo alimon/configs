@@ -88,11 +88,11 @@
             files: 'build/fingerprints/*'
         - groovy-postbuild:
             script:
-                !include-raw: openembedded-lkft/postbuild.groovy
+                !include-raw: android-hikey-linaro-4.9-pmwg/postbuild.groovy
         - email-ext:
             recipients: 'private-pmwg@lists.linaro.org, vishal.bhoj@linaro.org, fathi.boudra@linaro.org'
             content-type: text
-            subject: '[Jenkins] Build: ${GIT_BRANCH} ${GIT_REVISION,length=12}'
+            subject: '[Jenkins] Build (${WARNINGS}/${ERRORS}): ${GIT_BRANCH} ${GIT_REVISION,length=12}'
             body: |
                 Project: ${PROJECT_NAME}
                 Build number: ${BUILD_NUMBER}
