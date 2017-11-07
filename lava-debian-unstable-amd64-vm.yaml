@@ -22,7 +22,7 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-jessie-amd64
+    node: docker-stretch-amd64
     display-name: 'LAVA - Build large amd64 Debian Sid VM'
     wrappers:
         - timestamps
@@ -35,10 +35,10 @@
 
             export LANG=C
 
-            echo "deb http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
-            sudo mv jessie-backports.list /etc/apt/sources.list.d/
+            echo "deb http://mirror.bytemark.co.uk/debian stretch-backports main" > stretch-backports.list
+            sudo mv stretch-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
+            sudo apt-get install -y --no-install-recommends vmdebootstrap grub2-common
 
             mkdir out
             sudo vmdebootstrap \
@@ -80,10 +80,10 @@
 
 
             <pre>
-            The base system is a Debian Jessie VM with jessie-backports enabled.
+            The base system is a Debian Stretch VM with stretch-backports enabled.
 
-            echo "deb http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
-            sudo mv jessie-backports.list /etc/apt/sources.list.d/
+            echo "deb http://mirror.bytemark.co.uk/debian stretch-backports main" > stretch-backports.list
+            sudo mv stretch-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
 
