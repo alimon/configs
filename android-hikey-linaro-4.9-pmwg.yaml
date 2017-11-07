@@ -98,10 +98,18 @@
                 Build number: ${BUILD_NUMBER}
                 Build status: ${BUILD_STATUS}
                 Build URL: ${BUILD_URL}
+                Build location: ${PUBLISH_SERVER}${PUB_DEST}
                 Console output: ${BUILD_URL}consoleText
+                Parsed warnings/errors: ${BUILD_URL}parsed_console
                 Git branch:  ${GIT_BRANCH}
                 Git commit: ${GIT_COMMIT}
 
                 https://git.linaro.org/power/android.git/commit/?h=${KERNEL_BRANCH}&id=${GIT_COMMIT}
+
+                Warnings:
+                ${BUILD_LOG_REGEX, regex="^.*? warning: .*?$", linesBefore=0, linesAfter=2, showTruncatedLines=false}
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex="^.*? error: .*?$", linesBefore=0, linesAfter=2, showTruncatedLines=false}
             attach-build-log: true
             always: true
