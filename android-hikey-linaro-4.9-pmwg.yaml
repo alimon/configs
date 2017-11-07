@@ -51,7 +51,7 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=12}'
         - timeout:
             timeout: 500
         - credentials-binding:
@@ -92,7 +92,7 @@
         - email-ext:
             recipients: 'private-pmwg@lists.linaro.org, vishal.bhoj@linaro.org, fathi.boudra@linaro.org'
             content-type: text
-            subject: '[Jenkins] Build: ${GIT_BRANCH} ${GIT_COMMIT}'
+            subject: '[Jenkins] Build: ${GIT_BRANCH} ${GIT_REVISION,length=12}'
             body: |
                 Project: ${PROJECT_NAME}
                 Build number: ${BUILD_NUMBER}
