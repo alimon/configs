@@ -67,6 +67,28 @@ actions:
 - test:
     namespace: oe
     timeout:
+      minutes: 10
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: prep-tests
+          description: "Device preparation"
+        run:
+          steps:
+          - lsusb
+          - echo "y" | mkfs -t ext4 /dev/sda1
+          - mkdir -p /ltp-tmp
+          - mount /dev/sda1 /ltp-tmp && echo "mounted" || lava-test-raise "mount /dev/sda1 failed job exit"
+          - df -h
+          - mount
+      name: prep-inline
+      path: inline/prep.yaml
+
+- test:
+    namespace: oe
+    timeout:
       minutes: 60
     definitions:
     - repository: git://git.linaro.org/qa/test-definitions.git
