@@ -10,7 +10,7 @@ set -ex
 # Distro package is too old for Zephyr
 sudo pip3 install pyelftools pykwalify
 
-git clone --depth 1 -b ${BRANCH} https://git.linaro.org/lite/zephyr.git ${WORKSPACE}
+git clone -b ${BRANCH} https://git.linaro.org/lite/zephyr.git ${WORKSPACE}
 git clean -fdx
 if [ -n "${GIT_COMMIT}" ]; then
   git reset --hard ${GIT_COMMIT}
