@@ -7,6 +7,7 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
             linaro:
                 - job-read
                 - job-extended-read
@@ -35,6 +36,12 @@
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'power'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'pmwg'
     disabled: false
     node: docker-xenial-aosp
     display-name: 'PMWG Android on HiKey'
@@ -58,9 +65,6 @@
             - text:
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
-            - text:
-                credential-id: ARTIFACTORIAL_TOKEN
-                variable: ARTIFACTORIAL_TOKEN
     builders:
         - shell:
             !include-raw: lkft/hikey-aosp/builders.sh
@@ -79,6 +83,8 @@
               --build-info out/BUILD-INFO.txt \
               --link-latest \
               out/ ${PUB_DEST}
+        - shell:
+            !include-raw: android-hikey-linaro-4.9-pmwg/submit_for_testing.sh
     publishers:
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
@@ -104,7 +110,7 @@
                 Git branch:  ${GIT_BRANCH}
                 Git commit: ${GIT_COMMIT}
 
-                https://git.linaro.org/power/android.git/commit/?h=${KERNEL_BRANCH}&id=${GIT_COMMIT}
+                ${GIT_URL}/commit/?h=${KERNEL_BRANCH}&id=${GIT_COMMIT}
 
                 Warnings:
                 ${BUILD_LOG_REGEX, regex="^.*? warning: .*?$", linesBefore=0, linesAfter=2, showTruncatedLines=false}
