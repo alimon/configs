@@ -59,7 +59,7 @@ for image in ${update_images}; do
   cd ${image}
   image_arch=$(basename ${PWD} | cut -f2 -d '-')
   skip="skip"
-  if [ -f gerrit-branch ]; then
+  if [ -f gerrit-branches ]; then
     # Build only from branches mentioned in gerrit-branches
     if grep -q "^${GERRIT_BRANCH}\$" gerrit-branches; then
       skip="no"
@@ -69,7 +69,7 @@ for image in ${update_images}; do
     skip="no"
   fi
   case "${skip}:${host_arch}:${image_arch}" in
-    "skip:*")
+    "skip:"*)
       echo "Skipping: don't need to build ${image} on branch ${GERRIT_BRANCH}"
       ;;
     "no:amd64:amd64"|"no:amd64:i386"|"no:arm64:arm64"|"no:arm64:armhf")
