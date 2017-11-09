@@ -84,7 +84,7 @@ for image in ${update_images}; do
     docker_tag=$(cat .docker-tag)
     if [ x"${GERRIT_BRANCH}" != x"master" ]; then
       new_tag=${docker_tag}-${GERRIT_BRANCH}
-      docker images tag ${docker_tag} ${new_tag}
+      docker tag ${docker_tag} ${new_tag}
       docker_tag=${new_tag}
     fi
     docker push ${docker_tag}
