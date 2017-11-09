@@ -103,7 +103,6 @@ DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
 find ${DEPLOY_DIR_IMAGE} -type l -delete
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
-mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE} || true
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
@@ -143,6 +142,18 @@ Build description:
 * Manifest branch: ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
+
+if [ -e "/srv/oe/manifest-changes.txt" ]; then
+  # the space after pre.. tag is on purpose
+  cat > ${DEPLOY_DIR_IMAGE}/README.textile << EOF
+
+h4. Manifest changes
+
+pre.. 
+EOF
+  cat /srv/oe/manifest-changes.txt >> ${DEPLOY_DIR_IMAGE}/README.textile
+  mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE}
+fi
 
 # Need different files for each machine
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.img" | xargs -r basename)
