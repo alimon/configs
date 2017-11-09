@@ -88,7 +88,7 @@ PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
 
 case "${KERNEL_RECIPE}" in
-  linux-hikey-aosp|linux-hikey-stable|linux-hikey-stable-rc|linux-generic-android-common-o|linux-generic-android-common-o-release|linux-generic-lsk)
+  linux-hikey-aosp|linux-hikey-stable|linux-hikey-stable-rc|linux-generic-android-common-o|linux-generic-android-common-o-release|linux-generic-lsk*)
     cat << EOF >> ${distro_conf}
 PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
@@ -275,6 +275,15 @@ case "${KERNEL_RECIPE}" in
     ;;
   linux-generic-lsk)
     PUB_DEST="lsk-${KERNEL_VERSION}"
+    ;;
+  linux-generic-lsk-test)
+    PUB_DEST="lsk-${KERNEL_VERSION}-test"
+    ;;
+  linux-generic-lsk-rt)
+    PUB_DEST="lsk-${KERNEL_VERSION}-rt"
+    ;;
+  linux-generic-lsk-rt-test)
+    PUB_DEST="lsk-${KERNEL_VERSION}-rt-test"
     ;;
   *)
     PUB_DEST="${KERNEL_VERSION}"
