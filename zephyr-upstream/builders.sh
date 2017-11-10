@@ -9,6 +9,14 @@ set -ex
 
 # Distro package is too old for Zephyr
 sudo pip3 install pyelftools pykwalify
+# CMake is pre-installed
+#cmake_version=3.9.5
+#wget -q https://cmake.org/files/v3.9/cmake-${cmake_version}-Linux-x86_64.tar.gz
+#tar xf cmake-${cmake_version}-Linux-x86_64.tar.gz
+#cp -a cmake-${cmake_version}-Linux-x86_64/bin/* /usr/local/bin/
+#cp -a cmake-${cmake_version}-Linux-x86_64/share/* /usr/local/share/
+#rm -rf cmake-${cmake_version}-Linux-x86_64
+#cmake -version
 
 git clone -b ${BRANCH} https://git.linaro.org/lite/zephyr.git ${WORKSPACE}
 git clean -fdx

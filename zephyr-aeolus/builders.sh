@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 -y install ccache cmake g++-multilib gcc-arm-none-eabi git \
+sudo apt-get -q=2 -y install ccache g++-multilib gcc-arm-none-eabi git \
     python3-pip python-requests python-serial python3-serial python3-ply \
     python3-yaml python3-setuptools python3-wheel socat rsync device-tree-compiler
 
@@ -9,6 +9,14 @@ set -ex
 
 # Distro package is too old for Zephyr
 sudo pip3 install pyelftools pykwalify
+# CMake is pre-installed
+#cmake_version=3.9.5
+#wget -q https://cmake.org/files/v3.9/cmake-${cmake_version}-Linux-x86_64.tar.gz
+#tar xf cmake-${cmake_version}-Linux-x86_64.tar.gz
+#cp -a cmake-${cmake_version}-Linux-x86_64/bin/* /usr/local/bin/
+#cp -a cmake-${cmake_version}-Linux-x86_64/share/* /usr/local/share/
+#rm -rf cmake-${cmake_version}-Linux-x86_64
+#cmake -version
 
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
