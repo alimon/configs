@@ -1,0 +1,29 @@
+- job:
+    name: trigger-lt-qcom-debian-images-dragonboard410c
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build
+    display-name: 'Trigger for Qualcomm Debian based images for Snapdragon 410'
+    triggers:
+        - pollurl:
+            cron: '@hourly'
+            polling-node: build
+            urls:
+              - url: 'http://obs.linaro.org/linaro-overlay-buster/buster/Release'
+                check-content:
+                  - simple: true
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'lt-qcom-debian-images-dragonboard410c'

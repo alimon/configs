@@ -29,16 +29,16 @@
             default: 'linaro'
         - string:
             name: OS_FLAVOUR
-            default: 'stretch'
-        - string:
-            name: LINARO_OVERLAY
-            default: 'linaro-overlay-stretch/Debian_9.0'
+            default: 'buster'
         - string:
             name: PLATFORM_NAME
             default: 'qcom-snapdragon-arm64'
         - string:
+            name: FAI_BOARD_CLASS
+            default: 'DB410C'
+        - string:
             name: ROOTFS
-            default: 'developer,arm64,1800M alip,arm64,2500M installer,arm64,1024M'
+            default: 'developer,1800M alip,3G installer,1024M'
         - string:
             name: SDCARD
             default: 'developer,4G'
@@ -47,35 +47,23 @@
             default: 'rootfs'
         - string:
             name: DTBS
-            default: 'msm8916-mtp.dtb apq8016-sbc.dtb'
+            default: 'qcom/apq8016-sbc.dtb'
         - string:
             name: SERIAL_CONSOLE
             default: 'ttyMSM0'
         - string:
-            name: KERNEL_BRANCH
-            default: 'release/qcomlt-4.9'
-        - string:
-            name: QCOM_FIRMWARE
-            default: 'http://builds.96boards.org/releases/dragonboard410c/qualcomm/firmware/linux-board-support-package-r1032.1.zip'
-        - string:
-            name: QCOM_FIRMWARE_MD5
-            default: 'e1c7e8957b8f37a91cadc18c1aef5c04'
-        - string:
-            name: QCOM_FIRMWARE_LICENSE_MD5
-            default: '4d087ee0965cb059f1b2f9429e166f64'
-        - string:
             name: BOOTIMG_PAGESIZE
             default: '2048'
     disabled: false
-    node: docker-jessie-amd64
+    node: docker-stretch-arm64
     display-name: 'Qualcomm Debian based images for Snapdragon 410'
     scm:
         - git:
-            url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            url: https://git.linaro.org/ci/fai.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
-                - refs/heads/${KERNEL_BRANCH}
+                - refs/heads/master
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -85,11 +73,7 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell:
-            !include-raw: lt-qcom-debian-images/builders-arm64.sh
-        - shell:
-            !include-raw: lt-qcom-debian-images/installer-dragonboard-410c.sh
-        - shell:
-            !include-raw: lt-qcom-debian-images/sdcard-dragonboard-410c.sh
+            !include-raw: lt-qcom-debian-images/builders-fai.sh
         - linaro-publish-token:
             host: builds.96boards.org
         - shell: |
@@ -116,45 +100,6 @@
                  --server ${PUBLISH_SERVER} \
                  --link-latest \
                  out snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}
-        - shell: |
-            VERSION=$(cat build-version)
-
-            export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
-            export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
-
-            rm -rf configs lci-build-tools
-            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-debian-images/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
-
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            VERSION=$(cat build-version)
-
-            export BOOT_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz
-            export ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}/${VENDOR}-${OS_FLAVOUR}-developer-${PLATFORM_NAME}-${VERSION}.img.gz
-
-            ./lci-build-tools/yaml-to-json.py configs/lt-qcom-debian-images/lava-job-definitions/${DEVICE_TYPE}/template-ltp.yaml > custom_lava_job_definition_ltp.json
-
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition_ltp.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
     publishers:
         - groovy-postbuild:
             script: |
