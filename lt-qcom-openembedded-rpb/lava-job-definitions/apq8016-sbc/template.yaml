@@ -1,41 +1,158 @@
+device_type: ${DEVICE_TYPE}
+job_name: lt-qcom-openembedded-${DISTRO}-${MANIFEST_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 90
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom-openembedded-rpb/lava-job-definitions/dragonboard-410c/template.yaml
+
+protocols:
+  lava-lxc:
+    name: lxc-dragonboard410c-test
+    template: debian
+    distribution: debian
+    release: jessie
+
 actions:
-- command: deploy_linaro_android_image
-  parameters:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 5
+    to: lxc
+    packages:
+    - android-tools-adb
+    - android-tools-fastboot
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'root@linaro-developer:~#'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- deploy:
+    timeout:
+      minutes: 35
+    to: fastboot
+    namespace: dragonboard410c-oe
     images:
-    - partition: 'partition'
-      url: 'http://images-internal/builds.96boards.org/releases/dragonboard410c/linaro/rescue/16.09/linux/gpt_both0.bin'
-    - partition: 'hyp'
-      url: 'http://images-internal/builds.96boards.org/releases/dragonboard410c/linaro/rescue/16.09/linux/hyp.mbn'
-    - partition: 'modem'
-      url: 'http://images-internal/builds.96boards.org/releases/dragonboard410c/linaro/rescue/16.09/linux/NON-HLOS.bin'
-    - partition: 'rpm'
-      url: 'http://images-internal/builds.96boards.org/releases/dragonboard410c/linaro/rescue/16.09/linux/rpm.mbn'
-    - partition: 'sbl1'
-      url: 'http://images-internal/builds.96boards.org/releases/dragonboard410c/linaro/rescue/16.09/linux/sbl1.mbn'
-    - partition: 'sec'
-      url: 'http://images-internal/builds.96boards.org/releases/dragonboard410c/linaro/rescue/16.09/linux/sec.dat'
-    - partition: 'tz'
-      url: 'http://images-internal/builds.96boards.org/releases/dragonboard410c/linaro/rescue/16.09/linux/tz-psci.mbn'
-    - partition: 'aboot'
-      url: 'http://images-internal/builds.96boards.org/releases/dragonboard410c/linaro/rescue/16.09/linux/emmc_appsboot.mbn'
-    - partition: 'boot'
-      url: '${BOOT_URL}'
-    - partition: 'rootfs'
-      url: '${ROOTFS_BUILD_URL}'
-    target_type: 'ubuntu'
-    login_prompt: 'login:'
-    username: 'root'
-- command: boot_linaro_image
-- command: lava_test_shell
-  parameters:
-    testdef_repos:
-    - git-repo: git://git.linaro.org/qa/test-definitions.git
-      testdef: automated/linux/smoke/smoke.yaml
-    timeout: 1800
-- command: submit_results
-  parameters:
-    server: 'http://${LAVA_SERVER}'
-    stream: '${BUNDLE_STREAM_NAME}'
-device_type: '${DEVICE_TYPE}'
-job_name: '${BUILD_URL}'
-timeout: 18000
+      partition:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/gpt_both0.bin
+      hyp:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/hyp.mbn
+      cdt:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/sbc_1.0_8016.bin
+      rpm:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/rpm.mbn
+      sbl1:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/sbl1.mbn
+      tz:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/tz.mbn
+      aboot:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/emmc_appsboot.mbn
+      boot:
+        url: ${BOOT_URL}
+      rootfs:
+        url: ${ROOTFS_SPARSE_BUILD_URL}
+        compression: gz
+        apply-overlay: True
+    os: oe
+    protocols:
+        lava-lxc:
+        - action: fastboot-deploy
+          request: pre-power-command
+          timeout:
+              minutes: 2
+
+- boot:
+    namespace: dragonboard410c-oe
+    auto_login:
+      login_prompt: 'login:'
+      username: 'root'
+    prompts:
+    - 'root@(.*):/#'
+    - 'root@dragonboard-410c:~#'
+    timeout:
+      minutes: 15
+    method: fastboot
+
+# XXX: This test manfiests are the same of qcomlt test plans
+# used in test-runner, the LAVA dispatcher currently doesn't support
+# test plans.
+#
+# git.linaro.org/qa/test-definitions.git - plans/qcomlt
+- test:
+    namespace: dragonboard410c-oe
+    name: qcomlt-smoke
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/smoke/smoke.yaml
+      name: linux-smoke
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/usb-smoke/usb-smoke-test.yaml
+      name: linux-usb-smoke
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/toolchain-smoke/toolchain-smoke.yaml
+      name: linux-toolchain-smoke
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/device-tree/device-tree.yaml
+      name: linux-device-tree
+
+- test:
+    namespace: dragonboard410c-oe
+    name: qcomlt-bench
+    timeout:
+      minutes: 60
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dd-wr-speed/dd-wr-speed.yaml
+      name: linux-dd-wr-speed
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/sysbench/sysbench.yaml
+      params:
+              NUM_THREADS: 4
+              TESTS: cpu memory threads mutex
+      name: linux-sysbench
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/device-read-perf/device-read-perf.yaml
+      name: linux-device-read-perf
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/hackbench/hackbench.yaml
+      name: linux-hackbench
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/linpack/linpack.yaml
+      name: linux-linpack
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/openssl/openssl-speed.yaml
+      name: linux-openssl-speed
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/stream/stream-uniprocessor.yaml
+      name: linux-stream-uniprocessor
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/pi-stress/pi-stress.yaml
+      name: linux-pi-stress
