@@ -66,7 +66,7 @@ time sanitycheck \
   --outdir ${OUTDIR} \
   --no-clean \
   --enable-slow \
-  --ccache
+ -x=USE_CCACHE=${USE_CCACHE}
 
 cd ${WORKSPACE}
 # OUTDIR is already per-platform, but it may get contaminated with unrelated
