@@ -3,7 +3,7 @@
 sudo apt-get -q=2 update
 sudo apt-get -q=2 -y install git g++ g++-multilib gperf python3-ply \
     python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler \
-    python3-pip
+    python3-pip python3-setuptools python3-wheel
 
 set -ex
 

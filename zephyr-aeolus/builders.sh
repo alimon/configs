@@ -3,7 +3,7 @@
 sudo apt-get -q=2 update
 sudo apt-get -q=2 -y install ccache cmake g++-multilib gcc-arm-none-eabi git \
     python3-pip python-requests python-serial python3-serial python3-ply \
-    python3-yaml socat rsync device-tree-compiler
+    python3-yaml python3-setuptools python3-wheel socat rsync device-tree-compiler
 
 set -ex
 
