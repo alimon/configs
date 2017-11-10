@@ -59,14 +59,14 @@ echo "########################################################################"
 echo "    sanitycheck"
 echo "########################################################################"
 
-time sanitycheck \
+time ${WORKSPACE}/scripts/sanitycheck \
   --platform ${PLATFORM} \
   --inline-logs \
   --build-only \
   --outdir ${OUTDIR} \
   --no-clean \
   --enable-slow \
- -x=USE_CCACHE=${USE_CCACHE}
+  -x=USE_CCACHE=${USE_CCACHE}
 
 cd ${WORKSPACE}
 # OUTDIR is already per-platform, but it may get contaminated with unrelated
