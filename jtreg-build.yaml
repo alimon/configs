@@ -16,6 +16,17 @@
         browser: hgweb
         browser-url: http://hg.openjdk.java.net/code-tools/asmtools/
         subdir: asmtools
+        revision-type: tag
+        revision: "6.0"
+- scm:
+    name: jcov
+    scm:
+     - hg:
+        url: http://hg.openjdk.java.net/code-tools/jcov
+        clean: true
+        browser: hgweb
+        browser-url: http://hg.openjdk.java.net/code-tools/jcov
+        subdir: jcov
 - job:
     name: jtreg-build
     project-type: freestyle
@@ -41,6 +52,7 @@
     scm:
         - asmtools
         - jtreg
+        - jcov
     triggers:
         - pollscm:
             cron: 'H/5 * * * *'
@@ -81,6 +93,20 @@
               wget http://repo1.maven.org/maven2/com/beust/jcommander/1.72/jcommander-1.72.jar -O jcommander/jcommander.jar
             fi
 
+            if [ ! -d asm-6.0 ]; then
+              wget http://download.forge.ow2.org/asm/asm-6.0-bin.zip
+              unzip asm-6.0-bin.zip
+            fi
+
+            # Build jcov
+            cd ../jcov
+            ant -f build/build.xml -Dasm.jar=$PWD/../asm-6.0/lib/asm-6.0.jar \
+                -Dasm.tree.jar=$PWD/../asm-6.0/lib/asm-tree-6.0.jar \
+                -Dasm.util.jar=$PWD/../asm-6.0/lib/asm-util-6.0.jar \
+                -Djavatestjar=$PWD/../jtreg/jtharness/lib/javatest.jar
+
+            cd ../jtreg
+
             ls -lash
 
             rm -fr build
@@ -120,6 +146,9 @@
             export ANTHOME=$(ant -diagnostics | grep ant.home | \
                 sed 's,^.*: \(.*\),\1,' | uniq)
             export JCOMMANDER_JAR=$PWD/jcommander/jcommander.jar
+            export JCOV_JAR=$PWD/../jcov/JCOV_BUILD/jcov_3.0/jcov.jar
+            export JCOV_NETWORK_SAVER_JAR=$PWD/../jcov/JCOV_BUILD/jcov_3.0/jcov_network_saver.jar
+
 
             # Makefile expects files that are not supplied from the packages we
             # are downloading. Create dummy versions to keep it happy.
