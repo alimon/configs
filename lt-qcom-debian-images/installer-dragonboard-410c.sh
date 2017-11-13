@@ -13,15 +13,13 @@ cleanup_exit()
     sudo git clean -fdxq
 }
 
-export PATH=`pwd`/skales:$PATH
 VERSION=$(cat build-version)
 
 # Create boot image for SD installer
 mkbootimg \
-    --kernel out/Image \
-    --ramdisk "out/initrd.img-$(cat kernel-version)" \
+    --kernel Image.gz+dtb \
+    --ramdisk out/initrd.img-* \
     --output out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
-    --dt out/dt.img \
     --pagesize "${BOOTIMG_PAGESIZE}" \
     --base "0x80000000" \
     --cmdline "root=/dev/mmcblk1p8 rw rootwait console=${SERIAL_CONSOLE},115200n8"
