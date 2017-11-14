@@ -137,4 +137,11 @@
         - email-ext:
             recipients: 'lkft-maintainers@lists.linaro.org, fathi.boudra@linaro.org, milosz.wasilewski@linaro.org, naresh.kamboju@linaro.org'
             always: true
-            matrix-trigger: only-parent
+            matrix-trigger: only-configurations
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
