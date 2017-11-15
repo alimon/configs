@@ -16,6 +16,25 @@ template_base_path = 'configs/openembedded-lkft/lava-job-definitions'
 snapshots_url = 'https://snapshots.linaro.org/openembedded/lkft'
 
 
+def _load_template(template_name, template_path, device_type):
+    template = ''
+    template_file_name = ''
+
+    if template_name:
+        template_file_name = "%s/%s/%s" % (template_path,
+                                           device_type,
+                                           template_name)
+        if os.path.exists(template_file_name):
+            with open(template_file_name, 'r') as f:
+                template = f.read()
+        else:
+            print('template (%s) was specified but not exists' %
+                  template_file_name)
+            sys.exit(1)
+
+    return template, template_file_name
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--device-type",
@@ -62,6 +81,12 @@ def main():
                         help="Path to LAVA job templates",
                         dest="template_path",
                         default=template_base_path)
+    parser.add_argument("--template-base-pre",
+                        help="base template used to construct templates, previous",
+                        dest="template_base_pre")
+    parser.add_argument("--template-base-post",
+                        help="base template used to construct templates, posterior",
+                        dest="template_base_post")
     parser.add_argument("--template-names",
                         help="list of the templates to submit for testing",
                         dest="template_names",
@@ -99,15 +124,21 @@ def main():
     headers = {
         "Auth-Token": args.qa_token
     }
+
+    template_base_pre, _ = _load_template(args.template_base_pre,
+                                          args.template_path,
+                                          args.device_type)
+    template_base_post, _ = _load_template(args.template_base_post,
+                                           args.template_path,
+                                           args.device_type)
     for test in args.template_names:
-        template_file_name = "%s/%s/%s" % (args.template_path, args.device_type, test)
-        test_template = None
-        if os.path.exists(template_file_name):
-            test_template_file = open(template_file_name, "r")
-            test_template = test_template_file.read()
-            test_template_file.close()
-        else:
-            sys.exit(1)
+        test_template, template_file_name = _load_template(test,
+                                                           args.template_path,
+                                                           args.device_type)
+        if template_base_pre:
+            test_template = "%s\n%s" % (template_base_pre, test_template)
+        if template_base_post:
+            test_template = "%s\n%s" % (test_template, template_base_post)
 
         template = Template(test_template)
         print("using template: %s" % template_file_name)
