@@ -30,14 +30,15 @@
             #!/bin/bash
             set -ex
             cat <<EOF >local.list
-            deb http://obs.linaro.org/ERP/Debian_9/ ./
+            deb http://obs.linaro.org/ERP:/17.12/Debian_9/ ./
             deb http://obs.linaro.org/ERP:/staging/Debian_9/ ./
             EOF
 
             cat <<EOF > sources.list.udeb
-            deb [trusted=yes] http://obs.linaro.org/ERP/Debian_9/debian-installer ./
+            deb [trusted=yes] http://obs.linaro.org/ERP:/17.12/Debian_9/debian-installer ./
             deb [trusted=yes] http://obs.linaro.org/ERP:/staging/Debian_9/debian-installer ./
             deb http://deb.debian.org/debian stretch main/debian-installer
+            deb http://deb.debian.org/debian stretch-backports main/debian-installer
             EOF
 
             cat <<EOF > localudebs
