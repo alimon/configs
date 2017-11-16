@@ -24,7 +24,7 @@
             name: OBS_RELEASE
             default: 'Debian_9'
     disabled: false
-    node: docker-stretch-amd64
+    node: docker-stretch-arm64
     display-name: 'Reference Platform - kernel metapackage'
     wrappers:
         - timestamps
@@ -46,7 +46,7 @@
                 exit 0
             fi
 
-            package_version=$(apt-cache showsrc linux-reference-source|awk '/^Version/ { print ($2)+1 }')
+            package_version=$(apt-cache showsrc linux-reference-source|awk '/^Version/ { print ($2)+1 }'|sort --version-sort|tail -1)
             sudo apt-get install -y linux-support-${kernel_abi_version}
 
             git clone --depth=1 https://github.com/Linaro/debian-linux-latest-reference
