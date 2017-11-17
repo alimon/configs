@@ -62,7 +62,7 @@ sudo ./mksdcard -x -p dragonboard820c/sdrescue.txt \
 mkdir out2
 for i in ${SDCARD_RESCUE} \
          ${BOOTLOADER_UFS_LINUX} ; do
-    (cd $i && md5sum * > MD5SUMS.txt)
+    (cd out/$i && md5sum * > MD5SUMS.txt)
     zip -r out2/$i.zip out/$i
 done
 
