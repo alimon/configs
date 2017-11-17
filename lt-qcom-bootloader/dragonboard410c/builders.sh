@@ -38,11 +38,17 @@ for lk in lk_sdrescue lk_sd_boot lk_emmc_boot; do
     cd -
 done
 
-mkdir -p out/dragonboard410c_sdcard_rescue \
-      out/dragonboard410c_bootloader_sd_linux \
-      out/dragonboard410c_bootloader_emmc_linux \
-      out/dragonboard410c_bootloader_emmc_android \
-      out/dragonboard410c_bootloader_emmc_aosp
+SDCARD_RESCUE=dragonboard-410c-sdcard-rescue-${BUILD_NUMBER}
+BOOTLOADER_SD_LINUX=dragonboard-410c-bootloader-sd-linux-${BUILD_NUMBER}
+BOOTLOADER_EMMC_LINUX=dragonboard-410c-bootloader-emmc-linux-${BUILD_NUMBER}
+BOOTLOADER_EMMC_ANDROID=dragonboard-410c-bootloader-emmc-android-${BUILD_NUMBER}
+BOOTLOADER_EMMC_AOSP=dragonboard-410c-bootloader-emmc-aosp-${BUILD_NUMBER}
+
+mkdir -p out/${SDCARD_RESCUE} \
+      out/${BOOTLOADER_SD_LINUX} \
+      out/${BOOTLOADER_EMMC_LINUX} \
+      out/${BOOTLOADER_EMMC_ANDROID} \
+      out/${BOOTLOADER_EMMC_AOSP}
 
 # get license.txt file (for Android BSP)
 wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
@@ -57,12 +63,12 @@ cp -a LICENSE \
    dragonboard410c/linux/flashall \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
-   out/dragonboard410c_bootloader_emmc_linux
+   out/${BOOTLOADER_EMMC_LINUX}
 
 # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
 sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/linux/partitions.txt
 sudo sgdisk -bgpt.bin gpt.img
-./mkgpt -d -i gpt.bin -o out/dragonboard410c_bootloader_emmc_linux/gpt_both0.bin
+./mkgpt -d -i gpt.bin -o out/${BOOTLOADER_EMMC_LINUX}/gpt_both0.bin
 
 # bootloader_emmc_android
 cp -a license.txt \
@@ -70,56 +76,50 @@ cp -a license.txt \
    dragonboard410c/android/emmc_appsboot.mbn \
    bootloaders-android-old/sbl1.mbn \
    bootloaders-android/{NON-HLOS.bin,rpm.mbn,tz.mbn,hyp.mbn} \
-   out/dragonboard410c_bootloader_emmc_android
+   out/${BOOTLOADER_EMMC_ANDROID}
 
 # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
 sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/android/partitions.txt
 sudo sgdisk -bgpt.bin gpt.img
-./mkgpt -d -i gpt.bin -o out/dragonboard410c_bootloader_emmc_android/gpt_both0.bin
+./mkgpt -d -i gpt.bin -o out/${BOOTLOADER_EMMC_ANDROID}/gpt_both0.bin
 
 # bootloader_emmc_aosp
 cp -a LICENSE \
    dragonboard410c/aosp/flashall \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
-   out/dragonboard410c_bootloader_emmc_aosp
+   out/${BOOTLOADER_EMMC_AOSP}
 
 # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
 sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/aosp/partitions.txt
 sudo sgdisk -bgpt.bin gpt.img
-./mkgpt -d -i gpt.bin -o out/dragonboard410c_bootloader_emmc_aosp/gpt_both0.bin
+./mkgpt -d -i gpt.bin -o out/${BOOTLOADER_EMMC_AOSP}/gpt_both0.bin
 
 # bootloader_sd_linux
 cp -a LICENSE \
    lk_sd_boot/build-msm8916/emmc_appsboot.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,tz.mbn,hyp.mbn} \
-   out/dragonboard410c_bootloader_sd_linux
+   out/${BOOTLOADER_SD_LINUX}
 
-cp -a bootloaders-linux/sbl1.sd.mbn out/dragonboard410c_bootloader_sd_linux/sbl1.mbn
+cp -a bootloaders-linux/sbl1.sd.mbn out/${BOOTLOADER_SD_LINUX}/sbl1.mbn
 
 # sdcard_rescue
-cp -a LICENSE out/dragonboard410c_sdcard_rescue
+cp -a LICENSE out/${SDCARD_RESCUE}
 sudo ./mksdcard -x -p dragonboard410c/linux/sdrescue.txt \
-     -o out/dragonboard410c_sdcard_rescue/db410c_sd_rescue.img \
+     -o out/${SDCARD_RESCUE}/${SDCARD_RESCUE}.img \
      -i lk_sdrescue/build-msm8916/ \
-     -i out/dragonboard410c_bootloader_sd_linux
-
-# Create MD5SUMS file
-for i in dragonboard410c_sdcard_rescue \
-             dragonboard410c_bootloader_sd_linux \
-             dragonboard410c_bootloader_emmc_linux \
-             dragonboard410c_bootloader_emmc_android \
-             dragonboard410c_bootloader_emmc_aosp ; do
-    (cd out/$i && md5sum * > MD5SUMS.txt)
-done
+     -i out/${BOOTLOADER_SD_LINUX}
 
 # Final preparation of archives for publishing
 mkdir out2
-zip -rj out2/dragonboard410c_sdcard_rescue-${BUILD_NUMBER}.zip out/dragonboard410c_sdcard_rescue
-zip -rj out2/dragonboard410c_bootloader_emmc_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_linux
-zip -rj out2/dragonboard410c_bootloader_emmc_android-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_android
-zip -rj out2/dragonboard410c_bootloader_emmc_aosp-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_emmc_aosp
-zip -rj out2/dragonboard410c_bootloader_sd_linux-${BUILD_NUMBER}.zip out/dragonboard410c_bootloader_sd_linux
+for i in ${SDCARD_RESCUE} \
+         ${BOOTLOADER_SD_LINUX} \
+         ${BOOTLOADER_EMMC_LINUX} \
+         ${BOOTLOADER_EMMC_ANDROID} \
+         ${BOOTLOADER_EMMC_AOSP} ; do
+    (cd out/$i && md5sum * > MD5SUMS.txt)
+    zip -r out2/$i.zip out/$i
+done
 
 # Create MD5SUMS file
 (cd out2 && md5sum * > MD5SUMS.txt)
@@ -131,10 +131,10 @@ h4. Bootloaders for Dragonboard 410c
 
 This page provides the bootloaders packages for the Dragonboard 410c. There are several packages:
 * *sdcard_rescue* : an SD card image that can be used to boot from SD card, and rescue a board when the onboard eMMC is empty or corrupted
-* *bootloader_emmc_linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from onboard eMMC
-* *bootloader_emmc_android* : includes the bootloaders and partition table (GPT) used when booting Android images from onboard eMMC
-* *bootloader_emmc_aosp* : includes the bootloaders and partition table (GPT) used when booting AOSP based images from onboard eMMC
-* *bootloader_sd_linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from SD card
+* *bootloader-emmc-linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from onboard eMMC
+* *bootloader-emmc-android* : includes the bootloaders and partition table (GPT) used when booting Android images from onboard eMMC
+* *bootloader-emmc-aosp* : includes the bootloaders and partition table (GPT) used when booting AOSP based images from onboard eMMC
+* *bootloader-sd-linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from SD card
 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL

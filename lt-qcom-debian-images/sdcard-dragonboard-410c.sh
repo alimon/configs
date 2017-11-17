@@ -13,17 +13,15 @@ cleanup_exit()
     sudo git clean -fdxq
 }
 
-VERSION=$(cat build-version)
-
 # Create boot image for SD boot
 mkbootimg \
     --kernel Image.gz+dtb \
     --ramdisk out/initrd.img-* \
-    --output out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
+    --output out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img \
     --pagesize "${BOOTIMG_PAGESIZE}" \
     --base "0x80000000" \
     --cmdline "root=/dev/mmcblk1p9 rw rootwait console=${SERIAL_CONSOLE},115200n8"
-gzip -9 out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
+gzip -9 out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img
 
 rm -rf db-boot-tools
 git clone --depth 1 -b master https://git.linaro.org/landing-teams/working/qualcomm/db-boot-tools.git
@@ -37,7 +35,7 @@ wget --progress=dot -e dotbytes=2M \
      http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
 
 unzip -d out dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
-cp ${WORKSPACE}/out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz out/boot.img.gz
+cp ${WORKSPACE}/out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/boot.img.gz
 gunzip out/boot.img.gz
 
 for rootfs in ${SDCARD}; do
@@ -45,13 +43,16 @@ for rootfs in ${SDCARD}; do
     rootfs=$(echo $rootfs | cut -f1 -d,)
 
     rm -f out/rootfs.img out/rootfs.img.gz
-    cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}.img.gz out/rootfs.img.gz
+    cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/rootfs.img.gz
     gunzip out/rootfs.img.gz
 
-    sudo ./mksdcard -p dragonboard410c/linux/sdcard.txt -s $sz -i out -o dragonboard410c_sdcard_${rootfs}_debian-${BUILD_NUMBER}.img
+    SDCARD=${PLATFORM_NAME}-sdcard-${rootfs}-${OS_FLAVOR}-${BUILD_NUMBER}
+    mkdir -p ${SDCARD}
+    sudo ./mksdcard -p dragonboard410c/linux/sdcard.txt -s $sz -i out -o ${SDCARD}/${SDCARD}.img
 
     # create archive for publishing
-    zip -j ${WORKSPACE}/out/dragonboard410c_sdcard_${rootfs}_debian-${BUILD_NUMBER}.zip dragonboard410c_sdcard_${rootfs}_debian-${BUILD_NUMBER}.img out/LICENSE
+    cp out/LICENSE ${SDCARD}/
+    zip ${WORKSPACE}/out/${SDCARD}.zip ${SDCARD}
 done
 
 cd ..

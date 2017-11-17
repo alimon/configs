@@ -32,8 +32,10 @@ for lk in lk_sdrescue lk_ufs_boot; do
     cd -
 done
 
-mkdir -p out/dragonboard820c_sdcard_rescue \
-      out/dragonboard820c_bootloader_ufs_linux
+SDCARD_RESCUE=dragonboard-820c-sdcard-rescue-${BUILD_NUMBER}
+BOOTLOADER_UFS_LINUX=dragonboard-820c-bootloader-ufs-linux-${BUILD_NUMBER}
+
+mkdir -p out/${SDCARD_RESCUE} out/${BOOTLOADER_UFS_LINUX}
 
 # get LICENSE file (for Linux BSP)
 unzip -j $(basename ${QCOM_LINUX_FIRMWARE}) "*/LICENSE"
@@ -46,25 +48,23 @@ cp -a LICENSE \
    lk_ufs_boot/build-msm8996/emmc_appsboot.mbn \
    bootloaders-linux/gpt_both*.bin \
    bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0_8096.bin,tz.mbn,xbl.elf} \
-   out/dragonboard820c_bootloader_ufs_linux
+   out/${BOOTLOADER_UFS_LINUX}
 
 # sdcard_rescue
-cp -a LICENSE out/dragonboard820c_sdcard_rescue
+cp -a LICENSE out/${SDCARD_RESCUE}
 sudo ./mksdcard -x -p dragonboard820c/sdrescue.txt \
-     -o out/dragonboard820c_sdcard_rescue/db820c_sd_rescue.img \
+     -o out/${SDCARD_RESCUE}/${SDCARD_RESCUE}.img \
      -i lk_sdrescue/build-msm8996/ \
      -i bootloaders-sdboot/ \
      -i bootloaders-linux/
 
-# Create MD5SUMS file
-for i in out/dragonboard820c_*; do
-    (cd $i && md5sum * > MD5SUMS.txt)
-done
-
 # Final preparation of archives for publishing
 mkdir out2
-zip -rj out2/dragonboard820c_sdcard_rescue-${BUILD_NUMBER}.zip out/dragonboard820c_sdcard_rescue
-zip -rj out2/dragonboard820c_bootloader_ufs_linux-${BUILD_NUMBER}.zip out/dragonboard820c_bootloader_ufs_linux
+for i in ${SDCARD_RESCUE} \
+         ${BOOTLOADER_UFS_LINUX} ; do
+    (cd $i && md5sum * > MD5SUMS.txt)
+    zip -r out2/$i.zip out/$i
+done
 
 # Create MD5SUMS file
 (cd out2 && md5sum * > MD5SUMS.txt)

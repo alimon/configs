@@ -13,17 +13,15 @@ cleanup_exit()
     sudo git clean -fdxq
 }
 
-VERSION=$(cat build-version)
-
 # Create boot image for SD installer
 mkbootimg \
     --kernel Image.gz+dtb \
     --ramdisk out/initrd.img-* \
-    --output out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img \
+    --output out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img \
     --pagesize "${BOOTIMG_PAGESIZE}" \
     --base "0x80000000" \
     --cmdline "root=/dev/mmcblk1p8 rw rootwait console=${SERIAL_CONSOLE},115200n8"
-gzip -9 out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img
+gzip -9 out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img
 
 rm -rf db-boot-tools
 git clone --depth 1 -b master https://git.linaro.org/landing-teams/working/qualcomm/db-boot-tools.git
@@ -39,20 +37,20 @@ wget --progress=dot -e dotbytes=2M \
      http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_emmc_linux-${BL_BUILD_NUMBER}.zip
 
 unzip -d out dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
-cp ${WORKSPACE}/out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz out/boot.img.gz
-cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-installer-${PLATFORM_NAME}-${VERSION}.img.gz out/rootfs.img.gz
+cp ${WORKSPACE}/out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/boot.img.gz
+cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-installer-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/rootfs.img.gz
 gunzip out/{boot,rootfs}.img.gz
 
 mkdir -p os/debian
-cp ${WORKSPACE}/out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${VERSION}.img.gz os/debian/boot.img.gz
-cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${VERSION}.img.gz os/debian/rootfs.img.gz
+cp ${WORKSPACE}/out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz os/debian/boot.img.gz
+cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz os/debian/rootfs.img.gz
 gunzip os/debian/{boot,rootfs}.img.gz
 
 cat << EOF >> os/debian/os.json
 {
 "name": "Linaro Linux Desktop for DragonBoard 410c - Build #${BUILD_NUMBER}",
 "url": "http://builds.96boards.org/releases/dragonboard410c",
-"version": "${VERSION}",
+"version": "${BUILD_NUMBER}",
 "release_date": "`date +%Y-%m-%d`",
 "description": "Linaro Linux with LXQt desktop based on Debian (${OS_FLAVOUR}) for DragonBoard 410c"
 }
@@ -70,14 +68,18 @@ size_os=$(($size_os + 200*1024))
 size_img=$(($size_os + 1024*1024 + 300*1024))
 
 # create OS image
+SDCARD=${PLATFORM_NAME}-sdcard-installer-${OS_FLAVOR}-${BUILD_NUMBER}
+mkdir -p ${SDCARD}
+
 sudo rm -f out/os.img
 sudo mkfs.fat -a -F32 -n "OS" -C out/os.img $size_os
 mkdir -p mnt
 sudo mount -o loop out/os.img mnt
 sudo cp -r os/* mnt/
 sudo umount mnt
-sudo ./mksdcard -p dragonboard410c/linux/installer.txt -s $size_img -i out -o db410c_sd_install_debian.img
+sudo ./mksdcard -p dragonboard410c/linux/installer.txt -s $size_img -i out -o ${SDCARD}/${SDCARD}.img
 
 # create archive for publishing
-zip -j ${WORKSPACE}/out/dragonboard410c_sdcard_install_debian-${BUILD_NUMBER}.zip db410c_sd_install_debian.img out/LICENSE
+cp out/LICENSE ${SDCARD}/
+zip ${WORKSPACE}/out/${SDCARD}.zip ${SDCARD}
 cd ..
