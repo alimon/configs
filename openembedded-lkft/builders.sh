@@ -88,7 +88,7 @@ PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
 
 case "${KERNEL_RECIPE}" in
-  linux-hikey-aosp|linux-hikey-stable*|linux-generic-android-common-o*|linux-generic-lsk*|linux-generic-stable*)
+  linux-hikey-aosp|linux-generic-android-common-o*|linux-generic-lsk*|linux-generic-stable*)
     cat << EOF >> ${distro_conf}
 PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
 EOF
@@ -255,16 +255,16 @@ EOF
 
 # FIXME handle properly the publishing URL
 case "${KERNEL_RECIPE}" in
-  linux-hikey-stable)
+  linux-generic-stable)
     PUB_DEST="linux-stable-${KERNEL_VERSION}"
     ;;
-  linux-hikey-stable-rc)
+  linux-generic-stable-rc)
     PUB_DEST="linux-stable-rc-${KERNEL_VERSION}"
     ;;
-  linux-hikey-mainline)
+  linux-generic-mainline)
     PUB_DEST="linux-mainline"
     ;;
-  linux-hikey-next)
+  linux-generic-next)
     PUB_DEST="linux-next"
     ;;
   linux-hikey-lts)
