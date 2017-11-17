@@ -46,13 +46,13 @@ for rootfs in ${SDCARD}; do
     cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/rootfs.img.gz
     gunzip out/rootfs.img.gz
 
-    SDCARD=${PLATFORM_NAME}-sdcard-${rootfs}-${OS_FLAVOR}-${BUILD_NUMBER}
+    SDCARD=${PLATFORM_NAME}-sdcard-${rootfs}-${OS_FLAVOUR}-${BUILD_NUMBER}
     mkdir -p ${SDCARD}
     sudo ./mksdcard -p dragonboard410c/linux/sdcard.txt -s $sz -i out -o ${SDCARD}/${SDCARD}.img
 
     # create archive for publishing
     cp out/LICENSE ${SDCARD}/
-    zip ${WORKSPACE}/out/${SDCARD}.zip ${SDCARD}
+    zip -r ${WORKSPACE}/out/${SDCARD}.zip ${SDCARD}
 done
 
 cd ..

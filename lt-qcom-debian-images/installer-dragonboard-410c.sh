@@ -68,7 +68,7 @@ size_os=$(($size_os + 200*1024))
 size_img=$(($size_os + 1024*1024 + 300*1024))
 
 # create OS image
-SDCARD=${PLATFORM_NAME}-sdcard-installer-${OS_FLAVOR}-${BUILD_NUMBER}
+SDCARD=${PLATFORM_NAME}-sdcard-installer-${OS_FLAVOUR}-${BUILD_NUMBER}
 mkdir -p ${SDCARD}
 
 sudo rm -f out/os.img
@@ -81,5 +81,5 @@ sudo ./mksdcard -p dragonboard410c/linux/installer.txt -s $size_img -i out -o ${
 
 # create archive for publishing
 cp out/LICENSE ${SDCARD}/
-zip ${WORKSPACE}/out/${SDCARD}.zip ${SDCARD}
+zip -r ${WORKSPACE}/out/${SDCARD}.zip ${SDCARD}
 cd ..
