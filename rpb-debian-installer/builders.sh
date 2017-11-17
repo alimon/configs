@@ -2,6 +2,13 @@
 set -ex
 
 sudo cp local.list /etc/apt/sources.list.d/
+cat > linaro.pref <<EOF
+Package: *
+Pin: release n=stretch-backports
+Pin-Priority: 500
+EOF
+sudo cp linaro.pref /etc/apt/preferences.d/
+
 sudo apt-get update -q
 
 # Find kernel abi
