@@ -1,0 +1,28 @@
+- test:
+    namespace: dragonboard410c
+    name: qcomlt-wifi
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/wlan-smoke/wlan-smoke.yaml
+      name: linux-wlan-smoke
+
+device_type: ${DEVICE_TYPE}
+job_name: lt-qcom-${OS_INFO}-wifi-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 90
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom/lava-job-definitions/dragonboard-410c/template-wifi.yaml
+
+
