@@ -1,87 +1,25 @@
-- scm:
-    name: oe-core
-    scm:
-        - git:
-            url: https://github.com/openembedded/openembedded-core
-            refspec: +refs/heads/*:refs/remotes/oe-core/*
-            name: oe-core
-            branches:
-                - remotes/oe-core/morty
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-- scm:
-    name: meta-oe
-    scm:
-        - git:
-            url: https://github.com/openembedded/meta-openembedded
-            refspec: +refs/heads/*:refs/remotes/meta-oe/*
-            name: meta-oe
-            branches:
-                - remotes/meta-oe/morty
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-- scm:
-    name: meta-qcom
-    scm:
-        - git:
-            url: https://github.com/ndechesne/meta-qcom
-            refspec: +refs/heads/*:refs/remotes/meta-qcom/*
-            name: meta-qcom
-            branches:
-                - remotes/meta-qcom/morty
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-- scm:
-    name: meta-rpb
-    scm:
-        - git:
-            url: https://github.com/96boards/meta-rpb
-            refspec: +refs/heads/*:refs/remotes/meta-rpb/*
-            name: meta-rpb
-            branches:
-                - remotes/meta-rpb/morty
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-- scm:
-    name: meta-backports
-    scm:
-        - git:
-            url: https://git.linaro.org/openembedded/meta-backports
-            refspec: +refs/heads/*:refs/remotes/meta-backports/*
-            name: meta-backports
-            branches:
-                - remotes/meta-backports/morty
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
 - job:
     name: trigger-lt-qcom-openembedded-images
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
                 - job-read
                 - job-extended-read
-                - job-workspace
+        - build-discarder:
+            days-to-keep: 1
+            num-to-keep: 30
+            artifact-num-to-keep: 30
+    parameters:
+        - string:
+            name: FORCE_TRIGGER
+            default: ''
     disabled: false
     node: master
     display-name: 'Trigger for Qualcomm OE builds'
-    scm:
-        - oe-core
-        - meta-oe
-        - meta-qcom
-        - meta-rpb
-        - meta-backports
     triggers:
-        - pollscm: 'H/5 * * * *'
+        - timed: 'H/5 * * * *'
     wrappers:
         - timestamps
     builders:
@@ -90,10 +28,32 @@
 
             set -e
 
-            printf "${GIT_URL} ${GIT_BRANCH} ${GIT_COMMIT}\n"
-            printf "${GIT_URL_1} ${GIT_BRANCH_1} ${GIT_COMMIT_1}\n"
-            printf "${GIT_URL_2} ${GIT_BRANCH_2} ${GIT_COMMIT_2}\n"
-            printf "${GIT_URL_3} ${GIT_BRANCH_3} ${GIT_COMMIT_3}\n"
-            printf "${GIT_URL_4} ${GIT_BRANCH_4} ${GIT_COMMIT_4}\n"
-        - trigger-builds:
-            - project: 'lt-qcom-openembedded-rpb-morty'
+            GIT_BRANCH="refs/heads/morty"
+            git ls-remote --heads https://github.com/openembedded/openembedded-core ${GIT_BRANCH} > git-polling.txt
+            git ls-remote --heads https://github.com/openembedded/meta-openembedded ${GIT_BRANCH} >> git-polling.txt
+            git ls-remote --heads https://github.com/ndechesne/meta-qcom  ${GIT_BRANCH} >> git-polling.txt
+            git ls-remote --heads https://github.com/96boards/meta-rpb ${GIT_BRANCH} >> git-polling.txt
+            git ls-remote --heads https://git.linaro.org/openembedded/meta-backports ${GIT_BRANCH} >> git-polling.txt
+
+            rm -f git-changes-detected
+            # Check the file existence
+            if wget -q --spider "${JOB_URL}lastSuccessfulBuild/artifact/git-polling.txt"; then
+              # Download the file
+              wget -q "${JOB_URL}lastSuccessfulBuild/artifact/git-polling.txt" -O git-polling-latest.txt
+              # Compare latest git polling with current
+              cmp -s git-polling-latest.txt git-polling.txt || touch git-changes-detected
+            else
+              echo "Remote file does not exist. Skip comparison and trigger."
+            fi
+
+            # Allow to force manually the build
+            [ -z "${FORCE_TRIGGER}" ] || touch git-changes-detected
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: git-changes-detected
+            steps:
+                - trigger-builds:
+                    - project: 'lt-qcom-openembedded-rpb-morty'
+    publishers:
+        - archive:
+            artifacts: 'git-polling.txt'
