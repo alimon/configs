@@ -9,13 +9,15 @@ set -ex
 
 case "${QA_SERVER_PROJECT}" in
   linux-mainline-*)
-    export KSELFTESTS_URL=${KSELFTESTS_MAINLINE_URL}
-    export KSELFTESTS_VERSION=${KSELFTESTS_MAINLINE_VERSION}
+    source /srv/oe/build/lkftmetadata/packages/*/${KERNEL_RECIPE}/metadata
+    export KSELFTESTS_URL=${LINUX_GENERIC_MAINLINE_URL}
+    export KSELFTESTS_VERSION=${LINUX_GENERIC_MAINLINE_VERSION}
     export KSELFTESTS_REVISION=${KERNEL_COMMIT}
     ;;
   linux-next-*)
-    export KSELFTESTS_URL=${KSELFTESTS_NEXT_URL}
-    export KSELFTESTS_VERSION=${KSELFTESTS_NEXT_VERSION}
+    source /srv/oe/build/lkftmetadata/packages/*/${KERNEL_RECIPE}/metadata
+    export KSELFTESTS_URL=${LINUX_GENERIC_NEXT_URL}
+    export KSELFTESTS_VERSION=${LINUX_GENERIC_NEXT_VERSION}
     export KSELFTESTS_REVISION=${KERNEL_COMMIT}
     ;;
   *)
