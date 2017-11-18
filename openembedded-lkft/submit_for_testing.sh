@@ -6,9 +6,19 @@ set -ex
 [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="medium"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
-[ -z "${KSELFTESTS_URL}" ] && export KSELFTESTS_URL=${KSELFTESTS_MAINLINE_URL}
-[ -z "${KSELFTESTS_VERSION}" ] && export KSELFTESTS_URL=${KSELFTESTS_MAINLINE_VERSION}
-[ -z "${KSELFTESTS_REVISION}" ] && export KSELFTESTS_URL=${KSELFTESTS_MAINLINE_VERSION}
+
+case "${QA_SERVER_PROJECT}" in
+  linux-mainline-*)
+    KSELFTESTS_URL=${KSELFTESTS_MAINLINE_URL}
+    KSELFTESTS_VERSION=${KSELFTESTS_MAINLINE_VERSION}
+    KSELFTESTS_REVISION=${KERNEL_COMMIT}
+    ;;
+  linux-next-*)
+    KSELFTESTS_URL=${KSELFTESTS_NEXT_URL}
+    KSELFTESTS_VERSION=${KSELFTESTS_NEXT_VERSION}
+    KSELFTESTS_REVISION=${KERNEL_COMMIT}
+    ;;
+esac
 
 # Override the default skip list
 # FIXME envinject plugin has a regression fixed in 2.1.4

@@ -55,6 +55,9 @@
             name: KSELFTEST_SKIPLIST
             default: 'test_verifier test_tag test_maps test_lru_map test_lpm_map test_progs test_align test_kmod.sh ftracetest run.sh run_fuse_test.sh run_vmtests seccomp_bpf pstore_tests breakpoint_test_arm64 raw_skew'
         - string:
+            name: KSELFTEST_PATH
+            default: '/opt/kselftests/default-in-kernel/'
+        - string:
             name: SKIP_LAVA
             default: ''
     disabled: false
@@ -113,10 +116,6 @@
             esac
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
-            echo "KSELFTESTS_VERSION=${MAKE_KERNELVERSION}" >> device_type_parameters
-            echo "KSELFTESTS_URL=${KERNEL_REPO}" >> device_type_parameters
-            echo "KSELFTESTS_REVISION=${KERNEL_COMMIT}" >> device_type_parameters
-            echo "KSELFTEST_PATH=/opt/kselftests/default-in-kernel/" >> device_type_parameters
             echo "#${BUILD_NUMBER}-${SRCREV_kernel:0:8}" > ${WORKSPACE}/version.txt
         - build-name-setter:
             name: 'version.txt'
