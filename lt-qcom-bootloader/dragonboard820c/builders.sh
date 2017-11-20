@@ -59,18 +59,18 @@ sudo ./mksdcard -x -p dragonboard820c/sdrescue.txt \
      -i bootloaders-linux/
 
 # Final preparation of archives for publishing
-mkdir out2
+mkdir ${WORKSPACE}/out2
 for i in ${SDCARD_RESCUE} \
          ${BOOTLOADER_UFS_LINUX} ; do
     (cd out/$i && md5sum * > MD5SUMS.txt)
-    zip -r out2/$i.zip out/$i
+    (cd out && zip -r ${WORKSPACE}/out2/$i.zip $i)
 done
 
 # Create MD5SUMS file
-(cd out2 && md5sum * > MD5SUMS.txt)
+(cd ${WORKSPACE}/out2 && md5sum * > MD5SUMS.txt)
 
 # Build information
-cat > out2/HEADER.textile << EOF
+cat > ${WORKSPACE}/out2/HEADER.textile << EOF
 
 h4. Bootloaders for Dragonboard 820c
 
@@ -94,4 +94,4 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python ${HOME}/bin/linaro-cp.py \
      --server ${PUBLISH_SERVER} \
      --link-latest \
-     out2 snapshots/dragonboard820c/linaro/rescue/${BUILD_NUMBER}
+     ${WORKSPACE}/out2 snapshots/dragonboard820c/linaro/rescue/${BUILD_NUMBER}
