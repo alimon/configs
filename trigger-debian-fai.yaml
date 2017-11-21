@@ -1,0 +1,40 @@
+- job:
+    name: trigger-debian-fai
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-build
+                - job-cancel
+    disabled: false
+    node: master
+    display-name: 'Trigger to monitor FAI changes'
+    scm:
+        - git:
+            url: https://git.linaro.org/git/ci/fai.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'lt-qcom-debian-images-dragonboard410c'
+                - 'lt-qcom-debian-images-dragonboard820c'
