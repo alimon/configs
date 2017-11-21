@@ -6,7 +6,7 @@ git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linu
 export PATH=${PATH}:${PWD}/aarch64-linux-android-4.9/bin/
 
 make ARCH=arm64 hikey_defconfig
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) Image-dtb
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) -s Image-dtb
 
 wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
 wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
