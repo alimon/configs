@@ -66,18 +66,6 @@
     builders:
         - shell: |
             #!/bin/bash
-            # set kselftest skiplist depending on the kernel used
-            case ${BUILD_NAME} in
-              4.9)
-                export KSELFTEST_SKIPLIST="ftracetest"
-                ;;
-              linux-lt-4.4)
-                export KSELFTEST_SKIPLIST="step_after_suspend_test"
-                ;;
-              *)
-                export KSELFTEST_SKIPLIST=""
-                ;;
-            esac
 
             export SNAPSHOTS_BASE_URL="http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/${BUILD_NAME}/latest/"
 

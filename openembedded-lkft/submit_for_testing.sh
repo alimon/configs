@@ -2,7 +2,6 @@
 
 set -ex
 
-[ -z "${KSELFTEST_SKIPLIST}" ] && export KSELFTEST_SKIPLIST=""
 [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="medium"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
@@ -26,14 +25,6 @@ case "${QA_SERVER_PROJECT}" in
     export KSELFTESTS_REVISION=${KSELFTESTS_MAINLINE_VERSION}
     ;;
 esac
-
-# Override the default skip list
-# FIXME envinject plugin has a regression fixed in 2.1.4
-# https://issues.jenkins-ci.org/browse/JENKINS-26583
-# https://bugs.linaro.org/show_bug.cgi?id=3297
-if [ "${DEVICE_TYPE}" = "x15" ]; then
-  export KSELFTEST_SKIPLIST="${KSELFTEST_SKIPLIST} ftracetest main.sh step_after_suspend_test"
-fi
 
 if [ ! -z "${KERNEL_DESCRIBE}" ]; then
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
