@@ -62,6 +62,14 @@ cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
+# record changes since last build, if available
+MANIFEST_URL=${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml
+if wget -q ${MANIFEST_URL} -O pinned-manifest-latest.xml; then
+    repo diffmanifests ${PWD}/pinned-manifest-latest.xml ${PWD}/pinned-manifest.xml > manifest-changes.txt
+else
+    echo "latest build published does not have pinned-manifest.xml, skipping diff report"
+fi
+
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
@@ -150,6 +158,18 @@ Build description:
 * Manifest branch: ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/ARMmbed/mbl-manifest/commit/${MANIFEST_COMMIT}
 EOF
+
+if [ -e "/srv/oe/manifest-changes.txt" ]; then
+  # the space after pre.. tag is on purpose
+  cat > ${DEPLOY_DIR_IMAGE}/README.textile << EOF
+
+h4. Manifest changes
+
+pre.. 
+EOF
+  cat /srv/oe/manifest-changes.txt >> ${DEPLOY_DIR_IMAGE}/README.textile
+  mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE}
+fi
 
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
