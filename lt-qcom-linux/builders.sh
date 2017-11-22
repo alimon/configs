@@ -8,11 +8,14 @@ echo "KERNEL_BRANCH: ${KERNEL_BRANCH}"
 echo "GIT_COMMIT: ${GIT_COMMIT}"
 echo "GIT_BRANCH: ${GIT_BRANCH}"
 
-toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
+toolchain_url_arm=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/arm-linux-gnueabihf/gcc-linaro-6.3.1-2017.02-x86_64_arm-linux-gnueabihf.tar.xz
+toolchain_url_arm64=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
+toolchain_url=toolchain_url_$ARCH
+toolchain_url=${!toolchain_url}
+
 tcdir=${HOME}/srv/toolchain
 tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
 
-export ARCH=arm64
 export CROSS_COMPILE="ccache $(basename $(ls -1 ${tcbindir}/*-gcc) gcc)"
 export PATH=${tcbindir}:$PATH
 
@@ -25,11 +28,12 @@ PKGVERSION=$(echo ${KERNEL_VERSION} | sed -e 's/\.0-rc/\.0~rc/')$(echo ${KERNEL_
 
 cd ${WORKSPACE}/linux
 
-make ${KERNEL_CONFIGS}
+KERNEL_CONFIGS=KERNEL_CONFIGS_$ARCH
+make ${!KERNEL_CONFIGS}
 make savedefconfig
 cp defconfig arch/${ARCH}/configs
 
-make KERNELRELEASE=${SRCVERSION}-qcomlt \
+make KERNELRELEASE=${SRCVERSION}-qcomlt-${ARCH} \
      KDEB_PKGVERSION=${PKGVERSION}-${BUILD_NUMBER} \
      KDEB_CHANGELOG_DIST=${KDEB_CHANGELOG_DIST} \
      DEBEMAIL="dragonboard@lists.96boards.org" \

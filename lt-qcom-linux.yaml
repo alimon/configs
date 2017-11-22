@@ -19,8 +19,11 @@
             name: KERNEL_REPO_URL
             default: 'https://git.linaro.org/landing-teams/working/qualcomm/kernel.git'
         - string:
-            name: KERNEL_CONFIGS
+            name: KERNEL_CONFIGS_arm64
             default: 'defconfig distro.config'
+        - string:
+            name: KERNEL_CONFIGS_arm
+            default: 'multi_v7_defconfig distro.config'
         - string:
             name: KERNEL_DESCRIBE
         - string:
@@ -33,6 +36,15 @@
         - string:
             name: KDEB_CHANGELOG_DIST
             default: 'sid'
+    axes:
+        - axis:
+            type: user-defined
+            name: ARCH
+            values:
+                - arm
+                - arm64
+    execution-strategy:
+        sequential: false
     disabled: false
     node: docker-jessie-amd64
     display-name: 'Qualcomm LT Linux kernel build'
@@ -63,6 +75,7 @@
         - email-ext:
             recipients: 'nicolas.dechesne@linaro.org anibal.limon@linaro.org'
             always: true
+            matrix-trigger: only-parent
         - archive:
             artifacts: '*.changes, *.dsc, *.gz'
         - trigger-parameterized-builds:
