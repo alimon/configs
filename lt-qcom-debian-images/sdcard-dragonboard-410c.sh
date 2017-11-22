@@ -32,9 +32,9 @@ git log -1
 # Get SD bootloader package
 BL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-bootloader-dragonboard410c/lastSuccessfulBuild/buildNumber`
 wget --progress=dot -e dotbytes=2M \
-     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
+     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard-410c-bootloader-sd-linux-${BL_BUILD_NUMBER}.zip
 
-unzip -d out dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
+unzip -jd out dragonboard-410c-bootloader-sd-linux-${BL_BUILD_NUMBER}.zip
 cp ${WORKSPACE}/out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/boot.img.gz
 gunzip out/boot.img.gz
 

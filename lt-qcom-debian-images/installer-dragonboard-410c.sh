@@ -32,11 +32,11 @@ git log -1
 # Get SD and EMMC bootloader package
 BL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-bootloader-dragonboard410c/lastSuccessfulBuild/buildNumber`
 wget --progress=dot -e dotbytes=2M \
-     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
+     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard-410c-bootloader-sd-linux-${BL_BUILD_NUMBER}.zip
 wget --progress=dot -e dotbytes=2M \
-     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard410c_bootloader_emmc_linux-${BL_BUILD_NUMBER}.zip
+     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard-410c-bootloader-emmc-linux-${BL_BUILD_NUMBER}.zip
 
-unzip -d out dragonboard410c_bootloader_sd_linux-${BL_BUILD_NUMBER}.zip
+unzip -jd out dragonboard-410c-bootloader-sd-linux-${BL_BUILD_NUMBER}.zip
 cp ${WORKSPACE}/out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/boot.img.gz
 cp ${WORKSPACE}/out/${VENDOR}-${OS_FLAVOUR}-installer-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/rootfs.img.gz
 gunzip out/{boot,rootfs}.img.gz
@@ -58,7 +58,7 @@ EOF
 
 cp mksdcard flash os/
 cp dragonboard410c/linux/partitions.txt os/debian
-unzip -d os/debian dragonboard410c_bootloader_emmc_linux-${BL_BUILD_NUMBER}.zip
+unzip -jd os/debian dragonboard-410c-bootloader-emmc-linux-${BL_BUILD_NUMBER}.zip
 
 # get size of OS partition
 size_os=$(du -sk os | cut -f1)
