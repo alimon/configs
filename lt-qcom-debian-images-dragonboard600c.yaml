@@ -51,6 +51,9 @@
         - string:
             name: QCOM_FIRMWARE_MD5
             default: '0903e9f656d3cea005ecc8e26f1243b2'
+        - string:
+            name: PUB_DEST
+            default: "snapshots/sd-600eval/${VENDOR}/debian/${BUILD_NUMBER}"
     disabled: false
     node: docker-jessie-amd64
     display-name: 'Qualcomm Debian based images for Snapdragon 600 based 96boards'
@@ -73,42 +76,12 @@
             !include-raw: lt-qcom-debian-images/builders-dragonboard600c.sh
         - linaro-publish-token:
             host: builds.96boards.org
-        - shell: |
-            #!/bin/bash
-            set -ex
-            trap cleanup_exit INT TERM EXIT
-            cleanup_exit()
-            {
-                # cleanup here, only in case of error in this script
-                # normal cleanup deferred to later
-                [ $? = 0 ] && exit;
-                sudo git clean -fdxq
-            }
-
-            # Create MD5SUMS file
-            (cd out && md5sum * > MD5SUMS.txt)
-
-            wget -q ${BUILD_URL}consoleText -O out/build-log-${JOB_NAME}-${BUILD_NUMBER}.txt
-
-            # Publish to snapshots
-            test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py \
-                 --server ${PUBLISH_SERVER} \
-                 --link-latest \
-                 out snapshots/sd-600eval/${VENDOR}/debian/${BUILD_NUMBER}
-
+        - shell:
+            !include-raw: lt-qcom-debian-images/publishers.sh
     publishers:
         - groovy-postbuild:
-            script: |
-                def build_number = manager.build.number
-                def vendor = manager.build.buildVariables.get('VENDOR')
-                def url = "http://builds.96boards.org/snapshots/sd-600eval/${vendor}/debian/${build_number}/"
-                def desc = "&nbsp;<a href='${url}'>Build location<t/a>"
-
-                if (manager.build.result == hudson.model.Result.SUCCESS) {
-                  manager.build.setDescription(desc)
-                }
+            script:
+                !include-raw: lt-qcom-debian-images/postbuild.groovy
         - email:
             recipients: 'fathi.boudra@linaro.org'
         - email-ext:
