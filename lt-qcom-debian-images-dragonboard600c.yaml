@@ -16,26 +16,23 @@
                 - job-cancel
     parameters:
         - string:
-            name: BUNDLE_STREAM_NAME
-            default: '/public/team/linaro/lt-qualcomm/'
-        - string:
-            name: DEVICE_TYPE
-            default: 'ifc6410'
-        - string:
-            name: LAVA_SERVER
-            default: 'validation.linaro.org/RPC2/'
-        - string:
             name: VENDOR
             default: 'linaro'
         - string:
             name: OS_FLAVOUR
-            default: 'stretch'
+            default: 'buster'
         - string:
             name: PLATFORM_NAME
-            default: 'qcom-snapdragon'
+            default: 'dragonboard-600c'
+        - string:
+            name: FAI_BOARD_CLASS
+            default: 'DB600C'
         - string:
             name: ROOTFS
-            default: 'developer,armhf,1800M alip,armhf,2500M'
+            default: 'developer,1800M alip,3G'
+        - string:
+            name: ROOTFS_PARTLABEL
+            default: 'userdata'
         - string:
             name: DTBS
             default: 'qcom-apq8064-arrow-sd-600eval.dtb'
@@ -43,27 +40,33 @@
             name: SERIAL_CONSOLE
             default: 'ttyMSM0'
         - string:
-            name: KERNEL_BRANCH
-            default: 'release/qcomlt-4.9'
-        - string:
-            name: QCOM_FIRMWARE
-            default: 'http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160614/SD_600eval-linux_proprietary_firmware-v1.0.zip'
-        - string:
-            name: QCOM_FIRMWARE_MD5
-            default: '0903e9f656d3cea005ecc8e26f1243b2'
+            name: BOOTIMG_PAGESIZE
+            default: '2048'
         - string:
             name: PUB_DEST
-            default: "snapshots/sd-600eval/${VENDOR}/debian/${BUILD_NUMBER}"
+            default: "snapshots/dragonboard600c/${VENDOR}/debian/${BUILD_NUMBER}"
+        - string:
+            name: BOOTIMG_BASE
+            default: '0x80000000'
+        - string:
+            name: BOOTIMG_KERNEL_OFFSET
+            default: '0x208000'
+        - string:
+            name: BOOTIMG_RAMDISK_OFFSET
+            default: '0x3000000'
+        - string:
+            name: BOOTIMG_TAGS_OFFSET
+            default: '0x200100'
     disabled: false
-    node: docker-jessie-amd64
-    display-name: 'Qualcomm Debian based images for Snapdragon 600 based 96boards'
+    node: docker-stretch-armhf
+    display-name: 'Qualcomm Debian based images for Snapdragon 600'
     scm:
         - git:
-            url: https://git.linaro.org/landing-teams/working/qualcomm/kernel.git
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            url: https://git.linaro.org/ci/fai.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
-                - refs/heads/${KERNEL_BRANCH}
+                - refs/heads/master
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -73,7 +76,7 @@
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell:
-            !include-raw: lt-qcom-debian-images/builders-dragonboard600c.sh
+            !include-raw: lt-qcom-debian-images/builders-fai.sh
         - linaro-publish-token:
             host: builds.96boards.org
         - shell:
