@@ -1,6 +1,6 @@
 - job:
     name: lt-qcom-linux
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     logrotate:
         daysToKeep: 30
@@ -43,10 +43,15 @@
             values:
                 - arm
                 - arm64
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-amd64
     execution-strategy:
         sequential: false
     disabled: false
-    node: docker-jessie-amd64
+    node: master
     display-name: 'Qualcomm LT Linux kernel build'
     scm:
         - git:
