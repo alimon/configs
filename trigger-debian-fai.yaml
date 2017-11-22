@@ -33,7 +33,10 @@
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
-    builders:
-        - trigger-builds:
-            - project: 'lt-qcom-debian-images-dragonboard410c'
-            - project: 'lt-qcom-debian-images-dragonboard820c'
+    publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'lt-qcom-debian-images-dragonboard410c'
+                - 'lt-qcom-debian-images-dragonboard820c'
+              condition: SUCCESS
+              trigger-with-no-params: true
