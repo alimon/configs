@@ -72,6 +72,9 @@ mkbootimg \
     --ramdisk out/initrd.img-* \
     --output out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img \
     --pagesize "${BOOTIMG_PAGESIZE}" \
-    --base "0x80000000" \
+    --base "${BOOTIMG_BASE}" \
+    --kernel_offset "${BOOTIMG_KERNEL_OFFSET}" \
+    --ramdisk_offset "${BOOTIMG_RAMDISK_OFFSET}" \
+    --tags_offset "${BOOTIMG_TAGS_OFFSET}" \
     --cmdline "root=/dev/disk/by-partlabel/${ROOTFS_PARTLABEL} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
 pigz -9 out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img
