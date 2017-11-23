@@ -175,4 +175,5 @@ fi
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+MANIFEST_COMMIT=${MANIFEST_COMMIT}
 EOF

@@ -8,8 +8,6 @@
         artifactNumToKeep: 1
     properties:
         - authorization:
-            anonymous:
-                - job-workspace
             linaro:
                 - job-read
             mbl-ci-users:
@@ -29,7 +27,16 @@
             default: 'openembedded/mbl/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
         - string:
             name: LAVA_SERVER
-            default: 'validation.linaro.org/RPC2/'
+            default: 'https://validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'mbl'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'mbl'
     disabled: false
     node: master
     display-name: 'MBL - OpenEmbedded (master)'
@@ -63,6 +70,10 @@
         - ssh-agent-credentials:
             users:
                 - 'MBL'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
     builders:
         - shell:
             !include-raw: mbl-openembedded/builders.sh
@@ -93,11 +104,10 @@
               $(dirname ${PUB_DEST})
         - shell:
             !include-raw: mbl-openembedded/submit_for_testing.sh
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
     publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw: openembedded-lkft/postbuild.groovy
 # We can only archive files that are located in the workspace
 #        - archive:
 #            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
