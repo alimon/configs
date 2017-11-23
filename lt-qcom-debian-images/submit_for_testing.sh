@@ -1,0 +1,35 @@
+#!/bin/bash
+
+rm -rf configs
+git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+# main parameters
+export DEPLOY_OS=debian
+export OS_INFO=debian-${OS_FLAVOUR}
+export BOOT_OS_PROMPT=\'root@linaro-alip:~#\'
+
+# boot and rootfs parameters
+export PUB_DEST=https://builds.96boards.org/snapshots/dragonboard410c/${VENDOR}/debian/${BUILD_NUMBER}
+
+export BOOT_URL=${PUB_DEST}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz
+export BOOT_URL_COMP="gz"
+export LXC_BOOT_FILE=$(basename ${BOOT_URL} .gz)
+export ROOTFS_URL=${PUB_DEST}/${VENDOR}-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz
+export ROOTFS_URL_COMP="gz"
+export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
+
+# XXX: the debian rootfs images are build small as possible, resize
+# to be able install LAVA test overlay, by now to 3GB is enough
+export RESIZE_ROOTFS=3G
+
+python configs/openembedded-lkft/submit_for_testing.py \
+    --device-type ${DEVICE_TYPE} \
+    --build-number ${BUILD_NUMBER} \
+    --lava-server ${LAVA_SERVER} \
+    --qa-server ${QA_SERVER} \
+    --qa-server-team qcomlt \
+    --qa-server-project ${OS_INFO} \
+    --git-commit ${BUILD_NUMBER} \
+    --template-path configs/lt-qcom/lava-job-definitions \
+    --template-base-pre base_template.yaml \
+    --template-names template.yaml template-wifi.yaml template-bt.yaml
