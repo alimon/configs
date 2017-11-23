@@ -22,4 +22,4 @@ fi
 
 cd ${WORKSPACE}
 mkdir -p out/${PLATFORM}
-cp ports/zephyr/outdir/${PLATFORM}/zephyr.bin out/${PLATFORM}/
+cp ports/zephyr/outdir/${PLATFORM}/zephyr/zephyr.bin out/${PLATFORM}/
