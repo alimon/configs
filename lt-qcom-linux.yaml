@@ -2,9 +2,6 @@
     name: lt-qcom-linux
     project-type: matrix
     defaults: global
-    logrotate:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
@@ -14,6 +11,10 @@
             linaro-landing-team-qualcomm-personnel:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
     parameters:
         - string:
             name: KERNEL_REPO_URL
