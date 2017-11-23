@@ -38,9 +38,9 @@ sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
     -e "s|\${PUBLISH_SERVER}|${PUBLISH_SERVER}|" \
     -e "s|\${PUB_DEST}|${PUB_DEST}|" \
     < configs/mbl-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
-    > custom_lava_job_definition.yaml
+    > ${WORKSPACE}/custom_lava_job_definition.yaml
 
-cat << EOF > post_build_lava_parameters
+cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEVICE_TYPE=${DEVICE_TYPE}
 CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
 LAVA_SERVER=${LAVA_SERVER}
