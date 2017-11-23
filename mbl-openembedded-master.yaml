@@ -8,6 +8,8 @@
         artifactNumToKeep: 1
     properties:
         - authorization:
+            anonymous:
+                - job-workspace
             linaro:
                 - job-read
             mbl-ci-users:
@@ -25,6 +27,9 @@
         - string:
             name: PUB_DEST
             default: 'openembedded/mbl/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: master
     display-name: 'MBL - OpenEmbedded (master)'
@@ -86,6 +91,12 @@
               --server ${PUBLISH_SERVER} \
               --make-link \
               $(dirname ${PUB_DEST})
+        - shell:
+            !include-raw: mbl-openembedded/submit_for_testing.sh
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
     publishers:
 # We can only archive files that are located in the workspace
 #        - archive:
