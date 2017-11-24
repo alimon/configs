@@ -77,6 +77,8 @@
             sudo apt-get install -y ccache bc kmod cpio
         - shell:
             !include-raw: lt-qcom-linux/builders.sh
+        - inject:
+            properties-file: params
     publishers:
         - email-ext:
             recipients: 'nicolas.dechesne@linaro.org anibal.limon@linaro.org'
@@ -86,5 +88,12 @@
             artifacts: '*.changes, *.dsc, *.gz'
         - trigger-parameterized-builds:
             - project: build-package-obs
-              property-file: params
+              predefined-parameters: |
+                  source=${source_arm}
+                  repo=${repo_arm}
+              condition: SUCCESS
+            - project: build-package-obs
+              predefined-parameters: |
+                  source=${source_arm64}
+                  repo=${repo_arm64}
               condition: SUCCESS

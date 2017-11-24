@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -ex
 
 echo "Starting ${JOB_NAME} with the following parameters:"
@@ -38,10 +39,11 @@ make KERNELRELEASE=${SRCVERSION}-qcomlt-${ARCH} \
      KDEB_CHANGELOG_DIST=${KDEB_CHANGELOG_DIST} \
      DEBEMAIL="dragonboard@lists.96boards.org" \
      DEBFULLNAME="Linaro Qualcomm Landing Team" \
-     -j`nproc` deb-pkg
+     -j$(nproc) deb-pkg
 
 cd ..
+
 cat > params <<EOF
-source=${BUILD_URL}/artifact/$(echo *.dsc)
-repo=${TARGET_REPO}
+source_${ARCH}=${BUILD_URL}/artifact/$(echo *.dsc)
+repo_${ARCH}=${TARGET_REPO}
 EOF
