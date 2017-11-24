@@ -71,11 +71,13 @@ actions:
           name: db410c-resize-rootfs
         run:
           steps:
-          - if [ -z "${RESIZE_ROOTFS}" ]; then echo "No resize request, skiping..." && exit 0; else echo "Resizing to $RESIZE_ROOTFS..."; fi
+          - if [ -z "${RESIZE_ROOTFS}" ]; then echo "resize_rootfs: skip" && exit 0; fi
+          - cd /lava-lxc
           - simg2img ${LXC_ROOTFS_FILE} ${LXC_ROOTFS_FILE}.ext4
           - e2fsck -y -f ${LXC_ROOTFS_FILE}.ext4
           - resize2fs ${LXC_ROOTFS_FILE}.ext4 ${RESIZE_ROOTFS}
           - img2simg ${LXC_ROOTFS_FILE}.ext4 ${LXC_ROOTFS_FILE}
+          - echo "resize_rootfs: pass"
 
 - deploy:
     timeout:
