@@ -137,7 +137,7 @@
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[CI] HiKey: ${KERNEL_BRANCH} ${SRCREV_kernel,length=12} ${BUILD_STATUS}'
+            subject: '[CI] HiKey: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
@@ -148,3 +148,5 @@
 
                 Errors:
                 ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+            presend-script:
+                !include-raw: openembedded-lkft/presend-script.groovy

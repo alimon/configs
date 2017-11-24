@@ -129,7 +129,7 @@
         - email-ext:
             recipients: 'lkft-maintainers@lists.linaro.org'
             matrix-trigger: only-configurations
-            subject: '[CI] ${MACHINE}: ${KERNEL_BRANCH} ${SRCREV_kernel,length=12} ${BUILD_STATUS}'
+            subject: '[CI] ${MACHINE}: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
@@ -140,3 +140,5 @@
 
                 Errors:
                 ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+            presend-script:
+                !include-raw: openembedded-lkft/presend-script.groovy
