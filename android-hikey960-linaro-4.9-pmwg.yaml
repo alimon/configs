@@ -1,5 +1,5 @@
 - job:
-    name: android-hikey-linaro-4.9-pmwg
+    name: android-hikey960-linaro-4.9-pmwg
     project-type: freestyle
     defaults: global
     properties:
@@ -26,16 +26,16 @@
             name: SRCREV_kernel
         - string:
             name: REFERENCE_BUILD_URL
-            default: 'http://testdata.validation.linaro.org/lkft/aosp/current/'
-        - string:
-            name: DEFCONFIG
-            default: 'hikey_defconfig'
-        - string:
-            name: DEVICE_TYPE
-            default: 'hi6220-hikey'
+            default: 'http://testdata.validation.linaro.org/hikey960-pmwg/'
         - string:
             name: PUB_DEST
             default: 'android/pmwg/${JOB_NAME}/${BUILD_NUMBER}'
+        - string:
+            name: DEFCONFIG
+            default: 'hikey960_defconfig'
+        - string:
+            name: DEVICE_TYPE
+#            default: 'hi960-hikey'
         - string:
             name: LAVA_SERVER
             default: 'https://pmwg.validation.linaro.org/RPC2/'
@@ -50,7 +50,7 @@
             default: 'pmwg'
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'PMWG Android on HiKey'
+    display-name: 'PMWG Android on HiKey960'
     scm:
         - git:
             url: https://git.linaro.org/power/android.git
