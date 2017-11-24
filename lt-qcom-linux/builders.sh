@@ -44,6 +44,6 @@ make KERNELRELEASE=${SRCVERSION}-qcomlt-${ARCH} \
 cd ..
 
 cat > params <<EOF
-source_${ARCH}=${BUILD_URL}/artifact/$(echo *.dsc)
-repo_${ARCH}=${TARGET_REPO}
+source=${JOB_URL}/ws/$(echo *.dsc)
+repo=${TARGET_REPO}
 EOF
