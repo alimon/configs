@@ -9,12 +9,10 @@ export OS_INFO=debian-${OS_FLAVOUR}
 export BOOT_OS_PROMPT=\'root@linaro-alip:~#\'
 
 # boot and rootfs parameters
-export URL_DEST=${PUBLISH_SERVER}${PUB_DEST}
-
-export BOOT_URL=${URL_DEST}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz
+export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz
 export BOOT_URL_COMP="gz"
 export LXC_BOOT_FILE=$(basename ${BOOT_URL} .gz)
-export ROOTFS_URL=${URL_DEST}/${VENDOR}-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz
+export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${VENDOR}-${OS_FLAVOUR}-alip-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz
 export ROOTFS_URL_COMP="gz"
 export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
 
