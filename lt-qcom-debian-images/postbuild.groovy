@@ -1,8 +1,8 @@
 if (manager.build.result == hudson.model.Result.SUCCESS) {
-  def pub_dest = manager.build.buildVariables.get('PUB_DEST')
+  def publish_server = manager.envVars["PUBLISH_SERVER"]
+  def pub_dest = manager.envVars["PUB_DEST"]
 
-  def url = "http://builds.96boards.org/${pub_dest}/"
-  def desc = "&nbsp;<a href='${url}'>Build location<t/a><br />"
+  def desc = "&nbsp;<a href='${publish_server}${pub_dest}'>Build location<t/a><br />"
 
   manager.build.setDescription(desc)
 }
