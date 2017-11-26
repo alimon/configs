@@ -2,7 +2,7 @@ context:
   test_character_delay: 10
 
 device_type: hi6220-hikey
-job_name: armv8-ilp32-ltp-{{testname}}-${BUILD_NUMBER}
+job_name: armv8-ilp32-ltp-${TESTNAME}-${BUILD_NUMBER}
 timeouts:
   job:
     minutes: 60
@@ -149,9 +149,9 @@ actions:
       path: automated/linux/ltp/ltp.yaml
       parameters:
         SKIP_INSTALL: 'true'
-        TST_CMDFILES: '{{testname}}'
+        TST_CMDFILES: '${TESTNAME}'
         SKIPFILE: 'skipfile-lkft-hikey'
         TIMEOUT_MULTIPLIER: 3
-      name: ltp-{{testname}}-tests
+      name: ltp-${TESTNAME}-tests
       timeout:
         minutes: 60

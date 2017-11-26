@@ -106,6 +106,7 @@
         - shell: |
             #!/bin/bash
 
+            set -ex
             # Create sparse image
             # Only the LTP image is sent to LAVA, hence it is the only one
             # needing a sparse image to be published.
@@ -140,11 +141,10 @@
                     export DEVICE_TYPE=hi6220-hikey
                     export BOOT_URL=${PUBLISH_SERVER}/${PUB_DEST}/$(ls out/boot-0.0*.img | xargs basename)
                     export SYSTEM_URL=${PUBLISH_SERVER}/${PUB_DEST}/$(ls out/linaro-image-${rootfs}-${MACHINE}-*.rootfs.img.gz | xargs basename)
-
-                    pip install --force-reinstall --user jinja2-cli
-                    ${HOME}/.local/bin/jinja2 -D testname=syscalls \
-                        configs/openembedded-armv8/lava-job-definitions/${DEVICE_TYPE}/master-template-ltp.yaml.jinja2 \
-                        > custom_lava_job_definition.yaml
+                    export TESTNAME=syscalls
+                    eval "cat << EOF > custom_lava_job_definition.yaml
+                    $(<configs/openembedded-armv8/lava-job-definitions/${DEVICE_TYPE}/master-template-ltp.yaml)
+                    EOF"
 
                     cat << EOF > post_build_lava_parameters
                     DEVICE_TYPE=${DEVICE_TYPE}
