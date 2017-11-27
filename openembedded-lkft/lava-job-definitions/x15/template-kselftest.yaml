@@ -97,7 +97,12 @@ actions:
       username: root
     prompts:
     - 'root@am57xx-evm:'
-    commands: mmc
+    commands:
+    - run findfdt
+    - setenv console ttyS2,115200n8
+    - setenv mmcdev 1
+    - "setenv bootpart 1:f"
+    - run mmcboot
     timeout:
       minutes: 15
     method: u-boot
