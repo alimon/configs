@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 trap cleanup_exit INT TERM EXIT
 
