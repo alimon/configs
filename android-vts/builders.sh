@@ -18,11 +18,11 @@ make -j"$(nproc)" vts
 mkdir -p pub
 wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/generic/build-info/public-template.txt -O pub/BUILD-INFO.txt
 
-# Delete sources after build to save space
-rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* out/
-
 # Build Android
 cp out/host/linux-x86/vts/android-vts.zip pub/
+
+# Delete sources after build to save space
+rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* out/
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
