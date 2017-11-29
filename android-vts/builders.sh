@@ -27,6 +27,6 @@ rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ developm
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/pub
-PUB_DEST=/android/${JOB_NAME}/${LUNCH_TARGET}/${BUILD_NUMBER}
+PUB_DEST=/android/${JOB_NAME}/${MANIFEST_BRANCH}/${LUNCH_TARGET}/${BUILD_NUMBER}
 PUB_EXTRA_INC=^[^/]+zip
 EOF
