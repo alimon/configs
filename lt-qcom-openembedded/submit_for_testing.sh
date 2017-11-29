@@ -29,7 +29,7 @@ case "${MACHINE}" in
             --lava-server ${LAVA_SERVER} \
             --qa-server ${QA_SERVER} \
             --qa-server-team qcomlt \
-            --qa-server-project openembedded-rpb-morty \
+            --qa-server-project openembedded-rpb-${MANIFEST_BRANCH} \
             --env-suffix="-${DISTRO}" \
             --git-commit ${BUILD_NUMBER} \
             --template-path configs/lt-qcom/lava-job-definitions \
