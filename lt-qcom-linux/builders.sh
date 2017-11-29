@@ -39,7 +39,7 @@ make KERNELRELEASE=${SRCVERSION}-qcomlt-${ARCH} \
      KDEB_CHANGELOG_DIST=${KDEB_CHANGELOG_DIST} \
      DEBEMAIL="dragonboard@lists.96boards.org" \
      DEBFULLNAME="Linaro Qualcomm Landing Team" \
-     -j$(nproc) deb-pkg
+     -j$(nproc) ${KERNEL_BUILD_TARGET}
 
 cd ..
 
