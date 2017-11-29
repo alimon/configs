@@ -11,49 +11,18 @@
             days-to-keep: 1
             num-to-keep: 30
             artifact-num-to-keep: 30
-    parameters:
-        - string:
-            name: FORCE_TRIGGER
-            default: ''
     disabled: false
     node: master
     display-name: 'Trigger for Qualcomm OE builds'
+    scm:
+        - repo:
+            manifest-url: https://github.com/96boards/oe-rpb-manifest.git
+            manifest-branch: morty
     triggers:
-        - timed: 'H/5 * * * *'
+        - pollscm:
+            cron: 'H/5 * * * *'
     wrappers:
         - timestamps
     builders:
-        - shell: |
-            #!/bin/bash
-
-            set -e
-
-            GIT_BRANCH="refs/heads/morty"
-            git ls-remote --heads https://github.com/openembedded/openembedded-core ${GIT_BRANCH} > git-polling.txt
-            git ls-remote --heads https://github.com/openembedded/meta-openembedded ${GIT_BRANCH} >> git-polling.txt
-            git ls-remote --heads https://github.com/ndechesne/meta-qcom  ${GIT_BRANCH} >> git-polling.txt
-            git ls-remote --heads https://github.com/96boards/meta-rpb ${GIT_BRANCH} >> git-polling.txt
-            git ls-remote --heads https://git.linaro.org/openembedded/meta-backports ${GIT_BRANCH} >> git-polling.txt
-
-            rm -f git-changes-detected
-            # Check the file existence
-            if wget -q --spider "${JOB_URL}lastSuccessfulBuild/artifact/git-polling.txt"; then
-              # Download the file
-              wget -q "${JOB_URL}lastSuccessfulBuild/artifact/git-polling.txt" -O git-polling-latest.txt
-              # Compare latest git polling with current
-              cmp -s git-polling-latest.txt git-polling.txt || touch git-changes-detected
-            else
-              echo "Remote file does not exist. Skip comparison and trigger."
-            fi
-
-            # Allow to force manually the build
-            [ -z "${FORCE_TRIGGER}" ] || touch git-changes-detected
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: git-changes-detected
-            steps:
-                - trigger-builds:
-                    - project: 'lt-qcom-openembedded-rpb-morty'
-    publishers:
-        - archive:
-            artifacts: 'git-polling.txt'
+        - trigger-builds:
+            - project: 'lt-qcom-openembedded-rpb-morty'
