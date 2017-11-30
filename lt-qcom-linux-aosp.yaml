@@ -38,17 +38,22 @@
         - string:
             name: KERNEL_BRANCH
             default: 'release/android/qcomlt-4.14'
+    disabled: false
+    node: master
+    display-name: 'Qualcomm LT Linux kernel build for AOSP'
     axes:
         - axis:
             type: user-defined
             name: ARCH
             values:
                 - arm64
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
     execution-strategy:
         sequential: false
-    disabled: false
-    node: docker-stretch-amd64
-    display-name: 'Qualcomm LT Linux kernel build for AOSP'
     scm:
         - git:
             url: ${KERNEL_REPO_URL}
