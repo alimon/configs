@@ -14,7 +14,7 @@ done
 # Create MD5SUMS file
 (cd out && md5sum * > MD5SUMS.txt)
 
-wget -q ${BUILD_URL}consoleText -O out/build-log-${JOB_NAME}-${BUILD_NUMBER}.txt
+wget -q ${BUILD_URL}consoleText -O out/build-log-$(echo ${JOB_NAME}|sed -e 's/[^A-Za-z0-9._-]/_/g')-${BUILD_NUMBER}.txt
 
 # Publish to snapshots
 test -d ${HOME}/bin || mkdir ${HOME}/bin
