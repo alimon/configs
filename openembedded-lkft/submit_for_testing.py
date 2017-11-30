@@ -35,6 +35,30 @@ def _load_template(template_name, template_path, device_type):
     return template, template_file_name
 
 
+def _submit_to_squad(lava_job, lava_url_base, qa_server_api, qa_server_base, qa_token, quiet):
+    headers = {
+        "Auth-Token": qa_token
+    }
+
+    try:
+        data = {
+            "definition": lava_job,
+            "backend": urlsplit(lava_url_base).netloc  # qa-reports backends are named as lava instances
+        }
+        print("Submit to: %s" % qa_server_api)
+        results = requests.post(qa_server_api, data=data, headers=headers)
+        if results.status_code < 300:
+            print("%s/testjob/%s" % (qa_server_base, results.text))
+        else:
+            print(results.status_code)
+            print(results.text)
+    except requests.exceptions.RequestException as err:
+        print("QA Reports submission failed")
+        if not quiet:
+            print("offending job definition:")
+            print(lava_job)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--device-type",
@@ -91,7 +115,13 @@ def main():
                         help="list of the templates to submit for testing",
                         dest="template_names",
                         nargs="+",
-                        default=["template.yaml"])
+                        default=[])
+    parser.add_argument("--dry-run",
+                        help="""Only prepare and print templates.
+                        Don't submit to actual servers.
+                        This option disables --quiet""",
+                        action='store_true',
+                        dest="dryrun")
     parser.add_argument("--quiet",
                         help="Only output the final qa-reports URL",
                         action='store_true',
@@ -99,6 +129,9 @@ def main():
 
     args, _ = parser.parse_known_args()
 
+    if args.dryrun:
+        # disable quiet when dryrun is enabled
+        args.quiet = False
     if args.qa_token is None:
         print "QA_REPORTS_TOKEN is missing"
         sys.exit(1)
@@ -121,10 +154,6 @@ def main():
         lava_server = "https://" + lava_server
     lava_url_base = "%s://%s/" % (urlsplit(lava_server).scheme, urlsplit(lava_server).netloc)
 
-    headers = {
-        "Auth-Token": args.qa_token
-    }
-
     template_base_pre, _ = _load_template(args.template_base_pre,
                                           args.template_path,
                                           args.device_type)
@@ -145,23 +174,13 @@ def main():
         lava_job = template.substitute(os.environ)
         if not args.quiet:
             print(lava_job)
-        try:
-            data = {
-                "definition": lava_job,
-                "backend": urlsplit(lava_url_base).netloc  # qa-reports backends are named as lava instances
-            }
-            print("Submit to: %s" % qa_server_api)
-            results = requests.post(qa_server_api, data=data, headers=headers)
-            if results.status_code < 300:
-                print("%s/testjob/%s" % (qa_server_base, results.text))
-            else:
-                print(results.status_code)
-                print(results.text)
-        except requests.exceptions.RequestException as err:
-            print("QA Reports submission failed")
-            if not args.quiet:
-                print("offending job definition:")
-                print(lava_job)
+        if not args.dryrun:
+            _submit_to_squad(lava_job,
+                lava_url_base,
+                qa_server_api,
+                qa_server_base,
+                args.qa_token,
+                args.quiet)
 
 
 if __name__ == "__main__":
