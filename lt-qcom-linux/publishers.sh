@@ -4,11 +4,11 @@ set -ex
 
 # copy files which can be published, if needed
 mkdir out
-cp vmlinux arch/${ARCH}/boot/Image.gz out
-cp .config out/kernel.config
-cp arch/${ARCH}/configs/defconfig out
+cp ${WORKSPACE}/linux/vmlinux ${WORKSPACE}/linux/arch/${ARCH}/boot/Image.gz out
+cp ${WORKSPACE}/linux/.config out/kernel.config
+cp ${WORKSPACE}/linux/arch/${ARCH}/configs/defconfig out
 for f in ${KERNEL_DTBS}; do
-    cp arch/${ARCH}/boot/dts/$f out;
+    cp ${WORKSPACE}/linux/arch/${ARCH}/boot/dts/$f out;
 done
 
 # Create MD5SUMS file
