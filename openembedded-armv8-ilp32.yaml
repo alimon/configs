@@ -142,9 +142,12 @@
                     export BOOT_URL=${PUBLISH_SERVER}/${PUB_DEST}/$(ls out/boot-0.0*.img | xargs basename)
                     export SYSTEM_URL=${PUBLISH_SERVER}/${PUB_DEST}/$(ls out/linaro-image-${rootfs}-${MACHINE}-*.rootfs.img.gz | xargs basename)
                     export TESTNAME=syscalls
-                    eval "cat << EOF > custom_lava_job_definition.yaml
-                    $(<configs/openembedded-armv8/lava-job-definitions/${DEVICE_TYPE}/master-template-ltp.yaml)
-                    EOF"
+                    cat << EOF | python > custom_lava_job_definition.yaml
+                    import os
+                    fh = open("configs/openembedded-armv8/lava-job-definitions/${DEVICE_TYPE}/master-template-ltp.yaml", "r")
+                    print os.path.expandvars(fh.read())
+                    fh.close()
+                    EOF
 
                     cat << EOF > post_build_lava_parameters
                     DEVICE_TYPE=${DEVICE_TYPE}
