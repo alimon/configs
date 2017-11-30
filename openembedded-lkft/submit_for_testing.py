@@ -2,7 +2,9 @@ import argparse
 import os
 import requests
 import sys
+from copy import deepcopy
 from string import Template
+from jinja2 import Environment, FileSystemLoader, StrictUndefined
 
 try:
     from urllib.parse import urlsplit
@@ -105,6 +107,14 @@ def main():
                         help="Path to LAVA job templates",
                         dest="template_path",
                         default=template_base_path)
+    parser.add_argument("--testplan-path",
+                        help="Path to Jinja2 LAVA job templates",
+                        dest="testplan_path",
+                        default=testplan_base_path)
+    parser.add_argument("--testplan-device-path",
+                        help="Path to Jinja2 device deployment fragments",
+                        dest="testplan_device_path",
+                        default=testplan_base_path)
     parser.add_argument("--template-base-pre",
                         help="base template used to construct templates, previous",
                         dest="template_base_pre")
@@ -114,6 +124,14 @@ def main():
     parser.add_argument("--template-names",
                         help="list of the templates to submit for testing",
                         dest="template_names",
+                        nargs="+",
+                        default=[])
+    parser.add_argument("--test-plan",
+                        help="""list of the Jinja2 templates to submit for testing.
+                        It is assumed that the templates produce valid LAVA job
+                        definitions. All varaibles are substituted using Jinja2
+                        engine. This includes environment variables.""",
+                        dest="test_plan",
                         nargs="+",
                         default=[])
     parser.add_argument("--dry-run",
@@ -182,6 +200,22 @@ def main():
                 args.qa_token,
                 args.quiet)
 
+    THIS_DIR = os.path.dirname(os.path.abspath(args.testplan_path))
+    # prevent creating templates when variables are missing
+    j2_env = Environment(loader=FileSystemLoader(THIS_DIR), undefined=StrictUndefined)
+    context = deepcopy(os.environ)
+    context.update({"device_type": os.path.join(args.testplan_device_path, args.device_type)})
+    for test in args.test_plan:
+        lava_job = j2_env.get_template(test).render(context)
+        if not args.quiet:
+            print(lava_job)
+        if not args.dryrun:
+            _submit_to_squad(lava_job,
+                lava_url_base,
+                qa_server_api,
+                qa_server_base,
+                args.qa_token,
+                args.quiet)
 
 if __name__ == "__main__":
     main()
