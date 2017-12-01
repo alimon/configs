@@ -14,6 +14,7 @@ except ImportError:
 
 # Templates base path
 template_base_path = 'configs/openembedded-lkft/lava-job-definitions'
+testplan_base_path = 'configs/openembedded-lkft/lava-job-definitions'
 # Snapshots base URL
 snapshots_url = 'https://snapshots.linaro.org/openembedded/lkft'
 
