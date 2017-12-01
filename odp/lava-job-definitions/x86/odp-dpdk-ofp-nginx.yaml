@@ -1,0 +1,130 @@
+job_name: odp-dpdk-ofp-nginx-httperf
+
+metadata:
+    deb-repository: ${DEB_REPO_URL}
+
+timeouts:
+  job:
+    minutes: 300
+  action:
+    minutes: 300
+  connection:
+    minutes: 50
+  connections:
+    bootloader-commands:
+      minutes: 5
+
+visibility: public
+priority: medium
+
+protocols:
+  lava-multinode:
+    roles:
+      client:
+        device_type: x86
+        count: 1
+      server:
+        device_type: x86
+        count: 1
+    timeout:
+      minutes: 20
+  lava-vland:
+    client:
+      vlan_one:
+        tags:
+          - 10G
+    server:
+      vlan_one:
+        tags:
+          - 10G
+
+actions:
+- deploy:
+    role:
+      - client
+      - server
+    timeout:
+        minutes: 30
+    to: tftp
+    # Kernel is temporary as that from hwpack won't work see ODP-590
+    kernel:
+        url: http://people.linaro.org/~josep.puigdemont/kernel4.4/vmlinuz-4.4.0-31-generic
+    nfsrootfs:
+        url: http://people.linaro.org/~josep.puigdemont/kernel4.4/linaro-jessie-nano-20150123-1.tar.gz
+        compression: gz
+        prefix: binary/
+    modules:
+        url: http://people.linaro.org/~josep.puigdemont/kernel4.4/overlay.tar.gz
+        compression: gz
+    ramdisk:
+        url: http://people.linaro.org/~josep.puigdemont/kernel4.4/initramfs.amd64-new18.cpio.gz
+        compression: gz
+    os: debian
+    protocols:
+        lava-vland:
+            - action: lava-vland-overlay
+              request: deploy_vlans
+
+- boot:
+    role:
+      - server
+      - client
+    timeout:
+        minutes: 50
+    method: ipxe
+    commands: nfs
+    parameters:
+        shutdown-message: "reboot: Restarting system"
+    prompts:
+        - 'linaro-test'
+        - 'root@linaro-nano:'
+
+- test:
+    role:
+      - server
+    timeout:
+        minutes: 90
+    definitions:
+        - repository:
+            metadata:
+                format: Lava-Test Test Definition 1.0
+                name: install-kernel-headers
+                description: Installs Kernel headers
+                os:
+                    - debian
+                scope:
+                    - functional
+            install:
+                deps:
+                    - curl
+            run:
+                steps:
+                    - depmod -a
+                    - curl -s -O http://people.linaro.org/~josep.puigdemont/kernel4.4/linux-headers-4.4.0-31_4.4.0-31.50_all.deb
+                    - dpkg -i linux-headers-4.4.0-31_4.4.0-31.50_all.deb
+                    - rm linux-headers-4.4.0-31_4.4.0-31.50_all.deb
+                    - echo "deb http://ftp.debian.org/debian jessie-backports main" > /etc/apt/sources.list.d/backports.list
+                    - apt-get update
+                    - apt-get -t jessie-backports install -y libssl1.0.0 libssl-dev
+          from: inline
+          path: inline/install-kernel-headers.yaml
+          name: install-kernel-headers
+        - repository: http://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/linux/nginx-server/nginx-odp-dpdk.yaml
+          name: nginx-server-odp-dpdk
+          parameters:
+              "MAX_CORES": "0"
+              "VLAND_NAME": "vlan_one"
+              "DEB_REPO_URL": "${DEB_REPO_URL}"
+
+- test:
+    role:
+        -client
+    timeout:
+        minutes: 90
+    definitions:
+        - repository: http://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/linux/httperf-client/httperf-client.yaml
+          name: nginx-client-linux
