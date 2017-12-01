@@ -10,7 +10,7 @@ wget -q ${QCOM_LINUX_FIRMWARE}
 echo "${QCOM_LINUX_FIRMWARE_MD5}  $(basename ${QCOM_LINUX_FIRMWARE})" > MD5
 md5sum -c MD5
 
-unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*"
+unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*" "*/loaders/*"
 
 # Get the Android compiler
 git clone ${LK_GCC_GIT} --depth 1 -b ${LK_GCC_REL} android-gcc
