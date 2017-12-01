@@ -1,0 +1,27 @@
+{% extends "master.jinja2" %}
+
+{% block global_settings %}
+timeouts:
+  job:
+    minutes: {% if job_timeout is defined %}{{ job_timeout }}{% else %}90{% endif %}
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+{% endblock global_settings %}
+
+{% block priority %}{{LAVA_JOB_PRIORITY}}{% endblock priority %}
+{% block visibility %}public{% endblock visibility %}
+
+{% block metadata %}
+  git branch: {{KERNEL_BRANCH}}
+  git repo: {{KERNEL_REPO}}
+  git commit: {{KERNEL_COMMIT}}
+  git describe: {{KERNEL_DESCRIBE}}
+  make_kernelversion: "{{MAKE_KERNELVERSION}}"
+  kernel-config: {{KERNEL_CONFIG_URL}}
+  kernel-defconfig: {{KERNEL_DEFCONFIG_URL}}
+  build-url: {{BUILD_URL}}
+  build-location: {{SNAPSHOTS_URL}}/{{BASE_URL}}
+  series: lkft
+{% endblock metadata %}

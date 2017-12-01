@@ -1,0 +1,45 @@
+{% extends "lkft-fastboot.jinja2" %}
+
+{% block device_type %}x15{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    timeout:
+      minutes: 25
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      userdata:
+        url: {{SYSTEM_URL}}
+        compression: gz
+        apply-overlay: true
+    os: oe
+{% endblock deploy_target %}
+
+{% block boot_target %}
+- boot:
+    namespace: target
+    auto_login:
+      login_prompt: 'am57xx-evm login:'
+      username: root
+    prompts:
+    - 'root@am57xx-evm:'
+    commands:
+    - run findfdt
+    - setenv console ttyS2,115200n8
+    - setenv mmcdev 1
+    - "setenv bootpart 1:f"
+    - run mmcboot
+    timeout:
+      minutes: 15
+    method: u-boot
+{% endblock boot_target %}
+
+{% block test_target %}
+- test:
+    namespace: target
+    timeout:
+      minutes: 60
+    definitions:
+{% endblock test_target %}

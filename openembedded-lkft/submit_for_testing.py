@@ -5,6 +5,7 @@ import sys
 from copy import deepcopy
 from string import Template
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
+from jinja2.exceptions import TemplateNotFound
 
 try:
     from urllib.parse import urlsplit
@@ -14,7 +15,8 @@ except ImportError:
 
 # Templates base path
 template_base_path = 'configs/openembedded-lkft/lava-job-definitions'
-testplan_base_path = 'configs/openembedded-lkft/lava-job-definitions'
+testplan_base_path = 'configs/openembedded-lkft/lava-job-definitions/'
+testplan_device_path = 'devices/'
 # Snapshots base URL
 snapshots_url = 'https://snapshots.linaro.org/openembedded/lkft'
 
@@ -113,9 +115,9 @@ def main():
                         dest="testplan_path",
                         default=testplan_base_path)
     parser.add_argument("--testplan-device-path",
-                        help="Path to Jinja2 device deployment fragments",
+                        help="Relative path to Jinja2 device deployment fragments",
                         dest="testplan_device_path",
-                        default=testplan_base_path)
+                        default=testplan_device_path)
     parser.add_argument("--template-base-pre",
                         help="base template used to construct templates, previous",
                         dest="template_base_pre")
@@ -201,13 +203,21 @@ def main():
                 args.qa_token,
                 args.quiet)
 
-    THIS_DIR = os.path.dirname(os.path.abspath(args.testplan_path))
+    THIS_DIR = os.path.abspath(args.testplan_path)
     # prevent creating templates when variables are missing
     j2_env = Environment(loader=FileSystemLoader(THIS_DIR), undefined=StrictUndefined)
     context = deepcopy(os.environ)
     context.update({"device_type": os.path.join(args.testplan_device_path, args.device_type)})
     for test in args.test_plan:
-        lava_job = j2_env.get_template(test).render(context)
+        lava_job = None
+        try:
+            lava_job = j2_env.get_template(test).render(context)
+        except TemplateNotFound as e:
+            print("Test plan or device_type not found")
+            print(e)
+
+        if lava_job is None:
+            continue
         if not args.quiet:
             print(lava_job)
         if not args.dryrun:

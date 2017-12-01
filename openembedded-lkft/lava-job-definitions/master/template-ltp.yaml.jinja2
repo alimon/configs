@@ -1,0 +1,25 @@
+{% extends device_type %}
+
+{% block metadata %}
+  {{ super() }}
+  ltp-{{testname}}-tests__url: {{LTP_URL}}
+  ltp-{{testname}}-tests__version: "{{LTP_VERSION}}"
+  ltp-{{testname}}-tests__revision: "{{LTP_REVISION}}"
+{% endblock metadata %}
+
+{% block job_name %}lkft-ltp-{{testname}}-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/ltp/ltp.yaml
+      parameters:
+        SKIP_INSTALL: 'true'
+        TST_CMDFILES: '{{testname}}'
+        SKIPFILE: 'skipfile-lkft-hikey'
+        TIMEOUT_MULTIPLIER: 3
+      name: ltp-{{testname}}-tests
+      timeout:
+        minutes: {% if job_timeout is defined %}{{ job_timeout-5|int|abs }}{% else %}60{% endif %}
+{% endblock test_target %}

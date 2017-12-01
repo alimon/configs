@@ -1,0 +1,24 @@
+{% extends device_type %}
+
+{% set job_timeout = 45 %}
+{% block metadata %}
+  {{ super() }}
+  kselftest__url: {{KSELFTESTS_URL}}
+  kselftest__version: "{{KSELFTESTS_VERSION}}"
+  kselftest__revision: "{{KSELFTESTS_REVISION}}"
+{% endblock metadata %}
+
+{% block job_name %}lkft-kselftests-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/kselftest/kselftest.yaml
+      name: kselftest
+      parameters:
+        SKIPFILE: skipfiles/skiplist_{{DEVICE_TYPE}}_{{KERNEL_VERSION}}
+        KSELFTEST_PATH: {{KSELFTEST_PATH}}
+      timeout:
+        minutes: 40
+{% endblock test_target %}

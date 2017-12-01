@@ -1,0 +1,41 @@
+{% extends "lkft-nfs.jinja2" %}
+
+{% block global_settings %}
+context:
+  test_character_delay: 10
+{{ super() }}
+{% endblock global_settings %}
+
+{% block device_type %}x86{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    namespace: target
+    timeout:
+      minutes: 15
+    to: tftp
+    kernel:
+      url: {{KERNEL_URL}}
+    nfsrootfs:
+      url: {{NFSROOTFS_URL}}
+      compression: xz
+    os: oe
+{% endblock deploy_target %}
+
+{% block boot_target %}
+- boot:
+    namespace: target
+    timeout:
+      minutes: 10
+    method: ipxe
+    commands: nfs
+    parameters:
+      shutdown-message: "reboot: Restarting system"
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      login_commands:
+        - su
+    prompts:
+    - 'root@intel-core2-32:'
+{% endblock boot_target %}

@@ -1,0 +1,65 @@
+{% extends "lkft-fastboot.jinja2" %}
+
+{% block device_type %}dragonboard-410c{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      partition:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/gpt_both0.bin
+      hyp:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/hyp.mbn
+      cdt:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/sbc_1.0_8016.bin
+      rpm:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/rpm.mbn
+      sbl1:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/sbl1.mbn
+      tz:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/tz.mbn
+      aboot:
+        url: http://images-internal/dragonboard410c/linaro/rescue/17.09/linux/emmc_appsboot.mbn
+      boot:
+        url: {{BOOT_URL}}
+      rootfs:
+        url: {{SYSTEM_URL}}
+        compression: gz
+        apply-overlay: true
+    os: oe
+    protocols:
+      lava-lxc:
+      - action: fastboot-deploy
+        request: pre-power-command
+        timeout:
+          minutes: 2
+{% endblock deploy_target %}
+
+{% block boot_target %}
+- boot:
+    namespace: target
+    auto_login:
+      login_prompt: 'login:'
+      username: linaro
+      login_commands:
+        # Become super user to run tests
+        - su
+    prompts:
+    - 'root@(.*):/#'
+    - 'root@dragonboard-410c:~#'
+    timeout:
+      minutes: 5
+    method: fastboot
+{% endblock boot_target %}
+
+{% block test_target %}
+- test:
+    namespace: target
+    timeout:
+      minutes: 60
+    definitions:
+{% endblock test_target %}

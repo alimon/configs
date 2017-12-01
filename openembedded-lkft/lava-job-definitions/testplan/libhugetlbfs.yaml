@@ -1,0 +1,21 @@
+{% extends device_type %}
+
+{% set job_timeout = 25 %}
+{% block metadata %}
+  {{ super() }}
+  libhugetlbfs__url: {{LIBHUGETLBFS_URL}}
+  libhugetlbfs__version: "{{LIBHUGETLBFS_VERSION}}"
+  libhugetlbfs__revision: "{{LIBHUGETLBFS_REVISION}}"
+{% endblock metadata %}
+
+{% block job_name %}lkft-kselftests-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/libhugetlbfs/libhugetlbfs.yaml
+      name: libhugetlbfs
+      timeout:
+        minutes: 20
+{% endblock test_target %}
