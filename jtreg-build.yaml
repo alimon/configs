@@ -134,7 +134,7 @@
             # Parameters for makefile build, which includes asmtools.jar in
             # classpath in manifest.
             # java and ant's home directories are found from the commands.
-            export JDK17HOME=$(dirname $(java -XshowSettings:properties |& \
+            export JDKHOME=$(dirname $(java -XshowSettings:properties |& \
                  grep java.home |  sed 's,^.*java.home = \(.*\),\1,'))
             export JAVATEST_HOME=$PWD/jtharness
             export JAVATEST_JAR=$PWD/jtharness/lib/javatest.jar
@@ -149,6 +149,7 @@
             export JCOV_JAR=$PWD/../jcov/JCOV_BUILD/jcov_3.0/jcov.jar
             export JCOV_NETWORK_SAVER_JAR=$PWD/../jcov/JCOV_BUILD/jcov_3.0/jcov_network_saver.jar
 
+            echo JDKHOME=\"$JDKHOME\"
 
             # Makefile expects files that are not supplied from the packages we
             # are downloading. Create dummy versions to keep it happy.
