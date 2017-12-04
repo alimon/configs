@@ -1,0 +1,26 @@
+- test:
+    namespace: dragonboard410c
+    name: qcomlt-desktop
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/piglit/piglit.yaml
+      name: linux-piglit
+
+device_type: ${DEVICE_TYPE}
+job_name: lt-qcom-${OS_INFO}-desktop-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 90
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom/lava-job-definitions/dragonboard-410c/template-desktop.yaml

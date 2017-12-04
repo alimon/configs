@@ -13,9 +13,6 @@ export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
 export BOOT_URL_COMP=
 export LXC_BOOT_FILE=$(basename ${BOOT_URL})
 
-export ROOTFS_URL=${ROOTFS_SPARSE_BUILD_URL}
-export ROOTFS_URL_COMP="gz"
-export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
 export RESIZE_ROOTFS=
 
 case "${MACHINE}" in
@@ -23,6 +20,9 @@ case "${MACHINE}" in
     export DEVICE_TYPE="${MACHINE}"
     case "${DISTRO}" in
       rpb)
+        export ROOTFS_URL=${ROOTFS_SPARSE_BUILD_URL}
+        export ROOTFS_URL_COMP="gz"
+        export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
         python configs/openembedded-lkft/submit_for_testing.py \
             --device-type ${DEVICE_TYPE} \
             --build-number ${BUILD_NUMBER} \
@@ -35,6 +35,22 @@ case "${MACHINE}" in
             --template-path configs/lt-qcom/lava-job-definitions \
             --template-base-pre base_template.yaml \
             --template-names template.yaml template-wifi.yaml template-bt.yaml template-ptest.yaml
+
+        export ROOTFS_URL=${ROOTFS_DESKTOP_SPARSE_BUILD_URL}
+        export ROOTFS_URL_COMP="gz"
+        export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
+        python configs/openembedded-lkft/submit_for_testing.py \
+            --device-type ${DEVICE_TYPE} \
+            --build-number ${BUILD_NUMBER} \
+            --lava-server ${LAVA_SERVER} \
+            --qa-server ${QA_SERVER} \
+            --qa-server-team qcomlt \
+            --qa-server-project openembedded-rpb-${MANIFEST_BRANCH} \
+            --env-suffix="-${DISTRO}" \
+            --git-commit ${BUILD_NUMBER} \
+            --template-path configs/lt-qcom/lava-job-definitions \
+            --template-base-pre base_template.yaml \
+            --template-names template-desktop.yaml
       ;;
       rpb-wayland)
         echo "Currently no tests for rpb-wayland"
