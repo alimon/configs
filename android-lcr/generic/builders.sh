@@ -35,3 +35,6 @@ cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=$(readlink -f ${ANDROID_PRODUCT_OUT})
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}/${LUNCH_TARGET}
 EOF
+
+# delete workspace after buildig files
+rm -rf Android.bp bootstrap.bash compatibility developers external kernel prebuilts  toolchain art build config.txt development frameworks libcore packages sdk tools bionic build-configs cts device hardware libnativehelper pdk system bootable build-tools dalvik docs jenkins-tools Makefile platform_testing
