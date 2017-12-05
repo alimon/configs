@@ -40,7 +40,7 @@ git clone https://github.com/google/ExoPlayer
 cd ExoPlayer
 sed -i "s/23.0.3/26.0.2/g" build.gradle
 ./gradlew assembleDebug
-cp ./demo/buildout/outputs/apk/demo-withExtensions-debug.apk /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
+cp ./demo/build/out/outputs/apk/demo-withExtensions-debug.apk /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
 cd -
 
 # Compress images
