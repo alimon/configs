@@ -31,14 +31,14 @@ mkdir -p /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
 
 git clone https://github.com/googlesamples/androidtv-sample-inputs
 cd androidtv-sample-inputs/
-sed -i "s/23.0.3/25.0.2/g" app/build.gradle library/build.gradle
+sed -i "s/23.0.3/26.0.2/g" app/build.gradle library/build.gradle
 ./gradlew assembleDebug
 cp app/build/outputs/apk/app-debug.apk /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
 cd -
 
 git clone https://github.com/google/ExoPlayer
 cd ExoPlayer
-sed -i "s/23.0.3/25.0.2/g" build.gradle
+sed -i "s/23.0.3/26.0.2/g" build.gradle
 ./gradlew assembleDebug
 cp ./demo/buildout/outputs/apk/demo-withExtensions-debug.apk /home/buildslave/srv/${BUILD_DIR}/build/out/data/app/
 cd -
