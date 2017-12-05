@@ -1,0 +1,69 @@
+- job:
+    name: linaro-art-julien-sandbox
+    project-type: freestyle
+    defaults: global
+    description: >
+      This job is for Julien to update NUC device
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            julien.duraj:
+                - job-build
+                - job-configure
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+        - copyartifact:
+            projects: post-build-reports
+    disabled: false
+    node: docker-utopic-art-test
+    display-name: 'Tip: Benchmarks Baseline (Intel Nuc)'
+    concurrent: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        - shell: |
+            #!/bin/bash -xe
+
+            # Build scripts
+            ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
+            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+
+            cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
+            # Get the ip address of the nuc to connect to adb over network
+            source /home/buildslave/srv/nexus-config
+            export ANDROID_SERIAL=${NUC}
+            ./setup_host.sh
+            ./setup_android.sh
+
+
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml, *.json'
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android-art.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - groovy-postbuild:
+            script:
+              !include-raw:
+                - linaro-art/global.groovy
+        - trigger-parameterized-builds:
+            - project: 'post-build-reports'
+              property-file: post_build_reports_parameters
