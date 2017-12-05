@@ -108,6 +108,9 @@ EOF
 # add useful debug info
 cat conf/{site,auto}.conf
 
+# Temporary sstate cleanup to force warp7 firmware to be re-generated each time
+bitbake -c cleansstate u-boot-fslc imx7-efuse-util imx7-cst-native warp7-keys-native warp7-csf-native
+
 time bitbake ${IMAGES}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
