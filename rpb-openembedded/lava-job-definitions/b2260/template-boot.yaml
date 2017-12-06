@@ -1,0 +1,43 @@
+device_type: ${DEVICE_TYPE}
+job_name: RPB OE boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 10
+  action:
+    minutes: 5
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 4
+    to: tftp
+    os: oe
+    kernel:
+      url: '${KERNEL_URL}'
+      type: uimage
+    dtb:
+      url: '${DTB_URL}'
+    nfsrootfs:
+      url: '${NFSROOTFS_URL}'
+      compression: xz
+
+- boot:
+    method: u-boot
+    commands: nfs
+    auto_login:
+      login_prompt: 'stih410-b2260 login:'
+      username: root
+    prompts:
+    - 'root@stih410-b2260:~#'
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}

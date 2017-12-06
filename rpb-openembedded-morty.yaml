@@ -34,11 +34,17 @@
             name: PUB_DEST
             default: 'reference-platform/embedded/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
         - string:
-            name: BUNDLE_STREAM_NAME
-            default: '/public/team/linaro/rpb-openembedded-${MANIFEST_BRANCH}/'
-        - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'rpb-oe'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'rpb'
     disabled: false
     node: master
     display-name: 'Reference Platform - OpenEmbedded (morty)'
@@ -77,7 +83,39 @@
         - ssh-agent-credentials:
             users:
                 - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
     builders:
+        - shell: |
+            #!/bin/bash
+
+            # Mapping for MACHINE -> DEVICE_TYPE
+            case "${MACHINE}" in
+              am57xx-evm)
+                DEVICE_TYPE=x15
+                ;;
+              dragonboard-410c)
+                DEVICE_TYPE=dragonboard-410c
+                ;;
+              hikey)
+                DEVICE_TYPE=hi6220-hikey
+                ;;
+              juno)
+                DEVICE_TYPE=juno
+                ;;
+              stih410-b2260)
+                DEVICE_TYPE=b2260
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+            esac
+
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
         - shell:
             !include-raw: rpb-openembedded/builders.sh
         - inject:
@@ -85,57 +123,13 @@
         - linaro-publish-token
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
-        - shell: |
-            case "${MACHINE}" in
-              dragonboard-410c)
-                # FIXME convert to LAVA v2
-                #export DEVICE_TYPE=apq8016-sbc
-                ;;
-              stih410-b2260)
-                export DEVICE_TYPE=b2260
-                ;;
-              *)
-                echo "Skip DEVICE_TYPE for ${MACHINE}"
-                ;;
-            esac
-
-            rm -rf configs lci-build-tools
-            git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            # Handle LAVA v1 (json)/v2 (yaml) test definitions
-            case "${DEVICE_TYPE}" in
-              apq8016-sbc)
-                ./lci-build-tools/yaml-to-json.py configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
-                > custom_lava_job_definition.json
-
-                cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            BUNDLE_STREAM_NAME=${BUNDLE_STREAM_NAME}
-            CUSTOM_JSON_URL=${JOB_URL}/ws/custom_lava_job_definition.json
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-                ;;
-              b2260)
-                sed -e "s|\${KERNEL_URL}|${KERNEL_URL}|" \
-                    -e "s|\${DTB_URL}|${DTB_URL}|" \
-                    -e "s|\${NFSROOTFS_URL}|${NFSROOTFS_URL}|" \
-                    -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                    < configs/rpb-openembedded/lava-job-definitions/${DEVICE_TYPE}/template.yaml \
-                    > custom_lava_job_definition.yaml
-
-                cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-                ;;
-            esac
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
+        - shell:
+            !include-raw: rpb-openembedded/submit_for_testing.sh
     publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - openembedded-lkft/postbuild.groovy
 # We can only archive files that are located in the workspace
 #        - archive:
 #            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'

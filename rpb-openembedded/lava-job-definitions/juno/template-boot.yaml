@@ -1,0 +1,66 @@
+device_type: ${DEVICE_TYPE}
+job_name: RPB OE boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 30
+  action:
+    minutes: 5
+  actions:
+    u-boot-interrupt:
+      seconds: 120
+    u-boot-commands:
+      seconds: 120
+    uboot-retry:
+      seconds: 180
+  connections:
+    u-boot-interrupt:
+      seconds: 120
+    u-boot-commands:
+      seconds: 120
+    uboot-retry:
+      seconds: 180
+priority: medium
+visibility: public
+
+context:
+   bootloader_prompt: juno#
+
+actions:
+- deploy:
+    namespace: recovery
+    timeout:
+      minutes: 10
+    to: vemsd
+    recovery_image:
+      url:  ${RECOVERY_IMAGE_URL}
+      compression: zip
+
+- deploy:
+    namespace: rpb-juno
+    timeout:
+      minutes: 2
+    to: nfs
+    os: oe
+    nfsrootfs:
+      url: ${NFSROOTFS_URL}
+      compression: xz
+
+- boot:
+    namespace: rpb-juno
+    connection-namespace: recovery
+    method: u-boot
+    commands: norflash
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    prompts:
+    - 'root@(.*):~#'
+    - 'root@(.*):(.*)#'
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}

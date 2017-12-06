@@ -1,0 +1,99 @@
+device_type: ${DEVICE_TYPE}
+job_name: RPB OE boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 45
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+context:
+  test_character_delay: 10
+
+protocols:
+  lava-lxc:
+    name: lxc-target
+    template: debian
+    distribution: debian
+    release: stretch
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 15
+    to: lxc
+    packages:
+    - wget
+    - unzip
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - from: inline
+      name: install-google-fastboot
+      path: inline/install-google-fastboot.yaml
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: install-fastboot
+          description: "Install fastboot provided by google"
+        run:
+          steps:
+          - wget https://dl.google.com/android/repository/platform-tools_r27.0.0-linux.zip
+          - unzip platform-tools_r27.0.0-linux.zip
+          - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
+          - ln -s `pwd`/platform-tools/adb /usr/bin/adb
+          - fastboot --version
+
+- deploy:
+    timeout:
+      minutes: 25
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      userdata:
+        url: ${ROOTFS_SPARSE_BUILD_URL}
+        compression: gz
+        apply-overlay: true
+    os: oe
+
+- boot:
+    namespace: target
+    auto_login:
+      login_prompt: 'am57xx-evm login:'
+      username: root
+    prompts:
+    - 'root@am57xx-evm:'
+    commands:
+    - run findfdt
+    - setenv console ttyS2,115200n8
+    - setenv mmcdev 1
+    - "setenv bootpart 1:f"
+    - run mmcboot
+    timeout:
+      minutes: 15
+    method: u-boot
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}

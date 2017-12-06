@@ -1,0 +1,141 @@
+device_type: ${DEVICE_TYPE}
+job_name: RPB OE boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+protocols:
+  lava-lxc:
+    name: lxc-dragonboard410c-test
+    template: debian
+    distribution: debian
+    release: stretch
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 5
+    to: lxc
+    packages:
+    - wget
+    - unzip
+    - img2simg
+    - simg2img
+    - e2fsprogs
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'root@linaro-developer:~#'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- deploy:
+    timeout:
+      minutes: 40
+    to: download
+    namespace: rpb-db410
+    images:
+      boot:
+        url: ${BOOT_URL}
+      rootfs:
+        url: ${ROOTFS_SPARSE_BUILD_URL}
+        compression: gz
+    os: oe
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - from: inline
+      name: install-google-fastboot
+      path: inline/install-google-fastboot.yaml
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: install-fastboot
+          description: "Install fastboot provided by google"
+        run:
+          steps:
+          - wget https://dl.google.com/android/repository/platform-tools_r27.0.0-linux.zip
+          - unzip platform-tools_r27.0.0-linux.zip > /dev/null
+          - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
+          - ln -s `pwd`/platform-tools/adb /usr/bin/adb
+          - fastboot --version
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 30
+    definitions:
+    - from: inline
+      name: db410c-resize-rootfs
+      path: inline/db410c-resize-rootfs.yaml
+      repository:
+        metadata:
+          description: db410c resize rootfs image for test overlay
+          format: Lava-Test Test Definition 1.0
+          name: db410c-resize-rootfs
+        run:
+          steps:
+          - if [ -z "${RESIZE_ROOTFS}" ]
+          - then
+          -     echo "resize_rootfs: skip"
+          - else
+          -     cd /lava-lxc
+          -     simg2img ${LXC_ROOTFS_IMG} ${LXC_ROOTFS_IMG}.ext4
+          -     e2fsck -y -f ${LXC_ROOTFS_IMG}.ext4
+          -     resize2fs ${LXC_ROOTFS_IMG}.ext4 ${RESIZE_ROOTFS}
+          -     img2simg ${LXC_ROOTFS_IMG}.ext4 ${LXC_ROOTFS_IMG}
+          -     echo "resize_rootfs: pass"
+          - fi
+
+- deploy:
+    timeout:
+      minutes: 40
+    to: fastboot
+    namespace: rpb-db410
+    images:
+      boot:
+        url: lxc:///${LXC_BOOT_IMG}
+      rootfs:
+        url: lxc:///${LXC_ROOTFS_IMG}
+        apply-overlay: true
+    os: oe
+    protocols:
+        lava-lxc:
+        - action: fastboot-deploy
+          request: pre-power-command
+          timeout:
+              minutes: 2
+
+- boot:
+    namespace: rpb-db410
+    auto_login:
+      login_prompt: 'login:'
+      username: 'root'
+    prompts:
+    - 'root@(.*):/#'
+    - 'root@(.*):(.*)#'
+    timeout:
+      minutes: 15
+    method: fastboot
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
