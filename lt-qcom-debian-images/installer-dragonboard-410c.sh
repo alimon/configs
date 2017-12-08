@@ -32,9 +32,9 @@ git log -1
 # Get SD and EMMC bootloader package
 BL_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/jenkins/job/lt-qcom-bootloader-dragonboard410c/lastSuccessfulBuild/buildNumber`
 wget --progress=dot -e dotbytes=2M \
-     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard-410c-bootloader-sd-linux-${BL_BUILD_NUMBER}.zip
+     http://snapshots.linaro.org/96boards/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard-410c-bootloader-sd-linux-${BL_BUILD_NUMBER}.zip
 wget --progress=dot -e dotbytes=2M \
-     http://builds.96boards.org/snapshots/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard-410c-bootloader-emmc-linux-${BL_BUILD_NUMBER}.zip
+     http://snapshots.linaro.org/96boards/dragonboard410c/linaro/rescue/${BL_BUILD_NUMBER}/dragonboard-410c-bootloader-emmc-linux-${BL_BUILD_NUMBER}.zip
 
 unzip -jd out dragonboard-410c-bootloader-sd-linux-${BL_BUILD_NUMBER}.zip
 cp ${WORKSPACE}/out/boot-installer-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz out/boot.img.gz
@@ -49,7 +49,7 @@ gunzip os/debian/{boot,rootfs}.img.gz
 cat << EOF >> os/debian/os.json
 {
 "name": "Linaro Linux Desktop for DragonBoard 410c - Build #${BUILD_NUMBER}",
-"url": "http://builds.96boards.org/releases/dragonboard410c",
+"url": "http://releases.linaro.org/96boards/dragonboard410c",
 "version": "${BUILD_NUMBER}",
 "release_date": "`date +%Y-%m-%d`",
 "description": "Linaro Linux with LXQt desktop based on Debian (${OS_FLAVOUR}) for DragonBoard 410c"

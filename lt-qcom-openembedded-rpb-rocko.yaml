@@ -32,7 +32,7 @@
             default: 'rocko'
         - string:
             name: BASE_URL
-            default: 'https://builds.96boards.org/'
+            default: 'https://snapshots.linaro.org/'
         - string:
             name: LAVA_SERVER
             default: 'https://validation.linaro.org/RPC2/'
@@ -86,15 +86,14 @@
                 ;;
             esac
 
-            echo "PUB_DEST=snapshots/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER}/${DISTRO}" > pub_dest_parameters
+            echo "PUB_DEST=96boards/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER}/${DISTRO}" > pub_dest_parameters
         - inject:
             properties-file: pub_dest_parameters
         - shell:
             !include-raw: rpb-openembedded/builders.sh
         - inject:
             properties-file: post_build_lava_parameters
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
     publishers:
