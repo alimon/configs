@@ -137,9 +137,9 @@ h4. Reference Platform Build - CE OpenEmbedded
 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
-* Manifest URL: "https://github.com/96boards/oe-rpb-manifest.git":https://github.com/96boards/oe-rpb-manifest.git
+* Manifest URL: "${MANIFEST_URL}":${MANIFEST_URL}
 * Manifest branch: ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}
-* Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
+* Manifest commit: "${MANIFEST_COMMIT}":${MANIFEST_URL/.git/\/commit}/${MANIFEST_COMMIT}
 EOF
 
 if [ -e "/srv/oe/manifest-changes.txt" ]; then
