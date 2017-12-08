@@ -71,13 +71,6 @@
 
             shopt -s extglob
 
-            case "$ref_build" in
-                lastSuccess)   ref_build_num=$(wget -q --no-check-certificate -O - "${JOB_URL}lastSuccessfulBuild/buildNumber") ;;
-                previous)      ref_build_num=$(wget -q --no-check-certificate -O - "${JOB_URL}lastCompletedBuild/buildNumber") ;;
-                [1-9]*([0-9])) ref_build_num="$ref_build" ;;
-                *) echo "ERROR: Cannot handle ref_build: $ref_build"; exit 1 ;;
-            esac
-
             case "$branch" in
                 all-master)
                     gcc_branch=master
@@ -104,14 +97,6 @@
             abe_branch=refs/remotes/origin/master
             displaytag=upstream-monitoring-$branch-${BUILD_NUMBER}
             EOF
-
-            cat <<EOF > compare_results_parameters
-            ref_logs=tcwg-upstream-monitoring/${branch}-$ref_build_num
-            new_logs=tcwg-upstream-monitoring/${branch}-$BUILD_NUMBER
-            show_results=false
-            log_server=$log_server
-            EOF
-
         - trigger-builds:
             - project: tcwg-buildfarm
               property-file: buildfarm_parameters
@@ -120,6 +105,26 @@
                   build-step-failure-threshold: 'never'
                   unstable-threshold: 'never'
                   failure-threshold: 'never'
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            shopt -s extglob
+
+            case "$ref_build" in
+                lastSuccess)   ref_build_num=$(wget -q --no-check-certificate -O - "${JOB_URL}lastSuccessfulBuild/buildNumber") ;;
+                previous)      ref_build_num=$(wget -q --no-check-certificate -O - "${JOB_URL}lastCompletedBuild/buildNumber") ;;
+                [1-9]*([0-9])) ref_build_num="$ref_build" ;;
+                *) echo "ERROR: Cannot handle ref_build: $ref_build"; exit 1 ;;
+            esac
+
+            cat <<EOF > compare_results_parameters
+            ref_logs=tcwg-upstream-monitoring/${branch}-$ref_build_num
+            new_logs=tcwg-upstream-monitoring/${branch}-$BUILD_NUMBER
+            show_results=false
+            log_server=$log_server
+            EOF
         - trigger-builds:
             - project: tcwg-compare-results
               property-file: compare_results_parameters
