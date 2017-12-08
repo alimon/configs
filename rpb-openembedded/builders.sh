@@ -91,11 +91,9 @@ cat conf/{site,auto}.conf
 [ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-lava"
 [ "${DISTRO}" = "rpb-wayland" ] && IMAGES+=" rpb-weston-image rpb-weston-image-lava"
 [ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image"
-if [ "${MACHINE}" = "hikey-32" ] ; then
-    time bitbake_secondary_image --extra-machine hikey ${IMAGES}
-else
-    time bitbake ${IMAGES}
-fi
+
+time bitbake ${IMAGES}
+
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
 # Prepare files to publish
