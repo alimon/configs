@@ -253,46 +253,6 @@ Build description:
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
-# FIXME handle properly the publishing URL
-case "${KERNEL_RECIPE}" in
-  linux-generic-stable)
-    PUB_DEST="linux-stable-${KERNEL_VERSION}"
-    ;;
-  linux-generic-stable-rc)
-    PUB_DEST="linux-stable-rc-${KERNEL_VERSION}"
-    ;;
-  linux-generic-mainline)
-    PUB_DEST="linux-mainline"
-    ;;
-  linux-generic-next)
-    PUB_DEST="linux-next"
-    ;;
-  linux-hikey-lts)
-    PUB_DEST="linaro-hikey-stable-4.4"
-    ;;
-  linux-hikey-lts-rc)
-    PUB_DEST="linaro-hikey-stable-rc-4.4"
-    ;;
-  linux-generic-lsk)
-    PUB_DEST="lsk-${KERNEL_VERSION}"
-    ;;
-  linux-generic-lsk-test)
-    PUB_DEST="lsk-${KERNEL_VERSION}-test"
-    ;;
-  linux-generic-lsk-rt)
-    PUB_DEST="lsk-${KERNEL_VERSION}-rt"
-    ;;
-  linux-generic-lsk-rt-test)
-    PUB_DEST="lsk-${KERNEL_VERSION}-rt-test"
-    ;;
-  linux-generic-stable-rt)
-    PUB_DEST="linux-stable-rt-${KERNEL_VERSION}"
-    ;;
-  *)
-    PUB_DEST="${KERNEL_VERSION}"
-    ;;
-esac
-
 GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
@@ -303,8 +263,7 @@ for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
   source lkftmetadata/packages/*/${recipe}/metadata
 done
 
-SNAPSHOTS_URL=http://snapshots.linaro.org
-BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/${BUILD_NUMBER}
+BASE_URL=http://snapshots.linaro.org
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | xargs -r basename)
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
@@ -334,23 +293,22 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "libhugetlbfs_revision" : "${LIBHUGETLBFS_REVISION}",
   "build_arch" : "${TUNE_FEATURES}",
   "compiler" : "${TARGET_SYS} ${GCCVERSION}",
-  "build_location" : "${SNAPSHOTS_URL}/${BASE_URL}"
+  "build_location" : "${BASE_URL}/${PUB_DEST}"
 }
 EOF
 
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
-SNAPSHOTS_URL=${SNAPSHOTS_URL}
 BASE_URL=${BASE_URL}
-BOOT_URL=${SNAPSHOTS_URL}/${BASE_URL}/${BOOT_IMG}
-SYSTEM_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_IMG}
-KERNEL_URL=${SNAPSHOTS_URL}/${BASE_URL}/${KERNEL_IMG}
-DTB_URL=${SNAPSHOTS_URL}/${BASE_URL}/${DTB_IMG}
-RECOVERY_IMAGE_URL=${SNAPSHOTS_URL}/${BASE_URL}/juno-oe-uboot.zip
-NFSROOTFS_URL=${SNAPSHOTS_URL}/${BASE_URL}/${ROOTFS_TARXZ_IMG}
+BOOT_URL=${BASE_URL}/${PUB_DEST}/${BOOT_IMG}
+SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
+KERNEL_URL=${BASE_URL}/${PUB_DEST}/${KERNEL_IMG}
+DTB_URL=${BASE_URL}/${PUB_DEST}/${DTB_IMG}
+RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/juno-oe-uboot.zip
+NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_TARXZ_IMG}
 KERNEL_COMMIT=${SRCREV_kernel}
-KERNEL_CONFIG_URL=${SNAPSHOTS_URL}/${BASE_URL}/config
-KERNEL_DEFCONFIG_URL=${SNAPSHOTS_URL}/${BASE_URL}/defconfig
+KERNEL_CONFIG_URL=${BASE_URL}/${PUB_DEST}/config
+KERNEL_DEFCONFIG_URL=${BASE_URL}/${PUB_DEST}/defconfig
 KSELFTESTS_MAINLINE_URL=${KSELFTESTS_MAINLINE_URL}
 KSELFTESTS_MAINLINE_VERSION=${KSELFTESTS_MAINLINE_VERSION}
 KSELFTESTS_NEXT_URL=${KSELFTESTS_NEXT_URL}

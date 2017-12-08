@@ -43,6 +43,9 @@
             name: MANIFEST_BRANCH
             default: 'morty'
         - string:
+            name: PUB_DEST
+            default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/linaro-hikey-stable-${KERNEL_VERSION}/${BUILD_NUMBER}'
+        - string:
             name: LAVA_SERVER
             default: 'https://lkft.validation.linaro.org/RPC2/'
         - string:
@@ -119,7 +122,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              ${DEPLOY_DIR_IMAGE}/ ${BASE_URL}
+              ${DEPLOY_DIR_IMAGE}/ ${PUB_DEST}
         - shell:
             !include-raw: openembedded-lkft/submit_for_testing.sh
     publishers:

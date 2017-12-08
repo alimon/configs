@@ -4,9 +4,10 @@ virtualenv .venv
 source .venv/bin/activate
 pip install Jinja2 requests urllib3
 
-export BASE_URL=openembedded/lkft/morty/hikey/rpb/linux-mainline/346
-export BOOT_URL=http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/linux-mainline/346/boot-0.0+AUTOINC+06e4def583-fb1158a365-r0-hikey-20171012090440-346.uefi.img
-export DTB_URL=http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/linux-mainline/346/junor2.dtb
+export BASE_URL=http://snapshots.linaro.org
+export PUB_DEST=openembedded/lkft/morty/hikey/rpb/linux-mainline/346
+export BOOT_URL=${BASE_URL}/${PUB_DEST}/boot-0.0+AUTOINC+06e4def583-fb1158a365-r0-hikey-20171012090440-346.uefi.img
+export DTB_URL=${BASE_URL}/${PUB_DEST}/junor2.dtb
 export BUILD_ID=346
 export BUILD_NUMBER=346
 export BUILD_URL="https://ci.linaro.org/job/openembedded-lkft-linux-mainline/DISTRO=rpb,MACHINE=hikey,label=docker-stretch-amd64/346/"
@@ -15,12 +16,12 @@ export JOB_NAME="openembedded-lkft-linux-mainline/DISTRO=rpb,MACHINE=hikey,label
 export JOB_URL="https://ci.linaro.org/job/openembedded-lkft-linux-mainline/DISTRO=rpb,MACHINE=hikey,label=docker-stretch-amd64/"
 export KERNEL_BRANCH=master
 export KERNEL_COMMIT=ff5abbe799e29099695cb8b5b2f198dd8b8bdf26
-export KERNEL_CONFIG_URL=http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/linux-mainline/346/defconfig
-export KERNEL_DEFCONFIG_URL=http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/linux-mainline/346/defconfig
+export KERNEL_CONFIG_URL=${BASE_URL}/${PUB_DEST}/config
+export KERNEL_DEFCONFIG_URL=${BASE_URL}/${PUB_DEST}/defconfig
 export KERNEL_DESCRIBE=v4.14-rc4-84-gff5abbe799e2
 export KERNEL_RECIPE=linux-hikey-mainline
 export KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-export KERNEL_URL=http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/linux-mainline/346/Image--4.13+git0+ff5abbe799-r0-hikey-20171012090440-346.bin
+export KERNEL_URL=${BASE_URL}/${PUB_DEST}/Image--4.13+git0+ff5abbe799-r0-hikey-20171012090440-346.bin
 export KERNEL_VERSION=git
 export KSELFTEST_PATH="/opt/"
 export KSELFTESTS_URL=https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.13.tar.xz
@@ -38,15 +39,14 @@ export LTP_VERSION=20170929
 export MACHINE=hikey
 export MAKE_KERNELVERSION=4.14.0-rc4
 export MANIFEST_BRANCH=morty
-export NFSROOTFS_URL=http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/linux-mainline/346/rpb-console-image-hikey-20171012090440-346.rootfs.tar.xz
+export NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/rpb-console-image-hikey-20171012090440-346.rootfs.tar.xz
 export QA_REPORTS_TOKEN=qa-reports-token
 export QA_SERVER=https://qa-reports.linaro.org
 export QA_SERVER_PROJECT=linux-mainline-oe
-export RECOVERY_IMAGE_URL=http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/linux-mainline/346/juno-oe-uboot.zip
+export RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/juno-oe-uboot.zip
 export SKIP_LAVA=
-export SNAPSHOTS_URL=http://snapshots.linaro.org
 export SRCREV_kernel=ff5abbe799e29099695cb8b5b2f198dd8b8bdf26
-export SYSTEM_URL=http://snapshots.linaro.org/openembedded/lkft/morty/hikey/rpb/linux-mainline/346/rpb-console-image-hikey-20171012090440-346.rootfs.img.gz
+export SYSTEM_URL=${BASE_URL}/${PUB_DEST}/rpb-console-image-hikey-20171012090440-346.rootfs.img.gz
 export BUILD_NAME="openembedded-lkft-linux-mainline"
 export LAVA_JOB_PRIORITY="medium"
 export QA_SERVER="http://localhost:8000"
