@@ -2,7 +2,7 @@
 
 virtualenv .venv
 source .venv/bin/activate
-pip install Jinja2 requests urllib3
+pip install Jinja2 requests urllib3 ruamel.yaml
 
 export BASE_URL=http://snapshots.linaro.org
 export PUB_DEST=openembedded/lkft/morty/hikey/rpb/linux-mainline/346
@@ -55,39 +55,12 @@ export DEVICE_TYPE="x86"
 export KSELFTEST_SKIPLIST="pstore"
 export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
 
-[ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
-[ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="low"
-[ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
+export DRY_RUN=true
 
-if [ -z "${DEVICE_TYPE}" ]; then
-    echo "DEVICE_TYPE not set. Exiting"
-    exit 0
-fi
-
-if [ ! -z "${KERNEL_DESCRIBE}" ]; then
-    export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
-else
-    export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
-fi
-
-[ ! -z ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
-
-for test in $(ls lava-job-definitions/testplan); do
-    TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+for device in $(ls lava-job-definitions/devices); do
+    export DEVICE_TYPE=$device
+    bash submit_for_testing.sh
 done
-
-[ -z "${DEVICE_TYPE}" ] || \
-python submit_for_testing.py \
-  --device-type ${DEVICE_TYPE} \
-  --build-number ${BUILD_NUMBER} \
-  --lava-server ${LAVA_SERVER} \
-  --qa-server ${QA_SERVER} \
-  --qa-server-team lkft \
-  --qa-server-project ${QA_SERVER_PROJECT} \
-  --git-commit ${QA_BUILD_VERSION} \
-  --test-plan ${TEST_TEMPLATES} \
-  --testplan-path lava-job-definitions \
-  --dry-run
 
 # cleanup virtualenv
 deactivate

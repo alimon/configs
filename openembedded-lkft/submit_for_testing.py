@@ -2,10 +2,12 @@ import argparse
 import os
 import requests
 import sys
+import StringIO
 from copy import deepcopy
 from string import Template
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
-from jinja2.exceptions import TemplateNotFound
+from ruamel.yaml import YAML
+
 
 try:
     from urllib.parse import urlsplit
@@ -20,6 +22,20 @@ testplan_device_path = 'devices/'
 # Snapshots base URL
 snapshots_url = 'https://snapshots.linaro.org/openembedded/lkft'
 
+def parse_template(yaml_string):
+    '''
+        Round trip lava_job through ruamel to test parsing and
+        improve formatting. Comments are preserved.
+
+        In: yaml-formatted string
+        Out: validated yaml-formatted string
+    '''
+    yaml = YAML()
+    # ruamel does not provide a mechanism to dump to string, so use StringIO
+    # to catch it
+    output = StringIO.StringIO()
+    yaml.dump(yaml.load(yaml_string), output)
+    return output.getvalue()
 
 def _load_template(template_name, template_path, device_type):
     template = ''
@@ -139,9 +155,8 @@ def main():
                         nargs="+",
                         default=[])
     parser.add_argument("--dry-run",
-                        help="""Only prepare and print templates.
-                        Don't submit to actual servers.
-                        This option disables --quiet""",
+                        help="""Prepare and write templates to tmp/.
+                        Don't submit to actual servers.""",
                         action='store_true',
                         dest="dryrun")
     parser.add_argument("--quiet",
@@ -151,11 +166,12 @@ def main():
 
     args, _ = parser.parse_known_args()
 
+    output_path = "tmp"
     if args.dryrun:
-        # disable quiet when dryrun is enabled
-        args.quiet = False
+        if not os.path.exists(output_path):
+            os.mkdir(output_path)
     if args.qa_token is None:
-        print "QA_REPORTS_TOKEN is missing"
+        print("QA_REPORTS_TOKEN is missing")
         sys.exit(1)
 
     qa_server_base = args.qa_server
@@ -182,6 +198,7 @@ def main():
     template_base_post, _ = _load_template(args.template_base_post,
                                            args.template_path,
                                            args.device_type)
+    lava_jobs = []
     for test in args.template_names:
         test_template, template_file_name = _load_template(test,
                                                            args.template_path,
@@ -194,15 +211,17 @@ def main():
         template = Template(test_template)
         print("using template: %s" % template_file_name)
         lava_job = template.substitute(os.environ)
+        lava_job = parse_template(lava_job)
+        lava_jobs.append(lava_job)
+
         if not args.quiet:
             print(lava_job)
-        if not args.dryrun:
-            _submit_to_squad(lava_job,
-                lava_url_base,
-                qa_server_api,
-                qa_server_base,
-                args.qa_token,
-                args.quiet)
+        if args.dry_run:
+            testpath = os.path.join(output_path, args.device_type, test)
+            if not os.path.exists(os.path.dirname(testpath)):
+                os.makedirs(os.path.dirname(testpath))
+            with open(os.path.join(testpath), 'w') as f:
+                f.write(lava_job)
 
     THIS_DIR = os.path.abspath(args.testplan_path)
     # prevent creating templates when variables are missing
@@ -210,17 +229,22 @@ def main():
     context = deepcopy(os.environ)
     context.update({"device_type": os.path.join(args.testplan_device_path, args.device_type)})
     for test in args.test_plan:
-        lava_job = None
-        try:
-            lava_job = j2_env.get_template(test).render(context)
-        except TemplateNotFound as e:
-            print("Test plan or device_type not found")
-            print(e)
+        ''' Prepare lava jobs '''
+        lava_job = j2_env.get_template(test).render(context)
+        lava_job = parse_template(lava_job)
+        lava_jobs.append(lava_job)
 
-        if lava_job is None:
-            continue
         if not args.quiet:
             print(lava_job)
+        if args.dryrun:
+            testpath = os.path.join(output_path, args.device_type, test)
+            if not os.path.exists(os.path.dirname(testpath)):
+                os.makedirs(os.path.dirname(testpath))
+            with open(os.path.join(testpath), 'w') as f:
+                f.write(lava_job)
+
+    for lava_job in lava_jobs:
+        ''' Submit lava jobs '''
         if not args.dryrun:
             _submit_to_squad(lava_job,
                 lava_url_base,
@@ -228,6 +252,7 @@ def main():
                 qa_server_base,
                 args.qa_token,
                 args.quiet)
+
 
 if __name__ == "__main__":
     main()
