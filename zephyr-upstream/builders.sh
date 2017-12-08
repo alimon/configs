@@ -32,14 +32,9 @@ head -5 Makefile
 # https://github.com/zephyrproject-rtos/meta-zephyr-sdk/releases/download/0.9.2/zephyr-sdk-0.9.2-setup.run
 # To install Zephyr SDK: ./zephyr-sdk-0.9.2-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
 
-case "${ZEPHYR_GCC_VARIANT}" in
-  gccarmemb)
-    export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-6-2017-q2-update"
-  ;;
-  zephyr)
-    export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
-  ;;
-esac
+export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-6-2017-q2-update"
+# We building with the gccarmemb toolchain, we need ZEPHYR_SDK_INSTALL_DIR to find things like conf
+export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
 
 # Set build environment variables
 LANG=C
