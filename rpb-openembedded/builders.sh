@@ -36,7 +36,7 @@ export PATH=${HOME}/bin:${PATH}
 
 # initialize repo if not done already
 if [ ! -e ".repo/manifest.xml" ]; then
-   repo init -u https://github.com/96boards/oe-rpb-manifest.git -b ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}
+   repo init -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}
 
    # link to shared downloads on persistent disk
    # our builds config is expecting downloads and sstate-cache, here.
@@ -54,8 +54,7 @@ repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
 # record changes since last build, if available
-MANIFEST_URL=${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml
-if wget -q ${MANIFEST_URL} -O pinned-manifest-latest.xml; then
+if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
     repo diffmanifests ${PWD}/pinned-manifest-latest.xml ${PWD}/pinned-manifest.xml > manifest-changes.txt
 else
     echo "latest build published does not have pinned-manifest.xml, skipping diff report"
