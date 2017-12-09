@@ -21,7 +21,7 @@ sudo pip3 install pyelftools pykwalify
 git clone -b ${BRANCH} https://git.linaro.org/lite/zephyr.git ${WORKSPACE}
 git clean -fdx
 if [ -n "${GIT_COMMIT}" ]; then
-  git reset --hard ${GIT_COMMIT}
+  git checkout ${GIT_COMMIT}
 fi
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
