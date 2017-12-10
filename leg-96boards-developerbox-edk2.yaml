@@ -1,0 +1,103 @@
+- job:
+    name: leg-96boards-developerbox-edk2
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: docker-xenial-amd64
+    display-name: 'Linaro EDK II - Socionext Developerbox System Firmware'
+    scm:
+        - git:
+            url: git://git.linaro.org/leg/noupstream/edk2-platforms.git 
+            refspec: +refs/heads/developer-box:refs/remotes/origin/developer-box
+            name: origin
+            branches:
+                - refs/heads/developer-box
+            basedir: edk2-platforms
+            skip-tag: true
+            shallow-clone: true
+            clean: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf out Build edk2 edk2-non-osi
+            }
+
+            git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2-non-osi.git
+            git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2.git
+
+            # use Xenial's default cross toolchains as GCC5
+            export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
+
+            sudo dpkg --add-architecture i386
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends clang python-requests zip libstdc++6:i386 zlib1g:i386 \
+                            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
+
+            export OUTDIR=${WORKSPACE}/out
+            export PACKAGES_PATH=${WORKSPACE}/edk2:${WORKSPACE}/edk2-platforms:${WORKSPACE}/edk2-non-osi
+
+            NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
+
+            make -C edk2/BaseTools -j $NUM_THREADS
+
+            source edk2/edksetup.sh
+
+            # download and unpack the OpenSSL sources
+            cd ${WORKSPACE}/edk2/CryptoPkg/Library/OpensslLib
+
+            # capture the clone command (minus the trailing \r) from the HOWTO
+            CLONE_CMD=$(grep 'git clone -b' OpenSSL-HOWTO.txt |sed 's/[ >]*\(.*\)\r/\1/')
+
+            # clone the OpenSSL repo
+            eval ${CLONE_CMD} --depth 1
+
+            build -a AARCH64 -t GCC5 -b DEBUG -b RELEASE -n $NUM_THREADS -p Platform/Socionext/DeveloperBox/DeveloperBox.dsc -D FIRMWARE_VER=${BUILD_NUMBER}
+
+            mkdir $OUTDIR
+            cp Build/DeveloperBox/DEBUG_GCC5/FV/SPI_NOR_IMAGE.fd $OUTDIR/SPI_NOR_IMAGE.fd-DEBUG
+            cp Build/DeveloperBox/RELEASE_GCC5/FV/SPI_NOR_IMAGE.fd $OUTDIR/SPI_NOR_IMAGE.fd-RELEASE
+            cp Build/DeveloperBox/DEBUG_GCC5/FV/SYNQUACERFIRMWAREUPDATECAPSULEFMPPKCS7.Cap $OUTDIR/DeveloperBox-DEBUG.Cap
+            cp Build/DeveloperBox/RELEASE_GCC5/FV/SYNQUACERFIRMWAREUPDATECAPSULEFMPPKCS7.Cap $OUTDIR/DeveloperBox.Cap
+
+            #find out -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              out components/kernel/${JOB_NAME}/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'ard.biesheuvel@linaro.org'
