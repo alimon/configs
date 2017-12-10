@@ -52,9 +52,6 @@
               rm -rf out Build edk2 edk2-non-osi
             }
 
-            git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2-non-osi.git
-            git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2.git
-
             # use Xenial's default cross toolchains as GCC5
             export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
 
@@ -62,6 +59,20 @@
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends clang python-requests zip libstdc++6:i386 zlib1g:i386 \
                             gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
+
+            git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2-non-osi.git
+            git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2.git
+
+            (
+                # download and unpack the OpenSSL sources
+                cd ${WORKSPACE}/edk2/CryptoPkg/Library/OpensslLib
+
+                # capture the clone command (minus the trailing \r) from the HOWTO
+                CLONE_CMD=$(grep 'git clone -b' OpenSSL-HOWTO.txt |sed 's/[ >]*\(.*\)\r/\1/')
+
+                # clone the OpenSSL repo
+                eval ${CLONE_CMD} --depth 1
+            )
 
             export OUTDIR=${WORKSPACE}/out
             export PACKAGES_PATH=${WORKSPACE}/edk2:${WORKSPACE}/edk2-platforms:${WORKSPACE}/edk2-non-osi
@@ -71,15 +82,6 @@
             make -C edk2/BaseTools -j $NUM_THREADS
 
             source edk2/edksetup.sh
-
-            # download and unpack the OpenSSL sources
-            cd ${WORKSPACE}/edk2/CryptoPkg/Library/OpensslLib
-
-            # capture the clone command (minus the trailing \r) from the HOWTO
-            CLONE_CMD=$(grep 'git clone -b' OpenSSL-HOWTO.txt |sed 's/[ >]*\(.*\)\r/\1/')
-
-            # clone the OpenSSL repo
-            eval ${CLONE_CMD} --depth 1
 
             build -a AARCH64 -t GCC5 -b DEBUG -b RELEASE -n $NUM_THREADS -p Platform/Socionext/DeveloperBox/DeveloperBox.dsc -D FIRMWARE_VER=${BUILD_NUMBER}
 
