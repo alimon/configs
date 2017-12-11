@@ -54,6 +54,13 @@ repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 echo "MANIFEST_COMMIT=${MANIFEST_COMMIT}" > ${WORKSPACE}/submit_for_testing_parameters
 
+# record changes since last build, if available
+if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
+    repo diffmanifests ${PWD}/pinned-manifest-latest.xml ${PWD}/pinned-manifest.xml > manifest-changes.txt
+else
+    echo "latest build published does not have pinned-manifest.xml, skipping diff report"
+fi
+
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
@@ -99,6 +106,7 @@ DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
 find ${DEPLOY_DIR_IMAGE} -type l -delete
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
+mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE} || true
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
