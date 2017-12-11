@@ -54,8 +54,15 @@ repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
 # FIXME LHG Specific: clone restricted repository, which isn't in the public manifest
+cat << EOF > ${HOME}/lhg-review.sshconfig
+Host lhg-review.linaro.org
+    User lhg-gerrit-bot
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking no
+EOF
+chmod 0600 ${HOME}/lhg-review.sshconfig
 rm -rf layers/meta-lhg-prop
-GIT_SSH_COMMAND="${GIT_SSH_COMMAND}" git clone ssh://lhg-review.linaro.org:29418/lhg/meta-lhg-prop layers/meta-lhg-prop
+git clone ssh://lhg-review.linaro.org:29418/lhg/meta-lhg-prop layers/meta-lhg-prop
 
 # record changes since last build, if available
 if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
@@ -91,6 +98,11 @@ EOF
 
 # add useful debug info
 cat conf/{site,auto}.conf
+
+# FIXME LHG Specific: use a custom git fetcher command to workaround lhg-review.linaro.org broken SSHFP
+cat << EOF >> conf/local.conf
+FETCHCMD_git = "GIT_SSH_COMMAND="${GIT_SSH_COMMAND}" git -c core.fsyncobjectfiles=0"
+EOF
 
 # FIXME LHG Specific: don't override IMAGES
 #[ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-lava"
