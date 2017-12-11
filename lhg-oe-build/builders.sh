@@ -106,7 +106,6 @@ DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
 find ${DEPLOY_DIR_IMAGE} -type l -delete
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
-mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE} || true
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
@@ -135,17 +134,29 @@ find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
 sed -i "s|${DEPLOY_DIR_IMAGE}/||" MD5SUMS.txt
 mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 
-# Build information - this is 96boards specific
-#cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
-#
-#h4. Reference Platform Build - CE OpenEmbedded
-#
-#Build description:
-#* Build URL: "$BUILD_URL":$BUILD_URL
-#* Manifest URL: "https://github.com/linaro-home/lhg-oe-manifests.git":https://github.com/linaro-home/lhg-oe-manifests.git
-#* Manifest branch: ${MANIFEST_BRANCH}
-#* Manifest commit: "${MANIFEST_COMMIT}":https://github.com/linaro-home/lhg-oe-manifests/commit/${MANIFEST_COMMIT}
-#EOF
+# Build information
+cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
+
+h4. Linaro Home Group Build - OpenEmbedded
+
+Build description:
+* Build URL: "$BUILD_URL":$BUILD_URL
+* Manifest URL: "${MANIFEST_URL}":${MANIFEST_URL}
+* Manifest branch: ${MANIFEST_BRANCH}
+* Manifest commit: "${MANIFEST_COMMIT}":${MANIFEST_URL/.git/\/commit}/${MANIFEST_COMMIT}
+EOF
+
+if [ -e "/srv/oe/manifest-changes.txt" ]; then
+  # the space after pre.. tag is on purpose
+  cat > ${DEPLOY_DIR_IMAGE}/README.textile << EOF
+
+h4. Manifest changes
+
+pre.. 
+EOF
+  cat /srv/oe/manifest-changes.txt >> ${DEPLOY_DIR_IMAGE}/README.textile
+  mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE}
+fi
 
 # The archive publisher can't handle files located outside
 # ${WORKSPACE} - create the link before archiving.
