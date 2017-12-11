@@ -55,7 +55,7 @@ MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
 # FIXME LHG Specific: clone restricted repository, which isn't in the public manifest
 rm -rf layers/meta-lhg-prop
-GIT_SSH_COMMAND="${GIT_SSH_COMMAND}" git clone ssh://lhg-gerrit-bot@lhg-review.linaro.org:29418/lhg/meta-lhg-prop layers/meta-lhg-prop
+GIT_SSH_COMMAND="${GIT_SSH_COMMAND}" git clone ssh://lhg-review.linaro.org:29418/lhg/meta-lhg-prop layers/meta-lhg-prop
 
 # record changes since last build, if available
 if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
