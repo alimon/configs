@@ -36,7 +36,7 @@ export PATH=${HOME}/bin:${PATH}
 
 # initialize repo if not done already
 if [ ! -e ".repo/manifest.xml" ]; then
-   repo init -u ${MANIFEST_REPO} -b ${MANIFEST_BRANCH}
+   repo init -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH}
 
    # link to shared downloads on persistent disk
    # our builds config is expecting downloads and sstate-cache, here.
@@ -145,7 +145,7 @@ rm -f ${WORKSPACE}/out
 ln -s ${DEPLOY_DIR_IMAGE} ${WORKSPACE}/out
 
 # Need different files for each machine
-BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}.uefi.img" | xargs -r basename)
+BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | xargs -r basename)
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-westonchromium-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
 ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-westonchromium-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-westonchromium-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
