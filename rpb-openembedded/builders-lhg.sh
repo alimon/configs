@@ -98,7 +98,7 @@ cat conf/{site,auto}.conf
 #[ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image"
 
 # FIXME LHG Specific: add the layer
-bitbake-layers add-layer ${OEROOT}/layers/meta-lhg-prop
+bitbake-layers add-layer /srv/oe/layers/meta-lhg-prop
 
 time bitbake ${IMAGES}
 
