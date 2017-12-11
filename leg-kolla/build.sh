@@ -26,6 +26,8 @@ pip install -r requirements.txt
 
 mkdir -p logs/debian-source
 
+kolla_tag=queens-$(date +"%Y%m%d") # use YYYYMMDD for tags
+
 kolla_namespace=linaro
 ./tools/build.py --base debian \
                  --format none \
@@ -33,6 +35,7 @@ kolla_namespace=linaro
                  --pull \
                  --push \
                  --retries 0 \
+                 --tag ${kolla_tag} \
                  --type source \
                  --namespace ${kolla_namespace}
 
