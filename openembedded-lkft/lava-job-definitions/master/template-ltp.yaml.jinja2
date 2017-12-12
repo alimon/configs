@@ -17,7 +17,7 @@
       parameters:
         SKIP_INSTALL: 'true'
         TST_CMDFILES: '{{testname}}'
-        SKIPFILE: 'skipfile-lkft-hikey'
+        {% if LTP_SKIPFILE is defined %}SKIPFILE: '{{LTP_SKIPFILE}}'{% elif ltp_skipfile is defined %}SKIPFILE: '{{ltp_skipfile}}'{% endif %}
         TIMEOUT_MULTIPLIER: 3
       name: ltp-{{testname}}-tests
       timeout:
