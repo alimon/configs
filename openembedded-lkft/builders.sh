@@ -131,7 +131,7 @@ sed -i -e '/gpu/d' ${stih410_b2260_conf}
 cat << EOF >> conf/local.conf
 CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests-mainline kselftests-next libhugetlbfs-tests ltp ${extra_pkgs}"
 CORE_IMAGE_BASE_INSTALL_append = " python python-misc python-modules python-numpy python-pexpect python-pyyaml"
-CORE_IMAGE_BASE_INSTALL_append = " git mosh-server parted packagegroup-core-buildessential packagegroup-core-tools-debug"
+CORE_IMAGE_BASE_INSTALL_append = " git mosh-server parted packagegroup-core-buildessential packagegroup-core-tools-debug tzdata"
 EOF
 
 # Override cmdline
