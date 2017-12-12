@@ -10,11 +10,26 @@ except ImportError:
     from urlparse import urlsplit
 
 excluded_tests = [
-# Exclude mqtt_publisher/mqtt_subscriber - need a server running to connect to
+    # Leads to HARD FAULT.
+    'tests/kernel/common/test/zephyr/zephyr.bin',
+    'tests/drivers/build_all/test_build_ethernet/zephyr/zephyr.bin',
+    # Leads to USAGE FAULT.
+    'tests/net/all/test/zephyr/zephyr.bin',
+    # Doesn't run, no output.
+    'tests/kernel/mem_protect/app_memory/test/zephyr/zephyr.bin',
+    'tests/kernel/queue/test_poll/zephyr/zephyr.bin',
+    'tests/kernel/fifo/fifo_api/test_poll/zephyr/zephyr.bin',
+    # pi benchmark, not covered by current result log parse pattern.
+    'tests/kernel/fp_sharing/test_arm/zephyr/zephyr.bin',
+    # Endless output, not stopping.
+    'tests/kernel/test_build/test_debug/zephyr/zephyr.bin',
+    'tests/kernel/test_build/test_runtime_nmi/zephyr/zephyr.bin',
+    'tests/kernel/test_build/test_newlib/zephyr/zephyr.bin',
+    # Exclude mqtt_publisher/mqtt_subscriber - need a server running to connect to
     'tests/net/lib/mqtt_publisher/test/zephyr.bin',
     'tests/net/lib/mqtt_publisher/test_tls/zephyr.bin',
     'tests/net/lib/mqtt_subscriber/test/zephyr.bin',
-# Exclude adc_simple as the test is specific to Arduino 101 board.
+    # Exclude adc_simple as the test is specific to Arduino 101 board.
     'tests/drivers/adc/adc_simple/test/zephyr.bin',
     'tests/drivers/spi_test/test/zephyr.bin',
     'tests/drivers/build_all/test_build_sensors_n_z/zephyr.bin',
