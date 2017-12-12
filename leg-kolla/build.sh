@@ -1,13 +1,8 @@
 #!/bin/bash
 
-set -ex
+set -x
 
-trap cleanup_exit INT TERM EXIT
-
-cleanup_exit()
-{
-    rm -rf ${HOME}/.docker
-}
+rm -rf ${HOME}/.docker
 
 mkdir -p ${HOME}/.docker
 sed -e "s|\${DOCKER_AUTH}|${DOCKER_AUTH}|" < ${WORKSPACE}/config.json > ${HOME}/.docker/config.json
@@ -47,3 +42,8 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python ${HOME}/bin/linaro-cp.py \
   --link-latest \
   logs/debian-source reference-platform/enterprise/components/openstack/kolla-logs/${BUILD_NUMBER}
+
+echo "Images: https://hub.docker.com/u/linaro/"
+echo "Logs:   https://snapshots.linaro.org/reference-platform/enterprise/components/openstack/kolla-logs/${BUILD_NUMBER}/"
+
+rm -rf ${HOME}/.docker
