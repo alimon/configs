@@ -188,6 +188,11 @@ do_install_append() {
 FILES_\${PN} += "\${sysconfdir}/e2fsck.conf "
 EOF
 
+# FIXME Sumit specific
+if [ -z "${SRCREV_kernel}" ]; then
+  SRCREV_kernel=$(git ls-remote --heads ${KERNEL_REPO} ${KERNEL_BRANCH} | cut -f1)
+fi
+
 # Update kernel recipe SRCREV
 kernel_recipe=$(find ../layers/meta-96boards -name ${KERNEL_RECIPE}_${KERNEL_VERSION}.bb)
 sed -i "s|^SRCREV_kernel = .*|SRCREV_kernel = \"${SRCREV_kernel}\"|" ${kernel_recipe}

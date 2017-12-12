@@ -108,6 +108,11 @@
             esac
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+
+            if [ -z "${SRCREV_kernel}" ]; then
+              SRCREV_kernel=$(git ls-remote --heads ${KERNEL_REPO} ${KERNEL_BRANCH} | cut -f1)
+            fi
+
             echo "#${BUILD_NUMBER}-${SRCREV_kernel:0:8}" > ${WORKSPACE}/version.txt
         - build-name-setter:
             name: 'version.txt'
