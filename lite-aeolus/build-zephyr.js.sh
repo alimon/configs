@@ -4,4 +4,5 @@ make BOARD=${PLATFORM}
 
 cd ${WORKSPACE}
 mkdir -p out/${PLATFORM}
-cp outdir/${PLATFORM}/zephyr.bin out/${PLATFORM}/
+# Copy .bin/.elf
+cp outdir/${PLATFORM}/zephyr/zephyr.[be]* out/${PLATFORM}/
