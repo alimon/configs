@@ -33,12 +33,12 @@
                 - docker-xenial-aosp
         - axis:
             type: user-defined
-            name: ARCH
+            name: LUNCH_TARGET
             values:
-                - arm
-                - arm64
-                - arm64_only
-                - x86_64
+                - linaro_arm-userdebug
+                - linaro_arm64-userdebug
+                - linaro_x86_64-userdebug
+                - db410c-userdebug
     execution-strategy:
         sequential: true
     wrappers:
@@ -67,7 +67,6 @@
 
             source build/envsetup.sh
 
-            LUNCH_TARGET="linaro_${ARCH}-userdebug"
             lunch ${LUNCH_TARGET}
             make -k -j8 systemimage ramdisk
 
