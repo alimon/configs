@@ -99,6 +99,8 @@
 
             echo "Preparing to submit to LAVA"
 
+            BIN_EXT=bin
+
             case "${PLATFORM}" in
               #arduino_101)
               #  export DEVICE_TYPE=arduino101
@@ -111,6 +113,8 @@
                 ;;
               qemu_cortex_m3)
                 export DEVICE_TYPE=qemu
+                # Zephyr 1.10 doesn't build .bin for qemu* by default
+                BIN_EXT=elf
                 ;;
               *)
                 echo "Skipping LAVA testing for ${PLATFORM}"
@@ -122,7 +126,7 @@
 
             cd configs/lite-aeolus
 
-            export IMAGE_URL="http://snapshots.linaro.org/components/kernel/aeolus-2/zephyr.js/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}/zephyr.bin"
+            export IMAGE_URL="http://snapshots.linaro.org/components/kernel/aeolus-2/zephyr.js/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}/zephyr.${BIN_EXT}"
 
             [ -z "${DEVICE_TYPE}" ] || \
             python submit-for-test.py "Hello, ZJS world!"
