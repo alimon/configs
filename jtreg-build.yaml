@@ -7,26 +7,6 @@
         browser: hgweb
         browser-url: http://hg.openjdk.java.net/code-tools/jtreg/
         subdir: jtreg
-- scm:
-   name: asmtools
-   scm:
-    - hg:
-        url: http://hg.openjdk.java.net/code-tools/asmtools/
-        clean: true
-        browser: hgweb
-        browser-url: http://hg.openjdk.java.net/code-tools/asmtools/
-        subdir: asmtools
-        revision-type: tag
-        revision: "6.0"
-- scm:
-    name: jcov
-    scm:
-     - hg:
-        url: http://hg.openjdk.java.net/code-tools/jcov
-        clean: true
-        browser: hgweb
-        browser-url: http://hg.openjdk.java.net/code-tools/jcov
-        subdir: jcov
 - job:
     name: jtreg-build
     project-type: freestyle
@@ -50,9 +30,7 @@
     node: aarch64-06
     display-name: 'OpenJDK - Build JDK Regression Test Harness (jtreg)'
     scm:
-        - asmtools
         - jtreg
-        - jcov
     triggers:
         - pollscm:
             cron: 'H/5 * * * *'
@@ -64,108 +42,12 @@
 
             set -eu
 
-            # Build asmtools for jtreg.
-            cd asmtools
+            cd jtreg
 
-            ant -f build/build.xml
-
-            cd ../jtreg
-
-            unzip -o ../asmtools-6.0-build/dist/asmtools-6.0.zip
-
-            if [ ! -d jtharness ]; then
-              wget https://adopt-openjdk.ci.cloudbees.com/job/jtharness/lastSuccessfulBuild/artifact/jtharness-5.0.tar.gz
-              tar xzf jtharness-5.0.tar.gz jtharness/lib
-            fi
-
-            if [ ! -d junit ]; then
-              mkdir junit
-              wget http://repo1.maven.org/maven2/junit/junit/4.8.2/junit-4.8.2.jar -O junit/junit.jar
-            fi
-
-            if [ ! -d testng ]; then
-              mkdir testng
-              wget http://repo1.maven.org/maven2/org/testng/testng/6.9.5/testng-6.9.5.jar -O testng/testng.jar
-            fi
-
-            if [ ! -d jcommander ]; then
-              mkdir jcommander
-              wget http://repo1.maven.org/maven2/com/beust/jcommander/1.72/jcommander-1.72.jar -O jcommander/jcommander.jar
-            fi
-
-            if [ ! -d asm-6.0 ]; then
-              wget http://download.forge.ow2.org/asm/asm-6.0-bin.zip
-              unzip asm-6.0-bin.zip
-            fi
-
-            # Build jcov
-            cd ../jcov
-            ant -f build/build.xml -Dasm.jar=$PWD/../jtreg/asm-6.0/lib/asm-6.0.jar \
-                -Dasm.tree.jar=$PWD/../jtreg/asm-6.0/lib/asm-tree-6.0.jar \
-                -Dasm.util.jar=$PWD/../jtreg/asm-6.0/lib/asm-util-6.0.jar \
-                -Djavatestjar=$PWD/../jtreg/jtharness/lib/javatest.jar
-
-            cd ../jtreg
-
-            ls -lash
-
-            rm -fr build
-            rm -fr dist
-
-            which java
-            java -version
-
-            # Pick out version automatically from Mercurial tags.
-            JTREG_TAG=$(hg log -r "." --template "{latesttag}\n")
-            BUILD_VERSION=$(echo $JTREG_TAG | sed 's,jtreg\([0-9]*\.[0-9]*\)-b.*,\1,')
-            BUILD_NUMBER=$(echo $JTREG_TAG | sed 's,jtreg[0-9]*\.[0-9]*-\(b[0-9]*\),\1,')
-
-            MAJOR=$(echo $BUILD_VERSION | sed 's,\([0-9]*\)\.[0-9]*,\1,')
-            MINOR=$(echo $BUILD_VERSION | sed 's,[0-9]*\.\([0-9]*\),\1,')
-
-
-            # BUILD_VERSION=4.2
-            # BUILD_NUMBER=b03
-            echo jtreg$BUILD_VERSION-$BUILD_NUMBER
-
-            # syntax of the -target and -source command have changed with jdk9
-            sed -i 's|1.8|8|g' make/build.xml
-
-            # Parameters for makefile build, which includes asmtools.jar in
-            # classpath in manifest.
-            # java and ant's home directories are found from the commands.
-            export JDKHOME=$(dirname $(java -XshowSettings:properties |& \
+            JDKHOME=$(dirname $(java -XshowSettings:properties |& \
                  grep java.home |  sed 's,^.*java.home = \(.*\),\1,'))
-            export JAVATEST_HOME=$PWD/jtharness
-            export JAVATEST_JAR=$PWD/jtharness/lib/javatest.jar
-            export JAVAHARNESS_HOME=$PWD/jtharness
-            export ASMTOOLS_HOME=$PWD/asmtools-6.0
-            export TESTNG_HOME=$PWD/testng
-            export TESTNG_JAR=$PWD/testng/testng.jar
-            export JUNIT_JAR=$PWD/junit/junit.jar
-            export ANTHOME=$(ant -diagnostics | grep ant.home | \
-                sed 's,^.*: \(.*\),\1,' | uniq)
-            export JCOMMANDER_JAR=$PWD/jcommander/jcommander.jar
-            export JCOV_JAR=$PWD/../jcov/JCOV_BUILD/jcov_3.0/jcov.jar
-            export JCOV_NETWORK_SAVER_JAR=$PWD/../jcov/JCOV_BUILD/jcov_3.0/jcov_network_saver.jar
 
-            echo JDKHOME=\"$JDKHOME\"
-
-            # Makefile expects files that are not supplied from the packages we
-            # are downloading. Create dummy versions to keep it happy.
-            touch $JAVAHARNESS_HOME/COPYRIGHT-javatest.html
-            mkdir -p $JAVAHARNESS_HOME/doc/javatest/
-            touch $JAVAHARNESS_HOME/doc/javatest/javatestGUI.pdf
-            touch $TESTNG_HOME/LICENSE.txt
-
-            make -C make
-
-            rm -f *.zip
-            rm -f *.tar.gz
-
-            chmod u+x ./build/images/jtreg/bin/*
-
-            ls -lash
+            bash make/build-all.sh $JDKHOME
 
             : ${MAJOR:=4}
             : ${MINOR:=2}
