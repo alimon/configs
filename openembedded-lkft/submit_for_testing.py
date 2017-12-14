@@ -51,7 +51,8 @@ def _submit_to_squad(lava_job, lava_url_base, qa_server_api, qa_server_base, qa_
             "backend": urlsplit(lava_url_base).netloc  # qa-reports backends are named as lava instances
         }
         print("Submit to: %s" % qa_server_api)
-        results = requests.post(qa_server_api, data=data, headers=headers)
+        results = requests.post(qa_server_api, data=data, headers=headers,
+                                timeout=31)
         if results.status_code < 300:
             print("%s/testjob/%s" % (qa_server_base, results.text))
         else:
