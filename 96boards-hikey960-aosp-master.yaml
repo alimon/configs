@@ -85,26 +85,26 @@
             cd -
 
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-            cp -a /home/buildslave/srv/96boards-hikey-aosp-master/build/out/*.xml /home/buildslave/srv/${JOB_NAME}/build/out/*.json ${WORKSPACE}/
+            cp -a /home/buildslave/srv/96boards-hikey-aosp-master/build/out/*.xml /home/buildslave/srv/96boards-hikey-aosp-master/build/out/*.json ${WORKSPACE}/
 
-            cd /home/buildslave/srv/${JOB_NAME}/build/
+            cd /home/buildslave/srv/96boards-hikey-aosp-master/build/
             source build/envsetup.sh
             lunch hikey960-userdebug
             sed -i "s/eng.\`whoami\`/${BUILD_NUMBER}/g" device/linaro/hikey/factory-images/generate-factory-images-hikey960.sh
             sed -i "s/target\/product\/hikey960//g" device/linaro/hikey/factory-images/generate-factory-images-hikey960.sh
             cd -
-            cd /home/buildslave/srv/${JOB_NAME}/build/out/dist/
+            cd /home/buildslave/srv/96boards-hikey-aosp-master/build/out/dist/
             set +xe
             . ../../device/linaro/hikey/factory-images/generate-factory-images-package.sh
-            cp /home/buildslave/srv/${JOB_NAME}/build/out/*.xml  /home/buildslave/srv/${JOB_NAME}/build/out/dist/
+            cp /home/buildslave/srv/96boards-hikey-aosp-master/build/out/*.xml  /home/buildslave/srv/96boards-hikey-aosp-master/build/out/dist/
             rm -rf pub/
             mkdir pub/
             cp *.zip *.xml pub/
             cd -
-            cd /home/buildslave/srv/${JOB_NAME}/build/device/linaro/hikey/; git reset --hard; cd -;
+            cd /home/buildslave/srv/96boards-hikey-aosp-master/build/device/linaro/hikey/; git reset --hard; cd -;
 
             # generate boot.img compatible with UEFI
-            pushd /home/buildslave/srv/${JOB_NAME}/build/out/
+            pushd /home/buildslave/srv/96boards-hikey-aosp-master/build/out/
             cp kernel Image.gz
             gunzip Image.gz
             cat Image 3660-hikey960.dtb >> Image-dtb
