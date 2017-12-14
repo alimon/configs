@@ -7,9 +7,15 @@ small_rom() {
     echo "arduino_101" | grep -F -w -q "$1"
 }
 
+full_testsuite() {
+    echo "frdm_k64f" | grep -F -w -q "$1"
+}
+
 cd ports/zephyr
 if small_rom ${PLATFORM}; then
     ./make-minimal BOARD=${PLATFORM}
+elif full_testsuite ${PLATFORM}; then
+    ./make-bin-testsuite BOARD=${PLATFORM}
 else
     make BOARD=${PLATFORM}
 fi
