@@ -1,0 +1,65 @@
+- job:
+    name: 96boards-hikey-linux
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: KERNEL_REPO_URL
+            default: 'https://github.com/96boards-hikey/linux'
+        - string:
+            name: KERNEL_CONFIGS_
+            default: 'hikey960_defconfig distro.config'
+        - string:
+            name: KERNEL_BUILD_TARGET
+            default: 'deb-pkg'
+        - string:
+            name: KERNEL_BRANCH
+            default: 'hikey960-upstream-rebase'
+        - string:
+            name: TARGET_REPO
+            default: 'hikey'
+        - string:
+            name: KDEB_CHANGELOG_DIST
+            default: 'stretch'
+    disabled: false
+    node: docker-stretch-arm64
+    display-name: '96boards-hikey Linux kernel build'
+    scm:
+        - git:
+            url: ${KERNEL_REPO_URL}
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${KERNEL_BRANCH}
+            basedir: linux
+            skip-tag: false
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell:
+            !include-raw: 96boards-hikey-linux/builders.sh
+        - trigger-builds:
+            - project: 'build-package-obs'
+              property-file: params
+              block: true
+    publishers:
+        - email-ext:
+            recipients: 'packages@lists.linaro.org'
+            always: true
