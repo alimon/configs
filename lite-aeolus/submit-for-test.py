@@ -11,7 +11,11 @@ expect = sys.argv[1]
 
 ENV["JOB_NAME_SHORT"] = ENV["JOB_NAME"].split("/", 1)[0]
 
-with open("lava-job-definitions/%s/template.yaml" % ENV["DEVICE_TYPE"]) as f:
+tpl_suffix = ENV.get("TEST_TYPE", "")
+if tpl_suffix:
+    tpl_suffix = "-" + tpl_suffix
+
+with open("lava-job-definitions/%s/template%s.yaml" % (ENV["DEVICE_TYPE"], tpl_suffix)) as f:
     tpl = f.read()
 
 

@@ -1,0 +1,50 @@
+device_type: '$DEVICE_TYPE'
+job_name: '$JOB_NAME_SHORT $BUILD_DISPLAY_NAME'
+
+timeouts:
+  job:
+    minutes: 6
+  action:
+    minutes: 3
+  actions:
+    wait-usb-device:
+      seconds: 40
+
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 3
+    to: tmpfs
+    images:
+        zephyr:
+          url: '$IMAGE_URL'
+
+- boot:
+    method: cmsis-dap
+    timeout:
+      minutes: 3
+
+- test:
+  monitors:
+  - name: 'micropython_testsuite'
+    start: ''
+    end: '^status: '
+    pattern: (?P<test_case_id>\w+): (?P<result>(OK|FAILED|SKIPPED))
+    fixupdict:
+        OK: pass
+        FAILED: fail
+        SKIPPED: skip
+
+metadata:
+  # For some reason, LAVA doesn't allow to query by real job name,
+  # so we need to duplicate it as metadata.
+  job_name: '$JOB_NAME_SHORT'
+  build-url: $BUILD_URL
+  build-log: ${BUILD_URL}consoleText
+  zephyr-gcc-variant: $ZEPHYR_GCC_VARIANT
+  platform: $PLATFORM
+  git-url: $GIT_URL
+  git-commit: $GIT_COMMIT
