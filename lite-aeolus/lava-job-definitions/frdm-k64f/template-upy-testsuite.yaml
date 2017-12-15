@@ -28,15 +28,15 @@ actions:
       minutes: 3
 
 - test:
-  monitors:
-  - name: 'micropython_testsuite'
-    start: ''
-    end: '^status: '
-    pattern: '(?P<test_case_id>\w+): (?P<result>(OK|FAILED))'
-    fixupdict:
+    monitors:
+    - name: 'micropython_testsuite'
+      start: ''
+      end: '^status: '
+      pattern: '(?P<test_case_id>\w+): (?P<result>(OK|FAILED|SKIPPED))'
+      fixupdict:
         OK: pass
         FAILED: fail
-#        SKIPPED: skip
+        SKIPPED: skip
 
 metadata:
   # For some reason, LAVA doesn't allow to query by real job name,
