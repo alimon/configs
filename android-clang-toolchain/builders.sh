@@ -40,10 +40,10 @@ if [ ! -d clang+llvm-5.0.0-linux-x86_64-ubuntu14.04 ]; then
 fi
 
 # Temporary clang patch for 25b45aa81854313486df891985cdd7ef1ec09780
-cd llvm/tools/clang
-git clone https://git.linaro.org/people/minseong.kim/aosp_patches_for_upstream_clang.git
-patch -p1 < aosp_patches_for_upstream_clang/revert_25b45a.patch
-cd ../../../
+# cd ${HOME}/srv/aosp/${JOB_NAME}/llvm/tools/clang
+# git clone https://git.linaro.org/people/minseong.kim/aosp_patches_for_upstream_clang.git
+# patch -p1 < aosp_patches_for_upstream_clang/revert_25b45a.patch
+# cd ${HOME}/srv/aosp/${JOB_NAME}
 
 cd llvm
 mkdir -p build/clang-master
