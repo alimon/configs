@@ -2,6 +2,9 @@ import argparse
 import os
 import requests
 import sys
+import fnmatch
+import yaml
+import shutil
 from string import Template
 
 try:
@@ -12,9 +15,6 @@ except ImportError:
 excluded_tests = [
     # Leads to HARD FAULT.
     'tests/kernel/common/test/zephyr/zephyr.bin',
-    'tests/drivers/build_all/test_build_ethernet/zephyr/zephyr.bin',
-    # Leads to USAGE FAULT.
-    'tests/net/all/test/zephyr/zephyr.bin',
     # Doesn't run, no output.
     'tests/kernel/mem_protect/app_memory/test/zephyr/zephyr.bin',
     'tests/kernel/queue/test_poll/zephyr/zephyr.bin',
@@ -25,24 +25,13 @@ excluded_tests = [
     'tests/kernel/test_build/test_debug/zephyr/zephyr.bin',
     'tests/kernel/test_build/test_runtime_nmi/zephyr/zephyr.bin',
     'tests/kernel/test_build/test_newlib/zephyr/zephyr.bin',
-    # Exclude mqtt_publisher/mqtt_subscriber - need a server running to connect to
-    'tests/net/lib/mqtt_publisher/test/zephyr.bin',
-    'tests/net/lib/mqtt_publisher/test_tls/zephyr.bin',
-    'tests/net/lib/mqtt_subscriber/test/zephyr.bin',
     # Exclude adc_simple as the test is specific to Arduino 101 board.
     'tests/drivers/adc/adc_simple/test/zephyr.bin',
     'tests/drivers/spi_test/test/zephyr.bin',
-    'tests/drivers/build_all/test_build_sensors_n_z/zephyr.bin',
-    'tests/drivers/build_all/test_build_sensors_a_m/zephyr.bin',
-    'tests/drivers/build_all/test_build_ethernet/zephyr.bin',
-    'tests/drivers/build_all/test_build_drivers/zephyr.bin',
-    'tests/drivers/build_all/test_build_sensor_triggers/zephyr.bin',
     'tests/net/route/test/zephyr.bin',
     'tests/net/trickle/test/zephyr.bin',
     'tests/net/context/test/zephyr.bin',
     'tests/net/rpl/test/zephyr.bin',
-    'tests/net/all/test/zephyr.bin',
-    'tests/net/socket/udp/test/zephyr.bin',
     'tests/net/socket/udp/test/zephyr.bin',
     'tests/kernel/fp_sharing/test_arm/zephyr.bin',
     'tests/kernel/test_tickless/test/zephyr.bin',
@@ -51,27 +40,87 @@ excluded_tests = [
     'tests/kernel/sleep/test/zephyr.bin',
     'tests/kernel/timer/timer_monotonic/test/zephyr.bin',
     'tests/kernel/pthread/test/zephyr.bin',
-    'tests/kernel/test_build/test_newlib/zephyr.bin',
-    'tests/kernel/test_build/test_debug/zephyr.bin',
-    'tests/kernel/test_build/test_runtime_nmi/zephyr.bin',
     'tests/legacy/kernel/test_critical/test/zephyr.bin',
     'tests/legacy/kernel/test_sleep/test/zephyr.bin',
     'tests/ztest/test/base/test_verbose_1/zephyr.bin',
-    'tests/drivers/quark_clock/test_quark_clock_build/zephyr.bin',
-    'tests/drivers/dma/test_loop_transfer/test/zephyr.bin',
-    'tests/drivers/dma/test_chan_blen_transfer/test_dma_shell/zephyr.bin',
-    'tests/power/power_states/test_socwatch/zephyr.bin',
     'tests/kernel/mem_protect/app_memory/test/zephyr.bin',
     'tests/kernel/fatal/test/zephyr.bin',
-    'tests/bluetooth/shell/test_br/zephyr.bin',
     'tests/bluetooth/shell/test_nble/zephyr.bin',
-    'tests/bluetooth/shell/test/zephyr.bin'
 ]
 
 # Templates base path
 template_base_path = 'configs/zephyr-upstream/lava-job-definitions'
 # Snapshots base URL
 snapshots_url = 'https://snapshots.linaro.org/components/kernel/zephyr'
+
+
+def file_list(path, fname):
+    assert os.path.exists(path), '{} not found'.format(path)
+    file_list = []
+    for dirpath, dirnames, files in os.walk(path):
+        for name in files:
+            if fnmatch.fnmatch(name, fname):
+                file_list.append(os.path.join(dirpath, name))
+
+    return file_list
+
+
+def build_only():
+    # Parse testcase.yaml to exclude build only tests.
+    # testcase.yaml file path example: tests/drivers/build_all/testcase.yaml
+    testcases_yaml = file_list('tests', 'testcase.yaml')
+    build_only_tests = []
+    for testcase_yaml in testcases_yaml:
+        with open(testcase_yaml) as f:
+            data = yaml.load(f)
+
+        try:
+            testcase_dir = os.path.dirname(testcase_yaml)
+            # Example: tests/bluetooth/init/testcase.yaml
+            if 'common' in data.keys() and data['common'].get('build_only'):
+                for test in data['tests'].keys():
+                    build_only_tests.append(os.path.join(testcase_dir, test, 'zephyr.bin'))
+            else:
+                # Eaxmple: tests/drivers/build_all/testcase.yaml
+                for test, properties in data['tests'].items():
+                    if properties.get('build_only'):
+                        build_only_tests.append(os.path.join(testcase_dir, test, 'zephyr.bin'))
+        except KeyError as e:
+            print('ERROR: {} is missing in {}'.format(str(e), testcase_yaml))
+
+    return build_only_tests
+
+
+def generate_test_list(platform, device_type):
+    build_only_tests = build_only()
+    fixed_excluded_tests = set(excluded_tests).union(set(build_only_tests))
+    print('\n=== tests will be excluded ===')
+    print('--- build only tests ---')
+    for test in build_only_tests:
+        print(test)
+    print('--- tests from excluded_tests list ---')
+    for test in excluded_tests:
+        print(test)
+
+    test_list = file_list('output/{}/tests'.format(platform), 'zephyr.bin')
+    shutil.rmtree('output', ignore_errors=True)
+    # Test image path example: 'tests/kernel/pthread/test/zephyr.bin'
+    test_list = [test.split('/', 2)[-1] for test in test_list]
+    # Remove excluded tests.
+    test_list = list(set(test_list).difference(fixed_excluded_tests))
+    # Exclude benchmarks which require different parse pattern by test.
+    test_list = [test for test in test_list if 'benchmark' not in test]
+    # Don't run bluetooth test on qemu device.
+    if device_type == 'qemu':
+        test_list = [test for test in test_list if 'bluetooth' not in test]
+    # net test is broken on frdm-kw41z.
+    if device_type == 'frdm-kw41z':
+        test_list = [test for test in test_list if 'tests/net' not in test]
+    print('\n--- final test list ---')
+    for test in test_list:
+        print(test)
+
+    return test_list
 
 
 def main():
@@ -124,10 +173,6 @@ def main():
                         help="Jenkins build url",
                         dest="build_url",
                         required=True)
-    parser.add_argument("--test-list",
-                        help="test list",
-                        dest="test_list",
-                        required=True)
 
     args = parser.parse_args()
 
@@ -163,19 +208,7 @@ def main():
     headers = {
         "Auth-Token": args.qa_token
     }
-    test_list = args.test_list.split()
-    # Raw test path example: 'out/qemu_cortex_m3/tests/unit/bluetooth/at/test/zephyr.bin'
-    # Desired relative test path example: 'tests/kernel/pthread/test/zephyr.bin'
-    test_list = [test.split('/', 2)[-1] for test in test_list]
-    test_list = [test for test in test_list if test not in excluded_tests]
-    # Exclude benchmarks which require different parse pattern by test.
-    test_list = [test for test in test_list if 'benchmark' not in test]
-    # Don't run bluetooth test on qemu device.
-    if args.device_type == 'qemu':
-        test_list = [test for test in test_list if 'bluetooth' not in test]
-    # net test is broken on frdm-kw41z.
-    if args.device_type == 'frdm-kw41z':
-        test_list = [test for test in test_list if 'tests/net' not in test]
+    test_list = generate_test_list(args.board_name, args.device_type)
     for test in test_list:
         replace_dict = dict(
             # Test name example: kernel-pthread-test
@@ -200,7 +233,7 @@ def main():
             else:
                 print(results.status_code)
                 print(results.text)
-        except xmlrpclib.ProtocolError as err:
+        except xmlrpclib.ProtocolError as err:  # nopep8
             print("QA Reports submission failed")
             print("offending job definition:")
             print(lava_job)
