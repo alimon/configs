@@ -20,6 +20,8 @@ wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/g
 
 cp out/host/linux-x86/cts/android-cts.zip pub/
 
+rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
+
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/pub
