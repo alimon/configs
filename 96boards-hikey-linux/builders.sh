@@ -4,7 +4,7 @@ set -ex
 
 cd linux/
 KERNEL_DESCRIBE=`git describe --match 'v4*'| sed -e 's,^v,,'`
-KERNEL_VERSION=`echo ${KERNEL_DESCRIBE}|sed 's,-g.*,,' `
+KERNEL_VERSION=`echo ${KERNEL_DESCRIBE}|sed 's,-.*,,' `
 
 echo "Starting ${JOB_NAME} with the following parameters:"
 echo "KERNEL_DESCRIBE: ${KERNEL_DESCRIBE}"
