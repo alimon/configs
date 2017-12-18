@@ -1,6 +1,13 @@
 #!/bin/bash
 
-set -x
+set -ex
+
+trap cleanup_exit INT TERM EXIT
+
+cleanup_exit()
+{
+    rm -rf ${HOME}/.docker
+}
 
 rm -rf ${HOME}/.docker
 
@@ -32,9 +39,9 @@ kolla_namespace=linaro
                  --retries 0 \
                  --tag ${kolla_tag} \
                  --type source \
-                 --namespace ${kolla_namespace}
+                 --namespace ${kolla_namespace} || true
 
-docker images | grep ${kolla_namespace} | sort
+docker images | grep ${kolla_tag} | sort
 
 # Publish logs
 test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -45,5 +52,3 @@ time python ${HOME}/bin/linaro-cp.py \
 
 echo "Images: https://hub.docker.com/u/linaro/"
 echo "Logs:   https://snapshots.linaro.org/reference-platform/enterprise/components/openstack/kolla-logs/${BUILD_NUMBER}/"
-
-rm -rf ${HOME}/.docker
