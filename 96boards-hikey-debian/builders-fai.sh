@@ -47,7 +47,10 @@ sudo mount -t tmpfs tmpfs /tmp
 
 for rootfs in ${ROOTFS}; do
 
+    rootfs_sz=$(echo $rootfs | cut -f2 -d,)
+    rootfs=$(echo $rootfs | cut -f1 -d,)
     VERSION=$(cat build-version)
+
     image_name=${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${VERSION}
 
     # make bootable sd card
@@ -56,6 +59,14 @@ for rootfs in ${ROOTFS}; do
          -S ${rootfs_sz} \
          --class $(echo SAVECACHE,${OS_FLAVOUR},DEBIAN,LINARO,${rootfs},${PLATFORM_NAME},GRUB_PC | tr '[:lower:]' '[:upper:]') \
          /tmp/work.raw
+
+    cp /var/log/fai/linaro-${rootfs}/last/fai.log fai-${rootfs}.log
+    if grep ^ERROR: fai-${rootfs}.log
+    then
+        echo "Errors during build"
+        rm -rf out/
+        exit 1
+    fi
 
     # snatch the rootfs and bootfs for fastboot
     for device in $(sudo kpartx -avs /tmp/work.raw | cut -d' ' -f3); do
