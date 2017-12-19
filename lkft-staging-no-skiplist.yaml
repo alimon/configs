@@ -60,33 +60,60 @@
     builders:
         - shell: |
             #!/bin/bash
+
+            # no LTS 4.4 build for hikey
+            if [ ${DEVICE_TYPE} = hi6220-hikey ] && [ ${BUILD_NAME} = linux-stable-4.4 ]
+            then
+              exit 0
+            fi
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
 
             # set kselftest and ltp skiplist depending on the kernel used
             # set proper variables depending on the kernel used
             export KSELFTESTS_SKIPLIST="breakpoint_test breakpoint_test_arm64 step_after_suspend_test ftracetest"
+            case ${BUILD_NAME} in
+              linux-next)
+                export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
+                export KSELFTESTS_REVISION=${KERNEL_COMMIT_ID}
+                export KSELFTESTS_URL=${KERNEL_REPO}
+                export KSELFTEST_PATH=/opt/kselftests/default-in-kernel/
+                ;;
+              linux-mainline)
+                export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
+                export KSELFTESTS_REVISION=${KERNEL_COMMIT_ID}
+                export KSELFTESTS_URL=${KERNEL_REPO}
+                export KSELFTEST_PATH=/opt/kselftests/default-in-kernel/
+                ;;
+              *)
+                export KSELFTESTS_VERSION=${KSELFTEST_MAINLINE_VERSION}
+                export KSELFTESTS_REVISION=${KSELFTEST_MAINLINE_VERSION}
+                export KSELFTESTS_URL=${KSELFTEST_MAINLINE_URL}
+                export KSELFTEST_PATH=/opt/kselftests/mainline/
+                ;;
+            esac
             export LTP_SKIPLIST="skiplist-lkft-minimal"
             case ${DEVICE_TYPE} in
               hi6220-hikey)
-                MACHINE=hikey
+                export MACHINE=hikey
                 ;;
               juno-r2)
-                MACHINE=juno
+                export MACHINE=juno
                 ;;
               x15)
-                MACHINE=am57xx-evm
+                export MACHINE=am57xx-evm
                 ;;
               x86)
-                MACHINE=intel-core2-32
+                export MACHINE=intel-core2-32
                 export LTP_SKIPLIST="skiplist-lkft-nfs-minimal"
                 ;;
               *)
                 ;;
             esac
+            export PUB_DEST=${BUILD_NAME}
             export DISTRO=rpb
             export MANIFEST_BRANCH=morty
             export SNAPSHOTS_URL=https://snapshots.linaro.org
-            export BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${PUB_DEST}/latest
+            export BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NAME}/latest
 
             export SNAPSHOTS_BASE_URL=${SNAPSHOTS_URL}/${BASE_URL}
 
@@ -98,14 +125,24 @@
             rm build_env.sh
             for ENVVAR in $(jq --raw-output 'to_entries[] | "\(.key | ascii_upcase)=\(.value | sub("[[:space:]]+"; "_"))"' < build_config.json)
             do
-                echo ${ENVVAR} >> build_env.sh
+                echo "export ${ENVVAR}" >> build_env.sh
             done
             . ./build_env.sh
             ROOTFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
             NFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.tar\.xz" "${MD5_FILENAME}" | awk '{print $2}')
             BOOT_FILENAME=$(grep -E "boot\S*uefi\.img" "${MD5_FILENAME}" | awk '{print $2}')
             KERNEL_FILENAME=$(grep -E "bzImage" "${MD5_FILENAME}" | awk '{print $2}')
-            export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
+            JUNO_KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+            JUNO_DTB_FILENAME=$(grep -E "Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+            case ${DEVICE_TYPE} in
+              juno-r2)
+                export KERNEL_URL="${BUILD_LOCATION}/${JUNO_KERNEL_FILENAME}"
+                export DTB_URL="${BUILD_LOCATION}/${JUNO_DTB_FILENAME}"
+                ;;
+              *)
+                export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
+                ;;
+            esac
             export NFSROOTFS_URL="${BUILD_LOCATION}/${NFS_FILENAME}"
             export BOOT_URL="${BUILD_LOCATION}/${BOOT_FILENAME}"
             export SYSTEM_URL="${BUILD_LOCATION}/${ROOTFS_FILENAME}"
@@ -113,6 +150,9 @@
             export LAVA_JOB_PRIORITY=low
             export KERNEL_CONFIG_URL=${BUILD_LOCATION}/config
             export KERNEL_VERSION=${MAKE_KERNELVERSION}
+            export KERNEL_DEFCONFIG_URL=${BUILD_LOCATION}/defconfig
+            export BUILD_URL=${BUILD_LOCATION}
+            export RECOVERY_IMAGE_URL=${BUILD_LOCATION}/juno-oe-uboot.zip
             rm build_env.sh
             rm ${MD5_FILENAME}
             rm ${BUILD_CONFIG}
@@ -130,6 +170,7 @@
                 export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
             fi
 
+            env
             python configs/openembedded-lkft/submit_for_testing.py \
               --device-type ${DEVICE_TYPE} \
               --build-number ${BUILD_NUMBER} \
@@ -146,4 +187,4 @@
         - email-ext:
             recipients: 'lkft-triage@lists.linaro.org'
             matrix-trigger: only-configurations
-            subject: '[CI] ${BUILD_NAME}: ${DEVICE_TYPE} - ${BUILD_STATUS}'
+            subject: '[CI] staging (no skiplist) ${BUILD_NAME}: ${DEVICE_TYPE} - ${BUILD_STATUS}'
