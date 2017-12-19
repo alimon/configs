@@ -48,7 +48,7 @@ for rootfs in ${ROOTFS}; do
         echo "Errors during build"
         rm -rf out/
         exit 1
-    echo
+    fi
 
     rootfs_sz_real=$(du -h /tmp/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.raw | cut -f1)
 
