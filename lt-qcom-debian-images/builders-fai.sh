@@ -42,7 +42,7 @@ for rootfs in ${ROOTFS}; do
          --class $(echo SAVECACHE,${OS_FLAVOUR},DEBIAN,LINARO,QCOM,${rootfs},${FAI_BOARD_CLASS},RAW | tr '[:lower:]' '[:upper:]') \
          /tmp/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.raw
 
-    cp /var/log/fai/linaro-${rootfs}/last/fai.log fai-${rootfs}.log
+    sudo cp /var/log/fai/linaro-${rootfs}/last/fai.log fai-${rootfs}.log
     if grep ^ERROR: fai-${rootfs}.log
     then
         echo "Errors during build"
