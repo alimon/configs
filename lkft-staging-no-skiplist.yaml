@@ -68,30 +68,6 @@
             fi
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
 
-            # set kselftest and ltp skiplist depending on the kernel used
-            # set proper variables depending on the kernel used
-            export KSELFTESTS_SKIPLIST="breakpoint_test breakpoint_test_arm64 step_after_suspend_test ftracetest"
-            case ${BUILD_NAME} in
-              linux-next)
-                export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
-                export KSELFTESTS_REVISION=${KERNEL_COMMIT_ID}
-                export KSELFTESTS_URL=${KERNEL_REPO}
-                export KSELFTEST_PATH=/opt/kselftests/default-in-kernel/
-                ;;
-              linux-mainline)
-                export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
-                export KSELFTESTS_REVISION=${KERNEL_COMMIT_ID}
-                export KSELFTESTS_URL=${KERNEL_REPO}
-                export KSELFTEST_PATH=/opt/kselftests/default-in-kernel/
-                ;;
-              *)
-                export KSELFTESTS_VERSION=${KSELFTEST_MAINLINE_VERSION}
-                export KSELFTESTS_REVISION=${KSELFTEST_MAINLINE_VERSION}
-                export KSELFTESTS_URL=${KSELFTEST_MAINLINE_URL}
-                export KSELFTEST_PATH=/opt/kselftests/mainline/
-                ;;
-            esac
-            export LTP_SKIPLIST="skiplist-lkft-minimal"
             case ${DEVICE_TYPE} in
               hi6220-hikey)
                 export MACHINE=hikey
@@ -143,6 +119,30 @@
                 export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
                 ;;
             esac
+            # set kselftest and ltp skiplist depending on the kernel used
+            # set proper variables depending on the kernel used
+            export KSELFTESTS_SKIPLIST="breakpoint_test breakpoint_test_arm64 step_after_suspend_test ftracetest"
+            case ${BUILD_NAME} in
+              linux-next)
+                export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
+                export KSELFTESTS_REVISION=${KERNEL_COMMIT_ID}
+                export KSELFTESTS_URL=${KERNEL_REPO}
+                export KSELFTEST_PATH=/opt/kselftests/default-in-kernel/
+                ;;
+              linux-mainline)
+                export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
+                export KSELFTESTS_REVISION=${KERNEL_COMMIT_ID}
+                export KSELFTESTS_URL=${KERNEL_REPO}
+                export KSELFTEST_PATH=/opt/kselftests/default-in-kernel/
+                ;;
+              *)
+                export KSELFTESTS_VERSION=${KSELFTEST_MAINLINE_VERSION}
+                export KSELFTESTS_REVISION=${KSELFTEST_MAINLINE_VERSION}
+                export KSELFTESTS_URL=${KSELFTEST_MAINLINE_URL}
+                export KSELFTEST_PATH=/opt/kselftests/mainline/
+                ;;
+            esac
+            export LTP_SKIPLIST="skiplist-lkft-minimal"
             export NFSROOTFS_URL="${BUILD_LOCATION}/${NFS_FILENAME}"
             export BOOT_URL="${BUILD_LOCATION}/${BOOT_FILENAME}"
             export SYSTEM_URL="${BUILD_LOCATION}/${ROOTFS_FILENAME}"
