@@ -27,9 +27,6 @@
         - string:
             name: ROOTFS
             default: 'developer,1800M alip,3G'
-        - string:
-            name: SDCARD
-            default: 'developer,4G'
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Debian based images for HiKey'
@@ -64,7 +61,7 @@
             script: |
                 def build_number = manager.build.number
                 def vendor = manager.build.buildVariables.get('VENDOR')
-                def url = "http://builds.96boards.org/snapshots/hikey/${vendor}/debian/${build_number}/"
+                def url = "http://snapshots.linaro.org/96boards/hikey/${vendor}/debian/${build_number}/"
                 def desc = "&nbsp;<a href='${url}'>Build location<t/a>"
 
                 if (manager.build.result == hudson.model.Result.SUCCESS) {

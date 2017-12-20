@@ -60,8 +60,8 @@ for rootfs in ${ROOTFS}; do
          --class $(echo SAVECACHE,${OS_FLAVOUR},DEBIAN,LINARO,${rootfs},${PLATFORM_NAME},GRUB_PC | tr '[:lower:]' '[:upper:]') \
          /tmp/work.raw
 
-    cp /var/log/fai/linaro-${rootfs}/last/fai.log fai-${rootfs}.log
-    if grep ^ERROR: fai-${rootfs}.log
+    sudo cp /var/log/fai/linaro-${rootfs}/last/fai.log fai-${rootfs}.log
+    if grep -E '^(ERROR:|WARNING: These unknown packages are removed from the installation list|Exit code task_)' fai-${rootfs}.log
     then
         echo "Errors during build"
         rm -rf out/
