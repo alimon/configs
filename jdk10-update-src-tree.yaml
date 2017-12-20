@@ -2,7 +2,7 @@
     name: jdk10
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk10/hs
+            url: http://hg.openjdk.java.net/jdk/jdk10
             clean: true
             subdir: jdk10
 - job:
@@ -27,14 +27,13 @@
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
-    disabled: true
+    disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 10 - Update jdk10 source tree'
     scm:
         - jdk10
     triggers:
-# Disabled. Repo is not going to change.
-#        - pollscm: 'H 2 */2 * *'
+        - pollscm: 'H 2 1-6/2 * *'
     wrappers:
         - timestamps
     builders:
