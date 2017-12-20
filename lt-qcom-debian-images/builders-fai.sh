@@ -43,7 +43,7 @@ for rootfs in ${ROOTFS}; do
          /tmp/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.raw
 
     sudo cp /var/log/fai/linaro-${rootfs}/last/fai.log fai-${rootfs}.log
-    if grep ^ERROR: fai-${rootfs}.log
+    if grep -E '^(ERROR:|WARNING: These unknown packages are removed from the installation list|Exit code task_)' fai-${rootfs}.log
     then
         echo "Errors during build"
         rm -rf out/
