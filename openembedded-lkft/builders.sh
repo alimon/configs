@@ -56,6 +56,14 @@ cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
+# record changes since last build, if available
+BASE_URL=http://snapshots.linaro.org
+if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
+    repo diffmanifests ${PWD}/pinned-manifest-latest.xml ${PWD}/pinned-manifest.xml > manifest-changes.txt
+else
+    echo "latest build published does not have pinned-manifest.xml, skipping diff report"
+fi
+
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
@@ -253,6 +261,18 @@ Build description:
 * Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
 EOF
 
+if [ -e "/srv/oe/manifest-changes.txt" ]; then
+  # the space after pre.. tag is on purpose
+  cat > ${DEPLOY_DIR_IMAGE}/README.textile << EOF
+
+h4. Manifest changes
+
+pre.. 
+EOF
+  cat /srv/oe/manifest-changes.txt >> ${DEPLOY_DIR_IMAGE}/README.textile
+  mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE}
+fi
+
 GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
 TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
@@ -263,7 +283,6 @@ for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
   source lkftmetadata/packages/*/${recipe}/metadata
 done
 
-BASE_URL=http://snapshots.linaro.org
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | xargs -r basename)
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
