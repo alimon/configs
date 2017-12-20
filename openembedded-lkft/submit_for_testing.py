@@ -216,7 +216,7 @@ def main():
 
         if not args.quiet:
             print(lava_job)
-        if args.dry_run:
+        if args.dryrun:
             testpath = os.path.join(output_path, args.device_type, test)
             if not os.path.exists(os.path.dirname(testpath)):
                 os.makedirs(os.path.dirname(testpath))
