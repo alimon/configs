@@ -12,8 +12,8 @@ cleanup_exit()
 
 # Build
 source oe-init-build-env
-echo "BBLAYERS += \" ${WORKSPACE}/meta-luv\"" >> conf/bblayers.conf
 echo "BBLAYERS += \" ${WORKSPACE}/meta-oe\"" >> conf/bblayers.conf
+echo "BBLAYERS += \" ${WORKSPACE}/meta-luv\"" >> conf/bblayers.conf
 bitbake luv-live-image
 
 rm -f ${WORKSPACE}/build/tmp/deploy/images/qemuarm64/*.txt
