@@ -39,7 +39,7 @@ export PATH=${HOME}/bin:${PATH}
 
 # initialize repo if not done already
 if [ ! -e ".repo/manifest.xml" ]; then
-   repo init -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH}
+   repo init -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}
 
    # link to shared downloads on persistent disk
    # our builds config is expecting downloads and sstate-cache, here.
@@ -145,7 +145,7 @@ h4. Linaro Home Group Build - OpenEmbedded
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
 * Manifest URL: "${MANIFEST_URL}":${MANIFEST_URL}
-* Manifest branch: ${MANIFEST_BRANCH}
+* Manifest branch: ${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}
 * Manifest commit: "${MANIFEST_COMMIT}":${MANIFEST_URL/.git/\/commit}/${MANIFEST_COMMIT}
 EOF
 

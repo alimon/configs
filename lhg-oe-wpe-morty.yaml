@@ -1,0 +1,75 @@
+- job:
+    name: lhg-oe-build
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'lhg-westeros-wpe-image'
+        - string:
+            name: MANIFEST_URL
+            default: 'https://github.com/linaro-home/lhg-oe-manifests.git'
+        - string:
+            name: MANIFEST_BRANCH_PREFIX
+            default: 'wpe/'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'morty'
+        - string:
+            name: BASE_URL
+            default: 'http://snapshots.linaro.org/'
+        - string:
+# TBD: need to confirm with LHG where the WPE builds are to be published
+            name: PUB_DEST
+            default: 'openembedded/pre-built/lhg/${MANIFEST_BRANCH_PREFIX}${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
+    disabled: false
+    node: lhg
+    display-name: 'LHG Westeros/WPE - OpenEmbedded (morty)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - hikey-32
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb-wayland
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64-lhg
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: lhg-oe-build/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+#        - linaro-publish-token
+#        - shell:
+#            !include-raw: rpb-openembedded/publishers.sh
+    publishers:
+        - archive:
+            artifacts: 'out/*'
+        - email:
+            recipients: 'andrey.konovalov@linaro.org'
