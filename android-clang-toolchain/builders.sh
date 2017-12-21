@@ -1,4 +1,7 @@
 #!/bin/bash
+set -ex
+
+export PATH=$PATH://home/buildslave/bin/
 
 sudo apt-get -q=2 update
 sudo apt-get -q=2 install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk libxml2-utils rsync pxz python-requests

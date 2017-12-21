@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export BUILD_CONFIG_FILENAME=hikey-aosp-master-clang
+export PATH=$PATH:/home/buildslave/bin/
 
 # Install needed packages
 sudo apt-get -q=2 update
