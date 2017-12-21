@@ -81,7 +81,7 @@ for rootfs in ${ROOTFS}; do
         sudo rm -f /tmp/partition.raw
     done
     sudo kpartx -dv /tmp/work.raw
-    mv /tmp/${image_name}.raw out/${image_name}.sd
+    mv /tmp/work.raw out/${image_name}.sd
 
     # Compress image(s)
     pigz -9 out/rootfs-${image_name}.img out/boot-${image_name}.img out/${image_name}.sd
