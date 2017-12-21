@@ -2,6 +2,9 @@
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
 repo sync -j"$(nproc)" -c
 
+mkdir -p pub
+repo manifest -r -o pub/pinned-manifest.xml
+
 if [ -n "$PATCHSETS" ]; then
     rm -rf android-patchsets
     git clone --depth=1 https://android-git.linaro.org/git/android-patchsets.git
@@ -15,7 +18,6 @@ source build/envsetup.sh
 lunch ${LUNCH_TARGET}
 make -j"$(nproc)" vts
 
-mkdir -p pub
 wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/generic/build-info/public-template.txt -O pub/BUILD-INFO.txt
 
 # Build Android
