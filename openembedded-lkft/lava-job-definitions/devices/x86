@@ -42,3 +42,27 @@ context:
     prompts:
     - 'root@intel-core2-32:'
 {% endblock boot_target %}
+
+{% block test_target %}
+  {{ super() }}
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: prep-tmp-disk
+          description: "Mount local disk for tmp space"
+        run:
+          steps:
+            - df -h
+            - mount
+            - ls /dev/disk/by-id/ -l
+            - export TMPDISK=$(ls /dev/disk/by-id/ata-TOSHIBA_MG03ACA100_*)
+            - echo "y" | mkfs -t ext4 ${TMPDISK}
+            - mkdir -p /ltp-tmp
+            - mount ${TMPDISK} /ltp-tmp || lava-test-raise "mount failed job exit"
+            - df -h
+            - mount
+      name: prep-tmp-disk
+      path: inline/prep.yaml
+{% endblock test_target %}
+
