@@ -64,8 +64,10 @@ unzip -jd os/debian dragonboard-410c-bootloader-emmc-linux-${BL_BUILD_NUMBER}.zi
 size_os=$(du -sk os | cut -f1)
 size_os=$(((($size_os + 1024 - 1) / 1024) * 1024))
 size_os=$(($size_os + 200*1024))
-# pad for SD image size (including rootfs and bootloaders)
-size_img=$(($size_os + 1024*1024 + 300*1024))
+# pad for SD image size (including rootfs and bootloaders, as per partition table)
+size_pad=$(sudo ./mksdcard -p dragonboard410c/linux/installer.txt -n -g | grep "Create file with size" | cut -f7 -d' ')
+size_pad=$(((($size_pad + 1024 - 1) / 1024) * 1024))
+size_img=$(($size_os + $size_pad))
 
 # create OS image
 SDCARD=${PLATFORM_NAME}-sdcard-installer-${OS_FLAVOUR}-${BUILD_NUMBER}
