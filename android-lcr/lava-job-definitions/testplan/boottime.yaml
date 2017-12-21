@@ -1,0 +1,163 @@
+{% extends device_type %}
+
+{% set job_timeout = 90 %}
+{% set device_type_boot = device_type ~ "-boot" %}
+
+{% block job_name %}{{JOB_NAME}}-{{ANDROID_META_BUILD}}-boottime{% endblock job_name %}
+
+{% block test_target %}
+{{ super() }}
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: first-boot
+          params:
+            OPERATION: COLLECT
+            COLLECT_NO: "0"
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-first-analyze
+          params:
+            OPERATION: ANALYZE
+            COLLECT_NO: "0"
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-1
+          params:
+            OPERATION: COLLECT
+            COLLECT_NO: 1
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-2
+          params:
+            OPERATION: COLLECT
+            COLLECT_NO: 2
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-3
+          params:
+            OPERATION: COLLECT
+            COLLECT_NO: 3
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-4
+          params:
+            OPERATION: COLLECT
+            COLLECT_NO: 4
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-5
+          params:
+            OPERATION: COLLECT
+            COLLECT_NO: 5
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-6
+          params:
+            OPERATION: COLLECT
+            COLLECT_NO: 6
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-7
+          params:
+            OPERATION: COLLECT
+            COLLECT_NO: 7
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-second-analyze
+          params:
+            OPERATION: ANALYZE
+            COLLECT_NO: 7
+
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/bootchart/bootchart.yaml
+          name: bootchart-start
+          params:
+            OPERATION: start
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/bootchart/bootchart.yaml
+          name: bootchart-stop
+          params:
+            OPERATION: stop
+
+{% endblock test_target %}

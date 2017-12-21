@@ -1,0 +1,46 @@
+{% extends device_type %}
+
+{% set job_timeout = 120 %}
+
+{% block job_name %}{{JOB_NAME}}-{{ANDROID_META_BUILD}}-optee{% endblock job_name %}
+
+{% block test_target %}
+{{ super() }}
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: {% if job_timeout is defined %}{{ job_timeout-5|int|abs }}{% else %}160{% endif %}
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/media-codecs-functional-tests/media-codecs-functional-tests.yaml
+          name: media-codecs
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/piglit-gles2/piglit-gles2.yaml
+          name: piglit-gles2
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/piglit-gles3/piglit-gles3.yaml
+          name: piglit-gles3
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/piglit-glslparser/piglit-glslparser.yaml
+          name: piglit-glslparser
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/piglit-shader-runner/piglit-shader-runner.yaml
+          name: piglit-shader-runner
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/bionic-benchmarks/bionic-benchmarks.yaml
+          name: bionic-benchmarks
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/stringbench/stringbench.yaml
+          name: stringbench
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/libc-bench/libc-bench.yaml
+          name: libc-bench
+{% endblock test_target %}

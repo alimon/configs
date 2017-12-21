@@ -1,0 +1,32 @@
+{% extends "lcr.jinja2" %}
+
+{% block device_type %}x15{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    timeout:
+      minutes: 25
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      environment:
+        url: {{DOWNLOAD_URL}}/am57xx-evm-reva3.dtb
+      boot:
+        url: {{ANDROID_BOOT}}
+      cache:
+        url: {{ANDROID_CACHE}}
+      userdata:
+        url: {{ANDROID_DATA}}
+      system:
+        url: {{ANDROID_SYSTEM}}
+      vendor:
+        url: {{DOWNLOAD_URL}}/vendor.img
+{% endblock deploy_target %}
+
+{% block boot_target %}
+{% include "devices/x15-boot" %}
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}

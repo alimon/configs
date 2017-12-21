@@ -1,0 +1,19 @@
+{% extends device_type %}
+
+{% block job_name %}{{JOB_NAME}}-{{ANDROID_META_BUILD}}-{{testname}}{% endblock job_name %}
+
+{% block test_target %}
+{{ super() }}
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: {% if job_timeout is defined %}{{ job_timeout-5|int|abs }}{% else %}160{% endif %}
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/apk-automation/apk-automation.yaml
+          name: {{testname}}
+          params:
+            TEST_NAME: {{testname}}
+            LOOPS: 5
+{% endblock test_target %}

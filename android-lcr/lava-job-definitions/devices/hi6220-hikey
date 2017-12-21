@@ -1,0 +1,42 @@
+{% extends "lcr.jinja2" %}
+
+{% block device_type %}hi6220-hikey{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      ptable:
+        url: http://releases.linaro.org/reference-platform/enterprise/16.12/uefi/release/hikey/ptable-aosp-8g.img
+        reboot: hard-reset
+      boot:
+        reboot: hard-reset
+        url: {{DOWNLOAD_URL}}/boot.img.xz
+        compression: xz
+      cache:
+        url: {{ANDROID_CACHE}}
+        compression: xz
+      userdata:
+        url: {{ANDROID_DATA}}
+        compression: xz
+      system:
+        url: {{ANDROID_SYSTEM}}
+        compression: xz
+    protocols:
+      lava-lxc:
+      - action: fastboot-deploy
+        request: pre-power-command
+        timeout:
+          minutes: 2
+{% endblock deploy_target %}
+
+{% block boot_target %}
+{% include "devices/hi6220-hikey-boot" %}
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}

@@ -1,0 +1,21 @@
+{% extends device_type %}
+
+{% block job_name %}{{JOB_NAME}}-{{ANDROID_META_BUILD}}-{{testname}}{% endblock job_name %}
+
+{% block test_target %}
+{{ super() }}
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: {% if job_timeout is defined %}{{ job_timeout-5|int|abs }}{% else %}300{% endif %}
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/android/tradefed/tradefed.yaml
+      params:
+        TEST_URL: "http://testdata.validation.linaro.org/vts/oreo-vts-release-lcr-12192017/android-vts.zip"
+        TEST_PARAMS: "run {{testcommand}} --skip-device-info"
+        TEST_PATH: "android-vts"
+        RESULTS_FORMAT: "atomic"
+      name: {{testname}}
+{% endblock test_target %}

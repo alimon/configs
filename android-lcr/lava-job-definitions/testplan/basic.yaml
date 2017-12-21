@@ -1,0 +1,47 @@
+{% extends device_type %}
+
+{% set job_timeout = 90 %}
+{% set device_type_boot = device_type ~ "-boot" %}
+
+{% block job_name %}{{JOB_NAME}}-{{ANDROID_META_BUILD}}-basic{% endblock job_name %}
+
+{% block test_target %}
+{{ super() }}
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: {% if job_timeout is defined %}{{ job_timeout-30|int|abs }}{% else %}60{% endif %}
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/meminfo/meminfo.yaml
+          name: meminfo-first
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/busybox/busybox.yaml
+          name: busybox
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/ping/ping.yaml
+          name: ping
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/linaro-android-kernel-tests/linaro-android-kernel-tests.yaml
+          name: linaro-android-kernel-tests
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/tjbench/tjbench.yaml
+          name: tjbench
+
+{% include device_type_boot %}
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 15
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/meminfo/meminfo.yaml
+          name: meminfo-second
+{% endblock test_target %}
