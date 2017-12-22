@@ -8,7 +8,7 @@ cleanup_exit()
 {
   cd ${WORKSPACE}
   sudo kpartx -dv /tmp/work.raw || true
-  umount -f /tmp||true
+  sudo umount -f /tmp||true
   rm -rf out
 
 }
@@ -81,12 +81,12 @@ for rootfs in ${ROOTFS}; do
         sudo rm -f /tmp/partition.raw
     done
     sudo kpartx -dv /tmp/work.raw
-    mv /tmp/work.raw out/${image_name}.sd
+    cp /tmp/work.raw out/${image_name}.sd
 
     # Compress image(s)
     pigz -9 out/rootfs-${image_name}.img out/boot-${image_name}.img out/${image_name}.sd
 
     # dpkg -l output
-    mv out/packages.txt out/${image_name}.packages
+    cp out/packages.txt out/${image_name}.packages
 done
 
