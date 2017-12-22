@@ -8,8 +8,6 @@ sudo apt-get -q=2 install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk li
 
 wget -q \
   https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.sh
-sudo dpkg -i --force-all *.deb
-rm -f *.deb
 
 yes y | bash cmake-3.5.2-Linux-x86_64.sh
 export PATH=${PWD}/cmake-3.5.2-Linux-x86_64/bin/:${PATH}
