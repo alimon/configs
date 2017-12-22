@@ -9,8 +9,6 @@ cleanup_exit()
   cd ${WORKSPACE}
   sudo kpartx -dv /tmp/work.raw || true
   sudo umount -f /tmp||true
-  rm -rf out
-
 }
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
@@ -64,6 +62,7 @@ for rootfs in ${ROOTFS}; do
     sudo cp /var/log/fai/linaro-${rootfs}/last/fai.log fai-${rootfs}.log
     if grep -E '^(ERROR:|WARNING: These unknown packages are removed from the installation list|Exit code task_)' fai-${rootfs}.log
     then
+        rm -rf out/
         echo "Errors during build"
         exit 1
     fi
