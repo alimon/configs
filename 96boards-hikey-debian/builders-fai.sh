@@ -44,6 +44,7 @@ Build description:
 EOF
 
 sudo mount -t tmpfs tmpfs /tmp
+sudo cp tools/udevadm /sbin
 
 for rootfs in ${ROOTFS}; do
 
@@ -64,7 +65,6 @@ for rootfs in ${ROOTFS}; do
     if grep -E '^(ERROR:|WARNING: These unknown packages are removed from the installation list|Exit code task_)' fai-${rootfs}.log
     then
         echo "Errors during build"
-        rm -rf out/
         exit 1
     fi
 
