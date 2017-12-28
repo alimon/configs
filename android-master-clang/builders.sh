@@ -17,13 +17,6 @@ git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 java -version
 
-BUILD_DIR=${BUILD_DIR:-${JOB_NAME}}
-if [ ! -d "${HOME}/srv/${BUILD_DIR}" ]; then
-  sudo mkdir -p ${HOME}/srv/${BUILD_DIR}
-  sudo chmod 666 ${HOME}/srv/${BUILD_DIR}
-fi
-cd ${HOME}/srv/${BUILD_DIR}
-
 # clean up files from old build
 rm -rf build/prebuilts/clang
 
@@ -54,7 +47,7 @@ yes "I ACCEPT" | ./extract-linaro-hikey.sh
 cd -
 
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.xml ${WORKSPACE}/
+cp -a /home/buildslave/workspace/${BUILD_DIR}/build/out/*.xml /home/buildslave/workspace/${BUILD_DIR}/build/out/*.xml ${WORKSPACE}/
 
 cd build/out
 rm -f ramdisk.img
