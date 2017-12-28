@@ -47,7 +47,7 @@ yes "I ACCEPT" | ./extract-linaro-hikey.sh
 cd -
 
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-cp -a /home/buildslave/workspace/${BUILD_DIR}/build/out/*.xml /home/buildslave/workspace/${BUILD_DIR}/build/out/*.xml ${WORKSPACE}/
+cp -a /home/buildslave/workspace/android-master-clang/build/out/*.xml /home/buildslave/workspace/android-master-clang/build/out/*.xml ${WORKSPACE}/
 
 cd build/out
 rm -f ramdisk.img
