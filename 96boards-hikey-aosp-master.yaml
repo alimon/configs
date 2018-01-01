@@ -98,8 +98,13 @@
             done
             cd -
 
-            # Delete sources after build to save space
             cd build/
+            make -j"$(nproc)" vts cts
+            cp out/host/linux-x86/vts/android-vts.zip out/
+            cp out/host/linux-x86/cts/android-cts.zip out/
+            rm -rf out/host/
+
+            # Delete sources after build to save space
             rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
             cd -
 
@@ -110,6 +115,7 @@
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
             PUB_SRC=${PWD}/build/out
+            PUB_EXTRA_INC=^[^/]+zip
             EOF
 
             PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
