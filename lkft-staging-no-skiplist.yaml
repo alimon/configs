@@ -46,6 +46,7 @@
                 - 'x86'
                 - 'juno-r2'
                 - 'x15'
+                - 'b2260'
     execution-strategy:
         sequential: false
     wrappers:
@@ -84,6 +85,9 @@
               x86)
                 export MACHINE=intel-core2-32
                 ;;
+              b2260)
+                export MACHINE=stih410-b2260
+                ;;
               *)
                 ;;
             esac
@@ -112,10 +116,16 @@
             KERNEL_FILENAME=$(grep -E "bzImage" "${MD5_FILENAME}" | awk '{print $2}')
             JUNO_KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
             JUNO_DTB_FILENAME=$(grep -E "Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+            B2260_KERNEL_FILENAME=$(grep -E "uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+            B2260_DTB_FILENAME=$(grep -E "uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
             case ${DEVICE_TYPE} in
               juno-r2)
                 export KERNEL_URL="${BUILD_LOCATION}/${JUNO_KERNEL_FILENAME}"
                 export DTB_URL="${BUILD_LOCATION}/${JUNO_DTB_FILENAME}"
+                ;;
+              b2260)
+                export KERNEL_URL="${BUILD_LOCATION}/${B2260_KERNEL_FILENAME}"
+                export DTB_URL="${BUILD_LOCATION}/${B2260_DTB_FILENAME}"
                 ;;
               *)
                 export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
