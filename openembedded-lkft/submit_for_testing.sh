@@ -2,19 +2,6 @@
 
 set -ex
 
-virtualenv .venv
-source .venv/bin/activate
-pip install Jinja2 requests urllib3 ruamel.yaml
-
-cleanup() {
-    # cleanup virtualenv
-    echo "cleaning up virtualenv"
-    deactivate || true
-    rm -rf .venv
-}
-
-trap cleanup EXIT INT TERM QUIT
-
 [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="low"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE

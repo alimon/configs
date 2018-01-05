@@ -1,5 +1,9 @@
 #!/bin/bash
 
+virtualenv .venv
+source .venv/bin/activate
+pip install Jinja2 requests urllib3 ruamel.yaml
+
 export BASE_URL=http://snapshots.linaro.org
 export PUB_DEST=openembedded/lkft/morty/hikey/rpb/linux-mainline/346
 export BOOT_URL=${BASE_URL}/${PUB_DEST}/boot-0.0+AUTOINC+06e4def583-fb1158a365-r0-hikey-20171012090440-346.uefi.img
@@ -57,3 +61,7 @@ for device in $(ls lava-job-definitions/devices); do
     export DEVICE_TYPE=$device
     bash submit_for_testing.sh
 done
+
+# cleanup virtualenv
+deactivate
+rm -rf .venv
