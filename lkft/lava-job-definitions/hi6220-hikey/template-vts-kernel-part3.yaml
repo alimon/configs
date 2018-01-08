@@ -14,14 +14,17 @@ visibility:
     - lkft
 
 metadata:
-  android.build: "${BUILD_NUMBER}"
-  android.name: "${JOB_NAME}"
-  android.url: "${BUILD_URL}"
+  android.url: "${REFERENCE_BUILD_URL}"
+  android.version: "${ANDROID_VERSION}"
+  build-location: "${DOWNLOAD_URL}"
   git branch: "${KERNEL_BRANCH}"
   git repo: "${KERNEL_REPO}"
   git commit: "${KERNEL_COMMIT}"
   git describe: "${KERNEL_DESCRIBE}"
   build-url: "${BUILD_URL}"
+  vts-manifest: "${VTS_URL}/pinned-manifest.xml"
+  vts-plan: "vts-kernel"
+  vts-version: "${VTS_VERSION}"
   series: lkft
 
 protocols:
@@ -125,7 +128,7 @@ actions:
           from: git
           path: automated/android/tradefed/tradefed.yaml
           params:
-                TEST_URL: "${VTS_URL}"
+                TEST_URL: "${VTS_URL}/android-vts.zip"
                 TEST_PARAMS: "run vts-kernel --module VtsKernelLinuxKselftest --skip-device-info"
                 TEST_PATH: "android-vts"
                 RESULTS_FORMAT: "atomic"

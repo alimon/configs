@@ -16,7 +16,7 @@
     parameters:
         - string:
             name: REFERENCE_BUILD_URL
-            default: 'http://testdata.validation.linaro.org/lkft/aosp/current/'
+            default: 'http://testdata.validation.linaro.org/lkft/aosp/611/'
         - string:
             name: KERNEL_BRANCH
             default: 'android-hikey-linaro-4.9'
@@ -28,7 +28,10 @@
             default: 'https://qa-reports.linaro.org'
         - string:
             name: VTS_URL
-            default: 'http://testdata.validation.linaro.org/vts/237/android-vts.zip'
+            default: 'http://testdata.validation.linaro.org/vts/237/'
+        - string:
+           name: ANDROID_VERSION
+           default: 'AOSP MASTER'
         - string:
             name: KERNEL_DESCRIBE
         - string:
@@ -87,6 +90,7 @@
             export PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
             export DOWNLOAD_URL=https://snapshots.linaro.org/${PUB_DEST}
             export KERNEL_COMMIT=${SRCREV_kernel}
+            export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
 
             if [ ! -z "${KERNEL_DESCRIBE}" ]; then
                 export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
