@@ -2,9 +2,6 @@
     name: lkft-hikey-aosp-4.4
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 60
-        numToKeep: 60
     properties:
         - authorization:
             anonymous:
@@ -13,6 +10,10 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
     parameters:
         - string:
             name: REFERENCE_BUILD_URL
@@ -26,6 +27,9 @@
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'android-hikey-linaro-4.4-aosp'
         - string:
             name: VTS_URL
             default: 'http://testdata.validation.linaro.org/vts/237/'
@@ -83,67 +87,7 @@
 
             PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
         - shell: |
-            #!/bin/bash
-
-            export DEVICE_TYPE=hi6220-hikey
-            export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
-            export PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
-            export DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
-            export KERNEL_COMMIT=${SRCREV_kernel}
-            export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
-
-            if [ ! -z "${KERNEL_DESCRIBE}" ]; then
-                export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
-            else
-                export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
-            fi
-
-            rm -rf configs
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            python configs/openembedded-lkft/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team lkft \
-                --qa-server-project android-hikey-linaro-4.4-aosp \
-                --git-commit ${QA_BUILD_VERSION} \
-                --template-path configs/lkft/lava-job-definitions \
-                --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml \
-                --quiet
-
-            python configs/openembedded-lkft/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team staging-lkft \
-                --qa-server-project android-hikey-linaro-4.4-aosp \
-                --git-commit ${QA_BUILD_VERSION} \
-                --template-path configs/lkft/lava-job-definitions \
-                --template-names template-vts-staging-kernel.yaml \
-                --quiet
-
-            #for CTS_MODULE_NAME in CtsVmTestCases CtsLibcoreTestCases CtsBionicTestCases \
-            #        CtsCompilationTestCases CtsDramTestCases CtsFileSystemTestCases \
-            #        CtsHardwareTestCases CtsJobSchedulerTestCases CtsOsTestCases \
-            #        CtsPermissionTestCases CtsPermission2TestCases CtsSecurityTestCases \
-            #        CtsUsbTests
-            #do
-            #    export CTS_MODULE_NAME=${CTS_MODULE_NAME}
-            #    python configs/openembedded-lkft/submit_for_testing.py \
-            #        --device-type ${DEVICE_TYPE} \
-            #        --build-number ${BUILD_NUMBER} \
-            #        --lava-server ${LAVA_SERVER} \
-            #        --qa-server ${QA_SERVER} \
-            #        --qa-server-team lkft \
-            #        --qa-server-project android-hikey-linaro-4.4-aosp \
-            #        --git-commit ${QA_BUILD_VERSION} \
-            #        --template-path configs/lkft/lava-job-definitions \
-            #        --template-names template-cts.yaml \
-            #        --quiet
-            #done
+            !include-raw: lkft/hikey-aosp/submit_for_testing.sh
     publishers:
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
