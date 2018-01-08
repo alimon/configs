@@ -111,7 +111,7 @@ cat conf/{site,auto}.conf
 case "${MACHINE}" in
   imx7s-warp)
     # Temporary sstate cleanup to force warp7 firmware to be re-generated each time
-    bitbake -c cleansstate u-boot-fslc imx7-efuse-util imx7-cst-native warp7-keys-native warp7-csf-native
+    bitbake -c cleansstate u-boot-fslc imx7-efuse-util imx7-cst-native warp7-keys-native warp7-csf-native warp7-u-boot-scr
     ;;
 esac
 
