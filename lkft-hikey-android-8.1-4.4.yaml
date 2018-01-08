@@ -1,0 +1,112 @@
+- job:
+    name: lkft-hikey-android-8.1-4.4
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: REFERENCE_BUILD_URL
+            default: 'http://testdata.validation.linaro.org/lkft/aosp-stable/8.1.0_r7/'
+        - string:
+            name: KERNEL_BRANCH
+            default: 'android-hikey-linaro-4.4'
+        - string:
+            name: KERNEL_REPO
+            default: 'https://android.googlesource.com/kernel/hikey-linaro'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'android-hikey-linaro-4.4-android-8.1'
+        - string:
+            name: VTS_URL
+            default: 'http://testdata.validation.linaro.org/vts/oreo-vts-release-12172017/'
+        - string:
+            name: KERNEL_DESCRIBE
+        - string:
+            name: SRCREV_kernel
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'LKFT - AOSP Stable 4.4 (Android 8.1.0_r7)'
+    scm:
+        - git:
+            url: ${KERNEL_REPO}
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - origin/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - timeout:
+            timeout: 500
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
+    builders:
+        - shell:
+            !include-raw:
+                - lkft/hikey-aosp/builders.sh
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O out/BUILD-INFO.txt
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info out/BUILD-INFO.txt \
+              --link-latest \
+              out/ android/lkft/${JOB_NAME}/${BUILD_NUMBER}
+
+            PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
+        - shell: |
+            !include-raw: lkft/hikey-aosp/submit_for_testing.sh
+    publishers:
+        - logparser:
+            parse-rules: '/var/lib/jenkins/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - groovy-postbuild:
+            script:
+                !include-raw: openembedded-lkft/postbuild.groovy
+        - email:
+            recipients: 'lkft-maintainers@lists.linaro.org'
+            subject: '[CI] HiKey: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+                Git branch: ${KERNEL_BRANCH}
+                Git URL: ${KERNEL_REPO}
+                Git commit: ${SRCREV_kernel}
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+            presend-script:
+                !include-raw: openembedded-lkft/presend-script.groovy
