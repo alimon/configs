@@ -1,4 +1,5 @@
 #!/bin/bash
+export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
 export BUILD_CONFIG_FILENAME=hikey-aosp-master-clang
 export PATH=$PATH:/home/buildslave/bin/

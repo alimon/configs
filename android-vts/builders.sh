@@ -1,3 +1,4 @@
+export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
 repo sync -j"$(nproc)" -c
