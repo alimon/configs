@@ -17,6 +17,10 @@
             days-to-keep: 30
             num-to-keep: 30
             artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: KSELFTESTS_SKIPLIST
+            default: "breakpoint_test breakpoint_test_arm64 step_after_suspend_test ftracetest"
     disabled: false
     node: master
     display-name: 'LKFT - Staging no skip list'
@@ -131,9 +135,6 @@
                 export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
                 ;;
             esac
-            # set kselftest and ltp skiplist depending on the kernel used
-            # set proper variables depending on the kernel used
-            export KSELFTESTS_SKIPLIST="breakpoint_test breakpoint_test_arm64 step_after_suspend_test ftracetest"
             case ${BUILD_NAME} in
               linux-next)
                 export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
