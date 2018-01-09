@@ -20,6 +20,11 @@ pip install --user --force-reinstall ruamel.yaml
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
 export PATH=${PATH}:${PWD}/aarch64-linux-android-4.9/bin/
 
+# Enable VFB locally until the patch is merged
+if echo "${JOB_NAME}" | grep "4.14" ;then
+    git fetch https://android.googlesource.com/kernel/hikey-linaro refs/changes/13/605113/3 && git cherry-pick FETCH_HEAD
+fi
+
 make ARCH=arm64 hikey_defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) -s Image-dtb
 
