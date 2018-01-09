@@ -17,6 +17,21 @@
         - string:
             name: BUILD_CONFIG_FILENAME
             default: 'hikey-aosp-master'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'aosp-master-vts-tracking'
+        - string:
+            name: ANDROID_VERSION
+            default: 'AOSP MASTER'
+        - string:
+            name: KERNEL_DESCRIBE
+            default: 'dummy'
+        - string:
+            name: SRCREV_kernel
+            default: 'dummy'
     disabled: false
     node: docker-utopic-aosp
     display-name: '96boards - AOSP Master - HiKey'
@@ -119,25 +134,6 @@
             PUB_SRC=${PWD}/build/out
             PUB_EXTRA_INC=^[^/]+zip
             EOF
-
-            PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
-
-            # Construct post-build-lava parameters
-            source build-configs/${BUILD_CONFIG_FILENAME}
-            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-            DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
-            TARGET_PRODUCT=${TARGET_PRODUCT}
-            MAKE_TARGETS=droidcore
-            JOB_NAME=${JOB_NAME}
-            BUILD_NUMBER=${BUILD_NUMBER}
-            IMAGE_EXTENSION=img.xz
-            BUILD_URL=${BUILD_URL}
-            LAVA_SERVER=staging.validation.linaro.org/RPC2/
-            FRONTEND_JOB_NAME=${JOB_NAME}
-            DOWNLOAD_URL=https://builds.96boards.org/${PUB_DEST}
-            CTS_MODULE_NAME=CtsBionicTestCases
-            CUSTOM_JSON_URL=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/96boards-hikey/lava-job-definitions/hi6220-hikey/aosp-master/template-boot.yaml
-            EOF
         - inject:
             properties-file: publish_parameters
         - linaro-publish-token:
@@ -145,88 +141,34 @@
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
+        - inject:
+            properties-file: publish_parameters
         - shell: |
-            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/96boards-hikey/lava-job-definitions/hi6220-hikey/aosp-master/template-cts.yaml#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsVmTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsCompilationTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsDramTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsHardwareTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsJobSchedulerTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsOsTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsPermissionTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsPermission2TestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsSecurityTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsUsbTests#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsFileSystemTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
-        - shell: |
-            sed -i "s#CTS_MODULE_NAME=.*#CTS_MODULE_NAME=CtsLibcoreTestCases#" ${WORKSPACE}/post_build_lava_parameters
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
+            export PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
+            export VTS_URL=https://builds.96boards.org/${PUB_DEST}
+            export DEVICE_TYPE=hi6220-hikey
+            export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
+            export DOWNLOAD_URL=https://builds.96boards.org/${PUB_DEST}
+            export KERNEL_COMMIT=${BUILD_NUMBER}
+            export ANDROID_VERSION=$(echo $REFERENCE_BUILD_URL | awk -F"/" '{print$(NF-1)}')
+            export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
+            export QA_BUILD_VERSION=${BUILD_NUMBER}
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team staging-lkft \
+                --qa-server-project ${QA_SERVER_PROJECT} \
+                --git-commit ${QA_BUILD_VERSION} \
+                --template-path configs/lkft/lava-job-definitions \
+                --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-vts-staging-kernel.yaml \
+                --quiet
+
     publishers:
         - archive:
             artifacts: '*.xml,*.json'
