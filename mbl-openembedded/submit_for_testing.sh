@@ -26,6 +26,9 @@ export DTB_URL=${PUBLISH_SERVER}${PUB_DEST}/${DTB_IMG}
 rm -rf configs
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
+# Install jinja2-cli and ruamel.yaml
+pip install --user --force-reinstall jinja2-cli ruamel.yaml
+
 [ -z "${DEVICE_TYPE}" ] || \
 python configs/openembedded-lkft/submit_for_testing.py \
   --device-type ${DEVICE_TYPE} \
