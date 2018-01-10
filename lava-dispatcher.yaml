@@ -42,14 +42,17 @@
         - shell: |
             #!/bin/bash
 
-            rm -rf ${WORKSPACE}/*
             set -x
+            cd /
+            rm -rf ${WORKSPACE}
+            mkdir -p ${WORKSPACE}
+            cd ${WORKSPACE}
+            git clone -b ${GERRIT_BRANCH} https://git.linaro.org/${GERRIT_PROJECT} lava-checkout
+            cd lava-checkout
             echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
-            git clone -b ${GERRIT_BRANCH} https://git.linaro.org/${GERRIT_PROJECT}
-            cd *
             git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
             set +x
-            git checkout FETCH_HEAD
+            git checkout -q FETCH_HEAD
             git log -n3
             set -e
             echo
