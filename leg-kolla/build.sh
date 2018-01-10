@@ -40,3 +40,6 @@ kolla_namespace=linaro
                  --namespace ${kolla_namespace} || true
 
 docker images | grep ${kolla_tag} | sort
+
+# remove all images as they are pushed to hub.docker.com and won't be used
+docker images | grep ${kolla_tag} |awk '{print $3}' | xargs docker rmi -f
