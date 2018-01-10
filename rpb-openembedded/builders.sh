@@ -93,7 +93,7 @@ cat conf/{site,auto}.conf
 
 [ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-lava"
 [ "${DISTRO}" = "rpb-wayland" ] && IMAGES+=" rpb-weston-image rpb-weston-image-lava"
-[ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image"
+[ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image rpb-console-image-lava"
 
 time bitbake ${IMAGES}
 
