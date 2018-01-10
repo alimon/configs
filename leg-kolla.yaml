@@ -29,9 +29,11 @@
                 credential-id: DOCKER_AUTH
                 variable: DOCKER_AUTH
     builders:
-        - linaro-publish-token
         - shell:
             !include-raw: leg-kolla/build.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: leg-kolla/publishers.sh
     publishers:
         - email:
             recipients: 'marcin.juszkiewicz@linaro.org riku.voipio@linaro.org fathi.boudra@linaro.org gema.gomez-solano@linaro.org'
