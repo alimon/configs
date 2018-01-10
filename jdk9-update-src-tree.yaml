@@ -1,59 +1,59 @@
 - scm:
-    name: jdk9
+    name: jdk9u
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev
+            url: http://hg.openjdk.java.net/jdk-updates/jdk9u
             clean: true
-            subdir: jdk9
+            subdir: jdk9u
 - scm:
     name: corba
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/corba
+            url: http://hg.openjdk.java.net/jdk-updates/jdk9u/corba
             clean: true
-            subdir: jdk9/corba
+            subdir: jdk9u/corba
 - scm:
     name: hotspot
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/hotspot
+            url: http://hg.openjdk.java.net/jdk-updates/jdk9u/hotspot
             clean: true
-            subdir: jdk9/hotspot
+            subdir: jdk9u/hotspot
 - scm:
     name: jaxp
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/jaxp
+            url: http://hg.openjdk.java.net/jdk-updates/jdk9u/jaxp
             clean: true
-            subdir: jdk9/jaxp
+            subdir: jdk9u/jaxp
 - scm:
     name: jaxws
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/jaxws
+            url: http://hg.openjdk.java.net/jdk-updates/jdk9u/jaxws
             clean: true
-            subdir: jdk9/jaxws
+            subdir: jdk9u/jaxws
 - scm:
     name: jdk
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/jdk
+            url: http://hg.openjdk.java.net/jdk-updates/jdk9u/jdk
             clean: true
-            subdir: jdk9/jdk
+            subdir: jdk9u/jdk
 - scm:
     name: langtools
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/langtools
+            url: http://hg.openjdk.java.net/jdk-updates/jdk9u/langtools
             clean: true
-            subdir: jdk9/langtools
+            subdir: jdk9u/langtools
 - scm:
     name: nashorn
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk9/dev/nashorn
+            url: http://hg.openjdk.java.net/jdk-updates/jdk9u/nashorn
             clean: true
-            subdir: jdk9/nashorn
+            subdir: jdk9u/nashorn
 - job:
     name: jdk9-update-src-tree
     project-type: freestyle
@@ -78,9 +78,9 @@
             artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 9 - Update jdk9 source tree'
+    display-name: 'OpenJDK 9u - Update jdk9 source tree'
     scm:
-        - jdk9
+        - jdk9u
         - corba
         - hotspot
         - jaxp
@@ -101,7 +101,7 @@
             rm -rf out
             mkdir out
 
-            pushd jdk9
+            pushd jdk9u
             #find . -name BOM -exec rm {} \;
             #commit_id=$(hg identify | awk '{print $1}')
             #echo "jdk9-${commit_id}" | tee -a BOM
@@ -139,10 +139,10 @@
             echo "export YEAR=${YEAR}" > out/build-date.sh
             echo "export DAY_OF_YEAR=${DAY_OF_YEAR}" >> out/build-date.sh
 
-            tar --exclude=.hg -acf out/jdk9.tar.gz jdk9
+            tar --exclude=.hg -acf out/jdk9u.tar.gz jdk9u
     publishers:
         - archive:
-            artifacts: 'out/jdk9.tar.gz, out/build-date.sh, out/BOM'
+            artifacts: 'out/jdk9u.tar.gz, out/build-date.sh, out/BOM'
         - fingerprint:
             files: 'out/*'
             record-artifacts: true

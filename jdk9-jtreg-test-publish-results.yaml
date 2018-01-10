@@ -31,7 +31,7 @@
             default: 'default'
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 9 - Publish jtreg results'
+    display-name: 'OpenJDK 9u - Publish jtreg results'
     wrappers:
         - timestamps
         - ssh-agent-credentials:
@@ -47,9 +47,9 @@
 
             set -ex
 
-            PERSIST=$HOME/srv/openjdk9
+            PERSIST=$HOME/srv/openjdk9u
             SCRIPT_DIR=$PERSIST/openjdk-test-scripts
-            export JDK_VERSION=9
+            export JDK_VERSION=9u
 
             (unset PRIVATE_KEY; env | sort  >$WORKSPACE/env.out)
             tree -fd -L 5 $PERSIST | xz >$WORKSPACE/tree.out.xz

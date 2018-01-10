@@ -24,7 +24,7 @@
             default: 'http://openjdk.linaro.org/releases/jdk8u-server-release-1708.tar.xz'
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 9 - Configure and build OpenJDK 9'
+    display-name: 'OpenJDK 9u - Configure and build OpenJDK 9u'
     axes:
         - axis:
             type: user-defined
@@ -53,7 +53,7 @@
     builders:
         - copyartifact:
             project: jdk9-update-src-tree
-            filter: 'out/jdk9.tar.gz'
+            filter: 'out/jdk9u.tar.gz'
             target: incoming
             flatten: true
         - copyartifact:
@@ -89,7 +89,7 @@
             cd ${WORKSPACE}
 
             # Extract sources from upstream job
-            tar xf incoming/jdk9.tar.gz
+            tar xf incoming/jdk9u.tar.gz
 
             shopt -s nullglob
 
@@ -106,17 +106,17 @@
 
             if [ $two_stage_build = 1 ]; then
               pushd build-stage1
-              sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk8 ${ccache_build_opts}
+              sh ../jdk9u/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk8 ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
 
               pushd build-stage2
-              sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image ${ccache_build_opts}
+              sh ../jdk9u/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             else
               pushd build-stage2
-              sh ../jdk9/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
+              sh ../jdk9u/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             fi
@@ -124,7 +124,7 @@
             # Archive the result
             rm -rf out
             mkdir out
-            artifact_name=jdk9-${JVM_VARIANT}-${BUILD_TYPE}
+            artifact_name=jdk9u-${JVM_VARIANT}-${BUILD_TYPE}
             tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
 
             # Archive test support files.

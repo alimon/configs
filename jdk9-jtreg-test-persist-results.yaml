@@ -3,7 +3,7 @@
     project-type: matrix
     defaults: global
     description: |
-        * Writes the results to $HOME/srv/openjdk9/openjdk-jtreg-nightly-tests.
+        * Writes the results to $HOME/srv/openjdk9u/openjdk-jtreg-nightly-tests.
     properties:
         - authorization:
             linaro:
@@ -26,7 +26,7 @@
             default: 'default'
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 9 - Write jtreg tests results'
+    display-name: 'OpenJDK 9u - Write jtreg tests results'
     axes:
         - axis:
             type: user-defined
@@ -67,7 +67,7 @@
             flatten: true
         - copyartifact:
             project: jdk9-build-image
-            filter: 'out/jdk9-server-${BUILD_TYPE}.tar.gz'
+            filter: 'out/jdk9u-server-${BUILD_TYPE}.tar.gz'
             target: incoming
             flatten: true
         - shell: |
@@ -77,12 +77,12 @@
 
             tree -f .
 
-            PERSIST=$HOME/srv/openjdk9
-            export JDK_VERSION=9
+            PERSIST=$HOME/srv/openjdk9u
+            export JDK_VERSION=9u
 
             result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JTREG_CATEGORY=${JTREG_CATEGORY},JVM_VARIANT=${JVM_VARIANT},label=${label}/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
 
-            image_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=server,label=${label}/jdk9-server-${BUILD_TYPE}.tar.gz
+            image_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=server,label=${label}/jdk9u-server-${BUILD_TYPE}.tar.gz
 
             : ${YEAR:=$(date +%Y)}
             : ${DAY_OF_YEAR:=$(date +%j)}
