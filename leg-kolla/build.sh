@@ -1,4 +1,6 @@
 #!/bin/bash
+# build dependencies on Debian:
+# git build-essential virtualenv python-dev libffi-dev libssl-dev
 
 set -ex
 
