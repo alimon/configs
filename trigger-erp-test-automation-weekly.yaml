@@ -1,0 +1,28 @@
+- job:
+    name: trigger-erp-test-automation-weekly
+    display-name: 'Trigger ERP test automation weekly'
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    triggers:
+        - timed: '@weekly'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: erp-test-automation
+              predefined-parameters: |
+                  HOSTS=cb-g0
+                  BUILD_ENV=staging
+                  BUILD_NUM=latest

@@ -1,0 +1,39 @@
+- job:
+    name: 'erp-test-automation'
+    display-name: 'ERP test automation'
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    parameters:
+        - string:
+            name: HOSTS
+            default: 'cb-g0'
+        - string:
+            name: BUILD_ENV
+            default: 'staging'
+        - string:
+            name: BUILD_NUM
+            default: 'latest'
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: ANSIBLE_VAULT
+                variable: ANSIBLE_VAULT
+    builders:
+        - shell:
+            !include-raw: erp-test-automation/builders.sh
+    publishers:
+        - email:
+            recipients: 'chase.qi@linaro.org'
