@@ -92,14 +92,14 @@ actions:
           steps:
           - if [ -z "${RESIZE_ROOTFS}" ]
           - then
-          -     echo "resize_rootfs: skip"
+          -     echo "resize_rootfs:" "skip"
           - else
           -     cd /lava-lxc
           -     simg2img ${LXC_ROOTFS_IMG} ${LXC_ROOTFS_IMG}.ext4
           -     e2fsck -y -f ${LXC_ROOTFS_IMG}.ext4
           -     resize2fs ${LXC_ROOTFS_IMG}.ext4 ${RESIZE_ROOTFS}
           -     img2simg ${LXC_ROOTFS_IMG}.ext4 ${LXC_ROOTFS_IMG}
-          -     echo "resize_rootfs: pass"
+          -     echo "resize_rootfs:" "pass"
           - fi
 
 - deploy:
