@@ -6,6 +6,11 @@ rm -rf configs
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
 # Install jinja2-cli and ruamel.yaml
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
+  echo "INFO: apt update error - try again in a moment"
+  sleep 15
+  sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
+fi
 pkg_list="virtualenv python-pip"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
