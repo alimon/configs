@@ -2,12 +2,14 @@
     namespace: dragonboard410c
     name: qcomlt-desktop
     timeout:
-      minutes: 60
+      minutes: 90
     definitions:
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/piglit/piglit.yaml
       name: linux-piglit
+      params:
+              OPTIONS: "-x streaming-texture-leak -x glx -1"
 
 device_type: ${DEVICE_TYPE}
 job_name: lt-qcom-${OS_INFO}-desktop-${BUILD_NUMBER}
