@@ -73,6 +73,15 @@ for rootfs in ${ROOTFS}; do
 EOF
 done
 
+# Record info about kernel, there can be multiple .packages files, but we have already checked that kernel version is the same. so pick one.
+kernel_binpkg=$(grep -h out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | uniq |  sed 's/\s\s*/ /g' | cut -d ' ' -f2)
+kernel_pkgver=$(grep -h out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | uniq |  sed 's/\s\s*/ /g' | cut -d ' ' -f3)
+
+cat >> out/HEADER.textile << EOF
+* Kernel package name: ${kernel_binpkg}
+* Kernel package version: ${kernel_pkgver}
+EOF
+
 # Create boot image
 cat out/vmlinuz-* out/$(basename ${DTBS}) > Image.gz+dtb
 mkbootimg \
