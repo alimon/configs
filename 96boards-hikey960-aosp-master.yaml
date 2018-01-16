@@ -119,7 +119,10 @@
               --os_patch_level 2016-11-05 \
               --ramdisk ramdisk.img \
               --output boot.uefi.img
-            cp boot.uefi.img dist/pub/
+            for img in "boot.uefi.img system.img userdata.img cache.img"; do
+            pxz -9 $img
+            done
+            cp *.img.xz dist/pub/
             popd
 
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/dist/pub/BUILD-INFO.txt
