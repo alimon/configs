@@ -102,8 +102,8 @@ def generate_test_list(platform, device_type):
     for test in excluded_tests:
         print(test)
 
-    test_list = file_list('output/{}/tests'.format(platform), 'zephyr.bin')
-    shutil.rmtree('output', ignore_errors=True)
+    test_list = file_list('out/{}/tests'.format(platform), 'zephyr.bin')
+    shutil.rmtree('out', ignore_errors=True)
     # Test image path example: 'tests/kernel/pthread/test/zephyr.bin'
     test_list = [test.split('/', 2)[-1] for test in test_list]
     # Remove excluded tests.
@@ -208,6 +208,9 @@ def main():
     headers = {
         "Auth-Token": args.qa_token
     }
+    os.chdir(os.getenv('WORKSPACE'))
+    print('CWD: {}'.format(os.getcwd()))
+    print(os.listdir('.'))
     test_list = generate_test_list(args.board_name, args.device_type)
     for test in test_list:
         replace_dict = dict(
