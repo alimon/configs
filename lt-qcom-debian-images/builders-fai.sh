@@ -31,6 +31,9 @@ EOF
 
 sudo mount -t tmpfs tmpfs /tmp
 
+# dumb utility to parse dpkg -l output
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-debian-images/debpkgdiff.py
+
 for rootfs in ${ROOTFS}; do
 
     rootfs_sz=$(echo $rootfs | cut -f2 -d,)
@@ -67,6 +70,13 @@ for rootfs in ${ROOTFS}; do
 
     # dpkg -l output
     mv out/packages.txt out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages
+
+    # record changes since last build, if available
+    if wget -q ${PUBLISH_SERVER}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-*.packages -O last-build.packages; then
+        python debpkgdiff.py last-build.packages out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages > out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages-changes.txt
+    else
+        echo "latest build published does not have packages list, skipping diff report"
+    fi
 
     cat >> out/HEADER.textile << EOF
 * Linaro Debian ${rootfs}: size: ${rootfs_sz_real}
