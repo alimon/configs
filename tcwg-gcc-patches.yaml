@@ -35,7 +35,7 @@
     display-name: 'TCWG ZZZ Monitor gcc-patches@'
     scm:
         - git:
-            url: http://git-us.linaro.org/toolchain/jenkins-scripts.git
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
             refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             name: origin
             branches:
@@ -45,10 +45,8 @@
             shallow-clone: true
             wipe-workspace: false
         - git:
-            url: ssh://tcwg-buildslave@review.linaro.org:29418/toolchain/gcc.git
+            url: https://git-us.linaro.org/toolchain/gcc.git
             refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-            # tcwg-buildslave user id
-            credentials-id: 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
             name: origin
             branches:
                 - ${gcc_branch}
@@ -61,6 +59,10 @@
         - timeout:
             timeout: 600
         - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
         - build-name:
             name: '#${BUILD_NUMBER}'
     builders:
