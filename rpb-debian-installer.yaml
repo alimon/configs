@@ -72,6 +72,12 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               out snapshots/reference-platform/components/debian-installer/${BUILD_NUMBER}/
+        - trigger-builds:
+            - project: erp-test-automation
+              predefined-parameters: |
+                  HOSTS=cb-g0
+                  BUILD_ENV=stable
+                  BUILD_NUM=${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
