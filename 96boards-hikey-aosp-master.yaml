@@ -124,6 +124,9 @@
             cd build/
             source build/envsetup.sh
             lunch hikey-userdebug
+            cd cts
+            git fetch http://android-review.linaro.org/platform/cts refs/changes/07/18007/1 && git cherry-pick FETCH_HEAD
+            cd -
             make -j"$(nproc)" vts cts
             cp out/host/linux-x86/vts/android-vts.zip out/
             cp out/host/linux-x86/cts/android-cts.zip out/
