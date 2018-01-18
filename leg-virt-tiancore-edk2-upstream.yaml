@@ -95,14 +95,8 @@
 
                 source edksetup.sh
 
-                # download and unpack the OpenSSL sources
-                cd ${WORKSPACE}/CryptoPkg/Library/OpensslLib
-
-                # capture the clone command (minus the trailing \r) from the HOWTO
-                CLONE_CMD=$(grep 'git clone -b' OpenSSL-HOWTO.txt |sed 's/[ >]*\(.*\)\r/\1/')
-
-                # clone the OpenSSL repo
-                eval ${CLONE_CMD} --depth 1
+                # pull the OpenSSL sources
+                git submodule update --init --recursive
 
                 cd ${WORKSPACE}
                 for type in DEBUG RELEASE
