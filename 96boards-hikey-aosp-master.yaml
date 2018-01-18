@@ -124,9 +124,9 @@
             cd build/
             source build/envsetup.sh
             lunch hikey-userdebug
-            cd cts
+            pushd cts
             git fetch http://android-review.linaro.org/platform/cts refs/changes/07/18007/1 && git cherry-pick FETCH_HEAD
-            cd -
+            popd
             make -j"$(nproc)" vts cts
             cp out/host/linux-x86/vts/android-vts.zip out/
             cp out/host/linux-x86/cts/android-cts.zip out/
@@ -167,7 +167,7 @@
             export KERNEL_COMMIT=${BUILD_NUMBER}
             export KERNEL_BRANCH=android-hikey-linaro-4.9
             export KERNEL_REPO=android-hikey-linaro-4.9
-            export ANDROID_VERSION=aosp-master
+            export ANDROID_VERSION=aosp-master-$(date --iso-8601)
             export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
             export QA_BUILD_VERSION=${BUILD_NUMBER}
 
