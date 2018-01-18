@@ -93,7 +93,7 @@ cat conf/{site,auto}.conf
 
 [ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-lava"
 [ "${DISTRO}" = "rpb-wayland" ] && IMAGES+=" rpb-weston-image rpb-weston-image-lava"
-[ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image rpb-console-image-lava"
+[ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image"
 
 time bitbake ${IMAGES}
 
@@ -163,7 +163,12 @@ ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lava-${MA
 ROOTFS_DESKTOP_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-desktop-image-lava-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "uImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
 case "${MACHINE}" in
-  am57xx-evm|juno)
+  am57xx-evm)
+    # LAVA image is too big for am57xx-evm
+    ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
+    # FIXME: several dtb files case
+    ;;
+  juno)
     # FIXME: several dtb files case
     ;;
   *)
