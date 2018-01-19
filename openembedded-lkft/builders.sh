@@ -286,6 +286,7 @@ BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_N
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
+HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.hddimg" | xargs -r basename)
 case "${MACHINE}" in
   juno)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-r2-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
@@ -324,6 +325,7 @@ KERNEL_URL=${BASE_URL}/${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}/${PUB_DEST}/${DTB_IMG}
 RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/juno-oe-uboot.zip
 NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_TARXZ_IMG}
+HDD_URL=${BASE_URL}/${PUB_DEST}/${HDD_IMG}
 KERNEL_COMMIT=${SRCREV_kernel}
 KERNEL_CONFIG_URL=${BASE_URL}/${PUB_DEST}/config
 KERNEL_DEFCONFIG_URL=${BASE_URL}/${PUB_DEST}/defconfig

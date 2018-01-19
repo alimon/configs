@@ -1,0 +1,47 @@
+{% extends "lkft-nfs.jinja2" %}
+
+{% block global_settings %}
+context:
+  arch: arm64
+  netdevice: tap
+  machine: virt
+  cpu: cortex-a57
+  guestfs_interface: virtio
+{{ super() }}
+{% endblock global_settings %}
+
+{% block device_type %}qemu{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    timeout:
+      minutes: 15
+    to: tmpfs
+    images:
+      rootfs:
+        image_arg: -drive format=raw,file={rootfs} -m 4096 -smp 4 -nographic
+        url: {{NFSROOTFS_URL}}
+        compression: gz
+        apply-overlay: true
+        sparse: false
+      kernel:
+        image_arg: -kernel {kernel} --append "console=ttyAMA0 root=/dev/vda rw"
+        url: {{KERNEL_URL}}
+        type: image
+    os: oe
+{% endblock deploy_target %}
+
+{% block boot_target %}
+- boot:
+    timeout:
+      minutes: 10
+    method: qemu
+    media: tmpfs
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      login_commands:
+        - su
+    prompts:
+    - 'root@hikey:~#'
+{% endblock boot_target %}
