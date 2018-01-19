@@ -7,6 +7,7 @@ export DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
 export KERNEL_COMMIT=${SRCREV_kernel}
 export ANDROID_VERSION=$(echo $REFERENCE_BUILD_URL | awk -F"/" '{print$(NF-1)}')
 export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
+export CTS_VERSION=$(echo $CTS_URL | awk -F"/" '{print$(NF-1)}')
 
 if [ ! -z "${KERNEL_DESCRIBE}" ]; then
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
@@ -26,7 +27,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
     --template-path configs/lkft/lava-job-definitions \
-    --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml \
+    --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml \
     --quiet
 
 python configs/openembedded-lkft/submit_for_testing.py \
