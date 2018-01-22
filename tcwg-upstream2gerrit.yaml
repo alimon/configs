@@ -1,5 +1,5 @@
 - job:
-    name: tcwg-gcc-patches
+    name: tcwg-upstream2gerrit
     project-type: freestyle
     defaults: global
     description: |
@@ -18,13 +18,21 @@
             num-to-keep: 30
     parameters:
         - string:
+            name: branch
+            default: 'master'
+            description: 'Project branch to apply patch to'
+        - string:
             name: patches
             default: 'last'
-            description: 'List of patchworks patch ids (numbers); some of ids can be "last"'
+            description: 'List of patchworks patch ids (numbers); special values: last'
         - string:
-            name: gcc_branch
-            default: 'master'
+            name: project
+            default: 'gcc'
             description: 'GCC branch to apply patch to'
+        - bool:
+            name: squash
+            default: 'false'
+            description: 'Whether to squash all patches into one commit/review'
         - string:
             name: scripts_branch
             default: 'master'
@@ -32,7 +40,7 @@
     disabled: true
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'TCWG DEAD ZZZ Monitor gcc-patches@'
+    display-name: 'TCWG ZZZ Monitor Upstream Patches'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
@@ -44,17 +52,6 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
-        - git:
-            url: https://git-us.linaro.org/toolchain/gcc.git
-            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-            name: origin
-            branches:
-                - ${gcc_branch}
-            basedir: gcc
-            skip-tag: true
-            shallow-clone: false
-            wipe-workspace: false
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
     wrappers:
         - timeout:
             timeout: 600
@@ -68,4 +65,4 @@
     builders:
         - shell: |
             #!/bin/bash
-            ./jenkins-scripts/tcwg-gcc-patches.sh
+            ./jenkins-scripts/tcwg-upstream2gerrit.sh
