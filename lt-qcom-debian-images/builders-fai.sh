@@ -84,8 +84,8 @@ EOF
 done
 
 # Record info about kernel, there can be multiple .packages files, but we have already checked that kernel version is the same. so pick one.
-kernel_binpkg=$(grep -h out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | uniq |  sed 's/\s\s*/ /g' | cut -d ' ' -f2)
-kernel_pkgver=$(grep -h out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | uniq |  sed 's/\s\s*/ /g' | cut -d ' ' -f3)
+kernel_binpkg=$(grep -h linux-image out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | sed 's/\s\s*/ /g' | cut -d ' ' -f2 | uniq)
+kernel_pkgver=$(grep -h linux-image out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | sed 's/\s\s*/ /g' | cut -d ' ' -f3 | uniq)
 
 cat >> out/HEADER.textile << EOF
 * Kernel package name: ${kernel_binpkg}
