@@ -1,5 +1,5 @@
 device_type: hi6220-hikey
-job_name: "lkft-android-${KERNEL_BRANCH}-${BUILD_NUMBER}-cts-${CTS_MODULE_NAME}"
+job_name: "lkft-android-${KERNEL_BRANCH}-${BUILD_NUMBER}-cts-armeabi-v7a"
 timeouts:
   job:
     minutes: 360
@@ -14,16 +14,21 @@ visibility:
 
 secrets:
   ARTIFACTORIAL_TOKEN: "${ARTIFACTORIAL_TOKEN}"
+  AP_SSID: "${AP_SSID}"
+  AP_KEY: "${AP_KEY}"
 
 metadata:
-  android.build: "${BUILD_NUMBER}"
-  android.name: "${JOB_NAME}"
-  android.url: "${BUILD_URL}"
+  android.url: "${REFERENCE_BUILD_URL}"
+  android.version: "${ANDROID_VERSION}"
+  build-location: "${DOWNLOAD_URL}"
   git branch: "${KERNEL_BRANCH}"
   git repo: "${KERNEL_REPO}"
   git commit: "${KERNEL_COMMIT}"
   git describe: "${KERNEL_DESCRIBE}"
   build-url: "${BUILD_URL}"
+  cts-manifest: "${CTS_URL}/pinned-manifest.xml"
+  cts-version: "${CTS_VERSION}"
+  cts-plan: "cts-lkft"
   series: lkft
 
 protocols:
@@ -46,6 +51,7 @@ actions:
     - ca-certificates
     - wget
     - unzip
+    - openjdk-9-jdk-headless
     os: debian
 
 - boot:
@@ -129,8 +135,8 @@ actions:
       from: git
       path: automated/android/tradefed/tradefed.yaml
       params:
-        TEST_PARAMS: "run cts --include-filter ${CTS_MODULE_NAME} --disable-reboot --skip-preconditions --skip-device-info"
-        TEST_URL: "http://testdata.validation.linaro.org/cts/android-cts-aosp-master-build1.zip"
+        TEST_PARAMS: "run cts-lkft -a armeabi-v7a --disable-reboot --skip-preconditions --skip-device-info"
+        TEST_URL: "${CTS_URL}/android-cts.zip"
         TEST_PATH: "android-cts"
         RESULTS_FORMAT: "atomic"
-      name: "${CTS_MODULE_NAME}"
+      name: "cts-lkft-armeabi-v7a"

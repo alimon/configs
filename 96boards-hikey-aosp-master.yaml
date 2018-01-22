@@ -19,7 +19,7 @@
             default: 'hikey-aosp-master'
         - string:
             name: QA_SERVER
-            default: 'https://qa-reports.linaro.org'
+            default: 'https://staging-qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
             default: 'aosp-master-vts-tracking'
@@ -49,6 +49,12 @@
             - text:
                 credential-id: ARTIFACTORIAL_TOKEN
                 variable: ARTIFACTORIAL_TOKEN
+            - text:
+                credential-id: AP_SSID
+                variable: AP_SSID
+            - text:
+                credential-id: AP_KEY
+                variable: AP_KE
     builders:
         - shell: |
             #!/bin/bash
@@ -169,6 +175,7 @@
             export KERNEL_REPO=android-hikey-linaro-4.9
             export ANDROID_VERSION=aosp-master-$(date --iso-8601)
             export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
+            export CTS_VERSION=$(echo $CTS_URL | awk -F"/" '{print$(NF-1)}')
             export QA_BUILD_VERSION=${BUILD_NUMBER}
 
             rm -rf configs
@@ -183,7 +190,7 @@
                 --qa-server-project ${QA_SERVER_PROJECT} \
                 --git-commit ${QA_BUILD_VERSION} \
                 --template-path configs/lkft/lava-job-definitions \
-                --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-vts-staging-kernel.yaml \
+                --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-vts-staging-kernel.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml \
                 --quiet
 
     publishers:
