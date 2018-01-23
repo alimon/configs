@@ -29,6 +29,9 @@
         - string:
             name: ROOTFS_URL
             default: ''
+        - string:
+            name: PUB_DEST
+            default: "96boards/${MACHINE}/linaro/linux-integration/${BUILD_NUMBER}"
     disabled: false
     node: master
     display-name: 'Qualcomm LT Linux Integration kernel build'
@@ -75,6 +78,9 @@
             !include-raw: lt-qcom-linux-integration/builders.sh
         - inject:
             properties-file: builders_out_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-linux-integration/publishers.sh
     publishers:
         - email:
             recipients: 'anibal.limon@linaro.org'
