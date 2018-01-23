@@ -1,0 +1,88 @@
+- job:
+    name: lt-qcom-linux-integration
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: KERNEL_IMAGE_URL
+            default: ''
+        - string:
+            name: KERNEL_DT_URL
+            default: ''
+        - string:
+            name: KERNEL_MODULES_URL
+            default: ''
+        - string:
+            name: ROOTFS_URL
+            default: ''
+    disabled: false
+    node: master
+    display-name: 'Qualcomm LT Linux Integration kernel build'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'dragonboard410c'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell:
+            !include-raw: lt-qcom-linux-integration/builders-deps.sh
+        - shell: |
+            #!/bin/bash
+
+            # Set builder.sh configuration per MACHINE
+            case "${MACHINE}" in
+              dragonboard410c)
+                echo 'BOOTIMG_PAGESIZE=2048' >> builders_in_parameters
+                echo 'BOOTIMG_BASE=0x80000000' >> builders_in_parameters
+                echo 'RAMDISK_BASE=0x84000000' >> builders_in_parameters
+                echo 'ROOTFS_PARTITION=/dev/mmcblk0p10' >> builders_in_parameters
+                echo 'SERIAL_CONSOLE=ttyMSM0' >> builders_in_parameters
+                ;;
+              *)
+                echo "Currently MACHINE: ${MACHINE} isn't supported"
+                exit 1
+                ;;
+            esac
+        - inject:
+            properties-file: builders_in_parameters
+        - shell:
+            !include-raw: lt-qcom-linux-integration/builders.sh
+        - inject:
+            properties-file: builders_out_parameters
+    publishers:
+        - email:
+            recipients: 'anibal.limon@linaro.org'
+        - email-ext:
+            recipients: 'anibal.limon@linaro.org nicolas.dechesne@linaro.org'
+            always: true
+            matrix-trigger: only-parent
+        - ircbot:
+            channels:
+                - name: '#linaro-lt-qcomm'
+                  password: ${LT_QCOM_KEY}
