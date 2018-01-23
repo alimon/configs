@@ -20,6 +20,9 @@ export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
 # to be able install LAVA test overlay, by now to 3GB is enough
 export RESIZE_ROOTFS=3G
 
+# Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
+pip install --user --force-reinstall jinja2-cli ruamel.yaml
+
 python configs/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
     --build-number ${BUILD_NUMBER} \
