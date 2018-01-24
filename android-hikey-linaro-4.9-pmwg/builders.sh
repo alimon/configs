@@ -16,7 +16,7 @@ case "${DEFCONFIG}" in
   hikey_defconfig)
     python mkbootimg \
       --kernel ${PWD}/arch/arm64/boot/Image-dtb \
-      --cmdline console="ttyFIQ0 androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug" \
+      --cmdline "console=ttyFIQ0 androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug" \
       --os_version O \
       --os_patch_level 2016-11-05 \
       --ramdisk ramdisk.img \
@@ -25,7 +25,7 @@ case "${DEFCONFIG}" in
   hikey960_defconfig)
     python mkbootimg \
       --kernel ${PWD}/arch/arm64/boot/Image-dtb \
-      --cmdline console="androidboot.hardware=hikey960 console=ttyFIQ0 androidboot.console=ttyFIQ0 firmware_class.path=/system/etc/firmware loglevel=15 buildvariant=userdebug" \
+      --cmdline "androidboot.hardware=hikey960 console=ttyFIQ0 androidboot.console=ttyFIQ0 firmware_class.path=/system/etc/firmware loglevel=15 buildvariant=userdebug" \
       --base 0x0 --tags_offset 0x07a00000 --kernel_offset 0x00080000 \
       --ramdisk_offset 0x07c00000 \
       --os_version P \
