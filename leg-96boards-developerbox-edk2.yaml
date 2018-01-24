@@ -59,18 +59,7 @@
             sudo apt-get install -y --no-install-recommends python-requests zip gcc-aarch64-linux-gnu
 
             git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2-non-osi.git
-            git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2.git
-
-            (
-                # download and unpack the OpenSSL sources
-                cd ${WORKSPACE}/edk2/CryptoPkg/Library/OpensslLib
-
-                # capture the clone command (minus the trailing \r) from the HOWTO
-                CLONE_CMD=$(grep 'git clone -b' OpenSSL-HOWTO.txt |sed 's/[ >]*\(.*\)\r/\1/')
-
-                # clone the OpenSSL repo
-                eval ${CLONE_CMD} --depth 1
-            )
+            git clone -b developer-box --depth 1 --recurse-submodules git://git.linaro.org/leg/noupstream/edk2.git
 
             export OUTDIR=${WORKSPACE}/out
             export PACKAGES_PATH=${WORKSPACE}/edk2:${WORKSPACE}/edk2-platforms:${WORKSPACE}/edk2-non-osi
