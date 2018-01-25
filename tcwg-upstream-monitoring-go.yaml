@@ -86,7 +86,7 @@
 
             cat <<EOF > buildfarm_parameters
             override=gcc=gcc.git~$gcc_branch --extraconfigdir ../config/$config $override
-            log_name=tcwg-upstream-monitoring/${branch}-$BUILD_NUMBER/\$builder_type.\$target
+            log_name=tcwg-upstream-monitoring-go/${branch}-$BUILD_NUMBER/\$builder_type.\$target
             runtests=tcwg-x86_64-build tcwg-x86_32-build tcwg-apm_64-build tcwg-apm_32-build
             host_x86_64_excludecheck=gdb
             host_aarchXX_excludecheck=gdb
@@ -95,7 +95,7 @@
             target_list=tcwg-x86_64-build tcwg-x86_32-build tcwg-apm_64-build tcwg-apm_32-build
             log_server=$log_server
             abe_branch=refs/remotes/origin/master
-            displaytag=upstream-monitoring-$branch-${BUILD_NUMBER}
+            displaytag=upstream-monitoring-go-$branch-${BUILD_NUMBER}
             EOF
         - trigger-builds:
             - project: tcwg-buildfarm
@@ -120,8 +120,8 @@
             esac
 
             cat <<EOF > compare_results_parameters
-            ref_logs=tcwg-upstream-monitoring/${branch}-$ref_build_num
-            new_logs=tcwg-upstream-monitoring/${branch}-$BUILD_NUMBER
+            ref_logs=tcwg-upstream-monitoring-go/${branch}-$ref_build_num
+            new_logs=tcwg-upstream-monitoring-go/${branch}-$BUILD_NUMBER
             show_results=false
             log_server=$log_server
             EOF
