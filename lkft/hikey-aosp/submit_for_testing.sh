@@ -22,7 +22,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --build-number ${BUILD_NUMBER} \
     --lava-server ${LAVA_SERVER} \
     --qa-server ${QA_SERVER} \
-    --qa-server-team lkft \
+    --qa-server-team android-lkft \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
     --template-path configs/lkft/lava-job-definitions \
