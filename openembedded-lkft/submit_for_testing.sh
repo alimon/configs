@@ -5,6 +5,7 @@ set -ex
 [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="low"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
+[ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=lkft
 
 if [ -n "${DRY_RUN}" ]; then
     export DRY_RUN="--dry-run --template-path lava-job-definitions --testplan-path lava-job-definitions/ --quiet"
@@ -64,7 +65,7 @@ python ${BASE_PATH}/submit_for_testing.py \
   --build-number ${BUILD_NUMBER} \
   --lava-server ${LAVA_SERVER} \
   --qa-server ${QA_SERVER} \
-  --qa-server-team lkft \
+  --qa-server-team ${QA_SERVER_TEAM} \
   --qa-server-project ${QA_SERVER_PROJECT} \
   --git-commit ${QA_BUILD_VERSION} \
   ${DRY_RUN} \
