@@ -73,7 +73,9 @@ for rootfs in ${ROOTFS}; do
 
     # record changes since last build, if available
     if wget -q ${PUBLISH_SERVER}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-*.packages -O last-build.packages; then
-        python debpkgdiff.py last-build.packages out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages > out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages-changes.txt
+        echo -e "=== Packages changes for ${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}\n" >> out/build-changes.txt
+        python debpkgdiff.py last-build.packages out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages >> out/build-changes.txt
+        echo >> out/build-changes.txt
     else
         echo "latest build published does not have packages list, skipping diff report"
     fi
@@ -86,6 +88,15 @@ done
 # Record info about kernel, there can be multiple .packages files, but we have already checked that kernel version is the same. so pick one.
 kernel_binpkg=$(grep -h linux-image out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | sed 's/\s\s*/ /g' | cut -d ' ' -f2 | uniq)
 kernel_pkgver=$(grep -h linux-image out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | sed 's/\s\s*/ /g' | cut -d ' ' -f3 | uniq)
+
+# record kernel config changes since last build, if available
+if wget -q ${PUBLISH_SERVER}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/config-* -O last-build.config; then
+    echo -e "=== Changes for kernel config\n" >> out/build-changes.txt
+    diff -su last-build.config out/config-* > out/build-changes.txt
+    echo >> out/build-changes.txt
+else
+    echo "latest build published does not have kernel config, skipping diff report"
+fi
 
 cat >> out/HEADER.textile << EOF
 * Kernel package name: ${kernel_binpkg}
