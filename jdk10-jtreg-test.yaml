@@ -147,10 +147,6 @@
 
             mv jdk10/* ${src_dir}
 
-            # Move the applications tests to exclude them from execution.
-            # JCStress adds days to the execution time.
-            mv ${src_dir}/test/hotspot/jtreg/applications ${src_dir}
-
             blacklist=${WORKSPACE}/excludes.txt
             jdk_problem_list=${src_dir}/${JTREG_CATEGORY}/test/ProblemList.txt
 
@@ -197,7 +193,7 @@
 
             # hotspot splits its tests into gtest jtreg tests. We just do jtreg.
             if [ $JTREG_CATEGORY == "hotspot" ]; then
-                TEST_SUBDIR=${JTREG_CATEGORY}/jtreg
+                TEST_SUBDIR=${JTREG_CATEGORY}/jtreg:hotspot_all_no_apps
             else
                 TEST_SUBDIR=${JTREG_CATEGORY}
             fi
@@ -230,9 +226,6 @@
                   -timeout:8 \
                   -a -agentvm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
             fi
-
-            # Move the applications tests back, for neatness.
-            mv ${src_dir}/applications ${src_dir}/test/hotspot/jtreg
 
             # Kill leftover jstatd processes.
             killall -9 jstatd
