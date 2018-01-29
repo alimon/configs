@@ -134,7 +134,7 @@ stih410_b2260_conf=$(find ../layers/meta-st-cannes2/conf/machine -name stih410-b
 sed -i -e '/gpu/d' ${stih410_b2260_conf}
 
 # Include additional recipes in the image
-[ "${MACHINE}" = "am57xx-evm" ] || extra_pkgs="numactl"
+[ "${MACHINE}" = "am57xx-evm" -o "${MACHINE}" = "stih410-b2260" ] || extra_pkgs="numactl"
 cat << EOF >> conf/local.conf
 CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests-mainline kselftests-next libhugetlbfs-tests ltp ${extra_pkgs}"
 CORE_IMAGE_BASE_INSTALL_append = " python python-misc python-modules python-numpy python-pexpect python-pyyaml"
