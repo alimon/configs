@@ -1,0 +1,39 @@
+- test:
+    namespace: ${MACHINE}
+    name: qcomlt-linux-integration-smoke
+    timeout:
+      minutes: 5
+    definitions:
+    - from: inline
+      name: qcomlt-linux-integration-smoke
+      path: inline/qcomlt-linux-integration-smoke.yaml
+      repository:
+        metadata:
+          description: QCOM LT linux integration smoke
+          format: Lava-Test Test Definition 1.0
+          name: qcomlt-linux-integration-smoke 
+        run:
+          steps:
+          - uname -a
+          - df
+          - free
+          - ls -l /dev
+          - ls -l /sys
+          - ls -l /proc
+          - echo "linux_integration_smoke:" "pass"
+
+device_type: ${LAVA_DEVICE_TYPE}
+job_name: lt-qcom-linux-integration-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 90
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom-linux-integration/lava-job-definitions/template.yaml

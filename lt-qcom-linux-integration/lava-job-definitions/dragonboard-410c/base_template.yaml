@@ -1,0 +1,119 @@
+protocols:
+  lava-lxc:
+    name: lxc-${MACHINE}-test
+    template: debian
+    distribution: debian
+    release: stretch
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 5
+    to: lxc
+    packages:
+    - wget
+    - unzip
+    - abootimg
+    - cpio
+    - gzip
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'root@linaro-developer:~#'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- deploy:
+    timeout:
+      minutes: 40
+    to: download
+    namespace: ${MACHINE}
+    images:
+      boot:
+        url: ${BOOT_URL}
+        compression: ${BOOT_URL_COMP}
+        apply-overlay: true
+    os: oe
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - from: inline
+      name: install-google-fastboot
+      path: inline/install-google-fastboot.yaml
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: install-fastboot
+          description: "Install fastboot provided by google"
+        run:
+          steps:
+          - wget https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip
+          - unzip platform-tools_r26.0.2-linux.zip
+          - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
+          - ln -s `pwd`/platform-tools/adb /usr/bin/adb
+          - fastboot --version
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 30
+    definitions:
+    - from: inline
+      name: ${MACHINE}-apply-test-overlay
+      path: inline/${MACHINE}-apply-test-overlay.yaml
+      repository:
+        metadata:
+          description: ${MACHINE} apply test overlay
+          format: Lava-Test Test Definition 1.0
+          name: ${MACHINE}-apply-test-overlay
+        run:
+          steps:
+          - overlay_file=/lava-lxc/overlays/${MACHINE}/overlay.tar.gz
+          - if [ -f "$overlay_file" ]
+          - then
+          -     cd /lava-lxc
+          -     abootimg -x ${LXC_BOOT_FILE}
+          -     abootimg-unpack-initrd
+          -     tar -xvzf $overlay_file -C ramdisk
+          -     rm initrd.img
+          -     abootimg-pack-initrd
+          -     image_size=`du -b ${LXC_BOOT_FILE} | cut -f 1`
+          -     overlay_size=`gzip -l $overlay_file | tail -1 | awk '{print $2}'`
+          -     final_size=$(( $overlay_size + $image_size ))
+          -     abootimg -u ${LXC_BOOT_FILE} -r initrd.img -c "bootsize=$final_size"
+          -     echo "apply_test_overlay:" "pass"
+          - else
+          -     echo "apply_test_overlay:" "skip"
+          - fi
+
+- deploy:
+    timeout:
+      minutes: 40
+    to: fastboot
+    namespace: ${MACHINE}
+    images:
+      boot:
+        url: lxc:///${LXC_BOOT_FILE}
+    os: oe
+    protocols:
+        lava-lxc:
+        - action: fastboot-deploy
+          request: pre-power-command
+          timeout:
+              minutes: 2
+
+- boot:
+    namespace: ${MACHINE}
+    prompts:
+    - '(.*)#'
+    timeout:
+      minutes: 15
+    method: fastboot
