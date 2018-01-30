@@ -7,7 +7,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="fai-server fai-setup-storage qemu-utils procps mtools pigz zip android-tools-fsutils android-tools-mkbootimg"
+pkg_list="python-pip fai-server fai-setup-storage qemu-utils procps mtools pigz zip android-tools-fsutils android-tools-mkbootimg"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
