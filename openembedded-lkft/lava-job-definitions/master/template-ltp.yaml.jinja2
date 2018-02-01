@@ -19,7 +19,10 @@
       parameters:
         SKIP_INSTALL: 'true'
         TST_CMDFILES: '{{testname}}'
-        {% if LTP_SKIPFILE is defined %}SKIPFILE: '{{LTP_SKIPFILE}}'{% elif ltp_skipfile is defined %}SKIPFILE: '{{ltp_skipfile}}'{% endif %}
+        SKIPFILE: skipfile-lkft.yaml
+        BOARD: '{{ DEVICE_TYPE }}'
+        BRANCH: '{{ KERNEL_VERSION_OVERRIDE|default(KERNEL_VERSION) }}'
+        ENVIRONMENT: '{{ ENVIRONMENT|default('production') }}'
         TIMEOUT_MULTIPLIER: 3
       name: ltp-{{testname}}-tests
       timeout:

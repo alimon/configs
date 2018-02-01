@@ -23,6 +23,7 @@ export KERNEL_RECIPE=linux-hikey-mainline
 export KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 export KERNEL_URL=${BASE_URL}/${PUB_DEST}/Image--4.13+git0+ff5abbe799-r0-hikey-20171012090440-346.bin
 export KERNEL_VERSION=git
+export KERNEL_VERSION_OVERRIDE=mainline
 export KSELFTEST_PATH="/opt/"
 export KSELFTESTS_URL=https://www.kernel.org/pub/linux/kernel/v4.x/linux-4.13.tar.xz
 export KSELFTESTS_VERSION=4.13
