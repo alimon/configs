@@ -39,7 +39,7 @@
             echo deb-src http://obs.linaro.org/${TR}/${OBS_RELEASE}/ ./ | sudo tee -a /etc/apt/sources.list.d/${TARGET_REPO}.list
             sudo apt-get update -q=2
 
-            kernel_abi_version=$(apt-cache search ^linux-support|sed -e 's,-rc,~rc,' -e 's, .*,,' -e 's,linux-support-,,'|sort --version-sort|tail -1|sed -e 's,~rc,-rc,')
+            kernel_abi_version=$(apt-cache search ^linux-image-4.*-arm64$|sed -e 's,-rc,~rc,' -e 's,-arm64 .*,,' -e 's,linux-image-,,'|sort --version-sort|tail -1|sed -e 's,~rc,-rc,')
             old_kernel_abi_version=$(apt-cache show linux-image-reference-arm64|grep Depends:|sed -e 's,-rc,~rc,' -e 's,.*linux-image-,,' -e 's,-arm64$,,'|sort --version-sort|tail -1|sed -e 's,~rc,-rc,' )
             if [ ${old_kernel_abi_version} == ${kernel_abi_version} ]; then
                 echo metapackage up to date at ${old_kernel_abi_version}
