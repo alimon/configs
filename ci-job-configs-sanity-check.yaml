@@ -51,14 +51,10 @@
             git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
             git checkout -q FETCH_HEAD
 
-            # FIXME run-jjb.py was meant to be used for deployment only
-            # use JJB 'test' command instead of 'update' command
-            sed -i "s|update|test|" run-jjb.py
-
             export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
             export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
             jenkins-jobs --version
-            python run-jjb.py
+            python run-jjb.py test
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org ben.copeland@linaro.org'

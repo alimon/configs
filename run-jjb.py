@@ -32,6 +32,17 @@ def findparentfiles(fname):
     return filelist
 
 
+def usage():
+    sys.exit("{} <test|update>".format(sys.argv[0]))
+
+
+if len(sys.argv) < 2:
+    usage()
+
+action = sys.argv[1]
+if action not in ['test', 'update']:
+    usage()
+
 jjb_cmd = find_executable('jenkins-jobs') or sys.exit('jenkins-jobs is not found.')
 jjb_args = [jjb_cmd]
 
@@ -50,10 +61,11 @@ if jjb_user is not None and jjb_password is not None:
         f.write(jenkins_jobs_ini)
     jjb_args.append('--conf=jenkins_jobs.ini')
 
-jjb_args.extend(['update', 'template.yaml'])
+# action may be 'update' or 'test'.
+jjb_args.extend([action, 'template.yaml'])
 
 try:
-    git_args = ['git', 'diff', '--name-only',
+    git_args = ['git', 'diff', '--name-status',
                 os.environ.get('GIT_PREVIOUS_COMMIT'),
                 os.environ.get('GIT_COMMIT')]
     proc = subprocess.Popen(git_args,
@@ -71,7 +83,12 @@ if proc.returncode != 0:
 
 filelist = []
 files = []
-for filename in data.splitlines():
+for line in data.splitlines():
+    mode, filename = line.split('\t')
+    if mode == 'D':
+        # File is deleted
+        print("Ignoring deleted file {}".format(filename))
+        continue
     if filename.endswith('.yaml') and '/' not in filename:
         filelist.append(filename)
     else:
