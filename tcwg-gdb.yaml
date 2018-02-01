@@ -1,0 +1,151 @@
+- job:
+    name: tcwg-gdb
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: gdb_rev
+            default: 'refs/remotes/origin/master'
+            description: 'gdb revision to build'
+        - string:
+            name: target_list
+            default: 'aarch64-linux-gnu aarch64_be-linux-gnu aarch64-none-elf aarch64_be-none-elf arm-linux-gnueabi arm-linux-gnueabihf armv8l-linux-gnueabihf arm-netbsdelf arm-none-eabi arm-none-nacl arm-none-symbianelf arm-pe arm-vxworks arm-wince-pe armeb-linux-gnueabihf tcwg-x86_64-cam tcwg-x86_32-build tcwg-apm_64-build tcwg-apm_32-build tcwg-tk1_32-build'
+            description: 'List of targets to test'
+        - string:
+            name: bfd_list
+            default: '--enable-64-bit-bfd=no --enable-64-bit-bfd=yes'
+            description: 'Type of BFD to enable: --enable-64-bit-bfd=yes --enable-64-bit-bfd=no'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Jenkins-scripts branch to use'
+        - bool:
+            name: dont_fail
+            default: false
+            description: 'Do not fail the build'
+        - string:
+            name: log_name
+            default: '${JOB_NAME}-${BUILD_NUMBER}/${builder_type}.$target.$bfd'
+            description: 'Logname directory on logserver'
+        - string:
+            name: log_server
+            default: dev-01.tcwglab:/home/tcwg-buildslave/logs
+            description: 'Log_Server'
+    disabled: false
+    node: tcwg-coordinator
+    retry-count: 3
+    concurrent: true
+    display-name: 'TCWG BBB GDB'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/binutils-gdb.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            branches:
+                - ${gdb_rev}
+            skip-tag: true
+            shallow-clone: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-cam
+                - tcwg-x86_32-build
+                - tcwg-apm_64-build
+                - tcwg-apm_32-build
+                - tcwg-tk1_32-build
+        - axis:
+            type: dynamic
+            name: bfd
+            values:
+                - bfd_list
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        combination-filter: |
+            ((label==~/tcwg-x86_.*/) && ! (target==~/tcwg-.*/)) || (target==label)
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="gdb_rev"}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            rm -rf jenkins-scripts
+            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+
+            ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
+            . ./build-container.sh
+            BUILD_SHELL="build_container_exec bash"
+            $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
+
+            builder_type=$(print_type_for_label $label)
+
+            # Remove container on exit
+            trap "build_container_cleanup" EXIT HUP INT QUIT TRAP KILL PIPE TERM
+
+            case $target in
+                tcwg-*) target_opt="" ;;
+                *) target_opt="--target $target" ;;
+            esac
+
+            rm -rf build-$target || true
+            mkdir -p build-$target
+            cd build-$target
+            result=0
+            jobs=$(nproc --all)
+            echo BUILD STARTED $(date)
+            echo WORKSPACE: ${WORKSPACE}
+
+            # For the moment, only build gdb (do not run the tests).
+            # Do this in a different subdir.
+            # GDB is no longer supported on arm-vxworks
+            case ${target} in
+              arm-vxworks) ;;
+              *)
+                ${BUILD_SHELL} -c "mkdir build-gdb && cd build-gdb && ../../configure --with-gnu-ld --enable-plugins --enable-tui --disable-gas --disable-binutils --disable-ld --disable-gold --disable-gprof $target_opt ${bfd}"
+                ${BUILD_SHELL} -c "cd build-gdb && make all -j$jobs"
+                ;;
+            esac
+
+            echo BUILD FINISHED $(date)
+
+            # Cleanup to save disk space
+            cd ..
+            du -sh build-$target
+            rm -rf build-$target || true
+
+            if $dont_fail; then
+                result="0"
+            fi
+            exit $result
+    publishers:
+        - email-ext:
+            recipients: 'christophe.lyon@linaro.org,yao.qi@linaro.org'
+            matrix-trigger: only-parent
