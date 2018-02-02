@@ -72,7 +72,7 @@ for rootfs in ${ROOTFS}; do
     mv out/packages.txt out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages
 
     # record changes since last build, if available
-    if wget -q ${PUBLISH_SERVER}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-*.packages -O last-build.packages; then
+    if wget -q ${PUBLISH_SERVER}$(dirname ${PUB_DEST})/latest/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-*.packages -O last-build.packages; then
         echo -e "=== Packages changes for ${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}\n" >> out/build-changes.txt
         python debpkgdiff.py last-build.packages out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages >> out/build-changes.txt
         echo >> out/build-changes.txt
@@ -90,7 +90,7 @@ kernel_binpkg=$(grep -h linux-image out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAM
 kernel_pkgver=$(grep -h linux-image out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAME}-${BUILD_NUMBER}.packages | sed 's/\s\s*/ /g' | cut -d ' ' -f3 | uniq)
 
 # record kernel config changes since last build, if available
-if wget -q ${PUBLISH_SERVER}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/config-* -O last-build.config; then
+if wget -q ${PUBLISH_SERVER}$(dirname ${PUB_DEST})/latest/config-* -O last-build.config; then
     echo -e "=== Changes for kernel config\n" >> out/build-changes.txt
     diff -su last-build.config out/config-* > out/build-changes.txt
     echo >> out/build-changes.txt
