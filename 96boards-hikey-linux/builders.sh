@@ -14,7 +14,7 @@ echo "GIT_COMMIT: ${GIT_COMMIT}"
 echo "GIT_BRANCH: ${GIT_BRANCH}"
 
 sudo apt-get update -q
-sudo apt-get install -q -y bc kmod cpio
+sudo apt-get install -q -y bc kmod cpio libssl-dev
 
 SRCVERSION=$(echo ${KERNEL_VERSION} |sed 's,-rc,,')
 PKGVERSION=$(echo ${KERNEL_DESCRIBE} |sed -e 's,-rc,~rc,')
