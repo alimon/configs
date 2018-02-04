@@ -92,7 +92,7 @@ kernel_pkgver=$(grep -h linux-image out/${VENDOR}-${OS_FLAVOUR}-*-${PLATFORM_NAM
 # record kernel config changes since last build, if available
 if wget -q ${PUBLISH_SERVER}$(dirname ${PUB_DEST})/latest/config-* -O last-build.config; then
     echo -e "=== Changes for kernel config\n" >> out/build-changes.txt
-    diff -su last-build.config out/config-* > out/build-changes.txt
+    diff -su last-build.config out/config-* > out/build-changes.txt || true
     echo >> out/build-changes.txt
 else
     echo "latest build published does not have kernel config, skipping diff report"
