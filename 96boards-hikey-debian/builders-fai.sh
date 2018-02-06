@@ -70,8 +70,9 @@ for rootfs in ${ROOTFS}; do
     # snatch the rootfs and bootfs for fastboot
     for device in $(sudo kpartx -avs /tmp/work.raw | cut -d' ' -f3); do
         partition=$(echo ${device} | cut -d'p' -f3)
-        sudo dd if=/dev/mapper/${device} of=/tmp/partition.raw
+        sudo dd if=/dev/mapper/${device} of=/tmp/partition.raw bs=512
         if [ "${partition}" = "2" ]; then
+            sudo e2label /tmp/partition.raw rootfs
             img2simg /tmp/partition.raw out/rootfs-${image_name}.img
         fi
         if [ "${partition}" = "1" ]; then
