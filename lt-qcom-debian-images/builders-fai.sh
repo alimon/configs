@@ -98,6 +98,14 @@ else
     echo "latest build published does not have kernel config, skipping diff report"
 fi
 
+# the space after pre.. tag is on purpose
+cat > out/README.textile << EOF
+
+h4. Build changes
+pre.. 
+EOF
+cat out/build-changes.txt >> ${DEPLOY_DIR_IMAGE}/README.textile
+
 cat >> out/HEADER.textile << EOF
 * Kernel package name: ${kernel_binpkg}
 * Kernel package version: ${kernel_pkgver}
