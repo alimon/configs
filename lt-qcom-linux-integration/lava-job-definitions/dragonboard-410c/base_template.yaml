@@ -77,18 +77,18 @@ actions:
         run:
           steps:
           - overlay_file=/lava-lxc/overlays/${MACHINE}/overlay.tar.gz
-          - if [ -f $overlay_file ]
+          - if [ -f $$overlay_file ]
           - then
           -     cd /lava-lxc
           -     abootimg -x ${LXC_BOOT_FILE}
           -     abootimg-unpack-initrd
-          -     tar -xvzf $overlay_file -C ramdisk
+          -     tar -xvzf $$overlay_file -C ramdisk
           -     rm initrd.img
           -     abootimg-pack-initrd
           -     image_size=`du -b ${LXC_BOOT_FILE} | cut -f 1`
-          -     overlay_size=`gzip -l $overlay_file | tail -1 | awk '{print $2}'`
-          -     final_size=$(( $overlay_size + $image_size ))
-          -     abootimg -u ${LXC_BOOT_FILE} -r initrd.img -c "bootsize=$final_size"
+          -     overlay_size=`gzip -l $$overlay_file | tail -1 | awk '{print $$2}'`
+          -     final_size=$$(( $$overlay_size + $$image_size ))
+          -     abootimg -u ${LXC_BOOT_FILE} -r initrd.img -c "bootsize=$$final_size"
           -     echo "apply_test_overlay:" "pass"
           - else
           -     echo "apply_test_overlay:" "skip"
