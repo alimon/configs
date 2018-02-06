@@ -34,20 +34,23 @@ def main():
     for pkg in d2.keys():
         a.append("%s (%s)" % (pkg, d2[pkg]))
 
-    print("Added packages:")
-    for line in sorted(a):
-        print('\t'+line)
-    print("")
-
-    print("Changed packages:")
-    for line in sorted(c):
-        print('\t'+line)
-    print("")
-
-    print("Removed packages:")
-    for line in sorted(r):
-        print('\t'+line)
-
+    if len(a)+len(r)+len(c) == 0:
+        print("Files %s and %s are identical" % (sys.argv[1], sys.argv[2]))
+    else:
+        if len(a):
+            print("Added packages:")
+            for line in sorted(a):
+                print('\t'+line)
+            print("")
+        if len (c):
+            print("Changed packages:")
+            for line in sorted(c):
+                print('\t'+line)
+            print("")
+        if len(r):
+            print("Removed packages:")
+            for line in sorted(r):
+                print('\t'+line)
 
 if __name__ == "__main__":
     main()
