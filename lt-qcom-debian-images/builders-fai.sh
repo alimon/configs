@@ -104,7 +104,7 @@ cat > out/README.textile << EOF
 h4. Build changes
 pre.. 
 EOF
-cat out/build-changes.txt >> ${DEPLOY_DIR_IMAGE}/README.textile
+cat out/build-changes.txt >> out/README.textile
 
 cat >> out/HEADER.textile << EOF
 * Kernel package name: ${kernel_binpkg}
