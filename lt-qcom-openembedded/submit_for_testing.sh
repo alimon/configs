@@ -53,7 +53,7 @@ case "${MACHINE}" in
             --git-commit ${BUILD_NUMBER} \
             --template-path configs/lt-qcom/lava-job-definitions \
             --template-base-pre base_template.yaml \
-            --template-names template-desktop.yaml
+            --template-names template-desktop.yaml template-gst-validate.yaml
       ;;
       rpb-wayland)
         echo "Currently no tests for rpb-wayland"

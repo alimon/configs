@@ -1,0 +1,26 @@
+- test:
+    namespace: dragonboard410c
+    name: qcomlt-gst-validate
+    timeout:
+      minutes: 120
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/gst-validate/gst-validate.yaml
+      name: linux-gst-validate
+
+device_type: ${DEVICE_TYPE}
+job_name: lt-qcom-${OS_INFO}-gst-validate-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 150
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom/lava-job-definitions/dragonboard-410c/template-gst-validate.yaml
