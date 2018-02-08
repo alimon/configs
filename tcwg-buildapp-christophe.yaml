@@ -50,6 +50,14 @@
             name: LAVA_SERVER
             default: validation.linaro.org
             description: 'Lava server to use'
+        - string:
+            name: ARTIFACTORIAL_URI
+            default: https://archive.validation.linaro.org
+            description: 'Artifactorial server to use'
+        - string:
+            name: ARTIFACTORIAL_DIR
+            default: /team/toolchain
+            description: 'Artifactorial dir to use'
     disabled: false
     node: tcwg-coordinator
     child-workspace: $target/$app
@@ -97,8 +105,11 @@
             - text:
                 credential-id: LAVA_TOKEN
                 variable: LAVA_TOKEN
+        - credentials-binding:
+            - text:
+                credential-id: TCWG_ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
     builders:
-        - linaro-publish-token
         - shell: |
             #!/bin/bash
             set -ex
@@ -116,7 +127,9 @@
 
             trap "${CONTAINER_CLEANUP}" EXIT
 
-            env | egrep 'LAVA|BUILD_NUMBER|PUBLISH_TOKEN' > .env
+            env | egrep 'LAVA|BUILD_NUMBER|ARTIFACTORIAL' > .env
+            echo 'LAVA_URI=https://${LAVA_USER}:${LAVA_TOKEN}@${LAVA_SERVER}/RPC2' >> .env
+
             ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${boot} ${linux_repo} ${linux_branch}"
 
     publishers:
