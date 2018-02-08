@@ -17,6 +17,7 @@ actions:
     - img2simg
     - simg2img
     - e2fsprogs
+    - gzip
     os: debian
 
 - boot:
@@ -83,9 +84,16 @@ actions:
           -     echo "resize_rootfs:" "skip"
           - else
           -     cd /lava-lxc
+          -     overlay_file=/lava-lxc/overlays/dragonboard410c/overlay.tar.gz
+          -     overlay_size=$$(gzip -l $$overlay_file | tail -1 | awk '{print $$2}')
+          -     overlay_size=$$(( $$overlay_size / 1024 ))
           -     simg2img ${LXC_ROOTFS_FILE} ${LXC_ROOTFS_FILE}.ext4
-          -     e2fsck -y -f ${LXC_ROOTFS_FILE}.ext4
-          -     resize2fs ${LXC_ROOTFS_FILE}.ext4 ${RESIZE_ROOTFS}
+          -     fsck_code=$$(e2fsck -y -f ${LXC_ROOTFS_FILE}.ext4)
+          -     block_count=$$(dumpe2fs -h ${LXC_ROOTFS_FILE}.ext4 | grep "Block count" | awk '{print $$3}')
+          -     block_size=$$(dumpe2fs -h ${LXC_ROOTFS_FILE}.ext4 | grep "Block size" | awk '{print $$3}')
+          -     current_size=$$(( $$block_size * $$block_count / 1024 ))
+          -     final_size=$$(( $$current_size + $$overlay_size + 32768 ))
+          -     resize2fs ${LXC_ROOTFS_FILE}.ext4 "$$final_size"K
           -     img2simg ${LXC_ROOTFS_FILE}.ext4 ${LXC_ROOTFS_FILE}
           -     echo "resize_rootfs:" "pass"
           - fi

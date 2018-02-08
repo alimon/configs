@@ -17,8 +17,8 @@ export ROOTFS_URL_COMP="gz"
 export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
 
 # XXX: the debian rootfs images are build small as possible, resize
-# to be able install LAVA test overlay, by now to 3GB is enough
-export RESIZE_ROOTFS=3G
+# to be able install LAVA test overlay
+export RESIZE_ROOTFS=True
 
 # Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
 pip install --user --force-reinstall jinja2-cli ruamel.yaml
