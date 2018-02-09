@@ -127,7 +127,7 @@
 
             trap "${CONTAINER_CLEANUP}" EXIT
 
-            env | egrep 'LAVA|BUILD_NUMBER|ARTIFACTORIAL' > .env
+            env | egrep 'LAVA|ARTIFACTORIAL' > .env
             echo 'LAVA_URI=https://${LAVA_USER}:${LAVA_TOKEN}@${LAVA_SERVER}/RPC2' >> .env
 
             ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${boot} ${linux_repo} ${linux_branch}"
