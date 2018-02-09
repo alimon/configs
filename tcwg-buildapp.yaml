@@ -21,7 +21,7 @@
         - string:
            name: app_list
            default: 'gcc linux linux+all spec2k spec2k6'
-           description: 'List of apps to build (eg gcc, linux, linux+myconfig, linux+all ["linux" means allmodconfig, "linux+all" means build all defconfigs in sequence], spec2k spec2k6)'
+           description: 'List of apps to build (eg gcc, linux, linux+myconfig, linux+all ["linux" means allmodconfig, "linux+all" means build all defconfigs in sequence; multi_v7 can be used to boot on arm], spec2k spec2k6)'
         - string:
            name: linux_repo
            default: 'torvalds/linux'
@@ -30,6 +30,10 @@
            name: linux_branch
            default: 'master'
            description: 'Linux kernel branch to build (eg to-build)'
+        - bool:
+            name: boot
+            default: 'false'
+            description: 'Attempt to boot supported Linux configurations via Lava'
         - string:
            name: target_list
            default: 'arm-linux-gnueabihf aarch64-linux-gnu'
@@ -38,6 +42,22 @@
             name: scripts_branch
             default: master
             description: 'Jenkins-scripts branch to use'
+        - string:
+            name: build_container_tag
+            default: 'trusty'
+            description: 'Distro to use on the builder with non-default container type: trusty, xenial.'
+        - string:
+            name: LAVA_SERVER
+            default: validation.linaro.org
+            description: 'Lava server to use'
+        - string:
+            name: ARTIFACTORIAL_URI
+            default: https://archive.validation.linaro.org
+            description: 'Artifactorial server to use'
+        - string:
+            name: ARTIFACTORIAL_DIR
+            default: /team/toolchain
+            description: 'Artifactorial dir to use'
     disabled: false
     node: tcwg-coordinator
     child-workspace: $target/$app
@@ -77,27 +97,39 @@
                 - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
         - build-name:
             name: '#${BUILD_NUMBER}'
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_USER
+                variable: LAVA_USER
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_TOKEN
+                variable: LAVA_TOKEN
+        - credentials-binding:
+            - text:
+                credential-id: TCWG_ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
     builders:
         - shell: |
             #!/bin/bash
             set -ex
 
-            env
-            ssh-add -l
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
             . jenkins-scripts/jenkins-helpers.sh
             host_arch=$(print_arch_for_label "${label}")
-            host=$(print_host_for_node $NODE_NAME)
 
-            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${host_arch} --distro trusty --session-host ${host} > container.sh
+            host=$(print_host_for_node $NODE_NAME)
+            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${host_arch} --distro ${build_container_tag} --session-host ${host} > container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./container.sh
 
             trap "${CONTAINER_CLEANUP}" EXIT
 
-            boot=false # Temporarily hardcoded, until merged with the experimental job tcwg-buildapp-christophe
+            env | egrep 'LAVA|ARTIFACTORIAL' > .env
+            echo 'LAVA_URI=https://${LAVA_USER}:${LAVA_TOKEN}@${LAVA_SERVER}/RPC2' >> .env
+
             ${CONTAINER} "cd ${WORKSPACE} && ${WORKSPACE}/tcwg-buildapp.sh ${toolchain_url} ${app} ${target} ${boot} ${linux_repo} ${linux_branch}"
     publishers:
         - email:
