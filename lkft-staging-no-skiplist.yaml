@@ -51,6 +51,7 @@
                 - 'juno-r2'
                 - 'x15'
                 - 'b2260'
+                - 'dragonboard-410c'
     execution-strategy:
         sequential: false
     wrappers:
@@ -74,6 +75,11 @@
             then
               exit 0
             fi
+            # no LTS 4.4 build for dragonboard
+            if [ ${DEVICE_TYPE} = dragonboard-410c ] && [ ${BUILD_NAME} = linux-stable-4.4 ]
+            then
+              exit 0
+            fi
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
 
             case ${DEVICE_TYPE} in
@@ -91,6 +97,9 @@
                 ;;
               b2260)
                 export MACHINE=stih410-b2260
+                ;;
+              dragonboard-410c)
+                export MACHINE=dragonboard-410c
                 ;;
               *)
                 ;;
