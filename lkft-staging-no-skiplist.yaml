@@ -141,6 +141,9 @@
                 export KERNEL_URL="${BUILD_LOCATION}/${B2260_KERNEL_FILENAME}"
                 export DTB_URL="${BUILD_LOCATION}/${B2260_DTB_FILENAME}"
                 ;;
+              dragonboard-410c)
+                BOOT_FILENAME=$(grep -E "boot\S*\.img" "${MD5_FILENAME}" | awk '{print $2}')
+                ;;
               *)
                 export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
                 ;;
