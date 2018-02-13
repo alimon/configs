@@ -216,7 +216,6 @@ DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d
 
 # Prepare files to publish
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
-rm -rf ${DEPLOY_DIR_IMAGE}/bootloader
 find ${DEPLOY_DIR_IMAGE} -type l -delete
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
@@ -240,12 +239,6 @@ case "${MACHINE}" in
     done
     ;;
 esac
-
-# Move HiKey's bootloader related files into its own subdir
-[ "${MACHINE}" = "hikey" ] && {
-  mkdir -p ${DEPLOY_DIR_IMAGE}/bootloader
-  (cd ${DEPLOY_DIR_IMAGE} && mv fip.bin hisi-idt.py l-loader.bin nvme.img ptable-linux-*.img bootloader/)
-}
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
