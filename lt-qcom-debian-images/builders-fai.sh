@@ -102,6 +102,7 @@ fi
 cat > out/README.textile << EOF
 
 h4. Build changes
+
 pre.. 
 EOF
 cat out/build-changes.txt >> out/README.textile
