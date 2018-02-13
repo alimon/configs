@@ -25,17 +25,17 @@
       from: git
       path: automated/linux/device-tree/device-tree.yaml
       name: linux-device-tree
-    - repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      path: automated/linux/pm-qa/pm-qa.yaml
-      name: linux-pm-qa
 
 - test:
     namespace: dragonboard410c
     name: qcomlt-bench
     timeout:
-      minutes: 60
+      minutes: 75
     definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/pm-qa/pm-qa.yaml
+      name: linux-pm-qa
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/dd-wr-speed/dd-wr-speed.yaml
@@ -76,7 +76,7 @@ device_type: ${DEVICE_TYPE}
 job_name: lt-qcom-${OS_INFO}-${BUILD_NUMBER}
 timeouts:
   job:
-    minutes: 90
+    minutes: 105
   action:
     minutes: 15
   connection:
