@@ -52,6 +52,8 @@
                 - 'x15'
                 - 'b2260'
                 - 'dragonboard-410c'
+                - 'qemu_arm64'
+                - 'qemu_x86_64'
     execution-strategy:
         sequential: false
     wrappers:
@@ -101,6 +103,12 @@
               dragonboard-410c)
                 export MACHINE=dragonboard-410c
                 ;;
+              qemu_arm64)
+                export MACHINE=hikey
+                ;;
+              qemu_x86_64)
+                export MACHINE=intel-core2-32
+                ;;
               *)
                 ;;
             esac
@@ -132,6 +140,7 @@
             JUNO_DTB_FILENAME=$(grep -E "Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
             B2260_KERNEL_FILENAME=$(grep -E "uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
             B2260_DTB_FILENAME=$(grep -E "uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+            HDD_IMG=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.hddimg" "${MD5_FILENAME}" | awk '{print $2}')
             case ${DEVICE_TYPE} in
               juno-r2)
                 export KERNEL_URL="${BUILD_LOCATION}/${JUNO_KERNEL_FILENAME}"
