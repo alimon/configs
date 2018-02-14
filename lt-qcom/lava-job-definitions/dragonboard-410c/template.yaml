@@ -30,12 +30,8 @@
     namespace: dragonboard410c
     name: qcomlt-bench
     timeout:
-      minutes: 75
+      minutes: 65
     definitions:
-    - repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      path: automated/linux/pm-qa/pm-qa.yaml
-      name: linux-pm-qa
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/dd-wr-speed/dd-wr-speed.yaml
@@ -72,11 +68,22 @@
       path: automated/linux/pi-stress/pi-stress.yaml
       name: linux-pi-stress
 
+- test:
+    namespace: dragonboard410c
+    name: qcomlt-pm-qa
+    timeout:
+      minutes: 15
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/pm-qa/pm-qa.yaml
+      name: linux-pm-qa
+
 device_type: ${DEVICE_TYPE}
 job_name: lt-qcom-${OS_INFO}-${BUILD_NUMBER}
 timeouts:
   job:
-    minutes: 105
+    minutes: 110
   action:
     minutes: 15
   connection:
