@@ -14,13 +14,14 @@ context:
 
 {% block deploy_target %}
 - deploy:
+    namespace: target
     timeout:
       minutes: 15
     to: tmpfs
     images:
       rootfs:
         image_arg: -drive format=raw,file={rootfs} -m 4096 -smp 4 -nographic
-        url: {{NFSROOTFS_URL}}
+        url: {{EXT4_IMAGE_URL}}
         compression: gz
         apply-overlay: true
         sparse: false
@@ -33,6 +34,7 @@ context:
 
 {% block boot_target %}
 - boot:
+    namespace: target
     timeout:
       minutes: 10
     method: qemu
