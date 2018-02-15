@@ -40,7 +40,7 @@ cp pinned-manifest.xml  ${ANDROID_PRODUCT_OUT}/
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=$(readlink -f ${ANDROID_PRODUCT_OUT})
-PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}/${LUNCH_TARGET}
+PUB_DEST=/android/${JOB_NAME}/${LUNCH_TARGET}/${MANIFEST_BRANCH}/${BUILD_NUMBER}
 EOF
 
 # delete workspace after buildig files
