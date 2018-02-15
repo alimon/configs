@@ -77,6 +77,11 @@
             then
               exit 0
             fi
+            # no LTS 4.4 build for QEMU (Hikey build is used)
+            if [ ${DEVICE_TYPE} = qemu_arm64 ] && [ ${BUILD_NAME} = linux-stable-4.4 ]
+            then
+              exit 0
+            fi
             # no LTS 4.4 build for dragonboard
             if [ ${DEVICE_TYPE} = dragonboard-410c ] && [ ${BUILD_NAME} = linux-stable-4.4 ]
             then
@@ -134,27 +139,27 @@
             . ./build_env.sh
             ROOTFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
             NFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.tar\.xz" "${MD5_FILENAME}" | awk '{print $2}')
+            EXT4_IMAGE_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.ext4\.gz" "${MD5_FILENAME}" | awk '{print $2}')
             BOOT_FILENAME=$(grep -E "boot\S*uefi\.img" "${MD5_FILENAME}" | awk '{print $2}')
             KERNEL_FILENAME=$(grep -E "bzImage" "${MD5_FILENAME}" | awk '{print $2}')
-            JUNO_KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-            JUNO_DTB_FILENAME=$(grep -E "Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
-            B2260_KERNEL_FILENAME=$(grep -E "uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-            B2260_DTB_FILENAME=$(grep -E "uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
             HDD_IMG=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.hddimg" "${MD5_FILENAME}" | awk '{print $2}')
             case ${DEVICE_TYPE} in
               juno-r2)
-                export KERNEL_URL="${BUILD_LOCATION}/${JUNO_KERNEL_FILENAME}"
-                export DTB_URL="${BUILD_LOCATION}/${JUNO_DTB_FILENAME}"
+                KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E "Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               b2260)
-                export KERNEL_URL="${BUILD_LOCATION}/${B2260_KERNEL_FILENAME}"
-                export DTB_URL="${BUILD_LOCATION}/${B2260_DTB_FILENAME}"
+                KERNEL_FILENAME=$(grep -E "uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E "uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               dragonboard-410c)
                 BOOT_FILENAME=$(grep -E "boot\S*\.img" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
+              qemu_arm64)
+                KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E "Image.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                ;;
               *)
-                export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
                 ;;
             esac
             case ${BUILD_NAME} in
@@ -178,6 +183,7 @@
                 ;;
             esac
             export NFSROOTFS_URL="${BUILD_LOCATION}/${NFS_FILENAME}"
+            export EXT4_IMAGE_URL="${BUILD_LOCATION}/${EXT4_IMAGE_FILENAME}"
             export BOOT_URL="${BUILD_LOCATION}/${BOOT_FILENAME}"
             export SYSTEM_URL="${BUILD_LOCATION}/${ROOTFS_FILENAME}"
             export KERNEL_COMMIT=${KERNEL_COMMIT_ID}
@@ -185,8 +191,11 @@
             export KERNEL_CONFIG_URL=${BUILD_LOCATION}/config
             export KERNEL_VERSION=${MAKE_KERNELVERSION}
             export KERNEL_DEFCONFIG_URL=${BUILD_LOCATION}/defconfig
+            export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
+            export DTB_URL="${BUILD_LOCATION}/${DTB_FILENAME}"
             export BUILD_URL=${BUILD_LOCATION}
             export RECOVERY_IMAGE_URL=${BUILD_LOCATION}/juno-oe-uboot.zip
+            export HDD_URL=${BUILD_LOCATION}/${HDD_IMG}
             rm build_env.sh
             rm ${MD5_FILENAME}
             rm ${BUILD_CONFIG}
