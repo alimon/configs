@@ -4,6 +4,8 @@ export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
 repo sync -j"$(nproc)" -c
 
+repo manifest -r -o pinned-manifest.xml
+
 if [ -n "${BLOBS_URL}" ]; then
 IFS='#'; for url in ${BLOBS_URL}; do
   wget -q ${url}
@@ -30,7 +32,10 @@ template="private-template.txt"
 if [ "${BUILD_TYPE}" = "public" ]; then
   template="public-template.txt"
 fi
+
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/generic/build-info/${template} -O ${ANDROID_PRODUCT_OUT}/BUILD-INFO.txt
+
+cp pinned-manifest.xml  ${ANDROID_PRODUCT_OUT}/
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
