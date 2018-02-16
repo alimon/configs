@@ -1,0 +1,45 @@
+- job:
+    name: trigger-lt-qcom-linux-integration
+    project-type: freestyle
+    defaults: global
+    build-discarder:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+    disabled: false
+    node: master
+    display-name: 'Trigger for LT Qualcomm Linux Integration build'
+    triggers:
+        - pollurl:
+            cron: 'H/5 * * * *'
+            polling-node: master
+            urls:
+              - url: 'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/'
+                check-content:
+                  - simple: true
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -x
+            set -e
+
+            pip install --user python-dateutil beautifulsoup4
+
+            git clone --depth 1 https://git.linaro.org/ci/job/configs.git
+            python configs/trigger-lt-qcom-linux-integration/get_latest_kernel_ci_build.py > lt_qcom_linux_integration_parameters
+        - inject:
+            properties-file: lt_qcom_linux_integration_parameters
+    publishers:
+        - trigger-parameterized-builds:
+            - project: lt-qcom-linux-integration
+              predefined-parameters: |
+                KERNEL_IMAGE_URL=${KERNEL_IMAGE_URL}
+                KERNEL_DT_URL=${KERNEL_DT_URL}
+                KERNEL_MODULES_URL=${KERNEL_MODULES_URL}
+                ROOTFS_URL=${ROOTFS_URL}
+              condition: SUCCESS
