@@ -71,7 +71,7 @@ if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 		modules_file=out/$(basename ${KERNEL_MODULES_URL})
 
 		mkdir -p out/modules
-		tar -xvzf out/$(basename ${KERNEL_MODULES_URL}) -C out/modules
+		tar -xvf out/$(basename ${KERNEL_MODULES_URL}) -C out/modules
 		cd out/modules
 		find . | cpio -oA -H newc -F ../../$rootfs_file
 		cd ../../
@@ -91,7 +91,7 @@ if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 
 		mkdir -p out/rootfs_mount
 		sudo mount -o loop $rootfs_file out/rootfs_mount
-		sudo tar -xvzf out/$(basename ${KERNEL_MODULES_URL}) -C out/rootfs_mount
+		sudo tar -xvf out/$(basename ${KERNEL_MODULES_URL}) -C out/rootfs_mount
 		sudo umount out/rootfs_mount
 	fi
 fi
