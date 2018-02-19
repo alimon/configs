@@ -40,7 +40,7 @@ wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
 mkdir -p out
 python mkbootimg \
   --kernel ${PWD}/arch/arm64/boot/Image-dtb \
-  --cmdline console="ttyFIQ0 androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug" \
+  --cmdline console="${CMD}" \
   --os_version O \
   --os_patch_level 2016-11-05 \
   --ramdisk ramdisk.img \
