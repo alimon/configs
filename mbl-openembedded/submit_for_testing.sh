@@ -3,7 +3,7 @@
 # Need different files for each machine
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "?Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
 MODULES_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "modules-*-${MACHINE}-*-${BUILD_NUMBER}.tgz" | xargs -r basename)
-ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "mbl-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
 
 # Mapping for MACHINE -> DEVICE_TYPE
 case "${MACHINE}" in
