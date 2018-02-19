@@ -2,6 +2,9 @@
 
 set -ex
 
+git config --global user.email "ci_notify@linaro.org"
+git config --global user.name "Linaro CI"
+
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   echo "INFO: apt update error - try again in a moment"
   sleep 15
