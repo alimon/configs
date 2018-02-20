@@ -10,7 +10,7 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    disabled: false
+    disabled: true
     node: master
     display-name: 'CI YADP config builder'
     triggers:
@@ -28,11 +28,11 @@
         - timestamps
         - credentials-binding:
             - text:
-                credential-id: JENKINS_API_USER
-                variable: JENKINS_API_USER
+                credential-id: JJB_USER
+                variable: JJB_USER
             - text:
-                credential-id: JENKINS_API_PASSWORD
-                variable: JENKINS_API_PASSWORD
+                credential-id: JJB_PASSWORD
+                variable: JJB_PASSWORD
     builders:
         - shell: |
             #!/bin/bash -e
