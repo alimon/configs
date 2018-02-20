@@ -36,3 +36,19 @@ context:
     prompts:
     - 'root@intel-core2-32:'
 {% endblock boot_target %}
+
+{% block test_target %}
+  {{ super() }}
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: prep-tmp-disk
+          description: "Link /ltp-tmp to /tmp"
+        run:
+          steps:
+            - df -h
+            - ln -s /tmp /ltp-tmp
+      name: prep-tmp-disk
+      path: inline/prep.yaml
+{% endblock test_target %}
