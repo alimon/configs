@@ -67,8 +67,14 @@
 
             source build/envsetup.sh
 
+            if [ ${LUNCH_TARGET} == "db410c-userdebug" ]; then
+                BUILD_TARGET="systemimage userdataimage cacheimage ramdisk"
+            else
+                BUILD_TARGET="systemimage ramdisk"
+            fi
+
             lunch ${LUNCH_TARGET}
-            make -k -j8 systemimage ramdisk
+            make -k -j"$(nproc)" "${BUILD_TARGET}"
 
             cp .repo/manifest.xml out/source-manifest.xml
             repo manifest -r -o ${ANDROID_PRODUCT_OUT}/pinned-manifest.xml
