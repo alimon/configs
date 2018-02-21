@@ -137,7 +137,7 @@
             ${BUILD_SHELL} -c "git clone https://git.linaro.org/toolchain/abe.git"
             ${BUILD_SHELL} -c "cd abe && ./configure --with-git-reference-dir=/home/tcwg-buildslave/snapshots-ref"
             ${BUILD_SHELL} -c "cd abe && ./abe.sh --build dejagnu"
-            djpath=$(${BUILD_SHELL} -c "ls -d $PWD/abe/./builds/destdir/*/bin")
+            djpath=$(${BUILD_SHELL} -c "ls -d $PWD/abe/./builds/hosttools/*/bin")
             [ -x $djpath/runtest ] || (echo "DejaGnu not built in the expected location: $djpath/runtest" && exit 1)
 
             # If configure or build fails, the execution will stop
