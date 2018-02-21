@@ -63,7 +63,7 @@
             make -j"$(nproc)"
 
             pushd out/target/product/poplar
-            for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img"  "cache.img"; do
+            for image in "boot.img" "system.img" "userdata.img"  "cache.img"; do
               echo "Compressing ${image}"
               xz ${image}
             done
@@ -72,7 +72,7 @@
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=96boards/poplar/linaro/aosp-master/${BUILD_NUMBER}
-            PUB_SRC=${PWD}/out/target/poplar/
+            PUB_SRC=${PWD}/out/target/product/poplar/
             PUB_EXTRA_INC=^[^/]+zip
             EOF
         - inject:
