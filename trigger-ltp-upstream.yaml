@@ -1,0 +1,45 @@
+- job:
+    name: trigger-ltp-upstream
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for LTP upstream (master)'
+    scm:
+        - git:
+            url: https://github.com/linux-test-project/ltp.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            echo SRCREV_ltp=${GIT_COMMIT} > ltp_parameters
+            cat ltp_parameters
+    publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'ltp-upstream'
+              condition: SUCCESS
+              property-file: ltp_parameters
