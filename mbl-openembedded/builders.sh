@@ -99,14 +99,18 @@ INHERIT += "buildstats buildstats-summary"
 EOF
 
 # Set the image types to use
-distro_conf=$(find ../layers/meta-rpb/conf/distro -name rpb.inc)
-cat << EOF >> ${distro_conf}
+case ${DISTRO} in
+  rpb)
+    distro_conf=$(find ../layers/meta-rpb/conf/distro -name rpb.inc)
+    cat << EOF >> ${distro_conf}
 IMAGE_FSTYPES_remove_imx7s-warp = "ext4"
 IMAGE_FSTYPES_append_imx7s-warp = " ext4.gz"
 IMAGE_FSTYPES_remove_raspberrypi3 = "tar.bz2"
 IMAGE_FSTYPES_remove_raspberrypi3 = "ext3"
 IMAGE_FSTYPES_append_raspberrypi3 = " ext3.gz"
 EOF
+    ;;
+esac
 
 # add useful debug info
 cat conf/{site,auto}.conf
