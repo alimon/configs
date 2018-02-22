@@ -91,8 +91,8 @@ EOF
 # add useful debug info
 cat conf/{site,auto}.conf
 
-[ "${DISTRO}" = "rpb" ] && IMAGES+=" rpb-desktop-image rpb-desktop-image-test"
-[ "${DISTRO}" = "rpb-wayland" ] && IMAGES+=" rpb-weston-image rpb-weston-image-test"
+[ "${DISTRO}" = "rpb" ] && IMAGES+=" ${IMAGES_RPB}"
+[ "${DISTRO}" = "rpb-wayland" ] && IMAGES+=" ${IMAGES_RPB_WAYLAND}"
 [ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image"
 
 time bitbake ${IMAGES}
