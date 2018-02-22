@@ -2,13 +2,13 @@
     name: trigger-lt-qcom-linux-integration
     project-type: freestyle
     defaults: global
-    build-discarder:
-        daysToKeep: 30
-        numToKeep: 30
     properties:
         - authorization:
             anonymous:
                 - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
     disabled: false
     node: master
     display-name: 'Trigger for LT Qualcomm Linux Integration build'
@@ -25,13 +25,16 @@
     builders:
         - shell: |
             #!/bin/bash
-            set -x
-            set -e
+
+            set -ex
 
             pip install --user python-dateutil beautifulsoup4
 
-            git clone --depth 1 https://git.linaro.org/ci/job/configs.git
-            python configs/trigger-lt-qcom-linux-integration/get_latest_kernel_ci_build.py > lt_qcom_linux_integration_parameters
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            python configs/trigger-lt-qcom-linux-integration/get_latest_kernel_ci_build.py \
+              > lt_qcom_linux_integration_parameters
         - inject:
             properties-file: lt_qcom_linux_integration_parameters
     publishers:
