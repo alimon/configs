@@ -11,6 +11,10 @@ for f in ${KERNEL_DTBS}; do
     cp ${WORKSPACE}/linux/arch/${ARCH}/boot/dts/$f out;
 done
 
+if [ -e ${WORKSPACE}/boot-db410c.img ]; then
+    cp ${WORKSPACE}/boot-db410c.img out
+fi
+
 # Create MD5SUMS file
 (cd out && md5sum * > MD5SUMS.txt)
 
