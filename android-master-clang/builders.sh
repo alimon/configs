@@ -73,7 +73,7 @@ LAVA_SERVER=validation.linaro.org/RPC2/
 IMAGE_EXTENSION=img.xz
 FRONTEND_JOB_NAME=${JOB_NAME}
 DOWNLOAD_URL=http://snapshots.linaro.org/android/${JOB_NAME}/${BUILD_NUMBER}/
-CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/plain/android/hikey-v2/template-boottime.yaml
+CUSTOM_JSON_URL=https://git.linaro.org/ci/job/configs.git/plain/android-master-clang/lava-job-definitions/boottime-android-master-clang.yaml
 EOF
 
 echo "Build finished"
