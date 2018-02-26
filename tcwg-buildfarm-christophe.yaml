@@ -1,0 +1,307 @@
+- job:
+    name: tcwg-buildfarm-christophe
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: override
+            default: ''
+            description: 'Versions of components to build; e.g. binutils=binutils-gdb.git/linaro_binutils-2_25-branch gcc=gcc.git~linaro/gcc-5-branch glibc=glibc.git~release/2.21/master'
+        - string:
+            name: host_x86_64_languages
+            default: 'default'
+            description: 'Languages to build for x86_64-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: host_aarchXX_languages
+            default: 'c,c++'
+            description: 'Languages to build for AArchXX-hosted toolchains, e.g., "c,c++" or "all" or "default"'
+        - string:
+            name: runtests
+            default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build'
+            description: 'Run toolchain tests for these targets -- must be a subset of target_list'
+        - bool:
+            name: try_bootstrap
+            default: 'true'
+            description: 'Attempt to bootstrap GCC for compatible host and target combinations'
+        - string:
+            name: host_x86_64_excludecheck
+            default: 'gdb'
+            description: 'Do not run "make check" on these components on x86_64'
+        - string:
+            name: host_aarchXX_excludecheck
+            default: 'gcc'
+            description: 'Do not run "make check" on these components on AArchXX'
+        - string:
+            name: extraconfig
+            default: ''
+            description: 'Extra configuration files, syntax tool=path'
+        - bool:
+            name: rebuild
+            default: true
+            description: 'Rebuild the toolchain even if results are already on logserver'
+        - string:
+            name: log_name
+            default: '${JOB_NAME}-${BUILD_NUMBER}/${builder_type}.$target'
+            description: 'Logname directory on logserver'
+        - bool:
+            name: dont_fail
+            default: false
+            description: 'Do not fail the build'
+        - string:
+            name: log_server
+            default: dev-01.tcwglab:/home/tcwg-buildslave/logs
+            description: 'Log_Server'
+        - string:
+            name: target_list
+            default: 'aarch64-linux-gnu aarch64-linux-gnu_ilp32 armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build'
+            description: 'List of targets -- aarch64-linux-gnu aarch64-linux-gnu_ilp32 armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build tcwg-tk1_32-build tcwg-apm_64-build tcwg-apm_32-build -- the tcwg-* targets should be a subset of slave axis'
+        - string:
+            name: abe_branch
+            default: refs/remotes/origin/tested
+            description: 'ABE revision to test'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts branch to use'
+        - string:
+            name: build_container_tag
+            default: 'trusty'
+            description: 'Distro to use on the builder with non-default container type: trusty, xenial.'
+        - string:
+            name: displaytag
+            default: 'manual'
+            description: 'Tag to display in the Jenkins console, so that the build name is more helpful'
+    disabled: false
+    node: tcwg-coordinator
+    child-workspace: $target
+    concurrent: true
+    display-name: 'TCWG ZZZ BuildFarm Christophe'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/abe.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            branches:
+                - $abe_branch
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - $scripts_branch
+            basedir: jenkins-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-x86_64-build
+                - tcwg-x86_32-build
+                - tcwg-tk1_32-build
+                - tcwg-apm_64-build
+                - tcwg-apm_32-build
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+    execution-strategy:
+        combination-filter: |
+            (label=="tcwg-x86_64-build" && ! (target==~/tcwg-.*/)) || (target==label)
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - credentials-binding:
+            - text:
+                credential-id: TCWG_SES_USER
+                variable: TCWG_SES_USER
+        - credentials-binding:
+            - text:
+                credential-id: TCWG_SES_PASSWORD
+                variable: TCWG_SES_PASSWORD
+        - build-name:
+            name: '#${BUILD_NUMBER}-${displaytag}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            mkdir -p artifacts/
+
+            . ./jenkins-scripts/jenkins-helpers.sh
+
+            builder_type=$(print_type_for_label $label)
+
+            if [ x"$target" = x"$label" ]; then
+              target_opt="--target native"
+            elif [ x"$target" = x"aarch64-linux-gnu_ilp32" ]; then
+              target_opt="--target $target --override \"--extraconfigdir ../config/ilp32-dev\""
+            else
+              target_opt="--target $target"
+            fi
+
+            # Start build container
+            bash -x ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro ${build_container_tag} --prefix build_ > build-container.sh
+
+            # Define build_CONTAINER_RSH and build_container_cleanup
+            . ./build-container.sh
+
+            # Make sure to cleanup build container if something goes
+            # wrong when preparing the test environment
+            trap "cleanup_all_containers" EXIT
+
+            runtests_opt=""
+            if echo $runtests | grep -q $target; then
+              runtests_opt="--runtests"
+
+              tester_label=$(print_tester_label_for_target $target)
+              if [ x"$tester_label" != x"" ]; then
+                if [ x"$target" != x"aarch64-linux-gnu_ilp32" ]; then
+                  bash -x ./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
+                else
+                  # Set weight to "2" to give VM decent amount of RAM.
+                  bash -x ./jenkins-scripts/start-container-qemu.sh --weight 2 --label $tester_label --distro xenial --task test --prefix test_ --kernel_url https://dev-01.tcwglab/~tcwg-buildslave/images/ilp32/norov-Image --initrd_url https://cloud-images.ubuntu.com/releases/16.04/release/unpacked/ubuntu-16.04-server-cloudimg-arm64-initrd-generic > test-container.sh
+                fi
+                . ./test-container.sh
+                runtests_opt="$runtests_opt --testcontainer ${test_container_host}:${test_container_port}"
+              fi
+            fi
+
+            ${build_CONTAINER_RSH} 'echo "Build session is up; ulimit config:"; ulimit -a'
+
+            case $label in
+                tcwg-x86_*-build) languages="$host_x86_64_languages" ;;
+                *) languages="$host_aarchXX_languages" ;;
+            esac
+
+            if $try_bootstrap; then
+                bootstrap="--bootstrap"
+            else
+                bootstrap=""
+            fi
+
+            if [ x"$log_name" != x"" ]; then
+                eval "logname_opt=\"--logname $log_name\""
+            fi
+
+            if $rebuild; then
+                norebuild=""
+            else
+                norebuild="--norebuild"
+            fi
+
+            case $label in
+                tcwg-x86_*-build) excludecheck="$host_x86_64_excludecheck" ;;
+                *) excludecheck="$host_aarchXX_excludecheck" ;;
+            esac
+
+            excludecheck_opt=""
+            for testsuite in $excludecheck; do
+                excludecheck_opt="$excludecheck_opt --excludecheck $testsuite"
+            done
+
+            # If there were extraconfig options, extract the
+            # corresponding repo
+            if test -n "$extraconfig" ; then
+                git clone http://git.linaro.org/toolchain/abe-extraconfigs.git
+            fi
+
+            extraconfig_opt=""
+            for config in $extraconfig; do
+                case ${extraconfig} in
+                    *=*)
+                        tool=${extraconfig%=*}
+                        value=${extraconfig#*=}
+                        ;;
+                    *)
+                        echo ERROR: wrong extraconfig: $extraconfig
+                        exit 1
+                        ;;
+                esac
+                extraconfig_opt="${extraconfig_opt} --extraconfig $tool=$PWD/abe-extraconfigs/$value"
+            done
+
+            result="0"
+
+            ${build_CONTAINER_RSH} "sed -e s/@@MYHOSTNAME@@/${NODE_NAME}/g -e s/@@MAILHOST@@/[email-smtp.us-east-1.amazonaws.com]/ -e s/@@MAILPORT@@/587/ -i /etc/postfix/main.cf"
+            ${build_CONTAINER_RSH} "sed -e s/@@MAILHOST@@/email-smtp.us-east-1.amazonaws.com/ -e s/@@MAILPORT@@/587/ -e s/@@MAILUSER@@/${TCWG_SES_USER}/ -e s/@@MAILPASSWORD@@/${TCWG_SES_PASSWORD}/ -i /etc/postfix/sasl_password/sasl_password"
+            cat > tmpmail <<EOF
+            From: Christophe Lyon <christophe.lyon@linaro.org>
+            Subject: Amazon SES Test from buildfarm
+            This message was sent using Amazon SES from a buildfarm job.
+            EOF
+
+            cat tmpmail | ${build_CONTAINER_RSH} "sendmail -f sender@linaro.org christophe.lyon@linaro.org"
+            rm tmpmail
+            exit 0
+            
+            ${build_CONTAINER_RSH} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --override \"$override\" $target_opt --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
+
+            # If the build failed, stop the containers, which will
+            # leave them as-is for ~10 days.
+            if [ $result -ne 0 ]; then
+                trap "stop_all_containers" EXIT
+            fi
+
+            # If we actually built a toolchain, save its manifest.
+            # If the build was a no-op (results already present on log_server),
+            # copy the existing ones.
+            if [ -d _build/builds ]; then
+                manifest="`grep "^manifest=" ${WORKSPACE}/build-artifacts.txt | cut -d = -f 2-`"
+            else
+                manifest=""
+            fi
+            if [ x"${manifest}" != x ]; then
+                cp ${manifest} artifacts/
+            else
+                # We need to do the same name expansion as jenkins.sh
+                eval dir="$log_name"
+                scp "$log_server/$dir/*manifest.txt" artifacts/
+            fi
+
+            # Save logs and their directory structure
+            rsync -a --exclude="/logs/" --include="*/" --include="*.log" --include="*.err" --include="*.out" --include="*.txt" --exclude="*" --prune-empty-dirs ./ ./logs/
+            if ! tar -I pxz -cf ./artifacts/logs.tar.xz ./logs/ >/dev/null 2>&1; then
+                # PXZ can [rarely] fail due to high RAM usage, so fallback to normal XZ.
+                rm -f ./artifacts/logs.tar.xz
+                tar -cJf ./artifacts/logs.tar.xz ./logs/
+            fi
+
+            echo "Result of jenkins.sh: $result"
+            if $dont_fail; then
+                result="0"
+            fi
+            exit $result
+    publishers:
+        - archive:
+            artifacts: 'artifacts/*'
+            latest-only: false
+        - workspace-cleanup:
+            clean-if:
+                - success: true
+                - unstable: false
+                - failure: false
+                - aborted: false
+                - not-built: false
