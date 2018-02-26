@@ -15,19 +15,12 @@ actions:
 - deploy:
     timeout:
       minutes: 5
-    to: tftp
+    to: u-boot-ums
     os: oe
-    kernel:
-      url: ${KERNEL_URL}
-      type: uimage
-    modules:
-      url: ${MODULES_URL}
+    image:
+      url: ${IMAGE_URL}
       compression: gz
-    nfsrootfs:
-      url: ${NFSROOTFS_URL}
-      compression: xz
-    dtb:
-      url: ${DTB_URL}
+      root_partition: 2
 
 - boot:
     method: u-boot

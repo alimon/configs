@@ -4,6 +4,7 @@
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "?Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
 MODULES_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "modules-*-${MACHINE}-*-${BUILD_NUMBER}.tgz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "${IMAGES}-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
+DISK_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "${IMAGES}-${MACHINE}-*-${BUILD_NUMBER}.rootfs.wic.gz" | xargs -r basename)
 
 # Mapping for MACHINE -> DEVICE_TYPE
 case "${MACHINE}" in
@@ -22,6 +23,7 @@ export KERNEL_URL=${PUBLISH_SERVER}${PUB_DEST}/${KERNEL_IMG}
 export MODULES_URL=${PUBLISH_SERVER}${PUB_DEST}/${MODULES_IMG}
 export NFSROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_TARXZ_IMG}
 export DTB_URL=${PUBLISH_SERVER}${PUB_DEST}/${DTB_IMG}
+export IMAGE_URL=${PUBLISH_SERVER}${PUB_DEST}/${DISK_IMG}
 
 rm -rf configs
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
