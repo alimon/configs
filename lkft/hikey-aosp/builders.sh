@@ -25,7 +25,6 @@ export PATH=${PATH}:${PWD}/aarch64-linux-android-4.9/bin/
 
 # Enable VFB locally until the patch is merged
 if echo "${JOB_NAME}" | grep "4.14" ;then
-    git fetch https://android.googlesource.com/kernel/hikey-linaro refs/changes/13/605113/3 && git cherry-pick FETCH_HEAD
    CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug video=vfb:640x480-32@30 vfb.videomemorysize=3145728"
 else
    CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
