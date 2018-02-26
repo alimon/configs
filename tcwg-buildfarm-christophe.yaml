@@ -258,6 +258,7 @@
 
             cat tmpmail | ${build_CONTAINER_RSH} "sendmail -f sender@linaro.org christophe.lyon@linaro.org"
             rm tmpmail
+            sleep 30 # Give some time for the mail to be sent
             exit 0
             
             ${build_CONTAINER_RSH} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --override \"$override\" $target_opt --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild" || result=$?
