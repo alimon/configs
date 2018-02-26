@@ -8,7 +8,7 @@ ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "${IMAGES}-${MACHINE}-
 # Mapping for MACHINE -> DEVICE_TYPE
 case "${MACHINE}" in
   imx7s-warp*)
-    echo "Skip DEVICE_TYPE for ${MACHINE}"
+    export DEVICE_TYPE=imx7s-warp
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "?Image-*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
   raspberrypi3)
