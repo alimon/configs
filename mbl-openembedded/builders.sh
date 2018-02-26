@@ -116,7 +116,7 @@ esac
 cat conf/{site,auto}.conf
 
 case "${MACHINE}" in
-  imx7s-warp)
+  imx7s-warp*)
     # Temporary sstate cleanup to force warp7 firmware to be re-generated each time
     set +e
     bitbake -c cleansstate u-boot-fslc mbl-boot-scr
@@ -139,7 +139,7 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext?
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  juno|stih410-b2260|imx7s-warp|raspberrypi3)
+  juno|stih410-b2260|imx7s-warp*|raspberrypi3)
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
