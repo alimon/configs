@@ -246,6 +246,7 @@
             result="0"
 
             ${build_CONTAINER_RSH} "sudo sed -e s/@@MYHOSTNAME@@/${NODE_NAME}/g -e s/@@MAILHOST@@/email-smtp.us-east-1.amazonaws.com/ -e s/@@MAILPORT@@/587/ -i /etc/postfix/main.cf"
+            ${build_CONTAINER_RSH} "sudo sed -e s+sasl_passwd+sasl_password+ -i /etc/postfix/main.cf"
             ${build_CONTAINER_RSH} "sudo sed -e s/@@MAILHOST@@/email-smtp.us-east-1.amazonaws.com/ -e s/@@MAILPORT@@/587/ -e s/@@MAILUSER@@/${TCWG_SES_USER}/ -e s/@@MAILPASSWORD@@/${TCWG_SES_PASSWORD}/ -i /etc/postfix/sasl_password"
             ${build_CONTAINER_RSH} "echo ${NODE_NAME} | sudo tee /etc/mailname"
             ${build_CONTAINER_RSH} "sudo postmap hash:/etc/postfix/sasl_password"
