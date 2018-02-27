@@ -33,4 +33,17 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --git-commit ${BUILD_NUMBER} \
     --template-path configs/lt-qcom/lava-job-definitions \
     --template-base-pre base_template.yaml \
-    --template-names template.yaml template-wifi.yaml template-bt.yaml
+    --template-names template.yaml template-wifi.yaml template-bt.yaml template-pmwg.yaml
+
+# Submit to PMWG Lava server because it has special hw to do energy probes
+python configs/openembedded-lkft/submit_for_testing.py \
+    --device-type ${DEVICE_TYPE} \
+    --build-number ${BUILD_NUMBER} \
+    --lava-server ${PMWG_LAVA_SERVER} \
+    --qa-server ${QA_SERVER} \
+    --qa-server-team qcomlt \
+    --qa-server-project ${OS_INFO} \
+    --git-commit ${BUILD_NUMBER} \
+    --template-path configs/lt-qcom/lava-job-definitions \
+    --template-base-pre base_template.yaml \
+    --template-names template-pmwg.yaml

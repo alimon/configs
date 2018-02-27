@@ -1,0 +1,45 @@
+- test:
+    namespace: dragonboard410c
+    name: qcomlt-pmwg
+    timeout:
+      minutes: 60
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: prep-tests
+          description: "Download energy-probe-ext instrumentation"
+        run:
+          steps:
+          - cd /root
+          - git clone https://git.linaro.org/power/energy-probe-ext.git
+      name: prep-inline
+      path: inline/prep.yaml
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/workload-automation/workload-automation.yaml
+      params:
+        AGENDA: agenda/qcomlt/linux-workloads-db410c.yaml
+        WA_EXTENSION_PATHS: /root/energy-probe-ext
+        ARTIFACTORIAL_URL: https://archive.validation.linaro.org/artifacts/team/qcomlt/
+      name: linux-pmwg
+
+device_type: ${DEVICE_TYPE}
+job_name: lt-qcom-${OS_INFO}-pmwg-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 90
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility: group
+
+secrets:
+  ARTIFACTORIAL_TOKEN: "${ARTIFACTORIAL_TOKEN}"
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom/lava-job-definitions/dragonboard-410c/template-pmwg.yaml
