@@ -2,7 +2,7 @@
 
 # export VTS_URL=https://builds.96boards.org/${PUB_DEST}
 # export CTS_URL=https://builds.96boards.org/${PUB_DEST}
-export DEVICE_TYPE=db410c-android
+export DEVICE_TYPE=dragonboard410c
 export LAVA_SERVER=https://validation.linaro.org/RPC2/
 export DOWNLOAD_URL=https://snapshots.linaro.org/96boards/dragonboard410c/linaro/aosp/kernel/${BUILD_NUMBER}
 export REFERENCE_BUILD_URL=${REFERENCE_BUILD_URL}
@@ -25,6 +25,6 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-team qcomlt \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
-    --template-path configs/lt-qcom-linux-aosp/lava-job-definitions/dragonboard410c \
+    --template-path configs/lt-qcom-linux-aosp/lava-job-definitions/ \
     --template-names template-boot.yaml \
     --quiet
