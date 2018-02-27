@@ -1,7 +1,4 @@
 #!/bin/bash
-# Install ruamel.yaml
-pip install --user --force-reinstall ruamel.yaml
-pip install --user --force-reinstall Jinja2
 
 # export VTS_URL=https://builds.96boards.org/${PUB_DEST}
 # export CTS_URL=https://builds.96boards.org/${PUB_DEST}
