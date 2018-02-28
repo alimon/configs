@@ -91,41 +91,8 @@ fi
 (cd ${HOME}/optee_repo/build && sed -i -e 's/target-list=arm-softmmu/target-list=arm-softmmu --static/g' qemu.mk)
 (cd ${HOME}/optee_repo/build && sed -i -e 's/target-list=aarch64-softmmu/target-list=aarch64-softmmu --static/g' qemu_v8.mk)
 
-# b2260
-${make} PLATFORM=stm-b2260
-${make} PLATFORM=stm-b2260 CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1
-${make} PLATFORM=stm-b2260 CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_TA_LOG_LEVEL=0 DEBUG=0
-
-# Cannes
-${make} PLATFORM=stm-cannes
-${make} PLATFORM=stm-cannes CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1
-${make} PLATFORM=stm-cannes CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_TA_LOG_LEVEL=0 DEBUG=0
-
-# FVP
-${make} PLATFORM=vexpress-fvp CFG_ARM32_core=y
-${make} PLATFORM=vexpress-fvp CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1 CFG_TZC400=y
-${make} PLATFORM=vexpress-fvp CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_TA_LOG_LEVEL=0 DEBUG=0 CFG_TZC400=y
-${make} PLATFORM=vexpress-fvp CFG_ARM64_core=y
-${make} PLATFORM=vexpress-fvp CFG_ARM64_core=y CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1 CFG_TZC400=y
-${make} PLATFORM=vexpress-fvp CFG_ARM64_core=y CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_TA_LOG_LEVEL=0 DEBUG=0 CFG_TZC400=y
-
-# Juno
-${make} PLATFORM=vexpress-juno
-${make} PLATFORM=vexpress-juno CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1
-${make} PLATFORM=vexpress-juno CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_TA_LOG_LEVEL=0 DEBUG=0
-${make} PLATFORM=vexpress-juno CFG_ARM64_core=y
-${make} PLATFORM=vexpress-juno CFG_ARM64_core=y CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1
-${make} PLATFORM=vexpress-juno CFG_ARM64_core=y CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_TA_LOG_LEVEL=0 DEBUG=0
-
-# QEMU-virt (PLATFORM=vexpress-qemu_virt)
 ${make}
-${make} CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1
-${make} CFG_TEE_CORE_LOG_LEVEL=3 DEBUG=1
-${make} CFG_TEE_CORE_LOG_LEVEL=2 DEBUG=1
-${make} CFG_TEE_CORE_LOG_LEVEL=1 CFG_TEE_CORE_DEBUG=y DEBUG=1
-${make} CFG_TEE_CORE_LOG_LEVEL=1 CFG_TEE_CORE_DEBUG=n DEBUG=0
-${make} CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_CORE_DEBUG=y DEBUG=1
-${make} CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_CORE_DEBUG=n DEBUG=0
+${make} CFG_TEE_CORE_LOG_LEVEL=4 CFG_TEE_CORE_DEBUG=y CFG_TEE_TA_LOG_LEVEL=4 DEBUG=1
 ${make} CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_CORE_DEBUG=n CFG_TEE_TA_LOG_LEVEL=0 DEBUG=0
 ${make} CFG_TEE_CORE_MALLOC_DEBUG=y
 ${make} CFG_CORE_SANITIZE_UNDEFINED=y
@@ -137,9 +104,7 @@ ${make} CFG_CRYPTO_{DSA,RSA,DH,ECC}=n
 ${make} CFG_CRYPTO_{H,C,CBC_}MAC=n
 ${make} CFG_CRYPTO_{G,C}CM=n
 ${make} CFG_CRYPTO_{MD5,SHA{1,224,256,384,512}}=n
-${make} CFG_CRYPTO=n CFG_CRYPTO_ECC=y
 ${make} CFG_WITH_PAGER=y
-${make} CFG_WITH_PAGER=y CFG_TEE_CORE_DEBUG=y
 ${make} CFG_WITH_PAGER=y CFG_WITH_LPAE=y
 ${make} CFG_WITH_LPAE=y
 ${make} CFG_WITH_STATS=y
@@ -147,74 +112,59 @@ ${make} CFG_RPMB_FS=y
 ${make} CFG_RPMB_FS=y CFG_RPMB_TESTKEY=y
 ${make} CFG_REE_FS=n CFG_RPMB_FS=y
 ${make} CFG_WITH_USER_TA=n CFG_CRYPTO=n CFG_SE_API=n CFG_PCSC_PASSTHRU_READER_DRV=n
-${make} CFG_SMALL_PAGE_USER_TA=n
-${make} CFG_SQL_FS=y
-${make} CFG_WITH_PAGER=y CFG_WITH_LPAE=y CFG_RPMB_FS=y CFG_SQL_FS=y CFG_DT=y CFG_PS2MOUSE=y CFG_PL050=y CFG_PL111=y CFG_TEE_CORE_LOG_LEVEL=1 CFG_TEE_CORE_DEBUG=y DEBUG=1
-${make} CFG_WITH_PAGER=y CFG_WITH_LPAE=y CFG_RPMB_FS=y CFG_SQL_FS=y CFG_DT=y CFG_PS2MOUSE=y CFG_PL050=y CFG_PL111=y CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_CORE_DEBUG=n DEBUG=0
+${make} CFG_WITH_PAGER=y CFG_WITH_LPAE=y CFG_RPMB_FS=y CFG_DT=y CFG_PS2MOUSE=y CFG_PL050=y CFG_PL111=y CFG_TEE_CORE_LOG_LEVEL=1 CFG_TEE_CORE_DEBUG=y DEBUG=1
+${make} CFG_WITH_PAGER=y CFG_WITH_LPAE=y CFG_RPMB_FS=y CFG_DT=y CFG_PS2MOUSE=y CFG_PL050=y CFG_PL111=y CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_CORE_DEBUG=n DEBUG=0
 ${make} CFG_BUILT_IN_ARGS=y CFG_PAGEABLE_ADDR=0 CFG_NS_ENTRY_ADDR=0 CFG_DT_ADDR=0 CFG_DT=y
 ${make} CFG_TA_GPROF_SUPPORT=y CFG_ULIBS_GPROF=y
 ${make} CFG_SECURE_DATA_PATH=y
 
-# QEMU-ARMv8A
 ${make} PLATFORM=vexpress-qemu_armv8a CFG_ARM64_core=y
-${make} PLATFORM=vexpress-qemu_armv8a CFG_ARM64_core=y CFG_RPMB_FS=y CFG_SQL_FS=y
+${make} PLATFORM=vexpress-qemu_armv8a CFG_ARM64_core=y CFG_WITH_PAGER=y
 ${make} PLATFORM=vexpress-qemu_armv8a CFG_ARM64_core=y CFG_TA_GPROF_SUPPORT=y CFG_ULIBS_GPROF=y
-
-# SUNXI(Allwinner A80)
-${make} PLATFORM=sunxi CFG_TEE_CORE_LOG_LEVEL=4 DEBUG=1
-${make} PLATFORM=sunxi CFG_TEE_CORE_LOG_LEVEL=0 CFG_TEE_TA_LOG_LEVEL=0 DEBUG=0
-
-# HiKey board (HiSilicon Kirin 620)
+${make} PLATFORM=stm-b2260
+${make} PLATFORM=stm-cannes
+${make} PLATFORM=vexpress-fvp
+${make} PLATFORM=vexpress-fvp CFG_ARM64_core=y
+${make} PLATFORM=vexpress-juno
+${make} PLATFORM=vexpress-juno CFG_ARM64_core=y
 ${make} PLATFORM=hikey
 ${make} PLATFORM=hikey CFG_ARM64_core=y
-${make} PLATFORM=hikey CFG_ARM64_core=y CFG_TEE_TA_LOG_LEVEL=4 DEBUG=1
-
-# Mediatek mt8173 EVB
 ${make} PLATFORM=mediatek-mt8173 CFG_ARM64_core=y
-
-# i.MX6UL 14X14 EVK
 ${make} PLATFORM=imx-mx6ulevk ARCH=arm CFG_PAGEABLE_ADDR=0 CFG_NS_ENTRY_ADDR=0x80800000 CFG_DT_ADDR=0x83000000 CFG_DT=y DEBUG=y CFG_TEE_CORE_LOG_LEVEL=4
-
-# i.MX6Quad SABRE
+${make} PLATFORM=imx-mx6ullevk ARCH=arm CFG_PAGEABLE_ADDR=0 CFG_NS_ENTRY_ADDR=0x80800000 CFG_DT=y DEBUG=y CFG_TEE_CORE_LOG_LEVEL=4
+${make} PLATFORM=imx-mx6sxsabreauto
 ${make} PLATFORM=imx-mx6qsabrelite
 ${make} PLATFORM=imx-mx6qsabresd
 ${make} PLATFORM=imx-mx6dlsabresd
-
-# Texas Instruments DRA7xx
+${make} PLATFORM=imx-mx7dsabresd
 ${make} PLATFORM=ti-dra7xx
-
-# Texas Instruments AM57xx
 ${make} PLATFORM=ti-am57xx
-
-# Texas Instruments AM43xx
 ${make} PLATFORM=ti-am43xx
-
-# Spreadtrum sc9860
 ${make} PLATFORM=sprd-sc9860
 ${make} PLATFORM=sprd-sc9860 CFG_ARM64_core=y
-
-# FSL ls1021a
 ${make} PLATFORM=ls-ls1021atwr
 ${make} PLATFORM=ls-ls1021aqds
-
-# Xilinx Zynq7000 ZC702
+${make} PLATFORM=ls-ls1043ardb CFG_ARM64_core=y
+${make} PLATFORM=ls-ls1046ardb CFG_ARM64_core=y
+${make} PLATFORM=ls-ls1012ardb CFG_ARM64_core=y
 ${make} PLATFORM=zynq7k-zc702
-
-# Xilinx ZynqMP
 ${make} PLATFORM=zynqmp-zcu102
 ${make} PLATFORM=zynqmp-zcu102 CFG_ARM64_core=y
-
-# HiSilicon D02
 ${make} PLATFORM=d02
 ${make} PLATFORM=d02 CFG_ARM64_core=y
-
-# Renesas RCAR H3
 ${make} PLATFORM=rcar
 ${make} PLATFORM=rcar CFG_ARM64_core=y
-
-# Raspberry Pi 3
 ${make} PLATFORM=rpi3
 ${make} PLATFORM=rpi3 CFG_ARM64_core=y
+${make} PLATFORM=hikey-hikey960
+${make} PLATFORM=hikey-hikey960 CFG_ARM64_core=y
+${make} PLATFORM=hikey-hikey960 CFG_SECURE_DATA_PATH=n
+${make} PLATFORM=poplar
+${make} PLATFORM=poplar CFG_ARM64_core=y
+${make} PLATFORM=rockchip-rk322x
+${make} PLATFORM=sam
+${make} PLATFORM=marvell-armada7k8k
+${make} PLATFORM=marvell-armada3700
 
 # Run regression tests (xtest in QEMU)
 (cd ${HOME}/optee_repo/build && ${make} check CROSS_COMPILE="ccache arm-linux-gnueabihf-" AARCH32_CROSS_COMPILE=arm-linux-gnueabihf- CFG_TEE_CORE_DEBUG=y DUMP_LOGS_ON_ERROR=1)
