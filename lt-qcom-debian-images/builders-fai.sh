@@ -99,13 +99,20 @@ else
 fi
 
 # the space after pre.. tag is on purpose
-cat > out/README.textile << EOF
+if [ -f out/build-changes.txt ]; then
+    cat > out/README.textile << EOF
 
 h4. Build changes
 
 pre.. 
 EOF
-cat out/build-changes.txt >> out/README.textile
+    cat out/build-changes.txt >> out/README.textile
+else
+    cat > out/README.textile << EOF
+
+h4. No build changes
+EOF
+fi
 
 cat >> out/HEADER.textile << EOF
 * Kernel package name: ${kernel_binpkg}
