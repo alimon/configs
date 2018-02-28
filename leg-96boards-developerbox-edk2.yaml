@@ -52,8 +52,15 @@
               rm -rf out Build edk2 edk2-non-osi
             }
 
-            git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2-non-osi.git
-            git clone -b developer-box --depth 1 --recurse-submodules git://git.linaro.org/leg/noupstream/edk2.git
+            export EDK2_GIT_URL=git://git.linaro.org/leg/noupstream/edk2.git
+            export EDK2_GIT_BRANCH=developer-box
+            git clone --depth 1 -b $EDK2_GIT_BRANCH --recurse-submodules $EDK2_GIT_URL
+            export EDK2_GIT_COMMIT=$(cd edk2; git rev-parse HEAD)
+
+            export EDK2_NON_OSI_GIT_URL=git://git.linaro.org/leg/noupstream/edk2-non-osi.git
+            export EDK2_NON_OSI_GIT_BRANCH=developer-box
+            git clone --depth 1 -b $EDK2_NON_OSI_GIT_BRANCH  $EDK2_NON_OSI_GIT_URL
+            export EDK2_NON_OSI_GIT_COMMIT=$(cd edk2-non-osi; git rev-parse HEAD)
 
             export OUTDIR=${WORKSPACE}/out
             export PACKAGES_PATH=${WORKSPACE}/edk2:${WORKSPACE}/edk2-platforms:${WORKSPACE}/edk2-non-osi
@@ -71,6 +78,23 @@
             cp Build/DeveloperBox/RELEASE_GCC5/FV/SPI_NOR_IMAGE.fd $OUTDIR/SPI_NOR_IMAGE.fd-RELEASE
             cp Build/DeveloperBox/DEBUG_GCC5/FV/SYNQUACERFIRMWAREUPDATECAPSULEFMPPKCS7.Cap $OUTDIR/DeveloperBox-DEBUG.Cap
             cp Build/DeveloperBox/RELEASE_GCC5/FV/SYNQUACERFIRMWAREUPDATECAPSULEFMPPKCS7.Cap $OUTDIR/DeveloperBox.Cap
+
+            # Build information
+            cat > out/HEADER.textile << EOF
+h4. 96boards Enterprise Edition - Socionext DeveloperBox System Firmware
+
+Build Description:
+* Build URL             : "$BUILD_URL":$BUILD_URL
+* edk2-platforms repo   : $GIT_URL
+* edk2-platforms branch : $GIT_BRANCH
+* edk2-platforms HEAD   : $GIT_COMMIT
+* edk2 repo             : $EDK2_GIT_URL
+* edk2 branch           : $EDK2_GIT_BRANCH
+* edk2 HEAD             : $EDK2_GIT_COMMIT
+* edk2-non-osi repo     : $EDK2_NON_OSI_GIT_URL
+* edk2-non-osi branch   : $EDK2_NON_OSI_GIT_BRANCH
+* edk2-non-osi HEAD     : $EDK2_NON_OSI_GIT_COMMIT
+EOF
 
             #find out -name '*QEMU_EFI.fd' -exec bash -c 'in=${1}; out=${in%fd}img; cat $in /dev/zero | dd iflag=fullblock bs=1M count=64 of=$out; gzip -9 $out' _ {} \;
 
