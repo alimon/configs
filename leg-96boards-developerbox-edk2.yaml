@@ -17,7 +17,7 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-stretch-amd64
+    node: leg-aarch64
     display-name: 'Linaro EDK II - Socionext Developerbox System Firmware'
     scm:
         - git:
@@ -51,12 +51,6 @@
               cd ${WORKSPACE}
               rm -rf out Build edk2 edk2-non-osi
             }
-
-            # use stretch's 6.x cross toolchain as GCC5
-            export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
-
-            sudo apt-get update
-            sudo apt-get install -y --no-install-recommends python-requests zip gcc-aarch64-linux-gnu
 
             git clone -b developer-box --depth 1 git://git.linaro.org/leg/noupstream/edk2-non-osi.git
             git clone -b developer-box --depth 1 --recurse-submodules git://git.linaro.org/leg/noupstream/edk2.git
