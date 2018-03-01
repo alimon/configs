@@ -30,6 +30,12 @@ else
    CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
 fi
 
+
+# Need to use TI specific bluetooth driver
+if [ "${JOB_NAME}" = "lkft-hikey-android-8.0-4.9" ]; then
+    git revert --no-edit 3e08cd937ab1a22f144a870b95a32dfe6fe44d17
+fi
+
 make ARCH=arm64 hikey_defconfig
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) -s Image-dtb
 
