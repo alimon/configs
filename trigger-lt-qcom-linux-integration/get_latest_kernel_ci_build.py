@@ -99,16 +99,16 @@ def main():
 
     (image_url, dt_url, modules_url) = get_kernel_ci_build(kernel_ci_base_url,
                                                            kernel_ci_arch_config, kernel_ci_dt_file)
-    validate_url(image_url)
     print("KERNEL_IMAGE_URL=%s" % image_url)
-    validate_url(dt_url)
+    validate_url(image_url)
     print("KERNEL_DT_URL=%s" % dt_url)
-    validate_url(modules_url)
+    validate_url(dt_url)
     print("KERNEL_MODULES_URL=%s" % modules_url)
+    validate_url(modules_url)
 
     ramdisk_url = get_ramdisk_url(ramdisk_base_url)
-    validate_url(ramdisk_url)
     print('ROOTFS_URL=%s' % ramdisk_url)
+    validate_url(ramdisk_url)
 
     validate_if_already_built(builds_url, (image_url, dt_url, modules_url,
                               ramdisk_url))
