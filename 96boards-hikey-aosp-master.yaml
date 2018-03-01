@@ -147,14 +147,13 @@
 
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
-            PUB_DEST=snapshots/hikey/linaro/aosp-master/${BUILD_NUMBER}
+            PUB_DEST=96boards/hikey/linaro/aosp-master/${BUILD_NUMBER}
             PUB_SRC=${PWD}/build/out
             PUB_EXTRA_INC=^[^/]+zip
             EOF
         - inject:
             properties-file: publish_parameters
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh
