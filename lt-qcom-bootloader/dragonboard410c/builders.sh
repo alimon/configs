@@ -6,15 +6,9 @@ sudo apt-get install -y zip gdisk
 
 # download the firmware packages
 wget -q ${QCOM_LINUX_FIRMWARE}
-wget -q ${QCOM_ANDROID_FIRMWARE}
-wget -q ${QCOM_ANDROID_FIRMWARE_OLD}
 echo "${QCOM_LINUX_FIRMWARE_MD5}  $(basename ${QCOM_LINUX_FIRMWARE})" > MD5
-echo "${QCOM_ANDROID_FIRMWARE_MD5}  $(basename ${QCOM_ANDROID_FIRMWARE})" >> MD5
-echo "${QCOM_ANDROID_FIRMWARE_OLD_MD5}  $(basename ${QCOM_ANDROID_FIRMWARE_OLD})" >> MD5
 md5sum -c MD5
 
-unzip -j -d bootloaders-android $(basename ${QCOM_ANDROID_FIRMWARE})
-unzip -j -d bootloaders-android-old $(basename ${QCOM_ANDROID_FIRMWARE_OLD})
 unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*"
 
 # Get the Android compiler
@@ -41,17 +35,12 @@ done
 SDCARD_RESCUE=dragonboard-410c-sdcard-rescue-${BUILD_NUMBER}
 BOOTLOADER_SD_LINUX=dragonboard-410c-bootloader-sd-linux-${BUILD_NUMBER}
 BOOTLOADER_EMMC_LINUX=dragonboard-410c-bootloader-emmc-linux-${BUILD_NUMBER}
-BOOTLOADER_EMMC_ANDROID=dragonboard-410c-bootloader-emmc-android-${BUILD_NUMBER}
 BOOTLOADER_EMMC_AOSP=dragonboard-410c-bootloader-emmc-aosp-${BUILD_NUMBER}
 
 mkdir -p out/${SDCARD_RESCUE} \
       out/${BOOTLOADER_SD_LINUX} \
       out/${BOOTLOADER_EMMC_LINUX} \
-      out/${BOOTLOADER_EMMC_ANDROID} \
       out/${BOOTLOADER_EMMC_AOSP}
-
-# get license.txt file (for Android BSP)
-wget https://git.linaro.org/landing-teams/working/qualcomm/lt-docs.git/blob_plain/HEAD:/license/license.txt
 
 # get LICENSE file (for Linux BSP)
 unzip -j $(basename ${QCOM_LINUX_FIRMWARE}) "*/LICENSE"
@@ -69,19 +58,6 @@ cp -a LICENSE \
 sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/linux/partitions.txt
 sudo sgdisk -bgpt.bin gpt.img
 ./mkgpt -d -i gpt.bin -o out/${BOOTLOADER_EMMC_LINUX}/gpt_both0.bin
-
-# bootloader_emmc_android
-cp -a license.txt \
-   dragonboard410c/android/flashall \
-   dragonboard410c/android/emmc_appsboot.mbn \
-   bootloaders-android-old/sbl1.mbn \
-   bootloaders-android/{NON-HLOS.bin,rpm.mbn,tz.mbn,hyp.mbn} \
-   out/${BOOTLOADER_EMMC_ANDROID}
-
-# no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
-sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/android/partitions.txt
-sudo sgdisk -bgpt.bin gpt.img
-./mkgpt -d -i gpt.bin -o out/${BOOTLOADER_EMMC_ANDROID}/gpt_both0.bin
 
 # bootloader_emmc_aosp
 cp -a LICENSE \
@@ -115,7 +91,6 @@ mkdir ${WORKSPACE}/out2
 for i in ${SDCARD_RESCUE} \
          ${BOOTLOADER_SD_LINUX} \
          ${BOOTLOADER_EMMC_LINUX} \
-         ${BOOTLOADER_EMMC_ANDROID} \
          ${BOOTLOADER_EMMC_AOSP} ; do
     (cd out/$i && md5sum * > MD5SUMS.txt)
     (cd out && zip -r ${WORKSPACE}/out2/$i.zip $i)
@@ -132,14 +107,12 @@ h4. Bootloaders for Dragonboard 410c
 This page provides the bootloaders packages for the Dragonboard 410c. There are several packages:
 * *sdcard_rescue* : an SD card image that can be used to boot from SD card, and rescue a board when the onboard eMMC is empty or corrupted
 * *bootloader-emmc-linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from onboard eMMC
-* *bootloader-emmc-android* : includes the bootloaders and partition table (GPT) used when booting Android images from onboard eMMC
 * *bootloader-emmc-aosp* : includes the bootloaders and partition table (GPT) used when booting AOSP based images from onboard eMMC
 * *bootloader-sd-linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from SD card
 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
 * Proprietary bootloaders can be found on "Qualcomm Developer Network":https://developer.qualcomm.com/hardware/dragonboard-410c/tools
-* Android proprietary bootloaders package: $(basename ${QCOM_ANDROID_FIRMWARE})
 * Linux proprietary bootloaders package: $(basename ${QCOM_LINUX_FIRMWARE})
 * Little Kernel (LK) source code:
 ** "SD rescue boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_SD_RESCUE  | sed -e 's/+/\%2b/g')
