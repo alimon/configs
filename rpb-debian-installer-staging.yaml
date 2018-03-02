@@ -16,6 +16,10 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+    parameters:
+        - string:
+            name: PUB_DEST
+            default: '96boards/reference-platform/components/debian-installer-staging/${BUILD_NUMBER}'
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Reference Platform - Debian Installer (staging)'
@@ -72,7 +76,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out 96boards/reference-platform/components/debian-installer-staging/${BUILD_NUMBER}/
+              out ${PUB_DEST}
         - trigger-builds:
             - project: erp-test-automation
               predefined-parameters: |
@@ -80,6 +84,10 @@
                   BUILD_ENV=staging
                   BUILD_NUM=${BUILD_NUMBER}
     publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - lt-qcom-debian-images/postbuild.groovy
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
         - email-ext:
