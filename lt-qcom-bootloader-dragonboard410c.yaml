@@ -45,6 +45,9 @@
         - string:
             name: QCOM_LINUX_FIRMWARE_LICENSE_MD5
             default: '4d087ee0965cb059f1b2f9429e166f64'
+        - string:
+            name: PUB_DEST
+            default: '96boards/dragonboard410c/linaro/rescue/${BUILD_NUMBER}'
     disabled: false
     node: docker-stretch-amd64
     display-name: 'Qualcomm bootloader for DragonBoard 410c'
@@ -68,14 +71,9 @@
             !include-raw: lt-qcom-bootloader/dragonboard410c/builders.sh
     publishers:
         - groovy-postbuild:
-            script: |
-                def build_number = manager.build.number
-                def url = "http://snapshots.linaro.org/96boards/dragonboard410c/linaro/rescue/${build_number}/"
-                def desc = "&nbsp;<a href='${url}'>Build location<t/a>"
-
-                if (manager.build.result == hudson.model.Result.SUCCESS) {
-                  manager.build.setDescription(desc)
-                }
+            script:
+                !include-raw:
+                  - lt-qcom-debian-images/postbuild.groovy
         - email:
             recipients: 'fathi.boudra@linaro.org'
         - email-ext:
