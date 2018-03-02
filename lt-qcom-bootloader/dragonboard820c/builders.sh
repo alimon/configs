@@ -46,10 +46,12 @@ md5sum -c MD5
 cp -a LICENSE \
    dragonboard820c/linux/flashall \
    lk_ufs_boot/build-msm8996/emmc_appsboot.mbn \
-   bootloaders-linux/gpt_*.bin \
    bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0_8096.bin,tz.mbn,xbl.elf} \
    bootloaders-linux/prog_ufs_firehose_8996_ddr.elf \
-   dragonboard820c/{rawprogram,patch}.xml \
+   dragonboard820c/linux/{rawprogram,patch}.xml \
+   dragonboard820c/linux/gpt_*.bin \
+   dragonboard820c/linux/zeros_*.bin \
+   dragonboard820c/ufs-provision_toshiba.xml \
    out/${BOOTLOADER_UFS_LINUX}
 
 # sdcard_rescue
