@@ -42,8 +42,7 @@
         - matrix-tie-parent:
             node: build
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -132,7 +131,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              linux/out snapshots/reference-platform/components/linux/${MX_PLATFORM}/${BUILD_NUMBER}/
+              linux/out 96boards/reference-platform/components/linux/${MX_PLATFORM}/${BUILD_NUMBER}/
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
             CCACHE_DIR=${CCACHE_DIR} ccache -s

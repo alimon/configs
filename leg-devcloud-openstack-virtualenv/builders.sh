@@ -23,9 +23,9 @@ sudo chown -R buildslave:buildslave out
 (cd out && sha256sum * > SHA256SUMS)
 
 # Publish
-DEST=snapshots/reference-platform/components/developer-cloud/openstack/centos-virtualenv/${BUILD_NUMBER}
+DEST=96boards/reference-platform/components/developer-cloud/openstack/centos-virtualenv/${BUILD_NUMBER}
 if grep Debian /etc/issue 2>&1 >/dev/null ; then
-  DEST=snapshots/reference-platform/components/developer-cloud/openstack/debian-virtualenv/${BUILD_NUMBER}
+  DEST=96boards/reference-platform/components/developer-cloud/openstack/debian-virtualenv/${BUILD_NUMBER}
 fi
 
 test -d ${HOME}/bin || mkdir ${HOME}/bin

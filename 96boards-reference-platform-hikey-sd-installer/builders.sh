@@ -67,8 +67,8 @@ sudo chown ${USER}:${USER} rootfs/mnt/debian
 # download alip image for flash
 export ROOTFS_BUILD_TIMESTAMP=$(wget -q  -O - https://ci.linaro.org/job/96boards-reference-platform-debian/BOARD=hikey,label=docker-jessie-amd64/lastSuccessfulBuild/buildTimestamp?format=yyyyMMdd)
 export ROOTFS_BUILD_NUMBER=$(wget -q  -O - https://ci.linaro.org/job/96boards-reference-platform-debian/BOARD=hikey,label=docker-jessie-amd64/lastSuccessfulBuild/buildNumber)
-export TARGET_ROOT_URL="https://builds.96boards.org/snapshots/reference-platform/debian/${ROOTFS_BUILD_NUMBER}/hikey/hikey-rootfs-debian-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.emmc.img.gz"
-export TARGET_BOOT_URL="https://builds.96boards.org/snapshots/reference-platform/debian/${ROOTFS_BUILD_NUMBER}/hikey/hikey-boot-linux-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.uefi.img.gz"
+export TARGET_ROOT_URL="https://snapshots.linaro.org/96boards/reference-platform/debian/${ROOTFS_BUILD_NUMBER}/hikey/hikey-rootfs-debian-jessie-alip-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.emmc.img.gz"
+export TARGET_BOOT_URL="https://snapshots.linaro.org/96boards/reference-platform/debian/${ROOTFS_BUILD_NUMBER}/hikey/hikey-boot-linux-${ROOTFS_BUILD_TIMESTAMP}-${ROOTFS_BUILD_NUMBER}.uefi.img.gz"
 wget -nc --progress=dot -e dotbytes=2M -O rootfs/mnt/debian/rootfs.img.gz ${TARGET_ROOT_URL}
 wget -nc --progress=dot -e dotbytes=2M -O rootfs/mnt/debian/boot.img.gz ${TARGET_BOOT_URL}
 
@@ -77,7 +77,7 @@ sudo cp -a rootfs/usr/share/96boards-tools/flash-hikey rootfs/mnt/flash
 cat << EOF > rootfs/mnt/debian/os.json
 {
     "name": "Reference platform Debian Desktop for hikey - Build ${BUILD_NUMBER}",
-    "url": "http://builds.96boards.org/releases/installer/hikey",
+    "url": "http://releases.linaro.org/96boards/installer/hikey",
     "version": "${ROOTFS_BUILD_NUMBER}",
     "release_date": "$(date +%Y-%m-%d)",
     "description": "Reference platform Debian LXDE desktop for hikey"
@@ -95,4 +95,4 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
-  out/ snapshots/reference-platform/installer/hikey/${BUILD_NUMBER}/
+  out/ 96boards/reference-platform/installer/hikey/${BUILD_NUMBER}/

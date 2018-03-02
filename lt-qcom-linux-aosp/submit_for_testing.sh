@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# export VTS_URL=https://builds.96boards.org/${PUB_DEST}
-# export CTS_URL=https://builds.96boards.org/${PUB_DEST}
+# export VTS_URL=https://snapshots.linaro.org/${PUB_DEST}
+# export CTS_URL=https://snapshots.linaro.org/${PUB_DEST}
 export DEVICE_TYPE=dragonboard410c
 export LAVA_SERVER=https://validation.linaro.org/RPC2/
 export DOWNLOAD_URL=https://snapshots.linaro.org/96boards/dragonboard410c/linaro/aosp/kernel/${BUILD_NUMBER}

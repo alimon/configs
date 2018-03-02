@@ -45,8 +45,7 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -134,10 +133,10 @@
             linaro-hwpack-replace -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p `ls linux-headers-*-linaro-hikey_*.deb` -r linux-headers -d -i
 
             FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-hikey-uefi/lastSuccessfulBuild/buildNumber`
-            FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
+            FASTBOOT_EFI_URL="http://snapshots.linaro.org/96boards/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/AndroidFastbootApp.efi"
             wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
 
-            GRUB_EFI_URL="http://builds.96boards.org/snapshots/hikey/linaro/grub/latest"
+            GRUB_EFI_URL="http://snapshots.linaro.org/96boards/hikey/linaro/grub/latest"
             wget --progress=dot ${GRUB_EFI_URL}/grubaa64.efi -O grubaa64.efi
 
             cat > out/README.txt << EOF
@@ -146,7 +145,7 @@
             * git URL: ${GIT_URL}
             * git branch: ${GIT_BRANCH}
             * git commit: ${GIT_COMMIT}
-            * uefi: http://builds.96boards.org/snapshots/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
+            * uefi: http://snapshots.linaro.org/96boards/hikey/linaro/uefi/${FASTBOOT_EFI_BUILD_NUMBER}
             EOF
 
             for rootfs in ${ROOTFS}; do
@@ -162,7 +161,7 @@
 
               if [ "${rootfs}" = "alip" ]; then
                 mali_pkg="libmali-450_0.0.1-1_all.deb"
-                wget https://builds.96boards.org/snapshots/hikey/linaro/binaries/20150825/${mali_pkg} -O ${mali_pkg}
+                wget https://snapshots.linaro.org/96boards/hikey/linaro/binaries/20150825/${mali_pkg} -O ${mali_pkg}
                 linaro-hwpack-append -t `ls hwpack_linaro-hikey_*_arm64_supported.tar.gz` -p ${mali_pkg} -d -i
                 rm -f ${mali_pkg}
                 armsoc_pkg="xserver-xorg-video-armsoc_1.4.0-0linaro1.linarojessie.4_arm64.deb"
@@ -298,12 +297,12 @@
               --server ${PUBLISH_SERVER} \
               --build-info out/BUILD-INFO.txt \
               --link-latest \
-              out snapshots/hikey/linaro/debian/${BUILD_NUMBER}
+              out 96boards/hikey/linaro/debian/${BUILD_NUMBER}
         - shell: |
             VERSION=$(date +%Y%m%d)-${BUILD_NUMBER}
 
-            export BOOT_URL=https://builds.96boards.org/snapshots/hikey/linaro/debian/${BUILD_NUMBER}/boot-fat.uefi.img.gz
-            export SYSTEM_URL=https://builds.96boards.org/snapshots/hikey/linaro/debian/${BUILD_NUMBER}/hikey-jessie_alip_${VERSION}-4g.emmc.img.gz
+            export BOOT_URL=https://snapshots.linaro.org/96boards/hikey/linaro/debian/${BUILD_NUMBER}/boot-fat.uefi.img.gz
+            export SYSTEM_URL=https://snapshots.linaro.org/96boards/hikey/linaro/debian/${BUILD_NUMBER}/hikey-jessie_alip_${VERSION}-4g.emmc.img.gz
 
             ./lci-build-tools/yaml-to-json.py configs/${JOB_NAME}/lava-job-definitions/${DEVICE_TYPE}/template.yaml > custom_lava_job_definition.json
 

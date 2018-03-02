@@ -144,7 +144,7 @@
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_SRC=${PWD}/build/out
-            PUB_DEST=snapshots/reference-platform/aosp/hikey/${BUILD_NUMBER}
+            PUB_DEST=96boards/reference-platform/aosp/hikey/${BUILD_NUMBER}
             EOF
 
             # Construct post-build-lava parameters
@@ -165,8 +165,7 @@
             EOF
         - inject:
             properties-file: publish_parameters
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh

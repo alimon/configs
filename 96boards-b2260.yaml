@@ -38,8 +38,7 @@
     builders:
         - shell:
             !include-raw: 96boards-b2260/builders.sh
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -51,7 +50,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out snapshots/b2260/linaro/debian/${BUILD_NUMBER}
+              out 96boards/b2260/linaro/debian/${BUILD_NUMBER}
 
             rm -rf out
         - shell:  |

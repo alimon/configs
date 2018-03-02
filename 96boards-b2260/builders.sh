@@ -54,7 +54,7 @@ EOF
 rm -rf configs lci-build-tools
 git clone --depth 1 http://git.linaro.org/ci/lci-build-tools.git
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-wget -q http://builds.96boards.org/snapshots/b2260/linaro/u-boot/latest/u-boot.bin \
+wget -q http://snapshots.linaro.org/96boards/b2260/linaro/u-boot/latest/u-boot.bin \
      -O configs/96boards-b2260/boot/b2260/u-boot.bin
 bash -x lci-build-tools/jenkins_kernel_build_inst
 rm -rf out/dtbs

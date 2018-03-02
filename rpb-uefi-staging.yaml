@@ -59,8 +59,7 @@
     builders:
         - shell:
             !include-raw: rpb-uefi/staging/builders.sh
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -70,10 +69,10 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --build-info out/${BUILD_TYPE}/BUILD-INFO.txt \
-              out/${BUILD_TYPE} snapshots/reference-platform/components/uefi-staging/${BUILD_NUMBER}/${BUILD_TYPE}/${MX_PLATFORM}/
+              out/${BUILD_TYPE} 96boards/reference-platform/components/uefi-staging/${BUILD_NUMBER}/${BUILD_TYPE}/${MX_PLATFORM}/
             python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --make-link snapshots/reference-platform/components/uefi-staging/${BUILD_NUMBER}
+              --make-link 96boards/reference-platform/components/uefi-staging/${BUILD_NUMBER}
     publishers:
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, qa-team@linaro.org'

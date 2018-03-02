@@ -101,10 +101,10 @@
 
             Install (also check the bootloader "install guide":https://github.com/96boards/documentation/wiki/Dragonboard-410c-Installation-Guide-for-Linux-and-Android#install-android-release):
 
-            bc. wget https://builds.96boards.org/snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}/boot-db410c.img.xz
-            wget https://builds.96boards.org/snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}/cache.img.xz
-            wget https://builds.96boards.org/snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}/system.img.xz
-            wget https://builds.96boards.org/snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}/userdata.img.xz
+            bc. wget https://snapshots.linaro.org/96boards/reference-platform/aosp/db410c/${BUILD_NUMBER}/boot-db410c.img.xz
+            wget https://snapshots.linaro.org/96boards/reference-platform/aosp/db410c/${BUILD_NUMBER}/cache.img.xz
+            wget https://snapshots.linaro.org/96boards/reference-platform/aosp/db410c/${BUILD_NUMBER}/system.img.xz
+            wget https://snapshots.linaro.org/96boards/reference-platform/aosp/db410c/${BUILD_NUMBER}/userdata.img.xz
             for f in *.xz; do xz -d \$f; done
             sudo fastboot flash boot boot-db410c.img
             sudo fastboot flash system system.img
@@ -123,7 +123,7 @@
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_SRC=${PWD}/out/target/product/db410c/
-            PUB_DEST=snapshots/reference-platform/aosp/db410c/${BUILD_NUMBER}
+            PUB_DEST=96boards/reference-platform/aosp/db410c/${BUILD_NUMBER}
             PUB_EXTRA_INC=^(BUILD-INFO.txt|HEADER.textile)$
             EOF
 
@@ -144,8 +144,7 @@
             EOF
         - inject:
             properties-file: publish_parameters
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh

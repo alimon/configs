@@ -15,13 +15,13 @@
     parameters:
         - string:
             name: VENDOR_OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20170106/proprietary_LA.BR.1.2.7-01010-8x16.0_410C_May.tgz
+            default: http://snapshots.linaro.org/96boards/dragonboard410c/binaries/20170106/proprietary_LA.BR.1.2.7-01010-8x16.0_410C_May.tgz
         - string:
             name: BUILD_SCRIPT_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20170106/DB410c_build.sh
+            default: http://snapshots.linaro.org/96boards/dragonboard410c/binaries/20170106/DB410c_build.sh
         - string:
             name: USERDATA_OVERLAY_URL
-            default: http://builds.96boards.org/snapshots/dragonboard410c/binaries/20160523/userdata.tar.bz2
+            default: http://snapshots.linaro.org/96boards/dragonboard410c/binaries/20160523/userdata.tar.bz2
     disabled: false
     node: docker-utopic-aosp
     display-name: '96boards - DragonBoard 410c (Android)'
@@ -113,7 +113,7 @@
             cat << EOF >> os.json
             {
             "name": "Android for DragonBoard 410c - Build #${BUILD_NUMBER}",
-            "url": "http://builds.96boards.org/releases/dragonboard410c",
+            "url": "http://releases.linaro.org/96boards/dragonboard410c",
             "version": "`date +%Y%m%d`-${BUILD_NUMBER}",
             "release_date": "`date +%Y-%m-%d`",
             "description": "Android release for DragonBoard 410c"
@@ -149,14 +149,13 @@
 
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
-            PUB_DEST=/snapshots/dragonboard410c/qualcomm/android/${BUILD_NUMBER}
+            PUB_DEST=96boards/dragonboard410c/qualcomm/android/${BUILD_NUMBER}
             PUB_SRC=${PWD}/out/target/product/msm8916_64/
             PUB_EXTRA_INC=^[^/]+[._](mbn|zip)
             EOF
         - inject:
             properties-file: publish_parameters
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh

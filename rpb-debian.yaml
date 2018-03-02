@@ -50,8 +50,7 @@
         - matrix-tie-parent:
             node: build
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -117,12 +116,12 @@
 
             # Create boot image
             if [ "${BOARD}" == "hikey" ]; then
-                FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-uefi/MX_PLATFORM=hikey,MX_TYPE=RELEASE,label=docker-jessie-amd64/lastStableBuild/buildNumber`
-                FASTBOOT_EFI_URL="http://builds.96boards.org/snapshots/reference-platform/components/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey/AndroidFastbootApp.efi"
+                FASTBOOT_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-reference-uefi/MX_PLATFORM=hikey,MX_TYPE=RELEASE,label=docker-jessie-amd64/lastStableBuild/buildNumber`
+                FASTBOOT_EFI_URL="http://snapshots.linaro.org/96boards/reference-platform/components/uefi/${FASTBOOT_EFI_BUILD_NUMBER}/release/hikey/AndroidFastbootApp.efi"
                 wget --progress=dot ${FASTBOOT_EFI_URL} -O fastboot.efi
-                GRUB_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/view/96boards/job/96boards-reference-grub-efi-arm64/lastStableBuild/buildNumber`
-                GRUB_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64.efi"
-                GRUB_SD_EFI_URL="https://builds.96boards.org/snapshots/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64-sd.efi"
+                GRUB_EFI_BUILD_NUMBER=`wget -q --no-check-certificate -O - https://ci.linaro.org/job/96boards-reference-grub-efi-arm64/lastStableBuild/buildNumber`
+                GRUB_EFI_URL="https://snapshots.linaro.org/96boards/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64.efi"
+                GRUB_SD_EFI_URL="https://snapshots.linaro.org/96boards/reference-platform/components/grub/${GRUB_EFI_BUILD_NUMBER}/grubaa64-sd.efi"
                 wget --progress=dot ${GRUB_EFI_URL} -O grubaa64.efi
                 wget --progress=dot ${GRUB_SD_EFI_URL} -O grubaa64-sd.efi
 
@@ -145,8 +144,8 @@
                 gzip -9 out/${BOARD}/${BOARD}-boot-linux-${VERSION}.uefi.img
 
                 cat >> out/${BOARD}/HEADER.textile << EOF
-            * Grub UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER":http://builds.96boards.org/snapshots/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER
-            * ARM TF / EDK2 UEFI: "http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://builds.96boards.org/snapshots/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
+            * Grub UEFI: "http://snapshots.linaro.org/96boards/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER":http://snapshots.linaro.org/96boards/reference-platform/components/grub/$GRUB_EFI_BUILD_NUMBER
+            * ARM TF / EDK2 UEFI: "http://snapshots.linaro.org/96boards/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey":http://snapshots.linaro.org/96boards/reference-platform/components/uefi/$FASTBOOT_EFI_BUILD_NUMBER/release/hikey
             EOF
                 # Grub config to be set as part of the rootfs
                 ## FIXME: Make this generic
@@ -250,15 +249,15 @@
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              out/${BOARD} snapshots/reference-platform/debian/${BUILD_NUMBER}/${BOARD}
+              out/${BOARD} 96boards/reference-platform/debian/${BUILD_NUMBER}/${BOARD}
             python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --make-link snapshots/reference-platform/debian/${BUILD_NUMBER}
+              --make-link 96boards/reference-platform/debian/${BUILD_NUMBER}
 
             cat << EOF > post_build_lava_parameters
-            BOOT_URL=http://builds.96boards.org/snapshots/reference-platform/debian/${BUILD_NUMBER}/${BOARD}/$(ls out/${BOARD}/${BOARD}-boot-linux-${VERSION}.*img.gz | xargs basename)
-            ROOTFS_BUILD_URL=http://builds.96boards.org/snapshots/reference-platform/debian/${BUILD_NUMBER}/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.gz
-            SYSTEM_URL=http://builds.96boards.org/snapshots/reference-platform/debian/${BUILD_NUMBER}/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.gz
+            BOOT_URL=http://snapshots.linaro.org/96boards/reference-platform/debian/${BUILD_NUMBER}/${BOARD}/$(ls out/${BOARD}/${BOARD}-boot-linux-${VERSION}.*img.gz | xargs basename)
+            ROOTFS_BUILD_URL=http://snapshots.linaro.org/96boards/reference-platform/debian/${BUILD_NUMBER}/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.gz
+            SYSTEM_URL=http://snapshots.linaro.org/96boards/reference-platform/debian/${BUILD_NUMBER}/${BOARD}/${BOARD}-rootfs-debian-jessie-alip-${VERSION}.emmc.img.gz
             DTB=hi6220-hikey.dtb-${KERNEL_VERSION}
             EOF
         - inject:

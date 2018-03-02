@@ -41,8 +41,7 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -114,7 +113,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out snapshots/bubblegum/linaro/linux/${BUILD_NUMBER}/
+              out 96boards/bubblegum/linaro/linux/${BUILD_NUMBER}/
 
             CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
             CCACHE_DIR=${CCACHE_DIR} ccache -s

@@ -23,8 +23,7 @@
     builders:
         - shell:
             !include-raw: leg-cloud-image/debian/builders.sh
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -34,7 +33,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out snapshots/reference-platform/components/developer-cloud/debian/cloud-image/${BUILD_NUMBER}
+              out 96boards/reference-platform/components/developer-cloud/debian/cloud-image/${BUILD_NUMBER}
 
             rm -rf out
     publishers:

@@ -45,8 +45,7 @@
         - build-name:
             name: '#${BUILD_NUMBER}'
     builders:
-        - linaro-publish-token:
-            host: builds.96boards.org
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -132,7 +131,7 @@
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
               --link-latest \
-              out snapshots/reference-platform/components/linux/common/${BUILD_NUMBER}/
+              out 96boards/reference-platform/components/linux/common/${BUILD_NUMBER}/
     publishers:
         - archive:
             artifacts: '*.dsc, *.xz'
