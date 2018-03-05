@@ -165,6 +165,36 @@
               *)
                 ;;
             esac
+
+            # Simulate KERNEL_VERSION and KERNEL_VERSION_OVERRIDE behavior from
+            # production.
+            case ${BUILD_NAME} in
+              linux-next)
+                export KERNEL_VERSION=git
+                export KERNEL_VERSION_OVERRIDE=next
+                ;;
+              linux-mainline)
+                export KERNEL_VERSION=git
+                export KERNEL_VERSION_OVERRIDE=mainline
+                ;;
+              linux-stable-4.15)
+                export KERNEL_VERSION=4.15
+                ;;
+              linux-stable-4.14)
+                export KERNEL_VERSION=4.14
+                ;;
+              linux-stable-4.9)
+                export KERNEL_VERSION=4.9
+                ;;
+              linux-stable-4.4)
+                export KERNEL_VERSION=4.4
+                ;;
+              *)
+                echo "Unknown BUILD_NAME: ${BUILD_NAME}"
+                exit 1
+                ;;
+            esac
+
             case ${BUILD_NAME} in
               linux-next)
                 export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
@@ -192,7 +222,6 @@
             export KERNEL_COMMIT=${KERNEL_COMMIT_ID}
             export LAVA_JOB_PRIORITY=low
             export KERNEL_CONFIG_URL=${BUILD_LOCATION}/config
-            export KERNEL_VERSION=${MAKE_KERNELVERSION}
             export KERNEL_DEFCONFIG_URL=${BUILD_LOCATION}/defconfig
             export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
             export DTB_URL="${BUILD_LOCATION}/${DTB_FILENAME}"
