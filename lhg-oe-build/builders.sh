@@ -89,6 +89,11 @@ cat << EOF >> conf/auto.conf
 INHERIT += "buildstats buildstats-summary"
 EOF
 
+# Override cmdline
+cat << EOF >> conf/local.conf
+CMDLINE_remove = "quiet"
+EOF
+
 # add useful debug info
 cat conf/{site,auto}.conf
 
