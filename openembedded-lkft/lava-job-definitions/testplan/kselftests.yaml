@@ -28,9 +28,11 @@
       path: automated/linux/kselftest/kselftest.yaml
       name: kselftest
       parameters:
-        {# in case KSELFTESTS_SKIPLIST is defined it takes precedence over skipfile #}
-        {% if KSELFTESTS_SKIPLIST is defined %}SKIPLIST: {{KSELFTESTS_SKIPLIST}}{% else %}SKIPFILE: skipfiles/skiplist_{{DEVICE_TYPE}}_{{KERNEL_VERSION}}{% endif %}
         KSELFTEST_PATH: {{KSELFTEST_PATH}}
+        SKIPFILE: skipfile-lkft.yaml
+        BOARD: '{{ DEVICE_TYPE }}'
+        BRANCH: '{{ KERNEL_VERSION_OVERRIDE|default(KERNEL_VERSION) }}'
+        ENVIRONMENT: '{{ ENVIRONMENT|default("production") }}'
       timeout:
         minutes: 40
 {% endblock test_target %}
