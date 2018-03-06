@@ -19,6 +19,12 @@
               property-file: post_build_lava_parameters
               block: true
         - shell: |
+            sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/x15-v2/template-monkey.yaml#g" ${WORKSPACE}/post_build_lava_parameters
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
+        - shell: |
             sed -i "s#CUSTOM_JSON_URL=.*#CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/x15-v2/template-cts-focused1-v7a.yaml#g" ${WORKSPACE}/post_build_lava_parameters
         - trigger-builds:
             - project: 'post-build-lava'
