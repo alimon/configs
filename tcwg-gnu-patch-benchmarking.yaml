@@ -175,8 +175,11 @@
           #!/bin/bash
           set -ex
 
+          echo $LAST_TRIGGERED_JOB_NAME
+          echo $TRIGGERED_JOB_NAMES
+          echo $TRIGGERED_BUILD_NUMBERS_tcwg_buildfarm
           # Extract triggered build numbers from comma separated list
-          bf_buildnum=(${TRIGGERED_BUILD_NUMBERS_tcwg-buildfarm//,/ })
+          bf_buildnum=(${TRIGGERED_BUILD_NUMBERS_tcwg_buildfarm//,/ })
       - copyartifact:
           project: tcwg-buildfarm
           filter: 'artifacts/gcc-linaro*.tar.xz'
