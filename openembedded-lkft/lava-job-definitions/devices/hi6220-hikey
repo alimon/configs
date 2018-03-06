@@ -1,6 +1,6 @@
 {% extends "lkft-fastboot.jinja2" %}
 
-{% block device_type %}hi6220-hikey{% endblock %}
+{% block device_type %}hi6220-hikey-r2{% endblock %}
 
 {% block deploy_target %}
 - deploy:
@@ -43,12 +43,12 @@
     - 'root@(.*):/#'
     timeout:
       minutes: 5
-    method: uefi-menu
-    commands: fastboot
+    method: grub
+    commands: installed
     protocols:
       lava-lxc:
       # other action could be boot-fastboot
-      - action: uefi-commands
+      - action: grub-sequence-action
         request: pre-os-command
         timeout:
           minutes: 2
