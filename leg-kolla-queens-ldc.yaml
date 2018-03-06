@@ -1,5 +1,5 @@
 - job:
-    name: leg-kolla
+    name: leg-kolla-queens-ldc
     project-type: freestyle
     defaults: global
     properties:
@@ -16,13 +16,17 @@
             num-to-keep: 30
     parameters:
         - string:
+            name: DEVCLOUD
+            default: '1'
+            description: 'build images for developer cloud'
+        - string:
             name: BRANCH
-            default: 'master'
+            default: 'stable/queens'
             description: 'branch to use'
     disabled: false
     node: leg-aarch64
     concurrent: false
-    display-name: 'LEG Kolla images build/publish'
+    display-name: 'LEG Kolla images build/publish (Queens images for Linaro Developer Cloud)'
     wrappers:
         - timestamps
         - copy-to-slave:
