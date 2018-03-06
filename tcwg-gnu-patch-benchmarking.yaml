@@ -164,12 +164,12 @@
           abe_branch=$abe_rev
           displaytag=gnu-patch-benchmarking-patch-${GERRIT_CHANGE_NUMBER}
           EOF
-          echo "$buildfarm_params" >> gcc_orig_params
+          echo "$buildfarm_params" >> gcc_patch_params
       - trigger-builds:
           - project: 'tcwg-buildfarm'
             parameter-factories:
               - factory: filebuild
-                file-pattern: gcc_*_parameters
+                file-pattern: gcc_*_params
             block: true
       - shell: |
           #!/bin/bash
@@ -205,8 +205,6 @@
           extension=$extension
           EOF
           echo "$benchmark_params" >> ref_params
-          echo "-- Reference parameters"
-          cat ref_params
 
           cat > patch_params <<EOF
           toolchain_url=http://$NODE_NAME:$PWD/patch_tools/gcc-linaro*.tar.xz
@@ -214,5 +212,3 @@
           extension=$extension
           EOF
           echo "$benchmark_params" >> patch_params
-          echo "-- Reference parameters"
-          cat ref_params
