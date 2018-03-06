@@ -33,7 +33,7 @@ fi
 
 # Need to use TI specific bluetooth driver
 if [ "${JOB_NAME}" = "lkft-hikey-android-8.0-4.9" ]; then
-    git revert --no-edit 3e08cd937ab1a22f144a870b95a32dfe6fe44d17
+    git fetch ssh://vishal.bhoj@android-review.linaro.org:29418/kernel/hikey-linaro refs/changes/97/18097/1 && git cherry-pick FETCH_HEAD
 fi
 
 make ARCH=arm64 hikey_defconfig
