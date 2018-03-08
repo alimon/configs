@@ -1,0 +1,131 @@
+- job:
+    name: openembedded-lkft-linux-generic
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: KERNEL_REPO
+            default: 'https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+            description: |
+                <b>[MANDATORY]</b> Kernel repository URL
+        - string:
+            name: KERNEL_BRANCH
+            default: 'master'
+            description: |
+                <b>[MANDATORY]</b> Kernel branch
+        - choice:
+            name: KERNEL_ARCH
+            choices:
+                - 'arm64'
+                - 'arm'
+                - 'x86'
+            description: |
+                <b>[MANDATORY]</b> Kernel architecture
+        - string:
+            name: KERNEL_CONFIG
+            default: 'defconfig'
+            description: |
+                <b>[OPTIONAL]</b> Kernel config<br>
+                If ommited the default kernel config will use<br>
+                  - defconfig on arm64<br>
+                  - multi_v7_defconfig on arm<br>
+                  - x86_64_defconfig on x86<br>
+                Note: an additional config fragment is added to ensure systemd is functional
+        - string:
+            name: KERNEL_COMMIT
+            default: ''
+            description: |
+                <b>[OPTIONAL]</b> Kernel commit<br>
+                If ommited TIP will be used<br>
+                e.g.: 0adb32858b0bddf4ada5f364a84ed60b196dbcda
+        - string:
+            name: PUB_DEST
+            default: 'openembedded/lkft/rocko/generic/rpb/linux-custom/${BUILD_NUMBER}'
+            description: |
+                <b>[MANDATORY]</b> Publishing destination path on https://snapshots.linaro.org
+# FIXME we don't submit LAVA jobs for now
+#        - string:
+#            name: QA_SERVER
+#            default: 'https://qa-reports.linaro.org'
+#        - string:
+#            name: QA_SERVER_PROJECT
+#            default: 'linux-custom-oe'
+        - bool:
+            name: SKIP_LAVA
+            default: 'true'
+    disabled: false
+    node: docker-stretch-amd64
+    display-name: 'LKFT - Linux Generic/Custom kernel builder (OpenEmbedded/rocko)'
+    wrappers:
+        - timeout:
+            timeout: 180
+        - timestamps
+#        - credentials-binding:
+#            - text:
+#                credential-id: QA_REPORTS_TOKEN
+#                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash -e
+
+            # Mapping for ARCH -> MACHINE/DEVICE_TYPE
+            # Set a default config if it isn't given
+            case "${KERNEL_ARCH}" in
+              arm64)
+                MACHINE=hikey
+                DEVICE_TYPE=hi6220-hikey
+                # or Juno? (it is supported from in 4.4 kernel while HiKey isn't)
+                #MACHINE=juno
+                #DEVICE_TYPE=juno-r2
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
+                ;;
+              arm)
+                MACHINE=am57xx-evm
+                DEVICE_TYPE=x15
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=multi_v7_defconfig
+                ;;
+              x86)
+                MACHINE=intel-core2-32
+                DEVICE_TYPE=x86
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=x86_64_defconfig
+                ;;
+            esac
+
+            # Determine the kernel commit if it isn't given
+            [ -z "${KERNEL_COMMIT}" ] && KERNEL_COMMIT=$(git ls-remote --heads ${KERNEL_REPO} ${KERNEL_BRANCH} | cut -f1)
+
+            echo "IMAGES=rpb-console-image" > parameters
+            echo "MANIFEST_URL=https://github.com/96boards/oe-rpb-manifest.git" >> parameters
+            echo "MANIFEST_BRANCH=rocko" >> parameters
+            echo "DISTRO=rpb" >> parameters
+            echo "MACHINE=${MACHINE}" >> parameters
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" >> parameters
+            echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> parameters
+            echo "KERNEL_COMMIT=${KERNEL_COMMIT}" >> parameters
+            cat parameters
+
+            echo "#${BUILD_NUMBER}-${KERNEL_COMMIT:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - inject:
+            properties-file: parameters
+        - shell:
+            !include-raw: openembedded-lkft/builders-generic.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
