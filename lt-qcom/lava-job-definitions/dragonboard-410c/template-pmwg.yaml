@@ -4,6 +4,10 @@
     timeout:
       minutes: 60
     definitions:
+    - repository: https://git.linaro.org/lava-team/refactoring.git
+      from: git
+      path: testdefs/arm-probe.yaml
+      name: arm-probe
     - from: inline
       repository:
         metadata:
@@ -12,6 +16,8 @@
           description: "Download energy-probe-ext instrumentation"
         run:
           steps:
+          - apt-get update
+          - apt-get -y install trace-cmd
           - cd /root
           - git clone https://git.linaro.org/power/energy-probe-ext.git
       name: prep-inline
