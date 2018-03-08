@@ -153,7 +153,7 @@
           log_name=tcwg-gnu-patch-benchmarking-$gcc_orig_rev/$abe_rev/\$builder_type.\$target
           target_list=$target
           abe_branch=$abe_rev
-          displaytag=gnu-patch-benchmarking-ref-${GERRIT_CHANGE_NUMBER}
+          displaytag=gnu-patch-benchmarking-ref-${gcc_orig_rev}
           EOF
           echo "$buildfarm_params" >> gcc_orig_params
 
@@ -162,7 +162,7 @@
           log_name=tcwg-gnu-patch-benchmarking-$gcc_orig_patch/$abe_rev/\$builder_type.\$target
           target_list=$target
           abe_branch=$abe_rev
-          displaytag=gnu-patch-benchmarking-patch-${GERRIT_CHANGE_NUMBER}
+          displaytag=gnu-patch-benchmarking-patch-${gcc_patch_rev}
           EOF
           echo "$buildfarm_params" >> gcc_patch_params
       - trigger-builds:
@@ -175,45 +175,53 @@
           #!/bin/bash
           set -ex
 
-          echo $LAST_TRIGGERED_JOB_NAME
-          echo $TRIGGERED_JOB_NAMES
-          echo $TRIGGERED_BUILD_NUMBERS_tcwg_buildfarm
-          # Extract triggered build numbers from comma separated list
-          bf_buildnum=(${TRIGGERED_BUILD_NUMBERS_tcwg_buildfarm//,/ })
-          REFNUM=${bf_buildnum[0]}
-          PATCHNUM=${bf_buildnum[1]}
-      - copyartifact:
-          project: tcwg-buildfarm
-          filter: 'artifacts/gcc-linaro*.tar.xz'
-          target: ref-tools
-          which-build: specific-build
-          build-number: $REFNUM
-      - copyartifact:
-          project: tcwg-buildfarm
-          filter: 'artifacts/gcc-linaro*.tar.xz'
-          target: patch-tools
-          which-build: specific-build
-          build-number: $PATCHNUM
-      - shell: |
-          #!/bin/bash
-          set -ex
-
           # Note that armv8l-linux-gnueabihf will not match "arm-"*, and will run on tx1.
           case "$target" in
             "arm-"*) board="tk1" ;;
             *) board="tx1" ;;
           esac
+          # Assuming cross build as a first step
+          label=tcwg-x86_64-build
+
+          # Extract triggered build numbers from comma separated list
+          bf_buildnum=(${TRIGGERED_BUILD_NUMBERS_tcwg_buildfarm//,/ })
+          REFNUM=${bf_buildnum[0]}
+          PATCHNUM=${bf_buildnum[1]}
+
+          BF_URL_PREFIX=https://ci.linaro.org/job/tcwg-buildfarm
+          BF_URL_SUFIX=label=${label},target=${target}/artifact/artifacts/gcc-linaro*.tar.xz
+          mkdir -p ref-tools
+          cd ref-tools
+          wget --progress=dot -e dotbytes=2M  ${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX)
+          tar xJf gcc-linaro*.tar.xz
+          REF_CCPREFIX=$(readlink -f  gcc-linaro-*/bin)/${target}-
+          cd ..
+
+          mkdir -p patch-tools
+          cd patch-tools
+          wget --progress=dot -e dotbytes=2M  ${BF_URL_PREFIX}/${PATCHNUM}/${BF_URL_SUFIX}
+          tar xJf gcc-linaro*.tar.xz
+          PATCH_CCPREFIX=$(readlink -f  gcc-linaro-*/bin)/${target}-
+          cd ..
 
           cat > ref_params <<EOF
-          toolchain_url=http://$NODE_NAME:$PWD/ref_tools/gcc-linaro*.tar.xz
+          toolchain_url=rsync://$NODE_NAME:$REF_CCPREFIX
           target_list=$board
           extension=$extension
           EOF
           echo "$benchmark_params" >> ref_params
 
           cat > patch_params <<EOF
-          toolchain_url=http://$NODE_NAME:$PWD/patch_tools/gcc-linaro*.tar.xz
+          toolchain_url=rsync://$NODE_NAME:$PATCH_CCPREFIX
           target_list=$board
           extension=$extension
           EOF
           echo "$benchmark_params" >> patch_params
+      - trigger-builds:
+          - project: 'tcwg-benchmark'
+            property-file: ref_params
+            block: true
+      - trigger-builds:
+          - project: 'tcwg-benchmark'
+            property-file: patch_params
+            block: true
