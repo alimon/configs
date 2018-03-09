@@ -1,13 +1,37 @@
 - test:
     namespace: dragonboard410c
-    name: qcomlt-pmwg
     timeout:
-      minutes: 60
+      minutes: 5
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: ssh-enable-target-login
+          description: "Enable SSH Root login on Target"
+        run:
+          steps:
+          - echo -ne "linaro123\nlinaro123\n" | passwd root
+          - echo PermitRootLogin yes >> /etc/ssh/sshd_config
+          - systemctl restart ssh.service
+      name: ssh-enable-target-login-inline
+      path: inline/ssh-enable-target-login.yaml
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
     definitions:
     - repository: https://git.linaro.org/lava-team/refactoring.git
       from: git
       path: testdefs/arm-probe.yaml
       name: arm-probe
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 60
+    definitions:
     - from: inline
       repository:
         metadata:
@@ -17,17 +41,20 @@
         run:
           steps:
           - apt-get update
-          - apt-get -y install trace-cmd
+          - apt-get -y install trace-cmd git
           - cd /root
-          - git clone https://git.linaro.org/power/energy-probe-ext.git
+          - git clone https://git.linaro.org/power/energy-probe-ext.git /energy-probe-ext
+          - export TARGET_IP=$(lava-target-ip)
+          - echo $TARGET_IP lava-target-ip >> /etc/hosts
       name: prep-inline
       path: inline/prep.yaml
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/workload-automation/workload-automation.yaml
       params:
+        CONFIG: config/generic-linux-remote.py
         AGENDA: agenda/qcomlt/linux-workloads-db410c.yaml
-        WA_EXTENSION_PATHS: /root/energy-probe-ext
+        WA_EXTENSION_PATHS: /energy-probe-ext
         ARTIFACTORIAL_URL: https://archive.validation.linaro.org/artifacts/team/qcomlt/
       name: linux-pmwg
 
