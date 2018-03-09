@@ -20,6 +20,10 @@
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
+    parameters:
+        - string:
+            name: MAVEN_URL
+            default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz'
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK 11- Build SPECjbb2015 '
@@ -41,6 +45,18 @@
             #!/bin/bash
 
             set -exu
+
+            rm artifacts/apache-maven-*.tar.gz
+            cd artifacts
+            wget --progress=dot -e dotbytes=2M  ${MAVEN_URL}
+            cd -
+
+            tar -zxf artifacts/apache-maven-*.tar.gz
+            cd apache-maven-*
+            export M3_HOME=${PWD}
+            cd -
+
+            export PATH=${M3_HOME}/bin:$PATH
 
             rm -rf build out jdkX-server-release
             tar xzf artifacts/BUILD_TYPE=release,JVM_VARIANT=server,label=aarch64-06/jdkX-server-release.tar.gz
