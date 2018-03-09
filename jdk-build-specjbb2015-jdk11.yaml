@@ -1,0 +1,96 @@
+- job:
+    name: jdk-build-specjbb2015-jdk11
+    project-type: freestyle
+    defaults: global
+    description: |
+        * This job creates an archive of the SPECjbb2015 product for JDK11+.<br>
+          It can be copied as a *copy artifact* by other jobs.<br>
+        * <b>Note:</b> SPECjbb2015 should <b>not</b> be shared publically as there are licensing restrictions.
+        * This is build built on and for JDK 11+. JEP-320 removed some APIs that need to be replaced - this job
+          adds some dependencies to the maven job building SPECjbb2015.
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    disabled: false
+    node: build
+    display-name: 'OpenJDK - Archive SPECjbb2015 product'
+    wrappers:
+        - timestamps
+    builders:
+        - copyartifact:
+            project: archive-specjbb2015-product-tarball
+            filter: 'out/SPECjbb2015.tgz'
+            target: artifacts
+        - copyartifact:
+            project: jdkX-build-image
+            parameters: 'BUILD_TYPE=release,JVM_VARIANT=server,label=aarch64-06'
+            filter: 'out/jdkX-server-release.tar.gz'
+            target: artifacts
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            rm -rf build out jdkX-server-release
+            tar xzf artifacts/jdkX-server-release.tar.gz
+            export PATH=$PWD/jdkX-server-release/bin:$PATH
+
+            java -version
+
+            rm -rf build out
+            mkdir build out
+
+
+            tar -xzf artifacts/SPECjbb2015.tgz -C build
+
+            cd build/SPECjbb2015
+
+            unzip src.zip
+
+            sed  '
+            /<\/dependencies>/ {
+            i\
+                    <dependency>\
+                     <groupId>org.glassfish.jaxb</groupId>\
+                      <artifactId>jaxb-runtime</artifactId>\
+                      <version>2.3.0</version>\
+                    </dependency>\
+                    <dependency>\
+                      <groupId>org.glassfish.jaxb</groupId>\
+                      <artifactId>jaxb-xjc</artifactId>\
+                      <version>2.3.0</version>\
+                    </dependency>\
+                    <dependency>\
+                      <groupId>org.glassfish.jaxb</groupId>\
+                      <artifactId>jaxb-jxc</artifactId>\
+                      <version>2.3.0</version>\
+                    </dependency>\
+                    <dependency>\
+                      <groupId>javax.activation</groupId>\
+                      <artifactId>activation</artifactId>\
+                      <version>1.1.1</version>\
+                    </dependency>
+            }
+            ' <pom.xml >newpom.xml
+
+            mvn install -f newpom.xml
+
+            cp -r config docs *.bat *.sh target/SPECjbb2015-1.00
+
+            cd target
+
+            chmod -R ug+rw SPECjbb2015
+            tar -czf ../../../out/specjbb2015-1.0.0.tar.gz SPECjbb2015-1.00
+
+            cd ../..
+    publishers:
+        - archive:
+            artifacts: 'out/SPECjbb2015-jdk11.tgz'
