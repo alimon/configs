@@ -64,9 +64,9 @@ case "${MX_PLATFORM}" in
         ;;
 esac
 
-# Force cap GCC build profile to GCC49, still preferred by upstream
-TOOLCHAIN=GCC49
-export AARCH64_TOOLCHAIN=GCC49
+# Force cap GCC build profile to GCC5
+TOOLCHAIN=GCC5
+export AARCH64_TOOLCHAIN=GCC5
 
 # Clone the repos
 git clone -b $UEFI_TOOLS_GIT_BRANCH $UEFI_TOOLS_GIT_URL uefi-tools
@@ -144,14 +144,16 @@ if [ "${MX_PLATFORM}" = "hikey" ]; then
     cd ${WORKSPACE}/${BUILD_NUMBER}
     git clone --depth 1 -b ${L_LOADER_GIT_BRANCH} ${L_LOADER_GIT_URL} l-loader
     cd l-loader
-    ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
+    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/bl1.bin
+    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/bl2.bin
     ln -s ${WORKSPACE}/atf-fastboot/build/${MX_PLATFORM}/${BUILD_TYPE}/bl1.bin fastboot.bin
+    make -f ${MX_PLATFORM}.mk recovery.bin
     make -f ${MX_PLATFORM}.mk l-loader.bin
     for ptable in aosp-4g aosp-8g linux-4g linux-8g; do
         PTABLE=${ptable} SECTOR_SIZE=512 bash -x generate_ptable.sh
         mv prm_ptable.img ptable-${ptable}.img
     done
-    cp -a l-loader.bin ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
+    cp -a l-loader.bin recovery.bin ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
     wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
     # Ship nvme.img with UEFI binaries for convenience
     dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
@@ -167,19 +169,21 @@ if [ "${MX_PLATFORM}" = "hikey960" ]; then
     cd ${WORKSPACE}/${BUILD_NUMBER}
     git clone --depth 1 -b ${L_LOADER_GIT_BRANCH} ${L_LOADER_GIT_URL} l-loader
     cd l-loader
-    ln -s ${WORKSPACE}/out/${BUILD_TYPE}/bl1.bin
-    ln -s ${WORKSPACE}/out/${BUILD_TYPE}/fip.bin
+    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/bl1.bin
+    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/bl2.bin
+    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/fip.bin
     ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/BL33_AP_UEFI.fd
+    make -f ${MX_PLATFORM}.mk recovery.bin
     make -f ${MX_PLATFORM}.mk l-loader.bin
     PTABLE=aosp-32g SECTOR_SIZE=4096 SGDISK=./sgdisk bash -x generate_ptable.sh
-    cp -a l-loader.bin prm_ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
+    cp -a l-loader.bin recovery.bin prm_ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
     cd ${WORKSPACE}/${BUILD_NUMBER}
     git clone --depth 1 https://github.com/96boards-hikey/tools-images-hikey960.git
     cd tools-images-hikey960
     cat > config << EOF
 sec_usb_xloader.img 0x00020000
 sec_uce_boot.img 0x6A908000
-l-loader.bin 0x1AC00000
+recovery.bin 0x1AC00000
 EOF
     cp -a config hikey_idt sec_uce_boot.img sec_usb_xloader.img sec_xloader.img ${WORKSPACE}/out/${BUILD_TYPE}/
 fi
