@@ -93,9 +93,9 @@
             #   -jar specjbb2015.jar -m composite)
 
             if [ $JVM_VARIANT = "server" ]; then
-                (cd $SPECJBB_PRODUCT_HOME; java --add-modules java.se.ee -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -m composite)
+                (cd $SPECJBB_PRODUCT_HOME; java -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -m composite)
             else
-                (cd $SPECJBB_PRODUCT_HOME; java --add-modules java.se.ee  -XX:TieredStopAtLevel=1 -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -m composite)
+                (cd $SPECJBB_PRODUCT_HOME; java -XX:TieredStopAtLevel=1 -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -m composite)
             fi
 
             mkdir -p out
