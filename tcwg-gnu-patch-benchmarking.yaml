@@ -192,8 +192,8 @@
           BF_URL_SUFIX=label=${label},target=${target}
 
           # Hackish way to get tarball name from json api
-          TAR_REF_NAME=$(curl -s ${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX}/api/json?pretty=true | grep -P "fileName.*\"gcc-linaro-.*.tar.xz\"" | awk '{print $3}' | sed -e 's/[",]//g')
-          TAR_PATCH_NAME=$(curl -s ${BF_URL_PREFIX}/${PATCHNUM}/${BF_URL_SUFIX}/api/json?pretty=true | grep -P "fileName.*\"gcc-linaro-.*.tar.xz\"" | awk '{print $3}' | sed -e 's/[",]//g')
+          TAR_REF_NAME=$(wget --quiet ${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX}/api/json?pretty=true -O -| grep -P "fileName.*\"gcc-linaro-.*.tar.xz\"" | awk '{print $3}' | sed -e 's/[",]//g')
+          TAR_PATCH_NAME=$(wget --quiet ${BF_URL_PREFIX}/${PATCHNUM}/${BF_URL_SUFIX}/api/json?pretty=true -O -| grep -P "fileName.*\"gcc-linaro-.*.tar.xz\"" | awk '{print $3}' | sed -e 's/[",]//g')
           mkdir -p ref-tools
           cd ref-tools
           wget --progress=dot -e dotbytes=2M  "${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX}/artifact/artifacts/${TAR_REF_NAME}"
