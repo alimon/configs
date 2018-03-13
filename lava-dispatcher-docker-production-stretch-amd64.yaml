@@ -1,0 +1,75 @@
+- job:
+    name: lava-dispatcher-docker
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build-amd64
+    concurrent: false
+    display-name: 'LAVA Dispatcher Production Docker images'
+    scm:
+        - git:
+            url: https://git.linaro.org/ci/dockerfiles.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollurl:
+            cron: '@daily'
+            urls:
+              - url: 'http://images.validation.linaro.org/production-repo/services-trace.txt'
+            check-content:
+              - simple: true
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+                rm -rf ${HOME}/.docker
+            }
+
+            mkdir -p ${HOME}/.docker
+            sed -e "s|\${DOCKER_AUTH}|${DOCKER_AUTH}|" < ${WORKSPACE}/config.json > ${HOME}/.docker/config.json
+            chmod 0600 ${HOME}/.docker/config.json
+
+            # Build
+            pushd dockerfiles/lava/dispatcher/production/stretch-amd64
+            rm -f .docker-tag
+            ./build.sh
+            # push to linaro/lava-dispatcher-production-stretch-amd64:2018.2-1
+            docker push $(cat .docker-tag)
+            popd
+    publishers:
+        - email:
+            recipients: 'senthil.kumaran@linaro.org riku.voipio@linaro.org fathi.boudra@linaro.org'
