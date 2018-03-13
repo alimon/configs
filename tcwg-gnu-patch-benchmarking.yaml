@@ -194,6 +194,8 @@
           # Hackish way to get tarball name from json api
           TAR_REF_NAME=$(wget --quiet ${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX}/api/json?pretty=true -O -| grep -P "fileName.*\"gcc-linaro-.*.tar.xz\"" | awk '{print $3}' | sed -e 's/[",]//g')
           TAR_PATCH_NAME=$(wget --quiet ${BF_URL_PREFIX}/${PATCHNUM}/${BF_URL_SUFIX}/api/json?pretty=true -O -| grep -P "fileName.*\"gcc-linaro-.*.tar.xz\"" | awk '{print $3}' | sed -e 's/[",]//g')
+
+          rm -rf ref-tools
           mkdir -p ref-tools
           cd ref-tools
           wget --progress=dot -e dotbytes=2M  "${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX}/artifact/artifacts/${TAR_REF_NAME}"
@@ -201,6 +203,7 @@
           REF_CCPREFIX=$(readlink -f  gcc-linaro-*/bin)/${target}-
           cd ..
 
+          rm -rf patch-tools
           mkdir -p patch-tools
           cd patch-tools
           wget --progress=dot -e dotbytes=2M  "${BF_URL_PREFIX}/${PATCHNUM}/${BF_URL_SUFIX}/artifact/artifacts/${TAR_PATCH_NAME}"
