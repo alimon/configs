@@ -57,7 +57,14 @@ fi
 TEMPLATE_PATH=""
 
 for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
-    TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+# kselftests-native.yaml and kselftests-none.yaml tests needed for x86 and qemu_x86_64
+    if [[ ${test} = "kselftests-native.yaml" || ${test} = "kselftests-none.yaml" ]];then
+        if [[ ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "qemu_x86_64" ]];then
+            TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+        fi
+    else
+        TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+    fi
 done
 
 python ${BASE_PATH}/submit_for_testing.py \

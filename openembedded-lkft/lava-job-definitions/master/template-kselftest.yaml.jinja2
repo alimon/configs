@@ -1,0 +1,45 @@
+{% extends device_type %}
+
+{% block global_settings %}
+{{ super() }}
+  {% if extra_kernel_args is defined %}
+  extra_kernel_args: {{extra_kernel_args}}
+  {% endif %}
+{% endblock global_settings %}
+
+{% set job_timeout = 45 %}
+{% block metadata %}
+  {{ super() }}
+  kselftest__url: {{KSELFTESTS_URL}}
+  kselftest__version: "{{KSELFTESTS_VERSION}}"
+  kselftest__revision: "{{KSELFTESTS_REVISION}}"
+{% endblock metadata %}
+
+{% block job_name %}lkft-kselftests-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: timesync-off
+          description: "Disable systemd time sync services"
+        run:
+          steps:
+          - systemctl stop systemd-timesyncd || true
+      name: timesync-off
+      path: inline/timesync-off.yaml
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/kselftest/kselftest.yaml
+      name: kselftest
+      parameters:
+        KSELFTEST_PATH: {{KSELFTEST_PATH}}
+        SKIPFILE: skipfile-lkft.yaml
+        BOARD: '{{ DEVICE_TYPE }}'
+        BRANCH: '{{ KERNEL_VERSION_OVERRIDE|default(KERNEL_VERSION) }}'
+        ENVIRONMENT: '{{ ENVIRONMENT|default("production") }}'
+      timeout:
+        minutes: 40
+{% endblock test_target %}
