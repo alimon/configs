@@ -246,11 +246,19 @@
           REFNUM=${bf_buildnum[0]}
           PATCHNUM=${bf_buildnum[1]}
 
+          cat > res_params << EOF
+          results_ref=${board}/tcwg-benchmark-${REFNUM}
+          results_id=${board}/tcwg-benchmark-${PATCHNUM}
+          EOF
+
           cat > cmp_params << EOF
           resultsref=${board}/tcwg-benchmark-${REFNUM}
           resultseval=${board}/tcwg-benchmark-${PATCHNUM}
           EOF
       - trigger-builds:
+          - project: 'tcwg-benchmark-results'
+            property-file: res_params
+            block: false
           - project: 'tcwg-benchmark-compare'
             property-file: cmp_params
-            block: true
+            block: false
