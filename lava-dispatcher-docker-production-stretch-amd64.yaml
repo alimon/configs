@@ -16,7 +16,6 @@
             num-to-keep: 30
     disabled: false
     node: build-amd64
-    concurrent: false
     display-name: 'LAVA Dispatcher Production Docker images'
     scm:
         - git:
@@ -27,7 +26,6 @@
                 - refs/heads/master
             skip-tag: true
             shallow-clone: true
-            wipe-workspace: false
     triggers:
         - pollurl:
             cron: '@daily'
@@ -46,7 +44,6 @@
                 credential-id: DOCKER_AUTH
                 variable: DOCKER_AUTH
     builders:
-        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
