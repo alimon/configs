@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
 	echo "INFO: apt update error - try again in a moment"
@@ -18,5 +18,3 @@ fi
 sudo mount -t tmpfs tmpfs /tmp
 
 export GZ=pigz
-
-set -ex

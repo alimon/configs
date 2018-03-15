@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 wget_error() {
 	wget $1 -P out/
 	retcode=$?
