@@ -30,6 +30,10 @@
             name: runtests
             default: 'aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf armeb-linux-gnueabihf aarch64-none-elf aarch64_be-none-elf tcwg-x86_64-build tcwg-x86_32-build'
             description: 'Run toolchain tests for these targets -- must be a subset of target_list'
+        - string:
+            name: send_results_to
+            default: ''
+            description: 'Email address to send test results to'
         - bool:
             name: try_bootstrap
             default: 'true'
@@ -136,6 +140,14 @@
             # tcwg-buildslave user id
             users:
                 - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - credentials-binding:
+            - text:
+                credential-id: TCWG_SES_USER
+                variable: TCWG_SES_USER
+        - credentials-binding:
+            - text:
+                credential-id: TCWG_SES_PASSWORD
+                variable: TCWG_SES_PASSWORD
         - build-name:
             name: '#${BUILD_NUMBER}-${displaytag}'
     builders:
@@ -183,6 +195,10 @@
                 . ./test-container.sh
                 runtests_opt="$runtests_opt --testcontainer ${test_container_host}:${test_container_port}"
               fi
+            fi
+
+            if [ "x${send_results_to}" != x ]; then
+                send_results_to="--send-results-to ${send_results_to}"
             fi
 
             ${build_CONTAINER_RSH} 'echo "Build session is up; ulimit config:"; ulimit -a'
@@ -248,7 +264,14 @@
 
             result="0"
 
-            ${build_CONTAINER_RSH} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --override \"$override\" $target_opt --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} --logserver $log_server $logname_opt $norebuild $options"|| result=$?
+            # Configure postfix
+            ${build_CONTAINER_RSH} "sudo sed -e s/@@MYHOSTNAME@@/${NODE_NAME}/g -e s/@@MAILHOST@@/email-smtp.us-east-1.amazonaws.com/ -e s/@@MAILPORT@@/587/ -i /etc/postfix/main.cf"
+            ${build_CONTAINER_RSH} "sudo sed -e s/@@MAILHOST@@/email-smtp.us-east-1.amazonaws.com/ -e s/@@MAILPORT@@/587/ -e s/@@MAILUSER@@/${TCWG_SES_USER}/ -e s/@@MAILPASSWORD@@/${TCWG_SES_PASSWORD}/ -i /etc/postfix/sasl_password"
+            ${build_CONTAINER_RSH} "echo linaro.org | sudo tee /etc/mailname"
+            ${build_CONTAINER_RSH} "sudo postmap hash:/etc/postfix/sasl_password"
+            ${build_CONTAINER_RSH} "sudo /etc/init.d/postfix start"
+
+            ${build_CONTAINER_RSH} "cd ${WORKSPACE} && bash -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir ${WORKSPACE} --override \"$override\" $target_opt --languages ${languages} $bootstrap $runtests_opt $excludecheck_opt ${extraconfig_opt} ${send_results_to} --logserver $log_server $logname_opt $norebuild $options"|| result=$?
 
             # If the build failed, stop the containers, which will
             # leave them as-is for ~10 days.
