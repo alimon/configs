@@ -17,6 +17,8 @@ actions:
     - abootimg
     - cpio
     - gzip
+    - git
+    - mktemp
     os: debian
 
 - boot:
@@ -58,16 +60,9 @@ actions:
           - overlay_file=/lava-lxc/overlays/${MACHINE}/overlay.tar.gz
           - if [ -f $$overlay_file ]
           - then
-          -     cd /lava-lxc
-          -     abootimg -x ${LXC_BOOT_FILE}
-          -     abootimg-unpack-initrd
-          -     tar -xvzf $$overlay_file -C ramdisk
-          -     rm initrd.img
-          -     abootimg-pack-initrd
-          -     image_size=`du -b ${LXC_BOOT_FILE} | cut -f 1`
-          -     overlay_size=`gzip -l $$overlay_file | tail -1 | awk '{print $$2}'`
-          -     final_size=$$(( $$overlay_size + $$image_size ))
-          -     abootimg -u ${LXC_BOOT_FILE} -r initrd.img -c "bootsize=$$final_size"
+          -     configs_dir=$$(mktemp -d /tmp/configs.XXXX)
+          -     git clone --depth 1 http://git.linaro.org/ci/job/configs.git $$configs_dir 
+          -     $$configs_dir/lt-qcom-linux-integration/copy_test_overlay.sh ${LXC_BOOT_FILE} $$overlay_file
           -     echo "apply_test_overlay:" "pass"
           - else
           -     echo "apply_test_overlay:" "skip"
