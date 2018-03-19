@@ -78,6 +78,10 @@ rsync -avm \
   --exclude='*' \
   ${OUTDIR}/${PLATFORM} out/
 find ${OUTDIR}/${PLATFORM} -type f -name 'zephyr.config' -delete
+# If there are support files, ship them.
+BOARD_CONFIG=$(find "${WORKSPACE}/boards/" -type f -name "${PLATFORM}_defconfig")
+BOARD_DIR=$(dirname ${BOARD_CONFIG})
+test -d "${BOARD_DIR}/support" && rsync -avm "${BOARD_DIR}/support" "out/${PLATFORM}"
 
 CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
 CCACHE_DIR=${CCACHE_DIR} ccache -s
