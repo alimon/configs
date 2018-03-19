@@ -3,7 +3,7 @@
 set -x
 
 wget_error() {
-	wget $1 -P out/
+	wget -c $1 -P out/
 	retcode=$?
 	if [ $retcode -ne 0 ]; then
 		exit $retcode
@@ -114,7 +114,7 @@ wget_error ${KERNEL_IMAGE_URL}
 kernel_file=out/$(basename ${KERNEL_IMAGE_URL})
 kernel_file_type=$(file $kernel_file)
 if [[ ! $kernel_file_type = *"gzip compressed data"* ]]; then
-	${GZ} $kernel_file
+	${GZ} -kf $kernel_file
 	kernel_file=$kernel_file.gz
 fi
 
