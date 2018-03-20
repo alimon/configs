@@ -1,0 +1,75 @@
+- job:
+    name: trigger-odp-sanity-check
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+        - github:
+            url: https://github.com/Linaro/odp
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'https://lng.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'odp'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'lng'
+    disabled: false
+    node: master
+    display-name: 'Trigger for ODP sanity check'
+    scm:
+        - git:
+            url: https://github.com/Linaro/odp.git
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    triggers:
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            auth-id: 'GITHUB_TOKEN'
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${ghprbActualCommit:0:8}" > ${WORKSPACE}/version.txt
+        - shell: |
+            #!/bin/bash -e
+
+            rm -rf configs odp-ci-lava
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            git clone --depth 1 https://github.com/Linaro/odp-ci-lava.git
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+              --device-type thunderx \
+              --build-number ${BUILD_NUMBER} \
+              --lava-server ${LAVA_SERVER} \
+              --qa-server ${QA_SERVER} \
+              --qa-server-team ${QA_SERVER_TEAM} \
+              --qa-server-project ${QA_SERVER_PROJECT} \
+              --git-commit ${ghprbActualCommit} \
+              --template-path odp-ci-lava/multinodes \
+              --template-names thunderx-lng01-ubuntu-17.10.yaml
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
