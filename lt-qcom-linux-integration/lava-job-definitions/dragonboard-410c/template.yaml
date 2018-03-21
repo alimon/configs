@@ -22,6 +22,26 @@
           - ls -l /proc
           - echo "linux_integration_smoke:" "pass"
 
+- test:
+    namespace: ${MACHINE}
+    name: qcomlt-linux-integration-bootrr
+    timeout:
+      minutes: 5
+    definitions:
+    - from: inline
+      name: qcomlt-linux-integration-bootrr
+      path: inline/qcomlt-linux-integration-bootrr.yaml
+      repository:
+        metadata:
+          description: QCOM LT linux integration bootrr
+          format: Lava-Test Test Definition 1.0
+          name: qcomlt-linux-integration-bootrr
+        run:
+          steps:
+          - if [ "${MACHINE}" == "dragonboard410c" ]; then
+          - qcom,apq8016-sbc
+          - fi
+
 device_type: ${LAVA_DEVICE_TYPE}
 job_name: lt-qcom-linux-integration-${BUILD_NUMBER}
 timeouts:
