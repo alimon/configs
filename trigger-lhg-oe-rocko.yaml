@@ -1,0 +1,22 @@
+- job:
+    name: trigger-lhg-oe-rocko
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for LHG rocko build'
+    triggers:
+        # Run the builds every Monday, Wednesday, and Friday in the morning
+        - timed: 'H H(0-6) * * 1,3,5'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'lhg-oe-rocko'
