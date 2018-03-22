@@ -15,4 +15,4 @@ python configs/openembedded-lkft/submit_for_testing.py \
   --qa-server-project ${QA_SERVER_PROJECT} \
   --git-commit ${MANIFEST_COMMIT} \
   --template-path configs/lhg-oe-build/lava-job-definitions \
-  --template-names template-eme-clearkey.yaml
+  --template-names template-tests-${MANIFEST_BRANCH}.yaml
