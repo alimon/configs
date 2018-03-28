@@ -1,0 +1,67 @@
+- scm:
+    name: squad
+    scm:
+        - git:
+            url: https://github.com/Linaro/squad.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: squad
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+- scm:
+    name: qa-reports.linaro.org
+    scm:
+        - git:
+            url: https://github.com/Linaro/qa-reports.linaro.org.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: qa-reports
+            branches:
+                - refs/heads/master
+            basedir: qa-reports.linaro.org
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- job:
+    name: staging-qa-reports
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+    disabled: false
+    node: docker-stretch-amd64
+    display-name: 'Staging QA reports'
+    scm:
+        - squad
+        - qa-reports.linaro.org
+    trigger:
+        - github
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - ssh-agent-credentials:
+            users:
+                - 'QA_REPORTS_DEPLOY_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_ANSIBLE_VAULT_PASSWORD
+                variable: ANSIBLE_VAULT_PASSWORD
+    builders:
+        - shell:
+            !include-raw: staging-qa-reports/builders.sh
+    publishers:
+        - email:
+            recipients: 'qa-team@linaro.org'
