@@ -54,6 +54,9 @@ mkdir ${BUILD_NUMBER}; cd ${BUILD_NUMBER}
 # Per board repositories overrides
 case "${MX_PLATFORM}" in
     hikey|hikey960)
+        # FIXME temporary UEFI_TOOLS_GIT_URL override to get
+        #       "atf-build.sh: Fix path to BL32* images"
+        UEFI_TOOLS_GIT_URL=https://github.com/fboudra/uefi-tools.git
         EDK2_GIT_URL=https://github.com/96boards-hikey/edk2.git
         EDK2_GIT_VERSION="origin/testing/hikey960_v2.5"
         ATF_GIT_VERSION="origin/integration"
