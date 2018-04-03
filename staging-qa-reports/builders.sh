@@ -17,15 +17,16 @@ banner() {
     echo
 }
 
-banner "Install required Debian packages"
-echo "deb http://deb.debian.org/debian stretch-backports main" > stretch-backports.list
-sudo mv stretch-backports.list /etc/apt/sources.list.d/
-
-sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update
-sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y \
-  git moreutils unzip wget python3-setuptools python3-wheel
-sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y \
-  -t stretch-backports ansible
+## Build dependencies are pre-installed on the build host
+#banner "Install required Debian packages"
+#echo "deb http://deb.debian.org/debian stretch-backports main" > stretch-backports.list
+#sudo mv stretch-backports.list /etc/apt/sources.list.d/
+#
+#sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update
+#sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y \
+#  git moreutils unzip wget python3-setuptools python3-wheel
+#sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y \
+#  -t stretch-backports ansible
 
 banner "Build squad package"
 rm -rf build dist
