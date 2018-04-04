@@ -1,0 +1,79 @@
+- job:
+    name: lt-qcom-linux-automerge
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: AUTOMERGE_REPO_URL
+            default: 'https://github.com/alimon/automerge.git'
+        - string:
+            name: AUTOMERGE_BRANCH
+            default: 'master'
+        - string:
+            name: CONFIG_REPO_URL
+            default: 'https://git.linaro.org/landing-teams/working/qualcomm/configs.git'
+        - string:
+            name: CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: KERNEL_REPO_URL
+            default: 'git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+        - string:
+            name: INTEGRATION_REPO_URL
+            default: 'ssh://git@git.linaro.org/landing-teams/working/qualcomm/kernel-integration.git'
+        - string:
+            name: INTEGRATION_BRANCH
+            default: 'integration-linux-qcomlt'
+        - string:
+            name: KERNEL_CI_REPO_URL
+            default: ''
+        - string:
+            name: KERNEL_CI_BRANCH
+            default: 'integration-linux-qcomlt'
+    disabled: false
+    node: docker-stretch-amd64
+    display-name: 'Qualcomm LT Linux kernel Automerge build'
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'LT_QUALCOMM_PRIVATE_KEY_SSH'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            sudo apt-get update
+            sudo apt-get install -y ccache bc kmod cpio
+        - shell:
+            !include-raw: lt-qcom-linux-automerge/builders.sh
+        - inject:
+            properties-file: automerge_result_variables
+    publishers:
+        - email-ext:
+            recipients: 'anibal.limon@linaro.org nicolas.dechesne@linaro.org amit.kucheria@linaro.org'
+            always: true
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+
+                Automerge repo/branch: ${AUTOMERGE_REPO_URL} ${AUTOMERGE_BRANCH}
+
+                Kernel upstream repository: ${KERNEL_REPO_URL}
+                Integration repo/branch: ${INTEGRATION_REPO_URL} ${INTEGRATION_BRANCH}
+                Kernel CI repo/branch: ${KERNEL_CI_REPO_URL} ${KERNEL_CI_BRANCH}
+
+                Automerge configuration: ${AUTOMERGE_CONFIG}
+
+                ${AUTOMERGE_BRANCH_FAILED}
