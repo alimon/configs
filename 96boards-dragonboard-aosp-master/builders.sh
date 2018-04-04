@@ -25,7 +25,6 @@ rm -rf build/out/BUILD-INFO.txt
 wget https://git.linaro.org/ci/job/configs.git/plain/android-lcr/generic/build-info/public-template.txt -O build/out/BUILD-INFO.txt
 
 cat << EOF > ${WORKSPACE}/publish_parameters
-PUB_DEST=96boards/dragonboard410c/linaro/aosp-master/${BUILD_NUMBER}
 PUB_SRC=${PWD}/build/out
 PUB_EXTRA_INC=^[^/]+zip
 EOF
