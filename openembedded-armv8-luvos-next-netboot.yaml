@@ -1,5 +1,5 @@
 - job:
-    name: openembedded-armv8-luvos-master
+    name: openembedded-armv8-luv-netboot-next
     project-type: freestyle
     defaults: global
     logrotate:
@@ -22,16 +22,16 @@
             default: 'qemuarm64'
         - string:
             name: DISTRO
-            default: 'luv'
+            default: 'luv-netboot'
         - string:
             name: BRANCH
-            default: 'master'
+            default: 'next'
         - string:
             name: IMAGE
-            default: 'luv-live-image'
+            default: 'luv-netboot-image'
     disabled: false
     node: build
-    display-name: 'Linux UEFI Validation Operating System (luvOS) for ARMv8 - master'
+    display-name: 'Linux UEFI Validation Operating System Netboot (luvOS) for ARMv8 - next'
     scm:
         - git:
             url: https://github.com/01org/luv-yocto.git
@@ -50,7 +50,7 @@
         - linaro-publish-token
         - shell:
             !include-raw: openembedded-armv8-luvos/builders.sh
-        - shell:  |
+        - shell: |
             #!/bin/bash -e
 
             rm -rf configs

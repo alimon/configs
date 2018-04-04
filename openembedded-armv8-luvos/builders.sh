@@ -17,7 +17,7 @@ export PATH="/usr/sbin:/sbin:$PATH"
 source oe-init-build-env
 echo "BBLAYERS += \" ${WORKSPACE}/meta-oe\"" >> conf/bblayers.conf
 echo "BBLAYERS += \" ${WORKSPACE}/meta-luv\"" >> conf/bblayers.conf
-bitbake luv-live-image
+bitbake ${IMAGE}
 
 rm -f ${WORKSPACE}/build/tmp/deploy/images/qemuarm64/*.txt
 find ${WORKSPACE}/build/tmp/deploy/images/qemuarm64 -type l -delete
