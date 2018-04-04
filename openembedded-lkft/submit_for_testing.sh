@@ -6,6 +6,7 @@ set -ex
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="low"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
 [ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=lkft
+[ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
 
 if [ -n "${DRY_RUN}" ]; then
     export DRY_RUN="--dry-run --template-path lava-job-definitions --testplan-path lava-job-definitions/ --quiet"

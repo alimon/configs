@@ -59,6 +59,7 @@ export QA_REPORTS_TOKEN="secret"
 export DEVICE_TYPE="x86"
 export KSELFTEST_SKIPLIST="pstore"
 export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
+export TOOLCHAIN="arm-linaro-linux-gnueabi linaro-6.2"
 
 export DRY_RUN=true
 
