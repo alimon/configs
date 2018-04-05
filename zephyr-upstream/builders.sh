@@ -60,7 +60,6 @@ time ${WORKSPACE}/scripts/sanitycheck \
   --inline-logs \
   --build-only \
   --outdir ${OUTDIR} \
-  --no-clean \
   --enable-slow \
   -x=USE_CCACHE=${USE_CCACHE}
 
