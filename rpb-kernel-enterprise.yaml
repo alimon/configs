@@ -24,6 +24,12 @@
             name: KERNEL_GIT_URL
             default: 'https://github.com/Linaro/rpk.git'
         - string:
+            name: DEBIAN_GIT_BRANCH
+            default: 'rpb-stretch'
+        - string:
+            name: DEBIAN_GIT_URL
+            default: 'https://github.com/Linaro/debian-kernel-packaging.git'
+        - string:
             name: TARGET_REPO
             default: 'ERP:staging'
     disabled: false
@@ -55,7 +61,7 @@
             sudo apt-get install -y ccache python-requests quilt cpio rsync dh-exec
 
             # Checkout source code
-            git clone --depth 1 -b rpb-stretch https://github.com/Linaro/debian-kernel-packaging.git debian-pkg
+            git clone --depth 1 -b ${DEBIAN_GIT_BRANCH} ${DEBIAN_GIT_URL} debian-pkg
 
             # Export the kernel packaging version
             cd ${WORKSPACE}/linux
