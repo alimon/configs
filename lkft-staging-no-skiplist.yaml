@@ -138,6 +138,7 @@
                 echo "export ${ENVVAR}" >> build_env.sh
             done
             . ./build_env.sh
+            TOOLCHAIN=${COMPILER:-unknown}
             ROOTFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
             NFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.tar\.xz" "${MD5_FILENAME}" | awk '{print $2}')
             EXT4_IMAGE_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.ext4\.gz" "${MD5_FILENAME}" | awk '{print $2}')
