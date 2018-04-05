@@ -40,4 +40,5 @@ echo "${ANSIBLE_VAULT_PASSWORD}" > ${HOME}/.ansible-vault-passwd
 ./deploy staging \
     --vault-password-file ~/.ansible-vault-passwd \
     --extra-vars squad=${pkg} \
+    --extra-vars upgrade_only=true \
     site.yml
