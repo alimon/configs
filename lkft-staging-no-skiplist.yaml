@@ -138,7 +138,6 @@
                 echo "export ${ENVVAR}" >> build_env.sh
             done
             . ./build_env.sh
-            TOOLCHAIN=${COMPILER:-unknown}
             ROOTFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.img\.gz" "${MD5_FILENAME}" | awk '{print $2}')
             NFS_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.tar\.xz" "${MD5_FILENAME}" | awk '{print $2}')
             EXT4_IMAGE_FILENAME=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.rootfs\.ext4\.gz" "${MD5_FILENAME}" | awk '{print $2}')
@@ -214,6 +213,7 @@
                 export KSELFTEST_PATH=/opt/kselftests/mainline/
                 ;;
             esac
+            export TOOLCHAIN=${COMPILER:-unknown}
             export NFSROOTFS_URL="${BUILD_LOCATION}/${NFS_FILENAME}"
             export EXT4_IMAGE_URL="${BUILD_LOCATION}/${EXT4_IMAGE_FILENAME}"
             export BOOT_URL="${BUILD_LOCATION}/${BOOT_FILENAME}"
