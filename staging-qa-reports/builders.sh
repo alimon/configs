@@ -37,4 +37,7 @@ banner "Deploy"
 cp -a dist/${pkg} qa-reports.linaro.org/ansible
 cd qa-reports.linaro.org/ansible/
 echo "${ANSIBLE_VAULT_PASSWORD}" > ${HOME}/.ansible-vault-passwd
-./deploy staging --vault-password-file ~/.ansible-vault-passwd --extra-vars squad=${pkg} site.yml
+./deploy staging \
+    --vault-password-file ~/.ansible-vault-passwd \
+    --extra-vars squad=${pkg} \
+    site.yml
