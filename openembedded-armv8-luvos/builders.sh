@@ -14,7 +14,7 @@ cleanup_exit()
 export PATH="/usr/sbin:/sbin:$PATH"
 
 # Build
-source oe-init-build-env
+source luv-setup
 echo "BBLAYERS += \" ${WORKSPACE}/meta-oe\"" >> conf/bblayers.conf
 echo "BBLAYERS += \" ${WORKSPACE}/meta-luv\"" >> conf/bblayers.conf
 bitbake ${IMAGE}
