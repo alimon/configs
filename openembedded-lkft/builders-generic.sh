@@ -128,7 +128,6 @@ EOF
 
 custom_kernel_conf=$(find ../layers/meta-96boards/recipes-kernel -name custom-kernel-info.inc)
 cat << EOF > ${custom_kernel_conf}
-BASEPV = "4.16"
 KERNEL_COMMIT = "${KERNEL_COMMIT}"
 KERNEL_REPO = "${KERNEL_REPO/http*:/git:}"
 KERNEL_BRANCH = "${KERNEL_BRANCH}"
