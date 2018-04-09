@@ -26,6 +26,10 @@
             default: ''
             description: 'Spin number'
         - string:
+            name: rc_num
+            default: ''
+            description: 'Release candidate number (empty for RC1, 2 for RC2, ...)'
+        - string:
             name: gcc_ref
             default: ''
             description: 'GCC tag or branch name (like linaro-6.3-2017.03, origin/linaro/gcc-6-branch)'
@@ -92,15 +96,16 @@
             git remote update
 
             FLAGS="-t $gcc_ref -e gerrit"
-            [ "${spin:+set}" = "set" ] && FLAGS+=" $spin"
             [ "${date:+set}" = "set" ] && FLAGS+=" -d $date"
 
             case "$tag_kind" in
                 snapshot)  FLAGS+=" -S" ; dir_suffix="-snap";;
-                candidate) FLAGS+=" -r" ;;
+                candidate) FLAGS+=" -r $rc_num" ;;
                 release)   FLAGS+=" -R" ;;
                 *) echo "ERROR: tag_king is missing"; exit 1 ;;
             esac
+
+            [ "${spin:+set}" = "set" ] && FLAGS+=" $spin"
 
             ${WORKSPACE}/tcwg-release-tools/tcwg-release-tag.sh $FLAGS
 
