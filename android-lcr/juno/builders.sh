@@ -13,6 +13,11 @@ mkdir -p build
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
 cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.xml /home/buildslave/srv/${BUILD_DIR}/build/out/*.json ${WORKSPACE}/
 
+#package juno.img.bz2
+cd /home/buildslave/srv/${BUILD_DIR}/build/out/
+../device/linaro/juno/pack_juno_img.sh
+cd -
+
 # Delete sources after build to save space
 cd build
 rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
