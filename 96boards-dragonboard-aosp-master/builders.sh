@@ -5,8 +5,10 @@ if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
   exit 1
 fi
 
-# Clean android-patchsets and repositories in device
-rm -rf build/out build/android-patchsets build/device
+# Cleanup sources from other builds
+cd build
+rm -rf out art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/
+cd -
 
 # Build Android
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
