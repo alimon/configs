@@ -13,9 +13,10 @@ mkdir -p build
 build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
 cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.xml /home/buildslave/srv/${BUILD_DIR}/build/out/*.json ${WORKSPACE}/
 
-#package juno.img.bz2
+#package juno.img.bz2 and create uInitrd.img
 cd /home/buildslave/srv/${BUILD_DIR}/build/out/
 ../device/linaro/juno/pack_juno_img.sh
+mkimage -A arm64 -O linux -C none -T ramdisk -n "Android Ramdisk" -d ramdisk.img -a 84000000 -e 84000000 uInitrd.img
 cd -
 
 # Delete sources after build to save space
