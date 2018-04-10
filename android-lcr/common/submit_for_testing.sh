@@ -6,11 +6,11 @@
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
 
 if [ -n "${DRY_RUN}" ]; then
-    export DRY_RUN="--dry-run --template-path ../lava-job-definitions --testplan-path ../lava-job-definitions/ --quiet"
+    export EXTRA_PARAMS="--dry-run --template-path ../lava-job-definitions --testplan-path ../lava-job-definitions/"
     export BASE_PATH=../
     export SCRIPT_PATH=../../openembedded-lkft/
 else
-    export DRY_RUN=""
+    export EXTRA_PARAMS="--template-path configs/android-lcr/lava-job-definitions/ --testplan-path configs/android-lcr/lava-job-definitions/"
     export BASE_PATH=configs/android-lcr/
     export SCRIPT_PATH=configs/openembedded-lkft/
 fi
@@ -72,5 +72,6 @@ python ${SCRIPT_PATH}/submit_for_testing.py \
   --qa-server-team lmg \
   --qa-server-project ${QA_SERVER_PROJECT} \
   --git-commit ${BUILD_NUMBER} \
-  ${DRY_RUN} \
+  --quiet \
+  ${EXTRA_PARAMS} \
   --test-plan ${TEST_TEMPLATES}
