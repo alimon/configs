@@ -10,9 +10,6 @@ cleanup_exit()
   rm -rf build/tmp/
 }
 
-# sbin isn't in the PATH by default and prevent to find parted
-export PATH="/usr/sbin:/sbin:$PATH"
-
 # Build
 source luv-setup
 echo "BBLAYERS += \" ${WORKSPACE}/meta-oe\"" >> conf/bblayers.conf
