@@ -78,11 +78,9 @@
 
             # Download vendor binaries for hikey.
             mkdir -p build
+            # Delete sources before build to save space
             cd build/
-            rm -rf *.tgz
-            wget https://dl.google.com/dl/android/aosp/arm-hikey960-OPR-cf4e0c80.tgz -O arm-hikey960-OPR-cf4e0c80.tgz
-            tar -xvf arm-hikey960-OPR-cf4e0c80.tgz
-            yes "I ACCEPT" | ./extract-arm-hikey960.sh
+            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
             cd -
 
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
