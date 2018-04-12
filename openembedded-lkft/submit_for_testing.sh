@@ -51,7 +51,18 @@ fi
 
 if [ -z "${DRY_RUN}" ]; then
     rm -rf configs
-    git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+    # Perform a shallow clone unless CONFIGS_REPO_REV_OVERRIDE is set
+    CONFIGS_REPO_CLONE_ARGS="--depth 1"
+    if [ ! -z ${CONFIGS_REPO_REV_OVERRIDE} ]; then
+        CONFIGS_REPO_CLONE_ARGS=""
+    fi
+
+    CONFIGS_REPO_URL=${CONFIGS_REPO_URL_OVERRIDE:-http://git.linaro.org/ci/job/configs.git}
+    git clone ${CONFIGS_REPO_CLONE_ARGS} ${CONFIGS_REPO_URL} configs
+    if [ ! -z ${CONFIGS_REPO_REV_OVERRIDE} ]; then
+        (cd configs && git checkout ${CONFIGS_REPO_REV_OVERRIDE})
+    fi
 fi
 
 [ ! -z ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
