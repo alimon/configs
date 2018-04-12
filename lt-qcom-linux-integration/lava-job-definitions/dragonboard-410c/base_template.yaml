@@ -1,6 +1,6 @@
 protocols:
   lava-lxc:
-    name: lxc-${MACHINE}-test
+    name: lxc-${LAVA_DEVICE_TYPE}-test
     template: debian
     distribution: debian
     release: stretch
@@ -34,7 +34,7 @@ actions:
     timeout:
       minutes: 40
     to: download
-    namespace: ${MACHINE}
+    namespace: ${LAVA_DEVICE_TYPE}
     images:
       boot:
         url: ${BOOT_URL}
@@ -48,16 +48,16 @@ actions:
       minutes: 30
     definitions:
     - from: inline
-      name: ${MACHINE}-apply-test-overlay
-      path: inline/${MACHINE}-apply-test-overlay.yaml
+      name: ${LAVA_DEVICE_TYPE}-apply-test-overlay
+      path: inline/${LAVA_DEVICE_TYPE}-apply-test-overlay.yaml
       repository:
         metadata:
-          description: ${MACHINE} apply test overlay
+          description: ${LAVA_DEVICE_TYPE} apply test overlay
           format: Lava-Test Test Definition 1.0
-          name: ${MACHINE}-apply-test-overlay
+          name: ${LAVA_DEVICE_TYPE}-apply-test-overlay
         run:
           steps:
-          - overlay_file=/lava-lxc/overlays/${MACHINE}/overlay.tar.gz
+          - overlay_file=/lava-lxc/overlays/${LAVA_DEVICE_TYPE}/overlay.tar.gz
           - if [ -f $$overlay_file ]
           - then
           -     configs_dir=$$(mktemp -d /tmp/configs.XXXX)
@@ -93,7 +93,7 @@ actions:
     timeout:
       minutes: 40
     to: fastboot
-    namespace: ${MACHINE}
+    namespace: ${LAVA_DEVICE_TYPE}
     images:
       boot:
         url: lxc:///${LXC_BOOT_FILE}
@@ -106,7 +106,7 @@ actions:
               minutes: 2
 
 - boot:
-    namespace: ${MACHINE}
+    namespace: ${LAVA_DEVICE_TYPE}
     prompts:
     - 'linaro-test .*#'
     timeout:

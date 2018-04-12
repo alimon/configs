@@ -1,5 +1,5 @@
 - test:
-    namespace: ${MACHINE}
+    namespace: ${LAVA_DEVICE_TYPE}
     name: qcomlt-linux-integration-smoke
     timeout:
       minutes: 5
@@ -23,7 +23,7 @@
           - echo "linux_integration_smoke:" "pass"
 
 - test:
-    namespace: ${MACHINE}
+    namespace: ${LAVA_DEVICE_TYPE}
     name: qcomlt-linux-integration-bootrr
     timeout:
       minutes: 5
@@ -38,7 +38,7 @@
           name: qcomlt-linux-integration-bootrr
         run:
           steps:
-          - if [ "${MACHINE}" == "dragonboard410c" ]; then
+          - if [ "${LAVA_DEVICE_TYPE}" == "dragonboard-410c" ]; then
           - qcom,apq8016-sbc
           - fi
 
@@ -56,4 +56,4 @@ visibility: public
 
 metadata:
   source: https://git.linaro.org/ci/job/configs.git
-  path: lt-qcom-linux-integration/lava-job-definitions/template.yaml
+  path: lt-qcom-linux-integration/lava-job-definitions/${LAVA_DEVICE_TYPE}/template.yaml
