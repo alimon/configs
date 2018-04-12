@@ -20,7 +20,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="virtualenv python-pip android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail libelf-dev"
+pkg_list="virtualenv python-pip android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail libelf-dev pxz"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
@@ -216,9 +216,14 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.wic \
       ${DEPLOY_DIR_IMAGE}/*.stimg
 
-# FIXME: Sparse images here, until it gets done by OE
+# FIXME: Sparse and converted images here, until it gets done by OE
 case "${MACHINE}" in
-  juno|stih410-b2260|intel-core2-32)
+  juno|stih410-b2260)
+    ;;
+  intel-core2-32)
+    for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
+      pxz ${rootfs}
+    done
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
@@ -274,7 +279,7 @@ ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE
 ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
-HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.hddimg" | xargs -r basename)
+HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.hddimg.xz" | xargs -r basename)
 case "${MACHINE}" in
   juno)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-r2-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
