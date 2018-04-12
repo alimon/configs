@@ -1,6 +1,6 @@
 protocols:
   lava-lxc:
-    name: lxc-dragonboard410c-test
+    name: lxc-${DEVICE_TYPE}-test
     template: debian
     distribution: debian
     release: stretch
@@ -33,7 +33,7 @@ actions:
     timeout:
       minutes: 40
     to: download
-    namespace: dragonboard410c
+    namespace: ${DEVICE_TYPE}
     images:
       boot:
         url: ${BOOT_URL}
@@ -49,13 +49,13 @@ actions:
       minutes: 30
     definitions:
     - from: inline
-      name: db410c-resize-rootfs
-      path: inline/db410c-resize-rootfs.yaml
+      name: resize-rootfs
+      path: inline/resize-rootfs.yaml
       repository:
         metadata:
-          description: db410c resize rootfs image for test overlay
+          description: resize rootfs image for test overlay
           format: Lava-Test Test Definition 1.0
-          name: db410c-resize-rootfs
+          name: resize-rootfs
         run:
           steps:
           - if [ -z "${RESIZE_ROOTFS}" ]
@@ -63,7 +63,7 @@ actions:
           -     echo "resize_rootfs:" "skip"
           - else
           -     cd /lava-lxc
-          -     overlay_file=/lava-lxc/overlays/dragonboard410c/overlay.tar.gz
+          -     overlay_file=/lava-lxc/overlays/${DEVICE_TYPE}/overlay.tar.gz
           -     overlay_size=$$(gzip -l $$overlay_file | tail -1 | awk '{print $$2}')
           -     overlay_size=$$(( $$overlay_size / 1024 ))
           -     simg2img ${LXC_ROOTFS_FILE} ${LXC_ROOTFS_FILE}.ext4
@@ -102,7 +102,7 @@ actions:
     timeout:
       minutes: 40
     to: fastboot
-    namespace: dragonboard410c
+    namespace: ${DEVICE_TYPE}
     images:
       boot:
         url: lxc:///${LXC_BOOT_FILE}
@@ -118,7 +118,7 @@ actions:
               minutes: 2
 
 - boot:
-    namespace: dragonboard410c
+    namespace: ${DEVICE_TYPE}
     auto_login:
       login_prompt: 'login:'
       username: 'root'
