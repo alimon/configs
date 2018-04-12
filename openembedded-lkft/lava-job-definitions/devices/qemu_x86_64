@@ -4,6 +4,7 @@
 {{ super() }}
 context:
   arch: amd64
+  guestfs_interface: virtio
 {% endblock global_settings %}
 
 {% block device_type %}qemu{% endblock %}
@@ -16,7 +17,7 @@ context:
     to: tmpfs
     images:
       rootfs:
-        image_arg: -drive format=raw,file={rootfs} -m 4096 -smp 4 -nographic
+        image_arg: -drive format=raw,file={rootfs},if=virtio -m 4096 -smp 4 -nographic
         url: {{HDD_URL}}
     os: oe
 {% endblock deploy_target %}
