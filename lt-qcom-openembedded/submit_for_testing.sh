@@ -9,7 +9,6 @@ pip install --user --force-reinstall jinja2-cli ruamel.yaml
 # main parameters
 export DEPLOY_OS=oe
 export OS_INFO=openembedded-${DISTRO}-${MANIFEST_BRANCH}
-export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
 
 # boot and rootfs parameters, BOOT_URL comes from builders.sh
 # and has not compression
@@ -22,8 +21,14 @@ export RESIZE_ROOTFS=
 export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
 
 case "${MACHINE}" in
-  dragonboard-410c)
+  dragonboard-410c|dragonboard-820c)
     export DEVICE_TYPE="${MACHINE}"
+    if [ ${DEVICE_TYPE} = "dragonboard-410c" ]; then
+      export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
+    elif [ ${DEVICE_TYPE} = "dragonboard-820c" ]; then
+      export BOOT_OS_PROMPT=\'root@dragonboard-820c:~#\'
+    fi
+
     case "${DISTRO}" in
       rpb)
         export ROOTFS_URL=${ROOTFS_SPARSE_BUILD_URL}
