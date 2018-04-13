@@ -24,7 +24,7 @@
             default: 'http://openjdk.linaro.org/releases/jdk9-server-release-1708.tar.xz'
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 10 - Configure and build OpenJDK 10 Release'
+    display-name: 'OpenJDK 10u - Configure and build OpenJDK 10u Release'
     axes:
         - axis:
             type: user-defined
@@ -52,7 +52,7 @@
     builders:
         - copyartifact:
             project: jdk10-update-src-tree
-            filter: 'out/jdk10.tar.gz'
+            filter: 'out/jdk10u.tar.gz'
             target: incoming
             flatten: true
 #        - copyartifact:
@@ -72,8 +72,8 @@
 
             # Generate files names dependent on year/month.
             RELEASE=$(date +%y%m)
-            JDKDIR=jdk10-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
-            JDK_SRCDIR=jdk10-src-${RELEASE}
+            JDKDIR=jdk10u-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
+            JDK_SRCDIR=jdk10u-src-${RELEASE}
 
             ccache_build_opts=--disable-ccache
 
@@ -98,11 +98,11 @@
             mkdir out
 
             # Extract sources from upstream job
-            tar xaf incoming/jdk10.tar.gz
+            tar xaf incoming/jdk10u.tar.gz
 
-            mv jdk10 $JDK_SRCDIR
+            mv jdk10u $JDK_SRCDIR
             # Tar up the source before sullying it with a build.
-            tar --exclude=.hg\* -acf out/jdk10-src-${RELEASE}.tar.xz $JDK_SRCDIR
+            tar --exclude=.hg\* -acf out/jdk10u-src-${RELEASE}.tar.xz $JDK_SRCDIR
 
             mv $JDK_SRCDIR $JDKDIR
             shopt -s nullglob
@@ -142,7 +142,7 @@
             fi
 
             # Archive the result
-            artifact_name=jdk10-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
+            artifact_name=jdk10u-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
 
             # This is different from ordinary builds.
             tar -C build-stage2/images --exclude=\*.diz --transform="s!^jdk!$artifact_name!" -acf out/${artifact_name}.tar.xz jdk

@@ -26,7 +26,7 @@
             default: 'default'
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 10 - Run jtreg tests'
+    display-name: 'OpenJDK 10u - Run jtreg tests'
     axes:
         - axis:
             type: user-defined
@@ -78,7 +78,7 @@
 #            flatten: true
         - copyartifact:
             project: jdk10-update-src-tree
-            filter: 'out/jdk10.tar.gz, out/build-date.sh'
+            filter: 'out/jdk10u.tar.gz, out/build-date.sh'
             target: incoming
             flatten: true
         - copyartifact:
@@ -95,19 +95,19 @@
 
             source incoming/build-date.sh
 
-            export JDK_VERSION=10
+            export JDK_VERSION=10u
             # client variant uses server with -XX:TieredStopAtLevel=1
             # zero is a third possible value.
             REAL_VARIANT=${JVM_VARIANT/client/server}
-            IMAGE_DIR=${WORKSPACE}/jdk10-${REAL_VARIANT}-${BUILD_TYPE}
-            PERSIST=$HOME/srv/openjdk10
+            IMAGE_DIR=${WORKSPACE}/jdk10u-${REAL_VARIANT}-${BUILD_TYPE}
+            PERSIST=$HOME/srv/openjdk10u
 
             JCSTRESS=$PWD/incoming/jcstress.jar
 
-            tar xf incoming/jdk10.tar.gz
-            tar xf ~/workspace/jdk10-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk10-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
+            tar xf incoming/jdk10u.tar.gz
+            tar xf ~/workspace/jdk10-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk10u-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
             tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
-            tar xf ~/workspace/jdk10-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk10-${REAL_VARIANT}-${BUILD_TYPE}-support.tar.gz
+            tar xf ~/workspace/jdk10-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk10u-${REAL_VARIANT}-${BUILD_TYPE}-support.tar.gz
 
             # All the output directories and general frobbing
             # output is to match the existing layout as expected
@@ -126,7 +126,7 @@
 
             mkdir -p out ${src_dir} ${work_dir} ${report_dir}
 
-            mv jdk10/* ${src_dir}
+            mv jdk10u/* ${src_dir}
 
             blacklist=${WORKSPACE}/excludes.txt
             jdk_problem_list=${src_dir}/${JTREG_CATEGORY}/test/ProblemList.txt
@@ -148,12 +148,12 @@
             cat ${blacklist}
             echo "---------"
 
-            export JAVA_HOME=${WORKSPACE}/jdk10-${REAL_VARIANT}-${BUILD_TYPE}
+            export JAVA_HOME=${WORKSPACE}/jdk10u-${REAL_VARIANT}-${BUILD_TYPE}
             export PATH=$JAVA_HOME/bin:${PATH}
 
             # For hotspot and jdk we pass a -nativepath: option to jtreg.
             # This enables the tests needing native libraries to run.
-            NATIVEPATH=${WORKSPACE}/jdk10-${REAL_VARIANT}-${BUILD_TYPE}-support/support/test/${JTREG_CATEGORY}/jtreg/native/lib
+            NATIVEPATH=${WORKSPACE}/jdk10u-${REAL_VARIANT}-${BUILD_TYPE}-support/support/test/${JTREG_CATEGORY}/jtreg/native/lib
 
             if [ $JTREG_CATEGORY = "langtools" ]; then
                 # The nativepath option we pass must be a valid directory, or

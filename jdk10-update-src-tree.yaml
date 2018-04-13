@@ -1,10 +1,10 @@
 - scm:
-    name: jdk10
+    name: jdk10u
     scm:
         - hg:
-            url: http://hg.openjdk.java.net/jdk/jdk10
+            url: http://hg.openjdk.java.net/jdk-updates/jdk10u
             clean: true
-            subdir: jdk10
+            subdir: jdk10u
 - job:
     name: jdk10-update-src-tree
     project-type: freestyle
@@ -29,9 +29,9 @@
             artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 10 - Update jdk10 source tree'
+    display-name: 'OpenJDK 10u - Update jdk10u source tree'
     scm:
-        - jdk10
+        - jdk10u
     triggers:
         - pollscm: 'H 2 1-6/2 * *'
     wrappers:
@@ -45,7 +45,7 @@
             rm -rf out
             mkdir out
 
-            pushd jdk10
+            pushd jdk10u
             #find . -name BOM -exec rm {} \;
             #commit_id=$(hg identify | awk '{print $1}')
             #echo "jdk10-${commit_id}" | tee -a BOM
@@ -79,10 +79,10 @@
             echo "export YEAR=${YEAR}" > out/build-date.sh
             echo "export DAY_OF_YEAR=${DAY_OF_YEAR}" >> out/build-date.sh
 
-            tar --exclude=.hg -acf out/jdk10.tar.gz jdk10
+            tar --exclude=.hg -acf out/jdk10u.tar.gz jdk10u
     publishers:
         - archive:
-            artifacts: 'out/jdk10.tar.gz, out/build-date.sh, out/BOM'
+            artifacts: 'out/jdk10u.tar.gz, out/build-date.sh, out/BOM'
         - fingerprint:
             files: 'out/*'
             record-artifacts: true

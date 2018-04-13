@@ -26,7 +26,7 @@
             default: 'default'
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 10 - Write jdk10 source tree'
+    display-name: 'OpenJDK 10u - Write jdk10 source tree'
     wrappers:
         - workspace-cleanup:
             dirmatch: false
@@ -44,13 +44,13 @@
 
             : ${YEAR:=$(date +%Y)}
             : ${DAY_OF_YEAR:=$(date +%j)}
-            PERSIST=$HOME/srv/openjdk10
+            PERSIST=$HOME/srv/openjdk10u
 
             TOP_DIR=$PERSIST/openjdk-jtreg-nightly-tests
             src_dir=$TOP_DIR/src/$YEAR/$DAY_OF_YEAR
             mkdir -p $src_dir
             echo "Extracting tarball to $src_dir"
-            tar -C $src_dir --strip-components=1 -xf $WORKSPACE/incoming/jdk10.tar.gz
+            tar -C $src_dir --strip-components=1 -xf $WORKSPACE/incoming/jdk10u.tar.gz
 
             # Copy bill-of-materials to persistent area for email report.
             cp incoming/BOM $TOP_DIR

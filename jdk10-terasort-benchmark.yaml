@@ -18,7 +18,7 @@
             artifact-num-to-keep: 5
     disabled: false
     node: aarch64-06
-    display-name: 'OpenJDK 10 - Run terasort benchmark'
+    display-name: 'OpenJDK 10u - Run terasort benchmark'
     axes:
         - axis:
             type: user-defined
@@ -69,10 +69,10 @@
             REAL_VARIANT=${JVM_VARIANT/client/server}
 
             ## Extract jdk
-            rm -rf jdk10*
-            tar xf ~/workspace/jdk10-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk10-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
+            rm -rf jdk10u*
+            tar xf ~/workspace/jdk10u-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk10u-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
 
-            export JAVA_HOME=${WORKSPACE}/jdk10-${REAL_VARIANT}-${BUILD_TYPE}
+            export JAVA_HOME=${WORKSPACE}/jdk10u-${REAL_VARIANT}-${BUILD_TYPE}
             export PATH=${JAVA_HOME}/bin:$PATH
 
             ## Extract Hadoop pre-builts
