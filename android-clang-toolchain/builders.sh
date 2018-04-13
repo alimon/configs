@@ -32,9 +32,9 @@ else
 fi
 
 # Toolchain download
-if [ ! -d clang+llvm-5.0.0-linux-x86_64-ubuntu14.04 ]; then
-    wget http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
-    tar xvfJ clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
+if [ ! -d clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04 ]; then
+    wget http://releases.llvm.org/6.0.0/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+    tar xvfJ clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 fi
 
 # Temporary clang patch for 25b45aa81854313486df891985cdd7ef1ec09780
@@ -52,8 +52,8 @@ cmake -G "Unix Makefiles" ../ \
 	 -DCMAKE_INSTALL_PREFIX=./clang-master \
 	 -DLLVM_TARGETS_TO_BUILD="host;ARM;X86;AArch64" \
 	 -DLLVM_ENABLE_ASSERTIONS=false \
-	 -DCMAKE_C_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04/bin/clang \
-	 -DCMAKE_CXX_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04/bin/clang++ \
+	 -DCMAKE_C_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang \
+	 -DCMAKE_CXX_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++ \
 	 -DLIBCXXABI_LIBCXX_INCLUDES=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxx/include \
 	 -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxxabi/include \
 	 -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include
