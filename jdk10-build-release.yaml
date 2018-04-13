@@ -145,7 +145,7 @@
             artifact_name=jdk10u-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
 
             # This is different from ordinary builds.
-            tar -C build-stage2/images --exclude=\*.diz --transform="s!^jdk!$artifact_name!" -acf out/${artifact_name}.tar.xz jdk
+            tar -C build-stage2/images --exclude=\*.debuginfo --transform="s!^jdk!$artifact_name!" -acf out/${artifact_name}.tar.xz jdk
     publishers:
         - archive:
             artifacts: 'out/*.tar.xz'
