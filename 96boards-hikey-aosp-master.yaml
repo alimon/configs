@@ -120,8 +120,10 @@
 
             cd build/out
             for image in "boot.img" "vendor.img" "boot_fat.uefi.img" "system.img" "userdata.img"  "cache.img"; do
-              echo "Compressing ${image}"
-              xz ${image}
+              if [ -f ${image} ]; then
+                echo "Compressing ${image}"
+                xz ${image}
+              fi
             done
             cd -
 
