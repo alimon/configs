@@ -61,6 +61,8 @@ cmake -G Ninja ../ \
 	 -DCLANG_LIBDIR_SUFFIX=64
 
 VERBOSE=1 ninja install
+mkdir -p clang-master/prebuilt_include/llvm/lib/Fuzzer
+cp -a ../projects/compiler-rt/lib/fuzzer/*.{h,def} clang-master/prebuilt_include/llvm/lib/Fuzzer/
 
 rm -f clang-master.tar.xz
 tar -I pxz -cf clang-master.tar.xz clang-master
