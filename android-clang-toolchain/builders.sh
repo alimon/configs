@@ -56,7 +56,9 @@ cmake -G Ninja ../ \
 	 -DCMAKE_CXX_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++ \
 	 -DLIBCXXABI_LIBCXX_INCLUDES=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxx/include \
 	 -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxxabi/include \
-	 -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include
+	 -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include \
+	 -DLLVM_LIBDIR_SUFFIX=64 \
+	 -DCLANG_LIBDIR_SUFFIX=64
 
 VERBOSE=1 ninja install
 
