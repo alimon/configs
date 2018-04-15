@@ -7,10 +7,10 @@ sudo apt-get -q=2 update
 sudo apt-get -q=2 install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk libxml2-utils rsync pxz python-requests
 
 wget -q \
-  https://cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.sh
+  https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.sh
 
-yes y | bash cmake-3.5.2-Linux-x86_64.sh
-export PATH=${PWD}/cmake-3.5.2-Linux-x86_64/bin/:${PATH}
+yes y | bash cmake-3.11.0-Linux-x86_64.sh
+export PATH=${PWD}/cmake-3.11.0-Linux-x86_64/bin/:${PATH}
 
 mkdir -p ${HOME}/srv/aosp/${JOB_NAME}
 cd ${HOME}/srv/aosp/${JOB_NAME}
