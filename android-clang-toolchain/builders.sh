@@ -4,7 +4,7 @@ set -ex
 export PATH=$PATH://home/buildslave/bin/
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk libxml2-utils rsync pxz python-requests
+sudo apt-get -q=2 install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk libxml2-utils rsync pxz python-requests ninja-build
 
 wget -q \
   https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.sh
@@ -46,7 +46,7 @@ fi
 cd llvm
 mkdir -p build/clang-master
 cd build
-cmake -G "Unix Makefiles" ../ \
+cmake -G Ninja ../ \
 	 -DCMAKE_BUILD_TYPE=Release \
 	 -DPYTHON_EXECUTABLE=/usr/bin/python2 \
 	 -DCMAKE_INSTALL_PREFIX=./clang-master \
@@ -58,7 +58,7 @@ cmake -G "Unix Makefiles" ../ \
 	 -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxxabi/include \
 	 -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include
 
-make install VERBOSE=1 -j"$(nproc)"
+VERBOSE=1 ninja install
 
 rm -f clang-master.tar.xz
 tar -I pxz -cf clang-master.tar.xz clang-master
