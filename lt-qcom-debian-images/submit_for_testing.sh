@@ -23,6 +23,9 @@ export RESIZE_ROOTFS=True
 # Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
 pip install --user --force-reinstall jinja2-cli ruamel.yaml
 
+# Tests settings, thermal isn't work well in debian causes stall
+export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
+
 python configs/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
     --build-number ${BUILD_NUMBER} \

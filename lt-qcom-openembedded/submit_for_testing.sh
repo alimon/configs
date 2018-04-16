@@ -18,6 +18,9 @@ export LXC_BOOT_FILE=$(basename ${BOOT_URL})
 
 export RESIZE_ROOTFS=
 
+# Test settings
+export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
+
 case "${MACHINE}" in
   dragonboard-410c)
     export DEVICE_TYPE="${MACHINE}"
