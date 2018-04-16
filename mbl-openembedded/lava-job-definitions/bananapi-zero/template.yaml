@@ -1,0 +1,70 @@
+device_type: bananapi-zero
+
+job_name: MBL ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 10
+  action:
+    minutes: 5
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 5
+    to: u-boot-ums
+    os: oe
+    image:
+      url: ${IMAGE_URL}
+      compression: gz
+      root_partition: 2
+
+- boot:
+    method: u-boot
+    commands: ums
+    auto_login:
+      login_prompt: 'bananapi-zero login:'
+      username: 'root'
+    prompts:
+      - 'root@bananapi-zero:~#'
+    timeout:
+      minutes: 20
+- test:
+    timeout:
+      minutes: 5
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: mbl-test
+          description: "MBL basic test"
+        run:
+          steps:
+            - uname -a
+      name: mbl-test
+      path: inline/mbl-test.yaml
+    - path: automated/linux/mbl/mbl_auto.yaml
+      repository: https://git.linaro.org/landing-teams/working/mbl/test-definitions
+      name: mbl_auto
+      from: git
+      branch: linaro-mbl
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose

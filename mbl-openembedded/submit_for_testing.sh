@@ -17,6 +17,10 @@ case "${MACHINE}" in
     RPI_MODEL=bcm2710-rpi-3-b
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "?Image-*-${RPI_MODEL}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
+  bananapi-zero)
+    export DEVICE_TYPE=bananapi-zero
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "?Image-*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
+    ;;
 esac
 
 export KERNEL_URL=${PUBLISH_SERVER}${PUB_DEST}/${KERNEL_IMG}
