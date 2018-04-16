@@ -34,8 +34,9 @@ done
 
 SDCARD_RESCUE=dragonboard-820c-sdcard-rescue-${BUILD_NUMBER}
 BOOTLOADER_UFS_LINUX=dragonboard-820c-bootloader-ufs-linux-${BUILD_NUMBER}
+BOOTLOADER_UFS_AOSP=dragonboard-820c-bootloader-ufs-aosp-${BUILD_NUMBER}
 
-mkdir -p out/${SDCARD_RESCUE} out/${BOOTLOADER_UFS_LINUX}
+mkdir -p out/${SDCARD_RESCUE} out/${BOOTLOADER_UFS_LINUX} out/${BOOTLOADER_UFS_AOSP}
 
 # get LICENSE file (for Linux BSP)
 unzip -j $(basename ${QCOM_LINUX_FIRMWARE}) "*/LICENSE"
@@ -54,6 +55,18 @@ cp -a LICENSE \
    dragonboard820c/ufs-provision_toshiba.xml \
    out/${BOOTLOADER_UFS_LINUX}
 
+# bootloader_ufs_aosp
+cp -a LICENSE \
+   dragonboard820c/aosp/flashall \
+   lk_ufs_boot/build-msm8996/emmc_appsboot.mbn \
+   bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0_8096.bin,tz.mbn,xbl.elf} \
+   bootloaders-linux/prog_ufs_firehose_8996_ddr.elf \
+   dragonboard820c/aosp/{rawprogram,patch}.xml \
+   dragonboard820c/aosp/gpt_*.bin \
+   dragonboard820c/aosp/zeros_*.bin \
+   dragonboard820c/ufs-provision_toshiba.xml \
+   out/${BOOTLOADER_UFS_AOSP}
+
 # sdcard_rescue
 cp -a LICENSE out/${SDCARD_RESCUE}
 sudo ./mksdcard -x -p dragonboard820c/sdrescue.txt \
@@ -65,7 +78,8 @@ sudo ./mksdcard -x -p dragonboard820c/sdrescue.txt \
 # Final preparation of archives for publishing
 mkdir ${WORKSPACE}/out2
 for i in ${SDCARD_RESCUE} \
-         ${BOOTLOADER_UFS_LINUX} ; do
+         ${BOOTLOADER_UFS_LINUX} \
+         ${BOOTLOADER_UFS_AOSP} ; do
     (cd out/$i && md5sum * > MD5SUMS.txt)
     (cd out && zip -r ${WORKSPACE}/out2/$i.zip $i)
 done
@@ -79,8 +93,9 @@ cat > ${WORKSPACE}/out2/HEADER.textile << EOF
 h4. Bootloaders for Dragonboard 820c
 
 This page provides the bootloaders packages for the Dragonboard 820c. There are several packages:
-* *sdcard_rescue* : an SD card image that can be used to boot from SD card, and rescue a board when the onboard eMMC is empty or corrupted
-* *bootloader_ufs_linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from onboard eMMC
+* *sdcard_rescue* : an SD card image that can be used to boot from SD card, and rescue a board when the onboard UFS is empty or corrupted
+* *bootloader_ufs_linux* : includes the bootloaders and partition table (GPT) used when booting Linux images from onboard UFS
+* *bootloader_ufs_aosp* : includes the bootloaders and partition table (GPT) used when booting AOSP images from onboard UFS
 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
