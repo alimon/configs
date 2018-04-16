@@ -1,0 +1,37 @@
+- job:
+    name: leg-docker-registry-image
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: leg-aarch64
+    concurrent: false
+    display-name: 'LEG Docker registry image'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell:
+            !include-raw: leg-docker-registry-image/build.sh
+    publishers:
+        - email:
+            recipients: 'marcin.juszkiewicz@linaro.org riku.voipio@linaro.org fathi.boudra@linaro.org sdi-team@linaro.org'
+
