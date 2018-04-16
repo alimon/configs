@@ -21,7 +21,13 @@ fi
 pip install --user --force-reinstall ruamel.yaml
 
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
-export PATH=${PATH}:${PWD}/aarch64-linux-android-4.9/bin/
+mkdir -p clang
+cd clang
+wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/master/${TOOLCHAIN}.tar.gz
+tar -xf ${TOOLCHAIN}.tar.gz
+cd -
+export PATH=${PWD}/aarch64-linux-android-4.9/clang/bin/:${PWD}/bin/:${PATH}
+
 
 # Enable VFB locally until the patch is merged
 if echo "${JOB_NAME}" | grep "4.14" ;then
@@ -36,8 +42,10 @@ if [ "${JOB_NAME}" = "lkft-hikey-android-8.0-4.9" ]; then
     git fetch ssh://vishal.bhoj@android-review.linaro.org:29418/kernel/hikey-linaro refs/changes/97/18097/1 && git cherry-pick FETCH_HEAD
 fi
 
+export CLANG_TRIPLE=aarch64-linux-gnu-
+export CROSS_COMPILE=aarch64-linux-android-
 make ARCH=arm64 hikey_defconfig
-make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) -s Image-dtb
+make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image-dtb
 
 wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
 wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img

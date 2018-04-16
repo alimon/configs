@@ -8,6 +8,7 @@ export KERNEL_COMMIT=${SRCREV_kernel}
 export ANDROID_VERSION=$(echo $REFERENCE_BUILD_URL | awk -F"/" '{print$(NF-1)}')
 export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
 export CTS_VERSION=$(echo $CTS_URL | awk -F"/" '{print$(NF-1)}')
+[ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
 
 if [ ! -z "${KERNEL_DESCRIBE}" ]; then
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
