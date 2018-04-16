@@ -18,7 +18,6 @@ rm -rf ${WORKSPACE}/*
 git clone --depth 1 https://git.linaro.org/leg/sdi/docker-registry-image.git
 cd docker-registry-image
 docker build --tag "linaro/registry:2" .
-docker tag linaro/registry:2 hub.docker.com:linaro/registry:2
 docker push linaro/registry:2
 
 docker rmi linaro/registry:2
