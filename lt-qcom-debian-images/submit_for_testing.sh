@@ -6,6 +6,11 @@ git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 # main parameters
 export DEPLOY_OS=debian
 export OS_INFO=debian-${OS_FLAVOUR}
+if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
+	export QA_SERVER_PROJECT=${OS_INFO}
+elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
+	export QA_SERVER_PROJECT=${OS_INFO}-${DEVICE_TYPE}
+if
 export BOOT_OS_PROMPT=\'root@linaro-alip:~#\'
 
 # boot and rootfs parameters
@@ -23,8 +28,12 @@ export RESIZE_ROOTFS=True
 # Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
 pip install --user --force-reinstall jinja2-cli ruamel.yaml
 
-# Tests settings, thermal isn't work well in debian causes stall
-export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
+# Tests settings, thermal isn't work well in debian/db410c causes stall
+if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
+    export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
+else
+    export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
+fi
 
 python configs/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
@@ -32,7 +41,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --lava-server ${LAVA_SERVER} \
     --qa-server ${QA_SERVER} \
     --qa-server-team qcomlt \
-    --qa-server-project ${OS_INFO} \
+    --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${BUILD_NUMBER} \
     --template-path configs/lt-qcom/lava-job-definitions \
     --template-base-pre base_template.yaml \
@@ -45,7 +54,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --lava-server ${PMWG_LAVA_SERVER} \
     --qa-server ${QA_SERVER} \
     --qa-server-team qcomlt \
-    --qa-server-project ${OS_INFO} \
+    --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${BUILD_NUMBER} \
     --template-path configs/lt-qcom/lava-job-definitions \
     --template-base-pre base_template.yaml \

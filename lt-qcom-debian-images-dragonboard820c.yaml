@@ -16,6 +16,18 @@
             num-to-keep: 30
     parameters:
         - string:
+            name: DEVICE_TYPE
+            default: 'dragonboard-820c'
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+        - string:
+            name: PMWG_LAVA_SERVER
+            default: 'https://pmwg.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
             name: VENDOR
             default: 'linaro'
         - string:
@@ -84,10 +96,14 @@
         - linaro-publish-token
         - shell:
             !include-raw: lt-qcom-debian-images/publishers.sh
+        - shell:
+            !include-raw: lt-qcom-debian-images/submit_for_testing.sh
     publishers:
         - groovy-postbuild:
             script:
-                !include-raw: lt-qcom-debian-images/postbuild.groovy
+                !include-raw:
+                  - lt-qcom-debian-images/postbuild.groovy
+                  - openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'fathi.boudra@linaro.org'
         - email-ext:
