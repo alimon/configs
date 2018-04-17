@@ -102,22 +102,8 @@
             cd -
             cd /home/buildslave/srv/aosp-master/build/device/linaro/hikey/; git reset --hard; cd -;
 
-            # generate boot.img compatible with UEFI
             pushd /home/buildslave/srv/aosp-master/build/out/
-            cp ramdisk.img dist/pub/
-            cp kernel Image.gz
-            gunzip Image.gz
-            cat Image 3660-hikey960.dtb >> Image-dtb
-            wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
-            python mkbootimg \
-              --kernel Image-dtb \
-              --cmdline console="androidboot.hardware=hikey960 console=ttyFIQ0 androidboot.console=ttyFIQ0 firmware_class.path=/system/etc/firmware loglevel=15 buildvariant=userdebug" \
-              --base 0x0 --tags_offset 0x07a00000 --kernel_offset 0x00080000 \
-              --ramdisk_offset 0x07c00000 \
-              --os_version P \
-              --os_patch_level 2016-11-05 \
-              --ramdisk ramdisk.img \
-              --output boot.uefi.img
+            sudo apt-get install -y pxz
             for img in "boot.img dt.img boot.uefi.img vendor.img system.img userdata.img cache.img"; do
             pxz -9 $img
             done
