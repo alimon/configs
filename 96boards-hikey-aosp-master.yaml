@@ -64,7 +64,7 @@
             java -version
 
             sudo apt-get update
-            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz
 
             wget -q http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
               http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb \
@@ -118,7 +118,6 @@
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
             cp -a /home/buildslave/srv/aosp-master/build/out/*.xml /home/buildslave/srv/aosp-master/build/out/*.json ${WORKSPACE}/
 
-            apt-get install -y pxz
             cd build/out
             for image in "boot.img" "vendor.img" "boot_fat.uefi.img" "system.img" "userdata.img"  "cache.img"; do
               if [ -f ${image} ]; then
