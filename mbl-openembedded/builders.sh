@@ -124,6 +124,12 @@ case "${MACHINE}" in
     bitbake -c cleansstate u-boot-fslc mbl-boot-scr
     set -e
     ;;
+  bananapi-zero*)
+    # Temporary sstate cleanup to force warp7 firmware to be re-generated each time
+    set +e
+    bitbake -c cleansstate u-boot-bpi mbl-boot-scr
+    set -e
+    ;;
 esac
 
 time bitbake ${IMAGES}
