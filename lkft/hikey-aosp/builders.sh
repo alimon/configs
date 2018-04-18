@@ -26,7 +26,7 @@ cd clang
 wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/master/${TOOLCHAIN}.tar.gz
 tar -xf ${TOOLCHAIN}.tar.gz
 cd -
-export PATH=${PWD}/aarch64-linux-android-4.9/clang/bin/:${PWD}/bin/:${PATH}
+export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/clang/bin/:${PATH}
 
 
 # Enable VFB locally until the patch is merged
