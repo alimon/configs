@@ -6,7 +6,7 @@ kolla_branch=${BRANCH}
 kolla_ldc=${DEVCLOUD}
 kolla_options=
 
-if [ -z "${kolla_branch}" ]; then
+if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
     kolla_branch=master
     kolla_tag=rocky-$(date +"%Y%m%d") # use YYYYMMDD for tags
 else
