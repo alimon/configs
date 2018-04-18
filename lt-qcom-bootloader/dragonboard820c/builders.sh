@@ -50,7 +50,7 @@ cp -a LICENSE \
    bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0_8096.bin,tz.mbn,xbl.elf} \
    bootloaders-linux/prog_ufs_firehose_8996_ddr.elf \
    dragonboard820c/linux/{rawprogram,patch}.xml \
-   dragonboard820c/linux/gpt_*.bin \
+   dragonboard820c/linux/gpt_{main,backup}*.bin \
    dragonboard820c/linux/zeros_*.bin \
    dragonboard820c/ufs-provision_toshiba.xml \
    out/${BOOTLOADER_UFS_LINUX}
@@ -62,7 +62,7 @@ cp -a LICENSE \
    bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0_8096.bin,tz.mbn,xbl.elf} \
    bootloaders-linux/prog_ufs_firehose_8996_ddr.elf \
    dragonboard820c/aosp/{rawprogram,patch}.xml \
-   dragonboard820c/aosp/gpt_*.bin \
+   dragonboard820c/aosp/gpt_{main,backup}*.bin \
    dragonboard820c/aosp/zeros_*.bin \
    dragonboard820c/ufs-provision_toshiba.xml \
    out/${BOOTLOADER_UFS_AOSP}
