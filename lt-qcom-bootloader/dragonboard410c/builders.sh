@@ -9,7 +9,7 @@ wget -q ${QCOM_LINUX_FIRMWARE}
 echo "${QCOM_LINUX_FIRMWARE_MD5}  $(basename ${QCOM_LINUX_FIRMWARE})" > MD5
 md5sum -c MD5
 
-unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*"
+unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*" "*/loaders/*"
 
 # Get the Android compiler
 git clone ${LK_GCC_GIT} --depth 1 -b ${LK_GCC_REL} android-gcc
@@ -51,12 +51,17 @@ md5sum -c MD5
 cp -a LICENSE \
    dragonboard410c/linux/flashall \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
+   bootloaders-linux/prog_emmc_firehose_8916.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
+   dragonboard410c/linux/{rawprogram,patch}.xml \
+   dragonboard410c/linux/gpt_{main,backup}0.bin \
    out/${BOOTLOADER_EMMC_LINUX}
 
 # no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
 sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/linux/partitions.txt
 sudo sgdisk -bgpt.bin gpt.img
+# NOTE: gpt_both0.bin here does not relate to gpt_main0/gpt_backup0 that exist from db-boot-tools
+#       gpt_both0 is generated from partition.txt and the others from partition.xml
 ./mkgpt -d -i gpt.bin -o out/${BOOTLOADER_EMMC_LINUX}/gpt_both0.bin
 
 # bootloader_emmc_aosp
