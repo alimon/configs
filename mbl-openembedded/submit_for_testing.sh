@@ -20,6 +20,7 @@ case "${MACHINE}" in
   bananapi-zero)
     export DEVICE_TYPE=bananapi-zero
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "?Image-*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
+    DISK_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "${IMAGES}-${MACHINE}-*-${BUILD_NUMBER}.rootfs.sunxi-sdimg" | xargs -r basename)
     ;;
 esac
 
