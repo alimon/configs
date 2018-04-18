@@ -2,12 +2,12 @@
 
 # Submit QEMU jobs
 case "${MACHINE}" in
-#  am57xx-evm)
-#    DEVICE_TYPE=qemu_arm
-#    ;;
-#  hikey)
-#    DEVICE_TYPE=qemu_arm64
-#    ;;
+  am57xx-evm)
+    DEVICE_TYPE=qemu_arm
+    ;;
+  hikey)
+    DEVICE_TYPE=qemu_arm64
+    ;;
   intel-core2-32)
     DEVICE_TYPE=qemu_x86_64
     ;;
