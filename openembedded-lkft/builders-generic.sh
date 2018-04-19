@@ -127,14 +127,7 @@ SERIAL_CONSOLES_append_hikey = " 115200;ttyAMA2"
 EOF
 
 custom_kernel_conf=$(find ../layers/meta-96boards/recipes-kernel -name custom-kernel-info.inc)
-cat << EOF > ${custom_kernel_conf}
-KERNEL_COMMIT = "${KERNEL_COMMIT}"
-KERNEL_REPO = "${KERNEL_REPO/http*:/git:}"
-KERNEL_BRANCH = "${KERNEL_BRANCH}"
-KERNEL_CONFIG_aarch64 = "${KERNEL_CONFIG}"
-KERNEL_CONFIG_arm = "${KERNEL_CONFIG}"
-KERNEL_CONFIG_x86-64 = "${KERNEL_CONFIG}"
-EOF
+mv ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
 ###
 
 # add useful debug info

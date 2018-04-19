@@ -108,14 +108,21 @@
             # Determine the kernel commit if it isn't given
             [ -z "${KERNEL_COMMIT}" ] && KERNEL_COMMIT=$(git ls-remote --heads ${KERNEL_REPO} ${KERNEL_BRANCH} | cut -f1)
 
+            cat << EOF > ${WORKSPACE}/custom-kernel-info.inc.tmp
+            KERNEL_COMMIT = "${KERNEL_COMMIT}"
+            KERNEL_REPO = "${KERNEL_REPO/http*:/git:}"
+            KERNEL_BRANCH = "${KERNEL_BRANCH}"
+            KERNEL_CONFIG_aarch64 = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_arm = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_x86-64 = "${KERNEL_CONFIG}"
+            EOF
+
             echo "IMAGES=rpb-console-image" > parameters
             echo "MANIFEST_URL=https://github.com/96boards/oe-rpb-manifest.git" >> parameters
             echo "MANIFEST_BRANCH=rocko" >> parameters
             echo "DISTRO=rpb" >> parameters
             echo "MACHINE=${MACHINE}" >> parameters
             echo "DEVICE_TYPE=${DEVICE_TYPE}" >> parameters
-            echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> parameters
-            echo "KERNEL_COMMIT=${KERNEL_COMMIT}" >> parameters
             cat parameters
 
             echo "#${BUILD_NUMBER}-${KERNEL_COMMIT:0:8}" > ${WORKSPACE}/version.txt
