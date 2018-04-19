@@ -37,7 +37,7 @@ export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-6-2017-
 export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
 
 # Set build environment variables
-LANG=C
+export LANG=C.UTF-8
 ZEPHYR_BASE=${WORKSPACE}
 PATH=${ZEPHYR_BASE}/scripts:${PATH}
 OUTDIR=${HOME}/srv/zephyr/${ZEPHYR_GCC_VARIANT}/${PLATFORM}
