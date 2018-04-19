@@ -20,7 +20,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="python-pip android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail"
+pkg_list="python-pip android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail pxz"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
@@ -155,9 +155,14 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.wic \
       ${DEPLOY_DIR_IMAGE}/*.stimg
 
-# FIXME: Sparse images here, until it gets done by OE
+# FIXME: Sparse and converted images here, until it gets done by OE
 case "${MACHINE}" in
-  juno|stih410-b2260|orangepi-i96|intel-core2-32)
+  juno|stih410-b2260|orangepi-i96)
+    ;;
+  intel-core2-32)
+    for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
+      pxz ${rootfs}
+    done
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
