@@ -153,6 +153,7 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.wic \
+      ${DEPLOY_DIR_IMAGE}/*.iso \
       ${DEPLOY_DIR_IMAGE}/*.stimg
 
 # FIXME: Sparse and converted images here, until it gets done by OE
