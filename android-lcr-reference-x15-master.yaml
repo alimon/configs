@@ -1,14 +1,14 @@
 - job:
-    name: android-lcr-member-x15-master
+    name: android-lcr-reference-x15-master
     project-type: freestyle
     defaults: global
     properties:
         - authorization:
             anonymous:
                 - job-read
-                - job-extended-read
             linaro:
                 - job-build
+                - job-extended-read
                 - job-cancel
         - build-discarder:
             days-to-keep: 60
@@ -37,14 +37,14 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'x15-o-workarounds'
+                        pattern: 'x15-p-workarounds'
                       - compare-type: 'PLAIN'
                         pattern: 'MASTER-RLCR-PATCHSET'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'device/linaro/common'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-oreo'
+                        branch-pattern: 'linaro-p-preview'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'platform/manifest'
                   branches:
@@ -53,8 +53,6 @@
                   file-paths:
                       - compare-type: 'PLAIN'
                         pattern: 'x15.xml'
-                      - compare-type: 'PLAIN'
-                        pattern: 'linaro-pm-extras.xml'
                       - compare-type: 'PLAIN'
                         pattern: 'linaro.xml'
                       - compare-type: 'PLAIN'
@@ -66,15 +64,12 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'lcr-member-x15-master'
+                        pattern: 'lcr-reference-x15-master'
     wrappers:
         - timestamps
         - timeout:
             timeout: 500
-        - ssh-agent-credentials:
-                users:
-                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
-        !include: android-lcr/x15/builders.yaml.inc
+        !include: android-lcr/x15/builders-v2.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc
