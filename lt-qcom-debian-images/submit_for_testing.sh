@@ -10,7 +10,10 @@ if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
 	export QA_SERVER_PROJECT=${OS_INFO}
 elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
 	export QA_SERVER_PROJECT=${OS_INFO}-${DEVICE_TYPE}
-if
+else
+	echo "Device ${DEVICE_TYPE} not supported for testing"
+	exit 0
+fi
 export BOOT_OS_PROMPT=\'root@linaro-alip:~#\'
 
 # boot and rootfs parameters
