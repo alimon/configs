@@ -1,0 +1,34 @@
+- job:
+    name: trigger-lt-qcom-linux-automerge
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build
+    display-name: 'Trigger for Qualcomm Linux Automerge'
+    scm:
+        - git:
+            url:  https://git.linaro.org/landing-teams/working/qualcomm/configs.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+        - timed: '@weekly'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'lt-qcom-linux-automerge'
