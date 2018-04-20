@@ -91,18 +91,17 @@ EOF
 	export CONFIG_PATH=${AUTOMERGE_PATH}/automerge-ci.conf
 fi
 
-AUTOMERGE_CONFIG=$(cat ${CONFIG_PATH})
+AUTOMERGE_CONFIG=$(awk '{ print $0 " \\" }' ${CONFIG_PATH} | sed 's/.$//')
 
 # * Disable exit when fail to collect build logs
 set +e
 yes | ci-merge -l ${INTEGRATION_REPO_PATH} -r ${INTEGRATION_REPO_URL} -i ${INTEGRATION_BRANCH} | tee automerge.log
 AUTOMERGE_EXIT_CODE=$?
-AUTOMERGE_BRANCH_FAILED=$(grep "Merge failed," automerge.log)
+AUTOMERGE_BRANCH_FAILED=$(grep 'Merge failed' automerge.log | awk '{ print $0 " \\" }' | sed 's/.$//')
 set -e
 popd
 
-echo "AUTOMERGE_CONFIG=\"${AUTOMERGE_CONFIG}\"" > automerge_result_variables
-echo "AUTOMERGE_BRANCH_FAILED=\"${AUTOMERGE_BRANCH_FAILED}\"" >> automerge_result_variables
+echo "AUTOMERGE_CONFIG=${AUTOMERGE_CONFIG}" > automerge_result_variables
+echo "AUTOMERGE_BRANCH_FAILED=${AUTOMERGE_BRANCH_FAILED}" >> automerge_result_variables
 echo "AUTOMERGE_EXIT_CODE=${AUTOMERGE_EXIT_CODE}" >> automerge_result_variables
-echo "INTEGRATION_REPO_PATH=\"${INTEGRATION_REPO_PATH}\"" >> automerge_result_variables
-cat automerge_result_variables
+echo "INTEGRATION_REPO_PATH=${INTEGRATION_REPO_PATH}" >> automerge_result_variables
