@@ -13,30 +13,6 @@ echo "KERNEL_CI_BRANCH: ${KERNEL_CI_BRANCH}"
 
 set -ex
 
-function build_integration_kernel()
-{
-	export ARCH=$1
-	export KERNEL_CONFIGS=$2
-
-	toolchain_url_arm=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/arm-linux-gnueabihf/gcc-linaro-6.3.1-2017.02-x86_64_arm-linux-gnueabihf.tar.xz
-	toolchain_url_arm64=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
-	toolchain_url=toolchain_url_$ARCH
-	toolchain_url=${!toolchain_url}
-
-	tcdir=${HOME}/srv/toolchain
-	tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
-
-	export CROSS_COMPILE="ccache $(basename $(ls -1 ${tcbindir}/*-gcc) gcc)"
-	export PATH=${tcbindir}:$PATH
-
-	make distclean
-	make ${KERNEL_CONFIGS}
-	make savedefconfig
-	cp defconfig arch/${ARCH}/configs
-
-	make KERNELRELEASE=qcomlt-integration-${ARCH} -j$(nproc) Image
-}
-
 git config --global user.name "Linaro CI"
 git config --global user.email "ci_notify@linaro.org"
 git config --global core.sshCommand "ssh -F ${HOME}/qcom.sshconfig"
@@ -120,23 +96,13 @@ AUTOMERGE_CONFIG=$(cat ${CONFIG_PATH})
 # * Disable exit when fail to collect build logs
 set +e
 yes | ci-merge -l ${INTEGRATION_REPO_PATH} -r ${INTEGRATION_REPO_URL} -i ${INTEGRATION_BRANCH} | tee automerge.log
-ci_exit=$?
+AUTOMERGE_EXIT_CODE=$?
 AUTOMERGE_BRANCH_FAILED=$(grep "Merge failed," automerge.log)
 set -e
 popd
 
 echo "AUTOMERGE_CONFIG=\"${AUTOMERGE_CONFIG}\"" > automerge_result_variables
 echo "AUTOMERGE_BRANCH_FAILED=\"${AUTOMERGE_BRANCH_FAILED}\"" >> automerge_result_variables
+echo "AUTOMERGE_EXIT_CODE=${AUTOMERGE_EXIT_CODE}" >> automerge_result_variables
+echo "INTEGRATION_REPO_PATH=\"${INTEGRATION_REPO_PATH}\"" >> automerge_result_variables
 cat automerge_result_variables
-
-if [ $ci_exit -ne 0 ]; then
-	exit $ci_exit
-fi
-
-cd ${INTEGRATION_REPO_PATH}
-build_integration_kernel "arm" "multi_v7_defconfig"
-build_integration_kernel "arm64" "defconfig"
-
-if [ ! -z ${KERNEL_CI_REPO_URL} ]; then
-	git push -f ${KERNEL_CI_REPO_URL} ${INTEGRATION_BRANCH}:${KERNEL_CI_BRANCH}
-fi
