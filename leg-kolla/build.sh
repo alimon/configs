@@ -55,7 +55,7 @@ kolla_namespace=linaro
                  --logs-dir logs/debian-source \
                  --pull \
                  --push \
-                 --retries 0 \
+                 --retries ${RETRIES_OPT} \
                  --threads ${THREADS_OPT} \
                  --tag ${kolla_tag} \
                  --type source \
