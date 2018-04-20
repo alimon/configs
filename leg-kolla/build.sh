@@ -14,7 +14,7 @@ else
         kolla_tag=queens-$(date +"%Y%m%d") # use YYYYMMDD for tags
     else
         kolla_tag=ldc-queens-$(date +"%Y%m%d") # use YYYYMMDD for tags
-        kolla_options="--template-override ./Linaro-overlay/linaro-override.j2 --docker-dir ./Linaro-overlay/docker/"
+        kolla_options="--template-override ../Linaro-overlay/linaro-override.j2"
     fi
 fi
 
