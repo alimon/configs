@@ -1,0 +1,54 @@
+- job:
+    name: jdk11-jcstress-test-publish-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Reports are published to http://openjdk.linaro.org/jcstress-nightly-runs/
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    parameters:
+        - string:
+            name: PUBLISH_DEST
+            default: ''
+        - string:
+            name: PUBLISH_HOST
+            default: ''
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK 11 - Publish jcstress report'
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            # openjdk-testing user id
+            users:
+                - '744cffb4-9ce1-4856-b103-9fdda06dad36'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+
+            PERSIST=$HOME/srv/openjdk11
+            SCRIPT_DIR=$PERSIST/jcstress-test-scripts
+            export JDK_VERSION=11
+
+            if [ -d $SCRIPT_DIR ]; then
+                (cd $SCRIPT_DIR; git pull)
+            else
+                git clone https://git.linaro.org/leg/openjdk/jcstress-test-scripts.git $SCRIPT_DIR
+            fi
+            export TOP_DIR=$PERSIST
+
+            $SCRIPT_DIR/jcstress-publish $PUBLISH_DEST
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
