@@ -56,6 +56,7 @@ kolla_namespace=linaro
                  --pull \
                  --push \
                  --retries 0 \
+                 --threads ${THREADS_OPT} \
                  --tag ${kolla_tag} \
                  --type source \
                  --namespace ${kolla_namespace} || true
