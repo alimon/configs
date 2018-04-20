@@ -39,6 +39,15 @@ function build_integration_kernel()
 
 git config --global user.name "Linaro CI"
 git config --global user.email "ci_notify@linaro.org"
+git config --global core.sshCommand "ssh -F ${HOME}/qcom.sshconfig"
+
+cat << EOF > ${HOME}/qcom.sshconfig
+Host git.linaro.org
+    User git
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking no
+EOF
+chmod 0600 ${HOME}/qcom.sshconfig
 
 # Use a persistent storage to avoid clone every time the integration repository
 PERSISTENT_PATH=${HOME}/srv/qcomlt/linux_automerge
