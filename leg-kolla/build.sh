@@ -53,6 +53,8 @@ kolla_namespace=linaro
                  --format none \
                  ${kolla_options} \
                  --logs-dir logs/debian-source \
+                 --config-file ../linaro.conf \
+                 --profile linaro \
                  --pull \
                  --retries ${RETRIES_OPT} \
                  --threads ${THREADS_OPT} \
