@@ -1,5 +1,5 @@
 - job:
-    name: lava-dispatcher
+    name: lava-unit-tests
     project-type: freestyle
     defaults: global
     logrotate:
@@ -17,7 +17,7 @@
                 - job-cancel
     disabled: false
     node: lavabot
-    display-name: 'PEP8 and Unit Test CI Job for lava-dispatcher'
+    display-name: 'PEP8 and Unit Test CI Job for lava'
     triggers:
         - gerrit:
             server-name: 'review.linaro.org'
@@ -32,7 +32,7 @@
             custom-url: '${BUILD_URL}/console'
             projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'lava/lava-dispatcher'
+                  project-pattern: 'lava/lava'
                   branches:
                     - branch-compare-type: 'PLAIN'
                       branch-pattern: 'master'
@@ -54,15 +54,12 @@
             set +x
             git checkout -q FETCH_HEAD
             git log -n3
-            set -e
-            echo
-            echo "Running test for python2 and 3"
-            echo
-            ./ci-run -a
+
+            ./ci-run
             echo
             echo "Running package test build"
             echo
-            /usr/share/lava-server/debian-dev-build.sh -p lava-dispatcher
+            ./share/debian-dev-build.sh -p lava
         - build-name-setter:
             name: 'version.txt'
             file: true
