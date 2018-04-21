@@ -59,7 +59,7 @@ PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 # Construct post-build-lava parameters
 source build-configs/${BUILD_CONFIG_FILENAME}
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
+DEVICE_TYPE=hi6220-hikey
 TARGET_PRODUCT=${TARGET_PRODUCT}
 MAKE_TARGETS=${MAKE_TARGETS}
 JOB_NAME=${JOB_NAME}
