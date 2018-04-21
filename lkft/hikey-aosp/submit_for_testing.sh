@@ -23,7 +23,7 @@ if curl --output /dev/null --silent --head --fail "${REFERENCE_BUILD_URL}/vendor
     echo "This reference build comes with a vendor partition"
 else
     echo "No vendor partition, so flashing cache partition from the job instead"
-    sed -i "s|vendor|cache|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+    sed -i "s|vendor.img.xz|cache.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 fi
 
 python configs/openembedded-lkft/submit_for_testing.py \
