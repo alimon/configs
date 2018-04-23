@@ -3,9 +3,9 @@ device_type: sun8i-h2-plus-bananapi-m2-zero
 job_name: MBL ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 timeouts:
   job:
-    minutes: 10
+    minutes: 100
   action:
-    minutes: 5
+    minutes: 50
   connection:
     minutes: 2
 priority: medium
@@ -14,12 +14,13 @@ visibility: public
 actions:
 - deploy:
     timeout:
-      minutes: 5
+      minutes: 50
     to: u-boot-ums
     os: oe
     image:
       url: ${IMAGE_URL}
-      root_partition: 1
+      compression: gz
+      root_partition: 2
 
 - boot:
     method: u-boot
