@@ -1,0 +1,40 @@
+- job:
+    name: jdk-clean-job
+    project-type: freestyle
+    defaults: global
+    description: |
+        Clean up the machine after or before other jobs.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            num-to-keep: 10
+            artifact-num-to-keep: 1
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK - Clean job'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+            #set -exu
+
+            # Kill all orphaned java processes
+            ps --no-headers --ppid 1 --format "pid cmd"  | tr -s " " | grep java | cut -d " " -f 1 | xargs kill -9
+
+            # Kill all jstatd processes. These can accumulate.
+            killall -9 jstatd
+
+            # These can accumulate too.
+            killall -9 Xvfb
+
+            ps --forest -aux
+    publishers:
+        - email:
+            recipients: 'stuart.monteith@linaro.org'
