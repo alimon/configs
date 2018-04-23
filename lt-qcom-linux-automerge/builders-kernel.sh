@@ -27,7 +27,14 @@ function build_integration_kernel()
 }
 
 if [ ${AUTOMERGE_EXIT_CODE} -ne 0 ]; then
+	echo "ERROR: Automerge failed, returned ${AUTOMERGE_EXIT_CODE}"
 	exit ${AUTOMERGE_EXIT_CODE}
+fi
+
+if [ ! -z ${AUTOMERGE_BRANCH_FAILED} ]; then
+	echo "ERROR: Automerge failed,"
+	echo "${AUTOMERGE_BRANCH_FAILED}"
+	exit 1
 fi
 
 cd ${INTEGRATION_REPO_PATH}
