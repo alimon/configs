@@ -35,6 +35,13 @@
         - timestamps
     builders:
         - multijob:
+            name: 'OpenJDK Clean job'
+            condition: SUCCESSFUL
+            projects:
+                - name: jdk-clean-job
+                  current-parameters: true
+                  kill-phase-on: NEVER
+        - multijob:
             name: 'Build j2sdk images'
             condition: SUCCESSFUL
             projects:
