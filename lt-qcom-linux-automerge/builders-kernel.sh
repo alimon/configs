@@ -31,7 +31,7 @@ if [ ${AUTOMERGE_EXIT_CODE} -ne 0 ]; then
 	exit ${AUTOMERGE_EXIT_CODE}
 fi
 
-if [ ! -z ${AUTOMERGE_BRANCH_FAILED} ]; then
+if [ ! -z "${AUTOMERGE_BRANCH_FAILED}" ]; then
 	echo "ERROR: Automerge failed,"
 	echo "${AUTOMERGE_BRANCH_FAILED}"
 	exit 1
