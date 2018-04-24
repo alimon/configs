@@ -71,5 +71,4 @@ kolla_namespace=linaro
                  --threads ${THREADS_OPT} \
                  --tag ${kolla_tag} \
                  --type source \
-                 --namespace ${kolla_namespace} || true
-
+                 --namespace ${kolla_namespace}
