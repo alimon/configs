@@ -49,6 +49,7 @@ USE_CCACHE=1
 export CCACHE_DIR CCACHE_UNIFY CCACHE_SLOPPINESS USE_CCACHE
 env |grep '^ZEPHYR'
 mkdir -p "${CCACHE_DIR}"
+rm -rf ${OUTDIR}
 
 echo ""
 echo "########################################################################"
