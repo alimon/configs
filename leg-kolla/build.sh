@@ -33,6 +33,8 @@ chmod 0600 ${HOME}/.docker/config.json
 
 rm -rf ${WORKSPACE}/*
 
+wget -q http://git.linaro.org/ci/job/configs.git/plain/leg-kolla/linaro.conf -O ${WORKSPACE}/linaro.conf
+
 git clone --depth 1 --branch ${kolla_branch} https://git.openstack.org/openstack/kolla
 
 if [ -n ${kolla_ldc} ]; then
@@ -53,7 +55,7 @@ kolla_namespace=linaro
                  --format none \
                  ${kolla_options} \
                  --logs-dir logs/debian-source \
-                 --config-file ../linaro.conf \
+                 --config-file ${WORKSPACE}/linaro.conf \
                  --profile linaro \
                  --pull \
                  --retries ${RETRIES_OPT} \
