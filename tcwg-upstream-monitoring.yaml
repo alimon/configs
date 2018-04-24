@@ -1,16 +1,3 @@
-- scm:
-    name: gcc
-    scm:
-        - git:
-            url: https://git-us.linaro.org/toolchain/gcc.git
-            refspec: +refs/heads/*:refs/remotes/origin/*
-            basedir: gcc
-            scm-name: GCC
-            skip-tag: true
-            wipe-workspace: false
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
-            clean:
-                before: true
 - job:
     name: tcwg-upstream-monitoring
     project-type: matrix
@@ -55,6 +42,18 @@
     child-workspace: $branch
     concurrent: true
     display-name: 'TCWG Upstream Monitoring'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/gcc.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            name: gcc
+            basedir: gcc
+            scm-name: GCC
+            skip-tag: true
+            wipe-workspace: false
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            clean:
+                before: true
     axes:
         - axis:
             type: user-defined
