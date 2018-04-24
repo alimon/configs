@@ -9,7 +9,7 @@ export OS_INFO=debian-${OS_FLAVOUR}
 if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
 	export QA_SERVER_PROJECT=${OS_INFO}
 elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
-	export QA_SERVER_PROJECT=${OS_INFO}-${DEVICE_TYPE}
+	export QA_SERVER_PROJECT=${DEPLOY_OS}-${DEVICE_TYPE}
 else
 	echo "Device ${DEVICE_TYPE} not supported for testing"
 	exit 0
