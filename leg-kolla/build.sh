@@ -25,6 +25,15 @@ trap cleanup_exit INT TERM EXIT
 cleanup_exit()
 {
     rm -rf ${HOME}/.docker
+
+    docker images | grep ${kolla_tag} | sort
+
+    # remove all images as they are pushed to hub.docker.com and won't be used
+    # do in a loop as we remove in random order and some have children images
+    for run in 1 2 3 4 5
+    do
+	    docker images | grep ${kolla_tag} | awk '{print $3}' | xargs docker rmi -f 2>&1 >/dev/null || true
+    done
 }
 
 mkdir -p ${HOME}/.docker
@@ -64,11 +73,3 @@ kolla_namespace=linaro
                  --type source \
                  --namespace ${kolla_namespace} || true
 
-docker images | grep ${kolla_tag} | sort
-
-# remove all images as they are pushed to hub.docker.com and won't be used
-# do in a loop as we remove in random order and some have children images
-for run in 1 2 3 4 5
-do
-    docker images | grep ${kolla_tag} | awk '{print $3}' | xargs docker rmi -f 2>&1 >/dev/null || true
-done
