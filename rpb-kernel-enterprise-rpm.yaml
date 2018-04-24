@@ -25,9 +25,9 @@
             default: 'https://github.com/Linaro/rpk.git'
         - string:
             name: TARGET_REPO
-            default: 'ERP-RPM:17.08:staging'
+            default: 'ERP-RPM:staging'
     disabled: false
-    node: docker-jessie-rp
+    node: docker-stretch-arm64
     display-name: 'Reference Platform - Linux Kernel (EE) for RPM'
     scm:
         - git:
@@ -59,7 +59,7 @@
             set -ex
 
             sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
-            sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y -q osc rpm-common xz-utils
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y -q osc rpm-common
 
             cat > $HOME/.oscrc <<EOF
             [general]
@@ -82,7 +82,8 @@
             kernel_rpm_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
             kernel_git=$(git rev-parse --short=7 HEAD)
             pname=linux-${kernel_rpm_pkg_version}-${kernel_git}
-            git archive --prefix=${pname}/ --format=tar ${kernel_git} | xz -c > ~/${WORKSPACE}/${TARGET_REPO}/kernel-aarch64/${pname}.tar.xz
+            export XZ_DEFAULTS="--threads 0"
+            git archive --prefix=${pname}/ --format=tar ${kernel_git} | xz -c > ${WORKSPACE}/${TARGET_REPO}/kernel-aarch64/${pname}.tar.xz
 
             # Update OBS checkout
             cd ${WORKSPACE}/${TARGET_REPO}/kernel-aarch64
