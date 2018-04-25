@@ -24,7 +24,7 @@ fi
 export SNAPSHOTS_URL=https://snapshots.linaro.org
 export FILE_EXTENSION=tar.bz2
 if [ "${MAKE_TARGETS}" = "droidcore" ]; then
-    if [ -z "$IMAGE_EXTENSION" ]; then
+    if [ -n "${IMAGE_EXTENSION}" ]; then
         export FILE_EXTENSION=${IMAGE_EXTENSION}
     else
         export FILE_EXTENSION=img
