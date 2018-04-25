@@ -72,3 +72,8 @@ kolla_namespace=linaro
                  --tag ${kolla_tag} \
                  --type source \
                  --namespace ${kolla_namespace}
+
+for image in $(docker images | grep ${kolla_tag} | cut -d" " -f1)
+do
+	docker push $image
+done
