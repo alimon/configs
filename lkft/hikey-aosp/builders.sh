@@ -21,12 +21,8 @@ fi
 pip install --user --force-reinstall ruamel.yaml
 
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
-mkdir -p clang
-cd clang
-wget https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/master/${TOOLCHAIN}.tar.gz
-tar -xf ${TOOLCHAIN}.tar.gz
-cd -
-export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/clang/bin/:${PATH}
+git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
+export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/linux-x86/${TOOLCHAIN}/bin/:${PATH}
 
 
 # Enable VFB locally until the patch is merged
