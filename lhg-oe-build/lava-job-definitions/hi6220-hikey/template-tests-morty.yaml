@@ -2,6 +2,7 @@ device_type: hi6220-hikey-r2
 tags:
   - static-ip
   - 4k-hdmi-dongle
+  - usb-mouse
 job_name: lhg-oe-eme-clearkey-test-${MANIFEST_BRANCH}-${BUILD_NUMBER}
 timeouts:
   job:
@@ -110,15 +111,14 @@ actions:
     - "root@hikey:~#"
     timeout:
       minutes: 5
-    method: uefi-menu
-    commands: fastboot
+    method: grub
+    commands: installed
     protocols:
       lava-lxc:
-      # other action could be boot-fastboot
-      - action: uefi-commands
+      - action: grub-sequence-action
         request: pre-os-command
         timeout:
-          minutes: 5
+          minutes: 2
 
 - test:
    namespace: hikey-oe
