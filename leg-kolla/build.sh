@@ -50,6 +50,12 @@ if [ -n ${kolla_ldc} ]; then
     git clone --depth 1 https://git.linaro.org/leg/sdi/kolla/ldc-overlay.git Linaro-overlay
 fi
 
+# Rocky always tries to build it and it fails for us
+# to be debugged later
+if [ ${kolla_branch} == "master" ]; then
+    rm -rf kolla/docker/neutron/neutron-server-opendaylight
+fi
+
 virtualenv --python=/usr/bin/python2 venv-for-kolla
 . venv-for-kolla/bin/activate
 
