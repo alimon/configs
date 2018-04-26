@@ -3,7 +3,7 @@
 set -ex
 
 [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
-[ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="low"
+[ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="25"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
 [ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=lkft
 [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
