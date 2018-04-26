@@ -79,7 +79,14 @@ kolla_namespace=linaro
                  --type source \
                  --namespace ${kolla_namespace}
 
-for image in $(docker images | grep ${kolla_tag} | cut -d" " -f1)
+docker images | grep ${kolla_tag} | cut -d" " -f1 >list-of-images
+
+amount=$(wc -l list-of-images | cut -d" " -f1 | sort)
+current=0
+
+for image in $(cat list-of-images)
 do
+	echo "Pushing ${current} of ${amount} - ${image}"
 	docker push $image
+	((current++))
 done
