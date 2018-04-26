@@ -9,8 +9,8 @@ set -ex
 trap "build_container_cleanup" EXIT HUP INT QUIT TRAP PIPE TERM
 BUILD_SHELL="build_container_exec bash"
 
-gcc4_9ver=gcc=gcc.git~linaro-4.9-2016.02
-gcc5ver=gcc=gcc.git~linaro-5.3-2016.05
+gcc4_9ver=gcc=gcc.git~linaro/gcc-4_9-branch
+gcc5ver=gcc=gcc.git~linaro/gcc-5-branch
 gcc6ver=gcc=gcc.git~linaro-6.1-2016.08
 
 gccnum=$(echo ${testname} | sed 's/.*_gcc//') # eg 6
