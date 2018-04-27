@@ -1,5 +1,5 @@
 - job:
-    name: lava-dispatcher-docker
+    name: lava-dispatcher-daily-docker
     project-type: freestyle
     defaults: global
     properties:
@@ -17,10 +17,10 @@
     parameters:
         - string:
             name: REPOSITORY
-            default: 'production'
+            default: 'staging'
     disabled: false
     node: build-amd64
-    display-name: 'LAVA Dispatcher Production Docker images'
+    display-name: 'LAVA Dispatcher Docker images based on staging-repo'
     scm:
         - git:
             url: https://git.linaro.org/ci/dockerfiles.git
@@ -34,7 +34,7 @@
         - pollurl:
             cron: '@daily'
             urls:
-              - url: 'http://images.validation.linaro.org/production-repo/services-trace.txt'
+              - url: 'http://images.validation.linaro.org/staging-repo/services-trace.txt'
                 check-content:
                 - simple: true
     wrappers:
