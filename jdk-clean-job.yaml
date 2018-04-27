@@ -29,10 +29,13 @@
             ps --no-headers --ppid 1 --format "pid cmd"  | tr -s " " | grep java | cut -d " " -f 1 | xargs kill -9
 
             # Kill all jstatd processes. These can accumulate.
-            killall -9 jstatd
+            killall --verbose -9 jstatd
+
+            # Javac jobs can accumulate.
+            killall --verbose -9 javac
 
             # These can accumulate too.
-            killall -9 Xvfb
+            killall --verbose -9 Xvfb
 
             ps --forest -aux
     publishers:
