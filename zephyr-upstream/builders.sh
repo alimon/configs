@@ -18,7 +18,7 @@ sudo pip3 install pyelftools pykwalify
 #rm -rf cmake-${cmake_version}-Linux-x86_64
 #cmake -version
 
-git clone -b ${BRANCH} https://git.linaro.org/lite/zephyr.git ${WORKSPACE}
+git clone -b ${BRANCH} https://github.com/zephyrproject-rtos/zephyr.git ${WORKSPACE}
 git clean -fdx
 if [ -n "${GIT_COMMIT}" ]; then
   git checkout ${GIT_COMMIT}
