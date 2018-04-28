@@ -14,24 +14,27 @@ timeouts:
 {% endblock global_settings %}
 
 {% block priority %}{{LAVA_JOB_PRIORITY}}{% endblock priority %}
-{% block visibility %}public{% endblock visibility %}
+{% block visibility %}
+visibility:
+  group:
+      - lkft
+{% endblock visibility %}
 
 {% block metadata %}
   android.build: {{ANDROID_META_BUILD}}
   android.name: {{ANDROID_META_NAME}}
   android.url: {{ANDROID_META_URL}}
-  android.fastboot: "platform-tools_r26.0.0"
+  android.fastboot: "platform-tools_r27.0.1"
 {% endblock metadata %}
 
 {% block protocols %}
 protocols:
   lava-lxc:
     name: lxc-target
-    template: debian
-    distribution: debian
-    release: jessie
+    template: ubuntu
+    distribution: ubuntu
+    release: xenial
     arch: amd64
-    mirror: http://mirror.bytemark.co.uk/debian
 {% endblock protocols %}
 
 {% block actions %}
@@ -42,13 +45,16 @@ protocols:
     to: lxc
     packages:
     - wget
+    - zip
     - unzip
-    os: debian
+    os: ubuntu
 
 - boot:
     namespace: tlxc
     prompts:
     - 'root@(.*):/#'
+    - 'console:/'
+    - ':/'
     timeout:
       minutes: 5
     method: lxc
@@ -65,11 +71,11 @@ protocols:
         metadata:
           format: Lava-Test Test Definition 1.0
           name: install-fastboot
-          description: "Install fastboot provided by google"
+          description: "Install fastboot provided by google from https://developer.android.com/studio/releases/platform-tools"
         run:
           steps:
-          - wget http://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip
-          - unzip platform-tools_r26.0.0-linux.zip
+          - wget http://dl.google.com/android/repository/platform-tools_r27.0.1-linux.zip
+          - unzip -q platform-tools_r27.0.1-linux.zip
           - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
           - ln -s `pwd`/platform-tools/adb /usr/bin/adb
           - fastboot --version
