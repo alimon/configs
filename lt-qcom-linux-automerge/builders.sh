@@ -95,7 +95,7 @@ AUTOMERGE_CONFIG=$(sed ':a;N;$!ba;s/\n/\\\\/g' ${CONFIG_PATH})
 
 # * Disable exit when fail to collect build logs
 set +e
-yes | ci-merge -l ${INTEGRATION_REPO_PATH} -r ${INTEGRATION_REPO_URL} -i ${INTEGRATION_BRANCH} | tee automerge.log
+yes | ci-merge -l ${INTEGRATION_REPO_PATH} -r ${INTEGRATION_REPO_URL} -i ${INTEGRATION_BRANCH} -c ${RERERE_REPO_URL} | tee automerge.log
 AUTOMERGE_EXIT_CODE=$?
 AUTOMERGE_BRANCH_FAILED=$(grep 'Merge failed' automerge.log | sed ':a;N;$!ba;s/\n/\\\\/g')
 set -e
