@@ -8,12 +8,12 @@ kolla_options=
 
 if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
     kolla_branch=master
-    kolla_tag=rocky-$(date +"%Y%m%d") # use YYYYMMDD for tags
+    kolla_tag=rocky-${BUILD_NUMBER}
 else
     if [ -z "${kolla_ldc}" ]; then
-        kolla_tag=queens-$(date +"%Y%m%d") # use YYYYMMDD for tags
+        kolla_tag=queens-${BUILD_NUMBER}
     else
-        kolla_tag=ldc-queens-$(date +"%Y%m%d") # use YYYYMMDD for tags
+        kolla_tag=ldc-queens-${BUILD_NUMBER}
         kolla_options="--template-override ../Linaro-overlay/linaro-override.j2"
     fi
 fi
