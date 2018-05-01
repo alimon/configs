@@ -2,9 +2,6 @@
     name: android-imx8m
     project-type: freestyle
     defaults: global
-    logrotate:
-        daysToKeep: 60
-        numToKeep: 60
     properties:
         - authorization:
             anonymous:
@@ -13,10 +10,13 @@
             linaro:
                 - job-build
                 - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
     parameters:
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'IMX8M Android Vendor build'
+    display-name: 'NXP i.MX 8M Android build'
     concurrent: true
     wrappers:
         - timestamps
@@ -24,14 +24,15 @@
             timeout: 500
     builders:
         - shell: |
-            #!/bin/bash
+            #!/bin/bash -e
 
             export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+            export JENKINS_WORKSPACE=${WORKSPACE}
 
             java -version
 
-            sudo apt-get update
-            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz
+            sudo apt-get -q=2 update
+            sudo apt-get -q=2 install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz zlib1g-dev
 
             wget -q http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
               http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb \
@@ -43,15 +44,17 @@
             chmod a+x ${HOME}/bin/*
             export PATH=${HOME}/bin:${PATH}
 
-            wget http://snapshots.linaro.org/android/binaries/imx8m/imx-o8.1.0_1.3.0_8m.tar.gz
+            wget -q http://snapshots.linaro.org/android/binaries/imx8m/imx-o8.1.0_1.3.0_8m.tar.gz
             tar -xvf imx-o8.1.0_1.3.0_8m.tar.gz
             cd imx-o8.1.0_1.3.0_8m
             source imx_android_setup.sh
             source build/envsetup.sh
             lunch evk_8mq
-            make -j `nproc`
+            make -j$(nproc)
 
-            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-imx8m/template.txt -O out/target/product/evk_8mq/BUILD-INFO.txt
+            export WORKSPACE=${JENKINS_WORKSPACE}
+
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-imx8m/template.txt -O out/target/product/evk_8mq/BUILD-INFO.txt
 
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
