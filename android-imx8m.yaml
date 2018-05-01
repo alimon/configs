@@ -24,7 +24,7 @@
             timeout: 500
     builders:
         - shell: |
-            #!/bin/bash -e
+            #!/bin/bash
 
             export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
             export JENKINS_WORKSPACE=${WORKSPACE}
@@ -50,6 +50,7 @@
             source imx_android_setup.sh
             source build/envsetup.sh
             lunch evk_8mq
+            set -e
             make -j$(nproc)
 
             export WORKSPACE=${JENKINS_WORKSPACE}
