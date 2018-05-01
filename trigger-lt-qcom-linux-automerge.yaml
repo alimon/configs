@@ -1,3 +1,27 @@
+- scm:
+    name: configs
+    scm:
+        - git:
+            url:  https://git.linaro.org/landing-teams/working/qualcomm/configs.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+
+- scm:
+    name: rrcache
+    scm:
+        - git:
+            url:  https://git.linaro.org/landing-teams/working/qualcomm/automerge-rrcache.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+
 - job:
     name: trigger-lt-qcom-linux-automerge
     project-type: freestyle
@@ -15,14 +39,8 @@
     node: build
     display-name: 'QCLT Integration Tree Automerge'
     scm:
-        - git:
-            url:  https://git.linaro.org/landing-teams/working/qualcomm/configs.git
-            refspec: +refs/heads/*:refs/remotes/origin/*
-            name: origin
-            branches:
-                - refs/heads/master
-            skip-tag: true
-            shallow-clone: false
+        - configs
+        - rrcache
     triggers:
         - pollscm:
             cron: 'H/5 * * * *'
