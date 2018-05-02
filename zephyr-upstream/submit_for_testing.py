@@ -225,6 +225,7 @@ def main():
         )
         template = Template(test_template)
         lava_job = template.substitute(replace_dict)
+        print(lava_job)
         try:
             data = {
                 "definition": lava_job,

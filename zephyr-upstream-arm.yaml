@@ -118,7 +118,7 @@
               out/${PLATFORM} components/kernel/zephyr/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
 
         - shell: |
-            #!/bin/bash -e
+            #!/bin/bash -ex
 
             case "${PLATFORM}" in
               frdm_k64f)
@@ -151,8 +151,7 @@
                 --qa-server-team lite \
                 --qa-server-project zephyr-upstream-arm \
                 --gcc-variant ${ZEPHYR_GCC_VARIANT} \
-                --git-commit ${GIT_COMMIT} \
-                --build-url ${BUILD_URL} \
+                --git-commit ${GIT_COMMIT}
 
     publishers:
         - archive:
