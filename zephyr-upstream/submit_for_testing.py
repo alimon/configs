@@ -215,7 +215,7 @@ def main():
     for test in test_list:
         replace_dict = dict(
             # Test name example: kernel-pthread-test
-            test_name=test.rsplit('/zephyr.bin')[0].replace('/', '-'),
+            test_name=test.rsplit('/zephyr.bin')[0].replace('/', '-').replace('.', '-'),
             test_url="%s%s" % (test_url_prefix, test),
             build_url=args.build_url,
             gcc_variant=args.gcc_variant,
