@@ -24,14 +24,7 @@ git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linu
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
 export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/linux-x86/${TOOLCHAIN}/bin/:${PATH}
 
-
-# Enable VFB locally until the patch is merged
-if echo "${JOB_NAME}" | grep "4.14" ;then
-   CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug video=vfb:640x480-32@30 vfb.videomemorysize=3145728"
-else
-   CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
-fi
-
+CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
 
 # Need to use TI specific bluetooth driver
 if [ "${JOB_NAME}" = "lkft-hikey-android-8.0-4.9" ]; then
