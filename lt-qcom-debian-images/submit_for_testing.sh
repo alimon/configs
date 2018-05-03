@@ -37,6 +37,7 @@ if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
 else
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
 fi
+export SMOKE_TESTS="pwd, lsb_release -a, uname -a, ip a, lscpu, vmstat, lsblk"
 
 python configs/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \

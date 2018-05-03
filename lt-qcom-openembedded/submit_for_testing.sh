@@ -23,6 +23,7 @@ if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
 else
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
 fi
+export SMOKE_TESTS="pwd, uname -a, ip a, vmstat, lsblk"
 
 case "${MACHINE}" in
   dragonboard-410c|dragonboard-820c)
