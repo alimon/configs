@@ -69,9 +69,11 @@ fi
 TEMPLATE_PATH=""
 
 for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
-# kselftests-native.yaml and kselftests-none.yaml tests needed for x86 and qemu_x86_64
     if [[ ${test} = "kselftests-native.yaml" || ${test} = "kselftests-none.yaml" ]];then
-        if [[ ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "qemu_x86_64" ]];then
+        # kselftests-native.yaml and kselftests-none.yaml tests needed for x86
+        # Don't run on qemu; it's not possible to pass a kernel argument
+        # given the way we build the image and run qemu.
+        if [[ ${DEVICE_TYPE} = "x86" ]];then
             TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
         fi
     else
