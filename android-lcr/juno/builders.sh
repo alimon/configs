@@ -15,7 +15,6 @@ cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.xml /home/buildslave/srv/${B
 
 #package juno.img.bz2 and create uInitrd.img
 cd /home/buildslave/srv/${BUILD_DIR}/build/out/
-../device/linaro/juno/pack_juno_img.sh
 mkimage -A arm64 -O linux -C none -T ramdisk -n "Android Ramdisk" -d ramdisk.img -a 84000000 -e 84000000 uInitrd.img
 cd -
 
