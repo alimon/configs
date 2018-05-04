@@ -13,6 +13,7 @@ visibility: public
 
 context:
   test_character_delay: 10
+  kernel_start_message: "EFI stub: Using DTB from configuration table"
 
 protocols:
   lava-lxc:
@@ -28,8 +29,8 @@ actions:
       minutes: 15
     to: lxc
     packages:
-    - wget
-    - unzip
+    - adb
+    - fastboot
     os: debian
 
 - boot:
@@ -41,27 +42,6 @@ actions:
       minutes: 5
     method: lxc
 
-- test:
-    namespace: tlxc
-    timeout:
-      minutes: 10
-    definitions:
-    - from: inline
-      name: install-google-fastboot
-      path: inline/install-google-fastboot.yaml
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: install-fastboot
-          description: "Install fastboot provided by google"
-        run:
-          steps:
-          - wget https://dl.google.com/android/repository/platform-tools_r27.0.0-linux.zip
-          - unzip platform-tools_r27.0.0-linux.zip
-          - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
-          - ln -s `pwd`/platform-tools/adb /usr/bin/adb
-          - fastboot --version
-
 - deploy:
     timeout:
       minutes: 15
@@ -70,7 +50,7 @@ actions:
     connection: lxc
     images:
       ptable:
-        url: http://releases.linaro.org/reference-platform/embedded/hikey/16.12/rpb/bootloader/ptable-linux-8g.img
+        url: http://images.validation.linaro.org/builds.96boards.org/snapshots/reference-platform/components/uefi-staging/49/hikey/release/ptable-linux-8g.img
         reboot: hard-reset
       boot:
         url: ${BOOT_URL}
@@ -100,12 +80,11 @@ actions:
     - 'root@(.*):(.*)#'
     timeout:
       minutes: 5
-    method: uefi-menu
-    commands: fastboot
+    method: grub
+    commands: installed
     protocols:
       lava-lxc:
-      # other action could be boot-fastboot
-      - action: uefi-commands
+      - action: grub-sequence-action
         request: pre-os-command
         timeout:
           minutes: 2
