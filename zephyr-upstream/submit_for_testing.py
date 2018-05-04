@@ -237,7 +237,7 @@ def main():
             else:
                 print(results.status_code)
                 print(results.text)
-        except xmlrpclib.ProtocolError as err:  # nopep8
+        except requests.exceptions.RequestException as err:  # nopep8
             print("QA Reports submission failed")
             print("offending job definition:")
             print(lava_job)
