@@ -74,6 +74,10 @@
             name: abe_branch
             default: refs/remotes/origin/tested
             description: 'ABE revision to test'
+        - bool:
+            name: binaries
+            default: false
+            description: 'Create binary tarballs'
         - string:
             name: scripts_branch
             default: master
@@ -86,10 +90,6 @@
             name: displaytag
             default: 'manual'
             description: 'Tag to display in the Jenkins console, so that the build name is more helpful'
-        - bool:
-            name: binaries
-            default: false
-            description: 'Create binary tarballs'
     disabled: false
     node: tcwg-coordinator
     child-workspace: $target
@@ -153,7 +153,28 @@
     builders:
         - shell: |
             #!/bin/bash
-            ./jenkins-scripts/tcwg-buildfarm.sh
+            ./jenkins-scripts/docker-run.sh --distro $build_container_tag -- ./jenkins-scripts/tcwg-buildfarm.sh \
+              --label "$label" \
+              --target "$target" \
+              --BUILD_NUMBER "$BUILD_NUMBER" \
+              --JOB_NAME "$JOB_NAME" \
+              --NODE_NAME "$NODE_NAME" \
+              --WORKSPACE "$WORKSPACE" \
+              --override "$override" \
+              --host_x86_64_languages "$host_x86_64_languages" \
+              --host_aarchXX_languages "$host_aarchXX_languages" \
+              --runtests "$runtests" \
+              --send_results_to "$send_results_to" \
+              --try_bootstrap "$try_bootstrap" \
+              --host_x86_64_excludecheck "$host_x86_64_excludecheck" \
+              --host_aarchXX_excludecheck "$host_aarchXX_excludecheck" \
+              --extraconfig "$extraconfig" \
+              --rebuild "$rebuild" \
+              --log_name "$log_name" \
+              --dont_fail "$dont_fail" \
+              --log_server "$log_server" \
+              --abe_branch "$abe_branch" \
+              --binaries "$binaries"
     publishers:
         - archive:
             artifacts: 'artifacts/*'
