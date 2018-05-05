@@ -138,8 +138,6 @@
             cp out/host/linux-x86/cts/android-cts.zip out/
             rm -rf out/host/
 
-            # Delete sources after build to save space
-            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
             popd
 
             rm -rf build/out/BUILD-INFO.txt
@@ -183,12 +181,14 @@
                --ramdisk ../out/ramdisk.img \
                --output ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img
             xz ../out/boot-4.9-${KERNEL_DESCRIBE_4.9}.img
-            cd ../../
+            cd ../
+            # Delete sources after build to save space
+            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
 
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=96boards/hikey/linaro/aosp-master/${BUILD_NUMBER}
-            PUB_SRC=${PWD}/build/out
+            PUB_SRC=${PWD}/out
             PUB_EXTRA_INC=^[^/]+zip
             KERNEL_DESCRIBE_4_14=${KERNEL_DESCRIBE_4_14}
             KERNEL_DESCRIBE_4_9=${KERNEL_DESCRIBE_4_9}
