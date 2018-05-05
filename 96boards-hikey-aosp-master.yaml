@@ -160,7 +160,7 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image-dtb
             CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
             python mkbootimg \
-              --kernel ${PWD}/arch/arm64/boot/Image-dtb \
+              --kernel arch/arm64/boot/Image-dtb \
               --cmdline console="${CMD}" \
               --os_version O \
               --os_patch_level 2016-11-05 \
@@ -174,7 +174,7 @@
             make ARCH=arm64 hikey_defconfig
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image-dtb
             python mkbootimg \
-               --kernel {PWD}/arch/arm64/boot/Image-dtb \
+               --kernel arch/arm64/boot/Image-dtb \
                --cmdline console="${CMD}" \
                --os_version O \
                --os_patch_level 2016-11-05 \
