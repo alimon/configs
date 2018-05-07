@@ -1,14 +1,10 @@
 - scm:
-    name: configs
+    name: repo-manifest
     scm:
-        - git:
-            url:  https://git.linaro.org/landing-teams/working/qualcomm/configs.git
-            refspec: +refs/heads/*:refs/remotes/origin/*
-            name: origin
-            branches:
-                - refs/heads/master
-            skip-tag: true
-            shallow-clone: false
+        - repo:
+            manifest-url: https://git.linaro.org/landing-teams/working/qualcomm/configs.git
+            manifest-branch: repo
+            manifest-name: automerge-ci.xml
 
 - scm:
     name: rrcache
@@ -39,12 +35,11 @@
     node: build
     display-name: 'QCLT Integration Tree Automerge'
     scm:
-        - configs
+        - repo-manifest
         - rrcache
     triggers:
         - pollscm:
             cron: 'H/5 * * * *'
-        - timed: '@daily'
     wrappers:
         - timestamps
     builders:
