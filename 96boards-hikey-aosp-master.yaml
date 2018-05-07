@@ -239,7 +239,9 @@
                 --quiet
 
             # Submit jobs for 4.14 kernel
+            cd configs
             git reset --hard
+            cd -
             sed -i "s|boot.img.xz|boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
             # submit 4.14 jobs to lkft-staging to reduce load on production lkft
