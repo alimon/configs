@@ -1,0 +1,52 @@
+- scm:
+    name: configs
+    scm:
+        - git:
+            url:  https://git.linaro.org/landing-teams/working/qualcomm/configs.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+
+- job:
+    name: trigger-lt-qcom-linux-automerge-repo-manifest
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: QCOMLT_CONFIG_REPO_URL
+            default: 'ssh://git.linaro.org/landing-teams/working/qualcomm/configs.git'
+        - string:
+            name: QCOMLT_CONFIG_BRANCH
+            default: 'repo'
+    disabled: false
+    node: build
+    display-name: 'QCLT Integration Tree Automerge Repo Update'
+    scm:
+        - configs
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'LT_QUALCOMM_PRIVATE_KEY_SSH'
+    builders:
+        - shell:
+            !include-raw: lt-qcom-linux-automerge-repo-manifest/builders.sh
+    publishers:
+        - email-ext:
+            recipients: 'anibal.limon@linaro.org nicolas.dechesne@linaro.org amit.kucheria@linaro.org'
+            always: true
