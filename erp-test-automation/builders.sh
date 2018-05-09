@@ -28,9 +28,9 @@ cd erp-test-automation/erp-playbook
 # Provision image and run test
 ansible-galaxy install -p roles -r requirements.yml
 if [ "${BUILD_NUM}" = "latest" ]; then
-    ansible-playbook -l ${HOSTS} -e erp_debian_installer_environment=${BUILD_ENV} main.yml
+    ansible-playbook -l ${HOSTS} -e erp_installer_environment=${BUILD_ENV} -e erp_installer_distro=${BUILD_DISTRO} main.yml
 else
-    ansible-playbook -l ${HOSTS} -e erp_debian_installer_environment=${BUILD_ENV} -e erp_build_number=${BUILD_NUM} main.yml
+    ansible-playbook -l ${HOSTS} -e erp_installer_environment=${BUILD_ENV} -e erp_build_number=${BUILD_NUM} -e erp_installer_distro=${BUILD_DISTRO} main.yml
 fi
 
 # Wait for tests to finish

@@ -84,6 +84,13 @@
               --server ${PUBLISH_SERVER} \
               --link-latest \
               out 96boards/reference-platform/components/centos-installer-staging/${BUILD_NUMBER}/
+        - trigger-builds:
+            - project: erp-test-automation
+              predefined-parameters: |
+                  HOSTS=cb-g0
+                  BUILD_ENV=staging
+                  BUILD_NUM=${BUILD_NUMBER}
+                  BUILD_DISTRO=centos
     publishers:
         - email:
             recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org'
