@@ -53,6 +53,7 @@
             set -e
             make -j$(nproc)
 
+            cp device/fsl/common/tools/fsl-sdcard-partition.sh out/target/product/evk_8mq/
             export WORKSPACE=${JENKINS_WORKSPACE}
 
             wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-imx8m/template.txt -O out/target/product/evk_8mq/BUILD-INFO.txt
@@ -61,7 +62,7 @@
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=android/imx8m/${BUILD_NUMBER}
             PUB_SRC=${PWD}/out/target/product/evk_8mq/
-            PUB_EXTRA_INC=^[^/]+zip
+            PUB_EXTRA_INC=^[^/]+imx
             EOF
         - inject:
             properties-file: publish_parameters
