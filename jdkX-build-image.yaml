@@ -22,7 +22,7 @@
     parameters:
         - string:
             name: JDK_URL
-            default: 'http://openjdk.linaro.org/releases/jdk9-server-release-1708.tar.xz'
+            default: 'http://openjdk.linaro.org/releases/jdk10-server-release-1804.tar.xz'
     disabled: false
     node: aarch64-06
     display-name: 'OpenJDK JDK - Configure and build OpenJDK JDK'
@@ -77,10 +77,6 @@
 
             wget --progress=dot -e dotbytes=2M ${JDK_URL}
             tar -Jxf jdk*.tar.xz
-
-            cd jdk*/lib/security/
-            rm -f cacerts
-            ln -s /etc/ssl/certs/java/cacerts
 
             cd ${WORKSPACE}/jdk*
             export JAVA_HOME=${PWD}
