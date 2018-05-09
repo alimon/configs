@@ -23,7 +23,15 @@ python ./bin/automerge2repo.py automerge-ci.conf automerge-ci.xml
 git add automerge-ci.xml
 
 git commit -s -m "automerge-ci.xml: Update based on rev ${CURRENT_REVISION}" automerge-ci.xml
-echo "Pusing new version of automerge-ci.xml to ${QCOMLT_CONFIG_REPO_URL} ${QCOMLT_CONFIG_BRANCH}..."
-git push ${QCOMLT_CONFIG_REPO_URL} master:${QCOMLT_CONFIG_BRANCH} -f
+set +e
+diff_msg=$(git diff HEAD..origin/${QCOMLT_CONFIG_BRANCH} -- automerge-ci.xml)
+diff_status=$?
+set -e
+
+# only commit when is not branch previously created or a change exists into automerge-ci.xml
+if [ $diff_status -ne 0 ] || [ ! -z "$diff_msg" ]; then
+	echo "Pusing new version of automerge-ci.xml to ${QCOMLT_CONFIG_REPO_URL} ${QCOMLT_CONFIG_BRANCH}..."
+	git push ${QCOMLT_CONFIG_REPO_URL} master:${QCOMLT_CONFIG_BRANCH} -f
+fi
 
 exit 0
