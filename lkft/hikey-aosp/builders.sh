@@ -34,14 +34,14 @@ fi
 export CLANG_TRIPLE=aarch64-linux-gnu-
 export CROSS_COMPILE=aarch64-linux-android-
 make ARCH=arm64 hikey_defconfig
-make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image-dtb
+make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
 
 wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
 wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
 
 mkdir -p out
 python mkbootimg \
-  --kernel ${PWD}/arch/arm64/boot/Image-dtb \
+  --kernel ${PWD}/arch/arm64/boot/Image.gz-dtb \
   --cmdline console="${CMD}" \
   --os_version O \
   --os_patch_level 2016-11-05 \

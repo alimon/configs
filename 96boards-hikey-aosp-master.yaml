@@ -156,10 +156,10 @@
             export CLANG_TRIPLE=aarch64-linux-gnu-
             export CROSS_COMPILE=aarch64-linux-android-
             make ARCH=arm64 hikey_defconfig
-            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image-dtb
+            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
             python mkbootimg \
-              --kernel arch/arm64/boot/Image-dtb \
+              --kernel arch/arm64/boot/Image.gz-dtb \
               --cmdline console="${CMD}" \
               --os_version O \
               --os_patch_level 2016-11-05 \
@@ -171,9 +171,9 @@
             git checkout android-hikey-linaro-4.9
             export KERNEL_DESCRIBE_4_9=$(git describe --always)
             make ARCH=arm64 hikey_defconfig
-            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image-dtb
+            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
-               --kernel arch/arm64/boot/Image-dtb \
+               --kernel arch/arm64/boot/Image.gz-dtb \
                --cmdline console="${CMD}" \
                --os_version O \
                --os_patch_level 2016-11-05 \
@@ -185,9 +185,9 @@
             git checkout android-hikey-linaro-4.4
             export KERNEL_DESCRIBE_4_4=$(git describe --always)
             make ARCH=arm64 hikey_defconfig
-            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image-dtb
+            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
-               --kernel arch/arm64/boot/Image-dtb \
+               --kernel arch/arm64/boot/Image.gz-dtb \
                --cmdline console="${CMD}" \
                --os_version O \
                --os_patch_level 2016-11-05 \
