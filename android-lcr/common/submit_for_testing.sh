@@ -59,8 +59,13 @@ fi
 [ ! -z ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
 TEMPLATE_PATH=""
 
-for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
-    TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+DEVICE_PLAN=${PLAN_CHANGE:-"plan_change_${DEVICE_TYPE}"}
+if [ ! -n "$GERRIT_PROJECT" ]; then
+    DEVICE_PLAN=${PLAN_WEEKLY:-"plan_weekly_${DEVICE_TYPE}"}
+fi
+
+for test in $(ls ${BASE_PATH}/lava-job-definitions/${DEVICE_PLAN}); do
+    TEST_TEMPLATES="${TEST_TEMPLATES} ${DEVICE_PLAN}/${test}"
 done
 
 python ${SCRIPT_PATH}/submit_for_testing.py \
