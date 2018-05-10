@@ -17,28 +17,25 @@ export LXC_BOOT_FILE=$(basename ${BOOT_URL})
 
 export RESIZE_ROOTFS=
 
-# Tests settings, thermal fails in db410c
-export GST_IGNORE_TESTS_REPO="https://git.linaro.org/landing-teams/working/qualcomm/configs.git"
-if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
-    export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
-    export GST_IGNORE_TESTS_FILE="qa/gst-validate/db410c.ignore"
-elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
-    export PM_QA_TESTS="cpufreq cputopology"
-    export GST_IGNORE_TESTS_FILE="qa/gst-validate/db820c.ignore"
-else
-    export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
-fi
-export SMOKE_TESTS="pwd, uname -a, ip a, vmstat, lsblk"
-export PTEST_EXCLUDE="bluez5 libxml2 parted python strace"
-
 case "${MACHINE}" in
   dragonboard-410c|dragonboard-820c)
     export DEVICE_TYPE="${MACHINE}"
+
+    # Tests settings, thermal fails in db410c
+    export GST_IGNORE_TESTS_REPO="https://git.linaro.org/landing-teams/working/qualcomm/configs.git"
     if [ ${DEVICE_TYPE} = "dragonboard-410c" ]; then
+      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
+      export GST_IGNORE_TESTS_FILE="qa/gst-validate/db410c.ignore"
+
       export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
     elif [ ${DEVICE_TYPE} = "dragonboard-820c" ]; then
+      export PM_QA_TESTS="cpufreq cputopology"
+      export GST_IGNORE_TESTS_FILE="qa/gst-validate/db820c.ignore"
+
       export BOOT_OS_PROMPT=\'root@dragonboard-820c:~#\'
     fi
+    export SMOKE_TESTS="pwd, uname -a, ip a, vmstat, lsblk"
+    export PTEST_EXCLUDE="bluez5 libxml2 parted python strace"
 
     case "${DISTRO}" in
       rpb)
