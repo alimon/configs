@@ -18,8 +18,13 @@ export LXC_BOOT_FILE=$(basename ${BOOT_URL})
 export RESIZE_ROOTFS=
 
 # Tests settings, thermal fails in db410c
+export GST_IGNORE_TESTS_REPO="https://git.linaro.org/landing-teams/working/qualcomm/configs.git"
 if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
+    export GST_IGNORE_TESTS_FILE="qa/gst-validate/db410c.ignore"
+elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
+    export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
+    export GST_IGNORE_TESTS_FILE="qa/gst-validate/db820c.ignore"
 else
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
 fi
