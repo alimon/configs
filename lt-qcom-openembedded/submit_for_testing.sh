@@ -23,7 +23,7 @@ if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
     export GST_IGNORE_TESTS_FILE="qa/gst-validate/db410c.ignore"
 elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
-    export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
+    export PM_QA_TESTS="cpufreq cputopology"
     export GST_IGNORE_TESTS_FILE="qa/gst-validate/db820c.ignore"
 else
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"

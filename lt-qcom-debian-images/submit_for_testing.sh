@@ -34,6 +34,8 @@ pip install --user --force-reinstall jinja2-cli ruamel.yaml
 # Tests settings, thermal isn't work well in debian/db410c causes stall
 if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
+elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
+    export PM_QA_TESTS="cpufreq cputopology"
 else
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
 fi
