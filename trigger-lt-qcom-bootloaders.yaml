@@ -14,7 +14,18 @@
     disabled: false
     node: master
     display-name: 'Trigger for Qualcomm Bootloader builds'
+    scm:
+        - git:
+            url: https://git.linaro.org/git/landing-teams/working/qualcomm/db-boot-tools.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
     triggers:
+        - pollscm: 'H/5 * * * *'
         - timed: '@monthly'
     wrappers:
         - timestamps
