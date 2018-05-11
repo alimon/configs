@@ -4,6 +4,7 @@
 
 kolla_branch=${BRANCH}
 kolla_ldc=${DEVCLOUD}
+kolla_ldc_extras=${DEVCLOUD_EXTRA_PATCHES}
 kolla_options=
 
 if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
@@ -13,7 +14,17 @@ else
     if [ -z "${kolla_ldc}" ]; then
         kolla_tag=queens-${BUILD_NUMBER}
     else
-        kolla_tag=ldc-queens-${BUILD_NUMBER}
+        patches_count=0
+        if [ ! -z ${kolla_ldc_extras} ]; then
+            patches_count=$(echo ${kolla_ldc_extras} | tr ',' ' ' | wc -w)
+        fi
+
+        if [ "${patches_count}" -eq "0" ]; then
+            kolla_tag=ldc-queens-${BUILD_NUMBER}
+        else
+            kolla_tag=ldc-queens-${BUILD_NUMBER}-p${patches_count}
+        fi
+
         kolla_options="--template-override ../Linaro-overlay/linaro-override.j2"
     fi
 fi
@@ -54,6 +65,14 @@ fi
 # to be debugged later
 if [ ${kolla_branch} == "master" ]; then
     rm -rf kolla/docker/neutron/neutron-server-opendaylight
+fi
+
+# Apply extra patches to the kolla source code that haven't
+# been merged into the stable/queens branch.
+if [[ ! -z ${kolla_ldc} && ! -z ${kolla_ldc_extras} ]]; then
+    echo ${kolla_ldc_extras} | sed -n 1'p' | tr ',' '\n' | while read patch; do
+        curl https://git.openstack.org/cgit/openstack/kolla/patch/?id=${patch} | git apply -v --index --directory=kolla/
+    done
 fi
 
 virtualenv --python=/usr/bin/python2 venv-for-kolla
