@@ -20,10 +20,7 @@ function build_integration_kernel()
 
 	make distclean
 	make ${KERNEL_CONFIGS}
-	make savedefconfig
-	cp defconfig arch/${ARCH}/configs
-
-	make KERNELRELEASE=qcomlt-integration-${ARCH} -j$(nproc) Image
+	make -j$(nproc)
 }
 
 if [ ${AUTOMERGE_EXIT_CODE} -ne 0 ]; then
