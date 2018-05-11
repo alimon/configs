@@ -18,6 +18,16 @@
             skip-tag: true
             shallow-clone: false
 
+- scm:
+    name: linux-tag
+    scm:
+        - git:
+            url: git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+            refspec: +refs/tags/*:refs/remotes/origin/tags/*
+            branches:
+                - "**/tags/**"
+            shallow-clone: false
+
 - job:
     name: trigger-lt-qcom-linux-automerge
     project-type: freestyle
@@ -37,6 +47,7 @@
     scm:
         - repo-manifest
         - rrcache
+        - linux-tag
     triggers:
         - pollscm:
             cron: 'H/5 * * * *'
