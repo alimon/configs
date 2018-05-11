@@ -56,7 +56,7 @@ cp debian-installer-*/build/dest/netboot/netboot.tar.gz .
 mkdir out
 cp -a debian-installer-*/build/default-preseed out/default-preseed.cfg
 cp -a mini.iso netboot.tar.gz out/
-cd out; tar -zxvf netboot.tar.gz; cd ..
+cd out; tar xaf netboot.tar.gz ./debian-installer/arm64/{linux,initrd.gz}; cd ..
 
 # Create MD5SUMS file
 (cd out && find -type f -exec md5sum {} \; | sed "s/  \.\//  /g" > MD5SUMS.txt)
