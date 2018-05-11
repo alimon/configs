@@ -55,6 +55,11 @@ cp -a LICENSE \
    dragonboard820c/ufs-provision_toshiba.xml \
    out/${BOOTLOADER_UFS_LINUX}
 
+# create gpt_both files which are just the concatenation of primary and backup GPT headers
+for i in out/${BOOTLOADER_UFS_LINUX}/gpt_main*.bin ; do
+    cat $i $(echo $i | sed 's/main/backup/') > $(echo $i | sed 's/main/both/')
+done
+
 # bootloader_ufs_aosp
 cp -a LICENSE \
    dragonboard820c/aosp/flashall \
@@ -66,6 +71,11 @@ cp -a LICENSE \
    dragonboard820c/aosp/zeros_*.bin \
    dragonboard820c/ufs-provision_toshiba.xml \
    out/${BOOTLOADER_UFS_AOSP}
+
+# create gpt_both files which are just the concatenation of primary and backup GPT headers
+for i in out/${BOOTLOADER_UFS_AOSP}/gpt_main*.bin ; do
+    cat $i $(echo $i | sed 's/main/backup/') > $(echo $i | sed 's/main/both/')
+done
 
 # sdcard_rescue
 cp -a LICENSE out/${SDCARD_RESCUE}
