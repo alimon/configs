@@ -69,22 +69,23 @@
     builders:
         - shell: |
             #!/bin/bash
+            set -x
 
             # install required python modules
             pip install --user --force-reinstall Jinja2 requests urllib3 ruamel.yaml
 
             # no LTS 4.4 build for hikey
-            if [ ${DEVICE_TYPE} = hi6220-hikey ] && [ ${BUILD_NAME} = linux-stable-4.4 ]
+            if [ ${DEVICE_TYPE} = hi6220-hikey ] && [ ${BUILD_NAME} = linux-stable-rc-4.4 ]
             then
               exit 0
             fi
             # no LTS 4.4 build for QEMU (Hikey build is used)
-            if [ ${DEVICE_TYPE} = qemu_arm64 ] && [ ${BUILD_NAME} = linux-stable-4.4 ]
+            if [ ${DEVICE_TYPE} = qemu_arm64 ] && [ ${BUILD_NAME} = linux-stable-rc-4.4 ]
             then
               exit 0
             fi
             # no LTS 4.4 build for dragonboard
-            if [ ${DEVICE_TYPE} = dragonboard-410c ] && [ ${BUILD_NAME} = linux-stable-4.4 ]
+            if [ ${DEVICE_TYPE} = dragonboard-410c ] && [ ${BUILD_NAME} = linux-stable-rc-4.4 ]
             then
               exit 0
             fi
@@ -108,6 +109,9 @@
                 ;;
               dragonboard-410c)
                 export MACHINE=dragonboard-410c
+                ;;
+              qemu_arm)
+                export MACHINE=am57xx-evm
                 ;;
               qemu_arm64)
                 export MACHINE=hikey
@@ -146,23 +150,60 @@
             HDD_IMG=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.hddimg.xz" "${MD5_FILENAME}" | awk '{print $2}')
             case ${DEVICE_TYPE} in
               juno-r2)
-                KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-                DTB_FILENAME=$(grep -E "Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                KERNEL_FILENAME=$(grep -E " Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E " Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               b2260)
-                KERNEL_FILENAME=$(grep -E "uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-                DTB_FILENAME=$(grep -E "uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                KERNEL_FILENAME=$(grep -E " uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E " uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               dragonboard-410c)
-                BOOT_FILENAME=$(grep -E "boot\S*\.img" "${MD5_FILENAME}" | awk '{print $2}')
+                BOOT_FILENAME=$(grep -E " boot\S*\.img" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               qemu_arm64)
-                KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-                DTB_FILENAME=$(grep -E "Image.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                KERNEL_FILENAME=$(grep -E " Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E " Image.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                ;;
+              qemu_arm)
+                KERNEL_FILENAME=$(grep -E " zImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E " zImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               *)
                 ;;
             esac
+
+            # Simulate KERNEL_VERSION and KERNEL_VERSION_OVERRIDE behavior from
+            # production.
+            case ${BUILD_NAME} in
+              linux-next)
+                export KERNEL_VERSION=git
+                export KERNEL_VERSION_OVERRIDE=next
+                ;;
+              linux-mainline)
+                export KERNEL_VERSION=git
+                export KERNEL_VERSION_OVERRIDE=mainline
+                ;;
+              linux-stable-rc-4.16)
+                export KERNEL_VERSION=4.16
+                ;;
+              linux-stable-rc-4.15)
+                export KERNEL_VERSION=4.15
+                ;;
+              linux-stable-rc-4.14)
+                export KERNEL_VERSION=4.14
+                ;;
+              linux-stable-rc-4.9)
+                export KERNEL_VERSION=4.9
+                ;;
+              linux-stable-rc-4.4)
+                export KERNEL_VERSION=4.4
+                ;;
+              *)
+                echo "Unknown BUILD_NAME: ${BUILD_NAME}"
+                exit 1
+                ;;
+            esac
+
             case ${BUILD_NAME} in
               linux-next)
                 export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
@@ -183,6 +224,7 @@
                 export KSELFTEST_PATH=/opt/kselftests/mainline/
                 ;;
             esac
+            export TOOLCHAIN=${COMPILER:-unknown}
             export NFSROOTFS_URL="${BUILD_LOCATION}/${NFS_FILENAME}"
             export EXT4_IMAGE_URL="${BUILD_LOCATION}/${EXT4_IMAGE_FILENAME}"
             export BOOT_URL="${BUILD_LOCATION}/${BOOT_FILENAME}"
@@ -190,7 +232,6 @@
             export KERNEL_COMMIT=${KERNEL_COMMIT_ID}
             export LAVA_JOB_PRIORITY=25
             export KERNEL_CONFIG_URL=${BUILD_LOCATION}/config
-            export KERNEL_VERSION=${MAKE_KERNELVERSION}
             export KERNEL_DEFCONFIG_URL=${BUILD_LOCATION}/defconfig
             export KERNEL_URL="${BUILD_LOCATION}/${KERNEL_FILENAME}"
             export DTB_URL="${BUILD_LOCATION}/${DTB_FILENAME}"
