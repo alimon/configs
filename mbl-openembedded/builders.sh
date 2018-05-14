@@ -127,7 +127,7 @@ case "${MACHINE}" in
   bananapi-zero*)
     # Temporary sstate cleanup to force warp7 firmware to be re-generated each time
     set +e
-    bitbake -c cleansstate u-boot-bpi mbl-boot-scr
+    bitbake -c cleansstate u-boot-bpi mbl-boot-scr optee-os
     set -e
     ;;
 esac
