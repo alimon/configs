@@ -159,23 +159,23 @@
             HDD_IMG=$(grep -E "rpb-console-image-${MACHINE}-[0-9]{14}-[0-9]+\.hddimg.xz" "${MD5_FILENAME}" | awk '{print $2}')
             case ${DEVICE_TYPE} in
               juno-r2)
-                KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-                DTB_FILENAME=$(grep -E "Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                KERNEL_FILENAME=$(grep -E " Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E " Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               b2260)
-                KERNEL_FILENAME=$(grep -E "uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-                DTB_FILENAME=$(grep -E "uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                KERNEL_FILENAME=$(grep -E " uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E " uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               dragonboard-410c)
-                BOOT_FILENAME=$(grep -E "boot\S*\.img" "${MD5_FILENAME}" | awk '{print $2}')
+                BOOT_FILENAME=$(grep -E " boot\S*\.img" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               qemu_arm64)
-                KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-                DTB_FILENAME=$(grep -E "Image.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                KERNEL_FILENAME=$(grep -E " Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E " Image.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               qemu_arm)
-                KERNEL_FILENAME=$(grep -E "Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-                DTB_FILENAME=$(grep -E "Image.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
+                KERNEL_FILENAME=$(grep -E " zImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
+                DTB_FILENAME=$(grep -E " zImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               *)
                 ;;
