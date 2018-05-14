@@ -2,9 +2,11 @@
 
 # Submit QEMU jobs
 case "${MACHINE}" in
-  am57xx-evm)
-    DEVICE_TYPE=qemu_arm
-    ;;
+# Disable arm32 until issues are resolved.
+# https://projects.linaro.org/browse/CTT-1169
+#  am57xx-evm)
+#    DEVICE_TYPE=qemu_arm
+#    ;;
   hikey)
     DEVICE_TYPE=qemu_arm64
     ;;
