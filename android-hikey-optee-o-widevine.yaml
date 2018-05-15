@@ -1,0 +1,49 @@
+- job:
+    name: android-hikey-optee-o-widevine
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'AOSP HiKey build with OP-TEE (SWG) Widevine'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: 'dev-private-review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-codereview-value: 1
+            gerrit-build-failed-codereview-value: -1
+            readable-message: true
+            successful-message: 'widevine Sanity Check Successful'
+            start-message: 'widevine Sanity Check Started'
+            failure-message: 'widevine Sanity Check Failed'
+            trigger-for-unreviewed-patches: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'widevine/optee-widevine-ref'
+                  branches:
+                      - branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'widevine/android'
+                  branches:
+                      - branch-pattern: 'google/oc'
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+               - '8e3d0ab1-974d-4bb9-abc0-0b8f01de969a'
+        - timeout:
+            timeout: 500
+    builders:
+        - shell:
+            !include-raw: android-hikey-optee-o-widevine/builders.sh
