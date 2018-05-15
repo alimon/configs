@@ -1,5 +1,5 @@
 - job:
-    name: leg-kolla-queens
+    name: leg-kolla-push-images
     project-type: freestyle
     defaults: global
     properties:
@@ -15,22 +15,13 @@
             days-to-keep: 30
             num-to-keep: 30
     parameters:
-        - string:
-            name: BRANCH
-            default: 'stable/queens'
-            description: 'branch to use'
-        - string:
-            name: THREADS_OPT
-            default: '24'
-            description: 'number of threads (default: 24)'
-        - string:
-            name: RETRIES_OPT
-            default: '3'
-            description: 'number of retries (default: 3)'
+        - file:
+            name: push.parameters
+            description: "tag of images to push"
     disabled: false
     node: leg-aarch64
     concurrent: false
-    display-name: 'LEG Kolla images build/publish (Queens images)'
+    display-name: 'LEG Kolla images publish'
     wrappers:
         - timestamps
         - copy-to-slave:
@@ -43,14 +34,7 @@
                 variable: DOCKER_AUTH
     builders:
         - shell:
-            !include-raw: leg-kolla/build.sh
-        - linaro-publish-token
-        - shell:
-            !include-raw: leg-kolla/publishers.sh
-        - trigger-builds:
-            - project:
-                - 'leg-kolla-push-images'
-              property-file: "push.parameters"
+            !include-raw: leg-kolla-push-images/build.sh
     publishers:
         - email:
             recipients: 'marcin.juszkiewicz@linaro.org riku.voipio@linaro.org fathi.boudra@linaro.org sdi-team@linaro.org'

@@ -47,6 +47,11 @@
         - linaro-publish-token
         - shell:
             !include-raw: leg-kolla/publishers.sh
+        - trigger-builds:
+            - project:
+                - 'leg-kolla-push-images'
+              property-file: "push.parameters"
+
     publishers:
         - email:
             recipients: 'marcin.juszkiewicz@linaro.org riku.voipio@linaro.org fathi.boudra@linaro.org sdi-team@linaro.org'

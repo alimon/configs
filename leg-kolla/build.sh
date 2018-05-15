@@ -36,15 +36,6 @@ trap cleanup_exit INT TERM EXIT
 cleanup_exit()
 {
     rm -rf ${HOME}/.docker
-
-    docker images | grep ${kolla_tag} | sort
-
-    # remove all images as they are pushed to hub.docker.com and won't be used
-    # do in a loop as we remove in random order and some have children images
-    for run in 1 2 3 4 5
-    do
-	    docker images | grep ${kolla_tag} | awk '{print $3}' | xargs docker rmi -f 2>&1 >/dev/null || true
-    done
 }
 
 mkdir -p ${HOME}/.docker
@@ -100,12 +91,8 @@ kolla_namespace=linaro
 
 docker images | grep ${kolla_tag} | cut -d" " -f1 >list-of-images
 
-amount=$(wc -l list-of-images | cut -d" " -f1 | sort)
-current=0
+cat list-of-images
 
-for image in $(cat list-of-images)
-do
-	echo "Pushing ${current} of ${amount} - ${image}"
-	docker push $image
-	((current++))
-done
+wc -l list-of-images
+
+echo "kolla_tag=${kolla_tag}" >push.parameters
