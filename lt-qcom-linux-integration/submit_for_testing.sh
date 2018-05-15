@@ -13,8 +13,12 @@ export BOOT_URL_COMP=
 export LXC_BOOT_FILE=$(basename ${BOOT_URL})
 
 case "${MACHINE}" in
-  dragonboard410c)
-    export LAVA_DEVICE_TYPE="dragonboard-410c"
+  dragonboard410c|dragonboard820c)
+    if [ ${MACHINE} = "dragonboard410c" ]; then
+      export LAVA_DEVICE_TYPE="dragonboard-410c"
+    elif [ ${MACHINE} = "dragonboard820c" ]; then
+      export LAVA_DEVICE_TYPE="dragonboard-820c"
+    fi
 
     python configs/openembedded-lkft/submit_for_testing.py \
         --device-type ${LAVA_DEVICE_TYPE} \

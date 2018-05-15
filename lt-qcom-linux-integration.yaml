@@ -21,13 +21,19 @@
             name: KERNEL_IMAGE_URL
             default: ''
         - string:
-            name: KERNEL_DT_URL
-            default: ''
-        - string:
             name: KERNEL_MODULES_URL
             default: ''
         - string:
-            name: ROOTFS_URL
+            name: KERNEL_DT_URL_dragonboard410c
+            default: ''
+        - string:
+            name: ROOTFS_URL_dragonboard410c
+            default: ''
+        - string:
+            name: KERNEL_DT_URL_dragonboard820c
+            default: ''
+        - string:
+            name: ROOTFS_URL_dragonboard820c
             default: ''
         - string:
             name: PUB_DEST
@@ -47,6 +53,7 @@
             name: MACHINE
             values:
                 - 'dragonboard410c'
+                - 'dragonboard820c'
         - axis:
             type: slave
             name: label
@@ -71,10 +78,21 @@
             # Set builder.sh configuration per MACHINE
             case "${MACHINE}" in
               dragonboard410c)
+                echo "KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard410c}" >> builders_in_parameters
+                echo "ROOTFS_URL=${ROOTFS_URL_dragonboard410c}" >> builders_in_parameters
                 echo 'BOOTIMG_PAGESIZE=2048' >> builders_in_parameters
                 echo 'BOOTIMG_BASE=0x80000000' >> builders_in_parameters
                 echo 'RAMDISK_BASE=0x84000000' >> builders_in_parameters
                 echo 'ROOTFS_PARTITION=/dev/mmcblk0p10' >> builders_in_parameters
+                echo 'SERIAL_CONSOLE=ttyMSM0' >> builders_in_parameters
+                ;;
+              dragonboard820c)
+                echo "KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard820c}" >> builders_in_parameters
+                echo "ROOTFS_URL=${ROOTFS_URL_dragonboard820c}" >> builders_in_parameters
+                echo 'BOOTIMG_PAGESIZE=4096' >> builders_in_parameters
+                echo 'BOOTIMG_BASE=0x80000000' >> builders_in_parameters
+                echo 'RAMDISK_BASE=0x84000000' >> builders_in_parameters
+                echo 'ROOTFS_PARTITION=/dev/sda7' >> builders_in_parameters
                 echo 'SERIAL_CONSOLE=ttyMSM0' >> builders_in_parameters
                 ;;
               *)
