@@ -95,4 +95,4 @@ cat list-of-images
 
 wc -l list-of-images
 
-echo "kolla_tag=${kolla_tag}" >push.parameters
+echo "kolla_tag=${kolla_tag}" >${WORKSPACE}/push.parameters
