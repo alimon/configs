@@ -25,7 +25,7 @@ echo "Going to push ${amount} of images with '${kolla_tag}' tag."
 for image in $(cat list-of-images)
 do
 	echo "Pushing ${current} of ${amount} - ${image}"
-	docker push $image
+	docker push $image:${kolla_tag}
 	((current++))
 done
 
