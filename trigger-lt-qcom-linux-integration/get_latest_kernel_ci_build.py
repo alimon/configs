@@ -89,30 +89,49 @@ def main():
     kernel_ci_base_url = os.environ.get('KERNEL_CI_BASE_URL',
                                         'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
     kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
-                                           'arm64/defconfig+CONFIG_CPU_BIG_ENDIAN=y/')
+                                           'arm64/defconfig/')
+    machines = os.environ.get('MACHINES', 'dragonboard410c dragonboard820c').split()
+
     kernel_ci_dt_file = os.environ.get('KERNEL_CI_DT_FILE',
                                        'dtbs/qcom/apq8016-sbc.dtb')
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
-                                      'https://snapshots.linaro.org/96boards/dragonboard410c/linaro/openembedded/rocko/latest/rpb/')
+                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/rocko/latest/rpb/')
     builds_url = os.environ.get('BUILDS_URL',
-                                'https://snapshots.linaro.org/96boards/dragonboard410c/linaro/linux-integration/')
+                                'https://snapshots.linaro.org/96boards/%s/linaro/linux-integration/')
 
-    (image_url, dt_url, modules_url) = get_kernel_ci_build(kernel_ci_base_url,
-                                                           kernel_ci_arch_config, kernel_ci_dt_file)
+
+    image_url = None
+    modules_url = None
+    for m in machines:
+        if m == 'dragonboard410c':
+            kernel_ci_dt_file = 'dtbs/qcom/apq8016-sbc.dtb'
+        elif m == 'dragonboard820c':
+            kernel_ci_dt_file = 'dtbs/qcom/apq8096-db820c.dtb'
+        else:
+            sys.exit(2)
+
+        (image_url, dt_url, modules_url) = get_kernel_ci_build(kernel_ci_base_url,
+                                                               kernel_ci_arch_config, kernel_ci_dt_file)
+
+        print("KERNEL_DT_URL_%s=%s" % (m, dt_url))
+        validate_url(dt_url)
+
+        ramdisk_url = get_ramdisk_url((ramdisk_base_url % m))
+        print('ROOTFS_URL_%s=%s' % (m, ramdisk_url))
+        validate_url(ramdisk_url)
+
+        try:
+            validate_if_already_built((builds_url % m), (image_url, dt_url, modules_url,
+                                      ramdisk_url))
+        except urllib2.HTTPError as e:
+            # 404 can happen when no previous build exists
+            if e.code != 404:
+                raise
+
     print("KERNEL_IMAGE_URL=%s" % image_url)
     validate_url(image_url)
-    print("KERNEL_DT_URL=%s" % dt_url)
-    validate_url(dt_url)
     print("KERNEL_MODULES_URL=%s" % modules_url)
     validate_url(modules_url)
-
-    ramdisk_url = get_ramdisk_url(ramdisk_base_url)
-    print('ROOTFS_URL=%s' % ramdisk_url)
-    validate_url(ramdisk_url)
-
-    validate_if_already_built(builds_url, (image_url, dt_url, modules_url,
-                              ramdisk_url))
-
 
 if __name__ == '__main__':
     try:
