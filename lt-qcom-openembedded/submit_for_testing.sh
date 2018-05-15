@@ -22,15 +22,19 @@ case "${MACHINE}" in
     export DEVICE_TYPE="${MACHINE}"
 
     # Tests settings, thermal fails in db410c
-    export GST_IGNORE_TESTS_REPO="https://git.linaro.org/landing-teams/working/qualcomm/configs.git"
+    export IGNORE_TESTS_REPO="https://git.linaro.org/landing-teams/working/qualcomm/configs.git"
+    export GST_IGNORE_TESTS_REPO=${IGNORE_TESTS_REPO}
+    export PIGLIT_IGNORE_TESTS_REPO=${IGNORE_TESTS_REPO}
     if [ ${DEVICE_TYPE} = "dragonboard-410c" ]; then
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
       export GST_IGNORE_TESTS_FILE="qa/gst-validate/db410c.ignore"
+      export PIGLIT_IGNORE_TESTS_FILE="qa/piglit/db410c.ignore"
 
       export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
     elif [ ${DEVICE_TYPE} = "dragonboard-820c" ]; then
       export PM_QA_TESTS="cpufreq cputopology"
       export GST_IGNORE_TESTS_FILE="qa/gst-validate/db820c.ignore"
+      export PIGLIT_IGNORE_TESTS_FILE="qa/piglit/db820c.ignore"
 
       export BOOT_OS_PROMPT=\'root@dragonboard-820c:~#\'
     fi
