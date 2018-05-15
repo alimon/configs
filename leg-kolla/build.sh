@@ -62,7 +62,7 @@ fi
 # been merged into the stable/queens branch.
 if [[ ! -z ${kolla_ldc} && ! -z ${kolla_ldc_extras} ]]; then
     echo ${kolla_ldc_extras} | sed -n 1'p' | tr ',' '\n' | while read patch; do
-        curl https://git.openstack.org/cgit/openstack/kolla/patch/?id=${patch} | git apply -v --index --directory=kolla/
+        curl https://git.openstack.org/cgit/openstack/kolla/patch/?id=${patch} | git apply -v --directory=kolla/
     done
 fi
 
