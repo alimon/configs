@@ -16,14 +16,26 @@
                 - job-cancel
     parameters:
         - string:
+            name: VENDOR
+            default: 'linaro'
+        - string:
+            name: OS_FLAVOUR
+            default: 'stretch'
+        - string:
+            name: PLATFORM_NAME
+            default: 'b2260'
+        - string:
             name: ROOTFS
-            default: 'alip developer'
+            default: 'developer,1800M alip,3G'
+        - string:
+            name: PUB_DEST
+            default: '96boards/${PLATFORM_NAME}/${VENDOR}/debian/${BUILD_NUMBER}'
     disabled: false
-    node: docker-jessie-amd64
+    node: docker-stretch-armhf
     display-name: '96boards - STiH410 B2260'
     scm:
         - git:
-            url: https://github.com/Linaro/rpk.git
+            url: https://git.linaro.org/ci/fai.git
             refspec: +refs/heads/master:refs/remotes/origin/master
             name: origin
             branches:
@@ -40,19 +52,12 @@
             !include-raw: 96boards-b2260/builders.sh
         - linaro-publish-token
         - shell: |
-            #!/bin/bash
-
-            #
-            # Publish to the server
-            #
+            # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --link-latest \
-              out 96boards/b2260/linaro/debian/${BUILD_NUMBER}
-
-            rm -rf out
+              --link-latest out ${PUB_DEST}
         - shell:  |
             #!/bin/bash -e
 
@@ -60,7 +65,7 @@
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
             VERSION=$(date +%Y%m%d)-${BUILD_NUMBER}
-            NFSROOTFS="b2260-stretch_developer_${VERSION}.img.gz"
+            NFSROOTFS="rootfs-linaro-stretch-developer-${VERSION}.img.gz"
 
             sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
                 -e "s|\${NFSROOTFS}|${NFSROOTFS}|" \
@@ -78,6 +83,11 @@
             - project: 'post-build-lava'
               property-file: post_build_lava_parameters
               block: true
+
     publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
         - email:
-            recipients: 'fathi.boudra@linaro.org lee.jones@linaro.org patrice.chotard@linaro.org'
+            recipients: 'riku.voipio@linaro.org fathi.boudra@linaro.org lee.jones@linaro.org patrice.chotard@linaro.org'
