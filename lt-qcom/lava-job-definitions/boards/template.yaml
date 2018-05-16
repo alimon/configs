@@ -83,11 +83,22 @@
       params:
         TESTS: ${PM_QA_TESTS}
 
+- test:
+    namespace: ${DEVICE_TYPE}
+    name: qcomlt-containers
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/docker/docker.yaml
+      name: linux-containers
+
 device_type: ${DEVICE_TYPE}
 job_name: lt-qcom-${OS_INFO}-${BUILD_NUMBER}
 timeouts:
   job:
-    minutes: 115
+    minutes: 120
   action:
     minutes: 15
   connection:
