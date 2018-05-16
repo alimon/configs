@@ -30,6 +30,10 @@
             default: refs/remotes/origin/tested
             description: 'ABE revision to use'
         - string:
+            name: scripts_branch
+            default: refs/remotes/origin/master
+            description: 'jenkins-scripts revision to use'
+        - string:
             name: target_list
             default: 'aarch64-linux-gnu arm-linux-gnueabihf'
             description: 'List of targets'
@@ -153,6 +157,7 @@
           log_name=tcwg-gnu-patch-benchmarking-$gcc_orig_rev/$abe_rev/\$builder_type.\$target
           target_list=$target
           abe_branch=$abe_rev
+          scripts_branch=$scripts_branch
           displaytag=gnu-patch-benchmarking-ref-${gcc_orig_rev}
           EOF
           echo "$buildfarm_params" >> gcc_orig_params
@@ -162,6 +167,7 @@
           log_name=tcwg-gnu-patch-benchmarking-$gcc_orig_patch/$abe_rev/\$builder_type.\$target
           target_list=$target
           abe_branch=$abe_rev
+          scripts_branch=$scripts_branch
           displaytag=gnu-patch-benchmarking-patch-${gcc_patch_rev}
           EOF
           echo "$buildfarm_params" >> gcc_patch_params

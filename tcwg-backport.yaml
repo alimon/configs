@@ -38,6 +38,10 @@
             name: abe_branch
             default: refs/remotes/origin/tested
             description: 'ABE revision to use'
+        - string:
+            name: scripts_branch
+            default: refs/remotes/origin/master
+            description: 'jenkins-scripts revision to use'
         - bool:
             name: rebuild
             default: false
@@ -134,6 +138,7 @@
             log_server=$log_server
             target_list=$target_list
             abe_branch=$abe_rev
+            scripts_branch=$scripts_branch
             displaytag=backport-ref-${GERRIT_CHANGE_NUMBER}
             EOF
 
@@ -145,6 +150,7 @@
             log_server=$log_server
             target_list=$target_list
             abe_branch=$abe_rev
+            scripts_branch=$scripts_branch
             displaytag=backport-patch-${GERRIT_CHANGE_NUMBER}
             EOF
 

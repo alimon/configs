@@ -41,6 +41,10 @@
             name: abe_branch
             default: refs/remotes/origin/tested
             description: 'ABE branch to use.'
+        - string:
+            name: scripts_branch
+            default: refs/remotes/origin/master
+            description: 'jenkins-scripts branch to use.'
     disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: true
@@ -130,6 +134,7 @@
             override=gcc=gcc.git~$tag --extraconfigdir ../config/$toolchainconf
             log_name=${JOB_NAME}-${tag}-${BUILD_NUMBER}/\${builder_type}.\$target
             abe_branch=$abe_branch
+            scripts_branch=$scripts_branch
             EOF
 
             cat << EOF > ${WORKSPACE}/env.properties
