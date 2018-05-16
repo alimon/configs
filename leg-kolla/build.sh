@@ -56,6 +56,9 @@ fi
 # to be debugged later
 if [ ${kolla_branch} == "master" ]; then
     rm -rf kolla/docker/neutron/neutron-server-opendaylight
+
+    # enable ERP:staging repo
+    echo "deb http://obs.linaro.org/ERP:/staging/Debian_9/ ./" >>kolla/docker/base/sources.list.debian
 fi
 
 # Apply extra patches to the kolla source code that haven't
