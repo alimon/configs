@@ -57,7 +57,7 @@ case "${MACHINE}" in
             --git-commit ${BUILD_NUMBER} \
             --template-path configs/lt-qcom/lava-job-definitions \
             --template-base-pre base_template.yaml \
-            --template-names template.yaml template-wifi.yaml template-bt.yaml template-ptest.yaml
+            --template-names template.yaml template-wifi.yaml template-bt.yaml template-ptest.yaml template-stress.yaml
 
         export ROOTFS_URL=${ROOTFS_DESKTOP_SPARSE_BUILD_URL}
         export ROOTFS_URL_COMP="gz"

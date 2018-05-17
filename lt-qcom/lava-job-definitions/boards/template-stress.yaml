@@ -1,0 +1,46 @@
+- test:
+    namespace: ${DEVICE_TYPE}
+    name: qcomlt-stress
+    timeout:
+      minutes: 280
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/24h-stress-test/24h-stress-test.yaml
+      params:
+        TEST: "stress_ng"
+        DURATION: "5400"
+      name: linux-stress
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/24h-stress-test/24h-stress-test.yaml
+      params:
+        TEST: "stress_oom"
+        DURATION: "5400"
+      name: linux-stress
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/24h-stress-test/24h-stress-test.yaml
+      params:
+        TEST: "stress_network"
+        DURATION: "5400"
+        INTERFACE: "eth0"
+        LINK: "http://testdata.validation.linaro.org/stress/stress-network.img"
+        MD5: "e5c834fbdaa6bfd8eac5eb9404eefdd4"
+      name: linux-stress
+
+device_type: ${DEVICE_TYPE}
+job_name: lt-qcom-${OS_INFO}-stress-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 320
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: low
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom/lava-job-definitions/${DEVICE_TYPE}/template-stress.yaml
