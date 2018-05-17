@@ -35,7 +35,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
     --template-path configs/lkft/lava-job-definitions \
-    --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml \
+    --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml template-cts-displaytestcases.yaml \
     --quiet
 
 python configs/openembedded-lkft/submit_for_testing.py \
