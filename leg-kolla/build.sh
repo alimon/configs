@@ -76,7 +76,7 @@ cd kolla
 
 pip install -r requirements.txt
 
-mkdir -p logs/debian-source
+mkdir -p ${WORKSPACE}/kolla/logs/debian-source
 
 kolla_namespace=linaro
 ./tools/build.py --base debian \
