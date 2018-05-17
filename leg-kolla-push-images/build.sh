@@ -22,10 +22,4 @@ current=1
 
 echo "Going to push ${amount} of images with '${kolla_tag}' tag."
 
-for image in $(cat list-of-images)
-do
-	echo "Pushing ${current} of ${amount} - ${image}"
-	docker push $image:${kolla_tag}
-	((current++))
-done
-
+parallel --will-cite -k -j $(nproc --all) --halt now,fail=1 'echo 'Pushing {#} of {= '$_=total_jobs()' =} - {}' && /usr/bin/docker push {}:${kolla_tag}' ::: $(cat list-of-images)
