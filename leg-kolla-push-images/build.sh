@@ -4,8 +4,12 @@ set -ex
 
 trap cleanup_exit INT TERM EXIT
 
+docker_push_logs_dir="./docker_push_logs"
+docker_push_retries=3
+
 cleanup_exit()
 {
+    test -d ${docker_push_logs_dir} && cat ${docker_push_logs_dir}/*/**/std* jobs.log && rm -fr ${docker_push_logs_dir} jobs.log
     rm -rf ${HOME}/.docker
 }
 
@@ -22,4 +26,4 @@ current=1
 
 echo "Going to push ${amount} of images with '${kolla_tag}' tag."
 
-parallel --will-cite -k -j $(nproc --all) --halt now,fail=1 'echo 'Pushing {#} of {= '$_=total_jobs()' =} - {}' && /usr/bin/docker push {}:${kolla_tag}' ::: $(cat list-of-images)
+parallel -tu --results ${docker_push_logs_dir} --joblog jobs.log --env kolla_tag --will-cite -k --max-procs $(nproc --all) --retries ${docker_push_retries} 'echo 'Pushing {#} of {= '$_=total_jobs()' =} - {}' && /usr/bin/docker push {}:${kolla_tag}' ::: $(cat list-of-images)
