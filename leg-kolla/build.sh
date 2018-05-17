@@ -59,6 +59,7 @@ if [ ${kolla_branch} == "master" ]; then
 
     # enable ERP:staging repo
     echo "deb http://obs.linaro.org/ERP:/staging/Debian_9/ ./" >>kolla/docker/base/sources.list.debian
+    sed -i -e "s+'https://bintray.com/user/downloadSubjectPublicKey?username=bintray',+'https://bintray.com/user/downloadSubjectPublicKey?username=bintray','http://obs.linaro.org/ERP:/staging/Debian_9/Release.key',+g" kolla/docker/base/Dockerfile.j2
 fi
 
 # Apply extra patches to the kolla source code that haven't
