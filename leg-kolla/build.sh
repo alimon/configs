@@ -92,7 +92,7 @@ kolla_namespace=linaro
                  --type source \
                  --namespace ${kolla_namespace}
 
-docker images | grep ${kolla_tag} | cut -d" " -f1 >list-of-images
+docker images | grep ${kolla_tag} | cut -d" " -f1 | sort >list-of-images
 
 cat list-of-images
 
