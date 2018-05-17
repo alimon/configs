@@ -8,9 +8,10 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
-  ${WORKSPACE}/kolla/logs/debian-source reference-platform/enterprise/components/openstack/kolla-logs/${BUILD_NUMBER}
+  ${WORKSPACE}/kolla/logs/debian-source \
+  reference-platform/enterprise/components/openstack/kolla-logs/${JOB_NAME}/${BUILD_NUMBER}
 
 set +x
 
 echo "Images: https://hub.docker.com/u/linaro/"
-echo "Logs:   https://snapshots.linaro.org/reference-platform/enterprise/components/openstack/kolla-logs/${BUILD_NUMBER}/"
+echo "Logs:   https://snapshots.linaro.org/reference-platform/enterprise/components/openstack/kolla-logs/${JOB_NAME}/${BUILD_NUMBER}/"
