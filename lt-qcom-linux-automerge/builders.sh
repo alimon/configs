@@ -91,7 +91,7 @@ EOF
 	export CONFIG_PATH=${AUTOMERGE_PATH}/automerge-ci.conf
 fi
 
-AUTOMERGE_CONFIG=$(sed ':a;N;$!ba;s/\n/\\\n\/g' ${CONFIG_PATH})
+AUTOMERGE_CONFIG=$(sed ':a;N;$!ba;s/\n/\\\n/g' ${CONFIG_PATH})
 
 # * Disable exit when fail to collect build logs
 set +e
