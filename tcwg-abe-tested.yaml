@@ -26,6 +26,18 @@
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
+- scm:
+    name: dockerfiles
+    scm:
+        - git:
+            url: https://git-us.linaro.org/ci/dockerfiles.git
+            name: origin
+            branches:
+                - refs/heads/master
+            basedir: dockerfiles
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
 - job:
     name: tcwg-abe-tested
     project-type: multijob
@@ -53,6 +65,7 @@
     scm:
         - abe
         - jenkins-scripts
+        - dockerfiles
     triggers:
         # Every 30min
         - pollscm:
@@ -90,5 +103,4 @@
             #!/bin/bash
 
             set -ex
-            ./jenkins-scripts/tcwg-update-tested.sh --GIT_COMMIT $GIT_COMMIT --GIT_COMMIT_1 $GIT_COMMIT_1 --verbose true
-
+            ./jenkins-scripts/tcwg-update-tested.sh --GIT_COMMIT $GIT_COMMIT --GIT_COMMIT_1 $GIT_COMMIT_1 --GIT_COMMIT_2 $GIT_COMMIT_2 --verbose true
