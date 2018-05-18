@@ -90,8 +90,5 @@
             #!/bin/bash
 
             set -ex
+            ./jenkins-scripts/tcwg-update-tested.sh --GIT_COMMIT $GIT_COMMIT --GIT_COMMIT_1 $GIT_COMMIT_1 --verbose true
 
-            git config --global user.name "TCWG Buildslave"
-            git config --global user.email tcwg-buildslave@linaro.org
-            git -C abe push gerrit $GIT_COMMIT:refs/heads/tested
-            git -C jenkins-scripts push gerrit $GIT_COMMIT_1:refs/heads/tested
