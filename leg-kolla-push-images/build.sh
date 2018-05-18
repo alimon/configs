@@ -26,39 +26,39 @@ current=1
 errors=0
 pushed=0
 attempts=0
+retries='2 3 4'
 
 echo "Going to push ${total} of images with '${kolla_tag}' tag."
 
 for image in $(cat list-of-images)
 do
-	retries='2 3 4'
+	((attempts+=1))
 
-	(( attempts++ ))
 	echo "Pushing ${current}/${total} - ${image}:${kolla_tag}"
 	docker push ${image}:${kolla_tag}
 
 	if [ $? -eq 0 ]; then
-		(( pushed++ ))
+		(( pushed+=1 ))
 	else
-		(( errors++ ))
+		(( errors+=1 ))
 
 		for retry in $retries
 		do
-			(( attempts++ ))
+			((attempts+=1))
 			sleep 5
 			echo "Pushing ${current}/${total} - ${image}:${kolla_tag} - attempt number ${retry}"
 			docker push ${image}:${kolla_tag}
 
 			if [ $? -eq 0 ]; then
-				(( pushed++ ))
+				(( pushed+=1 ))
 				break
 			fi
 
-			(( errors++ ))
+			(( errors+=1 ))
 		done
 	fi
 
-	(( current++ ))
+	(( current+=1 ))
 done
 
 echo "Uploaded: ${pushed} out of ${total}"
