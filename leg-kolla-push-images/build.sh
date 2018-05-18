@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 trap cleanup_exit INT TERM EXIT
 
@@ -19,11 +19,48 @@ chmod 0600 ${HOME}/.docker/config.json
 
 rm -rf ${WORKSPACE}/*
 
-docker images | grep ${kolla_tag} | cut -d" " -f1 >list-of-images
+docker images | grep ${kolla_tag} | cut -d" " -f1|sort >list-of-images
 
-amount=$(wc -l list-of-images | cut -d" " -f1 | sort)
+total=$(wc -l list-of-images | cut -d" " -f1)
 current=1
+errors=0
+pushed=0
+attempts=0
 
-echo "Going to push ${amount} of images with '${kolla_tag}' tag."
+echo "Going to push ${total} of images with '${kolla_tag}' tag."
 
-parallel -tu --results ${docker_push_logs_dir} --joblog jobs.log --env kolla_tag --will-cite -k --max-procs $(nproc --all) --retries ${docker_push_retries} 'echo 'Pushing {#} of {= '$_=total_jobs()' =} - {}' && /usr/bin/docker push {}:${kolla_tag}' ::: $(cat list-of-images)
+for image in $(cat list-of-images)
+do
+	retries='2 3 4'
+
+	(( attempts++ ))
+	echo "Pushing ${current}/${total} - ${image}:${kolla_tag}"
+	docker push ${image}:${kolla_tag}
+
+	if [ $? -eq 0 ]; then
+		(( pushed++ ))
+	else
+		(( errors++ ))
+
+		for retry in $retries
+		do
+			(( attempts++ ))
+			sleep 5
+			echo "Pushing ${current}/${total} - ${image}:${kolla_tag} - attempt number ${retry}"
+			docker push ${image}:${kolla_tag}
+
+			if [ $? -eq 0 ]; then
+				(( pushed++ ))
+				break
+			fi
+
+			(( errors++ ))
+		done
+	fi
+
+	(( current++ ))
+done
+
+echo "Uploaded: ${pushed} out of ${total}"
+echo "Attempts: ${attempts}"
+echo "Errors: ${errors}"
