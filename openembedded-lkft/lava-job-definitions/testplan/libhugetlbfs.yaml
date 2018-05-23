@@ -1,6 +1,6 @@
 {% extends device_type %}
 
-{% set job_timeout = 25 %}
+{% set job_timeout = 45 %}
 {% block metadata %}
   {{ super() }}
   libhugetlbfs__url: {{LIBHUGETLBFS_URL}}
@@ -19,5 +19,5 @@
       parameters:
         WORD_SIZE: {% if libhuggetlbfs_word_size is defined %}{{libhuggetlbfs_word_size|int|abs}}{% else %}64{% endif %}
       timeout:
-        minutes: 20
+        minutes: 40
 {% endblock test_target %}
