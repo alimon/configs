@@ -72,12 +72,12 @@ for rootfs in ${ROOTFS}; do
         partition=$(echo ${device} | cut -d'p' -f3)
         sudo dd if=/dev/mapper/${device} of=/tmp/partition.raw bs=512
         if [ "${partition}" = "2" ]; then
-            cp /tmp/partition.raw out/rootfs-${image_name}.img
             sudo mount -o loop /tmp/partition.raw /mnt
             kvers=$(ls /mnt/boot/vmlinuz-*|sed -e 's,.*vmlinuz-,,'|sort -rV|head -1)
             cp /mnt/boot/vmlinuz-${kvers} out/vmlinuz
             cp /mnt/boot/initrd.img-${kvers}  out/initrd
             cp /mnt/usr/lib/linux-image-$kvers/stih410-b2260.dtb out/
+            sudo tar caf out/rootfs-${image_name}.tar /mnt 
             sudo chroot /mnt dpkg -l > out/${image_name}.packages
             sudo umount -f /mnt
         fi
@@ -87,6 +87,6 @@ for rootfs in ${ROOTFS}; do
     cp /tmp/work.raw out/${image_name}.sd
 
     # Compress image(s)
-    pigz -9 out/rootfs-${image_name}.img out/${image_name}.sd
+    pigz -9 out/rootfs-${image_name}.tar out/${image_name}.sd
 done
 
