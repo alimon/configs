@@ -95,6 +95,15 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - $scripts_branch
+            basedir: jenkins-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
     axes:
         - axis:
             type: slave
@@ -125,13 +134,16 @@
           #!/bin/bash
           set -ex
 
+          # For git_rev_parse
+          . ./jenkins-scripts/jenkins-helpers.sh
+
           # Gather revisions to build.
-          abe_rev=$(git -C abe rev-parse --short $abe_branch)
-          gcc_patch_rev=$(git -C gcc rev-parse $GERRIT_PATCHSET_REVISION)
+          abe_rev=$(git_rev_parse abe $abe_branch)
+          gcc_patch_rev=$(git_rev_parse gcc $GERRIT_PATCHSET_REVISION)
           if [ x"$gcc_orig" = x"gcc_patch_prev" ]; then
             gcc_orig="$gcc_patch_rev^"
           fi
-          gcc_orig_rev=$(git -C gcc rev-parse $gcc_orig)
+          gcc_orig_rev=$(git_rev_parse gcc $gcc_orig)
 
           # Get matching config.
           case ${GERRIT_BRANCH} in
