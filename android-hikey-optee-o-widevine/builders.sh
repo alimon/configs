@@ -61,7 +61,7 @@ make TARGET_BUILD_KERNEL=true TARGET_BOOTIMAGE_USE_FAT=true \
 	TARGET_BUILD_UEFI=true TARGET_ENABLE_MEDIADRM_64=true
 
 cd external
-git clone ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/widevine/optee-widevine-ref
+git clone ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/widevine/optee-widevine-ref -b master
 cd optee-widevine-ref/
 if [ "${GERRIT_PROJECT}" == "widevine/optee-widevine-ref" ]; then
     git pull ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
@@ -69,7 +69,7 @@ fi
 cd ../../
 
 cd vendor
-git clone ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/widevine/android widevine
+git clone ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/widevine/android widevine -b google/oc
 cd widevine/
 if [ "${GERRIT_PROJECT}" == "widevine/android" ]; then
     git pull ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
@@ -77,9 +77,9 @@ fi
 cd ../../
 
 cd external/optee-widevine-ref
-mma -B
+mma
 cd ../../
 
 cd vendor/widevine
-mma -B
+mma
 cd ../../
