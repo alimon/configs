@@ -35,7 +35,7 @@ Host dev-private-review.linaro.org
 EOF
 chmod 0600 ${HOME}/.ssh/config
 
-repo init -u https://android-git.linaro.org/git/platform/manifest.git -b android-8.1.0_r23 -g "default,-non-default,-device,hikey"
+repo init -u https://android-git.linaro.org/git/platform/manifest.git -b android-8.1.0_r29 -g "default,-non-default,-device,hikey"
 cd .repo
 git clone https://android-git.linaro.org/git/platform/manifest.git -b linaro-oreo local_manifests
 cd local_manifests
@@ -69,7 +69,7 @@ fi
 cd ../../
 
 cd vendor
-git clone ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/widevine/android widevine -b google/oc
+git clone ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/widevine/android widevine -b google/oc-mr1
 cd widevine/
 if [ "${GERRIT_PROJECT}" == "widevine/android" ]; then
     git pull ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
