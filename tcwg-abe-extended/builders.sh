@@ -17,6 +17,8 @@ gccnum=$(echo ${testname} | sed 's/.*_gcc//') # eg 6
 gccversionname=gcc${gccnum}ver                # eg gccversionname=gcc6ver
 gccversion=$(eval echo \$$gccversionname)     # eg gccversion=gcc=gcc.git~linaro-6.1-2016.08
 
+ret=0
+
 case "$testname" in
   canadian_cross_build_gcc*)
     # Configure git user info to make git stash happy. It
@@ -27,20 +29,17 @@ case "$testname" in
     mkdir _build
     cd _build
     target=arm-linux-gnueabihf
-    ${BUILD_SHELL} ../configure --with-git-reference-dir=~tcwg-buildslave/snapshots-ref
-    ret=$?
+    ${BUILD_SHELL} ../configure --with-git-reference-dir=~tcwg-buildslave/snapshots-ref || ret=$?
     if test ${ret} -ne 0; then
       echo "Configure error: ${ret}"
       exit $ret
     fi
-    ${BUILD_SHELL} ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc${gccnum} --build all $gccversion
-    ret=$?
+    ${BUILD_SHELL} ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc${gccnum} --build all $gccversion || ret=$?
     if test ${ret} -ne 0; then
       echo "First build error: ${ret}"
       exit $ret
     fi
-    ${BUILD_SHELL} ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc${gccnum} --build all $gccversion --host i686-w64-mingw32
-    ret=$?
+    ${BUILD_SHELL} ${WORKSPACE}/abe.sh --target ${target} --extraconfigdir ../config/gcc${gccnum} --build all $gccversion --host i686-w64-mingw32 || ret=$?
     if test ${ret} -ne 0; then
       echo "Second build error: ${ret}"
       exit $ret
@@ -73,23 +72,19 @@ case "$testname" in
     esac
 
     # Build and check a linux target
-    ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir `pwd` --target ${target} ${bootstrap} ${testcontainer_opt} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccnum} $gccversion"
-    ret=$?
+    ${BUILD_SHELL} -x ${WORKSPACE}/jenkins-scripts/jenkins.sh --workspace ${WORKSPACE} --abedir `pwd` --target ${target} ${bootstrap} ${testcontainer_opt} --runtests --excludecheck gdb --override "--extraconfigdir ../config/gcc${gccnum} $gccversion" || ret=$?
     #FIXME: check validation results (against a known baseline)
     #FIXME: validate the manifest
     ;;
   abe-testsuite)
-    ${BUILD_SHELL} -c "set -ex; ./configure; make check"
-    ret=$?
+    ${BUILD_SHELL} -c "set -ex; ./configure; make check" || ret=$?
     ;;
   abe-tests-checkout)
-    ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-checkout.sh --clean-snapshots --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref"
-    ret=$?
+    ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-checkout.sh --clean-snapshots --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref" || ret=$?
     ;;
   abe-tests-*)
     target=$(echo ${testname} | sed 's/abe-tests-//')
-    ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report --target ${target}"
-    ret=$?
+    ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-report --target ${target}" || ret=$?
     ;;
 esac
 
