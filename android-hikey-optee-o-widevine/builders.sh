@@ -28,6 +28,13 @@ export PATH=${HOME}/bin:${PATH}
 
 set -e
 
+cat << EOF > ${HOME}/.ssh/config
+Host dev-private-review.linaro.org
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking no
+EOF
+chmod 0600 ${HOME}/.ssh/config
+
 repo init -u https://android-git.linaro.org/git/platform/manifest.git -b android-8.1.0_r23 -g "default,-non-default,-device,hikey"
 cd .repo
 git clone https://android-git.linaro.org/git/platform/manifest.git -b linaro-oreo local_manifests

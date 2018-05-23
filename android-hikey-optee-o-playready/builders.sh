@@ -36,6 +36,13 @@ rm -f swg.xml
 wget -q https://raw.githubusercontent.com/linaro-swg/optee_android_manifest/lcr-ref-hikey-o/swg.xml
 cd ${WORKSPACE}
 
+cat << EOF > ${HOME}/.ssh/config
+Host lhg-review.linaro.org
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking no
+EOF
+chmod 0600 ${HOME}/.ssh/config
+
 repo sync -j$(nproc)
 ./android-patchsets/hikey-o-workarounds
 ./android-patchsets/get-hikey-blobs
