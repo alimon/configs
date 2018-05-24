@@ -69,13 +69,13 @@ if [ "${GERRIT_PROJECT}" == "android/playreadydrmplugin" ]; then
    git pull ssh://lhg-gerrit-bot@lhg-review.linaro.org:29418/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
 fi
 
-git clone -b hikey_android ssh://lhg-gerrit-bot@lhg-review.linaro.org:29418/lhg/playready
+git clone -b 3.3.4472 ssh://lhg-gerrit-bot@lhg-review.linaro.org:29418/lhg/playready
 cd playready
 if [ "${GERRIT_PROJECT}" == "lhg/playready" ]; then
    git pull ssh://lhg-gerrit-bot@lhg-review.linaro.org:29418/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
 fi
 
-git clone -b hikey_android ssh://lhg-gerrit-bot@lhg-review.linaro.org:29418/optee-playready source/optee-playready
+git clone -b 3.3.4472 ssh://lhg-gerrit-bot@lhg-review.linaro.org:29418/optee-playready source/optee-playready
 cd source/optee-playready/
 if [ "${GERRIT_PROJECT}" == "optee-playready" ]; then
    git pull ssh://lhg-gerrit-bot@lhg-review.linaro.org:29418/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
