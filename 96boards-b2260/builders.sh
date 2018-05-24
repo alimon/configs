@@ -16,7 +16,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="fai-server fai-setup-storage qemu-utils procps pigz kpartx "
+pkg_list="fai-server fai-setup-storage qemu-utils procps pigz kpartx u-boot-tools"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
@@ -77,7 +77,7 @@ for rootfs in ${ROOTFS}; do
             cp /mnt/boot/vmlinuz-${kvers} out/vmlinuz
             cp /mnt/boot/initrd.img-${kvers}  out/initrd
             cp /mnt/usr/lib/linux-image-$kvers/stih410-b2260.dtb out/
-            sudo tar caf out/rootfs-${image_name}.tar /mnt 
+            sudo tar caf out/rootfs-${image_name}.tar /mnt
             sudo chroot /mnt dpkg -l > out/${image_name}.packages
             sudo umount -f /mnt
         fi
@@ -85,6 +85,7 @@ for rootfs in ${ROOTFS}; do
     done
     sudo kpartx -dv /tmp/work.raw
     cp /tmp/work.raw out/${image_name}.sd
+    mkimage -A arm -O linux -T kernel -C none -a 0x40080000 -e 40080000 -d out/vmlinuz out/uImage
 
     # Compress image(s)
     pigz -9 out/rootfs-${image_name}.tar out/${image_name}.sd
