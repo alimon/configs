@@ -42,6 +42,10 @@
             name: debug
             default: false
             description: 'Whether to enable bash debugging output.'
+        - bool:
+            name: dryrun
+            default: false
+            description: 'Dry-run, do nothing, just print steps'
     disabled: false
     node: tcwg-x86_64-build
     retry-count: 3
@@ -100,7 +104,7 @@
                     exit 1
                     ;;
             esac
-            bash -x ${WORKSPACE}/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} > build-container.sh
+            bash -x ${WORKSPACE}/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_tag} --session-host ${builder} --dryrun ${dryrun} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./build-container.sh

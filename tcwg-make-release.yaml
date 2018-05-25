@@ -78,6 +78,10 @@
             name: logsdir
             default: ''
             description: 'Optional upload dir for logs on fileserver. If empty, a suitable value is computed by the script'
+        - bool:
+            name: dryrun
+            default: false
+            description: 'Dry-run, do nothing, just print steps'
     disabled: false
     node: tcwg-coordinator
     retry-count: 3
@@ -267,6 +271,34 @@
                 echo Unsupported binariesdir: ${binariesdir}. Fix the job.
                 ;;
             esac
+
+            if $dryrun; then
+                echo DRYRUN: ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --release_name ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER} ${gcc_src:+ --gcc ${gcc_src}} ${binutils_src:+ --binutils ${binutils_src}} ${glibc_src:+ --glibc ${glibc_src}}"
+
+                # Dry-run: generate fake test jobs
+                if $testrelease; then
+                    tarball_linux="tarball_linux"
+                    tarball_linux_url="http://${fileserver}/${url_prefix}/${target}/${tarball_linux}"
+                    cat << EOF > tcwg.params.linux
+            tarball_url=${tarball_linux_url}
+            release=${tcwg_version}-${tcwg_release}
+            target=${host}-${target}
+            dryrun=$dryrun
+            EOF
+
+                    if test x"${canadian}" = x"--canadian"; then
+                        tarball_mingw="tarball_mingw"
+                        tarball_mingw_url="http://${fileserver}/${url_prefix}/${target}/${tarball_mingw}"
+                        cat << EOF > tcwg.params.mingw
+            tarball_url=${tarball_mingw_url}
+            release=${tcwg_version}-${tcwg_release}
+            target=mingw-${target}
+            dryrun=$dryrun
+            EOF
+                    fi
+                fi
+                exit 0
+            fi
 
             ${BUILD_CONTAINER} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/MakeRelease.job --abedir ${WORKSPACE}/abe --workspace ${WORKSPACE} ${canadian} --target ${target}${tcwg_release:+ --release_name ${tcwg_release}} --fileserver ${fileserver} --toolchainconfig ${toolchain_config} --binariesdir ${binariesdir}/${target} --logsdir ${logsdir}/${target} --buildnumber ${BUILD_NUMBER} ${gcc_src:+ --gcc ${gcc_src}} ${binutils_src:+ --binutils ${binutils_src}} ${glibc_src:+ --glibc ${glibc_src}}"
             if test $? -gt 0; then
