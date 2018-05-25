@@ -46,6 +46,10 @@
             name: rebuild
             default: false
             description: 'Rebuild the toolchain even if results are already on logserver'
+        - bool:
+            name: dryrun
+            default: false
+            description: 'Dry-run, do nothing, just print steps'
     disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: true
@@ -152,6 +156,7 @@
             abe_branch=$abe_rev
             scripts_branch=$scripts_branch
             displaytag=backport-ref-${GERRIT_CHANGE_NUMBER}
+            dryrun=$dryrun
             EOF
 
             cat <<EOF > gcc_patch_parameters
@@ -164,6 +169,7 @@
             abe_branch=$abe_rev
             scripts_branch=$scripts_branch
             displaytag=backport-patch-${GERRIT_CHANGE_NUMBER}
+            dryrun=$dryrun
             EOF
 
             cat <<EOF > compare_results_parameters
@@ -171,6 +177,7 @@
             new_logs=tcwg-backport-$gcc_patch_rev/$abe_rev
             target_list=$target_list
             log_server=$log_server
+            dryrun=$dryrun
             EOF
         - trigger-builds:
             - project: tcwg-buildfarm
