@@ -3,9 +3,9 @@
 {% set job_timeout = 45 %}
 {% block metadata %}
   {{ super() }}
-  libhugetlbfs__url: {{LIBHUGETLBFS_URL}}
-  libhugetlbfs__version: "{{LIBHUGETLBFS_VERSION}}"
-  libhugetlbfs__revision: "{{LIBHUGETLBFS_REVISION}}"
+  libhugetlbfs__url: {{LIBHUGETLBFS_URL | default('unknown')}}
+  libhugetlbfs__version: "{{LIBHUGETLBFS_VERSION | default('unknown')}}"
+  libhugetlbfs__revision: "{{LIBHUGETLBFS_REVISION | default('unknown')}}"
 {% endblock metadata %}
 
 {% block job_name %}lkft-libhugetlbfs-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
