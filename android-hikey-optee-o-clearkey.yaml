@@ -1,0 +1,53 @@
+- job:
+    name: android-hikey-optee-o-clearkey
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'AOSP HiKey build with OP-TEE (SWG) ClearKey'
+    concurrent: false
+    scm:
+        - git:
+            url: https://github.com/linaro-home/clearkeydrmplugin.git
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+        - git:
+            url: https://github.com/linaro-home/optee-clearkey-cdmi.git
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    triggers:
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            auth-id: 'GITHUB_TOKEN'
+
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+               - '8e3d0ab1-974d-4bb9-abc0-0b8f01de969a'
+        - timeout:
+            timeout: 500
+    builders:
+        - shell:
+            !include-raw: android-hikey-optee-o-clearkey/builders.sh
