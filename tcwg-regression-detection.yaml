@@ -26,6 +26,10 @@
             name: ref_abe_rev
             default: ''
             description: 'Reference ABE revision to use. Empty (default) means previous revision'
+        - bool:
+            name: dryrun
+            default: false
+            description: 'Dry-run, do nothing, just print steps'
     disabled: false
     node: tcwg-coordinator
     retry-count: 3
@@ -125,6 +129,7 @@
             eval_abe_branch=$cur_abe_rev
             target_list=aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf
             displaytag=reg-detection-${BUILD_NUMBER}
+            dryrun=$dryrun
             EOF
 
             echo "NOTE: Buildfarm cmp job parameters:"
@@ -145,6 +150,7 @@
             target_list=$release_target_list
             testrelease=false
             tcwg_regression_rev=ok-for-regtest-with-gcc-linaro-7.2-2017.11
+            dryrun=$dryrun
             EOF
 
             echo "NOTE: Make-release job parameters:"
