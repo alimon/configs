@@ -26,6 +26,10 @@
             name: scripts_branch
             default: master
             description: 'Scripts branch to use'
+        - bool:
+            name: dryrun
+            default: false
+            description: 'Dry-run, do nothing, just print steps'
     disabled: false
     node: tcwg-coordinator
     retry-count: 3
@@ -102,7 +106,7 @@
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
             . ./jenkins-scripts/jenkins-helpers.sh
 
-            ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ > build-container.sh
+            ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ --dryrun $dryrun > build-container.sh
             . ./build-container.sh
             BUILD_SHELL="build_container_exec bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
@@ -110,6 +114,11 @@
             # Remove container on exit
             trap "build_container_cleanup" EXIT HUP INT QUIT TRAP KILL PIPE TERM
 
+            if $dryrun; then
+                DRYRUNCMD="echo DRYRUN:"
+            else
+                DRYRUNCMD=
+            fi
 
             status=0
             case "$test" in
@@ -132,19 +141,19 @@
                 ;;
               abe-tests)
                 ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-manifest2.sh --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref --quiet --display-summary" || status=$?
-                cp abe-tests/full-manifest-test/*.txt ${ARTIFACTS}
-                rm ${ARTIFACTS}/empty.txt
+                $DRYRUNCMD cp abe-tests/full-manifest-test/*.txt ${ARTIFACTS}
+                $DRYRUNCMD rm ${ARTIFACTS}/empty.txt
                 # full build logs are large, and not very useful, so we
                 # don't waste the disk space on them
-                rm -f ${ARTIFACTS}/test-mani-build[12].txt
+                $DRYRUNCMD rm -f ${ARTIFACTS}/test-mani-build[12].txt
                 ;;
               abe-tests-checkout)
                 ${BUILD_SHELL} -c "set -ex; git clone https://git.linaro.org/toolchain/abe-tests.git; cd abe-tests; ./test-checkout.sh --clean-snapshots --abe-path `pwd` --ref-snapshots /home/tcwg-buildslave/snapshots-ref" || status=$?
-                cp abe-tests/checkout-test/workspace*/test_*.log ${ARTIFACTS}
-                rm artifacts/empty.txt
+                $DRYRUNCMD cp abe-tests/checkout-test/workspace*/test_*.log ${ARTIFACTS}
+                $DRYRUNCMD rm artifacts/empty.txt
                 # the reports from here aren't usually needed, so are
                 # worth compressing
-                xz ${ARTIFACTS}/*
+                $DRYRUNCMD xz ${ARTIFACTS}/*
                 ;;
             esac
 

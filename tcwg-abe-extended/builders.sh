@@ -4,7 +4,7 @@ set -ex
 
 . ./jenkins-scripts/jenkins-helpers.sh
 
-./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ > build-container.sh
+./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ --dryrun $dryrun > build-container.sh
 . ./build-container.sh
 trap "build_container_cleanup" EXIT HUP INT QUIT TRAP PIPE TERM
 BUILD_SHELL="build_container_exec bash"
