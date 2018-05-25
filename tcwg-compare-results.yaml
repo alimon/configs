@@ -43,6 +43,10 @@
             name: cmp_version
             default: refs/heads/master
             description: 'Comparison scripts version to use'
+        - bool:
+            name: dryrun
+            default: false
+            description: 'Dry-run, do nothing, just print steps'
     disabled: false
     node: tcwg-x86_64-dev-01-short
     retry-count: 3
@@ -82,26 +86,32 @@
 
             trap "ssh ${log_server} rm -rf ${dest}" EXIT HUP INT QUIT TRAP KILL PIPE TERM
 
-            LOGSDIR=${WORKSPACE}/artifacts/logs
+            if ! $dryrun; then
+                LOGSDIR=${WORKSPACE}/artifacts/logs
 
-            mkdir -p ${LOGSDIR}
+                mkdir -p ${LOGSDIR}
 
-            ssh ${log_server} mkdir -p ${dest}
-            scp ./compare_jobs.sh \
-                ./compare_tests \
-                ./compare_dg_tests.pl \
-                ./unstable-tests.txt ${log_server}:${dest} || status=1
-            ssh ${log_server} bash ${dest}/compare_jobs.sh \
-                -pass-thresh ${pass_thresh} \
-                $basedir/$ref_logs $basedir/$new_logs ${target_list} || status=1
+                ssh ${log_server} mkdir -p ${dest}
+                scp ./compare_jobs.sh \
+                    ./compare_tests \
+                    ./compare_dg_tests.pl \
+                    ./unstable-tests.txt ${log_server}:${dest} || status=1
+                ssh ${log_server} bash ${dest}/compare_jobs.sh \
+                    -pass-thresh ${pass_thresh} \
+                    $basedir/$ref_logs $basedir/$new_logs ${target_list} || status=1
 
-            # Copy the generated reports
-            scp ${log_server}:${dest}/\*-diff-\*.txt ${LOGSDIR} || true
-            scp ${log_server}:${dest}/\*.html report.css ${LOGSDIR} || true
+                # Copy the generated reports
+                scp ${log_server}:${dest}/\*-diff-\*.txt ${LOGSDIR} || true
+                scp ${log_server}:${dest}/\*.html report.css ${LOGSDIR} || true
 
-            # Print results in console
-            if $show_results; then
-                cat ${LOGSDIR}/*.txt
+                # Print results in console
+                if $show_results; then
+                    cat ${LOGSDIR}/*.txt
+                fi
+            else
+                echo DRYRUN: compare_jobs.sh \
+                     -pass-thresh ${pass_thresh} \
+                     $basedir/$ref_logs $basedir/$new_logs ${target_list}
             fi
 
             exit $status

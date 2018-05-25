@@ -90,6 +90,10 @@
             name: displaytag
             default: 'manual'
             description: 'Tag to display in the Jenkins console, so that the build name is more helpful'
+        - bool:
+            name: dryrun
+            default: false
+            description: 'Dry-run, do nothing, just print steps'
     disabled: false
     node: tcwg-coordinator
     concurrent: true
@@ -113,6 +117,7 @@
             extraconfig=$extraconfig
             log_server=$log_server
             target_list=$target_list
+            dryrun=$dryrun
             EOF
 
             echo "NOTE: Buildfarm job parameters:"
@@ -122,6 +127,7 @@
             ref_logs=$ref_log_name
             new_logs=$eval_log_name
             log_server=$log_server
+            dryrun=$dryrun
             EOF
 
             echo "NOTE: Compare Results job parameters:"
