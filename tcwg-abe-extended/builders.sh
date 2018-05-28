@@ -54,7 +54,7 @@ case "$testname" in
       cross_linux_*)
         target=arm-linux-gnueabihf
 	tester_label=$(print_tester_label_for_target $target)
-	./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
+	bash -x ./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
 	. ./test-container.sh
 	trap "build_container_cleanup; test_container_cleanup" EXIT HUP INT QUIT TRAP PIPE TERM
 	testcontainer_opt="--testcontainer ${test_container_host}:${test_container_port}"
