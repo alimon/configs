@@ -1,5 +1,5 @@
 - job:
-    name: android-hikey-optee-o-clearkey
+    name: android-hikey-optee-o-clearkey-cdmi
     project-type: freestyle
     defaults: global
     properties:
@@ -12,26 +12,19 @@
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
+        - github:
+            url: https://github.com/linaro-home/optee-clearkey-cdmi
     disabled: false
     node: docker-xenial-aosp
     display-name: 'AOSP HiKey build with OP-TEE (SWG) ClearKey'
     concurrent: false
     scm:
         - git:
-            url: https://github.com/linaro-home/clearkeydrmplugin.git
-            refspec: +refs/pull/*:refs/remotes/origin/pr/*
-            name: origin
-            branches:
-                - any
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: true
-        - git:
             url: https://github.com/linaro-home/optee-clearkey-cdmi.git
             refspec: +refs/pull/*:refs/remotes/origin/pr/*
             name: origin
             branches:
-                - any
+                - ${sha1}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
