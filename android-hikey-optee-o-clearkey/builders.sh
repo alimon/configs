@@ -35,6 +35,8 @@ Host dev-private-review.linaro.org
 EOF
 chmod 0600 ${HOME}/.ssh/config
 
+rm -rf *
+
 repo init -u https://android-git.linaro.org/git/platform/manifest.git -b android-8.1.0_r29 -g "default,-non-default,-device,hikey"
 cd .repo
 git clone https://android-git.linaro.org/git/platform/manifest.git -b linaro-oreo local_manifests
