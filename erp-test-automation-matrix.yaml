@@ -1,0 +1,54 @@
+- job:
+    name: 'erp-test-automation-matrix'
+    display-name: 'ERP test automation matrix'
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    child-workspace: $HOST
+    axes:
+        - axis:
+            type: user-defined
+            name: HOST
+            values:
+                - j12-d03-04
+                - CB-R2-D05-06
+                - j12-m1-c33n1
+                - j13-r120-t32-19
+                - j13-qrep-05
+    parameters:
+        - string:
+            name: BUILD_ENV
+            default: 'staging'
+        - string:
+            name: BUILD_NUM
+            default: 'latest'
+        - string:
+            name: BUILD_DISTRO
+            default: 'debian'
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: ANSIBLE_VAULT
+                variable: ANSIBLE_VAULT
+    builders:
+        - shell:
+            !include-raw: erp-test-automation/builders-matrix.sh
+    publishers:
+        - email:
+            recipients: 'chase.qi@linaro.org'
