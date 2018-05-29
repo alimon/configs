@@ -28,6 +28,7 @@ case "${MACHINE}" in
     if [ ${DEVICE_TYPE} = "dragonboard-410c" ]; then
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
       export WLAN_DEVICE="wlan0"
+      export ETH_DEVICE="eth0"
       export GST_IGNORE_TESTS_FILE="qa/gst-validate/db410c.ignore"
       export PIGLIT_IGNORE_TESTS_FILE="qa/piglit/db410c.ignore"
 
@@ -35,6 +36,7 @@ case "${MACHINE}" in
     elif [ ${DEVICE_TYPE} = "dragonboard-820c" ]; then
       export PM_QA_TESTS="cpufreq cputopology"
       export WLAN_DEVICE="wlp1s0"
+      export ETH_DEVICE="enP2p1s0"
       export GST_IGNORE_TESTS_FILE="qa/gst-validate/db820c.ignore"
       export PIGLIT_IGNORE_TESTS_FILE="qa/piglit/db820c.ignore"
 
