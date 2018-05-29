@@ -1,0 +1,119 @@
+device_type: x15
+job_name: "lkft-android-${KERNEL_BRANCH}-${BUILD_NUMBER}-vts-staging-kernel"
+
+timeouts:
+  job:
+    minutes: 100
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility:
+  group:
+    -lkft
+
+metadata:
+  android.build: "${BUILD_NUMBER}"
+  android.name: "${JOB_NAME}"
+  android.url: "${BUILD_URL}"
+  git branch: "${KERNEL_BRANCH}"
+  git repo: "${KERNEL_REPO}"
+  git commit: "${KERNEL_COMMIT}"
+  git describe: "${KERNEL_DESCRIBE}"
+  build-url: "${BUILD_URL}"
+  toolchain: "${TOOLCHAIN}"
+  series: lkft
+
+protocols:
+  lava-lxc:
+    name: lxc-x15-test
+    distribution: ubuntu
+    release: xenial
+    arch: amd64
+    verbose: true
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 5
+    to: lxc
+    packages:
+    - wget
+    - unzip
+    os: ubuntu
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - ':/'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - from: inline
+      name: install-google-fastboot
+      path: inline/install-google-fastboot.yaml
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: install-fastboot
+          description: "Install fastboot provided by google"
+        run:
+          steps:
+          - wget https://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip
+          - unzip platform-tools_r26.0.0-linux.zip
+          - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
+          - ln -s `pwd`/platform-tools/adb /usr/bin/adb
+          - fastboot --version
+
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: droid
+    images:
+      boot:
+        url: "${DOWNLOAD_URL}/boot_fit.img"
+      vendor:
+        url: "${DOWNLOAD_URL}/vendor.img"
+      cache:
+        url: "${DOWNLOAD_URL}/cache.img"
+      userdata:
+        url: "${DOWNLOAD_URL}/userdata.img"
+      system:
+        url: "${DOWNLOAD_URL}/system.img"
+
+- boot:
+    namespace: droid
+    prompts:
+    - 'root@(.*):/#'
+    - ':/'
+    timeout:
+      minutes: 15
+    method: fastboot
+
+
+- test:
+      namespace: tlxc
+      connection: lxc
+      timeout:
+        minutes: 480
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/tradefed/tradefed.yaml
+          params:
+                TEST_URL: "${VTS_URL}/android-vts.zip"
+                TEST_PARAMS: "run vts-staging-kernel --skip-device-info"
+                TEST_PATH: "android-vts"
+                RESULTS_FORMAT: "atomic"
+                ANDROID_VERSION: "${ANDROID_VERSION}"
+          name: vts-staging-test
