@@ -46,6 +46,10 @@
             name: BAD
             default: ''
             description: 'Bad SVN revision'
+        - string:
+            name: build_container_tag
+            default: 'xenial'
+            description: 'Distro to use on the builder: trusty, xenial.'
     disabled: false
     node: tcwg-x86_64-cam
     concurrent: true
@@ -76,8 +80,18 @@
             git config --global user.email "tcwg-buildslave@linaro.org"
             git config --global user.name "TCWG BuildSlave"
 
+            # Start build container
+            bash -x ./jenkins-scripts/start-container-docker.sh --node $NODE_NAME --distro ${build_container_tag} --prefix build_ > build-container.sh
+
+            # Define build_CONTAINER_RSH and build_container_cleanup
+            . ./build-container.sh
+
+            # Make sure to cleanup build container if something goes
+            # wrong when preparing the test environment
+            trap "cleanup_all_containers" EXIT
+
             # Jenkins puts the parameters in the environment
-            ${shell} ${WORKSPACE}/jenkins-scripts/abe-bisect.sh
+            ${build_CONTAINER_RSH} "cd ${WORKSPACE} && ${shell} ${WORKSPACE}/jenkins-scripts/abe-bisect.sh"
     publishers:
         - email:
             recipients: 'christophe.lyon@linaro.org'
