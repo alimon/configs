@@ -119,15 +119,21 @@ cat conf/{site,auto}.conf
 
 case "${MACHINE}" in
   imx7s-warp*)
-    # Temporary sstate cleanup to force warp7 firmware to be re-generated each time
+    # Temporary sstate cleanup to force firmware to be re-generated each time
     set +e
-    bitbake -c cleansstate u-boot-fslc mbl-boot-scr
+    bitbake -c cleansstate u-boot-fslc mbl-boot-scr linux-firmware
     set -e
     ;;
   bananapi-zero*)
-    # Temporary sstate cleanup to force warp7 firmware to be re-generated each time
+    # Temporary sstate cleanup to force firmware to be re-generated each time
     set +e
-    bitbake -c cleansstate u-boot-bpi mbl-boot-scr optee-os
+    bitbake -c cleansstate u-boot-bpi mbl-boot-scr optee-os linux-firmware
+    set -e
+    ;;
+  raspberrypi3*)
+    # Temporary sstate cleanup to force firmware to be re-generated each time
+    set +e
+    bitbake -c cleansstate mbl-boot-scr linux-firmware
     set -e
     ;;
 esac
