@@ -1,6 +1,6 @@
-git clone --depth 1 ${ZEPHYR_GIT_URL} -b ${ZEPHYR_BRANCH} zephyr-rtos
-(cd zephyr-rtos; git clean -fdx)
-. zephyr-rtos/zephyr-env.sh
+git clone --depth 1 ${ZEPHYR_GIT_URL} -b ${ZEPHYR_BRANCH} zephyr
+(cd zephyr; git clean -fdx)
+. zephyr/zephyr-env.sh
 
 
 small_rom() {
