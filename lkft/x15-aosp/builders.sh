@@ -20,7 +20,7 @@ export PATH=${HOME}/bin:${PATH}
 
 repo init -u http://android.googlesource.com/platform/manifest -b master
 if [ ! -z ${REFERENCE_BUILD_URL} ]; then
-  cd .repo/manifest/
+  cd .repo/manifests/
   wget ${REFERENCE_BUILD_URL}/pinned-manifest.xml -O default.xml
   cd ../../
 fi
