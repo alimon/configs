@@ -58,7 +58,7 @@ make -j$(nproc)
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
-PUB_DEST=android/lkft/x15-aosp-4.14/${BUILD_NUMBER}
+PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
 PUB_SRC=${PWD}/out/target/product/am57xevm/
 PUB_EXTRA_INC=^[^/]+zip
 EOF
