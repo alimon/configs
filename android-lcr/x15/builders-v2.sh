@@ -23,12 +23,21 @@ cd build
 rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
 cd -
 
+if [[ ${JOB_NAME} == "lkft-x15-android-8.1-4.14" ]]; then
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/build/out
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 PUB_EXTRA_INC=^[^/]+[._](u-boot|dtb)$|MLO
 EOF
+else
+# Publish parameters
+cat << EOF > ${WORKSPACE}/publish_parameters
+PUB_SRC=${PWD}/build/out
+PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
+PUB_EXTRA_INC=^[^/]+[._](u-boot|dtb)$|MLO
+EOF
+fi
 
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 # Construct post-build-lava parameters
