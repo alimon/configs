@@ -35,7 +35,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
     --template-path configs/lkft/lava-job-definitions \
-    --template-names template-boot.yaml template-vts-kernel-syscalls.yaml template-cts-displaytestcases.yaml template-vts-kselftest.yaml template-cts.yaml template-vts-kernel-ltp.yaml
+    --template-names template-boot.yaml template-vts-kernel-syscalls.yaml template-cts-displaytestcases.yaml template-vts-kselftest.yaml template-cts.yaml template-vts-kernel-ltp.yaml \
     --quiet
 
 python configs/openembedded-lkft/submit_for_testing.py \
@@ -44,7 +44,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --lava-server ${LAVA_SERVER} \
     --qa-server ${QA_SERVER} \
     --qa-server-team staging-lkft \
-    --qa-server-project ${QA_SERVER_PROJECT}-vts-staging \
+    --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
     --template-path configs/lkft/lava-job-definitions \
     --template-names template-vts-staging-kernel.yaml \
