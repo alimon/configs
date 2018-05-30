@@ -5,6 +5,9 @@ export JENKINS_WORKSPACE=${WORKSPACE}
 
 java -version
 
+git config --global user.email "ci_notify@linaro.org"
+git config --global user.name "Linaro CI"
+
 sudo apt-get -q=2 update
 sudo apt-get -q=2 install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz zlib1g-dev
 
@@ -18,6 +21,7 @@ curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
 chmod a+x ${HOME}/bin/*
 export PATH=${HOME}/bin:${PATH}
 
+cd ~/srv/aosp-master/build/
 repo init -u http://android.googlesource.com/platform/manifest -b master
 if [ ! -z ${REFERENCE_BUILD_URL} ]; then
   cd .repo/manifests/
@@ -55,3 +59,5 @@ PUB_SRC=${PWD}/out/target/product/am57xevm/
 PUB_EXTRA_INC=^[^/]+zip
 EOF
 
+rm -rf .repo/manifests .repo/local_manifests
+rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ kernel/
