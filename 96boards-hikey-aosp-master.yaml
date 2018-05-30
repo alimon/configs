@@ -286,7 +286,20 @@
             sed -i "s|boot.img.xz|boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
             export KERNEL_BRANCH="android-hikey-linaro-4.14"
-            # submit 4.14 jobs to lkft-staging to reduce load on production lkft
+            # submit 4.14 jobs to v.l.o to reduce load on production lkft
+            export LAVA_SERVER=https://validation.linaro.org/RPC2/
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team staging-lkft \
+                --env-suffix "_4.14-${KERNEL_DESCRIBE_4_14}" \
+                --qa-server-project ${QA_SERVER_PROJECT} \
+                --git-commit ${QA_BUILD_VERSION} \
+                --template-path configs/lkft/lava-job-definitions \
+                --template-names template-boot.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml template-cts-displaytestcases.yaml \
+                --quiet
             export LAVA_SERVER=https://lkft-staging.validation.linaro.org/RPC2/
             python configs/openembedded-lkft/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
@@ -298,7 +311,7 @@
                 --qa-server-project ${QA_SERVER_PROJECT} \
                 --git-commit ${QA_BUILD_VERSION} \
                 --template-path configs/lkft/lava-job-definitions \
-                --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml template-cts-displaytestcases.yaml \
+                --template-names template-vts-kernel-part1.yaml \
                 --quiet
 
     publishers:
