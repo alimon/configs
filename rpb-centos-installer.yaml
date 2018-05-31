@@ -30,17 +30,17 @@
 
             set -ex
 
-            # Make sure the base image is updated to 7.3.1611
-            sudo sed -i 's/\$releasever/7.3.1611/g' /etc/yum.repos.d/CentOS-Base.repo
+            # Make sure the base image is updated to 7.5.1804
+            sudo sed -i 's/\$releasever/7.5.1804/g' /etc/yum.repos.d/CentOS-Base.repo
 
             sudo yum update -y
             sudo yum install -y cpio lorax python-requests wget xz
 
             # Call lorax to create the netinstall image
             sudo rm -rf netinstall
-            sudo lorax '--product=CentOS Linux' --version=7 --release=7.3.1611 \
+            sudo lorax '--product=CentOS Linux' --version=7 --release=7.5.1804 \
               --source=http://mirror.centos.org/altarch/7/os/aarch64/ \
-              --source=http://repo.linaro.org/rpm/linaro-overlay/centos-7/repo/ \
+              --source=http://obs.linaro.org/ERP-RPM:/18.06/stable/ \
               --isfinal --nomacboot --noupgrade --buildarch=aarch64 '--volid=CentOS 7 aarch64' netinstall/
 
             # Modify initrd to include a default kickstart (that includes the external repository)
@@ -48,7 +48,7 @@
             sudo mkdir initrd; cd initrd
             sudo sh -c 'xzcat ../initrd.img | cpio -d -i -m'
             cat > /tmp/ks.cfg << EOF
-            repo --name="linaro-overlay" --baseurl=http://repo.linaro.org/rpm/linaro-overlay/centos-7/repo/
+            repo --name="ERP-RPM:18.06" --baseurl=http://obs.linaro.org/ERP-RPM:/18.06/stable/
             EOF
             sudo cp /tmp/ks.cfg ks.cfg
             sudo sh -c 'find . | cpio -o -H newc | xz --check=crc32 --lzma2=dict=512KiB > ../initrd.img'
