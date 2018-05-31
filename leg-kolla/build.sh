@@ -29,6 +29,12 @@ else
     fi
 fi
 
+kolla_profile="linaro"
+
+if [ ! -z "${kolla_ldc}" ]; then
+    kolla_profile="devcloud"
+fi
+
 set -ex
 
 trap cleanup_exit INT TERM EXIT
@@ -85,7 +91,7 @@ kolla_namespace=linaro
                  ${kolla_options} \
                  --logs-dir logs/debian-source \
                  --config-file ${WORKSPACE}/linaro.conf \
-                 --profile linaro \
+                 --profile ${kolla_profile} \
                  --pull \
                  --retries ${RETRIES_OPT} \
                  --threads ${THREADS_OPT} \
