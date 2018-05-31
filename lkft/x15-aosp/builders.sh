@@ -55,6 +55,7 @@ cd ../../../
 source build/envsetup.sh
 lunch am57xevm_full-userdebug
 make -j$(nproc)
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/am57xevm/BUILD-INFO.txt
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
