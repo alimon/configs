@@ -22,7 +22,7 @@
             default: 'https://qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
-            default: 'aosp-master-vts-tracking'
+            default: 'aosp-master-tracking'
         - string:
             name: ANDROID_VERSION
             default: 'AOSP MASTER'
@@ -237,6 +237,8 @@
             export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
             export CTS_VERSION=$(echo $CTS_URL | awk -F"/" '{print$(NF-1)}')
             export QA_BUILD_VERSION=${BUILD_NUMBER}
+            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_4}
+            export SRCREV_kernel=${KERNEL_DESCRIBE_4_4}
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
@@ -251,7 +253,7 @@
                 --build-number ${BUILD_NUMBER} \
                 --lava-server ${LAVA_SERVER} \
                 --qa-server ${QA_SERVER} \
-                --qa-server-team staging-lkft \
+                --qa-server-team android-lkft \
                 --env-suffix "_4.4" \
                 --qa-server-project ${QA_SERVER_PROJECT} \
                 --git-commit ${QA_BUILD_VERSION} \
@@ -266,12 +268,14 @@
             sed -i "s|boot.img.xz|boot-4.9-${KERNEL_DESCRIBE_4_9}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
             export KERNEL_BRANCH="android-hikey-linaro-4.9-${KERNEL_DESCRIBE_4_9}"
+            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_9}
+            export SRCREV_kernel=${KERNEL_DESCRIBE_4_9}
             python configs/openembedded-lkft/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
                 --lava-server ${LAVA_SERVER} \
                 --qa-server ${QA_SERVER} \
-                --qa-server-team staging-lkft \
+                --qa-server-team android-lkft \
                 --env-suffix "_4.9" \
                 --qa-server-project ${QA_SERVER_PROJECT} \
                 --git-commit ${QA_BUILD_VERSION} \
@@ -286,6 +290,8 @@
             sed -i "s|boot.img.xz|boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
             export KERNEL_BRANCH="android-hikey-linaro-4.14-${KERNEL_DESCRIBE_4_14}"
+            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_14}
+            export SRCREV_kernel=${KERNEL_DESCRIBE_4_14}
             # submit 4.14 jobs to v.l.o to reduce load on production lkft
             export LAVA_SERVER=https://validation.linaro.org/RPC2/
             python configs/openembedded-lkft/submit_for_testing.py \
@@ -293,7 +299,7 @@
                 --build-number ${BUILD_NUMBER} \
                 --lava-server ${LAVA_SERVER} \
                 --qa-server ${QA_SERVER} \
-                --qa-server-team staging-lkft \
+                --qa-server-team android-lkft \
                 --env-suffix "_4.14" \
                 --qa-server-project ${QA_SERVER_PROJECT} \
                 --git-commit ${QA_BUILD_VERSION} \
@@ -306,7 +312,7 @@
                 --build-number ${BUILD_NUMBER} \
                 --lava-server ${LAVA_SERVER} \
                 --qa-server ${QA_SERVER} \
-                --qa-server-team staging-lkft \
+                --qa-server-team android-lkft \
                 --env-suffix "_4.14" \
                 --qa-server-project ${QA_SERVER_PROJECT} \
                 --git-commit ${QA_BUILD_VERSION} \
