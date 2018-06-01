@@ -147,10 +147,8 @@
             . jenkins-scripts/jenkins-helpers.sh
 
             # Start build container
-            build_container_type=docker
-            build_container_distro=trusty
             builder=$(print_host_for_node $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-${build_container_type}.sh --arch ${builder_arch} --distro ${build_container_distro} --session-host ${builder} > build-container.sh
+            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${builder_arch} --session-host ${builder} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./build-container.sh
