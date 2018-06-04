@@ -7,10 +7,10 @@ sudo apt-get -q=2 update
 sudo apt-get -q=2 install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk libxml2-utils rsync pxz python-requests ninja-build
 
 wget -q \
-  https://cmake.org/files/v3.11/cmake-3.11.0-Linux-x86_64.sh
+  https://cmake.org/files/v3.11/cmake-3.11.3-Linux-x86_64.sh
 
-yes y | bash cmake-3.11.0-Linux-x86_64.sh
-export PATH=${PWD}/cmake-3.11.0-Linux-x86_64/bin/:${PATH}
+yes y | bash cmake-3.11.3-Linux-x86_64.sh
+export PATH=${PWD}/cmake-3.11.3-Linux-x86_64/bin/:${PATH}
 
 mkdir -p ${HOME}/srv/aosp/${JOB_NAME}
 cd ${HOME}/srv/aosp/${JOB_NAME}
@@ -50,7 +50,7 @@ cmake -G Ninja ../ \
 	 -DCMAKE_BUILD_TYPE=Release \
 	 -DPYTHON_EXECUTABLE=/usr/bin/python2 \
 	 -DCMAKE_INSTALL_PREFIX=./clang-master \
-	 -DLLVM_TARGETS_TO_BUILD="host;ARM;X86;AArch64" \
+	 -DLLVM_TARGETS_TO_BUILD="host;ARM;X86;AArch64;BPF;Hexagon" \
 	 -DLLVM_ENABLE_ASSERTIONS=false \
 	 -DCMAKE_C_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang \
 	 -DCMAKE_CXX_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++ \
