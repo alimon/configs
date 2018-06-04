@@ -102,7 +102,7 @@
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
             . ./jenkins-scripts/jenkins-helpers.sh
 
-            ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ > build-container.sh
+            ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
             . ./build-container.sh
             BUILD_SHELL="build_container_exec bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
@@ -115,7 +115,7 @@
             case "$test" in
               cross_build)
                 tester_label=$(print_tester_label_for_target arm-linux-gnueabihf)
-                ./jenkins-scripts/start-container-docker.sh --label $tester_label --task test --prefix test_ > test-container.sh
+                ./jenkins-scripts/start-container-docker.sh --label $tester_label --distro trusty --task test --prefix test_ > test-container.sh
                 . ./test-container.sh
                 trap "build_container_cleanup; test_container_cleanup" EXIT HUP INT QUIT TRAP KILL PIPE TERM
 
