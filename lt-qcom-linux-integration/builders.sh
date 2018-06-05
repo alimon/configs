@@ -147,7 +147,7 @@ if [ -z ${SERIAL_CONSOLE} ]; then
 	echo "INFO: No SERIAL_CONSOLE specified set to default: ${SERIAL_CONSOLE}"
 fi
 
-boot_file=boot_linux_integration.img
+boot_file=boot-linux-integration-${MACHINE}-${BUILD_NUMBER}.img
 if [[ $rootfs_file_type = *"cpio archive"* ]]; then
 	ramdisk_file=$rootfs_file
 	skales-mkbootimg \
