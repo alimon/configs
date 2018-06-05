@@ -19,7 +19,7 @@
     parameters:
         - string:
             name: slave_list
-            default: 'tcwg-apm-01 tcwg-apm-02 tcwg-apm-03 tcwg-apm-04 tcwg-tx1-01 tcwg-tx1-02 tcwg-tx1-03 tcwg-tx1-04 tcwg-tx1-05 tcwg-x86_64-build-01 tcwg-x86_64-build-02 tcwg-x86_64-build-03 tcwg-x86_64-build-04 tcwg-x86_64-build-05 tcwg-x86_64-build-06 tcwg-x86_64-build-07 tcwg-x86_64-build-08 tcwg-x86_64-dev-01 tcwg-x86_64-dev-02'
+            default: 'tcwg-apm-01 tcwg-apm-02 tcwg-apm-03 tcwg-apm-04 tcwg-tx1-01 tcwg-tx1-02 tcwg-tx1-03 tcwg-tx1-04 tcwg-tx1-05 tcwg-x86_64-build-01 tcwg-x86_64-build-02 tcwg-x86_64-build-03 tcwg-x86_64-build-04 tcwg-x86_64-build-05 tcwg-x86_64-build-06 tcwg-x86_64-build-07 tcwg-x86_64-build-08 tcwg-x86_64-dev-01 tcwg-x86_64-dev-02 tcwg-bmk-dev-01 tcwg-bmk-dev-02'
             description: 'List of slaves to run on -- should be a subset of slave axis'
         - string:
             name: cleanup_running_hours
@@ -28,7 +28,11 @@
         - string:
             name: cleanup_stopped_hours
             default: '240'
-            description: 'Delete containers that are more then "hours" old.  Use "0" to disable time check.  Use negative values for dry-run.'
+            description: 'Delete containers that are more then "hours" old.  Use "0" to disable the cleanup.'
+        - string:
+            name: cleanup_ssh_agent_hours
+            default: '48'
+            description: 'Kill ssh-agent processes that are more then "hours" old.  Use "0" to disable time check.  Use negative values for dry-run.'
         - bool:
             name: cleanup_volumes
             default: 'false'
@@ -84,6 +88,8 @@
                 - tcwg-x86_64-build-08
                 - tcwg-x86_64-dev-01
                 - tcwg-x86_64-dev-02
+                - tcwg-bmk-dev-01
+                - tcwg-bmk-dev-02
         - axis:
             type: dynamic
             name: slave
@@ -108,7 +114,18 @@
             #!/bin/bash
 
             set -ex
-            ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
+            case "$label" in
+              tcwg-bmk-dev-*)
+                # tcwg-bmk-dev-* nodes are hosted on dev-* machines, aka
+                # tcwg-x86_64-dev-* nodes.  We only need to cleanup ssh-agent
+                # processes for tcwg-benchmark user, so disable all other
+                # cleanups.
+                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours 0 --cleanup-stopped-hours 0 --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes false --cleanup-images false --verbose $verbose
+                ;;
+              *)
+                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
+                ;;
+            esac
     publishers:
         - email:
             recipients: tcwg@linaro.org
