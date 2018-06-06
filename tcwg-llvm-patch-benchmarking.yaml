@@ -27,8 +27,8 @@
             description: 'Base branch'
         - string:
             name: reference
-            default: llvm_patch_prev
-            description: 'Reference version: llvm_patch_prev or sha1'
+            default: patch_prev
+            description: 'Reference version: patch_prev or sha1'
         - string:
             name: projects
             default: 'clang'
@@ -138,12 +138,14 @@
           cat > build_ref_params <<EOF
           projects=$ref_proj_list
           target_list=$target
+          scripts_branch=$scripts_branch
           EOF
           echo "$build_params" >> build_ref_params
 
           cat > build_patch_params <<EOF
           projects=$patched_proj_list
           target_list=$target
+          scripts_branch=$scripts_branch
           EOF
           echo "$build_params" >> build_patch_params
       - trigger-builds:
