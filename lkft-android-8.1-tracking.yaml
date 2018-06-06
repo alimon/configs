@@ -32,9 +32,12 @@
         - string:
             name: CTS_URL
             default: 'http://testdata.linaro.org/cts/android-cts-8.1_r5/'
+        - string:
+            name: TOOLCHAIN
+            default: 'clang-4679922'
     disabled: false
     node: docker-xenial-aosp
-    display-name: '96boards - AOSP Master - HiKey'
+    display-name: 'LKFT Android 8.1 validation on 4.4, 4.9 and 4.14 (HiKe)'
     concurrent: true
     triggers:
         - timed : '@daily'
@@ -227,9 +230,6 @@
                 --quiet
 
     publishers:
-        - archive:
-            artifacts: '*.xml,*.json'
-            latest-only: true
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
             unstable-on-warning: false
