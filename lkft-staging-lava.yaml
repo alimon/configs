@@ -51,7 +51,6 @@
                 - 'x86'
                 - 'juno-r2'
                 - 'x15'
-                - 'b2260'
                 - 'dragonboard-410c'
                 - 'qemu_arm'
                 - 'qemu_arm64'
@@ -105,9 +104,6 @@
               x86)
                 export MACHINE=intel-core2-32
                 ;;
-              b2260)
-                export MACHINE=stih410-b2260
-                ;;
               dragonboard-410c)
                 export MACHINE=dragonboard-410c
                 ;;
@@ -153,10 +149,6 @@
               juno-r2)
                 KERNEL_FILENAME=$(grep -E " Image.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
                 DTB_FILENAME=$(grep -E " Image.*juno-r2.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
-                ;;
-              b2260)
-                KERNEL_FILENAME=$(grep -E " uImage.*.bin" "${MD5_FILENAME}" | awk '{print $2}')
-                DTB_FILENAME=$(grep -E " uImage.*.dtb" "${MD5_FILENAME}" | awk '{print $2}')
                 ;;
               dragonboard-410c)
                 BOOT_FILENAME=$(grep -E " boot\S*\.img" "${MD5_FILENAME}" | awk '{print $2}')
