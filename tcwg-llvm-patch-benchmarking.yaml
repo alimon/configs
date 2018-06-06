@@ -1,0 +1,246 @@
+- job:
+    name: tcwg-llvm-patch-benchmarking
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+    parameters:
+        - string:
+            name: GERRIT_PATCHSET_REVISION
+            default:
+            description: 'Patched revision'
+        - string:
+            name: GERRIT_PROJECT
+            default: 'toolchain/llvm'
+            description: 'Project whoich contains the patch (llvm, clang, ...)'
+        - string:
+            name: GERRIT_BRANCH
+            default: 'master'
+            description: 'Base branch'
+        - string:
+            name: reference
+            default: llvm_patch_prev
+            description: 'Reference version: llvm_patch_prev or sha1'
+        - string:
+            name: projects
+            default: 'clang'
+            description: 'Which projects to build with $GERRIT_PROJECT -- clang compiler-rt lld libcxx libcxxabi libunwind openmp'
+        - string:
+            name: target_list
+            default: 'tcwg-apm_64-build tcwg-apm_32-build'
+            description: 'List of targets  -- tcwg-tk1_32-build tcwg-apm_32-build tcwg-apm_64-build'
+        - string:
+            name: extension_list
+            default: 'O2g'
+            description: 'List of build profiles: O2, O3, O2g, O3g, Ofast, Os'
+        - string:
+            name: script_branch
+            default: 'refs/remotes/origin/llvmprod'
+            description: 'ABE revision to use'
+        - text:
+            name: build_params
+            default: |
+              revision=
+              toolchain=
+              build_type=Release
+              cmake_flags=
+              build_container_tag=xenial
+              twostage=false
+              tessuite=false
+              compiler=clang
+              repository=https://git-us.linaro.org/toolchain/llvm
+            description: 'Build parameters, see tcwg-llvm-staged-build job'
+        - text:
+            name: benchmark_params
+            default: |
+              bench_list=bzip2
+              cflags=
+              testmode=benchmark
+              iterations=1
+              sysroot=tarball
+              fileserver=dev-01.tcwglab
+              forceinstall=false
+              run_profile=parallel3x3
+              scripts_branch=master
+              bmk_branch=master
+            description: 'Benchmark parameters, see tcwg-benchmark job'
+    disabled: false
+    node: tcwg-bmk-coordinator
+    concurrent: true
+    display-name: 'TCWG ZZZ LLVM Patch Benchmarking'
+    scm:
+        - git:
+            url: http://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            basedir: jenkins-scripts
+            name: origin
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-coordinator
+        - axis:
+            type: dynamic
+            name: target
+            values:
+                - target_list
+        - axis:
+            type: dynamic
+            name: extension
+            values:
+                - extension_list
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'tcwg-benchmark'
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -ex
+
+          . ./jenkins-scripts/jenkins-helpers.sh
+          REFERENCES="$HOME/llvm-reference"
+
+          # Gather revisions to build.
+          patched_proj=$(basename $GERRIT_PROJECT)
+          patch_rev=$(git_rev_parse $REFERENCES/$patched_proj $GERRIT_PATCHSET_REVISION)
+          if [ x"$reference" = x"patch_prev" ]; then
+            proj_ref="$patch_rev^"
+          fi
+          proj_ref_rev=$(git_rev_parse $REFERENCES/$patched_proj $proj_ref)
+
+          patched_proj_list=${patched_proj}@${patch_rev}
+          ref_proj_list=${patched_proj}@${proj_ref_rev}
+
+          for proj in $projects ; do
+            sha1=$(git_rev_parse $REFERENCES/$proj $GERRIT_BRANCH)
+            patched_proj_list+=" ${proj}@${sha1}"
+            ref_proj_list+=" ${proj}@${sha1}"
+          done
+
+          cat > build_ref_params <<EOF
+          projects=$ref_proj_list
+          target_list=$target
+          EOF
+          echo "$build_params" >> build_ref_params
+
+          cat > build_patch_params <<EOF
+          projects=$patched_proj_list
+          target_list=$target
+          EOF
+          echo "$build_params" >> build_patch_params
+      - trigger-builds:
+          - project: 'tcwg-llvm-staged-build'
+            parameter-factories:
+              - factory: filebuild
+                file-pattern: build_*_params
+            block: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+
+          case "$target" in
+            "tcwg-apm_64"*) board="tx1" ;;
+            *) board="tk1" ;;
+          esac
+
+          # Extract triggered build numbers from comma separated list
+          bf_buildnum=(${TRIGGERED_BUILD_NUMBERS_tcwg_llvm-staged-build//,/ })
+          REFNUM=${bf_buildnum[0]}
+          PATCHNUM=${bf_buildnum[1]}
+
+          BF_URL_PREFIX=https://ci.linaro.org/job/tcwg-llvm-staged-build
+          BF_URL_SUFIX=label=${target},target=${target}
+
+          # Hackish way to get tarball name from json api
+          TAR_REF_NAME=$(wget --quiet ${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX}/api/json?pretty=true -O -| grep -P "fileName.*\".*.tar.xz\"" | awk '{print $3}' | sed -e 's/[",]//g')
+          TAR_PATCH_NAME=$(wget --quiet ${BF_URL_PREFIX}/${PATCHNUM}/${BF_URL_SUFIX}/api/json?pretty=true -O -| grep -P "fileName.*\".*.tar.xz\"" | awk '{print $3}' | sed -e 's/[",]//g')
+
+          rm -rf ref-tools
+          mkdir -p ref-tools
+          cd ref-tools
+          wget --progress=dot -e dotbytes=2M  "${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX}/artifact/${TAR_REF_NAME}"
+          tar xJf *.tar.xz
+          REF_CCPREFIX=$(readlink -f clang+*/bin)/${target}-
+          cd ..
+
+          rm -rf patch-tools
+          mkdir -p patch-tools
+          cd patch-tools
+          wget --progress=dot -e dotbytes=2M  "${BF_URL_PREFIX}/${PATCHNUM}/${BF_URL_SUFIX}/artifact/${TAR_PATCH_NAME}"
+          tar xJf *.tar.xz
+          PATCH_CCPREFIX=$(readlink -f clang+*/bin)/${target}-
+          cd ..
+
+          cat > ref_params <<EOF
+          toolchain_url=rsync://${NODE_NAME}.tcwglab:$REF_CCPREFIX
+          target_list=$board
+          extension=$extension
+          builder=$target
+          EOF
+          echo "$benchmark_params" >> ref_params
+
+          cat > patch_params <<EOF
+          toolchain_url=rsync://${NODE_NAME}.tcwglab:$PATCH_CCPREFIX
+          target_list=$board
+          extension=$extension
+          builder=$target
+          EOF
+          echo "$benchmark_params" >> patch_params
+      - trigger-builds:
+          - project: 'tcwg-benchmark'
+            property-file: ref_params
+            block: true
+      - trigger-builds:
+          - project: 'tcwg-benchmark'
+            property-file: patch_params
+            block: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+
+          case "$target" in
+            "tcwg-apm_64"*) board="tx1" ;;
+            *) board="tk1" ;;
+          esac
+
+          # Extract triggered build numbers from comma separated list
+          bf_buildnum=(${TRIGGERED_BUILD_NUMBERS_tcwg_benchmark//,/ })
+          REFNUM=${bf_buildnum[0]}
+          PATCHNUM=${bf_buildnum[1]}
+
+          cat > res_params << EOF
+          results_ref=${board}/tcwg-benchmark-${REFNUM}
+          results_id=${board}/tcwg-benchmark-${PATCHNUM}
+          EOF
+
+          cat > cmp_params << EOF
+          resultsref=${board}/tcwg-benchmark-${REFNUM}
+          resultseval=${board}/tcwg-benchmark-${PATCHNUM}
+          EOF
+      - trigger-builds:
+          - project: 'tcwg-benchmark-results'
+            property-file: res_params
+            block: false
+          - project: 'tcwg-benchmark-compare'
+            property-file: cmp_params
+            block: false
