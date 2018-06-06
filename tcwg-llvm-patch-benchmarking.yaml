@@ -42,7 +42,7 @@
             default: 'O2g'
             description: 'List of build profiles: O2, O3, O2g, O3g, Ofast, Os'
         - string:
-            name: script_branch
+            name: scripts_branch
             default: 'refs/remotes/origin/llvmprod'
             description: 'ABE revision to use'
         - text:
@@ -69,7 +69,6 @@
               fileserver=dev-01.tcwglab
               forceinstall=false
               run_profile=parallel3x3
-              scripts_branch=master
               bmk_branch=master
             description: 'Benchmark parameters, see tcwg-benchmark job'
     disabled: false
@@ -81,7 +80,6 @@
             url: http://git-us.linaro.org/toolchain/jenkins-scripts.git
             refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             basedir: jenkins-scripts
-            name: origin
             branches:
                 - ${scripts_branch}
             skip-tag: true
@@ -196,6 +194,7 @@
           target_list=$board
           extension=$extension
           builder=$target
+          scripts_branch=$scripts_branch
           EOF
           echo "$benchmark_params" >> ref_params
 
@@ -204,6 +203,7 @@
           target_list=$board
           extension=$extension
           builder=$target
+          scripts_branch=$scripts_branch
           EOF
           echo "$benchmark_params" >> patch_params
       - trigger-builds:
