@@ -37,7 +37,7 @@
             default: 'clang-4679922'
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'LKFT Android 8.1 validation on 4.4, 4.9 and 4.14 (HiKe)'
+    display-name: 'LKFT Android 8.1 validation on 4.4, 4.9 and 4.14 (HiKey)'
     concurrent: true
     triggers:
         - timed : '@daily'
@@ -167,6 +167,13 @@
 
             # Submit jobs for 4.4 kernel
             sed -i "s|boot.img.xz|boot-4.4-${KERNEL_DESCRIBE_4_4}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            if curl --output /dev/null --silent --head --fail "${REFERENCE_BUILD_URL}/vendor.img.xz"; then
+                echo "This reference build comes with a vendor partition"
+            else
+                echo "No vendor partition, so flashing cache partition from the job instead"
+                sed -i "s|vendor.img.xz|cache.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            fi
+
 
             export KERNEL_BRANCH="android-hikey-linaro-4.4-${KERNEL_DESCRIBE_4_4}"
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
@@ -188,6 +195,12 @@
             git reset --hard
             cd -
             sed -i "s|boot.img.xz|boot-4.9-${KERNEL_DESCRIBE_4_9}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            if curl --output /dev/null --silent --head --fail "${REFERENCE_BUILD_URL}/vendor.img.xz"; then
+                echo "This reference build comes with a vendor partition"
+            else
+                echo "No vendor partition, so flashing cache partition from the job instead"
+                sed -i "s|vendor.img.xz|cache.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            fi
 
             export KERNEL_BRANCH="android-hikey-linaro-4.9-${KERNEL_DESCRIBE_4_9}"
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_9}
@@ -210,6 +223,12 @@
             git reset --hard
             cd -
             sed -i "s|boot.img.xz|boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            if curl --output /dev/null --silent --head --fail "${REFERENCE_BUILD_URL}/vendor.img.xz"; then
+                echo "This reference build comes with a vendor partition"
+            else
+                echo "No vendor partition, so flashing cache partition from the job instead"
+                sed -i "s|vendor.img.xz|cache.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            fi
 
             export KERNEL_BRANCH="android-hikey-linaro-4.14-${KERNEL_DESCRIBE_4_14}"
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_14}
