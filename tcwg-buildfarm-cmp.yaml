@@ -30,6 +30,10 @@
             name: ref_scripts_branch
             default: refs/remotes/origin/master
             description: 'jenkins-scripts revision to use for reference builds'
+        - string:
+            name: ref_distro
+            default: 'trusty-tcwg-tested'
+            description: 'Distro image to use in reference builds.'
         - bool:
             name: ref_rebuild
             default: true
@@ -50,6 +54,10 @@
             name: eval_scripts_branch
             default: refs/remotes/origin/master
             description: 'jenkins-scripts revision to use for evaluation builds'
+        - string:
+            name: eval_distro
+            default: 'trusty'
+            description: 'Distro image to use in reference builds.'
         - bool:
             name: eval_rebuild
             default: true
@@ -143,6 +151,8 @@
                   log_name=$ref_log_name/\$builder_type.\$target
                   abe_branch=$ref_abe_branch
                   scripts_branch=$ref_scripts_branch
+                  build_container_tag=$ref_distro
+                  test_container_tag=$ref_distro
                   rebuild=$ref_rebuild
                   displaytag=buildfarm-cmp-ref-${BUILD_NUMBER}
                 property-file: buildfarm_parameters
@@ -152,6 +162,8 @@
                   log_name=$eval_log_name/\$builder_type.\$target
                   abe_branch=$eval_abe_branch
                   scripts_branch=$eval_scripts_branch
+                  build_container_tag=$eval_distro
+                  test_container_tag=$eval_distro
                   rebuild=$eval_rebuild
                   displaytag=buildfarm-cmp-eval-${BUILD_NUMBER}
                 property-file: buildfarm_parameters
