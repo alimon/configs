@@ -2,7 +2,6 @@
 
 export DEVICE_TYPE=x15
 export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
-export PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
 export DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
 export KERNEL_COMMIT=${SRCREV_kernel}
 export ANDROID_VERSION=$(echo $REFERENCE_BUILD_URL | awk -F"/" '{print$(NF-1)}')
