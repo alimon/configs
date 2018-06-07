@@ -61,6 +61,10 @@
             name: no_tests_just_update_tested
             default: 'false'
             description: 'Do not run tests, and just update abe:tested'
+        - string:
+            name: distro
+            default: 'trusty-tcwg-tested'
+            description: 'Distro image to use'
     disabled: false
     node: tcwg-coordinator
     concurrent: true
@@ -106,4 +110,4 @@
             #!/bin/bash
 
             set -ex
-            ./jenkins-scripts/docker-run.sh -- ./jenkins-scripts/tcwg-update-tested.sh --GIT_COMMIT $GIT_COMMIT --GIT_COMMIT_1 $GIT_COMMIT_1 --GIT_COMMIT_2 $GIT_COMMIT_2 --verbose true
+            ./jenkins-scripts/docker-run.sh --distro $distro -- ./jenkins-scripts/tcwg-update-tested.sh --GIT_COMMIT $GIT_COMMIT --GIT_COMMIT_1 $GIT_COMMIT_1 --GIT_COMMIT_2 $GIT_COMMIT_2 --verbose true
