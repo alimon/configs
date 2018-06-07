@@ -26,6 +26,26 @@
             name: ref_abe_rev
             default: ''
             description: 'Reference ABE revision to use. Empty (default) means previous revision'
+        - string:
+            name: ref_scripts_branch
+            default: ''
+            description: 'Reference scripts branch to test. Empty (default) means previous revision'
+        - string:
+            name: ref_distro
+            default: 'trusty-tcwg-tested'
+            description: 'Distro image to use in reference builds.'
+        - string:
+            name: abe_branch
+            default: master
+            description: 'ABE branch to test'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts branch to test'
+        - string:
+            name: distro
+            default: 'trusty'
+            description: 'Distro image to use'
         - bool:
             name: dryrun
             default: false
@@ -38,9 +58,9 @@
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/abe.git
-            refspec: +refs/heads/master:refs/remotes/origin/master
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             branches:
-                - refs/heads/master
+                - $abe_branch
             wipe-workspace: false
             scm-name: abe
             skip-tag: true
@@ -62,9 +82,10 @@
             skip-tag: true
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             basedir: jenkins-scripts
             branches:
-                - refs/heads/master
+                - $scripts_branch
             wipe-workspace: false
             scm-name: jenkins-scripts
             skip-tag: true
@@ -111,12 +132,15 @@
 
             mkdir -p artifacts/
 
+            . jenkins-scripts/jenkins-helpers.sh
+
             # Abe's revisions to test
             # TODO: gather reference from previous build instead of using N-1.
-            cur_abe_rev=$(git rev-parse HEAD)
-            if [ "x$ref_abe_rev" = "x" ]; then
-              ref_abe_rev=$(git rev-parse HEAD~)
-            fi
+            cur_abe_rev=$(git_rev_parse . HEAD)
+            ref_abe_rev=$(git_rev_parse . ${ref_abe_rev:-HEAD~})
+
+            cur_scripts_branch=$(git_rev_parse jenkins-scripts HEAD)
+            ref_scripts_branch=$(git_rev_parse jenkins-scripts ${ref_scripts_branch:-HEAD~})
 
             echo "abe_revision=$cur_abe_rev" > artifacts/infos.txt
 
@@ -127,6 +151,10 @@
             eval_override=--extraconfigdir ../config/gcc7 gcc=gcc.git~linaro/gcc-7-branch
             ref_abe_branch=$ref_abe_rev
             eval_abe_branch=$cur_abe_rev
+            ref_scripts_branch=$ref_scripts_branch
+            eval_scripts_branch=$cur_scripts_branch
+            ref_distro=$ref_distro
+            eval_distro=$distro
             target_list=aarch64-linux-gnu armv8l-linux-gnueabihf arm-linux-gnueabi arm-linux-gnueabihf
             displaytag=reg-detection-${BUILD_NUMBER}
             dryrun=$dryrun
