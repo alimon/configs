@@ -4,7 +4,7 @@ set -ex
 
 . ./jenkins-scripts/jenkins-helpers.sh
 
-./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ --dryrun $dryrun > build-container.sh
+./jenkins-scripts/start-container-docker.sh --distro $distro --label $label --node $NODE_NAME --task build --prefix build_ --dryrun $dryrun > build-container.sh
 . ./build-container.sh
 trap "build_container_cleanup" EXIT HUP INT QUIT TRAP PIPE TERM
 BUILD_SHELL="build_container_exec bash"
@@ -54,7 +54,7 @@ case "$testname" in
       cross_linux_*)
         target=arm-linux-gnueabihf
 	tester_label=$(print_tester_label_for_target $target)
-	bash -x ./jenkins-scripts/start-container-docker.sh --label $tester_label --task test --prefix test_ > test-container.sh
+	bash -x ./jenkins-scripts/start-container-docker.sh --distro $distro --label $tester_label --task test --prefix test_  > test-container.sh
 	. ./test-container.sh
 	trap "build_container_cleanup; test_container_cleanup" EXIT HUP INT QUIT TRAP PIPE TERM
 	testcontainer_opt="--testcontainer ${test_container_host}:${test_container_port}"
