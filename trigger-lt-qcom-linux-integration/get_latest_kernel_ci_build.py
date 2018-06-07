@@ -31,8 +31,9 @@ def get_kernel_ci_build(url, arch_config, dt_file):
     image_url = url + 'Image'
     dt_url = url + dt_file
     modules_url = url + 'modules.tar.xz'
+    version = last_build.contents[0].text[0:-1] # remove last / char
 
-    return (image_url, dt_url, modules_url)
+    return (image_url, dt_url, modules_url, version)
 
 
 def get_ramdisk_url(url):
@@ -99,9 +100,9 @@ def main():
     builds_url = os.environ.get('BUILDS_URL',
                                 'https://snapshots.linaro.org/96boards/%s/linaro/linux-integration/')
 
-
     image_url = None
     modules_url = None
+    version = None
     for m in machines:
         if m == 'dragonboard410c':
             kernel_ci_dt_file = 'dtbs/qcom/apq8016-sbc.dtb'
@@ -110,8 +111,8 @@ def main():
         else:
             sys.exit(2)
 
-        (image_url, dt_url, modules_url) = get_kernel_ci_build(kernel_ci_base_url,
-                                                               kernel_ci_arch_config, kernel_ci_dt_file)
+        (image_url, dt_url, modules_url, version) = get_kernel_ci_build(kernel_ci_base_url,
+                                                                        kernel_ci_arch_config, kernel_ci_dt_file)
 
         print("KERNEL_DT_URL_%s=%s" % (m, dt_url))
         validate_url(dt_url)
@@ -132,6 +133,8 @@ def main():
     validate_url(image_url)
     print("KERNEL_MODULES_URL=%s" % modules_url)
     validate_url(modules_url)
+    print("KERNEL_VERSION=%s" % version)
+
 
 if __name__ == '__main__':
     try:
