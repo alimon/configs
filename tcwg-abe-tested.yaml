@@ -53,6 +53,11 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+              - "ci-dockerfiles-deployment"
+            queue-scanning: 'ALL'
         - throttle:
             max-total: 1
             option: project
@@ -103,9 +108,15 @@
                       predefined-parameters: |
                         abe_branch=$GIT_COMMIT
                         scripts_branch=$GIT_COMMIT_1
+                        distro=trusty
                     - name: tcwg-regression-detection
                       predefined-parameters: |
+                        abe_branch=$GIT_COMMIT
+                        scripts_branch=$GIT_COMMIT_1
+                        distro=trusty
                         ref_abe_rev=tested
+                        ref_scripts_branch=tested
+                        ref_distro=trusty-tcwg-tested
         - shell: |
             #!/bin/bash
 
