@@ -65,7 +65,7 @@
               cflags=
               testmode=benchmark
               iterations=1
-              sysroot=tarball
+              sysroot=
               fileserver=dev-01.tcwglab
               forceinstall=false
               run_profile=parallel3x3
@@ -180,7 +180,7 @@
           cd ref-tools
           wget --progress=dot -e dotbytes=2M  "${BF_URL_PREFIX}/${REFNUM}/${BF_URL_SUFIX}/artifact/${TAR_REF_NAME}"
           tar xJf *.tar.xz
-          REF_CCPREFIX=$(readlink -f clang+*/bin)/${target}-
+          REF_CCPREFIX=$(readlink -f clang+*/bin)/
           cd ..
 
           rm -rf patch-tools
@@ -188,7 +188,7 @@
           cd patch-tools
           wget --progress=dot -e dotbytes=2M  "${BF_URL_PREFIX}/${PATCHNUM}/${BF_URL_SUFIX}/artifact/${TAR_PATCH_NAME}"
           tar xJf *.tar.xz
-          PATCH_CCPREFIX=$(readlink -f clang+*/bin)/${target}-
+          PATCH_CCPREFIX=$(readlink -f clang+*/bin)/
           cd ..
 
           cat > ref_params <<EOF
