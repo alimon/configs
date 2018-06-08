@@ -80,11 +80,12 @@
             cd hikey-linaro
             git checkout android-hikey-linaro-4.14
             git pull
+            git clone --depth=1 https://android.googlesource.com/kernel/configs
             wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
             export KERNEL_DESCRIBE_4_14=$(git rev-parse --short HEAD)
             export CLANG_TRIPLE=aarch64-linux-gnu-
             export CROSS_COMPILE=aarch64-linux-android-
-            make ARCH=arm64 hikey_defconfig
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/o-mr1/android-4.14/android-base.cfg configs/o-mr1/android-4.14/android-base-arm64.cfg
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
             python mkbootimg \
@@ -94,13 +95,15 @@
               --os_patch_level 2016-11-05 \
               --ramdisk ../out/ramdisk.img \
               --output ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
+            cp vmlinux ../out/4.14_vmlinux
+            cp .config ../out/4.14_defconfig
             xz ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
 
             # Build 4.9 kernel
             git checkout android-hikey-linaro-4.9
             git pull
             export KERNEL_DESCRIBE_4_9=$(git rev-parse --short HEAD)
-            make ARCH=arm64 hikey_defconfig
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/o-mr1/android-4.9/android-base.cfg configs/o-mr1/android-4.9/android-base-arm64.cfg
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
@@ -109,13 +112,15 @@
                --os_patch_level 2016-11-05 \
                --ramdisk ../out/ramdisk.img \
                --output ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img
+            cp vmlinux ../out/4.9_vmlinux
+            cp .config ../out/4.9_defconfig
             xz ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img
 
             # Build 4.4 kernel
             git checkout android-hikey-linaro-4.4
             git pull
             export KERNEL_DESCRIBE_4_4=$(git rev-parse --short HEAD)
-            make ARCH=arm64 hikey_defconfig
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/o-mr1/android-4.4/android-base.cfg configs/o-mr1/android-4.4/android-base-arm64.cfg
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
@@ -125,6 +130,8 @@
                --ramdisk ../out/ramdisk.img \
                --output ../out/boot-4.4-${KERNEL_DESCRIBE_4_4}.img
             xz ../out/boot-4.4-${KERNEL_DESCRIBE_4_4}.img
+            cp vmlinux ../out/4.4_vmlinux
+            cp .config ../out/4.4_defconfig
             cd ../
 
             # Publish parameters
