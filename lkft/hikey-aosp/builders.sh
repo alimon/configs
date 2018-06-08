@@ -24,6 +24,8 @@ git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linu
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
 export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/linux-x86/${TOOLCHAIN}/bin/:${PATH}
 
+git clone --depth=1 https://android.googlesource.com/kernel/configs
+
 CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
 
 # Need to use TI specific bluetooth driver
@@ -33,7 +35,8 @@ fi
 
 export CLANG_TRIPLE=aarch64-linux-gnu-
 export CROSS_COMPILE=aarch64-linux-android-
-make ARCH=arm64 hikey_defconfig
+ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/${CONFIG_FRAGMENTS_PATH}/android-base.cfg configs/${CONFIG_FRAGMENTS_PATH}/android-base-arm64.cfg
+cp .config out/defconfig
 make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
 
 wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
@@ -48,3 +51,5 @@ python mkbootimg \
   --ramdisk ramdisk.img \
   --output out/boot.img
 xz out/boot.img
+
+rm -rf configs
