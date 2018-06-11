@@ -122,9 +122,9 @@
           patched_proj=$(basename $GERRIT_PROJECT)
           patch_rev=$(git_rev_parse $REFERENCES/$patched_proj $GERRIT_PATCHSET_REVISION)
           if [ x"$reference" = x"patch_prev" ]; then
-            proj_ref="$patch_rev^"
+            reference="$patch_rev^"
           fi
-          proj_ref_rev=$(git_rev_parse $REFERENCES/$patched_proj $proj_ref)
+          proj_ref_rev=$(git_rev_parse $REFERENCES/$patched_proj $reference)
 
           patched_proj_list=${patched_proj}@${patch_rev}
           ref_proj_list=${patched_proj}@${proj_ref_rev}
