@@ -1,0 +1,49 @@
+# Zephyr JOB definition for disco-l475-iot1
+device_type: '$device_type'
+job_name: 'zephyr-upstream $test_name'
+
+timeouts:
+  job:
+    minutes: 30
+  action:
+    minutes: 3
+  actions:
+    wait-usb-device:
+      seconds: 40
+
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 3
+    to: tmpfs
+    images:
+        zephyr:
+          url: '$test_url'
+
+- boot:
+    method: cmsis-dap
+    timeout:
+      minutes: 10
+
+- test:
+    timeout:
+      minutes: 10
+    monitors:
+    - name: '$test_name'
+      start: (tc_start\(\)|starting .*test|BOOTING ZEPHYR OS)
+      end: PROJECT EXECUTION
+      pattern: (?P<result>(PASS|FAIL))\s-\s(?P<test_case_id>\w+)\r\n
+      fixupdict:
+        PASS: pass
+        FAIL: fail
+
+metadata:
+  build-url: $build_url
+  build-log: $build_url/consoleText
+  zephyr-gcc-variant: $gcc_variant
+  platform: $board_name
+  git-url: https://git.linaro.org/zephyrproject-org/zephyr.git
+  git-commit: $git_commit

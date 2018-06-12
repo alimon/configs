@@ -183,6 +183,7 @@ def main():
         test_template = test_template_file.read()
         test_template_file.close()
     else:
+        print("{} not found!".format(template_file_name))
         sys.exit(1)
 
     qa_server_base = args.qa_server
