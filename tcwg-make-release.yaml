@@ -277,7 +277,7 @@
 
                 # Dry-run: generate fake test jobs
                 if $testrelease; then
-                    tarball_linux="tarball_linux-${builder_arch}-${target}"
+                    tarball_linux="tarball_linux-${host}-${target}"
                     tarball_linux_url="http://${fileserver}/${url_prefix}/${target}/${tarball_linux}"
                     cat << EOF > tcwg.params.linux
             tarball_url=${tarball_linux_url}
@@ -287,7 +287,7 @@
             EOF
 
                     if test x"${canadian}" = x"--canadian"; then
-                        tarball_mingw="tarball_mingwx-${builder_arch}-${target}"
+                        tarball_mingw="tarball_mingwx-${host}-${target}"
                         tarball_mingw_url="http://${fileserver}/${url_prefix}/${target}/${tarball_mingw}"
                         cat << EOF > tcwg.params.mingw
             tarball_url=${tarball_mingw_url}
