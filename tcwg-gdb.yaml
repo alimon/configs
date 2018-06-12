@@ -100,7 +100,7 @@
             rm -rf jenkins-scripts
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
 
-            ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty --task build --prefix build_ > build-container.sh
+            ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --distro trusty-tcwg-tested --task build --prefix build_ > build-container.sh
             . ./build-container.sh
             BUILD_SHELL="build_container_exec bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
