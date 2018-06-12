@@ -120,7 +120,7 @@
                 # tcwg-x86_64-dev-* nodes.  We only need to cleanup ssh-agent
                 # processes for tcwg-benchmark user, so disable all other
                 # cleanups.
-                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours 0 --cleanup-stopped-hours 0 --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes false --cleanup-images false --verbose $verbose
+                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours 0 --cleanup-stopped-hours 0 --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes false --cleanup-images false --verbose $verbose || true
                 ;;
               *)
                 ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
