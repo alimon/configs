@@ -40,6 +40,18 @@ def get_ramdisk_url(url):
     f = urllib2.urlopen(url)
     page = f.read()
 
+    soup = BeautifulSoup(page, "html.parser")
+    last_build = -1
+    for href in soup.find_all(href=True):
+        try:
+            last_build = int(href.text)
+        except:
+            continue
+        break
+
+    url = '%s/%d/rpb' % (url, last_build)
+    f = urllib2.urlopen(url)
+    page = f.read()
     base_url_p = urlparse.urlparse(url)
     base_url = "%s://%s" % (base_url_p.scheme, base_url_p.netloc)
     rex = re.compile('initramfs-bootrr-image-.*\.rootfs\.cpio\.gz$')
@@ -96,7 +108,7 @@ def main():
     kernel_ci_dt_file = os.environ.get('KERNEL_CI_DT_FILE',
                                        'dtbs/qcom/apq8016-sbc.dtb')
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
-                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/rocko/latest/rpb/')
+                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/rocko')
     builds_url = os.environ.get('BUILDS_URL',
                                 'https://snapshots.linaro.org/96boards/%s/linaro/linux-integration/')
 
