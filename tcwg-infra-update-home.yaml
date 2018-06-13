@@ -22,7 +22,7 @@
     parameters:
         - string:
             name: machines_list
-            default: 'apm-01.tcwglab apm-02.tcwglab test-armv8-01.tcwglab test-armv8-02.tcwglab tcwg-tx1-01.tcwglab tcwg-tx1-02.tcwglab tcwg-tx1-03.tcwglab tcwg-tx1-04.tcwglab tcwg-tx1-05.tcwglab tcwg-tx1-06.tcwglab tcwg-tx1-07.tcwglab tcwg-tx1-08.tcwglab tcwg-tk1-01.tcwglab tcwg-tk1-02.tcwglab tcwg-tk1-03.tcwglab tcwg-tk1-04.tcwglab tcwg-tk1-05.tcwglab tcwg-tk1-06.tcwglab tcwg-tk1-07.tcwglab tcwg-tk1-08.tcwglab tcwg-tk1-09.tcwglab build-01.tcwglab build-02.tcwglab build-03.tcwglab build-04.tcwglab build-05.tcwglab build-06.tcwglab build-07.tcwglab build-08.tcwglab dev-01.tcwglab dev-02.tcwglab'
+            default: 'tcwg-apm-01.tcwglab tcwg-apm-02.tcwglab tcwg-apm-03.tcwglab tcwg-apm-04.tcwglab tcwg-tx1-01.tcwglab tcwg-tx1-02.tcwglab tcwg-tx1-03.tcwglab tcwg-tx1-04.tcwglab tcwg-tx1-05.tcwglab tcwg-tx1-06.tcwglab tcwg-tx1-07.tcwglab tcwg-tx1-08.tcwglab tcwg-tk1-01.tcwglab tcwg-tk1-02.tcwglab tcwg-tk1-03.tcwglab tcwg-tk1-04.tcwglab tcwg-tk1-05.tcwglab tcwg-tk1-06.tcwglab tcwg-tk1-07.tcwglab tcwg-tk1-08.tcwglab tcwg-tk1-09.tcwglab build-01.tcwglab build-02.tcwglab build-03.tcwglab build-04.tcwglab build-05.tcwglab build-06.tcwglab build-07.tcwglab build-08.tcwglab dev-01.tcwglab dev-02.tcwglab'
             description: 'Machines to run on, see https://ci.linaro.org/job/tcwg-buildslave-command'
     disabled: false
     node: tcwg-coordinator
@@ -40,9 +40,9 @@
                     - branch-pattern: 'master'
                   file-paths:
                     - compare-type: ANT
-                      pattern: tcwg-base/tcwg-build/tcwg-buildslave/**
+                      pattern: tcwg-base/home-data/tcwg-buildslave/**
                     - compare-type: ANT
-                      pattern: tcwg-base/tcwg-build/tcwg-benchmark/**
+                      pattern: tcwg-base/home-data/tcwg-benchmark/**
             silent-start: true
     wrappers:
         - timeout:
@@ -55,13 +55,13 @@
             - project: 'tcwg-buildslave-command'
               predefined-parameters: |
                 machines_list=$machines_list
-                command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-buildslave tcwg-base/tcwg-build/tcwg-buildslave
+                command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-buildslave tcwg-base/home-data/tcwg-buildslave
                 target_user=tcwg-buildslave
               block: true
             - project: 'tcwg-buildslave-command'
               predefined-parameters: |
                 machines_list=$machines_list
-                command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-benchmark tcwg-base/tcwg-build/tcwg-benchmark
+                command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-benchmark tcwg-base/home-data/tcwg-benchmark
                 target_user=tcwg-benchmark
               block: true
     publishers:
