@@ -37,17 +37,8 @@ def get_kernel_ci_build(url, arch_config, dt_file):
 
 
 def get_ramdisk_url(url):
-    f = urllib2.urlopen(url)
-    page = f.read()
-
-    soup = BeautifulSoup(page, "html.parser")
-    last_build = -1
-    for href in soup.find_all(href=True):
-        try:
-            last_build = int(href.text)
-        except:
-            continue
-        break
+    f = urllib2.urlopen('https://ci.linaro.org/job/lt-qcom-openembedded-rpb-rocko/lastSuccessfulBuild/buildNumber')
+    last_build = int(f.read())
 
     url = '%s/%d/rpb' % (url, last_build)
     f = urllib2.urlopen(url)
