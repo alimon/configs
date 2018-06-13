@@ -12,23 +12,23 @@ cleanup_exit()
 
 rm -rf ${WORKSPACE}/*
 
+## Setup environment
+# The following build dependencies are pre-installed on the build host
+# dirmngr virtualenv git sshpass
+virtualenv --python=/usr/bin/python2 venv
+. venv/bin/activate
+
 git clone --depth 1 https://github.com/Linaro/erp-test-automation
 cd erp-test-automation/erp-playbook
+pip install -r requirements.txt
 
 # In this matrix build, there is a potential issue to share the same vault password file across hosts. When build fails
 # on one host, clearup_exit() will delete the file for safety, but the file may still required by another host. So
-# create pass file by host and specify the file with --vault-password-file option by host instread.
+# create pass file by host and specify the file with --vault-password-file option by host instead.
 sed -i 's|^vault_password_file = ~/.vault_pass_erp.txt|# vault_password_file = ~/.vault_pass_erp.txt|' ansible.cfg
 mkdir -p ${HOME}/.erp/${HOST}/
 passwd="${HOME}/.erp/${HOST}/vault_pass.txt"
 echo ${ANSIBLE_VAULT} > ${passwd}
-
-## Setup environment
-# The following build dependencies are pre-installed on the build host
-# dirmngr virtualenv git sshpass
-virtualenv --python=/usr/bin/python2 erp-test-env
-. erp-test-env/bin/activate
-pip install -r requirements.txt
 
 # Provision image and run test
 ansible-galaxy install -p roles -r requirements.yml
