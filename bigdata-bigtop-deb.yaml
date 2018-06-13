@@ -1,0 +1,31 @@
+- job:
+    name: bigdata-bigtop-deb
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    disabled: false
+    node: leg-aarch64
+    display-name: 'Bigdata Apache BigTop (deb)'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: bigdata-bigtop-deb/builders.sh
+    publishers:
+        - archive:
+            artifacts: 'bigdata-bigtop/output/**'
+        - email-ext:
+            recipients: 'leg-bigdata@linaro.org, fathi.boudra@linaro.org'
