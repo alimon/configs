@@ -61,7 +61,7 @@
             - project: 'tcwg-buildslave-command'
               predefined-parameters: |
                 machines_list=$machines_list
-                command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-benchmark tcwg-base/home-data/tcwg-benchmark
+                command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-benchmark tcwg-base/home-data/tcwg-benchmark; cd /home/tcwg-benchmark/.ssh/; rm config known_hosts; cp /home/tcwg-buildslave/.ssh/config /home/tcwg-buildslave/.ssh/known_hosts ./
                 target_user=tcwg-benchmark
               block: true
     publishers:
