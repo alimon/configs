@@ -55,13 +55,13 @@
             - project: 'tcwg-buildslave-command'
               predefined-parameters: |
                 machines_list=$machines_list
-                command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-buildslave tcwg-base/home-data/tcwg-buildslave
+                command=dir=$(mktemp -d); ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD > $dir.tar; tar x --strip-components=2 -f $dir.tar -C $dir tcwg-base/home-data; rsync -aL $dir/tcwg-buildslave/ /home/tcwg-buildslave/; rm -rf $dir/ $dir.tar
                 target_user=tcwg-buildslave
               block: true
             - project: 'tcwg-buildslave-command'
               predefined-parameters: |
                 machines_list=$machines_list
-                command=ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD | tar x --strip-components=3 -C /home/tcwg-benchmark tcwg-base/home-data/tcwg-benchmark; cd /home/tcwg-benchmark/.ssh/; rm config known_hosts; cp /home/tcwg-buildslave/.ssh/config /home/tcwg-buildslave/.ssh/known_hosts ./
+                command=dir=$(mktemp -d); ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD > $dir.tar; tar x --strip-components=2 -f $dir.tar -C $dir tcwg-base/home-data; rsync -aL $dir/tcwg-benchmark/ /home/tcwg-benchmark/; rm -rf $dir/ $dir.tar
                 target_user=tcwg-benchmark
               block: true
     publishers:
