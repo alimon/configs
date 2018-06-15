@@ -33,6 +33,7 @@ if [ "${JOB_NAME}" = "lkft-hikey-android-8.0-4.9" ]; then
     git fetch ssh://vishal.bhoj@android-review.linaro.org:29418/kernel/hikey-linaro refs/changes/97/18097/1 && git cherry-pick FETCH_HEAD
 fi
 
+mkdir -p out
 export CLANG_TRIPLE=aarch64-linux-gnu-
 export CROSS_COMPILE=aarch64-linux-android-
 ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/${CONFIG_FRAGMENTS_PATH}/android-base.cfg configs/${CONFIG_FRAGMENTS_PATH}/android-base-arm64.cfg
@@ -42,7 +43,6 @@ make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
 wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
 wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
 
-mkdir -p out
 python mkbootimg \
   --kernel ${PWD}/arch/arm64/boot/Image.gz-dtb \
   --cmdline console="${CMD}" \
