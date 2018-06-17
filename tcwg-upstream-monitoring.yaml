@@ -103,6 +103,8 @@
                 popd
             done
 
+            svnrev_gcc="$(git -C GCC log -n 1 | grep git-svn-id: | awk '{print $2;}' | cut -d@ -f2)
+
             cat <<EOF > buildfarm_parameters
             override=${comp_list} --extraconfigdir ../config/$config $override
             log_name=tcwg-upstream-monitoring/${branch}-$BUILD_NUMBER/\$builder_type.\$target
@@ -116,7 +118,7 @@
             abe_branch=tested
             scripts_branch=tested
             build_container_tag=xenial-tcwg-tested
-            displaytag=upstream-monitoring-$branch-${BUILD_NUMBER}
+            displaytag=upstream-monitoring-$branch-gcc-r${svnrev_gcc=}-${BUILD_NUMBER}
             send_results_to=gcc-testresults@gcc.gnu.org
             EOF
         - trigger-builds:
