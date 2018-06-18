@@ -115,10 +115,6 @@
 
                     for tc in GCC48 GCC49 GCC5 CLANG35
                     do
-                        mkdir -p ${OUTDIR}/QEMU-ARM/${type}_${tc}
-                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
-                        cp Build/ArmVirtQemu-ARM/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-ARM/${type}_${tc}
-
                         mkdir -p ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
                         cp Build/ArmVirtQemu-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
@@ -127,13 +123,20 @@
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemuKernel.dsc -D SECURE_BOOT_ENABLE
                         cp Build/ArmVirtQemuKernel-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-KERNEL-AARCH64/${type}_${tc}
 
-                        mkdir -p ${OUTDIR}/XEN-ARM/${type}_${tc}
-                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
-                        cp Build/ArmVirtXen-ARM/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-ARM/${type}_${tc}
-
                         mkdir -p ${OUTDIR}/XEN-AARCH64/${type}_${tc}
                         build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
                         cp Build/ArmVirtXen-AARCH64/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-AARCH64/${type}_${tc}
+                    done
+
+                    for tc in GCC48 GCC49 GCC5
+                    do
+                        mkdir -p ${OUTDIR}/QEMU-ARM/${type}_${tc}
+                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
+                        cp Build/ArmVirtQemu-ARM/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-ARM/${type}_${tc}
+
+                        mkdir -p ${OUTDIR}/XEN-ARM/${type}_${tc}
+                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
+                        cp Build/ArmVirtXen-ARM/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-ARM/${type}_${tc}
                     done
 
                     build -t GCC5 -b ${type} -n $NUM_THREADS -a IA32 -p OvmfPkg/OvmfPkgIa32.dsc -D SMM_REQUIRE -D SECURE_BOOT_ENABLE -D TLS_ENABLE -D HTTP_BOOT_ENABLE -D NETWORK_IP6_ENABLE
