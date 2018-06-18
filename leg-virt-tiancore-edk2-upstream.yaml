@@ -101,16 +101,20 @@
                 cd ${WORKSPACE}
                 for type in DEBUG RELEASE NOOPT
                 do
-                     for tc in GCC48 GCC49 GCC5 CLANG35
-                     do
-                        for pkg in Arm ArmPlatform Embedded
+                    for pkg in Arm ArmPlatform Embedded
+                    do
+                        for tc in GCC48 GCC49 GCC5
                         do
-                            for arch in ARM AARCH64
-                            do
-                                build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
-                            done
+                            build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
+                            build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
                         done
 
+                        build -a ARM -t CLANG38 -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
+                        build -a AARCH64 -t CLANG35 -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
+                    done
+
+                    for tc in GCC48 GCC49 GCC5 CLANG35
+                    do
                         mkdir -p ${OUTDIR}/QEMU-ARM/${type}_${tc}
                         build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
                         cp Build/ArmVirtQemu-ARM/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-ARM/${type}_${tc}
