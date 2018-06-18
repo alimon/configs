@@ -161,7 +161,34 @@
     builders:
         - shell: |
             #!/bin/bash
-            ./jenkins-scripts/tcwg-buildfarm.sh
+            set -ex
+            ./jenkins-scripts/docker-run.sh --distro $build_container_tag \
+              $(case "$target" in qemu-*) echo "--qemu $target" ;; esac) \
+              -- ./jenkins-scripts/tcwg-buildfarm.sh \
+              --label "$label" \
+              --target "$target" \
+              --BUILD_NUMBER "$BUILD_NUMBER" \
+              --JOB_NAME "$JOB_NAME" \
+              --NODE_NAME "$NODE_NAME" \
+              --TCWG_SES_USER "$TCWG_SES_USER" \
+              --TCWG_SES_PASSWORD "$TCWG_SES_PASSWORD" \
+              --WORKSPACE "$WORKSPACE" \
+              --override "$override" \
+              --host_x86_64_languages "$host_x86_64_languages" \
+              --host_aarchXX_languages "$host_aarchXX_languages" \
+              --runtests "$runtests" \
+              --send_results_to "$send_results_to" \
+              --try_bootstrap "$try_bootstrap" \
+              --host_x86_64_excludecheck "$host_x86_64_excludecheck" \
+              --host_aarchXX_excludecheck "$host_aarchXX_excludecheck" \
+              --extraconfig "$extraconfig" \
+              --rebuild "$rebuild" \
+              --log_name "$log_name" \
+              --dont_fail "$dont_fail" \
+              --log_server "$log_server" \
+              --abe_branch "$abe_branch" \
+              --test_container_tag "$test_container_tag" \
+              --binaries "$binaries"
     publishers:
         - archive:
             artifacts: 'artifacts/*'
