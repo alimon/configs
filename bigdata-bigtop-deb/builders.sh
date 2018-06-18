@@ -11,9 +11,9 @@ git clone --depth 1 --branch erp18.06 https://git.linaro.org/leg/bigdata/bigtop-
 
 # now build bigtop slaves
 cd bigtop-trunk
-# build docker images locally
-./gradlew -POS=debian-9 -Pprefix=erp18.06 bigtop-puppet
-./gradlew -POS=debian-9 -Pprefix=erp18.06 bigtop-slaves
+# build docker images locally - only needed once
+#./gradlew -POS=debian-9 -Pprefix=erp18.06 bigtop-puppet
+#./gradlew -POS=debian-9 -Pprefix=erp18.06 bigtop-slaves
 
 # build bigdata bigtop components using locally built docker image. This will take a while.
 # Artifacts will be stored under individual component folder inside output folder.
