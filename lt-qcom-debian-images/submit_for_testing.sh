@@ -35,13 +35,16 @@ pip install --user --force-reinstall jinja2-cli ruamel.yaml
 if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
     export WLAN_DEVICE="wlan0"
+    export WLAN_TIME_DELAY="0s"
     export ETH_DEVICE="eth0"
 elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
     export PM_QA_TESTS="cpufreq cputopology"
     export WLAN_DEVICE="wlp1s0"
+    export WLAN_TIME_DELAY="15s"
     export ETH_DEVICE="enP2p1s0"
 else
     export WLAN_DEVICE="wlan0"
+    export WLAN_TIME_DELAY="0s"
     export ETH_DEVICE="eth0"
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
 fi
