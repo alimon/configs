@@ -94,7 +94,7 @@ def main():
                                         'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
     kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
                                            'arm64/defconfig/')
-    machines = os.environ.get('MACHINES', 'dragonboard410c dragonboard820c').split()
+    machines = os.environ.get('MACHINES', 'dragonboard410c dragonboard820c sdm845_mtp').split()
 
     kernel_ci_dt_file = os.environ.get('KERNEL_CI_DT_FILE',
                                        'dtbs/qcom/apq8016-sbc.dtb')
@@ -109,8 +109,13 @@ def main():
     for m in machines:
         if m == 'dragonboard410c':
             kernel_ci_dt_file = 'dtbs/qcom/apq8016-sbc.dtb'
+            ramdisk_url = ramdisk_base_url % m
         elif m == 'dragonboard820c':
             kernel_ci_dt_file = 'dtbs/qcom/apq8096-db820c.dtb'
+            ramdisk_url = ramdisk_base_url % m
+        elif m == 'sdm845_mtp':
+            kernel_ci_dt_file = 'dtbs/qcom/sdm845-mtp.dtb'
+            ramdisk_url = ramdisk_base_url % 'dragonboard410c' # XXX: Use ramdisk from db410c for now
         else:
             sys.exit(2)
 
@@ -120,7 +125,7 @@ def main():
         print("KERNEL_DT_URL_%s=%s" % (m, dt_url))
         validate_url(dt_url)
 
-        ramdisk_url = get_ramdisk_url((ramdisk_base_url % m))
+        ramdisk_url = get_ramdisk_url(ramdisk_url)
         print('ROOTFS_URL_%s=%s' % (m, ramdisk_url))
         validate_url(ramdisk_url)
 

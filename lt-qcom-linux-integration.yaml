@@ -39,6 +39,12 @@
             name: ROOTFS_URL_dragonboard820c
             default: ''
         - string:
+            name: KERNEL_DT_URL_sdm845_mtp
+            default: ''
+        - string:
+            name: ROOTFS_URL_sdm845_mtp
+            default: ''
+        - string:
             name: PUB_DEST
             default: "96boards/${MACHINE}/linaro/linux-integration/${BUILD_NUMBER}"
         - string:
@@ -57,6 +63,7 @@
             values:
                 - 'dragonboard410c'
                 - 'dragonboard820c'
+                - 'sdm845_mtp'
         - axis:
             type: slave
             name: label
@@ -96,6 +103,14 @@
                 echo 'BOOTIMG_BASE=0x80000000' >> builders_in_parameters
                 echo 'RAMDISK_BASE=0x84000000' >> builders_in_parameters
                 echo 'ROOTFS_PARTITION=/dev/sda7' >> builders_in_parameters
+                echo 'SERIAL_CONSOLE=ttyMSM0' >> builders_in_parameters
+                ;;
+              sdm845_mtp)
+                echo "KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}" >> builders_in_parameters
+                echo "ROOTFS_URL=${ROOTFS_URL_sdm845_mtp}" >> builders_in_parameters
+                echo 'BOOTIMG_PAGESIZE=2048' >> builders_in_parameters
+                echo 'BOOTIMG_BASE=0x80000000' >> builders_in_parameters
+                echo 'RAMDISK_BASE=0x84000000' >> builders_in_parameters
                 echo 'SERIAL_CONSOLE=ttyMSM0' >> builders_in_parameters
                 ;;
               *)
