@@ -164,6 +164,7 @@
             set -ex
             ./jenkins-scripts/docker-run.sh --distro $build_container_tag \
               $(case "$target" in qemu-*) echo "--qemu $target" ;; esac) \
+              --dryrun "$dryrun" \
               -- ./jenkins-scripts/tcwg-buildfarm.sh \
               --label "$label" \
               --target "$target" \
@@ -188,7 +189,8 @@
               --log_server "$log_server" \
               --abe_branch "$abe_branch" \
               --test_container_tag "$test_container_tag" \
-              --binaries "$binaries"
+              --binaries "$binaries" \
+              --dryrun "$dryrun"
     publishers:
         - archive:
             artifacts: 'artifacts/*'
