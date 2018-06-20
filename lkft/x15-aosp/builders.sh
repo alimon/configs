@@ -33,6 +33,7 @@ if [ ! -z ${REFERENCE_BUILD_URL} ]; then
   cd ../../
 fi
 cd .repo/
+rm -rf local_manifests
 git clone git://android-git.linaro.org/platform/manifest.git -b x15-master local_manifests
 cd ../
 
