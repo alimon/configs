@@ -19,6 +19,7 @@ actions:
     - gzip
     - git
     - mktemp
+    - fastboot
     os: debian
 
 - boot:
@@ -104,12 +105,6 @@ actions:
       boot:
         url: lxc:///${LXC_BOOT_FILE}
     os: oe
-    protocols:
-        lava-lxc:
-        - action: fastboot-deploy
-          request: pre-power-command
-          timeout:
-              minutes: 2
 
 - boot:
     namespace: ${LAVA_DEVICE_TYPE}

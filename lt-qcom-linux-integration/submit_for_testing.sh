@@ -13,11 +13,17 @@ export BOOT_URL_COMP=
 export LXC_BOOT_FILE=$(basename ${BOOT_URL})
 
 case "${MACHINE}" in
-  dragonboard410c|dragonboard820c)
+  dragonboard410c|dragonboard820c|sdm845_mtp)
     if [ ${MACHINE} = "dragonboard410c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-410c"
+      export INSTALL_FASTBOOT=True
     elif [ ${MACHINE} = "dragonboard820c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-820c"
+      export INSTALL_FASTBOOT=True
+    elif [ ${MACHINE} = "sdm845_mtp" ]; then
+      export LAVA_DEVICE_TYPE="sdm845-mtp"
+      export INSTALL_FASTBOOT=
+      export LAVA_SERVER="${LKFT_STAGING_LAVA_SERVER}"
     fi
 
     python configs/openembedded-lkft/submit_for_testing.py \
