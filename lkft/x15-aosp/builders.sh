@@ -40,6 +40,7 @@ set -e
 
 repo sync -j16 -c
 
+./android-patchsets/x15-master-workarounds
 # build kernel
 export PATH=~/srv/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi/bin:$PATH
 export CROSS_COMPILE=arm-eabi-
@@ -51,7 +52,6 @@ make ti_sdk_dra7x_android_release_defconfig
 make -j$(nproc) zImage dtbs modules
 cd ../../../
 
-./android-patchsets/x15-master-workarounds
 source build/envsetup.sh
 lunch am57xevm_full-userdebug
 make -j$(nproc)
