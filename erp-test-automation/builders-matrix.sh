@@ -30,6 +30,14 @@ mkdir -p ${HOME}/.erp/${HOST}/
 passwd="${HOME}/.erp/${HOST}/vault_pass.txt"
 echo ${ANSIBLE_VAULT} > ${passwd}
 
+# Image upload is enabled by default in ansible role. It only upload image when it is not exist yet in mr-provisioner's
+# database. However, matrix build erp-test-automation-matrix run the same ansible playbook on multiple platforms in
+# parallel almost in the same time, means image existence query responds for all of these threads will be 'not exist
+# yet', which causes that the same image will be uploaded up to the number of platforms times. To break the race
+# condition, the following line postpone test run on all platforms except d05 10 minutes which should be more then
+# enough for the d05 to finish image upload.
+[ "${HOST}" = "j12-d05-01" ] || sleep 600
+
 # Provision image and run test
 ansible-galaxy install -p roles -r requirements.yml
 if [ "${BUILD_NUM}" = "latest" ]; then
