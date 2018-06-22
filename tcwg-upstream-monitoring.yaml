@@ -106,7 +106,7 @@
             svnrev_gcc="$(git -C gcc log -n 1 | grep git-svn-id: | awk '{print $2;}' | cut -d@ -f2)"
 
             cat <<EOF > buildfarm_parameters
-            override=${comp_list} --extraconfigdir ../config/$config $override
+            override=$(echo ${comp_list} --extraconfigdir ../config/$config $override)
             log_name=tcwg-upstream-monitoring/${branch}-$BUILD_NUMBER/\$builder_type.\$target
             runtests=tcwg-x86_64-build tcwg-x86_32-build tcwg-apm_64-build tcwg-apm_32-build tcwg-d05_32-build tcwg-d05_64-build tcwg-thx1_64-build
             host_x86_64_excludecheck=gdb
