@@ -41,7 +41,6 @@ set -e
 
 repo sync -j16 -c
 
-./android-patchsets/x15-master-workarounds
 # build kernel
 export PATH=~/srv/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi/bin:$PATH
 export CROSS_COMPILE=arm-eabi-
