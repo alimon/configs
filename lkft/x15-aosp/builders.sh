@@ -39,6 +39,9 @@ cd ../
 
 set -e
 
+# delete any stale folder
+rm -rf clang-src
+
 repo sync -j16 -c
 
 # build kernel
