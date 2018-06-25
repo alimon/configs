@@ -1,5 +1,5 @@
 - job:
-    name: trigger-lt-qcom-linux-integration
+    name: trigger-lt-qcom-linux-mainline
     project-type: freestyle
     defaults: global
     properties:
@@ -9,15 +9,22 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+    parameters:
+        - string:
+            name: KERNEL_CI_BASE_URL
+            default: 'https://storage.kernelci.org/mainline/master/'
+        - string:
+            name: BUILDS_URL
+            default: 'https://snapshots.linaro.org/96boards/%s/linaro/linux-mainline/'
     disabled: false
-    node: master
-    display-name: 'Trigger for LT Qualcomm Linux Integration build'
+    node: mainline
+    display-name: 'Trigger for LT Qualcomm Linux Mainline build'
     triggers:
         - pollurl:
             cron: 'H/5 * * * *'
             polling-node: master
             urls:
-              - url: 'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/'
+              - url: '${KERNEL_CI_BASE_URL}'
                 check-content:
                   - simple: true
     wrappers:
@@ -39,7 +46,7 @@
             properties-file: lt_qcom_parameters
     publishers:
         - trigger-parameterized-builds:
-            - project: lt-qcom-linux-integration
+            - project: lt-qcom-linux-mainline
               predefined-parameters: |
                 KERNEL_IMAGE_URL=${KERNEL_IMAGE_URL}
                 KERNEL_MODULES_URL=${KERNEL_MODULES_URL}

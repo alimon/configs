@@ -1,0 +1,96 @@
+- job:
+    name: lt-qcom-linux-mainline
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: KERNEL_IMAGE_URL
+            default: ''
+        - string:
+            name: KERNEL_MODULES_URL
+            default: ''
+        - string:
+            name: KERNEL_VERSION
+            default: 'noversion'
+        - string:
+            name: KERNEL_DT_URL_dragonboard410c
+            default: ''
+        - string:
+            name: ROOTFS_URL_dragonboard410c
+            default: ''
+        - string:
+            name: KERNEL_DT_URL_dragonboard820c
+            default: ''
+        - string:
+            name: ROOTFS_URL_dragonboard820c
+            default: ''
+        - string:
+            name: KERNEL_DT_URL_sdm845_mtp
+            default: ''
+        - string:
+            name: ROOTFS_URL_sdm845_mtp
+            default: ''
+        - string:
+            name: PUB_DEST
+            default: "96boards/${MACHINE}/linaro/linux-mainline/${BUILD_NUMBER}"
+    disabled: false
+    node: master
+    display-name: 'Qualcomm LT Linux Mainline kernel build'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'dragonboard410c'
+                - 'dragonboard820c'
+                - 'sdm845_mtp'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell:
+            !include-raw: lt-qcom-linux-integration/builders-deps.sh
+        - shell:
+            !include-raw: lt-qcom-linux-integration/builders.sh
+        - inject:
+            properties-file: builders_out_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-linux-integration/publishers.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+        - email:
+            recipients: 'anibal.limon@linaro.org'
+        - email-ext:
+            recipients: 'anibal.limon@linaro.org nicolas.dechesne@linaro.org'
+            always: true
+            matrix-trigger: only-parent
+        - ircbot:
+            channels:
+                - name: '#linaro-lt-qcomm'
+                  password: ${LT_QCOM_KEY}
