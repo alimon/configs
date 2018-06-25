@@ -72,7 +72,6 @@ rm -rf conf build/conf build/tmp-*glibc/
 
 # Accept EULA if/when needed
 export EULA_dragonboard410c=1
-export EULA_stih410b2260=1
 source setup-environment build
 
 # Add job BUILD_NUMBER to output files names
@@ -116,19 +115,8 @@ EOF
     ;;
 esac
 
-cat << EOF >> ${distro_conf}
-KERNEL_ALT_IMAGETYPE_remove_stih410-b2260 = "vmlinux"
-EOF
-
-# Mali GPU driver fails to build
-# error: implicit declaration of function 'copy_from_user'
-# [-Werror=implicit-function-declaration]
-# Ignore the whole gpu MACHINE_FEATURES mechanism
-stih410_b2260_conf=$(find ../layers/meta-st-cannes2/conf/machine -name stih410-b2260.conf)
-sed -i -e '/gpu/d' ${stih410_b2260_conf}
-
 # Include additional recipes in the image
-[ "${MACHINE}" = "am57xx-evm" -o "${MACHINE}" = "stih410-b2260" -o "${MACHINE}" = "beaglebone" ] || extra_pkgs="numactl"
+[ "${MACHINE}" = "am57xx-evm" -o "${MACHINE}" = "beaglebone" ] || extra_pkgs="numactl"
 cat << EOF >> conf/local.conf
 CORE_IMAGE_BASE_INSTALL_append = " kernel-selftests kselftests-mainline kselftests-next libhugetlbfs-tests ltp ${extra_pkgs}"
 CORE_IMAGE_BASE_INSTALL_append = " python python-misc python-modules python-numpy python-pexpect python-pyyaml"
@@ -218,7 +206,7 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
 
 # FIXME: Sparse and converted images here, until it gets done by OE
 case "${MACHINE}" in
-  juno|stih410-b2260)
+  juno)
     ;;
   intel-core2-32)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
