@@ -96,8 +96,6 @@ def main():
                                            'arm64/defconfig/')
     machines = os.environ.get('MACHINES', 'dragonboard410c dragonboard820c sdm845_mtp').split()
 
-    kernel_ci_dt_file = os.environ.get('KERNEL_CI_DT_FILE',
-                                       'dtbs/qcom/apq8016-sbc.dtb')
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
                                       'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/rocko')
     builds_url = os.environ.get('BUILDS_URL',
