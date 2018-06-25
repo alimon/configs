@@ -15,6 +15,40 @@ if [ -z "${GZ}" ]; then
 	export GZ=gzip
 fi
 
+# Set per MACHINE configuration
+case "${MACHINE}" in
+	dragonboard410c)
+		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard410c}
+		ROOTFS_URL=${ROOTFS_URL_dragonboard410c}
+		BOOTIMG_PAGESIZE=2048
+		BOOTIMG_BASE=0x80000000
+		RAMDISK_BASE=0x84000000
+		ROOTFS_PARTITION=/dev/mmcblk0p10
+		SERIAL_CONSOLE=ttyMSM0
+		;;
+	dragonboard820c)
+		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard820c}
+		ROOTFS_URL=${ROOTFS_URL_dragonboard820c}
+		BOOTIMG_PAGESIZE=4096
+		BOOTIMG_BASE=0x80000000
+		RAMDISK_BASE=0x84000000
+		ROOTFS_PARTITION=/dev/sda7
+		SERIAL_CONSOLE=ttyMSM0
+		;;
+	sdm845_mtp)
+		KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}
+		ROOTFS_URL=${ROOTFS_URL_sdm845_mtp}
+		BOOTIMG_PAGESIZE=2048
+		BOOTIMG_BASE=0x80000000
+		RAMDISK_BASE=0x84000000
+		SERIAL_CONSOLE=ttyMSM0
+		;;
+	*)
+		echo "Currently MACHINE: ${MACHINE} isn't supported"
+		exit 1
+		;;
+esac
+
 # Validate required parameters
 if [ -z "${KERNEL_IMAGE_URL}" ]; then
 	echo "ERROR: KERNEL_IMAGE_URL is empty"
@@ -126,27 +160,6 @@ if [[ ! -z "${KERNEL_DT_URL}" ]]; then
 fi
 
 # Create boot image
-if [ -z ${BOOTIMG_PAGESIZE} ]; then
-	export BOOTIMG_PAGESIZE="2048"
-	echo "INFO: No BOOTIMG_PAGESIZE specified set to default: ${BOOTIMG_PAGESIZE}"
-fi
-if [ -z ${BOOTIMG_BASE} ]; then
-	export BOOTIMG_BASE="0x80000000"
-	echo "INFO: No BOOTIMG_BASE specified set to default: ${BOOTIMG_BASE}"
-fi
-if [ -z ${RAMDISK_BASE} ]; then
-	export RAMDISK_BASE="0x84000000"
-	echo "INFO: No RAMDISK_BASE specified set to default: ${RAMDISK_BASE}"
-fi
-if [ -z ${ROOTFS_PARTITION} ]; then
-	export ROOTFS_PARTITION="/dev/mmcblk0p10"
-	echo "INFO: No ROOTFS_PARTITION specified set to default: ${ROOTFS_PARTITION}"
-fi
-if [ -z ${SERIAL_CONSOLE} ]; then
-	export SERIAL_CONSOLE="ttyMSM0"
-	echo "INFO: No SERIAL_CONSOLE specified set to default: ${SERIAL_CONSOLE}"
-fi
-
 boot_file=boot-linux-integration-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
 if [[ $rootfs_file_type = *"cpio archive"* ]]; then
 	ramdisk_file=$rootfs_file
