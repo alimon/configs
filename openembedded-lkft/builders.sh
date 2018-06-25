@@ -149,15 +149,19 @@ EOF
 
 # Remove systemd firstboot and machine-id file
 # Backport serialization change from v234 to avoid systemd tty race condition
-mkdir -p ../layers/meta-96boards/recipes-core/systemd/systemd
-wget -q http://people.linaro.org/~fathi.boudra/backport-v234-e266c06-v230.patch \
-  -O ../layers/meta-96boards/recipes-core/systemd/systemd/backport-v234-e266c06-v230.patch
-cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd/e2fsck.conf
+# Only on Morty
+if [ "${MANIFEST_BRANCH}" = "morty" ]; then
+  mkdir -p ../layers/meta-96boards/recipes-core/systemd/systemd
+  wget -q http://people.linaro.org/~fathi.boudra/backport-v234-e266c06-v230.patch \
+    -O ../layers/meta-96boards/recipes-core/systemd/systemd/backport-v234-e266c06-v230.patch
+
+  cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd/e2fsck.conf
 [options]
 # This will prevent e2fsck from stopping boot just because the clock is wrong
 broken_system_clock = 1
 EOF
-cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd_%.bbappend
+
+  cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd_%.bbappend
 FILESEXTRAPATHS_prepend := "\${THISDIR}/\${PN}:"
 
 SRC_URI += "\\
@@ -176,6 +180,7 @@ do_install_append() {
 
 FILES_\${PN} += "\${sysconfdir}/e2fsck.conf "
 EOF
+fi
 
 # Update kernel recipe SRCREV
 echo "SRCREV_kernel_${MACHINE} = \"${SRCREV_kernel}\"" >> conf/local.conf
