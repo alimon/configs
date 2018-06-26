@@ -165,7 +165,10 @@
         - shell: |
             #!/bin/bash
             set -ex
-            ./jenkins-scripts/docker-run.sh --distro $build_container_tag \
+            ./jenkins-scripts/docker-run.sh \
+              --label $label \
+              --node $NODE_NAME \
+              --distro $build_container_tag \
               $(case "$target" in qemu-*) echo "--qemu $target" ;; esac) \
               --dryrun "$dryrun" \
               -- ./jenkins-scripts/tcwg-buildfarm.sh \
