@@ -19,7 +19,7 @@ cd bigtop-trunk
 # Artifacts will be stored under individual component folder inside output folder.
 # components to be built: ambari bigtop-groovy bigtop-jsvc bigtop-tomcat bigtop-utils hadoop hbase hive spark zookeeper
 # docker run -v ${PWD}:/ws bigtop/slaves:erp18.06-debian-9-aarch64 bash -l -c 'cd /ws ; ./gradlew <comp>-deb'
-docker run -v ${PWD}:/ws bigtop/slaves:erp18.06-debian-9-aarch64 bash -l -c 'cd /ws ; ./gradlew hadoop-deb zookeeper-deb spark-deb hive-deb hbase-deb ambari-deb'
+docker run -v ${PWD}:/ws bigtop/slaves:erp18.06-debian-9-aarch64 bash -l -c 'cd /ws ; ./gradlew bigtop-groovy-deb bigtop-jsvc-deb bigtop-tomcat-deb bigtop-utils-deb hadoop-deb zookeeper-deb spark-deb hive-deb hbase-deb ambari-deb'
 
 # cleanup
 #docker prune -fa
