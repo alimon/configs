@@ -33,7 +33,8 @@
             sudo DEBIAN_FRONTEND=noninteractive apt -q -y install qemu-user-static debootstrap python-guestfs
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-nfs.sh
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-image.sh
-            wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/guest-img.py
+            chmod 755 ./build-foreign-nfs.sh
+            chmod 755 ./build-foreign-image.sh
             sudo ./build-foreign-nfs.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d buster
             sudo ./build-foreign-image.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d buster
             cd ..
@@ -83,6 +84,9 @@
 
             </pre></body></html>
             EOF
+
+            # echo final location
+            echo Publishing to: http://snapshots.linaro.org/components/lava/standard/debian/buster/arm64/${BUILD_NUMBER}
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
