@@ -1,13 +1,13 @@
 # Large image, expressly to be able to do lava-server tests inside
 # which needs lots of dependencies & space for postgresql.
-# able to use lava packages from Debian unstable for django1.10
-# and python3 testing.
+# able to use lava packages from Debian buster for django1.11
+# and python3.
 
 # lava reports & can check the checksum of the compressed image
 # after download.
 
 - job:
-    name: lava-debian-unstable-amd64-vm
+    name: lava-debian-buster-amd64-vm
     project-type: freestyle
     defaults: global
     logrotate:
@@ -23,7 +23,7 @@
                 - job-cancel
     disabled: false
     node: docker-stretch-amd64
-    display-name: 'LAVA - Build large amd64 Debian Sid VM'
+    display-name: 'LAVA - Build large amd64 Debian Buster VM'
     wrappers:
         - timestamps
     builders:
@@ -43,9 +43,9 @@
             mkdir out
             sudo vmdebootstrap \
               --verbose \
-              --image=${WORKSPACE}/out/large-sid.img \
+              --image=${WORKSPACE}/out/large-buster.img \
               --size=3G \
-              --distribution=unstable \
+              --distribution=buster \
               --mirror=http://mirror.bytemark.co.uk/debian \
               --enable-dhcp \
               --systemd-networkd \
@@ -56,27 +56,27 @@
               --log-level=debug \
               --log-mode=0644
 
-            cat > ${WORKSPACE}/out/debian-sid-amd64-readme.html <<EOF
+            cat > ${WORKSPACE}/out/debian-buster-amd64-readme.html <<EOF
             <html><body><pre>
-            lava-debian-unstable-amd64-vm build instructions"
-            ================================================
+            lava-debian-buster-amd64-vm build instructions"
+            ===============================================
 
-            This image can be used for any tests on sid (django1.9 and
+            This image can be used for any tests on buster (django1.11 and
             later).
 
             The image uses a prompt of "root@debian:"
             </pre>
-            <p><a href="https://ci.linaro.org/view/lava-ci/job/lava-debian-unstable-amd64-vm/">
-            https://ci.linaro.org/view/lava-ci/job/lava-debian-unstable-amd64-vm/</a></p>
+            <p><a href="https://ci.linaro.org/view/lava-ci/job/lava-debian-buster-amd64-vm/">
+            https://ci.linaro.org/view/lava-ci/job/lava-debian-buster-amd64-vm/</a></p>
 
-            <p><a href="https://ci.linaro.org/view/lava-ci/job/lava-debian-unstable-amd64-vm/console">
-            https://ci.linaro.org/view/lava-ci/job/lava-debian-unstable-amd64-vm/console</a></p>
+            <p><a href="https://ci.linaro.org/view/lava-ci/job/lava-debian-buster-amd64-vm/console">
+            https://ci.linaro.org/view/lava-ci/job/lava-debian-buster-amd64-vm/console</a></p>
 
-            <p><a href="https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-unstable-amd64-vm.yaml">
-            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-unstable-amd64-vm.yaml</a></p>
+            <p><a href="https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-buster-amd64-vm.yaml">
+            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-buster-amd64-vm.yaml</a></p>
 
-            <p><a href="http://snapshots.linaro.org/components/lava/standard/debian/sid/amd64/${BUILD_NUMBER}">
-            http://snapshots.linaro.org/components/lava/standard/debian/sid/amd64/${BUILD_NUMBER}</a></p>
+            <p><a href="http://snapshots.linaro.org/components/lava/standard/debian/buster/amd64/${BUILD_NUMBER}">
+            http://snapshots.linaro.org/components/lava/standard/debian/buster/amd64/${BUILD_NUMBER}</a></p>
 
 
             <pre>
@@ -85,24 +85,24 @@
             echo "deb http://mirror.bytemark.co.uk/debian stretch-backports main" > stretch-backports.list
             sudo mv stretch-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends -t jessie-backports vmdebootstrap grub2-common
+            sudo apt-get install -y --no-install-recommends -t stretch-backports vmdebootstrap grub2-common
 
             See vmdebootstrap.log for the full log.
             </pre></body></html>
             EOF
 
-            gzip -9 ${WORKSPACE}/out/large-sid.img
+            gzip -9 ${WORKSPACE}/out/large-buster.img
 
-            md5sum ${WORKSPACE}/out/large-sid.img.gz > ${WORKSPACE}/out/large-sid.img.gz.md5sum.txt
-            sha256sum ${WORKSPACE}/out/large-sid.img.gz > ${WORKSPACE}/out/large-sid.img.gz.sha256sum.txt
+            md5sum ${WORKSPACE}/out/large-buster.img.gz > ${WORKSPACE}/out/large-buster.img.gz.md5sum.txt
+            sha256sum ${WORKSPACE}/out/large-buster.img.gz > ${WORKSPACE}/out/large-buster.img.gz.sha256sum.txt
 
             # echo final location
-            echo Publishing to: http://snapshots.linaro.org/components/lava/standard/debian/sid/amd64/${BUILD_NUMBER}
+            echo Publishing to: http://snapshots.linaro.org/components/lava/standard/debian/buster/amd64/${BUILD_NUMBER}
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py --api_version 3 --link-latest out components/lava/standard/debian/sid/amd64/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py --api_version 3 --link-latest out components/lava/standard/debian/buster/amd64/${BUILD_NUMBER}
     publishers:
         - email:
             recipients: 'neil.williams@linaro.org fathi.boudra@linaro.org'

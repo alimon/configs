@@ -1,7 +1,7 @@
 # Debian arm64 NFS, initramfs, modules and dtbs
 
 - job:
-    name: lava-debian-sid-arm64
+    name: lava-debian-buster-arm64
     project-type: freestyle
     defaults: global
     logrotate:
@@ -16,8 +16,8 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-jessie-amd64
-    display-name: 'LAVA - Build ARM64 Debian unstable files'
+    node: docker-stretch-amd64
+    display-name: 'LAVA - Build ARM64 Debian Buster files'
     wrappers:
         - timestamps
     builders:
@@ -27,28 +27,27 @@
 
             mkdir out
             cd out/
-            echo "deb http://mirror.bytemark.co.uk/debian jessie-backports main" > jessie-backports.list
-            sudo mv jessie-backports.list /etc/apt/sources.list.d/
+            echo "deb http://mirror.bytemark.co.uk/debian stretch-backports main" > stretch-backports.list
+            sudo mv stretch-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
-            sudo DEBIAN_FRONTEND=noninteractive apt -q -y -t jessie-backports install qemu-user-static debootstrap
-            sudo DEBIAN_FRONTEND=noninteractive apt -q -y install python-guestfs
+            sudo DEBIAN_FRONTEND=noninteractive apt -q -y install qemu-user-static debootstrap python-guestfs
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-nfs.sh
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/build-foreign-image.sh
             wget https://git.linaro.org/lava-team/refactoring.git/blob_plain/HEAD:/scripts/guest-img.py
-            sudo ./build-foreign-nfs.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d sid
-            sudo ./build-foreign-image.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d sid
+            sudo ./build-foreign-nfs.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d buster
+            sudo ./build-foreign-image.sh -a arm64 -b /usr/bin/qemu-aarch64-static -d buster
             cd ..
-            cat > ${WORKSPACE}/out/debian-arm64-readme.html <<EOF
+            cat > ${WORKSPACE}/out/debian-buster-arm64-readme.html <<EOF
             <html><body><pre>
-            lava-debian-sid-arm64 build instructions
+            lava-debian-buster-arm64 build instructions
             ========================================
 
             This initramfs is built using update-initramfs inside a minimal
-            Debian Unstable debootstrap chroot. The contents of the chroot is
+            Debian Buster debootstrap chroot. The contents of the chroot is
             then packaged up as an NFS with an empty root password.
 
             apt is included in the NFS, as are bash, grep, iproute2, mawk and
-            sed. The NFS uses the default init in unstable: systemd.
+            sed. The NFS uses the default init in buster: systemd.
 
             The Debian ARM64 kernel is a modular build and the modules
             need to be available in the initramfs for the kernel to be
@@ -57,8 +56,8 @@
 
             A similar chroot is created with systemd-sysv added. The chroot is
             unpacked into an empty ext2 primary partition of an image:
-            sid-arm64.img The UUID of the partition is available as
-            sid-arm64.img.uuid.txt and should be appended to the kernel command
+            buster-arm64.img The UUID of the partition is available as
+            buster-arm64.img.uuid.txt and should be appended to the kernel command
             line using the root= argument when testing the image using QEMU in
             LAVA to ensure that the correct drive is booted. The image has
             systemd-networkd and systemd-resolved enabled to use DHCP on the
@@ -68,15 +67,15 @@
             checksums to ensure that the UUID matches the files being
             downloaded.
 
-            https://ci.linaro.org/view/lava-ci/job/lava-debian-sid-arm64/
+            https://ci.linaro.org/view/lava-ci/job/lava-debian-buster-arm64/
 
             The scripts used by jenkins are available here:
             https://git.linaro.org/lava-team/refactoring.git/tree/HEAD:/scripts
 
-            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-sid-arm64.yaml
-            The base system is a Debian Unstable VM.
+            https://git.linaro.org/ci/job/configs.git/blob/HEAD:/lava-debian-buster-arm64.yaml
+            The base system is a Debian Buster VM.
 
-            The NFS rootfs and the image both use a prompt of "root@sid:" and
+            The NFS rootfs and the image both use a prompt of "root@buster:" and
             the same auto login details:
                 auto_login:
                     login_prompt: 'login:'
@@ -88,7 +87,7 @@
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py --api_version 3 out components/lava/standard/debian/sid/arm64/${BUILD_NUMBER}
+            time python ${HOME}/bin/linaro-cp.py --api_version 3 out components/lava/standard/debian/buster/arm64/${BUILD_NUMBER}
     publishers:
         # - archive:
         #    artifacts: 'out/*'
