@@ -1,5 +1,16 @@
 - test:
     namespace: ${DEVICE_TYPE}
+    name: qcomlt-desktop-glmark2
+    timeout:
+      minutes: 10
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/glmark2/glmark2.yaml
+      name: linux-piglit
+
+- test:
+    namespace: ${DEVICE_TYPE}
     name: qcomlt-desktop
     timeout:
       minutes: 145
@@ -17,7 +28,7 @@ device_type: ${DEVICE_TYPE}
 job_name: lt-qcom-${OS_INFO}-desktop-${BUILD_NUMBER}
 timeouts:
   job:
-    minutes: 180
+    minutes: 190
   action:
     minutes: 15
   connection:
