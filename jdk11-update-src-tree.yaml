@@ -33,7 +33,9 @@
     scm:
         - jdk11
     triggers:
-        - pollscm: 'H 2 */2 * *'
+        # Trigger on Saturday, finishes for Monday morning.
+        - pollscm:
+            cron: '0 7 * * 6'
     wrappers:
         - timestamps
     builders:

@@ -33,7 +33,9 @@
     scm:
         - jdk10u
     triggers:
-        - pollscm: 'H 2 1-6/2 * *'
+        # Trigger builds every Friday morning at 0:00 am.
+        - pollscm:
+            cron: '0 0 * * 5'
     wrappers:
         - timestamps
     builders:
