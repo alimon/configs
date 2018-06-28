@@ -26,11 +26,10 @@ export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/linux-x86/${TOOLCHAIN}/
 
 git clone --depth=1 https://android.googlesource.com/kernel/configs
 
-CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
-
-# Need to use TI specific bluetooth driver
-if [ "${JOB_NAME}" = "lkft-hikey-android-8.0-4.9" ]; then
-    git fetch ssh://vishal.bhoj@android-review.linaro.org:29418/kernel/hikey-linaro refs/changes/97/18097/1 && git cherry-pick FETCH_HEAD
+if echo "$ANDROID_VERSION" | grep aosp-master ; then
+    CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug  overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab"
+else
+    CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
 fi
 
 mkdir -p out
