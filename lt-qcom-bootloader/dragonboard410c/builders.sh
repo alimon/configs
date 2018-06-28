@@ -79,10 +79,8 @@ sudo sgdisk -bgpt.bin gpt.img
 # bootloader_sd_linux
 cp -a LICENSE \
    lk_sd_boot/build-msm8916/emmc_appsboot.mbn \
-   bootloaders-linux/{NON-HLOS.bin,rpm.mbn,tz.mbn,hyp.mbn} \
+   bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
    out/${BOOTLOADER_SD_LINUX}
-
-cp -a bootloaders-linux/sbl1.sd.mbn out/${BOOTLOADER_SD_LINUX}/sbl1.mbn
 
 # sdcard_rescue
 cp -a LICENSE out/${SDCARD_RESCUE}
