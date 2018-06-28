@@ -69,7 +69,12 @@ fi
 TEMPLATE_PATH=""
 
 for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
-    if [[ ${test} = "kselftests-native.yaml" || ${test} = "kselftests-none.yaml" ]];then
+    if [[ ${test} = "ltp-open-posix.yaml" ]];then
+        # Adding LTP open posix test suite only for mainline and next builds
+        if [[ ${QA_SERVER_PROJECT} = "linux-mainline-oe" || ${QA_SERVER_PROJECT} = "linux-next-oe" ]];then
+            TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+        fi
+    elif  [[ ${test} = "kselftests-native.yaml" || ${test} = "kselftests-none.yaml" ]];then
         # kselftests-native.yaml and kselftests-none.yaml tests needed for x86
         # Don't run on qemu; it's not possible to pass a kernel argument
         # given the way we build the image and run qemu.
