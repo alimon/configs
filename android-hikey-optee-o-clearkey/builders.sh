@@ -63,14 +63,14 @@ make TARGET_BUILD_KERNEL=true TARGET_BOOTIMAGE_USE_FAT=true \
 	TARGET_BUILD_UEFI=true TARGET_ENABLE_MEDIADRM_64=true
 
 cd external
-git clone https://github.com/linaro-home/clearkeydrmplugin
-if [ "${ghprbGhRepository}" == "linaro-home/clearkeydrmplugin" ]; then
+git clone https://github.com/linaro-mmwg/clearkeydrmplugin
+if [ "${ghprbGhRepository}" == "linaro-mmwg/clearkeydrmplugin" ]; then
     git fetch origin pull/${ghprbPullId}/head:prbranch
     git checkout prbranch
 fi
 cd clearkeydrmplugin
-git clone https://github.com/linaro-home/optee-clearkey-cdmi
-if [ "${ghprbGhRepository}" == "linaro-home/optee-clearkey-cdmi" ]; then
+git clone https://github.com/linaro-mmwg/optee-clearkey-cdmi
+if [ "${ghprbGhRepository}" == "linaro-mmwg/optee-clearkey-cdmi" ]; then
     git fetch origin pull/${ghprbPullId}/head:prbranch
     git checkout prbranch
 fi
