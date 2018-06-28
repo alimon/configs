@@ -23,12 +23,6 @@ cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.json /home/buildslave/srv/${
 cp -v /home/buildslave/srv/${BUILD_DIR}/build/out/dist/fip.bin \
       /home/buildslave/srv/${BUILD_DIR}/build/out/dist/l-loader.bin build/out/ || true
 
-# Compress images
-cd build/
-## works for both nougat and oreo and master
-out/host/linux-x86/bin/make_ext4fs -s -T -1 -S out/obj/ETC/file_contexts.bin_intermediates/file_contexts.bin -L data -l 1595915776 -a data out/userdata-4gb.img out/data
-cd -
-
 cd build/out
 rm -f ramdisk.img
 for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img" "fip.bin" "l-loader.bin" "vendor.img"; do
