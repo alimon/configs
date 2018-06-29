@@ -192,6 +192,10 @@ cat ${distro_conf}
 # Temporary sstate cleanup to get lkft metadata generated
 bitbake -c cleansstate kselftests-mainline kselftests-next ltp libhugetlbfs
 
+if [ "${JOB_NAME:0:28}" = "openembedded-lkft-linux-next" ]; then
+  IMAGES="rpb-console-image-lkft"
+fi
+
 time bitbake ${IMAGES}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
