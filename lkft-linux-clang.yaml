@@ -1,0 +1,95 @@
+- job:
+    name: lkft-linux-clang
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 300
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: CLANG_TOOLCHAIN
+            default: 'clang-r328903'
+        - string:
+            name: KERNEL_GITREF
+            default: 'torvalds/master'
+        - matrix-combinations:
+            name: MATRIX_COMBINATIONS
+    disabled: false
+    node: master
+    display-name: 'LKFT Linux Kernel built with Clang'
+    concurrent: true
+    axes:
+        - axis:
+            type: user-defined
+            name: ARCH
+            values:
+                - 'arm64'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-lkft
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 180
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+
+            sudo apt-get update
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libssl-dev
+
+            mkdir ${CLANG_TOOLCHAIN}
+            wget -q "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/master/${CLANG_TOOLCHAIN}.tar.gz"
+            tar zxf "${CLANG_TOOLCHAIN}.tar.gz" -C "${CLANG_TOOLCHAIN}/"
+            git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
+
+            export PATH=${PWD}/${CLANG_TOOLCHAIN}/bin:${PWD}/aarch64-linux-android-4.9/bin:${PATH}
+
+            # Set up Linux Git repositories
+            # "torvalds" is Linus' kernel, mainline
+            # "linux-stable" is GKH repository for stable kernels
+
+            git clone -o torvalds https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux
+            cd linux
+            git remote add linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+            git remote update
+
+            if [ -n "${GIT_COMMIT}" ]; then
+              GIT_REFERENCE=${GIT_COMMIT}
+            else
+              GIT_REFERENCE=${KERNEL_GITREF}
+            fi
+            git checkout ${GIT_REFERENCE}
+
+            case "${ARCH}" in
+              arm64)
+                CLANG_TRIPLE=aarch64-linux-gnu-
+                CROSS_COMPILE=aarch64-linux-android-
+                ;;
+              *)
+                echo "Unsupported ARCH: ${ARCH}"
+                exit 1
+                ;;
+            esac
+            export ARCH
+            export CLANG_TRIPLE
+            export CROSS_COMPILE
+
+            make CC=clang HOSTCC=clang defconfig
+            make CC=clang HOSTCC=clang -j$(nproc)
+    publishers:
+        - email:
+            recipients: 'daniel.diaz@linaro.org'

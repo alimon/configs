@@ -1,0 +1,50 @@
+- job:
+    name: trigger-lkft-linux-clang-mainline
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 300
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    parameters:
+        - string:
+            name: KERNEL_BRANCH
+            default: 'master'
+    disabled: false
+    node: master
+    display-name: 'Trigger for LKFT - Linux Kernel with Clang Mainline'
+    scm:
+        - git:
+            url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/torvalds/${KERNEL_BRANCH}
+            name: torvalds
+            branches:
+                - torvalds/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            git clean -fdx
+            echo KERNEL_GITREF=torvalds/${KERNEL_BRANCH} > lkft_parameters
+            echo KERNEL_DESCRIBE=$(git describe --always) >> lkft_parameters
+            echo GIT_COMMIT=${GIT_COMMIT} >> lkft_parameters
+            echo MAKE_KERNELVERSION=$(make kernelversion) >> lkft_parameters
+            cat lkft_parameters
+    publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'lkft-linux-clang'
+              condition: SUCCESS
+              property-file: lkft_parameters
