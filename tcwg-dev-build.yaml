@@ -1,0 +1,90 @@
+- job:
+    name: tcwg-dev-build
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    parameters:
+        - string:
+            name: release_name
+            default: default
+            description: 'Release name; default is "date +%Y%m%d-%H_%M_%S"'
+        - choice:
+            name: target
+            choices:
+                - aarch64-elf
+                - aarch64-linux-gnu
+                - aarch64-linux-gnu_ilp32
+                - aarch64_be-elf
+                - aarch64_be-linux-gnu
+                - arm-eabi
+                - arm-linux-gnueabi
+                - arm-linux-gnueabihf
+                - armeb-eabi
+                - armeb-linux-gnueabi
+                - armeb-linux-gnueabihf
+                - armv8l-linux-gnueabihf
+            default: aarch64-linux-gnu
+            description: 'Target'
+        - choice:
+            name: version
+            choices:
+                - default
+                - gcc4_9
+                - gcc5
+                - gcc6
+                - gcc7
+                - latest-rel
+                - master
+            default: default
+            description: 'Toolchain version; should be support ABE config'
+        - bool:
+            name: verbose
+            default: false
+            description: 'Whether to be verbose'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts revision to use'
+    disabled: false
+    node: tcwg-x86_64-build
+    display-name: 'TCWG AAA Dev Build'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - $scripts_branch
+            basedir: jenkins-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${release_name}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            ./docker-run.sh -- ./tcwg-dev-build.sh \
+            --release_name "$release_name" \
+            --target "$target" \
+            --version "$version" \
+            --verbose "$verbose"
+    publishers:
+        - archive:
+            artifacts: 'artifacts/*'
+            latest-only: false
