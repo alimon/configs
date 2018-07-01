@@ -77,9 +77,13 @@ fi
 cd ../../
 
 cd external/optee-widevine-ref
-mma
+mma TARGET_BUILD_KERNEL=true TARGET_BOOTIMAGE_USE_FAT=true \
+        CFG_SECURE_DATA_PATH=y CFG_SECSTOR_TA_MGMT_PTA=y TARGET_TEE_IS_OPTEE=true \
+        TARGET_BUILD_UEFI=true TARGET_ENABLE_MEDIADRM_64=true USE_TEST_KBOX=true
 cd ../../
 
 cd vendor/widevine
-mma
+mma TARGET_BUILD_KERNEL=true TARGET_BOOTIMAGE_USE_FAT=true \
+        CFG_SECURE_DATA_PATH=y CFG_SECSTOR_TA_MGMT_PTA=y TARGET_TEE_IS_OPTEE=true \
+        TARGET_BUILD_UEFI=true TARGET_ENABLE_MEDIADRM_64=true
 cd ../../
