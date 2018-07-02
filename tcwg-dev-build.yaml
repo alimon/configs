@@ -65,7 +65,6 @@
             refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             branches:
                 - $scripts_branch
-            basedir: jenkins-scripts
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -85,7 +84,7 @@
         - shell: |
             #!/bin/bash
             set -ex
-            ./jenkins-scripts/docker-run.sh -- ./jenkins-scripts/tcwg-dev-build.sh \
+            ./docker-run.sh -- ./tcwg-dev-build.sh \
             --release_name "$release_name" \
             --target "$target" \
             --version "$version" \
