@@ -13,7 +13,11 @@
       from: git
       path: automated/android/tradefed/tradefed.yaml
       params:
-        TEST_URL: "http://testdata.validation.linaro.org/vts/oreo-vts-release-lcr-12192017/android-vts.zip"
+{% if VTS_PKG_URL is defined %}
+        TEST_URL: "{{VTS_PKG_URL}}"
+{% else %}
+        TEST_URL: "http://testdata.linaro.org/vts/oreo-mr1-vts-release-06262018/android-vts.zip"
+{% endif %}
         TEST_PARAMS: "run {{testcommand}} --skip-device-info"
         TEST_PATH: "android-vts"
         RESULTS_FORMAT: "atomic"

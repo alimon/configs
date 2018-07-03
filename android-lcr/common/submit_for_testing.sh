@@ -44,12 +44,16 @@ export ANDROID_META_NAME=${JOB_NAME}
 export ANDROID_META_BUILD=${BUILD_NUMBER}
 export ANDROID_META_URL=${BUILD_URL}
 export WA2_JOB_NAME=${BUILD_NUMBER}
+export CTS_PKG_URL=${CTS_PKG_URL}
+export VTS_PKG_URL=${VTS_PKG_URL}
 [ -z "${GERRIT_CHANGE_NUMBER}" ] && export GERRIT_CHANGE_NUMBER=""
 [ -z "${GERRIT_PATCHSET_NUMBER}" ] && export GERRIT_PATCHSET_NUMBER=""
 [ -z "${GERRIT_CHANGE_URL}" ] && export GERRIT_CHANGE_URL=""
 [ -z "${GERRIT_CHANGE_ID}" ] && export GERRIT_CHANGE_ID=""
 [ -z "${REFERENCE_BUILD_URL}" ] && export REFERENCE_BUILD_URL=""
 [ -z "${CTS_MODULE_NAME}" ] && export CTS_MODULE_NAME=""
+[ -z "${CTS_PKG_URL}" ] && unset CTS_PKG_URL
+[ -z "${VTS_PKG_URL}" ] && unset VTS_PKG_URL
 
 if [ -z "${DRY_RUN}" ]; then
     rm -rf configs
