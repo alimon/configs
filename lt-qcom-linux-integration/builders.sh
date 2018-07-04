@@ -160,7 +160,7 @@ if [[ ! -z "${KERNEL_DT_URL}" ]]; then
 fi
 
 # Create boot image
-boot_file=boot-linux-integration-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
+boot_file=boot-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
 if [[ $rootfs_file_type = *"cpio archive"* ]]; then
 	ramdisk_file=$rootfs_file
 	skales-mkbootimg \
