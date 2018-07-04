@@ -54,6 +54,10 @@
             name: scripts_branch
             default: master
             description: 'Scripts revision to use'
+        - text:
+            name: extra_options
+            default:
+            description: 'Extra options to pass to docker-run'
     disabled: false
     node: tcwg-x86_64-build
     concurrent: true
@@ -83,7 +87,11 @@
         - shell: |
             #!/bin/bash
             set -ex
-            ./docker-run.sh -- ./tcwg-dev-build.sh \
+            abe_branch=tested
+            distro=default
+            eval $extra_options
+            ./docker-run.sh --distro "$distro" -- ./tcwg-dev-build.sh \
+            --abe_branch "$abe_branch" \
             --release_name "$release_name" \
             --target "$target" \
             --version "$version" \
