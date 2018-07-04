@@ -39,13 +39,12 @@
             type: user-defined
             name: BUILD_NAME
             values:
-                - 'linux-next'
-                - 'linux-mainline'
-                - 'linux-stable-rc-4.4'
-                - 'linux-stable-rc-4.9'
-                - 'linux-stable-rc-4.14'
-                - 'linux-stable-rc-4.15'
-                - 'linux-stable-rc-4.16'
+                - 'linux-next-oe'
+                - 'linux-mainline-oe'
+                - 'linux-stable-rc-4.4-oe'
+                - 'linux-stable-rc-4.9-oe'
+                - 'linux-stable-rc-4.14-oe'
+                - 'linux-stable-rc-4.17-oe'
         - axis:
             type: user-defined
             name: QA_SERVER
@@ -83,17 +82,17 @@
             pip install --user --force-reinstall Jinja2 requests urllib3 ruamel.yaml
 
             # no LTS 4.4 build for hikey
-            if [ ${DEVICE_TYPE} = hi6220-hikey ] && [ ${BUILD_NAME} = linux-stable-rc-4.4 ]
+            if [ ${DEVICE_TYPE} = hi6220-hikey ] && [ ${BUILD_NAME} = linux-stable-rc-4.4-oe ]
             then
               exit 0
             fi
             # no LTS 4.4 build for QEMU (Hikey build is used)
-            if [ ${DEVICE_TYPE} = qemu_arm64 ] && [ ${BUILD_NAME} = linux-stable-rc-4.4 ]
+            if [ ${DEVICE_TYPE} = qemu_arm64 ] && [ ${BUILD_NAME} = linux-stable-rc-4.4-oe ]
             then
               exit 0
             fi
             # no LTS 4.4 build for dragonboard
-            if [ ${DEVICE_TYPE} = dragonboard-410c ] && [ ${BUILD_NAME} = linux-stable-rc-4.4 ]
+            if [ ${DEVICE_TYPE} = dragonboard-410c ] && [ ${BUILD_NAME} = linux-stable-rc-4.4-oe ]
             then
               exit 0
             fi
@@ -176,27 +175,24 @@
             # Simulate KERNEL_VERSION and KERNEL_VERSION_OVERRIDE behavior from
             # production.
             case ${BUILD_NAME} in
-              linux-next)
+              linux-next-oe)
                 export KERNEL_VERSION=git
                 export KERNEL_VERSION_OVERRIDE=next
                 ;;
-              linux-mainline)
+              linux-mainline-oe)
                 export KERNEL_VERSION=git
                 export KERNEL_VERSION_OVERRIDE=mainline
                 ;;
-              linux-stable-rc-4.16)
-                export KERNEL_VERSION=4.16
+              linux-stable-rc-4.17-oe)
+                export KERNEL_VERSION=4.17
                 ;;
-              linux-stable-rc-4.15)
-                export KERNEL_VERSION=4.15
-                ;;
-              linux-stable-rc-4.14)
+              linux-stable-rc-4.14-oe)
                 export KERNEL_VERSION=4.14
                 ;;
-              linux-stable-rc-4.9)
+              linux-stable-rc-4.9-oe)
                 export KERNEL_VERSION=4.9
                 ;;
-              linux-stable-rc-4.4)
+              linux-stable-rc-4.4-oe)
                 export KERNEL_VERSION=4.4
                 ;;
               *)
@@ -206,13 +202,13 @@
             esac
 
             case ${BUILD_NAME} in
-              linux-next)
+              linux-next-oe)
                 export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
                 export KSELFTESTS_REVISION=${KERNEL_COMMIT_ID}
                 export KSELFTESTS_URL=${KERNEL_REPO}
                 export KSELFTEST_PATH=/opt/kselftests/default-in-kernel/
                 ;;
-              linux-mainline)
+              linux-mainline-oe)
                 export KSELFTESTS_VERSION=${MAKE_KERNELVERSION}
                 export KSELFTESTS_REVISION=${KERNEL_COMMIT_ID}
                 export KSELFTESTS_URL=${KERNEL_REPO}
