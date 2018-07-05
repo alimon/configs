@@ -91,5 +91,18 @@
             make CC=clang HOSTCC=clang defconfig
             make CC=clang HOSTCC=clang -j$(nproc)
     publishers:
-        - email:
+        - email-ext:
             recipients: 'daniel.diaz@linaro.org'
+            matrix-trigger: only-configurations
+            subject: '[CI] Linux/Clang failed: ${KERNEL_GITREF}: ${KERNEL_DESCRIBE}'
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Build log: ${PROJECT_URL}${BUILD_NUMBER}/console
+                Git repo/branch: ${KERNEL_GITREF}
+                Git commit: ${GIT_COMMIT}
+                Clang toolchain: ${CLANG_TOOLCHAIN}
+                Kernel version (from make): ${MAKE_KERNELVERSION}
+                Kernel version (from Git): ${KERNEL_DESCRIBE}
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
