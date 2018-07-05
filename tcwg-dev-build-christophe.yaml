@@ -1,0 +1,104 @@
+- job:
+    name: tcwg-dev-build-christophe
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    parameters:
+        - string:
+            name: release_name
+            default: default
+            description: 'Release name; default is "date +%Y%m%d-%H_%M_%S"'
+        - choice:
+            name: target
+            choices:
+                - aarch64-linux-gnu
+                - aarch64-elf
+                - aarch64-linux-gnu_ilp32
+                - aarch64_be-elf
+                - aarch64_be-linux-gnu
+                - arm-eabi
+                - arm-linux-gnueabi
+                - arm-linux-gnueabihf
+                - armeb-eabi
+                - armeb-linux-gnueabi
+                - armeb-linux-gnueabihf
+                - armv8l-linux-gnueabihf
+            description: 'Target'
+        - choice:
+            name: version
+            choices:
+                - default
+                - gcc4_9
+                - gcc5
+                - gcc6
+                - gcc7
+                - latest-rel
+                - master
+            default: default
+            description: 'Toolchain version; should be support ABE config'
+        - choice:
+            name: host
+            choices:
+                - x86_64
+                - aarch64
+        - bool:
+            name: verbose
+            default: false
+            description: 'Whether to be verbose'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts revision to use'
+    disabled: false
+    node: tcwg-x86_64-build
+    concurrent: true
+    display-name: 'TCWG ZZZ Dev Build Christophe'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - $scripts_branch
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+    wrappers:
+        - timeout:
+            timeout: 300
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${release_name}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            label=""
+            case ${host} in
+                x86_64) ;;
+                aarch64) label="--label tcwg-apm_64-build" ;;
+            esac
+            ./docker-run.sh $label -- ./tcwg-dev-build.sh \
+            --release_name "$release_name" \
+            --target "$target" \
+            --version "$version" \
+            --verbose "$verbose"
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
