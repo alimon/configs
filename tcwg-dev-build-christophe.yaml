@@ -93,11 +93,17 @@
                 x86_64) ;;
                 aarch64) label="--label tcwg-apm_64-build" ;;
             esac
-            ./docker-run.sh $label -- ./tcwg-dev-build.sh \
-            --release_name "$release_name" \
-            --target "$target" \
-            --version "$version" \
-            --verbose "$verbose"
+
+            ./jenkins-scripts/start-container-docker.sh $label_NAME --task build --prefix build_ > build-container.sh
+            . ./build-container.sh
+            BUILD_SHELL="build_container_exec bash"
+
+            ${BUILD_SHELL} -c "git clone https://git.linaro.org/toolchain/jenkins-scripts.git"
+            ${BUILD_SHELL} -c "./jenkins-script/tcwg-dev-build.sh \
+              --release_name \"$release_name\" \
+              --target $target \
+              --version $version \
+              --verbose $verbose"
     publishers:
         - archive:
             artifacts: 'artifacts/**'
