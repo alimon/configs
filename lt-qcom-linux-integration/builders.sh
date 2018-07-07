@@ -10,6 +10,37 @@ wget_error() {
 	fi
 }
 
+function copy_tarball_to_rootfs() {
+	tarball_file=$1
+	rootfs_file=$2
+	rootfs_file_type=$3
+
+	if [[ $rootfs_file_type = *"cpio archive"* ]]; then
+		mkdir -p out/tarball
+		tar -xvf $tarball_file -C out/tarball
+		cd out/tarball
+		find . | cpio -oA -H newc -F ../../$rootfs_file
+		cd ../../
+		rm -rf out/tarball
+	else
+		required_size=$(${GZ} -l $tarball_file | tail -1 | awk '{print $2}')
+		required_size=$(( $required_size / 1024 ))
+
+		sudo e2fsck -y $rootfs_file
+		block_count=$(sudo dumpe2fs -h $rootfs_file | grep "Block count" | awk '{print $3}')
+		block_size=$(sudo dumpe2fs -h $rootfs_file | grep "Block size" | awk '{print $3}')
+		current_size=$(( $block_size * $block_count / 1024 ))
+
+		final_size=$(( $current_size + $required_size + 32768 ))
+		sudo resize2fs -p $rootfs_file "$final_size"K
+
+		mkdir -p out/rootfs_mount
+		sudo mount -o loop $rootfs_file out/rootfs_mount
+		sudo tar -xvf $tarball_file -C out/rootfs_mount
+		sudo umount out/rootfs_mount
+	fi
+}
+
 # Set default tools to use
 if [ -z "${GZ}" ]; then
 	export GZ=gzip
@@ -20,6 +51,7 @@ case "${MACHINE}" in
 	dragonboard410c)
 		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard410c}
 		ROOTFS_URL=${ROOTFS_URL_dragonboard410c}
+		FIRMWARE_URL=${FIRMWARE_URL_dragonboard410c}
 		BOOTIMG_PAGESIZE=2048
 		BOOTIMG_BASE=0x80000000
 		RAMDISK_BASE=0x84000000
@@ -29,6 +61,7 @@ case "${MACHINE}" in
 	dragonboard820c)
 		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard820c}
 		ROOTFS_URL=${ROOTFS_URL_dragonboard820c}
+		FIRMWARE_URL=${FIRMWARE_URL_dragonboard820c}
 		BOOTIMG_PAGESIZE=4096
 		BOOTIMG_BASE=0x80000000
 		RAMDISK_BASE=0x84000000
@@ -38,6 +71,7 @@ case "${MACHINE}" in
 	sdm845_mtp)
 		KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}
 		ROOTFS_URL=${ROOTFS_URL_sdm845_mtp}
+		FIRMWARE_URL=${FIRMWARE_URL_sdm845_mtp}
 		BOOTIMG_PAGESIZE=2048
 		BOOTIMG_BASE=0x80000000
 		RAMDISK_BASE=0x84000000
@@ -71,12 +105,16 @@ Build description:
 * Kernel dt URL: $KERNEL_DT_URL
 * kernel modules URL: $KERNEL_MODULES_URL
 * Rootfs URL: $ROOTFS_URL
+* Firmware URL: $FIRMWARE_URL
 EOF
 
 # Rootfs image, modules populate
 wget_error ${ROOTFS_URL}
 if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 	wget_error ${KERNEL_MODULES_URL}
+fi
+if [[ ! -z "${FIRMWARE_URL}" ]]; then
+	wget_error ${FIRMWARE_URL}
 fi
 rootfs_file=out/$(basename ${ROOTFS_URL})
 rootfs_file_type=$(file $rootfs_file)
@@ -103,33 +141,11 @@ else
 fi
 
 if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
-	if [[ $rootfs_file_type = *"cpio archive"* ]]; then
-		modules_file=out/$(basename ${KERNEL_MODULES_URL})
+	copy_tarball_to_rootfs "out/$(basename ${KERNEL_MODULES_URL})" "$rootfs_file" "$rootfs_file_type"
+fi
 
-		mkdir -p out/modules
-		tar -xvf out/$(basename ${KERNEL_MODULES_URL}) -C out/modules
-		cd out/modules
-		find . | cpio -oA -H newc -F ../../$rootfs_file
-		cd ../../
-		rm -r out/modules
-	else
-		modules_file=out/$(basename ${KERNEL_MODULES_URL})
-		required_size=$(${GZ} -l $modules_file | tail -1 | awk '{print $2}')
-		required_size=$(( $required_size / 1024 ))
-
-		sudo e2fsck -y $rootfs_file
-		block_count=$(sudo dumpe2fs -h $rootfs_file | grep "Block count" | awk '{print $3}')
-		block_size=$(sudo dumpe2fs -h $rootfs_file | grep "Block size" | awk '{print $3}')
-		current_size=$(( $block_size * $block_count / 1024 ))
-
-		final_size=$(( $current_size + $required_size + 32768 ))
-		sudo resize2fs -p $rootfs_file "$final_size"K
-
-		mkdir -p out/rootfs_mount
-		sudo mount -o loop $rootfs_file out/rootfs_mount
-		sudo tar -xvf out/$(basename ${KERNEL_MODULES_URL}) -C out/rootfs_mount
-		sudo umount out/rootfs_mount
-	fi
+if [[ ! -z "${FIRMWARE_URL}" ]]; then
+	copy_tarball_to_rootfs "out/$(basename ${FIRMWARE_URL})" "$rootfs_file" "$rootfs_file_type"
 fi
 
 if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
