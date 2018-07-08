@@ -1,4 +1,6 @@
-#!/bin/bash
+#!/bin/bash -ex
+
+PARENT_DIR=$(cd $(dirname $0); pwd)
 
 virtualenv .venv
 source .venv/bin/activate
@@ -23,7 +25,7 @@ export GERRIT_NEWREV=ded592ed8683143217b56c3915d00eef1d5abb12
 export GERRIT_PATCHSET_NUMBER=1
 export GERRIT_PATCHSET_REVISION=ded592ed8683143217b56c3915d00eef1d5abb12
 export GERRIT_PORT=29418
-export GERRIT_PROJECT=android-build-configs
+#export GERRIT_PROJECT=android-build-configs
 export GERRIT_REFSPEC=refs/changes/10/18010/1
 export GERRIT_SCHEME=ssh
 export GERRIT_TOPIC=
@@ -47,22 +49,31 @@ export LAVA_SERVER=lkft.validation.linaro.org/RPC2/
 export MAKE_TARGETS=droidcore
 export SKIP_REPORT=false
 export TARGET_PRODUCT=full_am57xevm
+#export ANDROID_VERSION_SUFFIX=master
+#export CTS_PKG_URL=http://testdata.linaro.org/cts/android-cts-master-linux_x86-arm-linaro.zip
+#export VTS_PKG_URL=http://testdata.linaro.org/vts/master/android-vts.zip
 
 export QA_SERVER=https://qa-reports.linaro.org/
 export QA_SERVER_PROJECT=lcr
 export QA_BUILD_VERSION=${BUILD_NUMBER}
 export QA_REPORTS_TOKEN=secret
+export ARTIFACTORIAL_TOKEN=artifactorial_token
+export AP_SSID=ap_ssid
+export AP_KEY=ap_key
+
 
 export DRY_RUN=true
 
-for device in $(ls ../lava-job-definitions/devices); do
+for device in $(ls ${PARENT_DIR}/../lava-job-definitions/devices); do
     case "$device" in
       *boot*)
+        ;;
+      *deploy*)
         ;;
       *)
         export DEVICE_TYPE=$device
         echo ${DEVICE_TYPE}
-        bash submit_for_testing.sh
+        bash ${PARENT_DIR}/submit_for_testing.sh
         ;;
     esac
 done

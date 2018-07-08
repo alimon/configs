@@ -1,0 +1,33 @@
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      ptable:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/69/hikey/release/ptable-aosp-8g.img
+        reboot: hard-reset
+      boot:
+        reboot: hard-reset
+        url: {{DOWNLOAD_URL}}/boot.img.xz
+        compression: xz
+      cache:
+        url: {{ANDROID_CACHE}}
+        compression: xz
+      userdata:
+        url: {{ANDROID_DATA}}
+        compression: xz
+      system:
+        url: {{ANDROID_SYSTEM}}
+        compression: xz
+      vendor:
+        reboot: hard-reset
+        url: {{DOWNLOAD_URL}}/vendor.img.xz
+        compression: xz
+    protocols:
+      lava-lxc:
+      - action: fastboot-deploy
+        request: pre-power-command
+        timeout:
+          minutes: 2

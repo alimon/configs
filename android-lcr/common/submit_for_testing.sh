@@ -2,18 +2,21 @@
 
 #set -ex
 
+PARENT_DIR=$(cd $(dirname $0); pwd)
+
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="low"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
 
 if [ -n "${DRY_RUN}" ]; then
-    export EXTRA_PARAMS="--dry-run --template-path ../lava-job-definitions --testplan-path ../lava-job-definitions/"
-    export BASE_PATH=../
-    export SCRIPT_PATH=../../openembedded-lkft/
+    export EXTRA_PARAMS="--dry-run"
 else
-    export EXTRA_PARAMS="--template-path configs/android-lcr/lava-job-definitions/ --testplan-path configs/android-lcr/lava-job-definitions/"
-    export BASE_PATH=configs/android-lcr/
-    export SCRIPT_PATH=configs/openembedded-lkft/
+    export EXTRA_PARAMS=""
 fi
+## directory of android-lcr
+export BASE_PATH=${PARENT_DIR}/../
+export SCRIPT_PATH=${PARENT_DIR}/../../openembedded-lkft/
+export TESTPLAN_PATH=${BASE_PATH}/lava-job-definitions
+export TEMPLATE_PATH=${BASE_PATH}/lava-job-definitions
 
 if [ -z "${DEVICE_TYPE}" ]; then
     echo "DEVICE_TYPE not set. Exiting"
@@ -54,6 +57,7 @@ export VTS_PKG_URL=${VTS_PKG_URL}
 [ -z "${CTS_MODULE_NAME}" ] && export CTS_MODULE_NAME=""
 [ -z "${CTS_PKG_URL}" ] && unset CTS_PKG_URL
 [ -z "${VTS_PKG_URL}" ] && unset VTS_PKG_URL
+[ -z "${ANDROID_VERSION_SUFFIX}" ] && unset ANDROID_VERSION_SUFFIX
 
 if [ -z "${DRY_RUN}" ]; then
     rm -rf configs
@@ -61,14 +65,13 @@ if [ -z "${DRY_RUN}" ]; then
 fi
 
 [ ! -z ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
-TEMPLATE_PATH=""
 
 DEVICE_PLAN=${PLAN_CHANGE:-"plan_change_${DEVICE_TYPE}"}
 if [ ! -n "$GERRIT_PROJECT" ]; then
     DEVICE_PLAN=${PLAN_WEEKLY:-"plan_weekly_${DEVICE_TYPE}"}
 fi
 
-for test in $(ls ${BASE_PATH}/lava-job-definitions/${DEVICE_PLAN}); do
+for test in $(ls ${TESTPLAN_PATH}/${DEVICE_PLAN}); do
     TEST_TEMPLATES="${TEST_TEMPLATES} ${DEVICE_PLAN}/${test}"
 done
 
@@ -83,4 +86,6 @@ python ${SCRIPT_PATH}/submit_for_testing.py \
   --git-commit ${BUILD_NUMBER} \
   --quiet \
   ${EXTRA_PARAMS} \
+  --testplan-path ${TESTPLAN_PATH} \
+  --template-path ${TEMPLATE_PATH} \
   --test-plan ${TEST_TEMPLATES}
