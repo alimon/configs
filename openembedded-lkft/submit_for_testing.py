@@ -225,7 +225,7 @@ def main():
 
     THIS_DIR = os.path.abspath(args.testplan_path)
     # prevent creating templates when variables are missing
-    j2_env = Environment(loader=FileSystemLoader(THIS_DIR), undefined=StrictUndefined)
+    j2_env = Environment(loader=FileSystemLoader(THIS_DIR, followlinks=True), undefined=StrictUndefined)
     context = deepcopy(os.environ)
     context.update({"device_type": os.path.join(args.testplan_device_path, args.device_type)})
     for test in args.test_plan:
