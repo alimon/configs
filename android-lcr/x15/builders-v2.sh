@@ -55,4 +55,7 @@ FRONTEND_JOB_NAME=${JOB_NAME}
 DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
 CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/x15-v2/template.yaml
 SKIP_REPORT=false
+CTS_PKG_URL=${CTS_PKG_URL}
+VTS_PKG_URL=${VTS_PKG_URL}
+ANDROID_VERSION_SUFFIX=${ANDROID_VERSION_SUFFIX}
 EOF
