@@ -120,23 +120,23 @@
         - shell: |
             #!/bin/bash -ex
 
-            #case "${PLATFORM}" in
-            #  frdm_k64f)
-            #    export DEVICE_TYPE=frdm-k64f
-            #    ;;
-            #  frdm_kw41z)
-            #    export DEVICE_TYPE=frdm-kw41z
-            #    ;;
-            #  disco_l475_iot1)
-            #    export DEVICE_TYPE=disco-l475-iot1
-            #    ;;
-            #  qemu_cortex_m3)
-            #    export DEVICE_TYPE=qemu
-            #    ;;
-            #  *)
-            #    echo "Skip DEVICE_TYPE for ${PLATFORM}"
-            #    ;;
-            #esac
+            case "${PLATFORM}" in
+              frdm_k64f)
+                export DEVICE_TYPE=frdm-k64f
+                ;;
+              frdm_kw41z)
+                export DEVICE_TYPE=frdm-kw41z
+                ;;
+              disco_l475_iot1)
+                export DEVICE_TYPE=disco-l475-iot1
+                ;;
+              qemu_cortex_m3)
+                export DEVICE_TYPE=qemu
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${PLATFORM}"
+                ;;
+            esac
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
