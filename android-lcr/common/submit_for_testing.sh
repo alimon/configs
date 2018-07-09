@@ -1,27 +1,34 @@
 #!/bin/bash
 
-#set -ex
-
-PARENT_DIR=$(cd $(dirname $0); pwd)
+set -ex
 
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="low"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
-
-if [ -n "${DRY_RUN}" ]; then
-    export EXTRA_PARAMS="--dry-run"
-else
-    export EXTRA_PARAMS=""
-fi
-## directory of android-lcr
-export BASE_PATH=${PARENT_DIR}/../
-export SCRIPT_PATH=${PARENT_DIR}/../../openembedded-lkft/
-export TESTPLAN_PATH=${BASE_PATH}/lava-job-definitions
-export TEMPLATE_PATH=${BASE_PATH}/lava-job-definitions
 
 if [ -z "${DEVICE_TYPE}" ]; then
     echo "DEVICE_TYPE not set. Exiting"
     exit 0
 fi
+
+if [ -n "${DRY_RUN}" ]; then
+    ## called from local side for via test_submit_for_testing.sh
+    export EXTRA_PARAMS="--dry-run"
+    ## path of this android-lcr/common/submit_for_testing.sh
+    ## make BASE_PATH to point to the configs directory
+    PARENT_DIR=$(cd $(dirname $0); pwd)
+    export BASE_PATH=${PARENT_DIR}/../../
+else
+    ## called via jenkins
+    rm -rf configs
+    git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+    export EXTRA_PARAMS=""
+    export BASE_PATH=`pwd`/configs
+fi
+
+## set paths to use absolute paths
+export SCRIPT_PATH=${BASE_PATH}/openembedded-lkft/
+export TESTPLAN_PATH=${BASE_PATH}/android-lcr/lava-job-definitions/
+export TEMPLATE_PATH=${BASE_PATH}/android-lcr/lava-job-definitions/
 
 # create env variables as in post-build-lava
 export SNAPSHOTS_URL=https://snapshots.linaro.org
@@ -59,10 +66,6 @@ export VTS_PKG_URL=${VTS_PKG_URL}
 [ -z "${VTS_PKG_URL}" ] && unset VTS_PKG_URL
 [ -z "${ANDROID_VERSION_SUFFIX}" ] && unset ANDROID_VERSION_SUFFIX
 
-if [ -z "${DRY_RUN}" ]; then
-    rm -rf configs
-    git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-fi
 
 [ ! -z ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
 
