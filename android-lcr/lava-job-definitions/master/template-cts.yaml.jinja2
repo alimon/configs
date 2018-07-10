@@ -19,6 +19,9 @@
 {% else %}
         TEST_URL: "http://testdata.linaro.org/cts/18.06/android-cts-8.1_r6-linux_x86-arm-linaro.zip"
 {% endif %}
+{% if ANDROID_VERSION_SUFFIX is defined and ANDROID_VERSION_SUFFIX == 'master' %}
+        ANDROID_VERSION: "aosp-master"
+{% endif %}
         FAILURES_PRINTED: "300"
       name: {{testname}}-{{abi}}
 {% endblock test_target %}

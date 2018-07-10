@@ -18,6 +18,9 @@
 {% else %}
         TEST_URL: "http://testdata.linaro.org/vts/oreo-mr1-vts-release-06262018/android-vts.zip"
 {% endif %}
+{% if ANDROID_VERSION_SUFFIX is defined and ANDROID_VERSION_SUFFIX == 'master' %}
+        ANDROID_VERSION: "aosp-master"
+{% endif %}
         TEST_PARAMS: "run {{testcommand}} --skip-device-info"
         TEST_PATH: "android-vts"
         RESULTS_FORMAT: "atomic"
