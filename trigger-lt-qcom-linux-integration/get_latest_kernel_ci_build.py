@@ -124,7 +124,7 @@ def main():
         validate_url(dt_url)
 
         ramdisk_url = get_ramdisk_url(ramdisk_url)
-        print('ROOTFS_URL_%s=%s' % (m, ramdisk_url))
+        print('RAMDISK_URL_%s=%s' % (m, ramdisk_url))
         validate_url(ramdisk_url)
 
         try:

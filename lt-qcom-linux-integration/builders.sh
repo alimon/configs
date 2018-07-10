@@ -50,7 +50,7 @@ fi
 case "${MACHINE}" in
 	dragonboard410c)
 		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard410c}
-		ROOTFS_URL=${ROOTFS_URL_dragonboard410c}
+		RAMDISK_URL=${RAMDISK_URL_dragonboard410c}
 		FIRMWARE_URL=${FIRMWARE_URL_dragonboard410c}
 		BOOTIMG_PAGESIZE=2048
 		BOOTIMG_BASE=0x80000000
@@ -60,7 +60,7 @@ case "${MACHINE}" in
 		;;
 	dragonboard820c)
 		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard820c}
-		ROOTFS_URL=${ROOTFS_URL_dragonboard820c}
+		RAMDISK_URL=${RAMDISK_URL_dragonboard820c}
 		FIRMWARE_URL=${FIRMWARE_URL_dragonboard820c}
 		BOOTIMG_PAGESIZE=4096
 		BOOTIMG_BASE=0x80000000
@@ -70,7 +70,7 @@ case "${MACHINE}" in
 		;;
 	sdm845_mtp)
 		KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}
-		ROOTFS_URL=${ROOTFS_URL_sdm845_mtp}
+		RAMDISK_URL=${RAMDISK_URL_sdm845_mtp}
 		FIRMWARE_URL=${FIRMWARE_URL_sdm845_mtp}
 		BOOTIMG_PAGESIZE=2048
 		BOOTIMG_BASE=0x80000000
@@ -88,8 +88,8 @@ if [ -z "${KERNEL_IMAGE_URL}" ]; then
 	echo "ERROR: KERNEL_IMAGE_URL is empty"
 	exit 1
 fi
-if [ -z "${ROOTFS_URL}" ]; then
-	echo "ERROR: ROOTFS_URL is empty"
+if [ -z "${RAMDISK_URL}" ]; then
+	echo "ERROR: RAMDISK_URL is empty"
 	exit 1
 fi
 
@@ -104,25 +104,25 @@ Build description:
 * Kernel image URL: $KERNEL_IMAGE_URL
 * Kernel dt URL: $KERNEL_DT_URL
 * kernel modules URL: $KERNEL_MODULES_URL
-* Rootfs URL: $ROOTFS_URL
+* Ramdisk URL: $RAMDISK_URL
 * Firmware URL: $FIRMWARE_URL
 EOF
 
-# Rootfs image, modules populate
-wget_error ${ROOTFS_URL}
+# Ramdisk image, modules populate
+wget_error ${RAMDISK_URL}
 if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 	wget_error ${KERNEL_MODULES_URL}
 fi
 if [[ ! -z "${FIRMWARE_URL}" ]]; then
 	wget_error ${FIRMWARE_URL}
 fi
-rootfs_file=out/$(basename ${ROOTFS_URL})
+rootfs_file=out/$(basename ${RAMDISK_URL})
 rootfs_file_type=$(file $rootfs_file)
 
 rootfs_comp=''
 if [[ $rootfs_file_type = *"gzip compressed data"* ]]; then
 	${GZ} -d $rootfs_file
-	rootfs_file=out/$(basename ${ROOTFS_URL} .gz)
+	rootfs_file=out/$(basename ${RAMDISK_URL} .gz)
 	rootfs_file_type=$(file $rootfs_file)
 	rootfs_comp='gz'
 fi
@@ -136,7 +136,7 @@ elif [[ $rootfs_file_type = *"ext4 filesystem data"* ]]; then
 elif [[ $rootfs_file_type = *"cpio archive"* ]]; then
 	rootfs_file=$rootfs_file
 else
-	echo "ERROR: ROOTFS_IMAGE type isn't supported: $rootfs_file_type"
+	echo "ERROR: RAMDISK_IMAGE type isn't supported: $rootfs_file_type"
 	exit 1
 fi
 
