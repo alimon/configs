@@ -1,0 +1,37 @@
+- job:
+    name: openembedded-osf-linux-microplatform
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+    disabled: false
+    node: docker-stretch-amd64
+    display-name: 'OSF Linux Microplatform Builder'
+    wrappers:
+        - timeout:
+            timeout: 180
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: osf-linux-microplatform/builders.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
