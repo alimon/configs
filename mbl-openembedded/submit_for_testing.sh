@@ -12,7 +12,7 @@ case "${MACHINE}" in
     export DEVICE_TYPE=imx7s-warp
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "?Image-*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
-  raspberrypi3)
+  raspberrypi3*)
     export DEVICE_TYPE=rpi3-b-32
     RPI_MODEL=bcm2710-rpi-3-b
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "?Image-*-${RPI_MODEL}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)

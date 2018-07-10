@@ -105,9 +105,9 @@ case ${DISTRO} in
     cat << EOF >> ${distro_conf}
 IMAGE_FSTYPES_remove_imx7s-warp = "ext4"
 IMAGE_FSTYPES_append_imx7s-warp = " ext4.gz"
-IMAGE_FSTYPES_remove_raspberrypi3 = "tar.bz2"
-IMAGE_FSTYPES_remove_raspberrypi3 = "ext3"
-IMAGE_FSTYPES_append_raspberrypi3 = " ext3.gz"
+IMAGE_FSTYPES_remove_raspberrypi3-mbl = "tar.bz2"
+IMAGE_FSTYPES_remove_raspberrypi3-mbl = "ext3"
+IMAGE_FSTYPES_append_raspberrypi3-mbl = " ext3.gz"
 IMAGE_FSTYPES_remove_bananapi-zero = "ext4"
 IMAGE_FSTYPES_append_bananapi-zero = " ext4.gz"
 EOF
@@ -153,7 +153,7 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext?
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  juno|stih410-b2260|imx7s-warp*|raspberrypi3|bananapi-zero)
+  juno|stih410-b2260|imx7s-warp*|raspberrypi3*|bananapi-zero)
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
