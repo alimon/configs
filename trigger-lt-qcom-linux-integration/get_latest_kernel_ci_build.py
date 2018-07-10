@@ -36,7 +36,7 @@ def get_kernel_ci_build(url, arch_config, dt_file):
     return (image_url, dt_url, modules_url, version)
 
 
-def get_ramdisk_url(url):
+def get_ramdisk_rootfs_url(url, rootfs_url):
     f = urllib2.urlopen('https://ci.linaro.org/job/lt-qcom-openembedded-rpb-rocko/lastSuccessfulBuild/buildNumber')
     last_build = int(f.read())
 
@@ -45,17 +45,26 @@ def get_ramdisk_url(url):
     page = f.read()
     base_url_p = urlparse.urlparse(url)
     base_url = "%s://%s" % (base_url_p.scheme, base_url_p.netloc)
-    rex = re.compile('initramfs-bootrr-image-.*\.rootfs\.cpio\.gz$')
 
+    ramdisk_rex = re.compile('initramfs-bootrr-image-.*\.rootfs\.cpio\.gz$')
     ramdisk_url = ''
     soup = BeautifulSoup(page, "html.parser", parse_only=SoupStrainer("a"))
     for line in soup.find_all('a', href=True):
-        s = rex.search(line['href'])
+        s = ramdisk_rex.search(line['href'])
         if s:
             ramdisk_url = base_url + line['href']
             break
 
-    return ramdisk_url
+    rootfs_rex = re.compile('rpb-console-image-test-.*\.rootfs\.img\.gz$')
+    rootfs_url = ''
+    soup = BeautifulSoup(page, "html.parser", parse_only=SoupStrainer("a"))
+    for line in soup.find_all('a', href=True):
+        s = rootfs_rex.search(line['href'])
+        if s:
+            rootfs_url = base_url + line['href']
+            break
+
+    return (ramdisk_url, rootfs_url)
 
 
 def validate_url(url):
@@ -98,6 +107,8 @@ def main():
 
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
                                       'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/rocko')
+    rootfs_base_url = os.environ.get('ROOTFS_BASE_URL',
+                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/rocko')
     builds_url = os.environ.get('BUILDS_URL',
                                 'https://snapshots.linaro.org/96boards/%s/linaro/linux-integration/')
 
@@ -108,12 +119,15 @@ def main():
         if m == 'dragonboard410c':
             kernel_ci_dt_file = 'dtbs/qcom/apq8016-sbc.dtb'
             ramdisk_url = ramdisk_base_url % m
+            rootfs_url = rootfs_base_url % m
         elif m == 'dragonboard820c':
             kernel_ci_dt_file = 'dtbs/qcom/apq8096-db820c.dtb'
             ramdisk_url = ramdisk_base_url % m
+            rootfs_url = rootfs_base_url % m
         elif m == 'sdm845_mtp':
             kernel_ci_dt_file = 'dtbs/qcom/sdm845-mtp.dtb'
             ramdisk_url = ramdisk_base_url % 'dragonboard410c' # XXX: Use ramdisk from db410c for now
+            rootfs_url = rootfs_base_url % 'dragonboard410c'
         else:
             sys.exit(2)
 
@@ -123,13 +137,15 @@ def main():
         print("KERNEL_DT_URL_%s=%s" % (m, dt_url))
         validate_url(dt_url)
 
-        ramdisk_url = get_ramdisk_url(ramdisk_url)
+        (ramdisk_url, rootfs_url) = get_ramdisk_rootfs_url(ramdisk_url, rootfs_url)
         print('RAMDISK_URL_%s=%s' % (m, ramdisk_url))
         validate_url(ramdisk_url)
+        print('ROOTFS_URL_%s=%s' % (m, rootfs_url))
+        validate_url(rootfs_url)
 
         try:
             validate_if_already_built((builds_url % m), (image_url, dt_url, modules_url,
-                                      ramdisk_url))
+                                      ramdisk_url, rootfs_url))
         except urllib2.HTTPError as e:
             # 404 can happen when no previous build exists
             if e.code != 404:

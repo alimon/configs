@@ -12,30 +12,30 @@ wget_error() {
 
 function copy_tarball_to_rootfs() {
 	tarball_file=$1
-	rootfs_file=$2
-	rootfs_file_type=$3
+	target_file=$2
+	target_file_type=$3
 
-	if [[ $rootfs_file_type = *"cpio archive"* ]]; then
+	if [[ $target_file_type = *"cpio archive"* ]]; then
 		mkdir -p out/tarball
 		tar -xvf $tarball_file -C out/tarball
 		cd out/tarball
-		find . | cpio -oA -H newc -F ../../$rootfs_file
+		find . | cpio -oA -H newc -F ../../$target_file
 		cd ../../
 		rm -rf out/tarball
 	else
 		required_size=$(${GZ} -l $tarball_file | tail -1 | awk '{print $2}')
 		required_size=$(( $required_size / 1024 ))
 
-		sudo e2fsck -y $rootfs_file
-		block_count=$(sudo dumpe2fs -h $rootfs_file | grep "Block count" | awk '{print $3}')
-		block_size=$(sudo dumpe2fs -h $rootfs_file | grep "Block size" | awk '{print $3}')
+		sudo e2fsck -y $target_file
+		block_count=$(sudo dumpe2fs -h $target_file | grep "Block count" | awk '{print $3}')
+		block_size=$(sudo dumpe2fs -h $target_file | grep "Block size" | awk '{print $3}')
 		current_size=$(( $block_size * $block_count / 1024 ))
 
 		final_size=$(( $current_size + $required_size + 32768 ))
-		sudo resize2fs -p $rootfs_file "$final_size"K
+		sudo resize2fs -p $target_file "$final_size"K
 
 		mkdir -p out/rootfs_mount
-		sudo mount -o loop $rootfs_file out/rootfs_mount
+		sudo mount -o loop $target_file out/rootfs_mount
 		sudo tar -xvf $tarball_file -C out/rootfs_mount
 		sudo umount out/rootfs_mount
 	fi
@@ -50,7 +50,12 @@ fi
 case "${MACHINE}" in
 	dragonboard410c)
 		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard410c}
-		RAMDISK_URL=${RAMDISK_URL_dragonboard410c}
+		if [ ! -z "${RAMDISK_URL_dragonboard410c}" ]; then
+			RAMDISK_URL=${RAMDISK_URL_dragonboard410c}
+		fi
+		if [ ! -z "${ROOTFS_URL_dragonboard410c}" ]; then
+			ROOTFS_URL=${ROOTFS_URL_dragonboard410c}
+		fi
 		FIRMWARE_URL=${FIRMWARE_URL_dragonboard410c}
 		BOOTIMG_PAGESIZE=2048
 		BOOTIMG_BASE=0x80000000
@@ -60,7 +65,12 @@ case "${MACHINE}" in
 		;;
 	dragonboard820c)
 		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard820c}
-		RAMDISK_URL=${RAMDISK_URL_dragonboard820c}
+		if [ ! -z "${RAMDISK_URL_dragonboard820c}" ]; then
+			RAMDISK_URL=${RAMDISK_URL_dragonboard820c}
+		fi
+		if [ ! -z "${ROOTFS_URL_dragonboard820c}" ]; then
+			ROOTFS_URL=${ROOTFS_URL_dragonboard820c}
+		fi
 		FIRMWARE_URL=${FIRMWARE_URL_dragonboard820c}
 		BOOTIMG_PAGESIZE=4096
 		BOOTIMG_BASE=0x80000000
@@ -70,11 +80,17 @@ case "${MACHINE}" in
 		;;
 	sdm845_mtp)
 		KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}
-		RAMDISK_URL=${RAMDISK_URL_sdm845_mtp}
+		if [ ! -z "${RAMDISK_URL_sdm845_mtp}" ]; then
+			RAMDISK_URL=${ROOTFS_URL_sdm845_mtp}
+		fi
+		if [ ! -z "${ROOTFS_URL_sdm845_mtp}" ]; then
+			ROOTFS_URL=${ROOTFS_URL_sdm845_mtp}
+		fi
 		FIRMWARE_URL=${FIRMWARE_URL_sdm845_mtp}
 		BOOTIMG_PAGESIZE=2048
 		BOOTIMG_BASE=0x80000000
 		RAMDISK_BASE=0x84000000
+		ROOTFS_PARTITION=/dev/sda8 # XXX: using Android userdata since we don't have Linux parttable
 		SERIAL_CONSOLE=ttyMSM0
 		;;
 	*)
@@ -92,6 +108,10 @@ if [ -z "${RAMDISK_URL}" ]; then
 	echo "ERROR: RAMDISK_URL is empty"
 	exit 1
 fi
+if [ -z "${ROOTFS_URL}" ]; then
+	echo "ERROR: RAMDISK_URL is empty"
+	exit 1
+fi
 
 # Build information
 mkdir -p out
@@ -105,26 +125,55 @@ Build description:
 * Kernel dt URL: $KERNEL_DT_URL
 * kernel modules URL: $KERNEL_MODULES_URL
 * Ramdisk URL: $RAMDISK_URL
+* RootFS URL: $ROOTFS_URL
 * Firmware URL: $FIRMWARE_URL
 EOF
 
-# Ramdisk image, modules populate
+# Ramdisk/RootFS image, modules populate
 wget_error ${RAMDISK_URL}
+ramdisk_file=out/$(basename ${RAMDISK_URL})
+ramdisk_file_type=$(file $ramdisk_file)
+
+wget_error ${ROOTFS_URL}
+rootfs_file=out/$(basename ${ROOTFS_URL})
+rootfs_file_type=$(file $rootfs_file)
+
 if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 	wget_error ${KERNEL_MODULES_URL}
+	modules_file="out/$(basename ${KERNEL_MODULES_URL})"
+
+	# XXX: Compress modules to gzip for use copy_tarball_to_rootfs
+	# generic code to calculate size in ext4 filesystem
+	modules_file_type=$(file $modules_file)
+	if [[ $modules_file_type = *"XZ compressed data"* ]]; then
+		xz -d $modules_file
+		modules_file="out/$(basename ${KERNEL_MODULES_URL} .xz)"
+		${GZ} $modules_file
+		modules_file=$modules_file.gz
+	elif [[ $modules_file_type = *"bzip2 compressed data"* ]]; then
+		bzip2 -d $modules_file
+		modules_file="out/$(basename ${KERNEL_MODULES_URL} .bz2)"
+		${GZ} $modules_file
+		modules_file=$modules_file.gz
+	fi
 fi
 if [[ ! -z "${FIRMWARE_URL}" ]]; then
 	wget_error ${FIRMWARE_URL}
 fi
-rootfs_file=out/$(basename ${RAMDISK_URL})
-rootfs_file_type=$(file $rootfs_file)
+firmware_file="out/$(basename ${FIRMWARE_URL} .bz2)"
 
 rootfs_comp=''
 if [[ $rootfs_file_type = *"gzip compressed data"* ]]; then
 	${GZ} -d $rootfs_file
-	rootfs_file=out/$(basename ${RAMDISK_URL} .gz)
+	rootfs_file=out/$(basename ${ROOTFS_URL} .gz)
 	rootfs_file_type=$(file $rootfs_file)
 	rootfs_comp='gz'
+fi
+if [[ $ramdisk_file_type = *"gzip compressed data"* ]]; then
+	${GZ} -d $ramdisk_file
+	ramdisk_file=out/$(basename ${RAMDISK_URL} .gz)
+	ramdisk_file_type=$(file $ramdisk_file)
+	ramdisk_comp='gz'
 fi
 
 if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
@@ -133,19 +182,19 @@ if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
 	rootfs_file=$rootfs_file_ext4
 elif [[ $rootfs_file_type = *"ext4 filesystem data"* ]]; then
 	rootfs_file=$rootfs_file
-elif [[ $rootfs_file_type = *"cpio archive"* ]]; then
-	rootfs_file=$rootfs_file
 else
-	echo "ERROR: RAMDISK_IMAGE type isn't supported: $rootfs_file_type"
+	echo "ERROR: ROOTFS_IMAGE type isn't supported: $rootfs_file_type"
 	exit 1
 fi
 
-if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
-	copy_tarball_to_rootfs "out/$(basename ${KERNEL_MODULES_URL})" "$rootfs_file" "$rootfs_file_type"
+if [[ ! -z "$modules_file" ]]; then
+	copy_tarball_to_rootfs "$modules_file" "$ramdisk_file" "$ramdisk_file_type"
+	copy_tarball_to_rootfs "$modules_file" "$rootfs_file" "$rootfs_file_type"
 fi
 
-if [[ ! -z "${FIRMWARE_URL}" ]]; then
-	copy_tarball_to_rootfs "out/$(basename ${FIRMWARE_URL})" "$rootfs_file" "$rootfs_file_type"
+if [[ ! -z "${firmware_file}" ]]; then
+	copy_tarball_to_rootfs "$firmware_file" "$ramdisk_file" "$ramdisk_file_type"
+	copy_tarball_to_rootfs "$firmware_file" "$rootfs_file" "$rootfs_file_type"
 fi
 
 if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
@@ -153,6 +202,12 @@ if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
 	img2simg $rootfs_file $rootfs_file_img
 	rm $rootfs_file
 	rootfs_file=$rootfs_file_img
+fi
+
+
+if [[ $ramdisk_comp = "gz" ]]; then
+	${GZ} $ramdisk_file
+	ramdisk_file="$ramdisk_file".gz
 fi
 if [[ $rootfs_comp = "gz" ]]; then
 	${GZ} $rootfs_file
@@ -175,33 +230,34 @@ if [[ ! -z "${KERNEL_DT_URL}" ]]; then
 	dt_mkbootimg_arg="--dt out/$(basename ${KERNEL_DT_URL})"
 fi
 
-# Create boot image
+# Create boot image (bootrr)
 boot_file=boot-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
-if [[ $rootfs_file_type = *"cpio archive"* ]]; then
-	ramdisk_file=$rootfs_file
-	skales-mkbootimg \
-		--kernel $kernel_file \
-		--ramdisk $ramdisk_file \
-		--output out/$boot_file \
-		$dt_mkbootimg_arg \
-		--pagesize "${BOOTIMG_PAGESIZE}" \
-		--base "${BOOTIMG_BASE}" \
-		--ramdisk_base "${RAMDISK_BASE}" \
-		--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
-else
-	ramdisk_file=out/initrd.img
-	echo "This is not an initrd" > $ramdisk_file
-	skales-mkbootimg \
-		--kernel $kernel_file \
-		--ramdisk $ramdisk_file \
-		--output out/$boot_file \
-		$dt_mkbootimg_arg \
-		--pagesize "${BOOTIMG_PAGESIZE}" \
-		--base "${BOOTIMG_BASE}" \
-		--ramdisk_base "${RAMDISK_BASE}" \
-		--cmdline "root=${ROOTFS_PARTITION} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
-fi
+skales-mkbootimg \
+	--kernel $kernel_file \
+	--ramdisk $ramdisk_file \
+	--output out/$boot_file \
+	$dt_mkbootimg_arg \
+	--pagesize "${BOOTIMG_PAGESIZE}" \
+	--base "${BOOTIMG_BASE}" \
+	--ramdisk_base "${RAMDISK_BASE}" \
+	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
+
+# Create boot image (functional)
+boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
+ramdisk_dummy_file=out/initrd.img
+echo "This is not an initrd" > $ramdisk_dummy_file
+skales-mkbootimg \
+	--kernel $kernel_file \
+	--ramdisk $ramdisk_dummy_file \
+	--output out/$boot_rootfs_file \
+	$dt_mkbootimg_arg \
+	--pagesize "${BOOTIMG_PAGESIZE}" \
+	--base "${BOOTIMG_BASE}" \
+	--ramdisk_base "${RAMDISK_BASE}" \
+	--cmdline "root=${ROOTFS_PARTITION} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
 
 echo BOOT_FILE=$boot_file >> builders_out_parameters
+echo BOOT_ROOTFS_FILE=$boot_rootfs_file >> builders_out_parameters
+echo ROOTFS_FILE="$(basename $rootfs_file)" >> builders_out_parameters
 
 ls -l out/
