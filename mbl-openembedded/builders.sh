@@ -121,19 +121,19 @@ case "${MACHINE}" in
   imx7s-warp*)
     # Temporary sstate cleanup to force firmware to be re-generated each time
     set +e
-    bitbake -c cleansstate virtual/kernel u-boot-fslc mbl-boot-scr linux-firmware
+    bitbake -c cleansstate linux-warp7 u-boot-fslc mbl-boot-scr linux-firmware
     set -e
     ;;
   bananapi-zero*)
     # Temporary sstate cleanup to force firmware to be re-generated each time
     set +e
-    bitbake -c cleansstate virtual/kernel u-boot-bpi mbl-boot-scr optee-os linux-firmware
+    bitbake -c cleansstate linux-mainline u-boot-bpi mbl-boot-scr optee-os linux-firmware
     set -e
     ;;
   raspberrypi3*)
     # Temporary sstate cleanup to force firmware to be re-generated each time
     set +e
-    bitbake -c cleansstate virtual/kernel mbl-boot-scr linux-firmware atf-rpi3
+    bitbake -c cleansstate linux-raspberrypi mbl-boot-scr linux-firmware atf-rpi3
     set -e
     ;;
 esac
