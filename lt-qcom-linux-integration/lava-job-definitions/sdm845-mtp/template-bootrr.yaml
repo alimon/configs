@@ -1,3 +1,19 @@
+device_type: ${LAVA_DEVICE_TYPE}
+job_name: lt-qcom-linux-integration-bootrr-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 90
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: high
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom-linux-integration/lava-job-definitions/${LAVA_DEVICE_TYPE}/template-bootrr.yaml
+
 protocols:
   lava-lxc:
     name: lxc-${LAVA_DEVICE_TYPE}-test
@@ -113,3 +129,51 @@ actions:
     timeout:
       minutes: 15
     method: fastboot
+
+- test:
+    namespace: ${LAVA_DEVICE_TYPE}
+    name: qcomlt-linux-integration-smoke
+    timeout:
+      minutes: 5
+    definitions:
+    - from: inline
+      name: qcomlt-linux-integration-smoke
+      path: inline/qcomlt-linux-integration-smoke.yaml
+      repository:
+        metadata:
+          description: QCOM LT linux integration smoke
+          format: Lava-Test Test Definition 1.0
+          name: qcomlt-linux-integration-smoke 
+        run:
+          steps:
+          - uname -a
+          - df
+          - free
+          - ls -l /dev
+          - ls -l /sys
+          - ls -l /proc
+          - echo "linux_integration_smoke:" "pass"
+
+- test:
+    namespace: ${LAVA_DEVICE_TYPE}
+    name: qcomlt-linux-integration-bootrr
+    timeout:
+      minutes: 5
+    definitions:
+    - from: inline
+      name: qcomlt-linux-integration-bootrr
+      path: inline/qcomlt-linux-integration-bootrr.yaml
+      repository:
+        metadata:
+          description: QCOM LT linux integration bootrr
+          format: Lava-Test Test Definition 1.0
+          name: qcomlt-linux-integration-bootrr
+        run:
+          steps:
+          - if [ "${LAVA_DEVICE_TYPE}" == "dragonboard-410c" ]; then
+          -     qcom,apq8016-sbc
+          - elif [ "${LAVA_DEVICE_TYPE}" == "dragonboard-820c" ]; then
+          -     arrow,apq8096-db820c
+          - elif [ "${LAVA_DEVICE_TYPE}" == "sdm845-mtp" ]; then
+          -     qcom,sdm845-mtp
+          - fi

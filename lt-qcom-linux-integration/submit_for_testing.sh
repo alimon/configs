@@ -35,8 +35,7 @@ case "${MACHINE}" in
         --qa-server-project linux-integration \
         --git-commit ${BUILD_NUMBER} \
         --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
-        --template-base-pre base_template.yaml \
-        --template-names template.yaml
+        --template-names template-bootrr.yaml
     ;;
   *)
     echo "Skip LAVA_DEVICE_TYPE for ${MACHINE}"
