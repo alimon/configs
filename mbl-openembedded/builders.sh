@@ -60,6 +60,11 @@ if [ ! -e ".repo/manifest.xml" ]; then
   ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
 fi
 
+case "${CLEAN}" in
+  yes)
+    rm -rf sstate-cache/*
+esac
+
 repo sync
 cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
