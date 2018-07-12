@@ -38,6 +38,7 @@ function copy_tarball_to_rootfs() {
 		sudo mount -o loop $target_file out/rootfs_mount
 		sudo tar -xvf $tarball_file -C out/rootfs_mount
 		sudo umount out/rootfs_mount
+		rm -rf out/rootfs_mount
 	fi
 }
 
