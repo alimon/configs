@@ -82,7 +82,7 @@ case "${MACHINE}" in
 	sdm845_mtp)
 		KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}
 		if [ ! -z "${RAMDISK_URL_sdm845_mtp}" ]; then
-			RAMDISK_URL=${ROOTFS_URL_sdm845_mtp}
+			RAMDISK_URL=${RAMDISK_URL_sdm845_mtp}
 		fi
 		if [ ! -z "${ROOTFS_URL_sdm845_mtp}" ]; then
 			ROOTFS_URL=${ROOTFS_URL_sdm845_mtp}
