@@ -29,12 +29,12 @@ head -5 Makefile
 
 # Toolchains are pre-installed and come from:
 # https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
-# https://github.com/zephyrproject-rtos/meta-zephyr-sdk/releases/download/0.9.2/zephyr-sdk-0.9.2-setup.run
-# To install Zephyr SDK: ./zephyr-sdk-0.9.2-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
+# https://github.com/zephyrproject-rtos/meta-zephyr-sdk/releases/download/0.9.3/zephyr-sdk-0.9.3-setup.run
+# To install Zephyr SDK: ./zephyr-sdk-0.9.3-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9.3"
 
 export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-7-2018-q2-update"
 # We building with the gccarmemb toolchain, we need ZEPHYR_SDK_INSTALL_DIR to find things like conf
-export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
+export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.9.3"
 
 # Set build environment variables
 export LANG=C.UTF-8
