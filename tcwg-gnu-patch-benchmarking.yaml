@@ -20,7 +20,7 @@
         - string:
             name: GERRIT_BRANCH
             default: linaro-local/gcc-7-integration-branch
-            description: 'Base GCC branch'
+            description: 'Base GCC branch. Use "master" for master branches of all components, while "gcc-master" keeps release branches for other toolchain components'
         - string:
             name: gcc_orig
             default: gcc_patch_prev
@@ -159,6 +159,8 @@
             *gcc-7*)
               toolchainconf='--extraconfigdir ../config/gcc7'
               ;;
+            gcc-master)
+              toolchainconf='--extraconfigdir ../config/latest-rel'
             *)
               toolchainconf='--extraconfigdir ../config/gcc7 binutils=binutils-gdb.git/master glibc=glibc.git~master newlib=newlib.git~master'
               ;;
