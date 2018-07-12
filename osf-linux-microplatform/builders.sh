@@ -87,6 +87,12 @@ DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d
 # Prepare files to publish
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
 find ${DEPLOY_DIR_IMAGE} -type l -delete
+cd ${DEPLOY_DIR_IMAGE}
+
+tar -cJf ostree_repo.tar.xz ostree_repo/
+rm -rf ostree_repo
+cd -
+
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
