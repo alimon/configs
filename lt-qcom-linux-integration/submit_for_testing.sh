@@ -18,6 +18,7 @@ export LXC_BOOT_ROOTFS_FILE=$(basename ${BOOT_ROOTFS_URL})
 export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
 export ROOTFS_URL_COMP="gz"
 export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
+export RESIZE_ROOTFS=True
 
 case "${MACHINE}" in
   dragonboard410c|dragonboard820c|sdm845_mtp)
