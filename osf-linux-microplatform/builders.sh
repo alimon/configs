@@ -98,6 +98,10 @@ mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 # Build information
 cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
 
+cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+EOF
+
 h4. OSF Linux Microplatform
 
 Build description:
