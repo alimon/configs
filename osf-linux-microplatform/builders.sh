@@ -95,12 +95,12 @@ find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
 sed -i "s|${DEPLOY_DIR_IMAGE}/||" MD5SUMS.txt
 mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 
-# Build information
-cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
-
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 EOF
+# Build information
+cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
+
 
 h4. OSF Linux Microplatform
 
