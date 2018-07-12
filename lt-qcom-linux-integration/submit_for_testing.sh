@@ -39,6 +39,8 @@ case "${MACHINE}" in
       export WLAN_DEVICE="wlp1s0"
       export WLAN_TIME_DELAY="15s"
       export ETH_DEVICE="enP2p1s0"
+
+      export BOOT_OS_PROMPT=\'root@dragonboard-820c:~#\'
     elif [ ${MACHINE} = "sdm845_mtp" ]; then
       export LAVA_DEVICE_TYPE="sdm845-mtp"
       export INSTALL_FASTBOOT=
