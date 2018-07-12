@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -xe
 
 # workaround EDK2 is confused by the long path used during the build
 # and truncate files name expected by VfrCompile
