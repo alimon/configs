@@ -1,5 +1,50 @@
 #!/bin/bash
 
+# To use in sdm845-mtp functional testing
+INITRAMFS_ROOTFS=$(cat <<EOF
+#!/bin/sh
+
+HOME=/root
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+export HOME PATH
+
+do_mount_fs() {
+	grep -qa "\$1" /proc/filesystems || return
+	test -d "\$2" || mkdir -p "\$2"
+	mount -t "\$1" "\$1" "\$2"
+}
+
+do_mknod() {
+	test -e "\$1" || mknod "\$1" "\$2" "\$3" "\$4"
+}
+
+mkdir -p /proc
+mount -t proc proc /proc
+
+do_mount_fs sysfs /sys
+do_mount_fs debugfs /sys/kernel/debug
+do_mount_fs devtmpfs /dev
+do_mount_fs devpts /dev/pts
+do_mount_fs tmpfs /dev/shm
+
+mkdir -p /run
+mkdir -p /var/run
+
+/sbin/udevd --daemon
+/bin/udevadm trigger
+
+do_mknod /dev/console c 5 1
+do_mknod /dev/null c 1 3
+do_mknod /dev/zero c 1 5
+
+mkdir -p /rootfs
+mount /dev/__ROOTFS_PARTITION__ /rootfs
+
+echo "All done. Switching to real root."
+exec switch_root /rootfs /sbin/init
+EOF
+)
+
 set -x
 
 wget_error() {
@@ -243,19 +288,39 @@ skales-mkbootimg \
 	--ramdisk_base "${RAMDISK_BASE}" \
 	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
 
-# Create boot image (functional)
+# Create boot image (functional), sdm845_mtp requires an initramfs to mount the rootfs and then
+# exec switch_rootfs
 boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
-ramdisk_dummy_file=out/initrd.img
-echo "This is not an initrd" > $ramdisk_dummy_file
-skales-mkbootimg \
-	--kernel $kernel_file \
-	--ramdisk $ramdisk_dummy_file \
-	--output out/$boot_rootfs_file \
-	$dt_mkbootimg_arg \
-	--pagesize "${BOOTIMG_PAGESIZE}" \
-	--base "${BOOTIMG_BASE}" \
-	--ramdisk_base "${RAMDISK_BASE}" \
-	--cmdline "root=${ROOTFS_PARTITION} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
+if [ "${MACHINE}" = "sdm845_mtp" ]; then
+	init_file=init
+	init_tar_file=init.tar.gz
+	echo "${INITRAMFS_ROOTFS}" | sed s/__ROOTFS_PARTITION__/${ROOTFS_PARTITION}/g > ./$init_file
+	tar -czf $init_tar_file ./$init_file
+	copy_tarball_to_rootfs "$init_tar_file" "$ramdisk_file" "$ramdisk_file_type"
+	rm -f $init_file $init_tar_file
+
+	skales-mkbootimg \
+		--kernel $kernel_file \
+		--ramdisk $ramdisk_file \
+		--output out/$boot_file \
+		$dt_mkbootimg_arg \
+		--pagesize "${BOOTIMG_PAGESIZE}" \
+		--base "${BOOTIMG_BASE}" \
+		--ramdisk_base "${RAMDISK_BASE}" \
+		--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
+else
+	ramdisk_dummy_file=out/initrd.img
+	echo "This is not an initrd" > $ramdisk_dummy_file
+	skales-mkbootimg \
+		--kernel $kernel_file \
+		--ramdisk $ramdisk_dummy_file \
+		--output out/$boot_rootfs_file \
+		$dt_mkbootimg_arg \
+		--pagesize "${BOOTIMG_PAGESIZE}" \
+		--base "${BOOTIMG_BASE}" \
+		--ramdisk_base "${RAMDISK_BASE}" \
+		--cmdline "root=${ROOTFS_PARTITION} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
+fi
 
 echo BOOT_FILE=$boot_file >> builders_out_parameters
 echo BOOT_ROOTFS_FILE=$boot_rootfs_file >> builders_out_parameters
