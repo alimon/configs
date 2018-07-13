@@ -254,10 +254,14 @@ fi
 if [[ $ramdisk_comp = "gz" ]]; then
 	${GZ} $ramdisk_file
 	ramdisk_file="$ramdisk_file".gz
+	ramdisk_file_type=$(file $ramdisk_file)
+	ramdisk_comp=""
 fi
 if [[ $rootfs_comp = "gz" ]]; then
 	${GZ} $rootfs_file
 	rootfs_file="$rootfs_file".gz
+	rootfs_file_type=$(file $rootfs_file)
+	rootfs_comp=""
 fi
 
 # Compress kernel image if isn't
@@ -292,17 +296,30 @@ skales-mkbootimg \
 # exec switch_rootfs
 boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
 if [ "${MACHINE}" = "sdm845_mtp" ]; then
+	if [[ $ramdisk_file_type = *"gzip compressed data"* ]]; then
+		${GZ} -d $ramdisk_file
+		ramdisk_file=out/$(basename ${RAMDISK_URL} .gz)
+		ramdisk_file_type=$(file $ramdisk_file)
+		ramdisk_comp='gz'
+	fi
 	init_file=init
 	init_tar_file=init.tar.gz
 	echo "${INITRAMFS_ROOTFS}" | sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" > ./$init_file
+	chmod +x ./$init_file
 	tar -czf $init_tar_file ./$init_file
 	copy_tarball_to_rootfs "$init_tar_file" "$ramdisk_file" "$ramdisk_file_type"
 	rm -f $init_file $init_tar_file
+	if [[ $ramdisk_comp = "gz" ]]; then
+		${GZ} $ramdisk_file
+		ramdisk_file="$ramdisk_file".gz
+		ramdisk_file_type=$(file $ramdisk_file)
+		ramdisk_comp=
+	fi
 
 	skales-mkbootimg \
 		--kernel $kernel_file \
 		--ramdisk $ramdisk_file \
-		--output out/$boot_file \
+		--output out/$boot_rootfs_file \
 		$dt_mkbootimg_arg \
 		--pagesize "${BOOTIMG_PAGESIZE}" \
 		--base "${BOOTIMG_BASE}" \
