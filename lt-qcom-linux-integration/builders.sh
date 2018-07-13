@@ -38,7 +38,7 @@ do_mknod /dev/null c 1 3
 do_mknod /dev/zero c 1 5
 
 mkdir -p /rootfs
-mount /dev/__ROOTFS_PARTITION__ /rootfs
+mount __ROOTFS_PARTITION__ /rootfs
 
 echo "All done. Switching to real root."
 exec switch_root /rootfs /sbin/init
@@ -294,7 +294,7 @@ boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-
 if [ "${MACHINE}" = "sdm845_mtp" ]; then
 	init_file=init
 	init_tar_file=init.tar.gz
-	echo "${INITRAMFS_ROOTFS}" | sed s/__ROOTFS_PARTITION__/${ROOTFS_PARTITION}/g > ./$init_file
+	echo "${INITRAMFS_ROOTFS}" | sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" > ./$init_file
 	tar -czf $init_tar_file ./$init_file
 	copy_tarball_to_rootfs "$init_tar_file" "$ramdisk_file" "$ramdisk_file_type"
 	rm -f $init_file $init_tar_file
