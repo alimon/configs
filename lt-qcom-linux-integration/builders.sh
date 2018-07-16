@@ -305,52 +305,38 @@ skales-mkbootimg \
 	--ramdisk_base "${RAMDISK_BASE}" \
 	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
 
-# Create boot image (functional), sdm845_mtp requires an initramfs to mount the rootfs and then
-# exec switch_rootfs
+# Create boot image (functional), sdm845-mtp requires an initramfs to mount the rootfs and then
+# exec switch_rootfs, use the same method in other boards too
 boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
-if [ "${MACHINE}" = "sdm845_mtp" ]; then
-	if [[ $ramdisk_file_type = *"gzip compressed data"* ]]; then
-		${GZ} -d $ramdisk_file
-		ramdisk_file=out/$(basename ${RAMDISK_URL} .gz)
-		ramdisk_file_type=$(file $ramdisk_file)
-		ramdisk_comp='gz'
-	fi
-	init_file=init
-	init_tar_file=init.tar.gz
-	echo "${INITRAMFS_ROOTFS}" | sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" > ./$init_file
-	chmod +x ./$init_file
-	tar -czf $init_tar_file ./$init_file
-	copy_tarball_to_rootfs "$init_tar_file" "$ramdisk_file" "$ramdisk_file_type"
-	rm -f $init_file $init_tar_file
-	if [[ $ramdisk_comp = "gz" ]]; then
-		${GZ} $ramdisk_file
-		ramdisk_file="$ramdisk_file".gz
-		ramdisk_file_type=$(file $ramdisk_file)
-		ramdisk_comp=
-	fi
-
-	skales-mkbootimg \
-		--kernel $kernel_file \
-		--ramdisk $ramdisk_file \
-		--output out/$boot_rootfs_file \
-		$dt_mkbootimg_arg \
-		--pagesize "${BOOTIMG_PAGESIZE}" \
-		--base "${BOOTIMG_BASE}" \
-		--ramdisk_base "${RAMDISK_BASE}" \
-		--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
-else
-	ramdisk_dummy_file=out/initrd.img
-	echo "This is not an initrd" > $ramdisk_dummy_file
-	skales-mkbootimg \
-		--kernel $kernel_file \
-		--ramdisk $ramdisk_dummy_file \
-		--output out/$boot_rootfs_file \
-		$dt_mkbootimg_arg \
-		--pagesize "${BOOTIMG_PAGESIZE}" \
-		--base "${BOOTIMG_BASE}" \
-		--ramdisk_base "${RAMDISK_BASE}" \
-		--cmdline "root=${ROOTFS_PARTITION} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
+if [[ $ramdisk_file_type = *"gzip compressed data"* ]]; then
+	${GZ} -d $ramdisk_file
+	ramdisk_file=out/$(basename ${RAMDISK_URL} .gz)
+	ramdisk_file_type=$(file $ramdisk_file)
+	ramdisk_comp='gz'
 fi
+init_file=init
+init_tar_file=init.tar.gz
+echo "${INITRAMFS_ROOTFS}" | sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" > ./$init_file
+chmod +x ./$init_file
+tar -czf $init_tar_file ./$init_file
+copy_tarball_to_rootfs "$init_tar_file" "$ramdisk_file" "$ramdisk_file_type"
+rm -f $init_file $init_tar_file
+if [[ $ramdisk_comp = "gz" ]]; then
+	${GZ} $ramdisk_file
+	ramdisk_file="$ramdisk_file".gz
+	ramdisk_file_type=$(file $ramdisk_file)
+	ramdisk_comp=
+fi
+
+skales-mkbootimg \
+	--kernel $kernel_file \
+	--ramdisk $ramdisk_file \
+	--output out/$boot_rootfs_file \
+	$dt_mkbootimg_arg \
+	--pagesize "${BOOTIMG_PAGESIZE}" \
+	--base "${BOOTIMG_BASE}" \
+	--ramdisk_base "${RAMDISK_BASE}" \
+	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
 
 echo BOOT_FILE=$boot_file >> builders_out_parameters
 echo BOOT_ROOTFS_FILE=$boot_rootfs_file >> builders_out_parameters
