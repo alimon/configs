@@ -92,6 +92,9 @@ cd ${DEPLOY_DIR_IMAGE}
 
 tar -cJf ostree_repo.tar.xz ostree_repo/
 rm -rf ostree_repo
+
+# Delete bootloader as it has a broken ptable
+rm -rf bootloader
 cd -
 
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
