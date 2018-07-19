@@ -51,22 +51,45 @@
             sudo apt-get update
             sudo DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y libssl-dev
 
+            # Keep an updated mirror of Linux in permanent storage
+            cd $HOME/srv
+            if [ ! -d linux.git ]; then
+              mkdir linux.git
+              cd linux.git
+              git init --bare
+              git remote add torvalds https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+              git remote add linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+              cd ..
+            fi
+
+            cd linux.git
+            git remote update
+
+            # Download Clang and GCC toolchains to cross-compile
+            cd ${WORKSPACE}
             mkdir ${CLANG_TOOLCHAIN}
             wget -q "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/master/${CLANG_TOOLCHAIN}.tar.gz"
             tar zxf "${CLANG_TOOLCHAIN}.tar.gz" -C "${CLANG_TOOLCHAIN}/"
             git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
+
 
             export PATH=${PWD}/${CLANG_TOOLCHAIN}/bin:${PWD}/aarch64-linux-android-4.9/bin:${PATH}
 
             # Set up Linux Git repositories
             # "torvalds" is Linus' kernel, mainline
             # "linux-stable" is GKH repository for stable kernels
-
-            git clone -o torvalds https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git linux
+            cd ${WORKSPACE}
+            git clone \
+              -o torvalds \
+              --reference ${HOME}/srv/linux.git \
+              https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git \
+              linux
             cd linux
             git remote add linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-            git remote update
+            git fetch linux-stable
 
+            # If triggered with a GIT_COMMIT, check it out;
+            # else, check out the Git reference.
             if [ -n "${GIT_COMMIT}" ]; then
               GIT_REFERENCE=${GIT_COMMIT}
             else
