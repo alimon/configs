@@ -68,7 +68,7 @@
             name: SKIP_LAVA
             default: 'true'
     disabled: false
-    node: docker-stretch-amd64
+    node: docker-lkft
     display-name: 'LKFT - Linux Generic/Custom kernel builder (OpenEmbedded/rocko)'
     wrappers:
         - timeout:
@@ -117,7 +117,7 @@
             KERNEL_CONFIG_x86-64 = "${KERNEL_CONFIG}"
             EOF
 
-            echo "IMAGES=rpb-console-image" > parameters
+            echo "IMAGES=rpb-console-image-lkft" > parameters
             echo "MANIFEST_URL=https://github.com/96boards/oe-rpb-manifest.git" >> parameters
             echo "MANIFEST_BRANCH=rocko" >> parameters
             echo "DISTRO=rpb" >> parameters
@@ -137,7 +137,7 @@
             properties-file: post_build_lava_parameters
         - linaro-publish-token
         - shell:
-            !include-raw: rpb-openembedded/publishers.sh
+            !include-raw: openembedded-lkft/publishers.sh
     publishers:
         - groovy-postbuild:
             script:
