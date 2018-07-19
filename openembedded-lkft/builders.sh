@@ -180,6 +180,8 @@ do_install_append() {
 
 FILES_\${PN} += "\${sysconfdir}/e2fsck.conf "
 EOF
+elif [ "${MANIFEST_BRANCH}" = "rocko" ]; then
+  sed -i "s|bits/wordsize.h||" ../layers/openembedded-core/meta/recipes-core/glibc/glibc-package.inc
 fi
 
 # Update kernel recipe SRCREV
