@@ -42,9 +42,8 @@
             echo GIT_COMMIT=${GIT_COMMIT} >> lkft_parameters
             echo MAKE_KERNELVERSION=$(make kernelversion) >> lkft_parameters
             cat lkft_parameters
-    publishers:
-        - trigger-parameterized-builds:
+        - trigger-builds:
             - project:
                 - 'lkft-linux-clang'
-              condition: SUCCESS
               property-file: lkft_parameters
+              block: true
