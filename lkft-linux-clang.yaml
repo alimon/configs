@@ -16,9 +16,6 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
-            name: CLANG_TOOLCHAIN
-            default: 'clang-r328903'
-        - string:
             name: KERNEL_GITREF
             default: 'torvalds/master'
         - matrix-combinations:
@@ -34,6 +31,12 @@
             values:
                 - 'arm64'
                 - 'x86_64'
+        - axis:
+            type: user-defined
+            name: CLANG_TOOLCHAIN
+            values:
+                - 'clang-r328903'
+                - 'clang-master'
         - axis:
             type: slave
             name: label
@@ -69,8 +72,13 @@
             # Download Clang and GCC toolchains to cross-compile
             cd ${WORKSPACE}
             mkdir ${CLANG_TOOLCHAIN}
-            wget -q "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/master/${CLANG_TOOLCHAIN}.tar.gz"
-            tar zxf "${CLANG_TOOLCHAIN}.tar.gz" -C "${CLANG_TOOLCHAIN}/"
+            if [ "${CLANG_TOOLCHAIN}" = "clang-master" ]; then
+              wget -q http://snapshots.linaro.org/android/android-clang-toolchain/latest/clang-master.tar.xz
+              tar zxf clang-master.tar.xz
+            else
+              wget -q "https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86/+archive/master/${CLANG_TOOLCHAIN}.tar.gz"
+              tar zxf "${CLANG_TOOLCHAIN}.tar.gz" -C "${CLANG_TOOLCHAIN}/"
+            fi
             git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
 
 
