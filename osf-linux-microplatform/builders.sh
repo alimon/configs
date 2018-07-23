@@ -73,7 +73,6 @@ cat << EOF >> conf/local.conf
 OSF_LMP_GIT_URL = "github.com"
 OSF_LMP_GIT_NAMESPACE = "opensourcefoundries/"
 SOTA_CLIENT_PROV = "aktualizr-implicit-prov"
-SOTA_PACKED_CREDENTIALS = "/home/buildslave/srv/ota-prototype.linaro.org/credentials.zip"
 EOF
 
 # add useful debug info
