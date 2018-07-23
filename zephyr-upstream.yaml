@@ -39,6 +39,8 @@
     node: master
     child-workspace: .
     display-name: 'Zephyr project (master)'
+    triggers:
+        - timed: 'H H/12 * * *'
     axes:
         - axis:
             type: slave
@@ -141,7 +143,7 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            [ "${GIT_COMMIT}" = "master" ] && unset DEVICE_TYPE
+            [ "${ROOT_BUILD_CAUSE}" = "SCMTRIGGER" ] && unset DEVICE_TYPE
             [ -z "${DEVICE_TYPE}" ] || \
             python configs/zephyr-upstream/submit_for_testing.py \
                 --board-name ${PLATFORM} \
