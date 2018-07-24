@@ -11,6 +11,9 @@ case "${MACHINE}" in
   intel-core2-32)
     DEVICE_TYPE=qemu_x86_64
     ;;
+  intel-corei7-64)
+    DEVICE_TYPE=qemu_x86_64
+    ;;
   *)
     unset DEVICE_TYPE
     ;;
