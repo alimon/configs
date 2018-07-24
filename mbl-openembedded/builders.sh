@@ -139,7 +139,7 @@ case "${MACHINE}" in
   raspberrypi3*)
     # Temporary sstate cleanup to force firmware to be re-generated each time
     set +e
-    bitbake -c cleansstate linux-raspberrypi mbl-boot-scr linux-firmware atf-rpi3
+    bitbake -c cleansstate linux-raspberrypi mbl-boot-scr linux-firmware atf-rpi3 optee-os
     set -e
     ;;
 esac
