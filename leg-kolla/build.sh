@@ -58,11 +58,7 @@ if [ -n ${kolla_ldc} ]; then
     git clone --depth 1 https://git.linaro.org/leg/sdi/kolla/ldc-overlay.git Linaro-overlay
 fi
 
-# Rocky always tries to build it and it fails for us
-# to be debugged later
 if [ ${kolla_branch} == "master" ]; then
-    rm -rf kolla/docker/neutron/neutron-server-opendaylight
-
     # enable ERP:staging repo
     echo "deb http://obs.linaro.org/ERP:/staging/Debian_9/ ./" >>kolla/docker/base/sources.list.debian
     sed -i -e "s+'https://bintray.com/user/downloadSubjectPublicKey?username=bintray',+'https://bintray.com/user/downloadSubjectPublicKey?username=bintray','http://obs.linaro.org/ERP:/staging/Debian_9/Release.key',+g" kolla/docker/base/Dockerfile.j2
