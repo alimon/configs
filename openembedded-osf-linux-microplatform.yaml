@@ -36,6 +36,11 @@
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
     publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'ostree-publish-ota'
+              condition: SUCCESS
+              property-file: ota_params
         - groovy-postbuild:
             script:
                 !include-raw:

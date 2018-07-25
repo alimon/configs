@@ -73,6 +73,7 @@ cat << EOF >> conf/local.conf
 OSF_LMP_GIT_URL = "github.com"
 OSF_LMP_GIT_NAMESPACE = "opensourcefoundries/"
 SOTA_CLIENT_PROV = "aktualizr-implicit-prov"
+OSTREE_BRANCHNAME = "hikey-${BUILD_NUMBER}"
 EOF
 
 # add useful debug info
@@ -107,6 +108,11 @@ mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 EOF
+
+cat << EOF > ${WORKSPACE}/ota_params
+BUILD_URL=${PUB_DEST}
+EOF
+
 # Build information
 cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
 

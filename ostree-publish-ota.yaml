@@ -1,0 +1,42 @@
+- job:
+    name: ostree-publish-ota
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: BUILD_URL
+            default: ''
+        - credentials:
+            name: CREDENTIALS
+            type: secretfile
+            default: "OTA_PACKED_CREDENTIALS"
+            description: "Test credentials"
+
+    disabled: false
+    node: docker-xenial-amd64
+    display-name: 'Publish ostree to an OTA server'
+    wrappers:
+        - timeout:
+            timeout: 180
+        - timestamps
+        - credentials-binding:
+            - zip-file:
+                credential-id: OTA_PACKED_CREDENTIALS
+                variable: CREDENTIALS
+    builders:
+        - shell:
+            !include-raw: osf-linux-microplatform/publish-ota.sh
