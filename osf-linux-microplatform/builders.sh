@@ -110,7 +110,7 @@ DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 EOF
 
 cat << EOF > ${WORKSPACE}/ota_params
-BUILD_URL=${PUB_DEST}
+BUILD_URL=http://snapshots.linaro.org/${PUB_DEST}/
 EOF
 
 # Build information
