@@ -135,7 +135,6 @@ RDEPENDS_packagegroup-rpb_remove = "docker"
 EOF
 
 cat << EOF >> conf/local.conf
-DEFAULTTUNE_intel-core2-32 = "core2-64"
 SERIAL_CONSOLES_remove_intel-core2-32 = "115200;ttyPCH0"
 SERIAL_CONSOLES_remove_intel-corei7-64 = "115200;ttyPCH0"
 SERIAL_CONSOLES_append_dragonboard-410c = " 115200;ttyMSM1"

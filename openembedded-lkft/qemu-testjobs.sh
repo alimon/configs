@@ -9,7 +9,7 @@ case "${MACHINE}" in
     DEVICE_TYPE=qemu_arm64
     ;;
   intel-core2-32)
-    DEVICE_TYPE=qemu_x86_64
+    DEVICE_TYPE=qemu_i386
     ;;
   intel-corei7-64)
     DEVICE_TYPE=qemu_x86_64
