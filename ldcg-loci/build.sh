@@ -8,6 +8,11 @@ BASE_IMG=${HUB_USERNAME}/loci-base:${IMG_TAG}
 # it has ERP:18.06 repo enabled
 # and all packages common in loci images gets preinstalled
 #
+for jobfile in Dockerfile erp18.06.list
+do
+	wget -q http://git.linaro.org/ci/job/configs.git/plain/ldcg-loci/${jobfile} -O ${WORKSPACE}/${jobfile}
+done
+
 docker build . --tag ${BASE_IMG}
 docker push ${BASE_IMG}
 
