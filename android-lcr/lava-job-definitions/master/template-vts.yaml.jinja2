@@ -24,5 +24,8 @@
         TEST_PARAMS: "run {{testcommand}} --skip-device-info"
         TEST_PATH: "android-vts"
         RESULTS_FORMAT: "atomic"
+{% if testrebootexpected is defined %}
+        TEST_REBOOT_EXPECTED: "{{testrebootexpected}}"
+{% endif %}
       name: {{testname}}
 {% endblock test_target %}
