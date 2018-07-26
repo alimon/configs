@@ -37,11 +37,14 @@ git clone --depth 1 https://git.openstack.org/openstack/loci
 
 cd loci/
 
-# 583726 # bindep: install blas and lapack headers to build scipy on aarch64
-# 583727 # requirements.sh: install numpy and scipy on AArch64
+# Apply extra patches to the source code that haven't been merged yet
 
-git pull https://git.openstack.org/openstack/loci refs/changes/26/583726/3
-git pull https://git.openstack.org/openstack/loci refs/changes/27/583727/5
+if [[ ! -z ${EXTRA_PATCHES} ]]; then
+    echo ${EXTRA_PATCHES} | sed -n 1'p' | tr ' ' '\n' | while read patch; do
+
+    git pull https://git.openstack.org/openstack/loci ${patch}
+    done
+fi
 
 # requirements needs to be built first
 for project in requirements cinder glance heat horizon ironic keystone neutron nova octavia
