@@ -72,7 +72,7 @@ fi
 TEMPLATE_PATH=""
 TEST_FILES=""
 
-for ts in ${TEST_SUITES,,); do
+for ts in ${TEST_SUITES,,}; do
     case ${ts} in
         all)
             TEST_FILES=$(ls ${BASE_PATH}/lava-job-definitions/testplan/)
