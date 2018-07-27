@@ -8,7 +8,7 @@ set -ex
 [ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=lkft
 [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
 
-[ "${TEST_SUITES}" = "none" ] && DRY_RUN="YES"
+[ "${TEST_SUITES}" = "none" ] && unset DEVICE_TYPE
 
 export BASE_PATH=configs/openembedded-lkft/
 if [ -n "${DRY_RUN}" ]; then
