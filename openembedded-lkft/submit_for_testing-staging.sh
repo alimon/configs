@@ -10,12 +10,9 @@ set -ex
 
 [ "${TEST_SUITES}" = "none" ] && DRY_RUN="YES"
 
+export BASE_PATH=configs/openembedded-lkft/
 if [ -n "${DRY_RUN}" ]; then
     export DRY_RUN="--dry-run --template-path lava-job-definitions --testplan-path lava-job-definitions/ --quiet"
-    export BASE_PATH=.
-else
-    export DRY_RUN=""
-    export BASE_PATH=configs/openembedded-lkft/
 fi
 
 if [ -z "${DEVICE_TYPE}" ]; then
