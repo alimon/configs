@@ -2,6 +2,10 @@
 
 set -ex
 
+echo "v---env---v"
+env
+echo "^---env---^"
+
 [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="25"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
@@ -11,9 +15,6 @@ set -ex
 [ "${TEST_SUITES}" = "none" ] && unset DEVICE_TYPE
 
 export BASE_PATH=configs/openembedded-lkft/
-if [ -n "${DRY_RUN}" ]; then
-    export DRY_RUN="--dry-run --template-path lava-job-definitions --testplan-path lava-job-definitions/ --quiet"
-fi
 
 if [ -z "${DEVICE_TYPE}" ]; then
     echo "DEVICE_TYPE not set. Exiting"
@@ -40,15 +41,7 @@ if [ -z "${DRY_RUN}" ]; then
         export KSELFTESTS_REVISION=${KSELFTESTS_MAINLINE_VERSION}
         ;;
     esac
-fi
 
-if [ ! -z "${KERNEL_DESCRIBE}" ]; then
-    export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
-else
-    export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
-fi
-
-if [ -z "${DRY_RUN}" ]; then
     rm -rf configs
 
     # Perform a shallow clone unless CONFIGS_REPO_REV_OVERRIDE is set
@@ -62,9 +55,18 @@ if [ -z "${DRY_RUN}" ]; then
     if [ ! -z ${CONFIGS_REPO_REV_OVERRIDE} ]; then
         (cd configs && git checkout ${CONFIGS_REPO_REV_OVERRIDE})
     fi
+else
+    export DRY_RUN="--dry-run --template-path lava-job-definitions --testplan-path lava-job-definitions/ --quiet"
 fi
 
-[ ! -z ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
+if [ -z "${KERNEL_DESCRIBE}" ]; then
+    echo "No kernel description -- Using kernel commit as QA version."
+    export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
+else
+    export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
+fi
+
+[ -n "${TEST_TEMPLATES}" ] && unset TEST_TEMPLATES
 [ -z "${TEST_SUITES}" ] && TEST_SUITES=all
 TEMPLATE_PATH=""
 TEST_FILES=""
