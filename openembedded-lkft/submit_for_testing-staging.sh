@@ -61,7 +61,7 @@ fi
 
 if [ -z "${KERNEL_DESCRIBE}" ]; then
     echo "No kernel description -- Using kernel commit as QA version."
-    export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
+    export QA_BUILD_VERSION=${KERNEL_SRCREV:0:12}
 else
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
 fi

@@ -109,10 +109,11 @@
             esac
 
             # Determine the kernel commit if it isn't given
-            [ -z "${KERNEL_COMMIT}" ] && KERNEL_COMMIT=$(git ls-remote --heads ${KERNEL_REPO} ${KERNEL_BRANCH} | cut -f1)
+            KERNEL_SRCREV="${KERNEL_COMMIT}"
+            [ -z "${KERNEL_SRCREV}" ] && KERNEL_SRCREV=$(git ls-remote --heads ${KERNEL_REPO} ${KERNEL_BRANCH} | cut -f1)
 
             cat << EOF > ${WORKSPACE}/custom-kernel-info.inc.tmp
-            KERNEL_COMMIT = "${KERNEL_COMMIT}"
+            KERNEL_COMMIT = "${KERNEL_SRCREV}"
             KERNEL_REPO = "${KERNEL_REPO/http*:/git:}"
             KERNEL_BRANCH = "${KERNEL_BRANCH}"
             KERNEL_CONFIG_aarch64 = "${KERNEL_CONFIG}"
@@ -130,10 +131,10 @@
             echo "PUB_DEST=openembedded/lkft/rocko/generic/rpb/linux-developer/${BUILD_NUMBER}" >> parameters
             echo "QA_SERVER=https://staging-qa-reports.linaro.org" >> parameters
             echo "QA_SERVER_PROJECT=linux-mainline-oe" >> parameters
-            echo "KERNEL_COMMIT=${KERNEL_COMMIT}" >> parameters
+            echo "KERNEL_SRCREV=${KERNEL_SRCREV}" >> parameters
             cat parameters
 
-            echo "#${BUILD_NUMBER}-${KERNEL_COMMIT:0:8}" > ${WORKSPACE}/version.txt
+            echo "#${BUILD_NUMBER}-${KERNEL_SRCREV:0:8}" > ${WORKSPACE}/version.txt
         - build-name-setter:
             name: 'version.txt'
             file: true
