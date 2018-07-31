@@ -4,6 +4,7 @@ set -ex
 
 [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
 [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="25"
+[ -z "${SANITY_LAVA_JOB_PRIORITY}" ] && export SANITY_LAVA_JOB_PRIORITY="30"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
 [ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=lkft
 [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
@@ -65,28 +66,60 @@ if [ -z "${DRY_RUN}" ]; then
     fi
 fi
 
-[ ! -z ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
+[ ! -z ${FULL_TEST_TEMPLATES} ] && unset FULL_TEST_TEMPLATES
 TEMPLATE_PATH=""
 
+# Generate list of job templates for full test run
 for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
     if [[ ${test} = "ltp-open-posix.yaml" ]];then
         # Run LTP open posix test suite on limited devices
         # Each one per architecture arm64 juno-r2, arm32 x15 and x86
         if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" ]];then
-            TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+            FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         fi
     elif  [[ ${test} = "kselftests-native.yaml" || ${test} = "kselftests-none.yaml" ]];then
         # kselftests-native.yaml and kselftests-none.yaml tests needed for x86
         # Don't run on qemu; it's not possible to pass a kernel argument
         # given the way we build the image and run qemu.
         if [[ ${DEVICE_TYPE} = "x86" ]];then
-            TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+            FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         fi
     else
-        TEST_TEMPLATES="${TEST_TEMPLATES} testplan/${test}"
+        FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
     fi
 done
 
+if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" ]];then
+    [ ! -z ${SANITY_TEST_TEMPLATES} ] && unset SANITY_TEST_TEMPLATES
+
+    # Save original priority
+    export FULL_LAVA_JOB_PRIORITY=${LAVA_JOB_PRIORITY}
+
+    # Bump priority for the sanity jobs
+    export LAVA_JOB_PRIORITY=${SANITY_LAVA_JOB_PRIORITY}
+
+    # Generate list of job templates for sanity test run
+    for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan-sanity/); do
+        SANITY_TEST_TEMPLATES="${SANITY_TEST_TEMPLATES} testplan-sanity/${test}"
+    done
+
+    # Submit sanity test run
+    python ${BASE_PATH}/submit_for_testing.py \
+      --device-type ${DEVICE_TYPE} \
+      --build-number ${BUILD_NUMBER} \
+      --lava-server ${LAVA_SERVER} \
+      --qa-server ${QA_SERVER} \
+      --qa-server-team ${QA_SERVER_TEAM} \
+      --qa-server-project ${QA_SERVER_PROJECT}-sanity \
+      --git-commit ${QA_BUILD_VERSION} \
+      ${DRY_RUN} \
+      --test-plan ${SANITY_TEST_TEMPLATES}
+
+    # reset LAVA_JOB_PRIORITY to default
+    export LAVA_JOB_PRIORITY=${FULL_LAVA_JOB_PRIORITY}
+fi
+
+# Submit full test run
 python ${BASE_PATH}/submit_for_testing.py \
   --device-type ${DEVICE_TYPE} \
   --build-number ${BUILD_NUMBER} \
@@ -96,4 +129,4 @@ python ${BASE_PATH}/submit_for_testing.py \
   --qa-server-project ${QA_SERVER_PROJECT} \
   --git-commit ${QA_BUILD_VERSION} \
   ${DRY_RUN} \
-  --test-plan ${TEST_TEMPLATES}
+  --test-plan ${FULL_TEST_TEMPLATES}
