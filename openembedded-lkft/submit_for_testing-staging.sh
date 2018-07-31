@@ -11,6 +11,10 @@ echo "^---env---^"
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
 [ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=lkft
 [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
+[ -z "${KERNEL_COMMIT}" ] && export KERNEL_COMMIT="${KERNEL_SRCREV}"
+[ -z "${MAKE_KERNELVERSION}" ] && export MAKE_KERNELVERSION="unknown"
+[ -z "${KERNEL_VERSION}" ] && export KERNEL_VERSION="unknown"
+[ -z "${KERNEL_DESCRIBE}" ] && export KERNEL_DESCRIBE=${KERNEL_SRCREV:0:12}
 
 [ "${TEST_SUITES}" = "none" ] && unset DEVICE_TYPE
 
@@ -59,12 +63,7 @@ else
     export DRY_RUN="--dry-run --template-path lava-job-definitions --testplan-path lava-job-definitions/ --quiet"
 fi
 
-if [ -z "${KERNEL_DESCRIBE}" ]; then
-    echo "No kernel description -- Using kernel commit as QA version."
-    export QA_BUILD_VERSION=${KERNEL_SRCREV:0:12}
-else
-    export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
-fi
+export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
 
 [ -n "${TEST_TEMPLATES}" ] && unset TEST_TEMPLATES
 [ -z "${TEST_SUITES}" ] && TEST_SUITES=all
