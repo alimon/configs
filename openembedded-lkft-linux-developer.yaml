@@ -81,6 +81,10 @@
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
     builders:
+        - shell:
+            !include-raw: openembedded-lkft/kernel-versions.sh
+        - inject:
+            properties-file: linux_versions
         - shell: |
             #!/bin/bash -e
 
@@ -107,10 +111,6 @@
                 [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=x86_64_defconfig
                 ;;
             esac
-
-            # Determine the kernel commit if it isn't given
-            KERNEL_SRCREV="${KERNEL_COMMIT}"
-            [ -z "${KERNEL_SRCREV}" ] && KERNEL_SRCREV=$(git ls-remote --heads ${KERNEL_REPO} ${KERNEL_BRANCH} | cut -f1)
 
             cat << EOF > ${WORKSPACE}/custom-kernel-info.inc.tmp
             KERNEL_COMMIT = "${KERNEL_SRCREV}"
