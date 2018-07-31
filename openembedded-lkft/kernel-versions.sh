@@ -26,7 +26,14 @@ fi
 
 GIT_COMMIT="$(git rev-parse HEAD)"
 
+MAKE_KERNELVERSION="$(make kernelversion)"
+kernel_major="$(echo ${MAKE_KERNELVERSION} | cut -d\. -f1)"
+kernel_minor="$(echo ${MAKE_KERNELVERSION} | cut -d\. -f2)"
+if echo "${MAKE_KERNELVERSION}" | grep -q "rc"; then
+  kernel_minor=$((kernel_minor - 1))
+fi
 echo "KERNEL_DESCRIBE=$(git describe --always)" >> "${WORKSPACE}/linux_versions"
 echo "KERNEL_SRCREV=${GIT_COMMIT}" >> "${WORKSPACE}/linux_versions"
-echo "MAKE_KERNELVERSION=$(make kernelversion)" >> "${WORKSPACE}/linux_versions"
+echo "MAKE_KERNELVERSION=${MAKE_KERNELVERSION}" >> "${WORKSPACE}/linux_versions"
+echo "KERNEL_VERSION=${kernel_major}.${kernel_minor}" >> "${WORKSPACE}/linux_versions"
 cat "${WORKSPACE}/linux_versions"
