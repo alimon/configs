@@ -68,11 +68,43 @@ if [ -z "${DRY_RUN}" ]; then
     fi
 fi
 
-[ ! -z ${FULL_TEST_TEMPLATES} ] && unset FULL_TEST_TEMPLATES
+[ -n "${FULL_TEST_TEMPLATES}" ] && unset FULL_TEST_TEMPLATES
+[ -z "${TEST_SUITES}" ] && TEST_SUITES=all
 TEMPLATE_PATH=""
+TEST_FILES=""
 
 # Generate list of job templates for full test run
-for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
+for ts in ${TEST_SUITES,,}; do
+    case ${ts} in
+        all)
+            TEST_FILES=$(ls ${BASE_PATH}/lava-job-definitions/testplan/)
+            ;;
+        none)
+            break
+            ;;
+        kselftests|libhugetlbfs|ltp)
+            TEST_FILES="${TEST_FILES} $(basename -a ${BASE_PATH}/lava-job-definitions/testplan/${ts}*.yaml)"
+            ;;
+        *)
+            if [ -e ${BASE_PATH}/lava-job-definitions/testplan/${ts}.yaml ]; then
+                TEST_FILES="${TEST_FILES} ${ts}.yaml"
+            else
+                echo "WARNING: Not sure what this test suite is about: ${ts}. Skipped."
+            fi
+            ;;
+    esac
+
+    case ${ts} in
+        all|sanity)
+            # Generate list of job templates for sanity test run
+            for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan-sanity/); do
+                SANITY_TEST_TEMPLATES="${SANITY_TEST_TEMPLATES} testplan-sanity/${test}"
+            done
+            ;;
+    esac
+done
+
+for test in ${TEST_FILES}; do
     if [[ ${test} = "ltp-open-posix.yaml" ]];then
         # Run LTP open posix test suite on limited devices
         # Each one per architecture arm64 juno-r2, arm32 x15 and x86
@@ -92,43 +124,40 @@ for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
 done
 
 if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "i386" ]];then
-    [ ! -z ${SANITY_TEST_TEMPLATES} ] && unset SANITY_TEST_TEMPLATES
-
     # Save original priority
     export FULL_LAVA_JOB_PRIORITY=${LAVA_JOB_PRIORITY}
 
     # Bump priority for the sanity jobs
     export LAVA_JOB_PRIORITY=${SANITY_LAVA_JOB_PRIORITY}
 
-    # Generate list of job templates for sanity test run
-    for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan-sanity/); do
-        SANITY_TEST_TEMPLATES="${SANITY_TEST_TEMPLATES} testplan-sanity/${test}"
-    done
-
     # Submit sanity test run
-    python ${BASE_PATH}/submit_for_testing.py \
-      --device-type ${DEVICE_TYPE} \
-      --build-number ${BUILD_NUMBER} \
-      --lava-server ${LAVA_SERVER} \
-      --qa-server ${QA_SERVER} \
-      --qa-server-team ${QA_SERVER_TEAM} \
-      --qa-server-project ${QA_SERVER_PROJECT}-sanity \
-      --git-commit ${QA_BUILD_VERSION} \
-      ${DRY_RUN} \
-      --test-plan ${SANITY_TEST_TEMPLATES}
+    if [ ! -z "${SANITY_TEST_TEMPLATES}" ]; then
+      python ${BASE_PATH}/submit_for_testing.py \
+        --device-type ${DEVICE_TYPE} \
+        --build-number ${BUILD_NUMBER} \
+        --lava-server ${LAVA_SERVER} \
+        --qa-server ${QA_SERVER} \
+        --qa-server-team ${QA_SERVER_TEAM} \
+        --qa-server-project ${QA_SERVER_PROJECT}-sanity \
+        --git-commit ${QA_BUILD_VERSION} \
+        ${DRY_RUN} \
+        --test-plan ${SANITY_TEST_TEMPLATES}
+    fi
 
     # reset LAVA_JOB_PRIORITY to default
     export LAVA_JOB_PRIORITY=${FULL_LAVA_JOB_PRIORITY}
 fi
 
 # Submit full test run
-python ${BASE_PATH}/submit_for_testing.py \
-  --device-type ${DEVICE_TYPE} \
-  --build-number ${BUILD_NUMBER} \
-  --lava-server ${LAVA_SERVER} \
-  --qa-server ${QA_SERVER} \
-  --qa-server-team ${QA_SERVER_TEAM} \
-  --qa-server-project ${QA_SERVER_PROJECT} \
-  --git-commit ${QA_BUILD_VERSION} \
-  ${DRY_RUN} \
-  --test-plan ${FULL_TEST_TEMPLATES}
+if [ ! -z "${FULL_TEST_TEMPLATES}" ]; then
+  python ${BASE_PATH}/submit_for_testing.py \
+    --device-type ${DEVICE_TYPE} \
+    --build-number ${BUILD_NUMBER} \
+    --lava-server ${LAVA_SERVER} \
+    --qa-server ${QA_SERVER} \
+    --qa-server-team ${QA_SERVER_TEAM} \
+    --qa-server-project ${QA_SERVER_PROJECT} \
+    --git-commit ${QA_BUILD_VERSION} \
+    ${DRY_RUN} \
+    --test-plan ${FULL_TEST_TEMPLATES}
+fi
