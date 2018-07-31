@@ -88,11 +88,10 @@ cat << EOF >> conf/auto.conf
 INHERIT += "buildstats buildstats-summary"
 EOF
 
-### FIXME LKFT Linux Generic Specific:
 # Set the kernel to use
 distro_conf=$(find ../layers/meta-rpb/conf/distro -name rpb.inc)
 cat << EOF >> ${distro_conf}
-PREFERRED_PROVIDER_virtual/kernel = "linux-generic"
+PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
 
 # Set the image types to use
