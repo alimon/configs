@@ -17,12 +17,7 @@
 
 set -xe
 
-linux_reference=""
-if [ -d "${HOME}/srv/linux.git" ]; then
-  linux_reference="--reference ${HOME}/srv/linux.git"
-fi
-
-git clone "${linux_reference}" -o origin "${KERNEL_REPO}" "${WORKSPACE}/linux"
+git clone --reference-if-able "${HOME}/srv/linux.git" -o origin "${KERNEL_REPO}" "${WORKSPACE}/linux"
 cd "${WORKSPACE}/linux"
 git checkout "origin/${KERNEL_BRANCH}"
 if [ "${KERNEL_COMMIT}" ]; then
