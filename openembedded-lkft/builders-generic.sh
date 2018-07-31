@@ -129,12 +129,6 @@ custom_kernel_conf=$(find ../layers/meta-96boards/recipes-kernel -name custom-ke
 mv ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
 ###
 
-# Enable lkft-metadata class
-cat << EOF >> conf/local.conf
-INHERIT += "lkft-metadata"
-LKFTMETADATA_COMMIT = "1"
-EOF
-
 # FIXME: Remove when upstream has resolved what to do with wordsize.h recursion
 sed -i "s|bits/wordsize.h||" ../layers/openembedded-core/meta/recipes-core/glibc/glibc-package.inc
 
@@ -142,9 +136,6 @@ sed -i "s|bits/wordsize.h||" ../layers/openembedded-core/meta/recipes-core/glibc
 cat conf/{site,auto,local}.conf
 cat ${distro_conf}
 cat ${custom_kernel_conf}
-
-# Temporary sstate cleanup to get lkft metadata generated
-bitbake -c cleansstate kselftests-mainline kselftests-next ltp libhugetlbfs
 
 time bitbake ${IMAGES}
 
@@ -216,9 +207,22 @@ TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 
-# lkft-metadata class generates metadata file, which can be sourced
-for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
-  source lkftmetadata/packages/*/${recipe}/metadata
+mkdir ${WORKSPACE}/lkftmetadata/
+for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs ${KERNEL_RECIPE}; do
+  #source lkftmetadata/packages/*/${recipe}/metadata
+  tmpfile=$(mktemp)
+  pkg=$(echo $recipe | tr '[a-z]-' '[A-Z]_')
+  bitbake -e ${recipe} | grep -e ^PV= -e ^SRC_URI= -e ^SRCREV= > ${tmpfile}
+  source ${tmpfile}
+  for suri in $SRC_URI; do if [[ ! $suri =~ file:// ]]; then uri=$(echo $suri | cut -d\; -f1); export ${pkg}_URL=$uri; break; fi; done
+  export ${pkg}_VERSION=${PV}
+  export ${pkg}_REVISION=${SRCREV}
+  unset -v PV SRC_URI SRCREV
+  rm ${tmpfile}
+  for v in URL VERSION REVISION; do
+    myvar="${pkg}_${v}"
+    echo "${myvar}=${!myvar}" >> ${WORKSPACE}/lkftmetadata/${recipe}
+  done
 done
 
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | sort | xargs -r basename)

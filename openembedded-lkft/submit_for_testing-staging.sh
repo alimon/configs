@@ -28,13 +28,13 @@ fi
 if [ -z "${DRY_RUN}" ]; then
     case "${QA_SERVER_PROJECT}" in
       linux-mainline-*)
-        source /srv/oe/build/lkftmetadata/packages/*/${KERNEL_RECIPE}/metadata
+        source ${WORKSPACE}/lkftmetadata/${KERNEL_RECIPE}
         export KSELFTESTS_URL=${LINUX_GENERIC_MAINLINE_URL}
         export KSELFTESTS_VERSION=${LINUX_GENERIC_MAINLINE_VERSION}
         export KSELFTESTS_REVISION=${KERNEL_COMMIT}
         ;;
       linux-next-*)
-        source /srv/oe/build/lkftmetadata/packages/*/${KERNEL_RECIPE}/metadata
+        source ${WORKSPACE}/lkftmetadata/${KERNEL_RECIPE}
         export KSELFTESTS_URL=${LINUX_GENERIC_NEXT_URL}
         export KSELFTESTS_VERSION=${LINUX_GENERIC_NEXT_VERSION}
         export KSELFTESTS_REVISION=${KERNEL_COMMIT}
