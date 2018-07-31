@@ -15,11 +15,14 @@
             num-to-keep: 60
     parameters:
         - string:
-            name: ART_URL
-            default: https://android-qa-reports.linaro.org/api/
-        - string:
             name: BUILD_DIR
             default: r-lcr-oreo
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'lcr'
     disabled: false
     node: docker-xenial-aosp
     display-name: 'Reference LCR Android P build for HiKey'
@@ -77,6 +80,9 @@
         - timestamps
         - timeout:
             timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
         - credentials-binding:
             - text:
                 credential-id: AP_SSID
@@ -91,6 +97,6 @@
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
     builders:
-        !include: android-lcr/hikey/builders-v2.yaml.inc
+        !include: android-lcr/hikey/builders-v2-jinja2.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc

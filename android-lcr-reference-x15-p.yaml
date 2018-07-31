@@ -20,6 +20,12 @@
         - string:
             name: BUILD_DIR
             default: r-lcr-oreo
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'lcr'
     disabled: false
     node: docker-xenial-aosp
     display-name: 'Reference LCR Android P Preview build for X15'
@@ -67,6 +73,9 @@
         - timestamps
         - timeout:
             timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
         - credentials-binding:
             - text:
                 credential-id: QA_REPORTS_TOKEN
@@ -75,6 +84,6 @@
                 credential-id: ARTIFACTORIAL_TOKEN
                 variable: ARTIFACTORIAL_TOKEN
     builders:
-        !include: android-lcr/x15/builders-v2.yaml.inc
+        !include: android-lcr/x15/builders-v2-jinja2.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc
