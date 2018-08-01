@@ -17,7 +17,7 @@ def get_kernel_ci_build(url, arch_config, dt_file):
 
     last_build = -1
     for tr in soup.select('table > tbody > tr'):
-        if 'Parent directory' in tr.text or 'last.commit' in tr.text:
+        if 'Parent directory' in tr.text or 'last.commit' in tr.text or '-lava-bisect-' in tr.text:
             continue
 
         if last_build == -1:
