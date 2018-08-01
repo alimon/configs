@@ -77,20 +77,18 @@ for ts in ${TEST_SUITES,,}; do
             break
             ;;
         none)
-            TEST_FILES=
-            break
+            # No point in going forward. Exit now.
+            exit 0
             ;;
-        kselftests)
-            TEST_FILES="${TEST_FILES} $(basename -a ${BASE_PATH}/lava-job-definitions/testplan/kselftests*.yaml)"
-            ;;
-        libhugetlbfs)
-            TEST_FILES="${TEST_FILES} $(basename -a ${BASE_PATH}/lava-job-definitions/testplan/libhugetlbfs*.yaml)"
-            ;;
-        ltp)
-            TEST_FILES="${TEST_FILES} $(basename -a ${BASE_PATH}/lava-job-definitions/testplan/ltp*.yaml)"
+        kselftests|libhugetlbfs|ltp)
+            TEST_FILES="${TEST_FILES} $(basename -a ${BASE_PATH}/lava-job-definitions/testplan/${ts}*.yaml)"
             ;;
         *)
-            echo "WARNING: Not sure what this test suite is about: ${ts}. Skipped."
+            if [ -e ${BASE_PATH}/lava-job-definitions/testplan/${ts}.yaml ]; then
+                TEST_FILES="${TEST_FILES} ${ts}.yaml"
+            else
+                echo "WARNING: Not sure what this test suite is about: ${ts}. Skipped."
+            fi
             ;;
     esac
 done
