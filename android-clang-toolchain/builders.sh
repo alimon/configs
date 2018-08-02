@@ -6,65 +6,47 @@ export PATH=$PATH://home/buildslave/bin/
 sudo apt-get -q=2 update
 sudo apt-get -q=2 install -y libxml2-dev zlib1g-dev libtinfo-dev git-svn gawk libxml2-utils rsync pxz python-requests ninja-build
 
-wget -q \
-  https://cmake.org/files/v3.11/cmake-3.11.3-Linux-x86_64.sh
+BASEDIR="${HOME}/srv/aosp/${JOB_NAME}"
+rm -rf "${BASEDIR}"
+mkdir -p "${BASEDIR}"
+cd "${BASEDIR}"
 
-yes y | bash cmake-3.11.3-Linux-x86_64.sh
-export PATH=${PWD}/cmake-3.11.3-Linux-x86_64/bin/:${PATH}
-
-mkdir -p ${HOME}/srv/aosp/${JOB_NAME}
-cd ${HOME}/srv/aosp/${JOB_NAME}
-
-# Toolchain src downloads
-if [ -d llvm ]; then
-    rm llvm -rf
-fi
-repo init -u https://android-git.linaro.org/git/platform/manifest.git -b clang-build
+# Download toolchain prebuilt bootstrap tools
+repo init -u https://android-git.linaro.org/git/platform/manifest.git -b linaro-upstream-llvm-toolchain
 repo sync -j16 -c
 
-# For building LLVMgold.so using -DLLVM_BINUTILS_INCDIR flag
-if [ ! -d binutils ]; then
-    git clone https://android.googlesource.com/toolchain/binutils
-else
-    cd binutils
-    git pull
-    cd ..
-fi
+# Apply needed patches, if any
+for d in toolchain/patches/*; do
+	[ -d "$d" ] || continue
+	for i in $d/*.patch; do
+		[ -e "$i" ] || continue
+		p="$(realpath $i)"
+		pushd $(basename $d)
+		echo "Applying $(basename $p)"
+		patch -p1 <"$p"
+		popd
+	done
+done
 
-# Toolchain download
-if [ ! -d clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04 ]; then
-    wget http://releases.llvm.org/6.0.0/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-    tar xvfJ clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-fi
+# Find the SVN revision the compiler is based on
+REVISION=0
+for i in clang clang-tools-extra compiler-rt libcxx libcxxabi lld llvm openmp_llvm; do
+	pushd toolchain/$i
+	REV=$(git log |grep git-svn-id: |head -n1 |cut -d@ -f2 |cut -d' ' -f1)
+	[ "$REV" -ge "$REVISION" ] && REVISION="$REV"
+	popd
+done
+echo "Building compiler based on clang revision $REVISION"
 
-# Temporary clang patch for 25b45aa81854313486df891985cdd7ef1ec09780
-# cd ${HOME}/srv/aosp/${JOB_NAME}/llvm/tools/clang
-# git clone https://git.linaro.org/people/minseong.kim/aosp_patches_for_upstream_clang.git
-# patch -p1 < aosp_patches_for_upstream_clang/revert_25b45a.patch
-# cd ${HOME}/srv/aosp/${JOB_NAME}
+# And give the build script the correct version information
+sed -i -e "s,^svn_revision =.*,svn_revision = 'r${REVISION}'," toolchain/llvm_android/android_version.py
 
-cd llvm
-mkdir -p build/clang-master
-cd build
-cmake -G Ninja ../ \
-	 -DCMAKE_BUILD_TYPE=Release \
-	 -DPYTHON_EXECUTABLE=/usr/bin/python2 \
-	 -DCMAKE_INSTALL_PREFIX=./clang-master \
-	 -DLLVM_TARGETS_TO_BUILD="host;ARM;X86;AArch64;BPF;Hexagon" \
-	 -DLLVM_ENABLE_ASSERTIONS=false \
-	 -DCMAKE_C_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang \
-	 -DCMAKE_CXX_COMPILER=${HOME}/srv/aosp/${JOB_NAME}/clang+llvm-6.0.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++ \
-	 -DLIBCXXABI_LIBCXX_INCLUDES=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxx/include \
-	 -DLIBCXX_CXX_ABI_INCLUDE_PATHS=${HOME}/srv/aosp/${JOB_NAME}/llvm/projects/libcxxabi/include \
-	 -DLLVM_BINUTILS_INCDIR=${HOME}/srv/aosp/${JOB_NAME}/binutils/binutils-2.27/include \
-	 -DLLVM_LIBDIR_SUFFIX=64 \
-	 -DCLANG_LIBDIR_SUFFIX=64
+# And build it...
+python toolchain/llvm_android/build.py
 
-VERBOSE=1 ninja install
-mkdir -p clang-master/prebuilt_include/llvm/lib/Fuzzer
-cp -a ../projects/compiler-rt/lib/fuzzer/*.{h,def} clang-master/prebuilt_include/llvm/lib/Fuzzer/
-
-rm -f clang-master.tar.xz
-tar -I pxz -cf clang-master.tar.xz clang-master
+# Recompress output to save space
+mv out/*.tar.bz2 .
+bunzip2 *.tar.bz2
+xz -9ef *.tar
 
 echo "Build finished"
