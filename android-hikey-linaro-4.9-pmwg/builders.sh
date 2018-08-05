@@ -5,6 +5,18 @@ set -ex
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
 export PATH=${PATH}:${PWD}/aarch64-linux-android-4.9/bin/
 
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
+  echo "INFO: apt update error - try again in a moment"
+  sleep 15
+  sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
+fi
+pkg_list="python-pip openssl libssl-dev"
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
+  echo "INFO: apt install error - try again in a moment"
+  sleep 15
+  sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
+fi
+
 make ARCH=arm64 ${DEFCONFIG}
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) -s Image-dtb
 
