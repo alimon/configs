@@ -37,6 +37,15 @@ def parse_template(yaml_string):
     yaml.dump(yaml.load(yaml_string), output)
     return output.getvalue()
 
+def get_job_name(lava_job_string):
+    '''
+        In: yaml-formatted string
+        Out: LAVA job's name
+    '''
+    yaml = YAML()
+    lava_job = yaml.load(lava_job_string)
+    return lava_job['job_name']
+
 def _load_template(template_name, template_path, device_type):
     template = ''
     template_file_name = ''
@@ -70,7 +79,7 @@ def _submit_to_squad(lava_job, lava_url_base, qa_server_api, qa_server_base, qa_
         results = requests.post(qa_server_api, data=data, headers=headers,
                                 timeout=31)
         if results.status_code < 300:
-            print("%s/testjob/%s" % (qa_server_base, results.text))
+            print("%s/testjob/%s %s" % (qa_server_base, results.text, get_job_name(lava_job)))
         else:
             print(results.status_code)
             print(results.text)
