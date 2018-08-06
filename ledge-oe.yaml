@@ -1,0 +1,76 @@
+- job:
+    name: ledge-oe
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            ledge-oe:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+            linaro:
+                - job-build
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 10
+    parameters:
+        - string:
+            name: MACHINE
+            default: 'ledge-ti-am572x'
+        - string:
+            name: DISTRO
+            default: 'ledge-gw'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'master'
+        - string:
+            name: PUB_DEST
+            default: 'components/ledge/oe/${BUILD_NUMBER}'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+    disabled: false
+    node: docker-stretch-amd64
+    display-name: 'LEDGE OE build'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ledge/oe/builders.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: ledge/oe/publishers.sh
+        - shell:  |
+            #!/bin/bash
+
+            set -e
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            DEVICE_TYPE=x86
+
+            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
+                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
+                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
+                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
+                -e "s|\${GIT_URL}|${GIT_URL}|" \
+                -e "s|\${PUBLISH_SERVER}|${PUBLISH_SERVER}|" \
+                -e "s|\${PUB_DEST}|${PUB_DEST}|" \
+                < configs/ledge/oe/lava-job-definitions/${DEVICE_TYPE}/template-optee-xtest-qemu.yaml \
+                > custom_lava_job_definition.yaml
+
+            cat << EOF > post_build_lava_parameters
+            DEVICE_TYPE=${DEVICE_TYPE}
+            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
+            LAVA_SERVER=${LAVA_SERVER}
+            EOF
+        - trigger-builds:
+            - project: 'post-build-lava'
+              property-file: post_build_lava_parameters
+              block: true
