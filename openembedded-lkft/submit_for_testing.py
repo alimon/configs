@@ -170,7 +170,7 @@ def main():
     if args.dryrun:
         if not os.path.exists(output_path):
             os.mkdir(output_path)
-    if args.qa_token is None:
+    if args.qa_token is None and not args.dryrun:
         print("QA_REPORTS_TOKEN is missing")
         sys.exit(1)
 
