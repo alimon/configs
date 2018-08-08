@@ -67,7 +67,7 @@
             java -version
 
             sudo apt-get update
-            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz
+            sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz libssl-dev
 
             mkdir -p ${WORKSPACE}/out/
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${WORKSPACE}/out/BUILD-INFO.txt
@@ -85,7 +85,7 @@
             export KERNEL_DESCRIBE_4_14=$(git rev-parse --short HEAD)
             export CLANG_TRIPLE=aarch64-linux-gnu-
             export CROSS_COMPILE=aarch64-linux-android-
-            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.14/android-base.cfg configs/android-4.14/android-base-arm64.cfg
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.14/android-base.config configs/android-4.14/android-base-arm64.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug"
             python mkbootimg \
@@ -103,7 +103,7 @@
             git checkout android-hikey-linaro-4.9
             git pull
             export KERNEL_DESCRIBE_4_9=$(git rev-parse --short HEAD)
-            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/o-mr1/android-4.9/android-base.cfg configs/o-mr1/android-4.9/android-base-arm64.cfg
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/o-mr1/android-4.9/android-base.config configs/o-mr1/android-4.9/android-base-arm64.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
@@ -120,7 +120,7 @@
             git checkout android-hikey-linaro-4.4
             git pull
             export KERNEL_DESCRIBE_4_4=$(git rev-parse --short HEAD)
-            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/o-mr1/android-4.4/android-base.cfg configs/o-mr1/android-4.4/android-base-arm64.cfg
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/o-mr1/android-4.4/android-base.config configs/o-mr1/android-4.4/android-base-arm64.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
