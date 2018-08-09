@@ -1,0 +1,32 @@
+- job:
+    name: yocto-check-layer
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: BRANCH
+            default: 'master'
+        - string:
+            name: LAYER_URL
+            default: ''
+        - string:
+            name: LAYER_BRANCH
+            default: ''
+    disabled: false
+    node: docker-stretch-amd64
+    display-name: 'Yocto Project Compatible Program Check'
+    builders:
+        - shell:
+            !include-raw: yocto/check-layer.sh
