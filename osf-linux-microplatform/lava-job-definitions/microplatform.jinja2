@@ -1,0 +1,22 @@
+{% extends "master.jinja2" %}
+{% block global_settings %}
+timeouts:
+  job:
+    minutes: {% if job_timeout is defined %}{{ job_timeout }}{% else %}90{% endif %}
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+
+tags:
+  - static-ip
+{% endblock global_settings %}
+
+{% block priority %}{{LAVA_JOB_PRIORITY}}{% endblock priority %}
+{% block visibility %}personal{% endblock visibility %}
+
+{% block metadata %}
+metadata:
+  series: mircroplatform
+  build-url: {{BUILD_URL}}
+{% endblock metadata %}

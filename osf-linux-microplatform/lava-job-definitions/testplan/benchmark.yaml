@@ -1,0 +1,82 @@
+{% extends device_type %}
+
+{% set job_timeout = 180 %}
+
+{% block metadata %}
+  {{ super() }}
+  test scope: performance
+{% endblock metadata %}
+
+{% block job_name %}microplatform-{{IMAGES}}-build-{{BUILD_NUMBER}}-benchmark{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 120
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: linpack
+      parameters:
+        TEST: automated/linux/linpack/linpack.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        # The first test needs time to pull and extract docker image.
+        minutes: 30
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: lmbench-memory
+      parameters:
+        TEST: automated/linux/lmbench/lmbench-memory.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 10
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: stream-uniprocessor
+      parameters:
+        TEST: automated/linux/stream/stream-uniprocessor.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 10
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: iperf
+      parameters:
+        TEST: automated/linux/iperf/iperf.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 10
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: hackbench
+      parameters:
+        TEST: automated/linux/hackbench/hackbench.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 60
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: unixbench
+      parameters:
+        TEST: automated/linux/unixbench/unixbench.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 60
+{% endblock test_target %}

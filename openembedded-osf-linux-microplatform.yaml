@@ -20,6 +20,28 @@
         - string:
             name: PUB_DEST
             default: 'openembedded/${JOB_NAME}/${BUILD_NUMBER}'
+        - string:
+            name: IMAGES
+            default: 'lmp-gateway-image'
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'ledge'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'microplatform-prototype'
+        - string:
+            name: SKIP_LAVA
+            default: ''
+        - string:
+            name: LAVA_JOB_PRIORITY
+            default: 'medium'
+
     disabled: false
     node: docker-xenial-amd64
     display-name: 'OSF Linux Microplatform Builder'
@@ -35,6 +57,8 @@
             properties-file: post_build_lava_parameters
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
+        - shell:
+            !include-raw: osf-linux-microplatform/submit_for_testing.sh
     publishers:
         - trigger-parameterized-builds:
             - project:

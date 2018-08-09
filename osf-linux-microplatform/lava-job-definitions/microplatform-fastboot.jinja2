@@ -1,0 +1,51 @@
+{% extends "microplatform.jinja2" %}
+
+{% block global_settings %}
+{{ super() }}
+context:
+  test_character_delay: 10
+{% endblock global_settings %}
+
+{% block protocols %}
+protocols:
+  lava-lxc:
+    name: lxc-hikey-test
+    template: debian
+    distribution: debian
+    release: stretch
+    mirror: http://cdn-fastly.deb.debian.org/debian
+{% endblock protocols %}
+
+{% block actions %}
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 5
+    to: lxc
+    packages:
+      - fastboot
+      - sshpass
+    os: debian
+
+
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    timeout:
+      minutes: 5
+    method: lxc
+
+
+{% block deploy_target %}
+{% endblock deploy_target %}
+
+{% block boot_target %}
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}
+
+{% endblock actions %}

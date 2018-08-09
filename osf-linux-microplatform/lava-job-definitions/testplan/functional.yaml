@@ -1,0 +1,63 @@
+{% extends device_type %}
+
+{% set job_timeout = 90 %}
+
+{% block metadata %}
+  {{ super() }}
+  test scope: functional
+{% endblock metadata %}
+
+{% block job_name %}microplatform-{{IMAGES}}-build-{{BUILD_NUMBER}}-functional{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 60
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: smoke
+      parameters:
+        TEST: automated/linux/smoke/smoke.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        # The first test needs time to pull and extract docker image.
+        minutes: 30
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: toolchain-smoke
+      parameters:
+        TEST: automated/linux/toolchain-smoke/toolchain-smoke.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 10
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: toolchain-smoke-static
+      parameters:
+        TEST: automated/linux/toolchain-smoke/toolchain-smoke.yaml
+        TESTDEF_PARAMS: "STATIC='True'"
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 10
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: pointer-tagging
+      parameters:
+        TEST: automated/linux/pointer-tagging/pointer-tagging-tests.yaml
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 30
+{% endblock test_target %}

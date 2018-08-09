@@ -109,12 +109,19 @@ find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
 sed -i "s|${DEPLOY_DIR_IMAGE}/||" MD5SUMS.txt
 mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 
+BOOT_IMG="$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*.img" | sort | xargs -r basename)"
+ROOTFS_IMG="$(find ${DEPLOY_DIR_IMAGE} -type f -name "sparse-lmp-gateway-image*.otaimg" | xargs -r basename)"
+BASE_URL="http://snapshots.linaro.org"
+
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+DEPLOY_DIR_IMAGE="${DEPLOY_DIR_IMAGE}"
+BUILD_URL="${BASE_URL}/${PUB_DEST}/"
+BOOT_URL="${BUILD_URL}/${BOOT_IMG}"
+SYSTEM_URL="${BUILD_URL}/${ROOTFS_IMG}"
 EOF
 
 cat << EOF > ${WORKSPACE}/ota_params
-BUILD_URL=http://snapshots.linaro.org/${PUB_DEST}/
+BUILD_URL=${BASE_URL}/${PUB_DEST}/
 EOF
 
 # Build information
