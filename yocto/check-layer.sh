@@ -20,7 +20,7 @@ pip install --user --force-reinstall ruamel.yaml
 set -ex
 
 git clone --depth=1 https://git.yoctoproject.org/git/poky -b ${BRANCH}
-git clone --depth=1 ${LAYER_URL} -b ${LAYER_BRANCH} layer
+git clone --depth=1 ${LAYER_URL} -b ${LAYER_BRANCH:-$BRANCH} layer
 
 cd poky
 source oe-init-build-env
