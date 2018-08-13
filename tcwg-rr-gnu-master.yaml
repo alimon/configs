@@ -83,16 +83,14 @@
             #!/bin/bash
             set -e
             echo "=== Print out environment for debug purposes ==="
-            env
+            env | grep "GERRIT\|GIT"
             echo "=== Environment end  ==="
             rm -rf prev_artifacts
         - copyartifact:
             project: tcwg-rr-gnu-master
             target: prev_artifacts
             optional: true
-            #which-build: last-successful
-            which-build: specific-build
-            build-number: "9"
+            which-build: last-successful
         - shell: |
             #!/bin/bash
             set -ex
