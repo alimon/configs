@@ -66,10 +66,10 @@
             description: |
                 <b>[MANDATORY]</b> Kernel repository URL
         - string:
-            name: KERNEL_BRANCH
+            name: KERNEL_REV
             default: 'master'
             description: |
-                <b>[MANDATORY]</b> Kernel branch
+                <b>[MANDATORY]</b> Kernel branch or commit ID to checkout
         - choice:
             name: TARGET_MACHINE
             choices:
@@ -89,13 +89,6 @@
                   - x86_64_defconfig on x86<br>
                 An URL pointing to the config can be used as well.<br/>
                 Note: an additional config fragment is added to ensure systemd is functional
-        - string:
-            name: KERNEL_COMMIT
-            default: ''
-            description: |
-                <b>[OPTIONAL]</b> Kernel commit<br>
-                If ommited TIP will be used<br>
-                e.g.: 0adb32858b0bddf4ada5f364a84ed60b196dbcda
         - string:
             name: TEST_SUITES
             default: 'none'
@@ -152,7 +145,6 @@
             cat << EOF > ${WORKSPACE}/custom-kernel-info.inc.tmp
             KERNEL_COMMIT = "${KERNEL_SRCREV}"
             KERNEL_REPO = "${KERNEL_REPO/http*:/git:}"
-            KERNEL_BRANCH = "${KERNEL_BRANCH}"
             KERNEL_CONFIG_aarch64 = "${KERNEL_CONFIG}"
             KERNEL_CONFIG_arm = "${KERNEL_CONFIG}"
             KERNEL_CONFIG_x86-64 = "${KERNEL_CONFIG}"
@@ -202,13 +194,13 @@
         - email-ext:
             recipients: 'daniel.diaz@linaro.org'
             matrix-trigger: only-configurations
-            subject: '[CI] Developer/${KERNEL_BRANCH}: ${BUILD_STATUS}'
+            subject: '[CI] Developer/${KERNEL_DESCRIBE}: ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Log: ${PROJECT_URL}${BUILD_NUMBER}/console
                 Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
                 Git URL: ${KERNEL_REPO}
-                Git branch: ${KERNEL_BRANCH}
+                Git describe: ${KERNEL_DESCRIBE}
                 Git commit: ${KERNEL_COMMIT}
 
                 Errors:

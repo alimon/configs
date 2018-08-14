@@ -243,7 +243,6 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "kernel_repo" : "${KERNEL_REPO}",
   "kernel_commit_id" : "${KERNEL_COMMIT}",
   "make_kernelversion" : "${MAKE_KERNELVERSION}",
-  "kernel_branch" : "${KERNEL_BRANCH}",
   "kernel_describe" : "${KERNEL_DESCRIBE}",
   "build_location" : "${BASE_URL}/${PUB_DEST}"
   "kselftest_mainline_url" : "${KSELFTESTS_MAINLINE_URL}",

@@ -2,9 +2,7 @@
 
 # Variables needed here:
 #  KERNEL_REPO         A clonable Git repository.
-#  KERNEL_BRANCH       The branch to checkout.
-#  KERNEL_COMMIT       (Optional) A commit to go to. This is
-#                      assumed to be part of the KERNE_BRANCH.
+#  KERNEL_REV          The branch or commit ID to checkout.
 #
 # This will create a file named ${WORKSPACE}/linux_versions
 # that can then be injected into the environment. The contents
@@ -23,11 +21,7 @@ git remote add torvalds https://github.com/torvalds/linux.git
 git remote add linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
 git remote add linux-stable-rc https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
 git fetch --multiple torvalds linux-stable linux-stable-rc
-git checkout "origin/${KERNEL_BRANCH}"
-if [ "${KERNEL_COMMIT}" ]; then
-  git reset --hard "${KERNEL_COMMIT}"
-fi
-
+git checkout "${KERNEL_REV}"
 GIT_COMMIT="$(git rev-parse HEAD)"
 
 MAKE_KERNELVERSION="$(make kernelversion)"
