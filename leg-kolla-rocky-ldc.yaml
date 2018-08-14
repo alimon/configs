@@ -1,0 +1,66 @@
+- job:
+    name: leg-kolla
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: DEVCLOUD
+            default: '1'
+            description: 'build images for developer cloud'
+        - string:
+            name: DEVCLOUD_EXTRA_PATCHES
+            default: ''
+            description: "comma separated list of patches ids to apply to the ldc branch not merged into master"
+        - string:
+            name: BRANCH
+            default: 'master'
+            description: 'branch to use'
+        - string:
+            name: THREADS_OPT
+            default: '24'
+            description: 'number of threads (default: 24)'
+        - string:
+            name: RETRIES_OPT
+            default: '3'
+            description: 'number of retries (default: 3)'
+    disabled: false
+    node: leg-aarch64
+    concurrent: false
+    display-name: 'LEG Kolla images build (Rocky images for Linaro Developer Cloud)'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell:
+            !include-raw: leg-kolla/build.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: leg-kolla/publishers.sh
+        - trigger-builds:
+            - project:
+                - 'leg-kolla-push-images'
+              property-file: "push.parameters"
+    publishers:
+        - archive:
+            artifacts: 'push.parameters'
+        - email:
+            recipients: 'marcin.juszkiewicz@linaro.org gema.gomez-solano@linaro.org jorge.niedbalski@linaro.org'

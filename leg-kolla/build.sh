@@ -8,31 +8,30 @@ kolla_ldc_extras=${DEVCLOUD_EXTRA_PATCHES}
 kolla_options=
 
 if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
-    kolla_branch=master
-    kolla_tag=rocky-${BUILD_NUMBER}
+    branch="rocky"
 else
-    if [ -z "${kolla_ldc}" ]; then
-        kolla_tag=queens-${BUILD_NUMBER}
-    else
-        patches_count=0
-        if [ ! -z ${kolla_ldc_extras} ]; then
-            patches_count=$(echo ${kolla_ldc_extras} | tr ',' ' ' | wc -w)
-        fi
-
-        if [ "${patches_count}" -eq "0" ]; then
-            kolla_tag=ldc-queens-${BUILD_NUMBER}
-        else
-            kolla_tag=ldc-queens-${BUILD_NUMBER}-p${patches_count}
-        fi
-
-        kolla_options="--template-override ../Linaro-overlay/linaro-override.j2"
-    fi
+    branch="queens"
 fi
-
-kolla_profile="linaro"
 
 if [ ! -z "${kolla_ldc}" ]; then
     kolla_profile="devcloud"
+
+    patches_count=0
+    if [ ! -z ${kolla_ldc_extras} ]; then
+        patches_count=$(echo ${kolla_ldc_extras} | tr ',' ' ' | wc -w)
+    fi
+
+    if [ "${patches_count}" -eq "0" ]; then
+        kolla_tag=ldc-${branch}-${BUILD_NUMBER}
+    else
+        kolla_tag=ldc-${branch}-${BUILD_NUMBER}-p${patches_count}
+    fi
+
+    kolla_options="--template-override ../Linaro-overlay/linaro-override.j2"
+
+else
+    kolla_profile="linaro"
+    kolla_tag=${branch}-${BUILD_NUMBER}
 fi
 
 set -ex
