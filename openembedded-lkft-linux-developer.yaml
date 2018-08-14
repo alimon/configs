@@ -22,6 +22,43 @@
             days-to-keep: 30
             num-to-keep: 30
             artifact-num-to-keep: 1
+    description: |
+        <h1>LKFT Developer Build</h1>
+        <p>This Jenkins job can build your <b>kernel</b> along with the rest of the
+          <b>OpenEmbedded</b> filesystem. It will be <b>published</b> automatically
+          and can be <b>tested</b> the same way <b>LKFT</b> runs on the regular
+          builds.</p>
+        <p>You can compare your test results with existing runs on actual hardware:
+           <b>arm (X15)</b>, <b>arm64 (HiKey)</b> and <b>x86_64 (Xeon
+           E3-1220)</b></p>
+        <p>This is more or less how it goes:
+          <ul>
+            <li>Jenkins will have the kernel and filesystem built here.</li>
+            <li>The filesystem, kernel, and all other artifacts will be published
+              in the snapshots server.</li>
+            <li>If so desired, Jenkins will pass this information along to the
+              qa-reports server, which will in turn send it to LAVA.</li>
+            <li>Once test jobs complete in LAVA, test results will get
+              consolidated in the qa-reports server.</li>
+          </ul>
+        </p>
+        <p>Links will appear on your build job to point to:
+          <ul>
+            <li>the published artifacts</li>
+            <li>each and every one of the tests submitted</li>
+          </ul>
+        </p>
+        <p>You can start by clicking on <b>Build with Parameters</b>, right here on the left
+        pane. Just provide a kernel (Git repo and revision) and we'll take care
+          of the rest!</p>
+        <p>Note that these config fragments are added to your defconfig:
+          <ul>
+            <li><a href="https://github.com/96boards/meta-96boards/blob/master/recipes-kernel/linux/linux-hikey-aosp/distro-overrides.config">distro</a></li>
+            <li><a href="https://github.com/96boards/meta-96boards/blob/master/recipes-kernel/linux/linux-hikey-aosp/systemd.config">systemd</a></li>
+            <li><a href="https://github.com/96boards/meta-96boards/blob/master/recipes-kernel/linux/linux-hikey-aosp/lkft.config">lkft</a></li>
+            <li><a href="https://github.com/torvalds/linux/blob/master/Makefile#L1182">kselftest-merge</a></li>
+          </ul>
+        </p>
     parameters:
         - string:
             name: KERNEL_REPO
@@ -40,10 +77,10 @@
                 - 'x15'
                 - 'x86'
             description: |
-                <b>[MANDATORY]</b> Target machine. Can be HiKey (arm64), X15 (arm), or x86 (x86_64).
+                <b>[MANDATORY]</b> Target machine. Can be hikey (arm64), x15 (arm), or x86 (x86_64).
         - string:
             name: KERNEL_CONFIG
-            default: 'defconfig'
+            default: ''
             description: |
                 <b>[OPTIONAL]</b> Kernel config<br>
                 If ommited the default kernel config will use<br>
