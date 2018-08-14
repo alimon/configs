@@ -27,7 +27,7 @@ if [ ! -z "${kolla_ldc}" ]; then
         kolla_tag=ldc-${branch}-${BUILD_NUMBER}-p${patches_count}
     fi
 
-    kolla_options="--template-override ../Linaro-overlay/linaro-override.j2"
+    kolla_options="--template-override ../Linaro-overlay/linaro-override-${branch}.j2"
 
 else
     kolla_profile="linaro"
