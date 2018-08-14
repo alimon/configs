@@ -85,7 +85,11 @@
             echo "=== Print out environment for debug purposes ==="
             env | grep "GERRIT\|GIT"
             echo "=== Environment end  ==="
+            echo "#$BUILD_NUMBER-$(basename $GERRIT_PROJECT)" > build_name.txt
             rm -rf prev_artifacts
+        - build-name-setter:
+            name: 'build_name.txt'
+            file: true
         - copyartifact:
             project: tcwg-rr-gnu-master
             target: prev_artifacts
