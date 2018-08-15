@@ -1,0 +1,97 @@
+- job:
+    name: tcwg-rr-llvm-kernel-aarch64
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - choice:
+            name: current_project
+            choices:
+                - llvm
+                - clang
+                - linux
+            description: 'Project to build'
+        - string:
+            name: ref
+            default: master
+            description: "Git ref of $project to build"
+        - string:
+            name: distro
+            default: xenial
+            description: 'Distro image to use'
+        - string:
+            name: scripts_branch
+            default: llvm-kernel
+            description: 'Scripts revision to use'
+    disabled: false
+    node: tcwg-d05_64-build
+    concurrent: false
+    display-name: 'TCWG RR LLVM + Linux-next @ AArch64'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - $scripts_branch
+            basedir: jenkins-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -e
+            echo "=== Print out environment for debug purposes ==="
+            env | grep "GERRIT\|GIT"
+            echo "=== Environment end  ==="
+            echo "#$BUILD_NUMBER-$project" > build_name.txt
+            rm -rf prev_artifacts
+        - build-name-setter:
+            name: 'build_name.txt'
+            file: true
+        - copyartifact:
+            project: tcwg-rr-llvm-kernel-aarch64
+            target: prev_artifacts
+            optional: true
+            which-build: last-successful
+        - shell: |
+            #!/bin/bash
+            set -ex
+            ./jenkins-scripts/docker-run.sh --distro $distro -- \
+            ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
+            --arch "aarch64" \
+            --project "$project" \
+            --ref "$ref" \
+            --verbose true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-next
+            steps:
+              - trigger-builds:
+                  - project: tcwg-rr-llvm-kernel-aarch64
+                    predefined-parameters: |
+                      project=$project
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
