@@ -86,24 +86,24 @@
                   --current_project "$current_project" \
                   --ref "$ref" \
                   --verbose true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/distance-to-master
-            steps:
-              - shell: |
-                  #!/bin/bash
-                  echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/distance-to-master)" > build-name
-              - build-name-setter:
-                  name: 'build-name'
-                  file: true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-next
-            steps:
-              - trigger-builds:
-                  - project: tcwg-rr-llvm-kernel-aarch64
-                    predefined-parameters: |
-                      project=$project
+              - conditional-step:
+                  condition-kind: file-exists
+                  condition-filename: artifacts/distance-to-master
+                  steps:
+                    - shell: |
+                        #!/bin/bash
+                        echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/distance-to-master)" > build-name
+                    - build-name-setter:
+                        name: 'build-name'
+                        file: true
+              - conditional-step:
+                  condition-kind: file-exists
+                  condition-filename: artifacts/trigger-next
+                  steps:
+                    - trigger-builds:
+                        - project: tcwg-rr-llvm-kernel-aarch64
+                          predefined-parameters: |
+                            project=$project
     publishers:
         - archive:
             artifacts: 'artifacts/**'
