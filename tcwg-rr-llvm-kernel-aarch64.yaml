@@ -64,10 +64,10 @@
             echo "=== Print out environment for debug purposes ==="
             env | grep "GERRIT\|GIT"
             echo "=== Environment end  ==="
-            echo "#$BUILD_NUMBER-$current_project" > build_name.txt
+            echo "#$BUILD_NUMBER-$current_project" > build-name
             rm -rf prev_artifacts
         - build-name-setter:
-            name: 'build_name.txt'
+            name: 'build-name'
             file: true
         - copyartifact:
             project: tcwg-rr-llvm-kernel-aarch64
@@ -77,7 +77,7 @@
         - conditional-step:
             condition-kind: always
             steps:
-              - shell:
+              - shell: |
                   #!/bin/bash
                   set -ex
                   ./jenkins-scripts/docker-run.sh --distro $distro -- \
@@ -86,6 +86,16 @@
                   --current_project "$current_project" \
                   --ref "$ref" \
                   --verbose true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/distance-to-master
+            steps:
+              - shell: |
+                  #!/bin/bash
+                  echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/distance-to-master)" > build-name
+              - build-name-setter:
+                  name: 'build-name'
+                  file: true
         - conditional-step:
             condition-kind: file-exists
             condition-filename: artifacts/trigger-next
