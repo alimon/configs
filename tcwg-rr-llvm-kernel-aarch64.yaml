@@ -74,36 +74,38 @@
             target: prev_artifacts
             optional: true
             which-build: last-successful
+        - shell: |
+            #!/bin/bash
+            set -ex
+            ./jenkins-scripts/docker-run.sh --distro $distro -- \
+            ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
+            --arch "aarch64" \
+            --current_project "$current_project" \
+            --ref "$ref" \
+            --verbose true || echo "BUILD FAILED"
         - conditional-step:
-            condition-kind: always
+            condition-kind: file-exists
+            condition-filename: artifacts/distance-to-master
             steps:
               - shell: |
                   #!/bin/bash
-                  set -ex
-                  ./jenkins-scripts/docker-run.sh --distro $distro -- \
-                  ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
-                  --arch "aarch64" \
-                  --current_project "$current_project" \
-                  --ref "$ref" \
-                  --verbose true
-              - conditional-step:
-                  condition-kind: file-exists
-                  condition-filename: artifacts/distance-to-master
-                  steps:
-                    - shell: |
-                        #!/bin/bash
-                        echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/distance-to-master)" > build-name
-                    - build-name-setter:
-                        name: 'build-name'
-                        file: true
-              - conditional-step:
-                  condition-kind: file-exists
-                  condition-filename: artifacts/trigger-next
-                  steps:
-                    - trigger-builds:
-                        - project: tcwg-rr-llvm-kernel-aarch64
-                          predefined-parameters: |
-                            project=$project
+                  echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/distance-to-master)" > build-name
+              - build-name-setter:
+                  name: 'build-name'
+                  file: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-next
+            steps:
+              - trigger-builds:
+                  - project: tcwg-rr-llvm-kernel-aarch64
+                    predefined-parameters: |
+                      project=$project
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/failures
+            steps:
+              - shell: "exit 1"
     publishers:
         - archive:
             artifacts: 'artifacts/**'
