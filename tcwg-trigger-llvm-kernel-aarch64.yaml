@@ -86,10 +86,15 @@
             rm -f trigger-*
             for url in $GIT_URL $GIT_URL_1 GIT_URL_2; do
               case "$(basename $url)" in
-                llvm) echo "current_project=llvm" > trigger-llvm ;;
-                clang) echo "current_project=clang" > trigger-clang ;;
-                linux*) echo "current_project=linux" > trigger-linux ;;
+                llvm) dir=llvm ;;
+                clang) dir=llvm/tools/clang ;;
+                linux*) dir=linux ;;
               esac
+              if [ x"$(git -C $dir branch --list --remotes --contains HEAD origin/linaro-local/ci/llvm-kernel-aarch64-tested)" != x"" ]; then
+                continue
+              fi
+              project=$(basename $dir)
+              echo "current_project=$project" > trigger-$project
             done
             echo "Going to trigger:"
             ls trigger-*
