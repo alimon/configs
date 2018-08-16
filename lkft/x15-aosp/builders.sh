@@ -51,8 +51,8 @@ export CROSS_COMPILE=arm-eabi-
 export ARCH=arm
 cd kernel/ti/x15/
 export KERNELDIR=${PWD}
-./ti_config_fragments/defconfig_builder.sh -t ti_sdk_dra7x_android_release
-make ti_sdk_dra7x_android_release
+./ti_config_fragments/defconfig_builder.sh -t ti_sdk_am57x_android_release
+make ti_sdk_am57x_android_release_defconfig
 make -j$(nproc) zImage dtbs modules
 cd ../../../
 
