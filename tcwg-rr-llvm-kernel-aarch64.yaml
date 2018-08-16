@@ -85,11 +85,11 @@
             --verbose true || echo "BUILD FAILED"
         - conditional-step:
             condition-kind: file-exists
-            condition-filename: artifacts/distance-to-master
+            condition-filename: artifacts/distance-to-good
             steps:
               - shell: |
                   #!/bin/bash
-                  echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/distance-to-master)" > build-name
+                  echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/distance-to-good)" > build-name
               - build-name-setter:
                   name: 'build-name'
                   file: true
