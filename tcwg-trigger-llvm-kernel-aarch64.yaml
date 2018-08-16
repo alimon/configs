@@ -81,9 +81,18 @@
             set -e
             echo "=== Print out environment for debug purposes ==="
             env | grep "GIT"
-            env
             echo "=== Environment end  ==="
-            echo "#$BUILD_NUMBER" > build-name
-        - build-name-setter:
-            name: 'build-name'
-            file: true
+            set -x
+            rm -f trigger-*
+            for url in $GIT_URL $GIT_URL_1 GIT_URL_2; do
+              case "$(basename $url)" in
+                llvm) echo "current_project=llvm" > trigger-llvm ;;
+                clang) echo "current_project=clang" > trigger-clang ;;
+                linux*) echo "current_project=linux" > trigger-linux ;;
+              esac
+            done
+        - trigger-builds:
+            - project: tcwg-rr-llvm-kernel-aarch64
+              parameter-factories:
+                - factory: filebuild
+                  file-pattern: trigger-*
