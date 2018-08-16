@@ -64,7 +64,7 @@
             echo "=== Print out environment for debug purposes ==="
             env | grep "GERRIT\|GIT"
             echo "=== Environment end  ==="
-            echo "#$BUILD_NUMBER-$project" > build_name.txt
+            echo "#$BUILD_NUMBER-$current_project" > build_name.txt
             rm -rf prev_artifacts
         - build-name-setter:
             name: 'build_name.txt'
@@ -74,15 +74,18 @@
             target: prev_artifacts
             optional: true
             which-build: last-successful
-        - shell: |
-            #!/bin/bash
-            set -ex
-            ./jenkins-scripts/docker-run.sh --distro $distro -- \
-            ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
-            --arch "aarch64" \
-            --project "$project" \
-            --ref "$ref" \
-            --verbose true
+        - conditional-step:
+            condition-kind: always
+            steps:
+              - shell:
+                  #!/bin/bash
+                  set -ex
+                  ./jenkins-scripts/docker-run.sh --distro $distro -- \
+                  ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
+                  --arch "aarch64" \
+                  --current_project "$current_project" \
+                  --ref "$ref" \
+                  --verbose true
         - conditional-step:
             condition-kind: file-exists
             condition-filename: artifacts/trigger-next
