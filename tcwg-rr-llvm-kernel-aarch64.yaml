@@ -18,12 +18,11 @@
             name: current_project
             choices:
                 - llvm
-                - clang
                 - linux
             description: 'Project to build'
         - string:
             name: ref
-            default: master
+            default: master%1000
             description: "Git ref of $project to build"
         - string:
             name: distro
@@ -31,7 +30,7 @@
             description: 'Distro image to use'
         - string:
             name: scripts_branch
-            default: llvm-kernel
+            default: llvm-kernel-v2
             description: 'Scripts revision to use'
     disabled: false
     node: tcwg-d05_64-build
@@ -79,10 +78,11 @@
             set -ex
             ./jenkins-scripts/docker-run.sh --distro $distro -- \
             ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
+            --mode "jenkins-builder" \
             --arch "aarch64" \
             --current_project "$current_project" \
             --ref "$ref" \
-            --verbose true || echo "BUILD FAILED"
+            --verbose true
         - conditional-step:
             condition-kind: file-exists
             condition-filename: artifacts/distance-to-good
@@ -93,20 +93,29 @@
               - build-name-setter:
                   name: 'build-name'
                   file: true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-next
-            steps:
-              - trigger-builds:
-                  - project: tcwg-rr-llvm-kernel-aarch64
-                    predefined-parameters: |
-                      current_project=$current_project
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/failures
-            steps:
-              - shell: "exit 1"
     publishers:
+        - postbuildscript:
+            builders:
+              - shell: |
+                  #!/bin/bash
+                  set -ex
+                  ./jenkins-scripts/docker-run.sh --distro $distro -- \
+                  ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
+                  --mode "jenkins-publisher" \
+                  --arch "aarch64" \
+                  --current_project "$current_project" \
+                  --ref "$ref" \
+                  --verbose true
+        - conditional-publisher:
+            - condition-kind: file-exists
+              condition-filename: artifacts/trigger-next
+              action:
+                - postbuildscript:
+                    builders:
+                      - trigger-builds:
+                          - project: tcwg-rr-llvm-kernel-aarch64
+                            predefined-parameters: |
+                              current_project=$current_project
         - archive:
             artifacts: 'artifacts/**'
             latest-only: false
