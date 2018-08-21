@@ -82,7 +82,17 @@
             --arch "aarch64" \
             --current_project "$current_project" \
             --ref "$ref" \
-            --verbose true
+            --verbose true || true
+        - shell: |
+            #!/bin/bash
+            set -ex
+            ./jenkins-scripts/docker-run.sh --distro $distro -- \
+            ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
+            --mode "jenkins-publisher" \
+            --arch "aarch64" \
+            --current_project "$current_project" \
+            --ref "$ref" \
+            --verbose true || true
         - conditional-step:
             condition-kind: file-exists
             condition-filename: artifacts/distance-to-good
@@ -93,31 +103,22 @@
               - build-name-setter:
                   name: 'build-name'
                   file: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-next
+            steps:
+              - trigger-builds:
+                  - project: tcwg-rr-llvm-kernel-aarch64
+                    predefined-parameters: |
+                      current_project=$current_project
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/failures
+            steps:
+              - shell: |
+                  #!/bin/bash
+                  exit 1
     publishers:
-        - postbuildscript:
-            builders:
-              - build-steps:
-                  - shell: |
-                      #!/bin/bash
-                      set -ex
-                      ./jenkins-scripts/docker-run.sh --distro $distro -- \
-                      ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
-                      --mode "jenkins-publisher" \
-                      --arch "aarch64" \
-                      --current_project "$current_project" \
-                      --ref "$ref" \
-                      --verbose true
-        - conditional-publisher:
-            - condition-kind: file-exists
-              condition-filename: artifacts/trigger-next
-              action:
-                - postbuildscript:
-                    builders:
-                      - build-steps:
-                          - trigger-builds:
-                              - project: tcwg-rr-llvm-kernel-aarch64
-                                predefined-parameters: |
-                                  current_project=$current_project
         - archive:
             artifacts: 'artifacts/**'
             latest-only: false
