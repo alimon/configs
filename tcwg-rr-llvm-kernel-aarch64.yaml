@@ -86,6 +86,9 @@
         - shell: |
             #!/bin/bash
             set -ex
+            if [ -e artifacts/failures ]; then
+              exit 0
+            fi
             ./jenkins-scripts/docker-run.sh --distro $distro -- \
             ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
             --mode "jenkins-publisher" \
