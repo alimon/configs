@@ -20,7 +20,7 @@
             description: 'Release number. Ex. 4.0.1'
         - string:
             name: candidate
-            default: ''
+            default: 'trunk'
             description: 'RC number. Ex. 1, 2, final'
         - string:
             name: toolchain
@@ -61,6 +61,8 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
+    triggers:
+        - timed: '@weekly'
     axes:
         - axis:
             type: slave
