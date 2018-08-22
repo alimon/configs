@@ -22,7 +22,7 @@
             description: 'Project to build'
         - string:
             name: ref
-            default: master%1000
+            default: master%10000
             description: "Git ref of $project to build"
         - string:
             name: baseline
@@ -142,7 +142,7 @@
             file: true
         - conditional-step:
             condition-kind: file-exists
-            condition-filename: artifacts/trigger-next
+            condition-filename: artifacts/trigger-next-*
             steps:
               - trigger-builds:
                   - project: tcwg-rr-llvm-kernel-aarch64
