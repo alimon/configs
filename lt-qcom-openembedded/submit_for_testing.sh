@@ -63,23 +63,7 @@ case "${MACHINE}" in
             --git-commit ${BUILD_NUMBER} \
             --template-path configs/lt-qcom/lava-job-definitions \
             --template-base-pre base_template.yaml \
-            --template-names template.yaml template-wifi.yaml template-bt.yaml template-ptest.yaml template-stress.yaml
-
-        export ROOTFS_URL=${ROOTFS_DESKTOP_SPARSE_BUILD_URL}
-        export ROOTFS_URL_COMP="gz"
-        export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
-        python configs/openembedded-lkft/submit_for_testing.py \
-            --device-type ${DEVICE_TYPE} \
-            --build-number ${BUILD_NUMBER} \
-            --lava-server ${LAVA_SERVER} \
-            --qa-server ${QA_SERVER} \
-            --qa-server-team qcomlt \
-            --qa-server-project openembedded-rpb-${MANIFEST_BRANCH} \
-            --env-suffix="-${DISTRO}" \
-            --git-commit ${BUILD_NUMBER} \
-            --template-path configs/lt-qcom/lava-job-definitions \
-            --template-base-pre base_template.yaml \
-            --template-names template-desktop.yaml template-gst-validate.yaml
+            --template-names template.yaml template-wifi.yaml template-bt.yaml
       ;;
       rpb-wayland)
         echo "Currently no tests for rpb-wayland"
