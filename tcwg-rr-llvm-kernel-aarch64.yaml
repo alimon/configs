@@ -68,19 +68,20 @@
             echo "=== Print out environment for debug purposes ==="
             env | grep "GERRIT\|GIT"
             echo "=== Environment end  ==="
+            set -x
             echo "#$BUILD_NUMBER-$current_project" > build-name
-            rm -rf prev_artifacts
+            rm -rf prev_artifacts*
             case "$baseline" in
-              last-successful) touch artifacts-last-successful ;;
-              none) touch artifacts-none ;;
-              *) touch artifacts-specific-build ;;
+              last-successful) touch prev_artifacts-last-successful ;;
+              none) touch prev_artifacts-none ;;
+              *) touch prev_artifacts-specific-build ;;
             esac
         - build-name-setter:
             name: 'build-name'
             file: true
         - conditional-step:
             condition-kind: file-exists
-            condition-filename: artifacts-last-successful
+            condition-filename: prev_artifacts-last-successful
             steps:
               - copyartifact:
                   project: tcwg-rr-llvm-kernel-aarch64
@@ -89,7 +90,7 @@
                   which-build: last-successful
         - conditional-step:
             condition-kind: file-exists
-            condition-filename: artifacts-specific-build
+            condition-filename: prev_artifacts-specific-build
             steps:
               - copyartifact:
                   project: tcwg-rr-llvm-kernel-aarch64
@@ -99,7 +100,7 @@
                   build-number: ${ENV,var="baseline"}
         - conditional-step:
             condition-kind: file-exists
-            condition-filename: artifacts-none
+            condition-filename: prev_artifacts-none
             steps:
               - shell: |
                   echo "Building without baseline"
