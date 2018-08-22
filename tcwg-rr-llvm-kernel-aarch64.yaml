@@ -23,7 +23,11 @@
         - string:
             name: current_rev
             default: master%10
-            description: "Git rev of $project to build"
+            description: "Git rev of $current_project to build"
+        - string:
+            name: base_rev
+            default: default
+            description: "Base git rev of $current_project to build, make sense only with %N current_rev; default means tested branch"
         - string:
             name: baseline
             default: last-successful
@@ -110,6 +114,7 @@
             ./jenkins-scripts/docker-run.sh --distro $distro -- \
             ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
             --mode "jenkins-builder" \
+            --base_rev "$base_rev" \
             --current_project "$current_project" \
             --current_rev "$current_rev" \
             --verbose true || true
@@ -122,6 +127,7 @@
             ./jenkins-scripts/docker-run.sh --distro $distro -- \
             ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
             --mode "jenkins-publisher" \
+            --base_rev "$base_rev" \
             --current_project "$current_project" \
             --current_rev "$current_rev" \
             --verbose true || true
