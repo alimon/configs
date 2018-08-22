@@ -137,20 +137,23 @@
               name="$name-R$(cat artifacts/distance-to-ref)"
             fi
             if [ -e artifacts/distance-to-tested ]; then
-              name="$name-G$(cat artifacts/distance-to-tested)"
+              name="$name-T$(cat artifacts/distance-to-tested)"
             fi
             echo "$name" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
         - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-next-*
+            condition-kind: file-match
+            include-pattern:
+              - "trigger-next-*"
+            condition-basedir: artifact-directory
             steps:
               - trigger-builds:
                   - project: tcwg-rr-llvm-kernel-aarch64
-                    predefined-parameters: |
-                      current_project=$current_project
+                    parameter-factories:
+                      - factory: filebuild
+                        file-pattern: artifacts/trigger-next-*
         - conditional-step:
             condition-kind: file-exists
             condition-filename: artifacts/failures
