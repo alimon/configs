@@ -97,16 +97,19 @@
             --current_project "$current_project" \
             --ref "$ref" \
             --verbose true || true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/distance-to-good
-            steps:
-              - shell: |
-                  #!/bin/bash
-                  echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/distance-to-good)" > build-name
-              - build-name-setter:
-                  name: 'build-name'
-                  file: true
+        - shell: |
+            #!/bin/bash
+            name="#$BUILD_NUMBER-$current_project"
+            if [ -e artifacts/distance-to-good ]; then
+              name="$name-G$(cat artifacts/distance-to-good)"
+            fi
+            if [ -e artifacts/distance-to-ref ]; then
+              name="$name-R$(cat artifacts/distance-to-ref)"
+            fi
+            echo "$name" > build-name
+        - build-name-setter:
+            name: 'build-name'
+            file: true
         - conditional-step:
             condition-kind: file-exists
             condition-filename: artifacts/trigger-next
