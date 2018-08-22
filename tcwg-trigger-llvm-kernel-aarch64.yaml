@@ -74,11 +74,7 @@
             echo "=== Environment end  ==="
             set -x
             rm -f trigger-*
-            for url in $GIT_URL_1 $GIT_URL_1_1; do
-              case "$(basename $url)" in
-                llvm*) dir=llvm ;;
-                linux*) dir=linux ;;
-              esac
+            for dir in llvm linux; do
               if [ x"$(git -C $dir branch --list --remotes --contains HEAD gerrit/linaro-local/ci/llvm-kernel-aarch64-tested)" != x"" ]; then
                 continue
               fi
