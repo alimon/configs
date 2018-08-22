@@ -21,9 +21,9 @@
                 - linux
             description: 'Project to build'
         - string:
-            name: ref
-            default: master%10000
-            description: "Git ref of $project to build"
+            name: current_rev
+            default: master%10
+            description: "Git rev of $project to build"
         - string:
             name: baseline
             default: last-successful
@@ -112,7 +112,7 @@
             --mode "jenkins-builder" \
             --arch "aarch64" \
             --current_project "$current_project" \
-            --ref "$ref" \
+            --current_rev "$current_rev" \
             --verbose true || true
         - shell: |
             #!/bin/bash
@@ -125,7 +125,7 @@
             --mode "jenkins-publisher" \
             --arch "aarch64" \
             --current_project "$current_project" \
-            --ref "$ref" \
+            --current_rev "$current_rev" \
             --verbose true || true
         - shell: |
             #!/bin/bash
@@ -133,8 +133,8 @@
             if [ -e artifacts/distance-to-good ]; then
               name="$name-G$(cat artifacts/distance-to-good)"
             fi
-            if [ -e artifacts/distance-to-ref ]; then
-              name="$name-R$(cat artifacts/distance-to-ref)"
+            if [ -e artifacts/distance-to-rev ]; then
+              name="$name-R$(cat artifacts/distance-to-rev)"
             fi
             if [ -e artifacts/distance-to-tested ]; then
               name="$name-T$(cat artifacts/distance-to-tested)"
