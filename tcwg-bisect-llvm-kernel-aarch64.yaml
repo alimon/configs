@@ -1,5 +1,5 @@
 - job:
-    name: tcwg-rr-llvm-kernel-aarch64
+    name: tcwg-bisect-llvm-kernel-aarch64
     project-type: freestyle
     defaults: global
     properties:
@@ -19,15 +19,15 @@
             choices:
                 - llvm
                 - linux
-            description: 'Project to build'
+            description: 'Project to bisect'
         - string:
-            name: current_rev
-            default: master
-            description: "Git rev of $current_project to build"
+            name: good_rev
+            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-aarch64-good
+            description: "Good revision"
         - string:
-            name: base_rev
-            default: default
-            description: "Base git rev of $current_project to build, make sense only with %N current_rev; default means tested branch"
+            name: bad_rev
+            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-aarch64-tested
+            description: "Bad revision"
         - string:
             name: baseline
             default: last-successful
@@ -43,7 +43,7 @@
     disabled: false
     node: tcwg-d05_64-build
     concurrent: false
-    display-name: 'TCWG RR LLVM + Linux-next @ AArch64'
+    display-name: 'TCWG Bisect LLVM + Linux-next @ AArch64'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
@@ -112,58 +112,16 @@
             #!/bin/bash
             set -ex
             ./jenkins-scripts/docker-run.sh --distro $distro -- \
-            ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
-            --mode "jenkins-builder" \
-            --base_rev "$base_rev" \
+            ./jenkins-scripts/tcwg-bisect-llvm-kernel.sh \
             --current_project "$current_project" \
-            --current_rev "$current_rev" \
-            --verbose true || true
-        - shell: |
-            #!/bin/bash
-            set -ex
-            if [ -e artifacts/failures ]; then
-              exit 0
-            fi
-            ./jenkins-scripts/docker-run.sh --distro $distro -- \
-            ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
-            --mode "jenkins-publisher" \
-            --base_rev "$base_rev" \
-            --current_project "$current_project" \
-            --current_rev "$current_rev" \
-            --verbose true || true
-        - shell: |
-            #!/bin/bash
-            name="#$BUILD_NUMBER-$current_project"
-            if [ -e artifacts/distance-to-good ]; then
-              name="$name-G$(cat artifacts/distance-to-good)"
-            fi
-            if [ -e artifacts/distance-to-rev ]; then
-              name="$name-R$(cat artifacts/distance-to-rev)"
-            fi
-            if [ -e artifacts/distance-to-tested ]; then
-              name="$name-T$(cat artifacts/distance-to-tested)"
-            fi
-            echo "$name" > build-name
+            --good_rev "$good_rev" \
+            --bad_rev "$good_rev" \
+            --verbose true
+            
+            echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
-        - conditional-step:
-            condition-kind: files-match
-            include-pattern:
-              - "artifacts/trigger-next-*"
-            steps:
-              - trigger-builds:
-                  - project: tcwg-rr-llvm-kernel-aarch64
-                    parameter-factories:
-                      - factory: filebuild
-                        file-pattern: artifacts/trigger-next-*
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/failures
-            steps:
-              - shell: |
-                  #!/bin/bash
-                  exit 1
     publishers:
         - archive:
             artifacts: 'artifacts/**'
