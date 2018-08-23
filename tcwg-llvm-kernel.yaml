@@ -1,0 +1,317 @@
+- project:
+    name: tcwg-llvm-kernel
+    jobs:
+      - 'tcwg-llvm-kernel-{arch}':
+          arch: aarch64
+      - 'tcwg-llvm-kernel-{arch}-bisect':
+          arch: aarch64
+      - 'tcwg-llvm-kernel-{arch}-trigger-{repo}':
+          arch: aarch64
+          repo: llvm
+      - 'tcwg-llvm-kernel-{arch}-trigger-{repo}':
+          arch: aarch64
+          repo: linux
+
+- job-template:
+    name: tcwg-llvm-kernel-{arch}
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - choice:
+            name: current_project
+            choices:
+                - llvm
+                - linux
+            description: 'Project to build'
+        - string:
+            name: current_rev
+            default: master
+            description: "Git rev of $current_project to build"
+        - string:
+            name: baseline
+            default: last-successful
+            description: "Baseline to compare against: last-successful, none"
+        - string:
+            name: distro
+            default: xenial
+            description: 'Distro image to use'
+        - string:
+            name: scripts_branch
+            default: llvm-kernel-v3
+            description: 'Scripts revision to use'
+    disabled: false
+    node: tcwg-d05_64-build
+    concurrent: false
+    display-name: 'TCWG RRv3 LLVM + Linux-next @ {arch}'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - $scripts_branch
+            basedir: jenkins-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+            prune: true
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -e
+            echo "=== Print out environment for debug purposes ==="
+            env | grep "GERRIT\|GIT"
+            echo "=== Environment end  ==="
+            set -x
+            echo "#$BUILD_NUMBER-$current_project" > build-name
+            rm -rf prev_artifacts*
+            case "$baseline" in
+              last-successful) touch prev_artifacts-last-successful ;;
+            esac
+        - build-name-setter:
+            name: 'build-name'
+            file: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: prev_artifacts-last-successful
+            steps:
+              - copyartifact:
+                  project: tcwg-rr-llvm-kernel-aarch64
+                  target: prev_artifacts
+                  optional: true
+                  which-build: last-successful
+        - shell: |
+            #!/bin/bash
+            set -ex
+            ./jenkins-scripts/docker-run.sh --distro $distro -- \
+            ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
+            --mode "jenkins-full" \
+            --base_rev "$base_rev" \
+            --current_project "$current_project" \
+            --current_rev "$current_rev" \
+            --verbose true || true
+
+            name="#$BUILD_NUMBER"
+            if [ -e artifacts/distance-to-good ]; then
+              name="$name-G$(cat artifacts/distance-to-good)"
+            fi
+            if [ -e artifacts/distance-to-tested ]; then
+              name="$name-T$(cat artifacts/distance-to-tested)"
+            fi
+            echo "$name" > build-name
+        - build-name-setter:
+            name: 'build-name'
+            file: true
+        - conditional-step:
+            condition-kind: and
+            condition-operands:
+              - condition-kind: file-exists
+                condition-filename: artifacts/failures
+              - condition-kind: file-exists
+                condition-filename: artifacts/trigger-bisect-on-failure
+            steps:
+              - trigger-builds:
+                  - project: tcwg-llvm-kernel-{arch}-bisect
+                    property-file: artifacts/trigger-bisect-on-failure
+        - shell: |
+            #!/bin/bash
+            if [ -f artifacts/failures ]; then
+              exit 1
+            fi
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+- job-template:
+    name: tcwg-llvm-kernel-{arch}-bisect
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - choice:
+            name: current_project
+            choices:
+                - llvm
+                - linux
+            description: 'Project to bisect'
+        - string:
+            name: good_rev
+            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-aarch64-good
+            description: "Good revision"
+        - string:
+            name: bad_rev
+            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-aarch64-tested
+            description: "Bad revision"
+        - string:
+            name: baseline
+            default: last-successful
+            description: "Baseline to compare against: last-successful, none"
+        - string:
+            name: distro
+            default: xenial
+            description: 'Distro image to use'
+        - string:
+            name: scripts_branch
+            default: llvm-kernel-v2
+            description: 'Scripts revision to use'
+    disabled: false
+    node: tcwg-d05_64-build
+    concurrent: true
+    display-name: 'TCWG RRv3 Bisect LLVM + Linux-next @ {arch}'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - $scripts_branch
+            basedir: jenkins-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+            prune: true
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -e
+            echo "=== Print out environment for debug purposes ==="
+            env | grep "GERRIT\|GIT"
+            echo "=== Environment end  ==="
+            set -x
+            echo "#$BUILD_NUMBER-$current_project" > build-name
+            rm -rf prev_artifacts*
+            case "$baseline" in
+              last-successful) touch prev_artifacts-last-successful ;;
+            esac
+        - build-name-setter:
+            name: 'build-name'
+            file: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: prev_artifacts-last-successful
+            steps:
+              - copyartifact:
+                  project: tcwg-rr-llvm-kernel-aarch64
+                  target: prev_artifacts
+                  optional: true
+                  which-build: last-successful
+        - shell: |
+            #!/bin/bash
+            set -ex
+            ./jenkins-scripts/docker-run.sh --distro $distro -- \
+            ./jenkins-scripts/tcwg-bisect-llvm-kernel.sh \
+            --current_project "$current_project" \
+            --good_rev "$good_rev" \
+            --bad_rev "$bad_rev" \
+            --verbose true
+
+            echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
+        - build-name-setter:
+            name: 'build-name'
+            file: true
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+- scm:
+    name: llvm
+    scm:
+        - git:
+            url: https://github.com/llvm-project/llvm-project-20170507.git
+            branches:
+                - refs/heads/master
+            basedir: llvm
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+            prune: true
+- scm:
+    name: linux
+    scm:
+        - git:
+            url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+            branches:
+                - refs/heads/master
+            basedir: linux
+            skip-tag: true
+            shallow-clone: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/linux.git
+            wipe-workspace: false
+            clean:
+                before: true
+            prune: true
+- job-template:
+    name: tcwg-llvm-kernel-{arch}-trigger-{repo}
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG RRv3 Trigger LLVM + Linux-next @ {arch} @ {repo}'
+    scm:
+        - '{repo}'
+    triggers:
+        # Every 5min
+        - pollscm:
+            cron: '*/5 * * * *'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: tcwg-llvm-kernel-{arch}
+              predefined-parameters: |
+                current_project={repo}
