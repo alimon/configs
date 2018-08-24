@@ -86,11 +86,13 @@
             env | grep "GERRIT\|GIT"
             echo "=== Environment end  ==="
             set -x
-            echo "#$BUILD_NUMBER-$current_project" > build-name
+            build_name="#$BUILD_NUMBER-$current_project"
             rm -rf prev_artifacts*
             case "$baseline" in
               last-successful) touch prev_artifacts-last-successful ;;
+              *)  build_name="$build_name-reset" ;;
             esac
+            echo "$build_name" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
@@ -127,6 +129,9 @@
             fi
             if [ -e artifacts/distance-to-tested ]; then
               name="$name-T$(cat artifacts/distance-to-tested)"
+            fi
+            if [ x"$baseline" != x"last-successful" ]; then
+              name="$name-reset"
             fi
             echo "$name" > build-name
         - build-name-setter:
@@ -223,11 +228,13 @@
             env | grep "GERRIT\|GIT"
             echo "=== Environment end  ==="
             set -x
-            echo "#$BUILD_NUMBER-$current_project" > build-name
+            build_name="#$BUILD_NUMBER-$current_project"
             rm -rf prev_artifacts*
             case "$baseline" in
               last-successful) touch prev_artifacts-last-successful ;;
+              *)  build_name="$build_name-reset" ;;
             esac
+            echo "$build_name" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
