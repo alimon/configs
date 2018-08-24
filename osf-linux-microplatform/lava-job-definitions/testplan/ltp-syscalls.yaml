@@ -1,0 +1,33 @@
+{% extends device_type %}
+
+{% set job_timeout = 150 %}
+
+{% block metadata %}
+  {{ super() }}
+  test scope: functional
+{% endblock metadata %}
+
+{% block job_name %}microplatform-{{IMAGES}}-build-{{BUILD_NUMBER}}-ltp-syscalls{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 120
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dockerized-tests/over-ssh.yaml
+      name: ltp-syscalls
+      parameters:
+        DOCKER_IMG: linaro/testdef-arm64-debian-stretch:2018.08
+        TEST: automated/linux/ltp/ltp.yaml
+        TESTDEF_PARAMS: "TST_CMDFILES='syscalls' SKIPFILE='skipfile-lkft.yaml' BOARD='hi6220-hikey' BRANCH='4.16' ENVIRONMENT='production'"
+        SSH_USER: "osf"
+        SSH_PASSWD: "osf"
+      timeout:
+        minutes: 120
+{% endblock test_target %}
