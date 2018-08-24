@@ -96,7 +96,7 @@
             condition-filename: prev_artifacts-last-successful
             steps:
               - copyartifact:
-                  project: tcwg-rr-llvm-kernel-aarch64
+                  project: tcwg-llvm-kernel-{arch}
                   target: prev_artifacts
                   optional: true
                   which-build: last-successful
@@ -104,7 +104,7 @@
             #!/bin/bash
             set -ex
             ./jenkins-scripts/docker-run.sh --distro $distro -- \
-            ./jenkins-scripts/tcwg-rr-llvm-kernel.sh \
+            ./jenkins-scripts/tcwg-llvm-kernel.sh \
             --mode "jenkins-full" \
             --base_rev "$base_rev" \
             --current_project "$current_project" \
@@ -166,11 +166,11 @@
             description: 'Project to bisect'
         - string:
             name: good_rev
-            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-aarch64-good
+            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-{arch}-good
             description: "Good revision"
         - string:
             name: bad_rev
-            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-aarch64-tested
+            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-{arch}-tested
             description: "Bad revision"
         - string:
             name: baseline
@@ -230,7 +230,7 @@
             condition-filename: prev_artifacts-last-successful
             steps:
               - copyartifact:
-                  project: tcwg-rr-llvm-kernel-aarch64
+                  project: tcwg-llvm-kernel-{arch}
                   target: prev_artifacts
                   optional: true
                   which-build: last-successful
