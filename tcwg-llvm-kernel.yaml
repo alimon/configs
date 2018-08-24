@@ -111,6 +111,13 @@
             --current_rev "$current_rev" \
             --verbose true || true
 
+            if [ ! -f artifacts/failures ]; then
+              rm -f artifacts/trigger-bisect-on-failure
+            else
+              echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
+              echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
+            fi
+
             name="#$BUILD_NUMBER-$current_project"
             if [ -e artifacts/distance-to-good ]; then
               name="$name-G$(cat artifacts/distance-to-good)"
@@ -123,12 +130,8 @@
             name: 'build-name'
             file: true
         - conditional-step:
-            condition-kind: and
-            condition-operands:
-              - condition-kind: file-exists
-                condition-filename: artifacts/failures
-              - condition-kind: file-exists
-                condition-filename: artifacts/trigger-bisect-on-failure
+            - condition-kind: file-exists
+              condition-filename: artifacts/trigger-bisect-on-failure
             steps:
               - trigger-builds:
                   - project: tcwg-llvm-kernel-{arch}-bisect
@@ -182,7 +185,7 @@
             description: 'Distro image to use'
         - string:
             name: scripts_branch
-            default: llvm-kernel-v2
+            default: llvm-kernel-v3
             description: 'Scripts revision to use'
     disabled: false
     node: tcwg-d05_64-build
@@ -244,10 +247,16 @@
             --bad_rev "$bad_rev" \
             --verbose true
 
+            echo "distro=$distro" >> artifacts/trigger-reset-baseline
+            echo "scripts_branch=$scripts_branch" >> artifacts/trigger-reset-baseline
+
             echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
+        - trigger-builds:
+            - project: tcwg-llvm-kernel-{arch}
+              property-file: artifacts/trigger-reset-baseline
     publishers:
         - archive:
             artifacts: 'artifacts/**'
