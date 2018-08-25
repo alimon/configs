@@ -138,7 +138,11 @@
         - shell: |
             #!/bin/bash
             set -ex
-            ./jenkins-scripts/docker-run.sh --distro $distro -- \
+            ./jenkins-scripts/docker-run.sh \
+            --distro $distro \
+            --label {node} \
+            --node $NODE_NAME \
+            -- \
             ./jenkins-scripts/tcwg-llvm-kernel.sh \
             --mode "jenkins-full" \
             --current_project "$current_project" \
@@ -276,7 +280,11 @@
         - shell: |
             #!/bin/bash
             set -ex
-            ./jenkins-scripts/docker-run.sh --distro $distro -- \
+            ./jenkins-scripts/docker-run.sh \
+            --distro $distro \
+            --label {node} \
+            --node $NODE_NAME \
+            -- \
             ./jenkins-scripts/tcwg-bisect-llvm-kernel.sh \
             --current_project "$current_project" \
             --good_rev "$good_rev" \
