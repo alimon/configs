@@ -1,14 +1,17 @@
 - project:
     name: tcwg-llvm-kernel
     arch:
-      - aarch64
+      - aarch64:
+          node: tcwg-d05_64-build
+      - arm:
+          node: tcwg-d05_32-build
     repo:
       - llvm
       - linux
     jobs:
-      - 'tcwg-llvm-kernel-{arch}'
-      - 'tcwg-llvm-kernel-{arch}-bisect'
-      - 'tcwg-llvm-kernel-{arch}-trigger-{repo}'
+      - 'tcwg-llvm-kernel-build-{arch}'
+      - 'tcwg-llvm-kernel-bisect-{arch}'
+      - 'tcwg-llvm-kernel-trigger-{repo}'
 
 - view:
     name: tcwg-llvm-kernel
@@ -16,7 +19,7 @@
     regex: 'tcwg-llvm-kernel.*'
 
 - job-template:
-    name: tcwg-llvm-kernel-{arch}
+    name: tcwg-llvm-kernel-build-{arch}
     project-type: freestyle
     defaults: global
     properties:
@@ -54,9 +57,9 @@
             default: llvm-kernel-v3
             description: 'Scripts revision to use'
     disabled: false
-    node: tcwg-d05_64-build
+    node: '{node}'
     concurrent: false
-    display-name: 'TCWG RRv3 LLVM + Linux-next @ {arch}'
+    display-name: 'TCWG RRv3 Build LLVM + Linux-next @ {arch}'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
@@ -98,7 +101,7 @@
             condition-string2: 'true'
             steps:
               - copyartifact:
-                  project: tcwg-llvm-kernel-{arch}
+                  project: tcwg-llvm-kernel-build-{arch}
                   target: prev_artifacts
                   optional: true
                   which-build: last-successful
@@ -138,7 +141,7 @@
             condition-filename: artifacts/trigger-bisect-on-failure
             steps:
               - trigger-builds:
-                  - project: tcwg-llvm-kernel-{arch}-bisect
+                  - project: tcwg-llvm-kernel-bisect-{arch}
                     property-file: artifacts/trigger-bisect-on-failure
         - shell: |
             #!/bin/bash
@@ -150,7 +153,7 @@
             artifacts: 'artifacts/**'
             latest-only: false
 - job-template:
-    name: tcwg-llvm-kernel-{arch}-bisect
+    name: tcwg-llvm-kernel-bisect-{arch}
     project-type: freestyle
     defaults: global
     properties:
@@ -192,7 +195,7 @@
             default: llvm-kernel-v3
             description: 'Scripts revision to use'
     disabled: false
-    node: tcwg-d05_64-build
+    node: '{node}'
     concurrent: true
     display-name: 'TCWG RRv3 Bisect LLVM + Linux-next @ {arch}'
     scm:
@@ -236,7 +239,7 @@
             condition-string2: 'true'
             steps:
               - copyartifact:
-                  project: tcwg-llvm-kernel-{arch}
+                  project: tcwg-llvm-kernel-build-{arch}
                   target: prev_artifacts
                   optional: true
                   which-build: last-successful
@@ -262,10 +265,10 @@
             name: 'build-name'
             file: true
         - trigger-builds:
-            - project: tcwg-llvm-kernel-{arch}
+            - project: tcwg-llvm-kernel-build-{arch}
               property-file: artifacts/trigger-1-reset-baseline
         - trigger-builds:
-            - project: tcwg-llvm-kernel-{arch}
+            - project: tcwg-llvm-kernel-build-{arch}
               property-file: artifacts/trigger-2-build-master
     publishers:
         - archive:
@@ -301,7 +304,7 @@
                 before: true
             prune: true
 - job-template:
-    name: tcwg-llvm-kernel-{arch}-trigger-{repo}
+    name: tcwg-llvm-kernel-trigger-{repo}
     project-type: freestyle
     defaults: global
     properties:
@@ -318,7 +321,7 @@
     disabled: false
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'TCWG RRv3 Trigger LLVM + Linux-next @ {arch} @ {repo}'
+    display-name: 'TCWG RRv3 Trigger LLVM + Linux-next @ {repo}'
     scm:
         - '{repo}'
     triggers:
@@ -330,6 +333,10 @@
         - timestamps
     builders:
         - trigger-builds:
-            - project: tcwg-llvm-kernel-{arch}
+            - project: tcwg-llvm-kernel-build-aarch64
+              predefined-parameters: |
+                current_project={repo}
+        - trigger-builds:
+            - project: tcwg-llvm-kernel-build-arm
               predefined-parameters: |
                 current_project={repo}
