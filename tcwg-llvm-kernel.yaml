@@ -41,10 +41,10 @@
             name: current_rev
             default: master
             description: "Git rev of $current_project to build"
-        - string:
-            name: baseline
-            default: last-successful
-            description: "Baseline to compare against: last-successful, none"
+        - bool:
+            name: use_baseline
+            default: true
+            description: "Either compare results against last-successful build or reset baseline"
         - string:
             name: distro
             default: xenial
@@ -87,18 +87,15 @@
             echo "=== Environment end  ==="
             set -x
             build_name="#$BUILD_NUMBER-$current_project"
-            rm -rf prev_artifacts*
-            case "$baseline" in
-              last-successful) touch prev_artifacts-last-successful ;;
-              *)  build_name="$build_name-reset" ;;
-            esac
+            rm -rf prev_artifacts
             echo "$build_name" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
         - conditional-step:
-            condition-kind: file-exists
-            condition-filename: prev_artifacts-last-successful
+            condition-kind: strings-match
+            condition-string1: '${{ENV,var="use_baseline"}}'
+            condition-string2: 'true'
             steps:
               - copyartifact:
                   project: tcwg-llvm-kernel-{arch}
@@ -111,7 +108,6 @@
             ./jenkins-scripts/docker-run.sh --distro $distro -- \
             ./jenkins-scripts/tcwg-llvm-kernel.sh \
             --mode "jenkins-full" \
-            --base_rev "$base_rev" \
             --current_project "$current_project" \
             --current_rev "$current_rev" \
             --verbose true || true
@@ -130,7 +126,7 @@
             if [ -e artifacts/distance-to-tested ]; then
               name="$name-T$(cat artifacts/distance-to-tested)"
             fi
-            if [ x"$baseline" != x"last-successful" ]; then
+            if ! $use_baseline; then
               name="$name-reset"
             fi
             echo "$name" > build-name
@@ -183,10 +179,10 @@
             name: bad_rev
             default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-{arch}-tested
             description: "Bad revision"
-        - string:
-            name: baseline
-            default: last-successful
-            description: "Baseline to compare against: last-successful, none"
+        - bool:
+            name: use_baseline
+            default: true
+            description: "Either compare results against last-successful build or reset baseline"
         - string:
             name: distro
             default: xenial
@@ -229,18 +225,15 @@
             echo "=== Environment end  ==="
             set -x
             build_name="#$BUILD_NUMBER-$current_project"
-            rm -rf prev_artifacts*
-            case "$baseline" in
-              last-successful) touch prev_artifacts-last-successful ;;
-              *)  build_name="$build_name-reset" ;;
-            esac
+            rm -rf prev_artifacts
             echo "$build_name" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
         - conditional-step:
-            condition-kind: file-exists
-            condition-filename: prev_artifacts-last-successful
+            condition-kind: strings-match
+            condition-string1: '${{ENV,var="use_baseline"}}'
+            condition-string2: 'true'
             steps:
               - copyartifact:
                   project: tcwg-llvm-kernel-{arch}
@@ -257,8 +250,12 @@
             --bad_rev "$bad_rev" \
             --verbose true
 
-            echo "distro=$distro" >> artifacts/trigger-reset-baseline
-            echo "scripts_branch=$scripts_branch" >> artifacts/trigger-reset-baseline
+            for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
+              if [ -f $i ]; then
+                echo "distro=$distro" >> $i
+                echo "scripts_branch=$scripts_branch" >> $i
+              fi
+            done
 
             echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
         - build-name-setter:
@@ -266,7 +263,10 @@
             file: true
         - trigger-builds:
             - project: tcwg-llvm-kernel-{arch}
-              property-file: artifacts/trigger-reset-baseline
+              property-file: artifacts/trigger-1-reset-baseline
+        - trigger-builds:
+            - project: tcwg-llvm-kernel-{arch}
+              property-file: artifacts/trigger-2-build-master
     publishers:
         - archive:
             artifacts: 'artifacts/**'
