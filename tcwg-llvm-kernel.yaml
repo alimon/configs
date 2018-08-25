@@ -3,7 +3,7 @@
     arch:
       - aarch64:
           node: tcwg-d05_64-build
-      - arm:
+      - armv8l:
           node: tcwg-d05_32-build
     repo:
       - llvm
@@ -17,6 +17,36 @@
     name: tcwg-llvm-kernel
     view-type: list
     regex: 'tcwg-llvm-kernel.*'
+
+- project:
+    name: tcwg-llvm-kernel-dead
+    suffix:
+      - aarch64-trigger-llvm
+      - aarch64-trigger-linux
+      - aarch64
+      - build-arm
+      - bisect-arm
+    jobs:
+      - 'tcwg-llvm-kernel-{suffix}'
+
+- job-template:
+    name: tcwg-llvm-kernel-{suffix}
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: true
+    node: tcwg-coordinator
+    display-name: 'TCWG RRv3 ZZZ DEAD {suffix}'
 
 - job-template:
     name: tcwg-llvm-kernel-build-{arch}
@@ -337,6 +367,6 @@
               predefined-parameters: |
                 current_project={repo}
         - trigger-builds:
-            - project: tcwg-llvm-kernel-build-arm
+            - project: tcwg-llvm-kernel-build-armv8l
               predefined-parameters: |
                 current_project={repo}
