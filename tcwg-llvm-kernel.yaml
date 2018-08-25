@@ -3,8 +3,10 @@
     arch:
       - aarch64:
           node: tcwg-d05_64-build
+          docker_arch: arm64
       - armv8l:
           node: tcwg-d05_32-build
+          docker_arch: armhf
     repo:
       - llvm
       - linux
@@ -139,9 +141,8 @@
             #!/bin/bash
             set -ex
             ./jenkins-scripts/docker-run.sh \
+            --arch {docker_arch} \
             --distro $distro \
-            --label {node} \
-            --node $NODE_NAME \
             -- \
             ./jenkins-scripts/tcwg-llvm-kernel.sh \
             --mode "jenkins-full" \
@@ -281,9 +282,8 @@
             #!/bin/bash
             set -ex
             ./jenkins-scripts/docker-run.sh \
+            --arch {docker_arch} \
             --distro $distro \
-            --label {node} \
-            --node $NODE_NAME \
             -- \
             ./jenkins-scripts/tcwg-bisect-llvm-kernel.sh \
             --current_project "$current_project" \
