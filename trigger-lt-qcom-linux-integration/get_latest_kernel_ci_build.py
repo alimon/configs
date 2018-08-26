@@ -37,7 +37,7 @@ def get_kernel_ci_build(url, arch_config, dt_file):
 
 
 def get_ramdisk_rootfs_url(url, rootfs_url):
-    f = urllib2.urlopen('https://ci.linaro.org/job/lt-qcom-openembedded-rpb-rocko/lastSuccessfulBuild/buildNumber')
+    f = urllib2.urlopen('https://ci.linaro.org/job/lt-qcom-openembedded-rpb-sumo/lastSuccessfulBuild/buildNumber')
     last_build = int(f.read())
 
     url = '%s/%d/rpb' % (url, last_build)
@@ -106,9 +106,9 @@ def main():
     machines = os.environ.get('MACHINES', 'dragonboard410c dragonboard820c sdm845_mtp').split()
 
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
-                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/rocko')
+                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/sumo')
     rootfs_base_url = os.environ.get('ROOTFS_BASE_URL',
-                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/rocko')
+                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/sumo')
     builds_url = os.environ.get('BUILDS_URL',
                                 'https://snapshots.linaro.org/96boards/%s/linaro/linux-integration/')
 
