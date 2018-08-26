@@ -218,8 +218,8 @@ if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 fi
 if [[ ! -z "${FIRMWARE_URL}" ]]; then
 	wget_error ${FIRMWARE_URL}
+	firmware_file="out/$(basename ${FIRMWARE_URL} .bz2)"
 fi
-firmware_file="out/$(basename ${FIRMWARE_URL} .bz2)"
 
 rootfs_comp=''
 if [[ $rootfs_file_type = *"gzip compressed data"* ]]; then
