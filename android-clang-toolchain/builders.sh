@@ -21,7 +21,7 @@ for d in toolchain/patches/*; do
 	for i in $d/*.patch; do
 		[ -e "$i" ] || continue
 		p="$(realpath $i)"
-		pushd $(basename $d)
+		pushd "toolchain/$(basename $d)"
 		echo "Applying $(basename $p)"
 		patch -p1 <"$p"
 		popd
