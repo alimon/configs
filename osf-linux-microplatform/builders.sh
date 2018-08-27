@@ -114,10 +114,9 @@ ROOTFS_IMG="$(find ${DEPLOY_DIR_IMAGE} -type f -name "sparse-lmp-gateway-image*.
 BASE_URL="http://snapshots.linaro.org"
 
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-DEPLOY_DIR_IMAGE="${DEPLOY_DIR_IMAGE}"
-BUILD_URL="${BASE_URL}/${PUB_DEST}/"
-BOOT_URL="${BUILD_URL}/${BOOT_IMG}"
-SYSTEM_URL="${BUILD_URL}/${ROOTFS_IMG}"
+DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+BOOT_URL=${BASE_URL}/${PUB_DEST}/${BOOT_IMG}
+SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 EOF
 
 cat << EOF > ${WORKSPACE}/ota_params
