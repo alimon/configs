@@ -74,7 +74,7 @@ for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
     if [[ ${test} = "ltp-open-posix.yaml" ]];then
         # Run LTP open posix test suite on limited devices
         # Each one per architecture arm64 juno-r2, arm32 x15 and x86
-        if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" ]];then
+        if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "i386" ]];then
             FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         fi
     elif  [[ ${test} = "kselftests-native.yaml" || ${test} = "kselftests-none.yaml" ]];then
@@ -89,7 +89,7 @@ for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
     fi
 done
 
-if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" ]];then
+if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "i386" ]];then
     [ ! -z ${SANITY_TEST_TEMPLATES} ] && unset SANITY_TEST_TEMPLATES
 
     # Save original priority
