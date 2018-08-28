@@ -151,7 +151,9 @@
             --current_rev "$current_rev" \
             --verbose true || true
 
-            if [ ! -f artifacts/failures ]; then
+            if [ ! -f artifacts/failures ] || ! $use_baseline; then
+              # Don't trigger bisect if build succeeded or if
+              # this [failed] build is the new baseline.
               rm -f artifacts/trigger-bisect-on-failure
             elif [ -f artifacts/trigger-bisect-on-failure ]; then
               echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
