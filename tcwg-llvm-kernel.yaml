@@ -151,28 +151,31 @@
             --current_rev "$current_rev" \
             --verbose true || true
 
-            if [ ! -f artifacts/failures ] || ! $use_baseline; then
-              # Don't trigger bisect if build succeeded or if
-              # this [failed] build is the new baseline.
-              rm -f artifacts/trigger-bisect-on-failure
-            elif [ -f artifacts/trigger-bisect-on-failure ]; then
-              echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
-              echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
-            fi
-
             name="#$BUILD_NUMBER-$current_project"
+            if [ -e artifacts/linux_n_obj ]; then
+              name="$name-O$(cat artifacts/linux_n_obj)"
+            fi
             if [ -e artifacts/distance-to-good ]; then
               name="$name-G$(cat artifacts/distance-to-good)"
             fi
             if [ -e artifacts/distance-to-tested ]; then
               name="$name-T$(cat artifacts/distance-to-tested)"
             fi
-            if [ -e artifacts/linux_n_obj ]; then
-              name="$name-O$(cat artifacts/linux_n_obj)"
-            fi
             if ! $use_baseline; then
               name="$name-reset"
+              # Don't trigger bisect if this [possibly failed] build is
+              # the new baseline.
+              rm -f artifacts/trigger-bisect-on-failure
             fi
+            if [ ! -f artifacts/failures ]; then
+              rm -f artifacts/trigger-bisect-on-failure
+            fi
+            if [ -f artifacts/trigger-bisect-on-failure ]; then
+              name="$name-bisect"
+              echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
+              echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
+            fi
+
             echo "$name" > build-name
         - build-name-setter:
             name: 'build-name'
