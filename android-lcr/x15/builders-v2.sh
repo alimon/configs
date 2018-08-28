@@ -23,6 +23,11 @@ cd build
 rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
 cd -
 
+# export KERNEL_DESCRIBE variant for lkft-x15-android-8.1-4.14.yaml build
+cd build/kernel/ti/x15/
+export KERNEL_DESCRIBE=$(git rev-parse --short HEAD)
+cd -
+
 if [[ ${JOB_NAME} == "lkft-x15-android-8.1-4.14" ]]; then
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
@@ -58,4 +63,5 @@ SKIP_REPORT=false
 CTS_PKG_URL=${CTS_PKG_URL}
 VTS_PKG_URL=${VTS_PKG_URL}
 ANDROID_VERSION_SUFFIX=${ANDROID_VERSION_SUFFIX}
+KERNEL_DESCRIBE=${KERNEL_DESCRIBE}
 EOF

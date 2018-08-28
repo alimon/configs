@@ -50,6 +50,7 @@ export PATH=~/srv/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi/bin:$PATH
 export CROSS_COMPILE=arm-eabi-
 export ARCH=arm
 cd kernel/ti/x15/
+export KERNEL_DESCRIBE=$(git rev-parse --short HEAD)
 export KERNELDIR=${PWD}
 ./ti_config_fragments/defconfig_builder.sh -t ti_sdk_am57x_android_release
 make ti_sdk_am57x_android_release_defconfig
