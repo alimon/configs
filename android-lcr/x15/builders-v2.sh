@@ -18,14 +18,14 @@ if [[ ${JOB_NAME} == "android-lcr-member-x15-n" || ${JOB_NAME} == "android-lcr-m
   wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/x15/build-info/template.txt -O build/out/BUILD-INFO.txt
 fi
 
-# Delete sources after build to save space
-cd build
-rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
-cd -
-
 # export KERNEL_DESCRIBE variant for lkft-x15-android-8.1-4.14.yaml build
 cd build/kernel/ti/x15/
 export KERNEL_DESCRIBE=$(git rev-parse --short HEAD)
+cd -
+
+# Delete sources after build to save space
+cd build
+rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
 cd -
 
 if [[ ${JOB_NAME} == "lkft-x15-android-8.1-4.14" ]]; then
