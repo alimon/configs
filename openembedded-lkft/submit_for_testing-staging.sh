@@ -93,6 +93,12 @@ for ts in ${TEST_SUITES,,}; do
     esac
 done
 
+# Were there no tests after expansion?
+if [ -z "${TEST_FILES// /}" ]; then
+    echo "No test files to execute. Terminating now."
+    exit 0
+fi
+
 for test in ${TEST_FILES}; do
     if [[ ${test} = "ltp-open-posix.yaml" ]];then
         # Run LTP open posix test suite on limited devices
