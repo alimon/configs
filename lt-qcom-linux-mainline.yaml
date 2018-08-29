@@ -68,6 +68,18 @@
         - string:
             name: PUB_DEST
             default: "96boards/${MACHINE}/linaro/${KERNEL_FLAVOR}/${BUILD_NUMBER}"
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+        - string:
+            name: LKFT_STAGING_LAVA_SERVER
+            default: 'https://lkft-staging.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'linux-master'
     disabled: false
     node: master
     display-name: 'Qualcomm LT Linux Mainline kernel build'
@@ -100,11 +112,14 @@
         - linaro-publish-token
         - shell:
             !include-raw: lt-qcom-linux-integration/publishers.sh
+        - shell:
+            !include-raw: lt-qcom-linux-integration/submit_for_testing.sh
     publishers:
         - groovy-postbuild:
             script:
                 !include-raw:
                   - rpb-openembedded/postbuild.groovy
+                  - openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'anibal.limon@linaro.org'
         - email-ext:

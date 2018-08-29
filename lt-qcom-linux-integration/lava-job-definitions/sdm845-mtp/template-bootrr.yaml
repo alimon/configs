@@ -1,5 +1,5 @@
 device_type: ${LAVA_DEVICE_TYPE}
-job_name: lt-qcom-linux-integration-bootrr-${BUILD_NUMBER}
+job_name: lt-qcom-${QA_SERVER_PROJECT}-bootrr-${BUILD_NUMBER}
 timeouts:
   job:
     minutes: 90
@@ -132,18 +132,18 @@ actions:
 
 - test:
     namespace: ${LAVA_DEVICE_TYPE}
-    name: qcomlt-linux-integration-smoke
+    name: qcomlt-${QA_SERVER_PROJECT}-smoke
     timeout:
       minutes: 5
     definitions:
     - from: inline
-      name: qcomlt-linux-integration-smoke
-      path: inline/qcomlt-linux-integration-smoke.yaml
+      name: qcomlt-${QA_SERVER_PROJECT}-smoke
+      path: inline/qcomlt-${QA_SERVER_PROJECT}-smoke.yaml
       repository:
         metadata:
           description: QCOM LT linux integration smoke
           format: Lava-Test Test Definition 1.0
-          name: qcomlt-linux-integration-smoke 
+          name: qcomlt-${QA_SERVER_PROJECT}-smoke
         run:
           steps:
           - uname -a
@@ -156,18 +156,18 @@ actions:
 
 - test:
     namespace: ${LAVA_DEVICE_TYPE}
-    name: qcomlt-linux-integration-bootrr
+    name: qcomlt-${QA_SERVER_PROJECT}-bootrr
     timeout:
       minutes: 5
     definitions:
     - from: inline
-      name: qcomlt-linux-integration-bootrr
-      path: inline/qcomlt-linux-integration-bootrr.yaml
+      name: qcomlt-${QA_SERVER_PROJECT}-bootrr
+      path: inline/qcomlt-${QA_SERVER_PROJECT}-bootrr.yaml
       repository:
         metadata:
           description: QCOM LT linux integration bootrr
           format: Lava-Test Test Definition 1.0
-          name: qcomlt-linux-integration-bootrr
+          name: qcomlt-${QA_SERVER_PROJECT}-bootrr
         run:
           steps:
           - if [ "${LAVA_DEVICE_TYPE}" == "dragonboard-410c" ]; then

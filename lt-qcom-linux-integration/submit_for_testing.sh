@@ -63,7 +63,7 @@ case "${MACHINE}" in
         --lava-server ${LAVA_SERVER} \
         --qa-server ${QA_SERVER} \
         --qa-server-team qcomlt \
-        --qa-server-project linux-integration \
+        --qa-server-project ${QA_SERVER_PROJECT} \
         --git-commit ${BUILD_NUMBER} \
         --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
         --template-names template-bootrr.yaml
@@ -74,7 +74,7 @@ case "${MACHINE}" in
         --lava-server ${LAVA_SERVER} \
         --qa-server ${QA_SERVER} \
         --qa-server-team qcomlt \
-        --qa-server-project linux-integration \
+        --qa-server-project ${QA_SERVER_PROJECT} \
         --git-commit ${BUILD_NUMBER} \
         --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
         --template-base-pre base_template-functional.yaml \
