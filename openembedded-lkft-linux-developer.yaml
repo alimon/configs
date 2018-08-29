@@ -88,16 +88,18 @@
                   - multi_v7_defconfig on X15<br>
                   - x86_64_defconfig on x86<br>
                 Note: Additional config fragments are added to all defconfigs to ensure build is functional. See job description.
-        - string:
+        - extended-choice:
             name: TEST_SUITES
-            default: 'none'
             description: |
                 <b>[OPTIONAL]</b> Test suites to run<br/>
-                Can be blank (for all), 'none' for no tests, or a combination of the following separated by space:
-                  - kselftests
-                  - libhugetlbfs
-                  - ltp
+                Can be blank (for all), 'none' for no tests, or a combination of the following separated by space:<br/>
+                  - kselftests<br/>
+                  - libhugetlbfs<br/>
+                  - ltp<br/>
                 E.g.: 'kselftests ltp'
+            type: checkbox
+            value: 'kselftests,libhugetlbfs,ltp'
+            multi-select-delimiter: ' '
     disabled: false
     node: docker-lkft
     display-name: 'LKFT - Linux Developer Builder (OpenEmbedded/rocko)'
