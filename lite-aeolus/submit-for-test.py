@@ -4,7 +4,8 @@ from string import Template
 import xmlrpclib
 
 # Actually submit job to LAVA
-SUBMIT = 1
+# Disabled until settings are fixed: https://bugs.linaro.org/show_bug.cgi?id=3914
+SUBMIT = 0
 
 ENV = os.environ
 expect = sys.argv[1]
