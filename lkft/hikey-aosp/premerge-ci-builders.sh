@@ -24,6 +24,7 @@ git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linu
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
 export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/linux-x86/${TOOLCHAIN}/bin/:${PATH}
 
+git merge --no-edit remotes/origin/${UPSTREAM_KERNEL_BRANCH}
 git clone --depth=1 https://android.googlesource.com/kernel/configs
 
 export ANDROID_VERSION=$(echo $REFERENCE_BUILD_URL | awk -F"/" '{print$(NF-1)}')
