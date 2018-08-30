@@ -66,6 +66,10 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+        - build-blocker:
+            blocking-jobs:
+              - "tcwg-llvm-kernel-bisect-{arch}"
+            queue-scanning: 'ALL'
     parameters:
         - choice:
             name: current_project
@@ -300,26 +304,26 @@
             --bad_rev "$bad_rev" \
             --verbose true
 
-            for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
+            for i in bisect-artifacts/trigger-1-reset-baseline bisect-artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
                 echo "distro=$distro" >> $i
                 echo "scripts_branch=$scripts_branch" >> $i
               fi
             done
 
-            echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
+            echo "#$BUILD_NUMBER-$current_project-$(cat bisect-artifacts/first-bad)" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
         - trigger-builds:
             - project: tcwg-llvm-kernel-build-{arch}
-              property-file: artifacts/trigger-1-reset-baseline
+              property-file: bisect-artifacts/trigger-1-reset-baseline
         - trigger-builds:
             - project: tcwg-llvm-kernel-build-{arch}
-              property-file: artifacts/trigger-2-build-master
+              property-file: bisect-artifacts/trigger-2-build-master
     publishers:
         - archive:
-            artifacts: 'artifacts/**'
+            artifacts: 'bisect-artifacts/**'
             latest-only: false
 - scm:
     name: llvm
@@ -365,6 +369,11 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+        - build-blocker:
+            blocking-jobs:
+              - "tcwg-llvm-kernel-bisect-aarch64"
+              - "tcwg-llvm-kernel-bisect-armv8l"
+            queue-scanning: 'ALL'
     disabled: false
     node: tcwg-coordinator
     concurrent: false
@@ -373,7 +382,7 @@
         - '{repo}'
     triggers:
         - pollscm:
-            cron: '@hourly'
+            cron: '@daily'
     wrappers:
         - timeout:
             timeout: 600
