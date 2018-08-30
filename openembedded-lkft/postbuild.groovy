@@ -11,7 +11,7 @@ if (manager.build.result == hudson.model.Result.SUCCESS) {
       def url = matcher.group(1)
       def testjob_id = matcher.group(2)
       def job_name = matcher.group(3)
-      desc += "&nbsp;<a href='${url}'>QA Reports: ${testjob_id}${job_name}</a><br/>"
+      desc += "&nbsp;<a href='${url}'>LAVA job (QA ${testjob_id})${job_name}</a><br/>"
     }
   }
   manager.build.setDescription(desc)
