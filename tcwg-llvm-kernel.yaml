@@ -325,6 +325,16 @@
         - archive:
             artifacts: 'bisect-artifacts/**'
             latest-only: false
+        - email-ext:
+            recipients: 'yvan.roux@linaro.org, tcwg-validation@linaro.org'
+            content-type: text
+            body: |
+                Bisected ${{current_project}} on {arch} between ${{bad_rev}} ${{good_rev}} .
+                Culprit: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/bisect-artifacts/BISECT_RUN/*view*/
+                Artifacts: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/bisect-artifacts/
+                Build URL: ${{PROJECT_URL}}${{BUILD_NUMBER}}/
+                Build log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/consoleText
+            always: true
 - scm:
     name: llvm
     scm:
