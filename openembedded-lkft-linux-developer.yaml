@@ -84,11 +84,10 @@
             description: |
                 <b>[OPTIONAL]</b> Kernel config<br>
                 If ommited the default kernel config will use<br>
-                  - defconfig on arm64<br>
-                  - multi_v7_defconfig on arm<br>
+                  - defconfig on HiKey<br>
+                  - multi_v7_defconfig on X15<br>
                   - x86_64_defconfig on x86<br>
-                An URL pointing to the config can be used as well.<br/>
-                Note: an additional config fragment is added to ensure systemd is functional
+                Note: Additional config fragments are added to all defconfigs to ensure build is functional. See job description.
         - string:
             name: TEST_SUITES
             default: 'none'
@@ -157,6 +156,7 @@
             echo "MACHINE=${MACHINE}" >> parameters
             echo "DEVICE_TYPE=${DEVICE_TYPE}" >> parameters
             echo "LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/" >> parameters
+            echo "LAVA_JOB_PRIORITY=79" >> parameters
             echo "PUB_DEST=openembedded/lkft/rocko/generic/rpb/linux-developer/${BUILD_NUMBER}" >> parameters
             echo "QA_SERVER=https://qa-reports.linaro.org" >> parameters
             echo "QA_SERVER_PROJECT=linux-developer-oe" >> parameters
