@@ -60,6 +60,10 @@
             name: scripts_branch
             default: master
             description: 'Scripts revision to use'
+        - string:
+            name: build_container_tag
+            default: xenial-tcwg-tested
+            description: 'Distro to use on the builder with non-default container type: trusty, xenial.'
     disabled: false
     node: tcwg-x86_64-build
     concurrent: true
@@ -95,7 +99,7 @@
                 aarch64) label="--label tcwg-apm_64-build" ;;
             esac
 
-            ./start-container-docker.sh $label --task build --prefix build_ > build-container.sh
+            ./start-container-docker.sh $label --task build --prefix build_ --distro $build_container_tag > build-container.sh
             . ./build-container.sh
             BUILD_SHELL="build_container_exec bash"
 
