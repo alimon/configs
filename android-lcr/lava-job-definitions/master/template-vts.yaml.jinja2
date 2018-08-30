@@ -11,7 +11,7 @@
     definitions:
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
-      path: automated/android/tradefed/tradefed.yaml
+      path: automated/android/noninteractive-tradefed/tradefed.yaml
       params:
 {% if VTS_PKG_URL is defined %}
         TEST_URL: "{{VTS_PKG_URL}}"
@@ -21,7 +21,7 @@
 {% if ANDROID_VERSION_SUFFIX is defined and ANDROID_VERSION_SUFFIX == 'master' %}
         ANDROID_VERSION: "aosp-master"
 {% endif %}
-        TEST_PARAMS: "run {{testcommand}} --skip-device-info"
+        TEST_PARAMS: "{{testcommand}} --skip-device-info"
         TEST_PATH: "android-vts"
         RESULTS_FORMAT: "atomic"
 {% if testrebootexpected is defined %}
