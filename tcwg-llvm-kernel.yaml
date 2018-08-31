@@ -313,9 +313,10 @@
 
             echo "#$BUILD_NUMBER-$current_project-$(cat bisect-artifacts/first-bad)" > build-name
 
+            CI_MAIL_RECIPIENTS="tcwg-validation@linaro.org, ndesaulniers@google.com"
             case "$current_project" in
-              linux) CI_MAIL_RECIPIENTS="arnd@linaro.org, mark.brown@linaro.org" ;;
-              *) CI_MAIL_RECIPIENTS="yvan.roux@linaro.org" ;;
+              linux) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, arnd@linaro.org, mark.brown@linaro.org" ;;
+              *) CI_MAIL_RECIPIENTS="CI_MAIL_RECIPIENTS, yvan.roux@linaro.org" ;;
             esac
             echo "CI_MAIL_RECIPIENTS=$CI_MAIL_RECIPIENTS" > ci_mail_parameters
         - build-name-setter:
@@ -334,7 +335,7 @@
             artifacts: 'bisect-artifacts/**'
             latest-only: false
         - email-ext:
-            recipients: '${{CI_MAIL_RECIPIENTS}}, tcwg-validation@linaro.org'
+            recipients: '${{CI_MAIL_RECIPIENTS}}'
             content-type: text
             body: |
                 Bisected ${{current_project}} on {arch} between ${{bad_rev}} ${{good_rev}} .
