@@ -175,7 +175,7 @@
             # not spawn tcwg-test-release itself. This is taken care
             # of by tcwg-make-and-test-release.
             # keep 6.2-2016.11 regtest tag until we make one for 7.1
-            cat << EOF > make_release_parameters
+            cat << EOF > make_test_release_parameters
             gcc_src=http://releases.linaro.org/components/toolchain/gcc-linaro/7.2-2017.11/gcc-linaro-7.2-2017.11.tar.xz
             release_name=2017.11-regtest-${BUILD_NUMBER}
             toolchain_config=gcc7
@@ -188,7 +188,18 @@
             EOF
 
             echo "NOTE: Make-release job parameters:"
-            cat make_release_parameters
+            cat make_test_release_parameters
+
+            rm -f llvm_release_parameters
+            if ! git --git-dir=jenkins-scripts/.git diff --exit-code --name-only \
+                GIT_PREVIOUS_COMMIT_3 GIT_COMMIT_3 -- \
+                start-container-docker.sh build-container.sh tcwg-llvm-release.sh; then
+              cat << EOF > llvm_release_parameters
+              release=6.0.0
+              candidate=final
+              build_container_tag=$distro
+              EOF
+            fi
         - multijob:
             name: 'Check Manifest'
             condition: ALWAYS
@@ -205,9 +216,16 @@
               - name: tcwg-dev-build
                 property-file: dev_build_parameters
               - name: tcwg-make-and-test-release
-                property-file: make_release_parameters
+                property-file: make_test_release_parameters
                 predefined-parameters: |
                   target_list='arm-linux-gnueabihf'
+        - trigger-builds:
+            - project: tcwg-llvm-release
+              predefined-parameters: |
+                target_list='arm-linux-gnueabihf'
+              parameter-factories:
+                - factory: filebuild
+                  file-pattern: llvm_release_parameters
     publishers:
         - archive:
             artifacts: 'artifacts/*'
