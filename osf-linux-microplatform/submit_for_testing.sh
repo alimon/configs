@@ -42,10 +42,25 @@ export QA_BUILD_VERSION=${BUILD_NUMBER}
 TEMPLATE_PATH=""
 # Generate list of job templates for full test run
 for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
-    FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
+    FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} ${BASE_PATH}/lava-job-definitions/testplan/benchmark.yaml  ${BASE_PATH}/lava-job-definitions/testplan/functional.yaml  ${BASE_PATH}/lava-job-definitions/testplan/ltp-syscalls.yaml"
 done
 
 # Submit full test run
+python2 ${BASE_PATH}/submit_for_testing.py \
+  --device-type ${DEVICE_TYPE} \
+  --build-number ${BUILD_NUMBER} \
+  --lava-server ${LAVA_SERVER} \
+  --qa-server ${QA_SERVER} \
+  --qa-server-team ${QA_SERVER_TEAM} \
+  --qa-server-project ${QA_SERVER_PROJECT} \
+  --git-commit ${QA_BUILD_VERSION} \
+  ${DRY_RUN} \
+  --test-plan ${FULL_TEST_TEMPLATES}
+
+export BOOT_URL=http://snapshots.linaro.org/openembedded/openembedded-osf-linux-microplatform/10/boot-0.0+AUTOINC+2d8c108bf0-ed8112606c-r0-hikey-20180712052629.uefi.img
+export SYSTEM_URL=http://snapshots.linaro.org/openembedded/openembedded-osf-linux-microplatform/10/sparse-lmp-gateway-image-hikey-20180730101524.otaimg
+FULL_TEST_TEMPLATES="${BASE_PATH}/lava-job-definitions/testplan/ota-update.yaml"
+# Submit ota-update test run
 python2 ${BASE_PATH}/submit_for_testing.py \
   --device-type ${DEVICE_TYPE} \
   --build-number ${BUILD_NUMBER} \

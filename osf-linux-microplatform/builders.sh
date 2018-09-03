@@ -94,6 +94,10 @@ otaimg=$(ls *.otaimg)
 ext2simg -v ${otaimg} sparse-${otaimg}
 rm -rf ${otaimg}
 
+export REPO=${PWD}/ostree_repo
+export OSTREE=../../../tmp*/sysroots-components/x86_64/ostree-native/usr/bin/ostree
+BRANCHNAME=$(${OSTREE} refs --repo ${REPO})
+UPDATE_SHA=$(${OSTREE} log --repo ${REPO}  ${BRANCHNAME}  | grep -m1 commit | cut  -f2 -d ' ')
 tar -cJf ostree_repo.tar.xz ostree_repo/
 rm -rf ostree_repo
 
@@ -113,10 +117,12 @@ BOOT_IMG="$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*.img" | sort | xargs -
 ROOTFS_IMG="$(find ${DEPLOY_DIR_IMAGE} -type f -name "sparse-lmp-gateway-image*.otaimg" | xargs -r basename)"
 BASE_URL="http://snapshots.linaro.org"
 
+
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 BOOT_URL=${BASE_URL}/${PUB_DEST}/${BOOT_IMG}
 SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
+UPDATE_SHA=${UPDATE_SHA}
 EOF
 
 cat << EOF > ${WORKSPACE}/ota_params

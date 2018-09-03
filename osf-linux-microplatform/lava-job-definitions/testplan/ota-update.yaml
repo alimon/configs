@@ -1,0 +1,30 @@
+{% extends device_type %}
+
+{% set job_timeout = 150 %}
+
+{% block metadata %}
+  {{ super() }}
+  test scope: functional
+{% endblock metadata %}
+
+{% block job_name %}microplatform-{{IMAGES}}-build-{{BUILD_NUMBER}}-ltp-syscalls{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 120
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/ota-update/ota-update.yaml
+      name: ota-update
+      parameters:
+        BASELINE_SHA: "${BASELINE_SHA}"
+        UPDATE_SHA: "${UPDATE_SHA}"
+      timeout:
+        minutes: 120
+{% endblock test_target %}
