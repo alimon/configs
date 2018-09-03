@@ -19,6 +19,10 @@ set -xe
 
 git clone --reference-if-able "${HOME}/srv/linux.git" -o origin "${KERNEL_REPO}" "${WORKSPACE}/linux"
 cd "${WORKSPACE}/linux"
+git remote add torvalds https://github.com/torvalds/linux.git
+git remote add linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+git remote add linux-stable-rc https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
+git fetch --multiple torvalds linux-stable linux-stable-rc
 git checkout "origin/${KERNEL_BRANCH}"
 if [ "${KERNEL_COMMIT}" ]; then
   git reset --hard "${KERNEL_COMMIT}"
