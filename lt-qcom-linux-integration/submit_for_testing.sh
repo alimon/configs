@@ -20,8 +20,12 @@ export ROOTFS_URL_COMP="gz"
 export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
 export RESIZE_ROOTFS=True
 
+SEND_TESTJOB=false
+
 case "${MACHINE}" in
   dragonboard410c|dragonboard820c|sdm845_mtp)
+    SEND_TESTJOB=true
+
     if [ ${MACHINE} = "dragonboard410c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-410c"
       export INSTALL_FASTBOOT=True
@@ -32,6 +36,7 @@ case "${MACHINE}" in
       export ETH_DEVICE="eth0"
 
       export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
+
     elif [ ${MACHINE} = "dragonboard820c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-820c"
       export INSTALL_FASTBOOT=True
@@ -42,6 +47,10 @@ case "${MACHINE}" in
       export ETH_DEVICE="enP2p1s0"
 
       export BOOT_OS_PROMPT=\'root@dragonboard-820c:~#\'
+
+      if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
+        SEND_TESTJOB=false
+      fi
     elif [ ${MACHINE} = "sdm845_mtp" ]; then
       export LAVA_DEVICE_TYPE="sdm845-mtp"
       export INSTALL_FASTBOOT=
@@ -54,33 +63,39 @@ case "${MACHINE}" in
 
       # XXX: We are using db410c OE userspace
       export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
+
+      if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
+        SEND_TESTJOB=false
+      fi
     fi
     export SMOKE_TESTS="pwd, uname -a, ip a, vmstat, lsblk"
-
-    python configs/openembedded-lkft/submit_for_testing.py \
-        --device-type ${LAVA_DEVICE_TYPE} \
-        --build-number ${BUILD_NUMBER} \
-        --lava-server ${LAVA_SERVER} \
-        --qa-server ${QA_SERVER} \
-        --qa-server-team qcomlt \
-        --qa-server-project ${QA_SERVER_PROJECT} \
-        --git-commit ${BUILD_NUMBER} \
-        --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
-        --template-names template-bootrr.yaml
-
-    python configs/openembedded-lkft/submit_for_testing.py \
-        --device-type ${LAVA_DEVICE_TYPE} \
-        --build-number ${BUILD_NUMBER} \
-        --lava-server ${LAVA_SERVER} \
-        --qa-server ${QA_SERVER} \
-        --qa-server-team qcomlt \
-        --qa-server-project ${QA_SERVER_PROJECT} \
-        --git-commit ${BUILD_NUMBER} \
-        --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
-        --template-base-pre base_template-functional.yaml \
-        --template-names template-functional.yaml
     ;;
   *)
     echo "Skip LAVA_DEVICE_TYPE for ${MACHINE}"
     ;;
 esac
+
+if [ $SEND_TESTJOB = true ]; then
+  python configs/openembedded-lkft/submit_for_testing.py \
+      --device-type ${LAVA_DEVICE_TYPE} \
+      --build-number ${BUILD_NUMBER} \
+      --lava-server ${LAVA_SERVER} \
+      --qa-server ${QA_SERVER} \
+      --qa-server-team qcomlt \
+      --qa-server-project ${QA_SERVER_PROJECT} \
+      --git-commit ${BUILD_NUMBER} \
+      --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
+      --template-names template-bootrr.yaml
+
+  python configs/openembedded-lkft/submit_for_testing.py \
+      --device-type ${LAVA_DEVICE_TYPE} \
+      --build-number ${BUILD_NUMBER} \
+      --lava-server ${LAVA_SERVER} \
+      --qa-server ${QA_SERVER} \
+      --qa-server-team qcomlt \
+      --qa-server-project ${QA_SERVER_PROJECT} \
+      --git-commit ${BUILD_NUMBER} \
+      --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
+      --template-base-pre base_template-functional.yaml \
+      --template-names template-functional.yaml
+fi
