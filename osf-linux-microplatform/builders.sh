@@ -21,7 +21,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
 
-pkg_list=" python-pip coreutils gawk wget git-core diffstat unzip texinfo gcc-multilib build-essential chrpath socat cpio python python3 python3-pip python3-pexpect xz-utils debianutils iputils-ping libsdl1.2-dev xterm android-tools-fsutils repo whiptail pxz locales libssl-dev android-tools-fsutils libarchive13 libgpgme11"
+pkg_list=" python-pip coreutils gawk wget git-core diffstat unzip texinfo gcc-multilib build-essential chrpath socat cpio python python3 python3-pip python3-pexpect xz-utils debianutils iputils-ping libsdl1.2-dev xterm android-tools-fsutils repo whiptail pxz locales libssl-dev android-tools-fsutils libarchive13 libgpgme11 libcurl4"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
