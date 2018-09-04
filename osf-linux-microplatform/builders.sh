@@ -15,6 +15,8 @@ cleanup_exit()
     echo "Running cleanup_exit..."
 }
 
+sudo DEBIAN_FRONTEND=noninteractive add-apt-repository ppa:alexlarsson/flatpak
+
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   echo "INFO: apt update error - try again in a moment"
   sleep 15
