@@ -21,7 +21,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
 
-pkg_list=" python-pip coreutils gawk wget git-core diffstat unzip texinfo gcc-multilib build-essential chrpath socat cpio python python3 python3-pip python3-pexpect xz-utils debianutils iputils-ping libsdl1.2-dev xterm android-tools-fsutils repo whiptail pxz locales libssl-dev android-tools-fsutils libarchive13 libgpgme11 libcurl4"
+pkg_list=" python-pip coreutils gawk wget git-core diffstat unzip texinfo gcc-multilib build-essential chrpath socat cpio python python3 python3-pip python3-pexpect xz-utils debianutils iputils-ping libsdl1.2-dev xterm android-tools-fsutils repo whiptail pxz locales libssl-dev android-tools-fsutils libarchive13 libgpgme11 ostree"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
@@ -95,9 +95,9 @@ ext2simg -v ${otaimg} sparse-${otaimg}
 rm -rf ${otaimg}
 
 export REPO=${PWD}/ostree_repo
-export OSTREE=../../../tmp*/sysroots-components/x86_64/ostree-native/usr/bin/ostree
-BRANCHNAME=$(${OSTREE} refs --repo ${REPO})
-UPDATE_SHA=$(${OSTREE} log --repo ${REPO}  ${BRANCHNAME}  | grep -m1 commit | cut  -f2 -d ' ')
+# export OSTREE=../../../tmp*/sysroots-components/x86_64/ostree-native/usr/bin/ostree
+BRANCHNAME=$(ostree refs --repo ${REPO})
+UPDATE_SHA=$(ostree log --repo ${REPO}  ${BRANCHNAME}  | grep -m1 commit | cut  -f2 -d ' ')
 tar -cJf ostree_repo.tar.xz ostree_repo/
 rm -rf ostree_repo
 
