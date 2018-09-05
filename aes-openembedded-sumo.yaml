@@ -1,5 +1,5 @@
 - job:
-    name: lt-qcom-openembedded-rpb-sumo
+    name: aes-openembedded-rpb-sumo
     project-type: matrix
     defaults: global
     logrotate:
@@ -12,7 +12,12 @@
                 - job-read
                 - job-extended-read
                 - job-workspace
-            linaro-landing-team-qualcomm-personnel:
+            loic.poulain@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+            ryan.harkin@linaro.org:
                 - job-read
                 - job-extended-read
                 - job-build
@@ -32,7 +37,7 @@
             default: 'https://github.com/96boards/oe-rpb-manifest.git'
         - string:
             name: MANIFEST_BRANCH_PREFIX
-            default: 'qcom/'
+            default: 'aes/'
         - string:
             name: MANIFEST_BRANCH
             default: 'sumo'
@@ -50,14 +55,13 @@
             default: 'https://qa-reports.linaro.org'
     disabled: false
     node: master
-    display-name: 'Qualcomm OpenEmbedded RPB (sumo)'
+    display-name: 'AES OpenEmbedded RPB (sumo)'
     axes:
         - axis:
             type: user-defined
             name: MACHINE
             values:
-                - 'dragonboard-410c'
-                - 'dragonboard-820c'
+                - 'eragon410'
         - axis:
             type: user-defined
             name: DISTRO
@@ -94,7 +98,7 @@
                 ;;
             esac
 
-            echo "PUB_DEST=96boards/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER}/${DISTRO}" > pub_dest_parameters
+            echo "PUB_DEST=openembedded/aes/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}" > pub_dest_parameters
         - inject:
             properties-file: pub_dest_parameters
         - shell:
@@ -113,6 +117,6 @@
                   - rpb-openembedded/postbuild.groovy
                   - openembedded-lkft/postbuild.groovy
         - email-ext:
-            recipients: 'fathi.boudra@linaro.org, nicolas.dechesne@linaro.org, anibal.limon@linaro.org'
+            recipients: 'fathi.boudra@linaro.org, loic.poulain@linaro.org, ryan.harkin@linaro.org'
             always: true
             matrix-trigger: only-parent
