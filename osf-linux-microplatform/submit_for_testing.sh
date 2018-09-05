@@ -39,11 +39,7 @@ fi
 export QA_BUILD_VERSION=${BUILD_NUMBER}
 
 [ -n ${FULL_TEST_TEMPLATES} ] && unset FULL_TEST_TEMPLATES
-TEMPLATE_PATH=""
-# Generate list of job templates for full test run
-for test in $(ls ${BASE_PATH}/lava-job-definitions/testplan/); do
-    FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/benchmark.yaml testplan/functional.yaml testplan/ltp-syscalls.yaml"
-done
+FULL_TEST_TEMPLATES="testplan/benchmark.yaml testplan/functional.yaml testplan/ltp-syscalls.yaml"
 
 # Submit full test run
 python2 ${BASE_PATH}/submit_for_testing.py \
