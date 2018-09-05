@@ -69,3 +69,20 @@ OSF_LMP_GIT_NAMESPACE = "opensourcefoundries/"
 EOF
 
 bitbake lmp-gateway-image
+
+DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
+
+# Prepare files to publish
+rm -f ${DEPLOY_DIR_IMAGE}/*.txt
+find ${DEPLOY_DIR_IMAGE} -type l -delete
+
+# Create MD5SUMS file
+find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
+sed -i "s|${DEPLOY_DIR_IMAGE}/||" MD5SUMS.txt
+mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
+
+# Note: the main job script allows to override the default value for
+#       BASE_URL and PUB_DEST, typically used for OE RPB builds
+cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+EOF
