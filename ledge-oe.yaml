@@ -42,35 +42,6 @@
     builders:
         - shell:
             !include-raw: ledge/oe/builders.sh
-        - linaro-publish-token
-        - shell:
-            !include-raw: ledge/oe/publishers.sh
-        - shell:  |
-            #!/bin/bash
-
-            set -e
-
-            rm -rf configs
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            DEVICE_TYPE=x86
-
-            sed -e "s|\${BUILD_NUMBER}|${BUILD_NUMBER}|" \
-                -e "s|\${BUILD_URL}|${BUILD_URL}|" \
-                -e "s|\${GIT_BRANCH}|${GIT_BRANCH}|" \
-                -e "s|\${GIT_COMMIT}|${GIT_COMMIT}|" \
-                -e "s|\${GIT_URL}|${GIT_URL}|" \
-                -e "s|\${PUBLISH_SERVER}|${PUBLISH_SERVER}|" \
-                -e "s|\${PUB_DEST}|${PUB_DEST}|" \
-                < configs/ledge/oe/lava-job-definitions/${DEVICE_TYPE}/template-optee-xtest-qemu.yaml \
-                > custom_lava_job_definition.yaml
-
-            cat << EOF > post_build_lava_parameters
-            DEVICE_TYPE=${DEVICE_TYPE}
-            CUSTOM_YAML_URL=${JOB_URL}/ws/custom_lava_job_definition.yaml
-            LAVA_SERVER=${LAVA_SERVER}
-            EOF
-        - trigger-builds:
-            - project: 'post-build-lava'
-              property-file: post_build_lava_parameters
-              block: true
+#        - linaro-publish-token
+#        - shell:
+#            !include-raw: ledge/oe/publishers.sh
