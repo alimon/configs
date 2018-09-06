@@ -125,6 +125,6 @@ python ${BASE_PATH}/submit_for_testing.py \
   --qa-server ${QA_SERVER} \
   --qa-server-team ${QA_SERVER_TEAM} \
   --qa-server-project ${QA_SERVER_PROJECT} \
-  --git-commit ${QA_BUILD_VERSION} \
+  --git-commit ${QA_BUILD_VERSION}-b${BUILD_NUMBER} \
   ${DRY_RUN} \
   --test-plan ${TEST_TEMPLATES}
