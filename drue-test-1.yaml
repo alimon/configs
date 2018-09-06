@@ -1,0 +1,32 @@
+- job:
+    name: drue-test-1
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-cancel
+            daniel.diaz@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Test job for Dan Rue'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            env
+            echo "Hello, world!"
+    publishers:
+        - email:
+            recipients: 'dan.rue@linaro.org'
