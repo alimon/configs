@@ -58,7 +58,7 @@
             set -ex
 
             sudo apt-get update -q=2
-            sudo apt-get install -y ccache python-requests quilt cpio rsync dh-exec
+            sudo apt-get install -q -y ccache python-requests quilt cpio rsync dh-exec
 
             # Checkout source code
             git clone --depth 1 -b ${DEBIAN_GIT_BRANCH} ${DEBIAN_GIT_URL} debian-pkg
@@ -68,7 +68,7 @@
 
             kernel_version=$(make kernelversion)
             kernel_deb_pkg_version=$(echo ${kernel_version} | sed -e 's/\.0-rc/~rc/')
-            export KDEB_PKGVERSION="${kernel_deb_pkg_version}.linaro.${BUILD_NUMBER}-1"
+            export KDEB_PKGVERSION="${kernel_deb_pkg_version}.dfsg.${BUILD_NUMBER}-1"
             git tag -f v${kernel_deb_pkg_version//\~/-}
 
             # Build the debian source kernel
@@ -85,7 +85,7 @@
                 - Branch: ${GIT_BRANCH}
                 - Commit: ${GIT_COMMIT}
 
-             -- Fathi Boudra <fathi.boudra@linaro.org>  $(date -R)
+             -- enterprise <rp-enterprise@linaro.org>>  $(date -R)
 
             EOF
 
@@ -141,4 +141,4 @@
               property-file: build-package-params
               condition: SUCCESS
         - email:
-            recipients: 'fathi.boudra@linaro.org riku.voipio@linaro.org packages@lists.linaro.org'
+            recipients: 'rp-enterprise@linaro.org packages@lists.linaro.org'
