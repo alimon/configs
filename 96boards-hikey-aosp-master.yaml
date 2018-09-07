@@ -132,6 +132,8 @@
             pushd test/suite_harness
             git fetch http://android-review.linaro.org/platform/test/suite_harness refs/changes/23/19623/1 && git cherry-pick FETCH_HEAD 
             popd
+            make vendorimage TARGET_KERNEL_USE=4.4
+            cp out/target/product/hikey/vendor.img out/vendor-4.4.img
             lunch aosp_arm64-userdebug
             make -j"$(nproc)" vts cts
             cp out/host/linux-x86/vts/android-vts.zip out/
@@ -255,6 +257,7 @@
 
             # Submit jobs for 4.4 kernel
             sed -i "s|boot.img.xz|boot-4.4-${KERNEL_DESCRIBE_4_4}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            sed -i "s|vendor.img.xz|vendor-4.4.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
             export KERNEL_BRANCH="android-hikey-linaro-4.4-${KERNEL_DESCRIBE_4_4}"
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
