@@ -119,8 +119,8 @@ RDEPENDS_packagegroup-rpb_remove = "docker"
 EOF
 
 cat << EOF >> conf/local.conf
-DEFAULTTUNE_intel-core2-32 = "core2-64"
 SERIAL_CONSOLES_remove_intel-core2-32 = "115200;ttyPCH0"
+SERIAL_CONSOLES_remove_intel-corei7-64 = "115200;ttyPCH0"
 SERIAL_CONSOLES_append_dragonboard-410c = " 115200;ttyMSM1"
 SERIAL_CONSOLES_append_hikey = " 115200;ttyAMA2"
 EOF
@@ -167,7 +167,7 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
 case "${MACHINE}" in
   juno)
     ;;
-  intel-core2-32)
+  intel-core2-32|intel-corei7-64)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
       pxz ${rootfs}
     done
