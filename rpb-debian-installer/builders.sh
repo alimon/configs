@@ -12,7 +12,7 @@ sudo cp linaro.pref /etc/apt/preferences.d/
 sudo apt-get update -q
 
 # Find kernel abi
-KERNEL_ABI=`apt-cache show linux-image-reference-arm64 | grep -m 1 Depends | sed -e "s/.*linux-image-//g" -e "s/-arm64//g"`
+KERNEL_ABI=`apt-cache show linux-image-reference-arm64 | grep -m 1 Depends | sed -e "s/.*linux-image-//g" -e "s/-arm64.*//g"`
 
 # Build the installer
 DEB_INSTALLER_VERSION="20170615+deb9u2"
