@@ -100,6 +100,56 @@ function copy_tarball_to_rootfs() {
 	fi
 }
 
+function create_ramdisk_from_folder() {
+	ramdisk_name=$1
+	ramdisk_folder=$2
+	ramdisk="$ramdisk_name.cpio"
+
+	cd $ramdisk_folder
+	find . | cpio -ov -H newc > "../../out/$ramdisk"
+	${GZ} "../../out/$ramdisk"
+	ramdisk=$ramdisk.gz
+	echo "$ramdisk"
+	cd ../
+}
+
+function overlay_ramdisk_from_git() {
+	git_repo=$1
+	git_branch=$2
+
+	# clone git repo and get revision details
+	project_name="$(basename "$git_repo" .git)"
+	project_folder="$project_name"
+	project_ramdisk_folder="$(realpath $project_folder)/rootfs"
+	git clone -b "$git_branch" --depth 1 "$git_repo" "$project_folder"
+	cd "$project_folder"
+	DESTDIR="$project_ramdisk_folder" prefix="/usr" make install 2>&1 > /dev/null
+	project_name="$project_name-$(git rev-parse --short HEAD)"
+
+	# created the overlayed ramdisk involves the creation of new ramdisk from folder and
+	# concat both into a single file
+	project_ramdisk_overlay=$(create_ramdisk_from_folder $project_name $project_ramdisk_folder)
+	cd ../
+
+	overlayed_ramdisk_file="$(basename $ramdisk_file)+$(basename $project_ramdisk_overlay)"
+	cat "$ramdisk_file" "out/$project_ramdisk_overlay" > "out/$overlayed_ramdisk_file"
+	echo "$overlayed_ramdisk_file"
+	rm -rf "$project_folder"
+}
+
+function overlay_ramdisk_from_file() {
+	file_name=$1
+	file_cpio="out/$file_name.cpio"
+
+	echo $file_name | cpio -ov -H newc > $file_cpio
+	${GZ} $file_cpio
+	file_cpio=$file_cpio.gz
+
+	overlayed_ramdisk_file="$(basename $ramdisk_file)+$(basename $file_cpio)"
+	cat "$ramdisk_file" "$file_cpio" > "out/$overlayed_ramdisk_file"
+	echo "$overlayed_ramdisk_file"
+}
+
 # Set default tools to use
 if [ -z "${GZ}" ]; then
 	export GZ=gzip
@@ -293,6 +343,12 @@ if [[ ! -z "${KERNEL_DT_URL}" ]]; then
 	dt_mkbootimg_arg="--dt out/$(basename ${KERNEL_DT_URL})"
 fi
 
+# Overlay ramdisk to install tools, artifacts, etc
+if [[ ! -z "${BOOTRR_GIT_REPO}" ]]; then
+	overlayed_ramdisk_file="out/$(overlay_ramdisk_from_git "${BOOTRR_GIT_REPO}" "${BOOTRR_GIT_BRANCH}")"
+	ramdisk_file=$overlayed_ramdisk_file
+fi
+
 # Create boot image (bootrr)
 boot_file=boot-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
 skales-mkbootimg \
@@ -308,25 +364,12 @@ skales-mkbootimg \
 # Create boot image (functional), sdm845-mtp requires an initramfs to mount the rootfs and then
 # exec switch_rootfs, use the same method in other boards too
 boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
-if [[ $ramdisk_file_type = *"gzip compressed data"* ]]; then
-	${GZ} -d $ramdisk_file
-	ramdisk_file=out/$(basename ${RAMDISK_URL} .gz)
-	ramdisk_file_type=$(file $ramdisk_file)
-	ramdisk_comp='gz'
-fi
 init_file=init
-init_tar_file=init.tar.gz
 echo "${INITRAMFS_ROOTFS}" | sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" > ./$init_file
 chmod +x ./$init_file
-tar -czf $init_tar_file ./$init_file
-copy_tarball_to_rootfs "$init_tar_file" "$ramdisk_file" "$ramdisk_file_type"
-rm -f $init_file $init_tar_file
-if [[ $ramdisk_comp = "gz" ]]; then
-	${GZ} $ramdisk_file
-	ramdisk_file="$ramdisk_file".gz
-	ramdisk_file_type=$(file $ramdisk_file)
-	ramdisk_comp=
-fi
+overlayed_ramdisk_file="out/$(overlay_ramdisk_from_file "$init_file")"
+rm -f $init_file
+ramdisk_file=$overlayed_ramdisk_file
 
 skales-mkbootimg \
 	--kernel $kernel_file \
