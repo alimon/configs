@@ -1,6 +1,7 @@
 # Build Android
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
+rm -rf out/
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
 repo sync -j"$(nproc)" -c
 
