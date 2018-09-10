@@ -192,6 +192,6 @@ SYSTEM_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_IMG}
 KERNEL_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
 NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TARXZ_IMG}
-PTABLE_URL=http://snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/69/hikey/release/ptable-linux-8g.img
+PTABLE_URL=http://images.validation.linaro.org/builds.96boards.org/snapshots/reference-platform/components/uefi-staging/49/hikey/release/ptable-linux-8g.img
 FIP_URL=${BASE_URL}${PUB_DEST}/bootloader/${FIP_IMG}
 EOF
