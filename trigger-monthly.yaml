@@ -1,5 +1,5 @@
 - job:
-    name: trigger-96boards-b2260
+    name: trigger-monthly
     project-type: freestyle
     defaults: global
     properties:
@@ -9,9 +9,9 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    disabled: true
+    disabled: false
     node: master
-    display-name: 'Trigger for 96boards - STiH410 B2260'
+    display-name: 'Trigger to launch monthly rebuilds'
     triggers:
         - timed: '@monthly'
     wrappers:
@@ -19,3 +19,5 @@
     builders:
         - trigger-builds:
             - project: '96boards-b2260'
+        - trigger-builds:
+            - project: '96boards-hikey-debian'
