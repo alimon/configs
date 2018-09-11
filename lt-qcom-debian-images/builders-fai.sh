@@ -16,6 +16,19 @@ fi
 
 set -ex
 
+# Needed to use git commit/push on CI
+git config --global user.name "Linaro CI"
+git config --global user.email "ci_notify@linaro.org"
+git config --global core.sshCommand "ssh -F ${HOME}/qcom.sshconfig"
+
+cat << EOF > ${HOME}/qcom.sshconfig
+Host git.linaro.org
+    User git
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking no
+EOF
+chmod 0600 ${HOME}/qcom.sshconfig
+
 # Build information
 mkdir -p out
 cat > out/HEADER.textile << EOF
@@ -33,6 +46,9 @@ sudo mount -t tmpfs tmpfs /tmp
 
 # dumb utility to parse dpkg -l output
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lt-qcom-debian-images/debpkgdiff.py
+
+# Record build log changes in git tree
+git clone ssh://git.linaro.org/landing-teams/working/qualcomm/lt-ci.git -b debian/${PLATFORM_NAME}
 
 for rootfs in ${ROOTFS}; do
 
@@ -80,6 +96,9 @@ for rootfs in ${ROOTFS}; do
         echo "latest build published does not have packages list, skipping diff report"
     fi
 
+    # record list of installed packages in git
+    cp out/${VENDOR}-${OS_FLAVOUR}-${rootfs}-${PLATFORM_NAME}-${BUILD_NUMBER}.packages lt-ci/${VENDOR}-${OS_FLAVOUR}-${rootfs}.packages
+
     cat >> out/HEADER.textile << EOF
 * Linaro Debian ${rootfs}: size: ${rootfs_sz_real}
 EOF
@@ -97,6 +116,9 @@ if wget -q ${PUBLISH_SERVER}$(dirname ${PUB_DEST})/latest/config-* -O last-build
 else
     echo "latest build published does not have kernel config, skipping diff report"
 fi
+
+# record kernel config changes in git
+cp out/config-* lt-ci/config
 
 # the space after pre.. tag is on purpose
 if [ -f out/build-changes.txt ]; then
@@ -118,6 +140,13 @@ cat >> out/HEADER.textile << EOF
 * Kernel package name: ${kernel_binpkg}
 * Kernel package version: ${kernel_pkgver}
 EOF
+
+# Commit build changes in lt-ci
+cd lt-ci
+git add -A
+git commit --allow-empty -m "Import build ${BUILD_NUMBER}"
+git push origin debian/${PLATFORM_NAME}
+cd ..
 
 # Create boot image
 cat out/vmlinuz-* out/$(basename ${DTBS}) > Image.gz+dtb
