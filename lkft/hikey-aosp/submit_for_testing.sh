@@ -26,6 +26,10 @@ else
     sed -i "s|vendor.img.xz|cache.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 fi
 
+if echo ${KERNEL_BRANCH} | grep "4.4"; then
+   sed -i "s|vendor.img.xz|vendor-4.4.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+fi
+
 python configs/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
     --build-number ${BUILD_NUMBER} \
