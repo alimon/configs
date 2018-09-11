@@ -28,7 +28,7 @@ case "${DEFCONFIG}" in
   hikey_defconfig)
     python mkbootimg \
       --kernel ${PWD}/arch/arm64/boot/Image-dtb \
-      --cmdline "console=ttyFIQ0 androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/system/etc/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug" \
+      --cmdline "androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/vendor/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab" \
       --os_version O \
       --os_patch_level 2016-11-05 \
       --ramdisk ramdisk.img \
