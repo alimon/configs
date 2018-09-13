@@ -15,6 +15,4 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; th
 	sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
 fi
 
-sudo mount -t tmpfs tmpfs /tmp
-
 export GZ=pigz
