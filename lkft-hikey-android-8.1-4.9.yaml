@@ -57,7 +57,7 @@
             branches:
                 - origin/${KERNEL_BRANCH}
             skip-tag: true
-            shallow-clone: true
+            shallow-clone: false
             wipe-workspace: false
     wrappers:
         - timestamps
@@ -80,7 +80,12 @@
                 variable: AP_KEY
     builders:
         - shell: |
+            #!/bin/bash
+
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
             git revert --no-edit bbab5cb8a5bd598af247d9eaf5a3033e7d12104e
+
         - shell:
             !include-raw:
                 - lkft/hikey-aosp/builders.sh
