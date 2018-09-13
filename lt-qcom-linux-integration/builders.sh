@@ -1,6 +1,61 @@
 #!/bin/bash
 
-# To use in sdm845-mtp functional testing
+# Init script to use ramdisk used in bootrr testing
+INITRAMFS_RAMDISK=$(cat <<EOF
+#!/bin/sh
+
+HOME=/root
+PATH=/sbin:/bin:/usr/sbin:/usr/bin
+PS1="linaro-test [rc=\$(echo \\\$?)]# "
+export HOME PS1 PATH
+
+do_mount_fs() {
+	grep -q "\$1" /proc/filesystems || return
+	test -d "\$2" || mkdir -p "\$2"
+	mount -t "\$1" "\$1" "\$2"
+}
+
+do_mknod() {
+	test -e "\$1" || mknod "\$1" "\$2" "\$3" "\$4"
+}
+
+mkdir -p /proc
+mount -t proc proc /proc
+
+do_mount_fs sysfs /sys
+do_mount_fs debugfs /sys/kernel/debug
+do_mount_fs devtmpfs /dev
+do_mount_fs devpts /dev/pts
+do_mount_fs tmpfs /dev/shm
+
+mkdir -p /run
+mkdir -p /var/run
+
+/sbin/udevd --daemon
+/bin/udevadm trigger
+
+do_mknod /dev/console c 5 1
+do_mknod /dev/null c 1 3
+do_mknod /dev/zero c 1 5
+
+echo -n 'BOOT TIME: '
+cat /proc/uptime
+
+if \$(grep -q bootrr-auto /proc/cmdline); then
+	for TEST in \$(tr "\0" "\n" < /proc/device-tree/compatible); do
+		if [ -x "/usr/bin/\${TEST}" ]; then
+			/usr/bin/\${TEST}
+		fi
+	done
+
+	echo ~~~~~~~~~~~~~~~~~~~~~
+fi
+
+exec sh </dev/console >/dev/console 2>/dev/console
+EOF
+)
+
+# Init script to mount rootfs mainly used in functional testing
 INITRAMFS_ROOTFS=$(cat <<EOF
 #!/bin/sh
 
@@ -20,7 +75,7 @@ do_mknod() {
 
 rescue_shell() {
 	echo "Failed to mount rootfs (__ROOTFS_PARTITION__), executing rescue shell..."
-	export PS1="linaro-test [rc=$(echo \$?)]# "
+	export PS1="linaro-test [rc=\$(echo \\\$?)]# "
 	exec sh </dev/console >/dev/console 2>/dev/console
 }
 
@@ -139,7 +194,7 @@ function overlay_ramdisk_from_git() {
 
 function overlay_ramdisk_from_file() {
 	file_name=$1
-	file_cpio="out/$file_name.cpio"
+	file_cpio="out/$2.cpio"
 
 	echo $file_name | cpio -ov -H newc > $file_cpio
 	${GZ} $file_cpio
@@ -349,11 +404,17 @@ if [[ ! -z "${BOOTRR_GIT_REPO}" ]]; then
 	ramdisk_file=$overlayed_ramdisk_file
 fi
 
-# Create boot image (bootrr)
+# Create boot image (bootrr), overlay the init script to setup the ramdisk
+init_file=init
+echo "${INITRAMFS_RAMDISK}" > ./$init_file
+chmod +x ./$init_file
+overlayed_ramdisk_file="out/$(overlay_ramdisk_from_file "$init_file" "init_ramdisk")"
+rm -f $init_file
+
 boot_file=boot-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
 skales-mkbootimg \
 	--kernel $kernel_file \
-	--ramdisk $ramdisk_file \
+	--ramdisk $overlayed_ramdisk_file \
 	--output out/$boot_file \
 	$dt_mkbootimg_arg \
 	--pagesize "${BOOTIMG_PAGESIZE}" \
@@ -367,13 +428,12 @@ boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-
 init_file=init
 echo "${INITRAMFS_ROOTFS}" | sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" > ./$init_file
 chmod +x ./$init_file
-overlayed_ramdisk_file="out/$(overlay_ramdisk_from_file "$init_file")"
+overlayed_ramdisk_file="out/$(overlay_ramdisk_from_file "$init_file" "init_rootfs")"
 rm -f $init_file
-ramdisk_file=$overlayed_ramdisk_file
 
 skales-mkbootimg \
 	--kernel $kernel_file \
-	--ramdisk $ramdisk_file \
+	--ramdisk $overlayed_ramdisk_file \
 	--output out/$boot_rootfs_file \
 	$dt_mkbootimg_arg \
 	--pagesize "${BOOTIMG_PAGESIZE}" \
