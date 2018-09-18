@@ -5,7 +5,7 @@ import xmlrpclib
 
 # Actually submit job to LAVA
 # Disabled until settings are fixed: https://bugs.linaro.org/show_bug.cgi?id=3914
-SUBMIT = 0
+SUBMIT = 1
 
 ENV = os.environ
 expect = sys.argv[1]
