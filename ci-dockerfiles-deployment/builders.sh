@@ -72,7 +72,7 @@ for image in ${update_images}; do
     "skip:"*)
       echo "Skipping: don't need to build ${image} on branch ${GERRIT_BRANCH}"
       ;;
-    "no:amd64:amd64"|"no:amd64:i386"|"no:arm64:arm64"|"no:arm64:armhf")
+    "no:amd64:amd64"|"no:amd64:i386"|"no:arm64:arm64"|"no:armhf:armhf")
       echo "=== Start build: ${image} ==="
       ./build.sh || echo "=== FAIL: ${image} ===" >> ${WORKSPACE}/log
       ;;
