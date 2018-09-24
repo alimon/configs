@@ -2,6 +2,8 @@
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
 rm -rf out/
+# Prevent repo aborting sync because of uncommitted changes.
+repo forall -c 'git reset --hard' >/dev/null
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
 repo sync -j"$(nproc)" -c
 
