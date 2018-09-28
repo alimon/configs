@@ -82,9 +82,9 @@
             default: master
             description: "Git rev of $current_project to build"
         - bool:
-            name: use_baseline
-            default: true
-            description: "Either compare results against last-successful build or reset baseline"
+            name: reset_baseline
+            default: false
+            description: "Whether to reset baseline to results of this build"
         - string:
             name: distro
             default: xenial
@@ -134,8 +134,8 @@
             file: true
         - conditional-step:
             condition-kind: strings-match
-            condition-string1: '${{ENV,var="use_baseline"}}'
-            condition-string2: 'true'
+            condition-string1: '${{ENV,var="reset_baseline"}}'
+            condition-string2: 'false'
             steps:
               - copyartifact:
                   project: tcwg-llvm-kernel-build-{arch}
@@ -162,8 +162,8 @@
             if [ -e artifacts/distance-to-baseline ]; then
               name="$name-G$(cat artifacts/distance-to-baseline)"
             fi
-            if ! $use_baseline; then
-              name="$name-reset"
+            if $reset_baseline; then
+              name="$name-baseline"
               # Don't trigger bisect if this [possibly failed] build is
               # the new baseline.
               rm -f artifacts/trigger-bisect-on-failure
@@ -227,10 +227,6 @@
             name: bad_rev
             default: refs/remotes/origin/master
             description: "Bad revision"
-        - bool:
-            name: use_baseline
-            default: true
-            description: "Either compare results against last-successful build or reset baseline"
         - string:
             name: distro
             default: xenial
@@ -278,16 +274,11 @@
         - build-name-setter:
             name: 'build-name'
             file: true
-        - conditional-step:
-            condition-kind: strings-match
-            condition-string1: '${{ENV,var="use_baseline"}}'
-            condition-string2: 'true'
-            steps:
-              - copyartifact:
-                  project: tcwg-llvm-kernel-build-{arch}
-                  target: prev_artifacts
-                  optional: true
-                  which-build: last-successful
+        - copyartifact:
+            project: tcwg-llvm-kernel-build-{arch}
+            target: prev_artifacts
+            optional: true
+            which-build: last-successful
         - shell: |
             #!/bin/bash
             set -ex
