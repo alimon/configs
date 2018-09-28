@@ -160,7 +160,7 @@
               name="$name-O$(cat artifacts/linux_n_obj)"
             fi
             if [ -e artifacts/distance-to-baseline ]; then
-              name="$name-G$(cat artifacts/distance-to-baseline)"
+              name="$name-B$(cat artifacts/distance-to-baseline)"
             fi
             if $reset_baseline; then
               name="$name-baseline"
@@ -378,6 +378,8 @@
             num-to-keep: 30
         - build-blocker:
             blocking-jobs:
+              - "tcwg-llvm-kernel-build-aarch64"
+              - "tcwg-llvm-kernel-build-armv8l"
               - "tcwg-llvm-kernel-bisect-aarch64"
               - "tcwg-llvm-kernel-bisect-armv8l"
             queue-scanning: 'ALL'
