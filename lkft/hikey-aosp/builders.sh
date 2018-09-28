@@ -45,7 +45,7 @@ ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig co
 cp .config out/defconfig
 make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
 
-wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
+wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py -O mkbootimg
 wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
 
 python mkbootimg \

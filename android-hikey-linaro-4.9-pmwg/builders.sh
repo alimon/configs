@@ -20,7 +20,7 @@ fi
 make ARCH=arm64 ${DEFCONFIG}
 make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) -s Image-dtb
 
-wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg -O mkbootimg
+wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py -O mkbootimg
 wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
 
 mkdir -p out
