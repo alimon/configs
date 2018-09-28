@@ -159,11 +159,8 @@
             if [ -e artifacts/linux_n_obj ]; then
               name="$name-O$(cat artifacts/linux_n_obj)"
             fi
-            if [ -e artifacts/distance-to-good ]; then
-              name="$name-G$(cat artifacts/distance-to-good)"
-            fi
-            if [ -e artifacts/distance-to-tested ]; then
-              name="$name-T$(cat artifacts/distance-to-tested)"
+            if [ -e artifacts/distance-to-baseline ]; then
+              name="$name-G$(cat artifacts/distance-to-baseline)"
             fi
             if ! $use_baseline; then
               name="$name-reset"
@@ -223,12 +220,12 @@
                 - linux
             description: 'Project to bisect'
         - string:
-            name: good_rev
-            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-{arch}-good
-            description: "Good revision"
+            name: baseline_rev
+            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-{arch}-baseline
+            description: "Baseline revision"
         - string:
             name: bad_rev
-            default: refs/remotes/gerrit/linaro-local/ci/llvm-kernel-{arch}-tested
+            default: refs/remotes/origin/master
             description: "Bad revision"
         - bool:
             name: use_baseline
@@ -300,7 +297,7 @@
             -- \
             ./jenkins-scripts/tcwg-bisect-llvm-kernel.sh \
             --current_project "$current_project" \
-            --good_rev "$good_rev" \
+            --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
             --verbose true
 
@@ -338,7 +335,7 @@
             recipients: '${{CI_MAIL_RECIPIENTS}}'
             content-type: text
             body: |
-                Bisected ${{current_project}} on {arch} between bad ${{bad_rev}} and good ${{good_rev}} .
+                Bisected ${{current_project}} on {arch} between bad ${{bad_rev}} and baseline ${{baseline_rev}} .
                 Bisect log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/bisect-artifacts/bisect.log/*view*/
                 Artifacts: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/bisect-artifacts/
                 Build URL: ${{PROJECT_URL}}${{BUILD_NUMBER}}/
