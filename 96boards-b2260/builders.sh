@@ -41,7 +41,6 @@ Build description:
 * FAI commit: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
 EOF
 
-sudo mount -t tmpfs tmpfs /tmp
 sudo cp tools/udevadm /sbin
 
 for rootfs in ${ROOTFS}; do
