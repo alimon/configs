@@ -134,6 +134,24 @@ actions:
     timeout:
       minutes: 300
     definitions:
+    - from: inline
+      path: android-boot.yaml
+      name: android-boot
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: android-boot
+          description: "android-boot"
+        run:
+          steps:
+            - lava-test-case "android-boot" --shell adb getprop sys.boot_completed
+
+- test:
+    namespace: tlxc
+    connection: lxc
+    timeout:
+      minutes: 300
+    definitions:
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/android/noninteractive-tradefed/tradefed.yaml
