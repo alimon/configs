@@ -8,6 +8,10 @@ echo "deb http://obs.linaro.org/ERP:/18.06/Debian_9 ./" | sudo tee /etc/apt/sour
 sudo apt-get -q=2 update
 sudo apt-get -q=2 install -y --no-install-recommends cpio qemu-utils virtinst libvirt-clients
 
+default_gw=$(ip route show default 0.0.0.0/0 | cut -d' ' -f3)
+sudo sed -i "/^uri_default/d" /etc/libvirt/libvirt.conf
+echo "uri_default = \"qemu+tcp://${default_gw}/system\"" | sudo tee -a /etc/libvirt/libvirt.conf
+
 virt-host-validate
 
 sudo virsh pool-list --all
