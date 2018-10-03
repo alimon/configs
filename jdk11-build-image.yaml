@@ -19,12 +19,8 @@
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
-    parameters:
-        - string:
-            name: JDK_URL
-            default: 'http://openjdk.linaro.org/releases/jdk10-server-release-1804.tar.xz'
     disabled: false
-    node: aarch64-06
+    node: j12-qrep-01
     display-name: 'OpenJDK 11 - Configure and build OpenJDK 11'
     axes:
         - axis:
@@ -42,7 +38,7 @@
             type: slave
             name: label
             values:
-                - aarch64-06
+                - j12-qrep-01
     execution-strategy:
         sequential: true
     wrappers:
@@ -50,7 +46,7 @@
             dirmatch: false
         - timestamps
         - matrix-tie-parent:
-            node: aarch64-06
+            node: j12-qrep-01
     builders:
         - copyartifact:
             project: jdk11-update-src-tree
@@ -75,10 +71,7 @@
 
             rm -rf jdk* primordial-jdk* build*
 
-            wget --progress=dot -e dotbytes=2M ${JDK_URL}
-            tar -Jxf jdk*.tar.xz
-
-            cd ${WORKSPACE}/jdk*
+            cd ${HOME}/workspace/jdk-boot-jdk/jdk10
             export JAVA_HOME=${PWD}
 
             export PATH=${JAVA_HOME}/bin:${PATH}
@@ -90,8 +83,7 @@
 
             shopt -s nullglob
 
-            # Extract boot jdk
-            # Not used. tar xf incoming/primordial-jdk11.tar.gz
+
 
             # Configure and build
             mkdir -p build-stage1 build-stage2
