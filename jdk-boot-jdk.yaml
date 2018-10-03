@@ -24,12 +24,18 @@
         - shell: |
             #!/bin/bash
 
-            rm -rf jdk*
-            wget http://openjdk.linaro.org/releases/jdk8u-server-release-1804.tar.xz http://openjdk.linaro.org/releases/jdk10-server-release-1804.tar.xz
-            tar Jxf jdk8u-server-release-1804.tar.xz
-            tar Jxf jdk10-server-release-1804.tar.xz
+            JDK8u=jdk8u-server-release-1804
+            JDK10=jdk10-server-release-1804
 
-            find $PWD -name 'jdk*'
+            rm -rf jdk*
+            wget http://openjdk.linaro.org/releases/${JDK8u}.tar.xz http://openjdk.linaro.org/releases/${JDK10}.tar.xz
+            tar Jxf ${JDK8u}.tar.xz
+            tar Jxf ${JDK10}.tar.xz
+
+            mv ${JDK8u} jdk8u
+            mv ${JDK10} jdk10
+
+            find $PWD -name 'jdk*' -maxdepth 1
     publishers:
         - email:
             recipients: 'stuart.monteith@linaro.org'
