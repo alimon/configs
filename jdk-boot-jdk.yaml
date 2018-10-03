@@ -1,0 +1,35 @@
+- job:
+    name: jdk-boot-jdk
+    project-type: freestyle
+    defaults: global
+    description: |
+        Download and unpack boot jdks.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            num-to-keep: 10
+            artifact-num-to-keep: 1
+    disabled: false
+    node: j12-qrep-01
+    display-name: 'OpenJDK - Boot JDKs'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            rm -rf jdk*
+            wget http://openjdk.linaro.org/releases/jdk8u-server-release-1804.tar.xz http://openjdk.linaro.org/releases/jdk10-server-release-1804.tar.xz
+            tar Jxf jdk8u-server-release-1804.tar.xz
+            tar Jxf jdk10-server-release-1804.tar.xz
+
+            find $PWD -name 'jdk*'
+    publishers:
+        - email:
+            recipients: 'stuart.monteith@linaro.org'
