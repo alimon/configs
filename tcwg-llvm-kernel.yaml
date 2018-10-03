@@ -17,16 +17,16 @@
           llvm_branch: release_70
     linux:
       - next:
-          linux_repo: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
           linux_branch: master
       - mainline:
-          linux_repo: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
           linux_branch: master
       - stable:
-          linux_repo: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           linux_branch: linux-4.18.y
       - lts:
-          linux_repo: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           linux_branch: linux-4.14.y
     jobs:
       - 'tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}'
@@ -350,7 +350,7 @@
     name: linux
     scm:
         - git:
-            url: '{linux_repo}'
+            url: '{linux_url}'
             branches:
                 - refs/heads/{linux_branch}
             basedir: linux
