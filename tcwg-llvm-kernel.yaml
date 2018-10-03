@@ -1,3 +1,8 @@
+- view:
+    name: tcwg-llvm-kernel
+    view-type: list
+    regex: 'tcwg-llvm-kernel.*'
+
 - project:
     name: tcwg-llvm-kernel
     arch:
@@ -7,36 +12,109 @@
       - armv8l:
           node: tcwg-d05_32-build
           docker_arch: armhf
-    repo:
-      - llvm
-      - linux
     llvm:
       - master:
+          llvm_url: https://github.com/llvm-project/llvm-project-20170507.git
           llvm_branch: master
+          llvm_reference: llvm-project-20170507.git
       - release:
+          llvm_url: https://github.com/llvm-project/llvm-project-20170507.git
           llvm_branch: release_70
+          llvm_reference: llvm-project-20170507.git
     linux:
       - next:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
           linux_branch: master
+          linux_reference: linux.git
       - mainline:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
           linux_branch: master
+          linux_reference: linux.git
       - stable:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           linux_branch: linux-4.18.y
+          linux_reference: linux.git
       - lts:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           linux_branch: linux-4.14.y
+          linux_reference: linux.git
+    repo:
+      - llvm
+      - linux
     jobs:
+      - 'tcwg-llvm-kernel-trigger-{arch}-{llvm}-{linux}-{repo}'
       - 'tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}'
       - 'tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}'
-      - 'tcwg-llvm-kernel-trigger-{repo}-{llvm}-{linux}'
 
-- view:
-    name: tcwg-llvm-kernel
-    view-type: list
-    regex: 'tcwg-llvm-kernel.*'
+- scm:
+    name: llvm
+    scm:
+        - git:
+            url: '{llvm_url}'
+            branches:
+                - 'refs/heads/{llvm_branch}'
+            basedir: llvm
+            skip-tag: true
+            shallow-clone: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/{llvm_reference}
+            wipe-workspace: false
+            clean:
+                before: true
+            prune: true
+- scm:
+    name: linux
+    scm:
+        - git:
+            url: '{linux_url}'
+            branches:
+                - 'refs/heads/{linux_branch}'
+            basedir: linux
+            skip-tag: true
+            shallow-clone: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/{linux_reference}
+            wipe-workspace: false
+            clean:
+                before: true
+            prune: true
+- job-template:
+    name: tcwg-llvm-kernel-trigger-{arch}-{llvm}-{linux}-{repo}
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+        - build-blocker:
+            blocking-jobs:
+              - "tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{repo}"
+              - "tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}-{repo}"
+            queue-scanning: 'ALL'
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG BBB RRv4 Trigger LLVM + Linux-next @ {repo} @ llvm-{llvm} @ linux-{linux}'
+    scm:
+      - '{repo}'
+    triggers:
+        - pollscm:
+            cron: '@daily'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{repo}
+              predefined-parameters: |
+                current_project={repo}
+                current_rev=$GIT_COMMIT
 
 - job-template:
     name: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}
@@ -331,83 +409,6 @@
                 Build log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/consoleText
             always: true
 
-- scm:
-    name: llvm
-    scm:
-        - git:
-            url: https://github.com/llvm-project/llvm-project-20170507.git
-            branches:
-                - 'refs/heads/{llvm_branch}'
-            basedir: llvm
-            skip-tag: true
-            shallow-clone: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project-20170507.git
-            wipe-workspace: false
-            clean:
-                before: true
-            prune: true
-- scm:
-    name: linux
-    scm:
-        - git:
-            url: '{linux_url}'
-            branches:
-                - 'refs/heads/{linux_branch}'
-            basedir: linux
-            skip-tag: true
-            shallow-clone: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/linux.git
-            wipe-workspace: false
-            clean:
-                before: true
-            prune: true
-- job-template:
-    name: tcwg-llvm-kernel-trigger-{repo}-{llvm}-{linux}
-    project-type: freestyle
-    defaults: global
-    properties:
-        - authorization:
-            anonymous:
-                - job-read
-                - job-extended-read
-            linaro:
-                - job-build
-                - job-cancel
-        - build-discarder:
-            days-to-keep: 30
-            num-to-keep: 30
-        - build-blocker:
-            blocking-jobs:
-              - "tcwg-llvm-kernel-build-aarch64-{llvm}-{linux}"
-              - "tcwg-llvm-kernel-build-armv8l-{llvm}-{linux}"
-              - "tcwg-llvm-kernel-bisect-aarch64-{llvm}-{linux}"
-              - "tcwg-llvm-kernel-bisect-armv8l-{llvm}-{linux}"
-            queue-scanning: 'ALL'
-    disabled: false
-    node: tcwg-coordinator
-    concurrent: false
-    display-name: 'TCWG BBB RRv4 Trigger LLVM + Linux-next @ {repo} @ llvm-{llvm} @ linux-{linux}'
-    scm:
-        - '{repo}'
-    triggers:
-        - pollscm:
-            cron: '@daily'
-    wrappers:
-        - timeout:
-            timeout: 600
-        - timestamps
-    builders:
-        - trigger-builds:
-            - project: tcwg-llvm-kernel-build-aarch64-{llvm}-{linux}
-              predefined-parameters: |
-                current_project={repo}
-                current_rev=$GIT_COMMIT
-        - trigger-builds:
-            - project: tcwg-llvm-kernel-build-armv8l-{llvm}-{linux}
-              predefined-parameters: |
-                current_project={repo}
-                current_rev=$GIT_COMMIT
-
 - project:
     name: tcwg-llvm-kernel-dead
     suffix:
@@ -417,6 +418,22 @@
       - bisect-armv8l
       - trigger-llvm
       - trigger-linux
+      - trigger-llvm-master-next
+      - trigger-llvm-master-mainline
+      - trigger-llvm-master-stable
+      - trigger-llvm-master-lts
+      - trigger-llvm-release-next
+      - trigger-llvm-release-mainline
+      - trigger-llvm-release-stable
+      - trigger-llvm-release-lts
+      - trigger-linux-master-next
+      - trigger-linux-master-mainline
+      - trigger-linux-master-stable
+      - trigger-linux-master-lts
+      - trigger-linux-release-next
+      - trigger-linux-release-mainline
+      - trigger-linux-release-stable
+      - trigger-linux-release-lts
     jobs:
       - 'tcwg-llvm-kernel-{suffix}'
 
