@@ -14,12 +14,13 @@
             openjdk-members:
                 - job-build
                 - job-cancel
+                - job-workspace
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
     disabled: false
-    node: aarch64-06
+    node: j12-qrep-01
     display-name: 'OpenJDK 8 - Configure and build OpenJDK 8 Release'
     scm:
         - git:
@@ -47,7 +48,7 @@
             type: slave
             name: label
             values:
-                - aarch64-06
+                - j12-qrep-01
     execution-strategy:
         sequential: true
     wrappers:
@@ -55,7 +56,7 @@
             dirmatch: false
         - timestamps
         - matrix-tie-parent:
-            node: aarch64-06
+            node: j12-qrep-01
     builders:
         - copyartifact:
             project: jdk8-update-src-tree
@@ -87,6 +88,12 @@
             # Setup archive directory
             mkdir out
 
+            cd ${HOME}/workspace/jdk-boot-jdk/jdk10
+            export JAVA_HOME=${PWD}
+
+            export PATH=${JAVA_HOME}/bin:${PATH}
+
+            cd ${WORKSPACE}
             # Extract sources from upstream job
             rm -rf jdk8u
             tar xf incoming/jdk8u.tar.gz
@@ -97,10 +104,6 @@
 
             mv $JDK_SRCDIR $JDKDIR
             shopt -s nullglob
-
-            # Extract boot jdk
-            rm -rf primordial-jdk7
-            tar xf incoming/primordial-jdk7.tar.gz
 
             # Configure and build.
             rm -rf build*

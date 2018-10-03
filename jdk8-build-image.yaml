@@ -14,12 +14,13 @@
             openjdk-members:
                 - job-build
                 - job-cancel
+                - job-workspace
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
     disabled: false
-    node: aarch64-06
+    node: j12-qrep-01
     display-name: 'OpenJDK 8 - Configure and build OpenJDK 8'
     scm:
         - git:
@@ -48,7 +49,7 @@
             type: slave
             name: label
             values:
-                - aarch64-06
+                - j12-qrep-01
     execution-strategy:
         sequential: true
     wrappers:
@@ -56,7 +57,7 @@
             dirmatch: false
         - timestamps
         - matrix-tie-parent:
-            node: aarch64-06
+            node: j12-qrep-01
     builders:
         - copyartifact:
             project: jdk8-update-src-tree
@@ -79,32 +80,19 @@
 
             ccache_build_opts=--disable-ccache
 
+            rm -rf jdk* primordial-jdk* build*
+
+            cd ${HOME}/workspace/jdk-boot-jdk/jdk10
+            export JAVA_HOME=${PWD}
+
+            export PATH=${JAVA_HOME}/bin:${PATH}
+
+            cd ${WORKSPACE}
             # Extract sources from upstream job
             rm -rf jdk8u
             tar xf incoming/jdk8u.tar.gz
 
             shopt -s nullglob
-
-            # SRDM Commented out as not needed for buildng client builds, but
-            # maybe necessary in future.
-            #
-            # Apply patches
-            # Only apply to client builds.
-            # if [ "$JVM_VARIANT" = "client" ]; then
-            #    OLDDIR=$PWD
-            #    cd $WORKSPACE/patches
-            #    for patch in $(find  -name '*.patch'); do
-            #        patch_dir=$(dirname $patch)
-            #        patch_path=$(pwd)/$patch
-            #        (echo Applying $patch to $patch_dir ; cd $OLDDIR/jdk8u/$patch_dir; \
-            #        patch -p1  < $patch_path)
-            #    done
-            #    cd $OLDDIR
-            # fi
-
-            # Extract boot jdk
-            rm -rf primordial-jdk7
-            tar xf incoming/primordial-jdk7.tar.gz
 
             # Configure and build.
             rm -rf build*
