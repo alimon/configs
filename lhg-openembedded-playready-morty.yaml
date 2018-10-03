@@ -34,6 +34,9 @@
         - string:
             name: GIT_SSH_COMMAND
             default: 'ssh -F ${HOME}/lhg-review.sshconfig'
+        - string:
+            name: AUTH_GROUPS
+            default: 'playready-confidential-access'
     disabled: false
     node: master
     display-name: 'LHG PlayReady - OpenEmbedded (morty)'
@@ -95,4 +98,6 @@
             properties-file: post_build_lava_parameters
         - linaro-publish-token
         - shell:
-            !include-raw: rpb-openembedded/publishers-lhg.sh
+            !include-raw: rpb-openembedded/buildinfo-protected.sh
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh

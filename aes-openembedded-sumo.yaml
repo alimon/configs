@@ -53,6 +53,9 @@
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
+        - string:
+            name: AUTH_GROUPS
+            default: 'linaro sse-team'
     disabled: false
     node: master
     display-name: 'AES OpenEmbedded RPB (sumo)'
@@ -105,6 +108,8 @@
         - inject:
             properties-file: post_build_lava_parameters
         - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/buildinfo-protected.sh
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
         - shell:
