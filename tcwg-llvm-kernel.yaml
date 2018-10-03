@@ -93,15 +93,21 @@
             num-to-keep: 30
         - build-blocker:
             blocking-jobs:
-              - "tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{repo}"
-              - "tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}-{repo}"
+              - "tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}"
+              - "tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}"
             queue-scanning: 'ALL'
     disabled: false
     node: tcwg-coordinator
     concurrent: false
     display-name: 'TCWG BBB RRv4 Trigger LLVM + Linux-next @ {repo} @ llvm-{llvm} @ linux-{linux}'
     scm:
-      - '{repo}'
+      - '{repo}':
+          llvm_url: {llvm_url}
+          llvm_branch: {llvm_branch}
+          llvm_reference: {llvm_reference}
+          linux_url: {linux_url}
+          linux_branch: {linux_branch}
+          linux_reference: {linux_reference}
     triggers:
         - pollscm:
             cron: '@daily'
@@ -111,7 +117,7 @@
         - timestamps
     builders:
         - trigger-builds:
-            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{repo}
+            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}
               predefined-parameters: |
                 current_project={repo}
                 current_rev=$GIT_COMMIT
