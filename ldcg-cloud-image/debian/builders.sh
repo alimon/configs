@@ -6,7 +6,7 @@ export mountpoint=$(mktemp -d /tmp/${image_name}.XXXXXX)
 echo "deb http://obs.linaro.org/ERP:/18.06/Debian_9 ./" | sudo tee /etc/apt/sources.list.d/erp-18.06.list
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y --no-install-recommends cpio qemu-utils virtinst libvirt-clients
+sudo apt-get -q=2 install -y --no-install-recommends cpio qemu-utils virtinst libvirt-clients iproute2
 
 default_gw=$(ip route show default 0.0.0.0/0 | cut -d' ' -f3)
 sudo sed -i "/^uri_default/d" /etc/libvirt/libvirt.conf
