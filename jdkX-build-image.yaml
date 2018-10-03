@@ -75,8 +75,12 @@
 
             rm -rf jdk* primordial-jdk* build*
 
+            # Download, setup boot JDK for building.
             wget --progress=dot -e dotbytes=2M ${JDK_URL}
             tar -Jxf jdk*.tar.xz
+
+            # Bash 4.4 doesn't support cd with >1 parameter.
+            rm jdk*.tar.gz
 
             cd ${WORKSPACE}/jdk*
             export JAVA_HOME=${PWD}
