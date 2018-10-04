@@ -46,15 +46,18 @@
         - git:
             url: '{llvm_url}'
             branches:
-                - 'refs/heads/{llvm_branch}'
+              - 'refs/heads/{llvm_branch}'
             basedir: llvm
             skip-tag: true
             shallow-clone: true
+            sparse-checkout:
+              paths:
+                - doesnt_exist
             submodule:
-                reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project-20170507.git
+              reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project-20170507.git
             wipe-workspace: false
             clean:
-                before: true
+              before: true
             prune: true
 - scm:
     name: linux
@@ -62,15 +65,16 @@
         - git:
             url: '{linux_url}'
             branches:
-                - 'refs/heads/{linux_branch}'
+              - 'refs/heads/{linux_branch}'
             basedir: linux
             skip-tag: true
             shallow-clone: true
             submodule:
-                reference-repo: /home/tcwg-buildslave/snapshots-ref/linux.git
+              disable: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/linux.git
             wipe-workspace: false
             clean:
-                before: true
+              before: true
             prune: true
 - job-template:
     name: tcwg-llvm-kernel-trigger-{arch}-{llvm}-{linux}-{repo}
