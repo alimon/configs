@@ -32,13 +32,22 @@
       - lts:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           linux_branch: linux-4.14.y
+    linux_config:
+      - defconfig
+      - defconfig_nolse
+      - allmodconfig
+      - allyesconfig
+      - allnoconfig
     repo:
       - llvm
       - linux
+    exclude:
+      - arch: armhf
+        linux_config: defconfig_nolse
     jobs:
-      - 'tcwg-llvm-kernel-trigger-{arch}-{llvm}-{linux}-{repo}'
-      - 'tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}'
-      - 'tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}'
+      - 'tcwg-llvm-kernel-trigger-{arch}-{llvm}-{linux}-{linux_config}-{repo}'
+      - 'tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{linux_config}'
+      - 'tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}-{linux_config}'
 
 - scm:
     name: llvm
@@ -81,7 +90,7 @@
               before: true
             prune: true
 - job-template:
-    name: tcwg-llvm-kernel-trigger-{arch}-{llvm}-{linux}-{repo}
+    name: tcwg-llvm-kernel-trigger-{arch}-{llvm}-{linux}-{linux_config}-{repo}
     project-type: freestyle
     defaults: global
     properties:
@@ -97,13 +106,13 @@
             num-to-keep: 30
         - build-blocker:
             blocking-jobs:
-              - "tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}"
-              - "tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}"
+              - "tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{linux_config}"
+              - "tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}-{linux_config}"
             queue-scanning: 'ALL'
     disabled: false
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'TCWG BBB RRv5 Trigger {arch} @ LLVM-{llvm} @ Linux-{linux} @ {repo}'
+    display-name: 'TCWG BBB RRv6 Trigger {arch} @ LLVM-{llvm} @ Linux-{linux}-{linux_config} @ {repo}'
     scm:
       - '{repo}':
           llvm_url: '{llvm_url}'
@@ -119,13 +128,13 @@
         - timestamps
     builders:
         - trigger-builds:
-            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}
+            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{linux_config}
               predefined-parameters: |
                 current_project={repo}
                 current_rev=$GIT_COMMIT
 
 - job-template:
-    name: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}
+    name: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
@@ -141,7 +150,7 @@
             num-to-keep: 30
         - build-blocker:
             blocking-jobs:
-              - "tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}"
+              - "tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}-{linux_config}"
             queue-scanning: 'ALL'
     parameters:
         - choice:
@@ -152,7 +161,7 @@
             description: 'Project to build'
         - string:
             name: current_rev
-            default: refs/remotes/baseline/linaro-local/ci/tcwg-llvm-kernel-baseline-{arch}-{llvm}-{linux}
+            default: default
             description: "Git rev of $current_project to build"
         - bool:
             name: reset_baseline
@@ -169,7 +178,7 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG BBB RRv5 Build {arch} @ LLVM-{llvm} @ Linux-{linux}'
+    display-name: 'TCWG BBB RRv5 Build {arch} @ LLVM-{llvm} @ Linux-{linux}-{linux_config}'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
@@ -213,7 +222,7 @@
             condition-string2: 'false'
             steps:
               - copyartifact:
-                  project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}
+                  project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{linux_config}
                   target: prev_artifacts
                   optional: true
                   which-build: last-successful
@@ -229,6 +238,7 @@
             --mode "jenkins-full" \
             --current_project "$current_project" \
             --current_rev "$current_rev" \
+            --linux_config "{linux_config}" \
             --verbose true || true
 
             name="#$BUILD_NUMBER-$current_project"
@@ -262,7 +272,7 @@
             condition-filename: artifacts/trigger-bisect-on-failure
             steps:
               - trigger-builds:
-                  - project: tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}
+                  - project: tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}-{linux_config}
                     property-file: artifacts/trigger-bisect-on-failure
         - shell: |
             #!/bin/bash
@@ -275,7 +285,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}
+    name: tcwg-llvm-kernel-bisect-{arch}-{llvm}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
@@ -298,11 +308,11 @@
             description: 'Project to bisect'
         - string:
             name: baseline_rev
-            default: refs/remotes/baseline/linaro-local/ci/tcwg-llvm-kernel-baseline-{arch}-{llvm}-{linux}
+            default: default
             description: "Baseline revision"
         - string:
             name: bad_rev
-            default: refs/remotes/baseline/linaro-local/ci/tcwg-llvm-kernel-baseline-{arch}-{llvm}-{linux}
+            default: default
             description: "Bad revision"
         - string:
             name: distro
@@ -315,7 +325,7 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG BBB RRv5 Bisect {arch} @ LLVM-{llvm} @ Linux-{linux}'
+    display-name: 'TCWG BBB RRv5 Bisect {arch} @ LLVM-{llvm} @ Linux-{linux}-{linux_config}'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
@@ -354,7 +364,7 @@
             name: 'build-name'
             file: true
         - copyartifact:
-            project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}
+            project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{linux_config}
             target: prev_artifacts
             optional: true
             which-build: last-successful
@@ -370,6 +380,7 @@
             --current_project "$current_project" \
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
+            --linux_config "{linux_config}" \
             --verbose true
 
             for i in bisect-artifacts/trigger-1-reset-baseline bisect-artifacts/trigger-2-build-master; do
@@ -399,10 +410,10 @@
             name: 'build-name'
             file: true
         - trigger-builds:
-            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}
+            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{linux_config}
               property-file: bisect-artifacts/trigger-1-reset-baseline
         - trigger-builds:
-            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}
+            - project: tcwg-llvm-kernel-build-{arch}-{llvm}-{linux}-{linux_config}
               property-file: bisect-artifacts/trigger-2-build-master
         - inject:
             properties-file: ci_mail_parameters
@@ -414,7 +425,7 @@
             recipients: '${{CI_MAIL_RECIPIENTS}}'
             content-type: text
             body: |
-                Bisected ${{current_project}} on {arch} @ llvm-{llvm} @ linux-{linux} between bad ${{bad_rev}} and baseline ${{baseline_rev}} .
+                Bisected ${{current_project}} on {arch} @ llvm-{llvm} @ linux-{linux}-{linux_config} between bad ${{bad_rev}} and baseline ${{baseline_rev}} .
                 Bisect log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/bisect-artifacts/bisect.log/*view*/
                 Artifacts: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/bisect-artifacts/
                 Build URL: ${{PROJECT_URL}}${{BUILD_NUMBER}}/
@@ -467,3 +478,55 @@
     disabled: true
     node: tcwg-coordinator
     display-name: 'TCWG DEAD tcwg-llvm-kernel-{suffix}'
+
+- project:
+    name: tcwg-llvm-kernel-dead-2
+    task:
+      - trigger
+      - build
+      - bisect
+    arch:
+      - aarch64
+      - armv8l
+    llvm:
+      - master
+      - release
+    linux:
+      - next
+      - mainline
+      - stable
+      - lts
+    repo:
+      - "-llvm"
+      - "-linux"
+      - ""
+    exclude:
+      - task: trigger
+        repo: ""
+      - task:
+          - build
+          - bisect
+        repo:
+          - "-llvm"
+          - "-linux"
+    jobs:
+      - 'tcwg-llvm-kernel-{task}-{arch}-{llvm}-{linux}{repo}'
+
+- job-template:
+    name: tcwg-llvm-kernel-{task}-{arch}-{llvm}-{linux}{repo}
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: true
+    node: tcwg-coordinator
+    display-name: 'TCWG DEAD tcwg-llvm-kernel-{task}-{arch}-{llvm}-{linux}{repo}'
