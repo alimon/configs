@@ -16,28 +16,22 @@
       - master:
           llvm_url: https://github.com/llvm-project/llvm-project-20170507.git
           llvm_branch: master
-          llvm_reference: llvm-project-20170507.git
       - release:
           llvm_url: https://github.com/llvm-project/llvm-project-20170507.git
           llvm_branch: release_70
-          llvm_reference: llvm-project-20170507.git
     linux:
       - next:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
           linux_branch: master
-          linux_reference: linux.git
       - mainline:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
           linux_branch: master
-          linux_reference: linux.git
       - stable:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           linux_branch: linux-4.18.y
-          linux_reference: linux.git
       - lts:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
           linux_branch: linux-4.14.y
-          linux_reference: linux.git
     repo:
       - llvm
       - linux
@@ -56,7 +50,7 @@
             basedir: llvm
             skip-tag: true
             shallow-clone: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/{llvm_reference}
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project-20170507.git
             wipe-workspace: false
             clean:
                 before: true
@@ -71,7 +65,7 @@
             basedir: linux
             skip-tag: true
             shallow-clone: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/{linux_reference}
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/linux.git
             wipe-workspace: false
             clean:
                 before: true
@@ -104,10 +98,8 @@
       - '{repo}':
           llvm_url: '{llvm_url}'
           llvm_branch: '{llvm_branch}'
-          llvm_reference: '{llvm_reference}'
           linux_url: '{linux_url}'
           linux_branch: '{linux_branch}'
-          linux_reference: '{linux_reference}'
     triggers:
         - pollscm:
             cron: '@daily'
