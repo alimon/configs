@@ -1,5 +1,5 @@
 - job:
-    name: jdk-boot-jdk
+    name: jdk-cache-files
     project-type: freestyle
     defaults: global
     description: |
@@ -17,10 +17,14 @@
             artifact-num-to-keep: 1
     disabled: false
     node: j12-qrep-01
-    display-name: 'OpenJDK - Boot JDKs'
+    display-name: 'OpenJDK - Cache files'
     wrappers:
         - timestamps
     builders:
+        - copyartifact:
+            project: openjdk8-hadoop-LCA14
+            filter: 'out/openjdk8-hadoop-LCA14.tar.gz'
+            flatten: true
         - shell: |
             #!/bin/bash
 
@@ -35,7 +39,7 @@
             mv ${JDK8u} jdk8u
             mv ${JDK10} jdk10
 
-            find $PWD -name 'jdk*' -maxdepth 1
+            find $PWD -maxdepth 1
     publishers:
         - email:
             recipients: 'stuart.monteith@linaro.org'
