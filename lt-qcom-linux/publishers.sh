@@ -8,7 +8,11 @@ rm -rf out/
 mkdir out
 cp ${WORKSPACE}/linux/vmlinux ${WORKSPACE}/linux/arch/${ARCH}/boot/Image.gz out
 cp ${WORKSPACE}/linux/.config out/kernel.config
-cp ${WORKSPACE}/linux/arch/${ARCH}/configs/defconfig out
+KERNEL_CONFIGS=KERNEL_CONFIGS_$ARCH
+for f in ${!KERNEL_CONFIGS}; do
+    ff=$(find ${WORKSPACE}/linux/arch/${ARCH}/configs/ ${WORKSPACE}/linux/kernel/configs/ -name $f)
+    cp $ff out;
+done
 for f in ${KERNEL_DTBS}; do
     cp ${WORKSPACE}/linux/arch/${ARCH}/boot/dts/$f out;
 done
