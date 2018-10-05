@@ -29,12 +29,6 @@
             name: KERNEL_BUILD_TARGET
             default: 'all'
         - string:
-            name: PUB_DEST
-            default: "96boards/dragonboard410c/linaro/aosp/kernel/${BUILD_NUMBER}"
-        - string:
-            name: KERNEL_DTBS
-            default: 'qcom/apq8016-sbc.dtb'
-        - string:
             name: REFERENCE_BUILD_URL
             default: 'http://snapshots.linaro.org/android/robher-aosp-gendev/413/db410c-userdebug/'
         - string:
@@ -99,6 +93,16 @@
         - shell:
             !include-raw: lt-qcom-linux/builders.sh
         - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-linux-aosp/publisher_vars_db410c.sh
+        - inject:
+            properties-file: publisher_vars_db410c
+        - shell:
+            !include-raw: lt-qcom-linux/publishers.sh
+        - shell:
+            !include-raw: lt-qcom-linux-aosp/publisher_vars_db820c.sh
+        - inject:
+            properties-file: publisher_vars_db820c
         - shell:
             !include-raw: lt-qcom-linux/publishers.sh
     publishers:
