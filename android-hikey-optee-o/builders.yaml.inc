@@ -1,5 +1,6 @@
         - shell:
-            echo "CI_MAIL_RECIPIENTS=op-tee@linaro.org" > env_var_parameters
+            CI_MAIL_RECIPIENTS="victor.chong@linaro.org"
+            echo "CI_MAIL_RECIPIENTS=${CI_MAIL_RECIPIENTS}" > env_var_parameters
         - inject:
             properties-file: env_var_parameters
         - shell:
