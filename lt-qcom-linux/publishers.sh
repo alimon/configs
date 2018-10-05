@@ -2,6 +2,8 @@
 
 set -ex
 
+# make sure there are no left over files
+rm -rf out/
 # copy files which can be published, if needed
 mkdir out
 cp ${WORKSPACE}/linux/vmlinux ${WORKSPACE}/linux/arch/${ARCH}/boot/Image.gz out
