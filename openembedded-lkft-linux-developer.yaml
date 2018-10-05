@@ -50,8 +50,9 @@
           </ul>
         </p>
         <p>You can start by clicking on <b>Build with Parameters</b>, right here on the left
-        pane. Just provide a kernel (Git repo and revision) and we'll take care
-          of the rest!</p>
+          pane. Just provide a kernel (Git repo and revision) and we'll take care
+          of the rest!<br/>
+          (Please note that you need to log-in to Jenkins first if you haven't.)</p>
         <p>Note that these config fragments are added to your defconfig:
           <ul>
             <li><a href="https://github.com/96boards/meta-96boards/blob/master/recipes-kernel/linux/linux-hikey-aosp/distro-overrides.config">distro</a></li>
@@ -70,7 +71,16 @@
             name: KERNEL_REV
             default: 'master'
             description: |
-                <b>[MANDATORY]</b> Kernel branch or commit ID to checkout
+                <b>[MANDATORY]</b> Kernel branch, tag, or commit ID to checkout.<br/>
+                Available trees are:<br/>
+                  <ul>
+                    <li>origin (the tree you provide)</li>
+                    <li>torvalds (Linus' mainline tree)</li>
+                    <li>linux-stable (GKH's stable tree)</li>
+                    <li>linux-stable-rc (GKH's stable RC tree)</li>
+                  </ul>
+                You can specifiy any valid Git reference from those trees, such as <tt>origin/myworkbranch</tt>,
+                <tt>linux-stable-rc/linux-4.18.y</tt>, <tt>b4dc0ffee</tt>, <tt>v4.9.131</tt>, etc.
         - choice:
             name: TARGET_MACHINE
             choices:
@@ -83,23 +93,23 @@
             name: KERNEL_CONFIG
             default: ''
             description: |
-                <b>[OPTIONAL]</b> Kernel config file<br>
+                <b>[OPTIONAL]</b> Kernel config file<br/>
                 File to use from arch/${ARCH}/configs/ as base kernel configuration. If ommited the default
-                kernel config will be used:<br>
-                  - defconfig on HiKey<br>
-                  - multi_v7_defconfig on X15<br>
-                  - x86_64_defconfig on x86<br>
+                kernel config will be used:<br/>
+                  - defconfig on HiKey<br/>
+                  - multi_v7_defconfig on X15<br/>
+                  - x86_64_defconfig on x86<br/>
                 Note: Additional config fragments are added to all defconfigs to ensure build is functional. See
                 <a href="https://ci.linaro.org/job/openembedded-lkft-linux-developer/">the status page</a> for
                 more information.
         - extended-choice:
             name: TEST_SUITES
             description: |
-                [OPTIONAL] Test suites to run
-                Any combination of the following can be chosen:
-                  - kselftests
-                  - libhugetlbfs
-                  - ltp
+                [OPTIONAL] Test suites to run<br/>
+                Any combination of the following can be chosen:<br/>
+                  - kselftests<br/>
+                  - libhugetlbfs<br/>
+                  - ltp<br/>
                 Build artifacts will be published regardless of selection here.
             type: checkbox
             value: 'kselftests,libhugetlbfs,ltp'
@@ -108,7 +118,7 @@
             name: NOTIFICATION_EMAIL
             default: ''
             description: |
-                <b>[OPTIONAL]</b> Notification email<br>
+                <b>[OPTIONAL]</b> Notification email<br/>
                 If provided, a notification on the build/test results will be
                 sent to this email.
     disabled: false
