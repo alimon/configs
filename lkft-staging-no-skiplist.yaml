@@ -44,7 +44,7 @@
                 - 'linux-stable-rc-4.4-oe'
                 - 'linux-stable-rc-4.9-oe'
                 - 'linux-stable-rc-4.14-oe'
-                - 'linux-stable-rc-4.17-oe'
+                - 'linux-stable-rc-4.18-oe'
         - axis:
             type: user-defined
             name: QA_SERVER
@@ -56,12 +56,14 @@
             values:
                 - 'hi6220-hikey'
                 - 'x86'
+                - 'i386'
                 - 'juno-r2'
                 - 'x15'
                 - 'dragonboard-410c'
                 - 'qemu_arm'
                 - 'qemu_arm64'
                 - 'qemu_x86_64'
+                - 'qemu_i386'
     execution-strategy:
         sequential: false
     wrappers:
@@ -96,7 +98,7 @@
             then
               exit 0
             fi
-            export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
+            export LAVA_SERVER=https://lkft-staging.validation.linaro.org/RPC2/
 
             case ${DEVICE_TYPE} in
               hi6220-hikey)
@@ -108,8 +110,11 @@
               x15)
                 export MACHINE=am57xx-evm
                 ;;
-              x86)
+              i386)
                 export MACHINE=intel-core2-32
+                ;;
+              x86)
+                export MACHINE=intel-corei7-64
                 ;;
               dragonboard-410c)
                 export MACHINE=dragonboard-410c
@@ -121,6 +126,9 @@
                 export MACHINE=hikey
                 ;;
               qemu_x86_64)
+                export MACHINE=intel-corei7-64
+                ;;
+              qemu_i386)
                 export MACHINE=intel-core2-32
                 ;;
               *)
@@ -128,7 +136,7 @@
             esac
             export PUB_DEST=${BUILD_NAME}
             export DISTRO=rpb
-            export MANIFEST_BRANCH=morty
+            export MANIFEST_BRANCH=rocko
             export SNAPSHOTS_URL=https://snapshots.linaro.org
             export BASE_URL=openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/${BUILD_NAME%-oe}/latest
             export ENVIRONMENT=staging
@@ -183,8 +191,8 @@
                 export KERNEL_VERSION=git
                 export KERNEL_VERSION_OVERRIDE=mainline
                 ;;
-              linux-stable-rc-4.17-oe)
-                export KERNEL_VERSION=4.17
+              linux-stable-rc-4.18-oe)
+                export KERNEL_VERSION=4.18
                 ;;
               linux-stable-rc-4.14-oe)
                 export KERNEL_VERSION=4.14
