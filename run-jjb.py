@@ -6,6 +6,7 @@ import signal
 import string
 import subprocess
 import sys
+import xml.etree.ElementTree
 from distutils.spawn import find_executable
 
 
@@ -50,7 +51,19 @@ if jjb_user is not None and jjb_password is not None:
         f.write(jenkins_jobs_ini)
     jjb_args.append('--conf=jenkins_jobs.ini')
 
-jjb_args.extend(['update', 'template.yaml'])
+jjb_test_args = list(jjb_args)
+jjb_delete_args = list(jjb_args)
+
+# !!! "update" below and through out this file is replaced by "test" (using sed)
+# !!! in the sanity-check job.
+main_action = 'update'
+jjb_args.extend([main_action, 'template.yaml'])
+jjb_test_args.extend(['test', '-o', 'out/', 'template.yaml'])
+jjb_delete_args.extend(['delete'])
+
+if main_action == 'test':
+    # Dry-run, don't delete jobs.
+    jjb_delete_args.insert(0, 'echo')
 
 try:
     git_args = ['git', 'diff', '--name-only',
@@ -107,8 +120,58 @@ for conf_filename in filelist:
         if proc.returncode != 0:
             raise ValueError("command has failed with code '%s'" % proc.returncode)
 
+        try:
+            shutil.rmtree('out/', ignore_errors=True)
+
+            proc = subprocess.Popen(jjb_test_args,
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    universal_newlines=False,
+                                    preexec_fn=lambda:
+                                    signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+            data = proc.communicate()[0]
+            if proc.returncode != 0:
+                raise ValueError("command has failed with code '%s'" % proc.returncode)
+
+            proc = subprocess.Popen(['ls', 'out/'],
+                                    stdin=subprocess.PIPE,
+                                    stdout=subprocess.PIPE,
+                                    universal_newlines=False,
+                                    preexec_fn=lambda:
+                                    signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+            data = proc.communicate()[0]
+            if proc.returncode != 0:
+                raise ValueError("command has failed with code '%s'" % proc.returncode)
+
+            for filename in data.splitlines():
+                try:
+                    xmlroot = xml.etree.ElementTree.parse('out/' + filename).getroot()
+                    disabled = next(xmlroot.iterfind('disabled')).text
+                    if disabled != 'true':
+                        continue
+                    displayName = next(xmlroot.iterfind('displayName')).text
+                    if displayName != 'DELETE ME':
+                        continue
+                except:
+                    continue
+
+                delete_args = list(jjb_delete_args)
+                delete_args.extend([filename])
+                proc = subprocess.Popen(delete_args,
+                                        stdin=subprocess.PIPE,
+                                        stdout=subprocess.PIPE,
+                                        universal_newlines=False,
+                                        preexec_fn=lambda:
+                                        signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+                data = proc.communicate()[0]
+                if proc.returncode != 0:
+                    raise ValueError("command has failed with code '%s'" % proc.returncode)
+                print data
+        except (OSError, ValueError) as e:
+            raise ValueError("%s" % e)
+
+        shutil.rmtree('out/', ignore_errors=True)
         os.remove('template.yaml')
-        #shutil.rmtree('out')
 
 if os.path.exists('jenkins_jobs.ini'):
     os.remove('jenkins_jobs.ini')
