@@ -1,0 +1,103 @@
+- scm:
+    name: jdkX
+    scm:
+        - hg:
+            url: https://hg.openjdk.java.net/jdk/jdk
+            clean: true
+            subdir: jdkX
+- job:
+    name: jdkX-ci-build
+    project-type: freestyle
+    defaults: global
+    description: |
+        Updates source and builds OpenJDK frequently to ensure builds are successful.
+
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 30 
+            num-to-keep: 11
+            artifact-num-to-keep: 5
+    disabled: false
+    node: aarch64-06
+    display-name: 'OpenJDK JDK - Configure and build OpenJDK JDK'
+    scm:
+        - jdkX
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+    triggers:
+        - pollscm:
+            cron: '*/15 * * * *'
+    builders:
+        - copyartifact:
+            project: jtreg-build
+            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            #export CCACHE_DIR=~/.ccache-${JVM_VARIANT}-${BUILD_TYPE}
+            #ccache -M 1G
+            #ccache -s
+
+            ccache_build_opts=--disable-ccache
+
+            rm -rf jdk* primordial-jdk* build*
+            tar xJf jtreg-build-4.2.0-SNAPSHOT.tar.xz
+
+            cd ${HOME}/workspace/jdk-cache-files/jdk10
+            export JAVA_HOME=${PWD}
+
+            export PATH=${JAVA_HOME}/bin:${PATH}
+
+            cd ${WORKSPACE}
+
+            # Extract sources from upstream job
+            tar xf incoming/jdkX.tar.gz
+
+            shopt -s nullglob
+
+            # Configure and build
+            mkdir -p build-stage1 build-stage2
+
+            which java
+            java -version
+
+            pushd build-stage2
+            sh ../jdkX/configure --with-debug-level=fastdebug \
+                ${ccache_build_opts} \
+                 --with-jtreg=${WORKSPACE}/jtreg
+            make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native |& tee build.out
+            gzip <build.out > ../out/build.out.gz
+            popd
+
+            # Archive the result
+            rm -rf out
+            mkdir out
+            artifact_name=jdkX-${JVM_VARIANT}-${BUILD_TYPE}
+            tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
+
+            # Archive test support files.
+            tar -C build-stage2/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
+    publishers:
+        - archive:
+            artifacts: 'out/*.tar.gz, out/build.out.gz'
+        - email-ext:
+            reply-to: aarch64-port-dev@mail.openjdk.java.net
+            subject: jdk/jdk Build ${BUILD_NUMBER}
+            attach-build-log: true
+            body: 'Build ${BUILD_URL}'
+            fixed: true
+            failure: true
+            recipients: 'stuart.monteith@linaro.org'
