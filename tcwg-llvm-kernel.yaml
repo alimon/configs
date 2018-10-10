@@ -198,10 +198,11 @@
             - "tcwg-{toolchain_name}-kernel-build-{target}-{toolchain_ver}-{linux}-{linux_config}"
             - "tcwg-{toolchain_name}-kernel-bisect-{target}-{toolchain_ver}-{linux}-{linux_config}"
           queue-scanning: 'ALL'
-    disabled: false
+    disabled: true
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'TCWG BBB RRv6 Trigger {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config} @ {component}'
+    display-name: 'DELETE ME'
+    #display-name: 'TCWG BBB RRv6 Trigger {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config} @ {component}'
     workspace: workspace/tcwg-{toolchain_name}-kernel/$JOB_NAME
     scm:
       - '{component}-scm':
@@ -290,10 +291,11 @@
           name: scripts_branch
           default: llvm-kernel-v4
           description: 'Scripts revision to use'
-    disabled: false
+    disabled: true
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG BBB RRv6 Build {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config}'
+    display-name: 'DELETE ME'
+    #display-name: 'TCWG BBB RRv6 Build {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config}'
     workspace: workspace/tcwg-{toolchain_name}-kernel/$JOB_NAME
     scm:
         - jenkins-scripts
@@ -412,10 +414,11 @@
           name: scripts_branch
           default: llvm-kernel-v4
           description: 'Scripts revision to use'
-    disabled: false
+    disabled: true
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG BBB RRv6 Bisect {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config}'
+    display-name: 'DELETE ME'
+    #display-name: 'TCWG BBB RRv6 Bisect {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config}'
     workspace: workspace/tcwg-{toolchain_name}-kernel/$JOB_NAME
     scm:
       - jenkins-scripts
@@ -513,85 +516,17 @@
 - project:
     name: tcwg-llvm-kernel-dead
     suffix:
-      - build-aarch64
-      - build-armv8l
-      - bisect-aarch64
-      - bisect-armv8l
-      - trigger-llvm
-      - trigger-linux
-      - trigger-llvm-master-next
-      - trigger-llvm-master-mainline
-      - trigger-llvm-master-stable
-      - trigger-llvm-master-lts
-      - trigger-llvm-release-next
-      - trigger-llvm-release-mainline
-      - trigger-llvm-release-stable
-      - trigger-llvm-release-lts
-      - trigger-linux-master-next
-      - trigger-linux-master-mainline
-      - trigger-linux-master-stable
-      - trigger-linux-master-lts
-      - trigger-linux-release-next
-      - trigger-linux-release-mainline
-      - trigger-linux-release-stable
-      - trigger-linux-release-lts
+      - aarch64
+      - aarch64-bisect
+      - aarch64-trigger-linux
+      - aarch64-trigger-llvm
+      - bisect-arm
+      - build-arm
     jobs:
       - 'tcwg-llvm-kernel-{suffix}'
 
 - job-template:
     name: tcwg-llvm-kernel-{suffix}
-    project-type: freestyle
-    defaults: global
-    properties:
-        - authorization:
-            anonymous:
-                - job-read
-                - job-extended-read
-            linaro:
-                - job-build
-                - job-cancel
-        - build-discarder:
-            days-to-keep: 30
-            num-to-keep: 30
-    disabled: true
-    node: tcwg-coordinator
-    display-name: 'DELETE ME'
-
-- project:
-    name: tcwg-llvm-kernel-dead-2
-    task:
-      - trigger
-      - build
-      - bisect
-    target:
-      - aarch64
-      - armv8l
-    llvm:
-      - master
-      - release
-    linux:
-      - next
-      - mainline
-      - stable
-      - lts
-    repo:
-      - "-llvm"
-      - "-linux"
-      - ""
-    exclude:
-      - task: trigger
-        repo: ""
-      - task:
-          - build
-          - bisect
-        repo:
-          - "-llvm"
-          - "-linux"
-    jobs:
-      - 'tcwg-llvm-kernel-{task}-{target}-{llvm}-{linux}{repo}'
-
-- job-template:
-    name: tcwg-llvm-kernel-{task}-{target}-{llvm}-{linux}{repo}
     project-type: freestyle
     defaults: global
     properties:
