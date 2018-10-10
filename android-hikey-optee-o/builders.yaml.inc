@@ -1,4 +1,4 @@
-        - shell:
+        - shell: |
             CI_MAIL_RECIPIENTS="victor.chong@linaro.org"
             echo "CI_MAIL_RECIPIENTS=${CI_MAIL_RECIPIENTS}" > env_var_parameters
         - inject:
