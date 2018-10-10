@@ -65,28 +65,6 @@
         - matrix-tie-parent:
             node: j12-qrep-01
     builders:
-        - copyartifact:
-            project: jtreg-build
-            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
-            target: incoming
-            flatten: true
-# copyartifact is slow and the file is local
-# copy instead of going back and forth between master <-> slave
-#        - copyartifact:
-#            project: jdkX-build-image
-#            filter: 'out/jdkX-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
-#            target: incoming
-#            flatten: true
-        - copyartifact:
-            project: jdkX-update-src-tree
-            filter: 'out/jdkX.tar.gz, out/build-date.sh'
-            target: incoming
-            flatten: true
-        - copyartifact:
-            project: jcstress-build
-            filter: 'tests-all/target/jcstress.jar'
-            target: incoming
-            flatten: true
         - shell: |
             #!/bin/bash
 
@@ -94,7 +72,9 @@
 
             set -exu
 
-            source incoming/build-date.sh
+            DEPS=$HOME/workspace/jdkX-get-deps
+
+            source $DEPS/build-date.sh
 
             export JDK_VERSION=X
             # client variant uses server with -XX:TieredStopAtLevel=1
@@ -103,11 +83,11 @@
             IMAGE_DIR=${WORKSPACE}/jdkX-${REAL_VARIANT}-${BUILD_TYPE}
             PERSIST=$HOME/srv/openjdkX
 
-            JCSTRESS=$PWD/incoming/jcstress.jar
+            JCSTRESS=$DEPS/jcstress.jar
 
-            tar xf incoming/jdkX.tar.gz
+            tar xf $DEPS/jdkX.tar.gz
             tar xf ~/workspace/jdkX-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdkX-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
-            tar xf incoming/jtreg-build-4.2.0-SNAPSHOT.tar.xz
+            tar xf $DEPS/jtreg-build-4.2.0-SNAPSHOT.tar.xz
             tar xf ~/workspace/jdkX-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdkX-${REAL_VARIANT}-${BUILD_TYPE}-support.tar.gz
 
             # All the output directories and general frobbing
