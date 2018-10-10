@@ -29,4 +29,4 @@ python configs/openembedded-lkft/submit_for_testing.py \
   --qa-server-project ${QA_SERVER_PROJECT} \
   --git-commit ${GIT_COMMIT:0:12} \
   --template-path configs/android-hikey-linaro-4.9-pmwg/lava-job-definitions \
-  --template-names template.yaml
+  --template-names template.yaml vellamo-template.yaml multimedia-template.yaml
