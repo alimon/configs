@@ -42,7 +42,7 @@ echo "Building compiler based on clang revision $REVISION"
 sed -i -e "s,^svn_revision =.*,svn_revision = 'r${REVISION}'," toolchain/llvm_android/android_version.py
 
 # And build it...
-python toolchain/llvm_android/build.py
+python toolchain/llvm_android/build.py --no-build-windows
 
 # Recompress output to save space
 mv out/*.tar.bz2 .
