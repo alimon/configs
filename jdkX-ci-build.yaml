@@ -16,10 +16,10 @@
             anonymous:
                 - job-read
                 - job-extended-read
+                - job-workspace
             openjdk-members:
                 - job-build
                 - job-cancel
-                - job-workspace
         - build-discarder:
             days-to-keep: 30 
             num-to-keep: 11
@@ -36,7 +36,7 @@
         - timestamps
     triggers:
         - pollscm:
-            cron: '*/15 * * * *'
+            cron: '* H * * *'
     builders:
         - copyartifact:
             project: jtreg-build
@@ -75,8 +75,7 @@
             sh ../jdkX/configure --with-debug-level=fastdebug \
                 ${ccache_build_opts} \
                  --with-jtreg=${WORKSPACE}/jtreg
-            make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native |& tee build.out
-            gzip <build.out > ../out/build.out.gz
+            make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
             popd
 
             # Archive the result
@@ -89,7 +88,7 @@
             tar -C build/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
     publishers:
         - archive:
-            artifacts: 'out/*.tar.gz, out/build.out.gz'
+            artifacts: 'out/*.tar.gz'
         - email-ext:
             reply-to: aarch64-port-dev@mail.openjdk.java.net
             subject: jdk/jdk Build ${BUILD_NUMBER}
