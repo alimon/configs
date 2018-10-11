@@ -1,6 +1,6 @@
 - job:
     name: jdk-cache-files
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     description: |
         Download and unpack boot jdks.
@@ -16,10 +16,17 @@
             num-to-keep: 10
             artifact-num-to-keep: 1
     disabled: false
-    node: j12-qrep-01
+    node: master
     display-name: 'OpenJDK - Cache files'
     wrappers:
         - timestamps
+    axes:
+        - axis:
+            type: slave
+            name: node
+            values:
+                - aarch64-06
+                - j12-qrep-01
     builders:
         - copyartifact:
             project: openjdk8-hadoop-LCA14
