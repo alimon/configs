@@ -1,6 +1,6 @@
 - job:
     name: jdk-cache-files
-    project-type: matrix
+    project-type: freestyle
     defaults: global
     description: |
         Download and unpack boot jdks.
@@ -12,19 +12,11 @@
             openjdk-members:
                 - job-build
                 - job-cancel
-                - job-delete
         - build-discarder:
             num-to-keep: 10
             artifact-num-to-keep: 1
     disabled: false
-    node: master
-    axes:
-        - axis:
-            type: slave
-            name: nodes
-            values:
-              - aarch64-06
-              - j12-qrep-01
+    node: j12-qrep-01
     display-name: 'OpenJDK - Cache files'
     wrappers:
         - timestamps
