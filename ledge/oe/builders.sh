@@ -68,7 +68,7 @@ OSF_LMP_GIT_URL = "github.com"
 OSF_LMP_GIT_NAMESPACE = "opensourcefoundries/"
 EOF
 
-bitbake lmp-gateway-image
+bitbake ledge-gateway
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
