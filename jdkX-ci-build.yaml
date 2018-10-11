@@ -53,7 +53,6 @@
 
             ccache_build_opts=--disable-ccache
 
-            rm -rf jdk* primordial-jdk* build*
             tar xJf jtreg-build-4.2.0-SNAPSHOT.tar.xz
 
             cd ${HOME}/workspace/jdk-cache-files2/jdk10
@@ -63,18 +62,16 @@
 
             cd ${WORKSPACE}
 
-            # Extract sources from upstream job
-            tar xf incoming/jdkX.tar.gz
-
             shopt -s nullglob
 
             # Configure and build
-            mkdir -p build-stage1 build-stage2
+            rm -rf build
+            mkdir -p build
 
             which java
             java -version
 
-            pushd build-stage2
+            pushd build
             sh ../jdkX/configure --with-debug-level=fastdebug \
                 ${ccache_build_opts} \
                  --with-jtreg=${WORKSPACE}/jtreg
@@ -86,10 +83,10 @@
             rm -rf out
             mkdir out
             artifact_name=jdkX-${JVM_VARIANT}-${BUILD_TYPE}
-            tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
+            tar -C build/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
 
             # Archive test support files.
-            tar -C build-stage2/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
+            tar -C build/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
     publishers:
         - archive:
             artifacts: 'out/*.tar.gz, out/build.out.gz'
