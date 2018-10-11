@@ -11,7 +11,6 @@
     defaults: global
     description: |
         Updates source and builds OpenJDK frequently to ensure builds are successful.
-
     properties:
         - authorization:
             anonymous:
@@ -32,7 +31,8 @@
         - jdkX
     wrappers:
         - workspace-cleanup:
-            dirmatch: false
+            dirmatch: true
+            exclude: jdkX/**
         - timestamps
     triggers:
         - pollscm:
