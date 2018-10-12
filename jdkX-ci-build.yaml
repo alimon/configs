@@ -30,9 +30,6 @@
     scm:
         - jdkX
     wrappers:
-        - workspace-cleanup:
-            dirmatch: true
-            exclude: jdkX/**
         - timestamps
     triggers:
         - pollscm:
@@ -52,7 +49,7 @@
             #ccache -s
 
             ccache_build_opts=--disable-ccache
-
+            rm -rf jtreg
             tar xJf jtreg-build-4.2.0-SNAPSHOT.tar.xz
 
             cd ${HOME}/workspace/jdk-cache-files2/node/${NODE_NAME}/jdk10
