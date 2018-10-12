@@ -1,5 +1,5 @@
 - job:
-    name: 96boards-reference-platform-openembedded-sumo
+    name: 96boards-reference-platform-openembedded-sumo-meta-rpb-premerge-ci
     project-type: matrix
     defaults: global
     logrotate:
@@ -17,11 +17,30 @@
                 - job-extended-read
                 - job-build
                 - job-cancel
+        - github:
+            url: https://github.com/96boards/meta-rpb.git
     parameters:
         !include: rpb-openembedded-sumo-params.yaml.inc
     disabled: false
     node: master
-    display-name: 'Reference Platform - OpenEmbedded (sumo)'
+    display-name: 'Premerge CI for meta-rpb Layer in Reference Platform - OpenEmbedded (sumo)'
+    scm:
+        - git:
+            url: https://github.com/96boards/meta-rpb.git
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    triggers:
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            white-list-target-branches:
+                - sumo
+            auth-id: 'GITHUB_TOKEN'
     axes:
         - axis:
             type: user-defined
@@ -41,7 +60,7 @@
             type: slave
             name: label
             values:
-                - docker-stretch-amd64
+                - docker-stretch-oe-amd64
     execution-strategy:
         sequential: false
     wrappers:
@@ -54,6 +73,12 @@
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
     builders:
+        - shell: |
+            #!/bin/bash
+            PUB_DEST="reference-platform/embedded/premerge-ci/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}"
+            echo "PUB_DEST=${PUB_DEST}" > pub_dest_parameters
+        - inject:
+            properties-file: pub_dest_parameters
         - shell: |
             #!/bin/bash
 

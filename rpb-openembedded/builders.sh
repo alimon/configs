@@ -51,6 +51,12 @@ if [ ! -e ".repo/manifest.xml" ]; then
    ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
 fi
 
+
+if [ "${ghprbPullId}" ]; then
+    echo "Applying Github pull-request #${ghprbPullId} from ${ghprbGhRepository}"
+    sed -i -e "s|name=\"${ghprbGhRepository}\"|name=\"${ghprbGhRepository}\" revision=\"refs/pull/${ghprbPullId}/head\"|" .repo/manifest.xml
+fi
+
 repo sync
 cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
