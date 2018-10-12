@@ -35,10 +35,11 @@
         - pollscm:
             cron: 'H * * * *'
     builders:
-        - copyartifact:
-            project: jtreg-build
-            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
-            flatten: true
+#   Include this when we decide to do jtreg tests.
+#        - copyartifact:
+#            project: jtreg-build
+#            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
+#            flatten: true
         - shell: |
             #!/bin/bash
 
@@ -49,8 +50,9 @@
             #ccache -s
 
             ccache_build_opts=--disable-ccache
-            rm -rf jtreg
-            tar xJf jtreg-build-4.2.0-SNAPSHOT.tar.xz
+            # Include when Jtreg tests make sense to be run.
+            #rm -rf jtreg
+            #tar xJf jtreg-build-4.2.0-SNAPSHOT.tar.xz
 
             cd ${HOME}/workspace/jdk-cache-files2/node/${NODE_NAME}/jdk10
             export JAVA_HOME=${PWD}
@@ -75,17 +77,15 @@
             sh ../jdkX/configure --with-debug-level=fastdebug \
                 ${ccache_build_opts} \
                  --with-jtreg=${WORKSPACE}/jtreg
-            make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native |& tee ../out/build.out
+            make images |& tee ../out/build.out
             popd
 
             # Take bottom 100 lines of build output, shift it right by two characters
             tail -n 100 out/build.out | sed 's,^,   ,' > build-tail.out
+
             # Archive the result
             artifact_name=jdkX-ci-build
             tar -C build/images/jdk --exclude=\*.debuginfo --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
-
-            # Archive test support files.
-            tar -C build/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
     publishers:
         - archive:
             artifacts: 'out/*.tar.gz, out/build.out'
@@ -97,9 +97,14 @@
                 OpenJDK AArch64 jdk/jdk build status is ${BUILD_STATUS}
                 Build details -  ${BUILD_URL}
 
+                Changes -
+                ${CHANGES, showPaths=true, format="  %a: %r %p \n--\"%m\"", pathFormat="\n\t- %p"}
+
                 Build output -
                 ${FILE,path="build-tail.out"}
 
             fixed: true
             failure: true
+# remove success once we're happy with the build.
+            success: true
             recipients: 'stuart.monteith@linaro.org'
