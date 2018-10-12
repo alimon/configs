@@ -82,7 +82,7 @@
             tail -n 100 out/build.out | sed 's,^,   ,' > build-tail.out
             # Archive the result
             artifact_name=jdkX-ci-build
-            tar -C build/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
+            tar -C build/images/jdk --exclude=\*.debuginfo --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
 
             # Archive test support files.
             tar -C build/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
