@@ -48,6 +48,14 @@
               - name: jdk11-build-image
                 current-parameters: true
                 kill-phase-on: FAILURE
+        # Get depenencies for subsequent jobs.
+        - multijob:
+            name: 'Get Deps'
+            condition: ALWAYS
+            projects:
+              - name: jdk11-get-deps
+                current-parameters: true
+                kill-phase-on: FAILURE
 # FIXME - set SPECjbb2015 benchmark continuation condition from SUCCESSFUL to ALWAYS
 # Exception in thread "main" java.util.ServiceConfigurationError:
 # org.spec.jbb.core.comm.connectivity.ConnectivityProvider:

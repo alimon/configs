@@ -53,30 +53,19 @@
         - timeout:
             timeout: 900
     builders:
-        - copyartifact:
-            project: jcstress-build
-            filter: 'tests-custom/target/jcstress.jar, tests-all/target/jcstress.jar'
-            target: incoming
-            flatten: false
-# copyartifact is slow and the file is local
-# copy instead of going back and forth between master <-> slave
-#        - copyartifact:
-#            project: jdk11-build-image
-#            filter: 'out/jdk11-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
-#            target: incoming
-#            flatten: true
         - shell: |
             #!/bin/bash
 
             set -eu
 
             TEST_TYPE=all
+            DEPS=$HOME/workspace/jdkX-get-deps
 
             # client variant uses server with -XX:TieredStopAtLevel=1
             # zero is a third possible value.
             REAL_VARIANT=${JVM_VARIANT/client/server}
 
-            JCSTRESS_JAR=${WORKSPACE}/incoming/tests-${TEST_TYPE}/target/jcstress.jar
+            JCSTRESS_JAR=$DEPS/jcstress.jar
             rm -rf jdk11*
             tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk11-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
             export JAVA_HOME=${WORKSPACE}/jdk11-${REAL_VARIANT}-${BUILD_TYPE}

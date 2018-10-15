@@ -1,0 +1,42 @@
+- job:
+    name: jdk11-get-deps
+    project-type: freestyle
+    defaults: global
+    description: |
+        Download dependencies for builds. This includes build source code, jtreg, jcstress.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            num-to-keep: 10
+            artifact-num-to-keep: 1
+    disabled: false
+    node: j12-qrep-01
+    display-name: 'OpenJDK - Get Dependencies'
+    wrappers:
+        - timestamps
+    builders:
+        - copyartifact:
+            project: jcstress-build
+            filter: 'tests-all/target/jcstress.jar'
+            flatten: true
+        - copyartifact:
+            project: jtreg-build
+            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
+            flatten: true
+        - copyartifact:
+            project: jdk11-update-src-tree
+            filter: 'out/jdk11.tar.gz, out/build-date.sh'
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            find $PWD -maxdepth 1
+    publishers:
+        - email:
+            recipients: 'stuart.monteith@linaro.org'

@@ -45,18 +45,6 @@
         - matrix-tie-parent:
             node: j12-qrep-01
     builders:
-# copyartifact is slow and the file is local
-# copy instead of going back and forth between master <-> slave
-#        - copyartifact:
-#            project: jdk11-build-image
-#            filter: 'out/jdk11-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
-#            target: incoming
-#            flatten: true
-        - copyartifact:
-            project: openjdk8-hadoop-LCA14
-            filter: 'out/openjdk8-hadoop-LCA14.tar.gz'
-            target: incoming
-            flatten: true
         - shell: |
             #!/bin/bash
 
@@ -68,6 +56,7 @@
             # zero is a third possible value.
             REAL_VARIANT=${JVM_VARIANT/client/server}
 
+            CACHE_FILES=$HOME/workspace/jdk-cache-files2
             ## Extract jdk
             rm -rf jdk11*
             tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk11-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
