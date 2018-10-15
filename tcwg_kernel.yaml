@@ -1,12 +1,5 @@
 - project:
     name: tcwg_kernel-llvm
-    target:
-      - aarch64:
-          node: tcwg-d05_64-build
-          docker_arch: arm64
-      - armv8l:
-          node: tcwg-d05_32-build
-          docker_arch: armhf
     toolchain_name:
       - llvm:
           binutils_branch: no_binutils_branch
@@ -16,6 +9,9 @@
           llvm_branch: master
       - release:
           llvm_branch: release_70
+    target:
+      - aarch64
+      - arm
     linux:
       - next:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
@@ -31,34 +27,23 @@
           linux_branch: linux-4.14.y
     linux_config:
       - defconfig
-      - defconfig_nolse
       - allmodconfig
       - allyesconfig
       - allnoconfig
     component:
       - llvm
       - linux
-    exclude:
-      - target: armv8l
-        linux_config: defconfig_nolse
     jobs:
-      - 'tcwg_kernel-trigger-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}-{component}'
-      - 'tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}'
-      - 'tcwg_kernel-bisect-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}'
+      - 'tcwg_kernel-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
 - view:
     name: tcwg_kernel-llvm
     view-type: list
-    regex: 'tcwg_kernel-llvm.*'
+    regex: 'tcwg_kernel-.*-llvm.*'
 
 - project:
     name: tcwg_kernel-gnu
-    target:
-      - aarch64:
-          node: tcwg-x86_64-build
-          docker_arch: amd64
-      - armv8l:
-          node: tcwg-x86_64-build
-          docker_arch: amd64
     toolchain_name:
       - gnu:
           llvm_branch: no_llvm_branch
@@ -69,6 +54,9 @@
       - release:
           binutils_branch: binutils-2_31-branch
           gcc_branch: gcc-8-branch
+    target:
+      - aarch64
+      - arm
     linux:
       - next:
           linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
@@ -84,7 +72,6 @@
           linux_branch: linux-4.14.y
     linux_config:
       - defconfig
-      - defconfig_nolse
       - allmodconfig
       - allyesconfig
       - allnoconfig
@@ -92,17 +79,14 @@
       - binutils
       - gcc
       - linux
-    exclude:
-      - target: armv8l
-        linux_config: defconfig_nolse
     jobs:
-      - 'tcwg_kernel-trigger-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}-{component}'
-      - 'tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}'
-      - 'tcwg_kernel-bisect-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}'
+      - 'tcwg_kernel-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
 - view:
     name: tcwg_kernel-gnu
     view-type: list
-    regex: 'tcwg_kernel-gnu.*'
+    regex: 'tcwg_kernel-.*-gnu.*'
 
 - scm:
     name: llvm-scm
@@ -188,21 +172,20 @@
           num-to-keep: 30
 
 - job-template:
-    name: tcwg_kernel-trigger-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}-{component}
+    name: tcwg_kernel-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
       - default_properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}"
-            - "tcwg_kernel-bisect-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}"
+            - "tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
+            - "tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
           queue-scanning: 'ALL'
     disabled: true
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'DELETE ME'
-    #display-name: 'TCWG BBB RRv6 Trigger {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config} @ {component}'
+    display-name: 'TCWG BBB RRv7 Trigger {toolchain_name}-{toolchain_ver} @ {target} @ Linux-{linux}-{linux_config} @ {component}'
     workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
     scm:
       - '{component}-scm':
@@ -220,7 +203,7 @@
         - timestamps
     builders:
       - trigger-builds:
-          - project: tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}
+          - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
             predefined-parameters: |
               current_project={component}
               current_rev=$GIT_COMMIT
@@ -263,14 +246,14 @@
           prune: true
 
 - job-template:
-    name: tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}
+    name: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
       - default_properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_kernel-bisect-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}"
+            - "tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
           queue-scanning: 'ALL'
     parameters:
       - '{toolchain_name}-parameters':
@@ -292,21 +275,20 @@
           default: llvm-kernel-v4
           description: 'Scripts revision to use'
     disabled: true
-    node: '{node}'
+    node: tcwg-x86_64-build
     concurrent: false
-    display-name: 'DELETE ME'
-    #display-name: 'TCWG BBB RRv6 Build {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config}'
+    display-name: 'TCWG BBB RRv7 Build {toolchain_name}-{toolchain_ver} @ {target} @ Linux-{linux}-{linux_config}'
     workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
     scm:
-        - jenkins-scripts
+      - jenkins-scripts
     wrappers:
-        - timeout:
-            timeout: 600
-        - timestamps
-        - ssh-agent-credentials:
-            # tcwg-buildslave user id
-            users:
-                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+      - timeout:
+          timeout: 600
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
     builders:
         - shell: |
             #!/bin/bash
@@ -316,26 +298,14 @@
             echo "=== Environment end  ==="
             set -x
             build_name="#$BUILD_NUMBER-$current_project"
-            rm -rf prev_artifacts
             echo "$build_name" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
-        - conditional-step:
-            condition-kind: strings-match
-            condition-string1: '${{ENV,var="reset_baseline"}}'
-            condition-string2: 'false'
-            steps:
-              - copyartifact:
-                  project: tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}
-                  target: prev_artifacts
-                  optional: true
-                  which-build: last-successful
         - shell: |
             #!/bin/bash
             set -ex
             ./jenkins-scripts/docker-run.sh \
-            --arch {docker_arch} \
             --distro $distro \
             -- \
             ./jenkins-scripts/tcwg-{toolchain_name}-kernel.sh \
@@ -344,11 +314,12 @@
             --current_project "$current_project" \
             --current_rev "$current_rev" \
             --linux_config "{linux_config}" \
+            --reset_baseline "$reset_baseline" \
             --verbose true || true
 
             name="#$BUILD_NUMBER-$current_project"
-            if [ -e artifacts/linux_n_obj ]; then
-              name="$name-O$(cat artifacts/linux_n_obj)"
+            if [ -e artifacts/results ]; then
+              name="$name-R$(tail -n1 artifacts/results)"
             fi
             if [ -e artifacts/distance-to-baseline ]; then
               name="$name-B$(cat artifacts/distance-to-baseline)"
@@ -377,7 +348,7 @@
             condition-filename: artifacts/trigger-bisect-on-failure
             steps:
               - trigger-builds:
-                  - project: tcwg_kernel-bisect-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}
+                  - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
                     property-file: artifacts/trigger-bisect-on-failure
         - shell: |
             #!/bin/bash
@@ -390,7 +361,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_kernel-bisect-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}
+    name: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
@@ -415,21 +386,20 @@
           default: llvm-kernel-v4
           description: 'Scripts revision to use'
     disabled: true
-    node: '{node}'
+    node: tcwg-x86_64-build
     concurrent: false
-    display-name: 'DELETE ME'
-    #display-name: 'TCWG BBB RRv6 Bisect {target} @ {toolchain_name}-{toolchain_ver} @ Linux-{linux}-{linux_config}'
+    display-name: 'TCWG BBB RRv7 Bisect {toolchain_name}-{toolchain_ver} @ {target} @ Linux-{linux}-{linux_config}'
     workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
     scm:
       - jenkins-scripts
     wrappers:
-        - timeout:
-            timeout: 600
-        - timestamps
-        - ssh-agent-credentials:
-            # tcwg-buildslave user id
-            users:
-                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+      - timeout:
+          timeout: 600
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
     builders:
         - shell: |
             #!/bin/bash
@@ -439,21 +409,14 @@
             echo "=== Environment end  ==="
             set -x
             build_name="#$BUILD_NUMBER-$current_project"
-            rm -rf prev_artifacts
             echo "$build_name" > build-name
         - build-name-setter:
             name: 'build-name'
             file: true
-        - copyartifact:
-            project: tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}
-            target: prev_artifacts
-            optional: true
-            which-build: last-successful
         - shell: |
             #!/bin/bash
             set -ex
             ./jenkins-scripts/docker-run.sh \
-            --arch {docker_arch} \
             --distro $distro \
             -- \
             ./jenkins-scripts/tcwg-bisect-{toolchain_name}-kernel.sh \
@@ -491,10 +454,10 @@
             name: 'build-name'
             file: true
         - trigger-builds:
-            - project: tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}
+            - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
               property-file: bisect-artifacts/trigger-1-reset-baseline
         - trigger-builds:
-            - project: tcwg_kernel-build-{toolchain_name}-{target}-{toolchain_ver}-{linux}-{linux_config}
+            - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
               property-file: bisect-artifacts/trigger-2-build-master
         - inject:
             properties-file: ci_mail_parameters
@@ -512,3 +475,59 @@
                 Build URL: ${{PROJECT_URL}}${{BUILD_NUMBER}}/
                 Build log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/consoleText
             always: true
+
+- project:
+    name: tcwg_kernel-dead
+    toolchain_name2:
+      - llvm
+      - gnu
+    toolchain_ver:
+      - master
+      - release
+    target:
+      - aarch64
+      - armv8l
+    linux:
+      - next
+      - mainline
+      - stable
+      - lts
+    linux_config:
+      - defconfig_nolse
+    component:
+      - llvm
+      - linux
+    jobs:
+      - 'tcwg_kernel-trigger-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}-{component}'
+      - 'tcwg_kernel-build-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-bisect-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+
+- job-template:
+    name: tcwg_kernel-trigger-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}-{component}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default_properties
+    disabled: true
+    node: tcwg-coordinator
+    display-name: 'DELETE ME'
+
+- job-template:
+    name: tcwg_kernel-build-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default_properties
+    disabled: true
+    node: tcwg-coordinator
+    display-name: 'DELETE ME'
+
+- job-template:
+    name: tcwg_kernel-bisect-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default_properties
+    disabled: true
+    node: tcwg-coordinator
+    display-name: 'DELETE ME'
