@@ -1,0 +1,99 @@
+- job:
+    name: trigger-private-lt-qcom-ci-job-configs
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 200
+    disabled: false
+    node: master
+    display-name: 'CI job configs deployment for Qualcomm LT Private Jobs'
+    triggers:
+        - gerrit:
+            server-name: 'dev-private-review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'landing-teams/working/qualcomm/ci/job/configs'
+                  branches:
+                    - branch-pattern: 'master'
+            silent-start: true
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: JJB_USER
+                variable: JJB_USER
+        - credentials-binding:
+            - text:
+                credential-id: JJB_PASSWORD
+                variable: JJB_PASSWORD
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_USER
+                variable: LAVA_USER
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_TOKEN
+                variable: LAVA_TOKEN
+        - credentials-binding:
+            - text:
+                credential-id: LT_QCOM_KEY
+                variable: LT_QCOM_KEY
+        - credentials-binding:
+            - text:
+                credential-id: AUTH_TOKEN
+                variable: AUTH_TOKEN
+        - ssh-agent-credentials:
+                users:
+                    - 'LT_QUALCOMM_PRIVATE_KEY_SSH'
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            echo ""
+            echo "########################################################################"
+            echo "    Gerrit Environment"
+            env |grep '^GERRIT'
+            echo "########################################################################"
+
+            git config --global user.name "Linaro CI"
+            git config --global user.email "ci_notify@linaro.org"
+
+            # Add SSH server signatures to known_hosts list.
+            bash -c "ssh-keyscan dev-private-git.linaro.org >  ${HOME}/.ssh/known_hosts"
+            bash -c "ssh-keyscan dev-private-review.linaro.org >>  ${HOME}/.ssh/known_hosts"
+            bash -c "ssh-keyscan  -t rsa -p 29418 dev-private-review.linaro.org >> \
+               ${HOME}/.ssh/known_hosts"
+
+            rm -rf ${WORKSPACE}/*
+
+            git clone -b ${GERRIT_BRANCH} --depth 2 ssh://git@dev-private-git.linaro.org/${GERRIT_PROJECT}
+            cd *
+            git fetch ssh://git@dev-private-git.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
+            git checkout -q FETCH_HEAD
+
+            export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
+            export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
+            jenkins-jobs --version
+            wget -q https://git.linaro.org/ci/job/configs.git/plain/run-jjb.py -O run-jjb.py
+            python run-jjb.py
+    publishers:
+        - email:
+            recipients: 'nicolas.dechesne@linaro.org luis.machado@linaro.org'
