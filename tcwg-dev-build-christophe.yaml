@@ -21,18 +21,18 @@
         - choice:
             name: target
             choices:
-                - aarch64-linux-gnu
-                - aarch64-elf
-                - aarch64-linux-gnu_ilp32
-                - aarch64_be-elf
-                - aarch64_be-linux-gnu
-                - arm-eabi
-                - arm-linux-gnueabi
-                - arm-linux-gnueabihf
-                - armeb-eabi
-                - armeb-linux-gnueabi
-                - armeb-linux-gnueabihf
-                - armv8l-linux-gnueabihf
+                - cross-aarch64-linux-gnu
+                - cross-aarch64-elf
+                - cross-aarch64-linux-gnu_ilp32
+                - cross-aarch64_be-elf
+                - cross-aarch64_be-linux-gnu
+                - cross-arm-eabi
+                - cross-arm-linux-gnueabi
+                - cross-arm-linux-gnueabihf
+                - cross-armeb-eabi
+                - cross-armeb-linux-gnueabi
+                - cross-armeb-linux-gnueabihf
+                - cross-armv8l-linux-gnueabihf
                 - native
             description: 'Target'
         - choice:
@@ -102,6 +102,11 @@
             ./start-container-docker.sh $label --task build --prefix build_ --distro $build_container_tag > build-container.sh
             . ./build-container.sh
             BUILD_SHELL="build_container_exec bash"
+
+            # The "cross-" prefix is just a hint for the user, remove
+            # it for the actual build. Its purpose is not to confuse
+            # the target value with "native".
+            target=${target#cross-}
 
             ${BUILD_SHELL} -c "rm -rf jenkins-scripts"
             ${BUILD_SHELL} -c "git clone https://git.linaro.org/toolchain/jenkins-scripts.git"
