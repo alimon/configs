@@ -196,7 +196,7 @@
           linux_branch: '{linux_branch}'
     triggers:
       - pollscm:
-          cron: '@daily'
+          cron: '*/5 * * * *'
     wrappers:
         - timeout:
             timeout: 600
@@ -478,14 +478,12 @@
 
 - project:
     name: tcwg_kernel-dead
-    toolchain_name2:
+    toolchain_name:
       - llvm
-      - gnu
     toolchain_ver:
       - master
       - release
     target:
-      - aarch64
       - armv8l
     linux:
       - next
@@ -498,12 +496,12 @@
       - llvm
       - linux
     jobs:
-      - 'tcwg_kernel-trigger-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}-{component}'
-      - 'tcwg_kernel-build-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-      - 'tcwg_kernel-bisect-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg-{toolchain_name}-kernel-trigger-{target}-{toolchain_ver}-{linux}-{linux_config}-{component}'
+      - 'tcwg-{toolchain_name}-kernel-build-{target}-{toolchain_ver}-{linux}-{linux_config}'
+      - 'tcwg-{toolchain_name}-kernel-bisect-{target}-{toolchain_ver}-{linux}-{linux_config}'
 
 - job-template:
-    name: tcwg_kernel-trigger-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}-{component}
+    name: tcwg-{toolchain_name}-kernel-trigger-{target}-{toolchain_ver}-{linux}-{linux_config}-{component}
     project-type: freestyle
     defaults: global
     properties:
@@ -513,7 +511,7 @@
     display-name: 'DELETE ME'
 
 - job-template:
-    name: tcwg_kernel-build-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    name: tcwg-{toolchain_name}-kernel-build-{target}-{toolchain_ver}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
@@ -523,7 +521,7 @@
     display-name: 'DELETE ME'
 
 - job-template:
-    name: tcwg_kernel-bisect-{toolchain_name2}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    name: tcwg-{toolchain_name}-kernel-bisect-{target}-{toolchain_ver}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
