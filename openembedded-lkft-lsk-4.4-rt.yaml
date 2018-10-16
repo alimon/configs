@@ -38,10 +38,10 @@
             name: MAKE_KERNELVERSION
         - string:
             name: IMAGES
-            default: 'rpb-console-image'
+            default: 'rpb-console-image-lkft'
         - string:
             name: MANIFEST_BRANCH
-            default: 'morty'
+            default: 'rocko'
         - string:
             name: PUB_DEST
             default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/lsk-${KERNEL_VERSION}-rt/${BUILD_NUMBER}'
@@ -60,9 +60,11 @@
         - string:
             name: SKIP_LAVA
             default: ''
+        - matrix-combinations:
+            name: MATRIX_COMBINATIONS
     disabled: false
     node: master
-    display-name: 'LKFT - LSK 4.4 RT (OpenEmbedded/morty)'
+    display-name: 'LKFT - LSK 4.4 RT (OpenEmbedded/rocko)'
     axes:
         - axis:
             type: user-defined

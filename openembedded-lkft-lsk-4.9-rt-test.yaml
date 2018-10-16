@@ -38,10 +38,10 @@
             name: MAKE_KERNELVERSION
         - string:
             name: IMAGES
-            default: 'rpb-console-image'
+            default: 'rpb-console-image-lkft'
         - string:
             name: MANIFEST_BRANCH
-            default: 'morty'
+            default: 'rocko'
         - string:
             name: PUB_DEST
             default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/lsk-${KERNEL_VERSION}-rt-test/${BUILD_NUMBER}'
@@ -60,9 +60,11 @@
         - string:
             name: SKIP_LAVA
             default: ''
+        - matrix-combinations:
+            name: MATRIX_COMBINATIONS
     disabled: false
     node: master
-    display-name: 'LKFT - LSK 4.9 RT test (OpenEmbedded/morty)'
+    display-name: 'LKFT - LSK 4.9 RT test (OpenEmbedded/rocko)'
     axes:
         - axis:
             type: user-defined
@@ -71,6 +73,7 @@
                 - 'dragonboard-410c'
                 - 'hikey'
                 - 'intel-core2-32'
+                - 'intel-corei7-64'
                 - 'juno'
         - axis:
             type: user-defined
@@ -108,6 +111,9 @@
                 DEVICE_TYPE=dragonboard-410c
                 ;;
               intel-core2-32)
+                DEVICE_TYPE=i386
+                ;;
+              intel-corei7-64)
                 DEVICE_TYPE=x86
                 ;;
               juno)
