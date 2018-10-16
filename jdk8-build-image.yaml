@@ -36,12 +36,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-                - zero
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -64,19 +58,10 @@
             filter: 'out/jdk8u.tar.gz'
             target: incoming
             flatten: true
-        - copyartifact:
-            project: archive-primordial-jdk7
-            filter: 'out/primordial-jdk7.tar.gz'
-            target: incoming
-            flatten: true
         - shell: |
             #!/bin/bash
 
             set -exu
-
-            #export CCACHE_DIR=~/.ccache-${JVM_VARIANT}-${BUILD_TYPE}
-            #ccache -M 1G
-            #ccache -s
 
             ccache_build_opts=--disable-ccache
 
@@ -105,17 +90,17 @@
 
             if [ $two_stage_build = 1 ]; then
               pushd build-stage1
-              sh ../jdk8u/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk7 ${ccache_build_opts}
+              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk7 ${ccache_build_opts}
               make images
               popd
 
               pushd build-stage2
-              sh ../jdk8u/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image ${ccache_build_opts}
+              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image ${ccache_build_opts}
               make images
               popd
             else
               pushd build-stage2
-              sh ../jdk8u/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
+              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
               make images
               popd
             fi
@@ -123,7 +108,7 @@
             # Archive the result
             rm -rf out
             mkdir out
-            artifact_name=jdk8u-${JVM_VARIANT}-${BUILD_TYPE}
+            artifact_name=jdk8u-${BUILD_TYPE}
             tar -C build-stage2/images/j2sdk-image --exclude=\*.diz --transform="s!^!$artifact_name/!" -acf out/${artifact_name}.tar.gz jre bin lib
     publishers:
         - archive:

@@ -31,12 +31,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-                - client
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -77,10 +71,7 @@
             source $DEPS/build-date.sh
 
             export JDK_VERSION=8u
-            # client variant uses server with -XX:TieredStopAtLevel=1
-            # zero is a third possible value.
-            REAL_VARIANT=${JVM_VARIANT/client/server}
-            IMAGE_DIR=${WORKSPACE}/jdk8u-${REAL_VARIANT}-${BUILD_TYPE}
+            IMAGE_DIR=${WORKSPACE}/jdk8u-${BUILD_TYPE}
             PERSIST=$HOME/srv/openjdk8u
 
             JCSTRESS=$DEPS/jcstress.jar
@@ -105,7 +96,7 @@
             : ${JTREG_SUBCATEGORIES:=.}
 
             tar xf $DEPS/jdk8u.tar.gz
-            tar xf ~/workspace/jdk8-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk8u-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
+            tar xf ~/workspace/jdk8-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk8u-${BUILD_TYPE}.tar.gz
             tar xf $DEPS/jtreg-build-4.2.0-SNAPSHOT.tar.xz
 
             # All the output directories and general frobbing
@@ -120,8 +111,8 @@
             mkdir -p ${basedir}/{src,builds,reports}
 
             src_dir=${basedir}/src/${YEAR}/${DAY_OF_YEAR}
-            work_dir=${basedir}/builds/${JVM_VARIANT}-${BUILD_TYPE}/${YEAR}/${DAY_OF_YEAR}/JTwork-${JTREG_CATEGORY}
-            report_dir=${basedir}/reports/${JVM_VARIANT}-${BUILD_TYPE}/${JTREG_CATEGORY}/$(uname -m)/${YEAR}/${DAY_OF_YEAR}/JTreport
+            work_dir=${basedir}/builds/${BUILD_TYPE}/${YEAR}/${DAY_OF_YEAR}/JTwork-${JTREG_CATEGORY}
+            report_dir=${basedir}/reports/${BUILD_TYPE}/${JTREG_CATEGORY}/$(uname -m)/${YEAR}/${DAY_OF_YEAR}/JTreport
 
             mkdir -p out ${src_dir} ${work_dir} ${report_dir}
 
@@ -147,7 +138,7 @@
             cat ${blacklist}
             echo "---------"
 
-            export JAVA_HOME=${WORKSPACE}/jdk8u-${REAL_VARIANT}-${BUILD_TYPE}
+            export JAVA_HOME=${WORKSPACE}/jdk8u${BUILD_TYPE}
             export PATH=$JAVA_HOME/bin:${PATH}
 
             PATH=${WORKSPACE}/jtreg/bin:${PATH}
@@ -157,9 +148,8 @@
             # Ignore error in jtreg final result.
             set +e
 
-            if [ $JVM_VARIANT = "server" ]; then
-                java -jar jtreg/lib/jtreg.jar \
-                  -dir:${src_dir}/${JTREG_CATEGORY}/test \
+            java -jar jtreg/lib/jtreg.jar \
+                 -dir:${src_dir}/${JTREG_CATEGORY}/test \
                   -testjdk:${IMAGE_DIR} \
                   -exclude:${blacklist} \
                   -conc:auto \
@@ -167,19 +157,7 @@
                   -w:${work_dir} \
                   -timeout:2 \
                   -a -othervm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
-            else
-                java -jar jtreg/lib/jtreg.jar \
-                  -dir:${src_dir}/${JTREG_CATEGORY}/test \
-                  -vmoption:-XX:+TieredCompilation \
-                  -vmoption:-XX:TieredStopAtLevel=1 \
-                  -testjdk:${IMAGE_DIR} \
-                  -exclude:${blacklist} \
-                  -conc:auto \
-                  -r:${report_dir} \
-                  -w:${work_dir} \
-                  -timeout:2 \
-                  -a -othervm -ignore:quiet -v1 ${JTREG_SUBCATEGORIES} | cat -n
-            fi
+
 
             # Kill leftover jstatd processes.
             killall -9 jstatd
@@ -195,7 +173,7 @@
             find ${report_dir} -type f -exec perl -p -i -e "$sed_expr" {} \;
 
             mkdir -p out
-            tar -C ${basedir} --show-transformed-names -acvf out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz builds reports
+            tar -C ${basedir} --show-transformed-names -acvf out/jtreg-results-${JTREG_CATEGORY}-${BUILD_TYPE}.tar.gz builds reports
     publishers:
         - archive:
-            artifacts: 'out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
+            artifacts: 'out/jtreg-results-${JTREG_CATEGORY}-${BUILD_TYPE}.tar.gz'

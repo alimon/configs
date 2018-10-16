@@ -21,12 +21,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-                - client
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -44,13 +38,6 @@
         - matrix-tie-parent:
             node: j12-qrep-01
     builders:
-# copyartifact is slow and the file is local
-# copy instead of going back and forth between master <-> slave
-#        - copyartifact:
-#            project: jdk11-build-image
-#            filter: 'out/jdk11-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
-#            target: incoming
-#            flatten: true
         - copyartifact:
             project: jdk-build-specjbb2015-jdk11
             filter: 'out/SPECjbb2015-jdk11.tar.gz'
@@ -60,14 +47,10 @@
             #!/bin/bash
 
             set -exu
-            #
-            # client variant uses server with -XX:TieredStopAtLevel=1
-            # zero is a third possible value.
-            REAL_VARIANT=${JVM_VARIANT/client/server}
 
             ## Extract jdk
-            tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk11-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
-            export JAVA_HOME=${WORKSPACE}/jdk11-${REAL_VARIANT}-${BUILD_TYPE}
+            tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk11-${BUILD_TYPE}.tar.gz
+            export JAVA_HOME=${WORKSPACE}/jdk11-${BUILD_TYPE}
             export PATH=$JAVA_HOME/bin:$PATH
             which java
             java -version
@@ -92,15 +75,11 @@
             #   -Dspecjbb.controller.preset.duration=100 \
             #   -jar specjbb2015.jar -m composite)
 
-            if [ $JVM_VARIANT = "server" ]; then
-                (cd $SPECJBB_PRODUCT_HOME; java -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -ikv -m composite)
-            else
-                (cd $SPECJBB_PRODUCT_HOME; java -XX:TieredStopAtLevel=1 -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -ikv -m composite)
-            fi
+            (cd $SPECJBB_PRODUCT_HOME; java -XX:+UseLargePages -XX:-UseBiasedLocking -Xmx12g -Xms12g -XX:+UseParallelOldGC -jar specjbb2015.jar -ikv -m composite)
 
             mkdir -p out
 
-            datafile=$(basename $(echo $SPECJBB_PRODUCT_HOME/specjbb*.data.gz) | sed "s/\(specjbb2015\)/\1-${JVM_VARIANT}-${BUILD_TYPE}/")
+            datafile=$(basename $(echo $SPECJBB_PRODUCT_HOME/specjbb*.data.gz) | sed "s/\(specjbb2015\)/\1-${BUILD_TYPE}/")
 
             cp $SPECJBB_PRODUCT_HOME/specjbb*.data.gz out/$datafile
 
@@ -111,7 +90,7 @@
               -s $SPECJBB_PRODUCT_HOME/specjbb2015-C-*.data.gz \
               -l 1
 
-            tar -acf out/specjbb-result-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz result
+            tar -acf out/specjbb-result-${BUILD_TYPE}.tar.gz result
 
             rm -rf html
             mkdir html

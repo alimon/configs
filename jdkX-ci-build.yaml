@@ -35,19 +35,10 @@
         - pollscm:
             cron: 'H * * * *'
     builders:
-#   Include this when we decide to do jtreg tests.
-#        - copyartifact:
-#            project: jtreg-build
-#            filter: 'jtreg-build-4.2.0-SNAPSHOT.tar.xz'
-#            flatten: true
         - shell: |
             #!/bin/bash
 
             set -exu
-
-            #export CCACHE_DIR=~/.ccache-${JVM_VARIANT}-${BUILD_TYPE}
-            #ccache -M 1G
-            #ccache -s
 
             ccache_build_opts=--disable-ccache
             # Include when Jtreg tests make sense to be run.

@@ -36,11 +36,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -63,9 +58,6 @@
             filter: 'out/jdk8u.tar.gz'
             target: incoming
             flatten: true
-        - copyartifact:
-            project: archive-primordial-jdk7
-            filter: 'out/primordial-jdk7.tar.gz'
             target: incoming
             flatten: true
         - shell: |
@@ -73,14 +65,9 @@
 
             set -exu
 
-            #export CCACHE_DIR=~/.ccache-${JVM_VARIANT}-${BUILD_TYPE}
-            #ccache -M 1G
-            #ccache -s
-            export JVM_VARIANT=server
-
             # Generate files names dependent on year/month.
             RELEASE=$(date +%y%m)
-            JDKDIR=jdk8u-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
+            JDKDIR=jdk8u-${BUILD_TYPE}-${RELEASE}
             JDK_SRCDIR=jdk8u-src-${RELEASE}
 
             ccache_build_opts=--disable-ccache
@@ -94,6 +81,10 @@
             export PATH=${JAVA_HOME}/bin:${PATH}
 
             cd ${WORKSPACE}
+
+            # Setup archive directory
+            mkdir out
+
             # Extract sources from upstream job
             rm -rf jdk8u
             tar xf incoming/jdk8u.tar.gz
@@ -116,13 +107,12 @@
 
             if [ $two_stage_build = 1 ]; then
               pushd build-stage1
-              sh ../$JDKDIR/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk7 ${ccache_build_opts} 
+              sh ../$JDKDIR/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk7 ${ccache_build_opts} 
               make images
               popd
 
               pushd build-stage2
-              sh ../$JDKDIR/configure --with-jvm-variants=${JVM_VARIANT} \
-                                        --with-debug-level=${BUILD_TYPE} \
+              sh ../$JDKDIR/configure   --with-debug-level=${BUILD_TYPE} \
                                         --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image \
                                         ${ccache_build_opts} \
                                         --with-user-release-suffix="Linaro-$RELEASE" \
@@ -131,8 +121,7 @@
               popd
             else
               pushd build-stage2
-              sh ../$JDKDIR/configure --with-jvm-variants=${JVM_VARIANT} \
-                                        --with-debug-level=${BUILD_TYPE} \
+              sh ../$JDKDIR/configure   --with-debug-level=${BUILD_TYPE} \
                                         ${ccache_build_opts} \
                                         --with-user-release-suffix="Linaro-$RELEASE" \
                                         --with-milestone="release"
@@ -141,7 +130,7 @@
             fi
 
             # Archive the result
-            artifact_name=jdk8u-${JVM_VARIANT}-${BUILD_TYPE}-${RELEASE}
+            artifact_name=jdk8u-${BUILD_TYPE}-${RELEASE}
 
             # This is different from ordinary builds.
             tar -C build-stage2/images --exclude=\*.diz --transform="s!^j2sdk-image!$artifact_name!" -acf out/${artifact_name}.tar.xz j2sdk-image

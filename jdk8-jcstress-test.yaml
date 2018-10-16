@@ -28,12 +28,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-                - client
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -61,14 +55,10 @@
             TEST_TYPE=all
             DEPS=$HOME/workspace/jdkX-get-deps
 
-            # client variant uses server with -XX:TieredStopAtLevel=1
-            # zero is a third possible value.
-            REAL_VARIANT=${JVM_VARIANT/client/server}
-
             JCSTRESS_JAR=$DEPS/jcstress.jar
             rm -rf jdk8u*
-            tar xf ~/workspace/jdk8-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk8u-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
-            export JAVA_HOME=${WORKSPACE}/jdk8u-${REAL_VARIANT}-${BUILD_TYPE}
+            tar xf ~/workspace/jdk8-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk8u-${BUILD_TYPE}.tar.gz
+            export JAVA_HOME=${WORKSPACE}/jdk8u-${BUILD_TYPE}
             export PATH=${JAVA_HOME}/bin:${PATH}
             which java
             java -version
@@ -83,7 +73,7 @@
             rm -rf out
             mkdir out
 
-            out_dirname=jcstress-results-${JVM_VARIANT}-${BUILD_TYPE}
+            out_dirname=jcstress-results-${BUILD_TYPE}
 
             rm -rf ${out_dirname}
             mkdir -p ${out_dirname}

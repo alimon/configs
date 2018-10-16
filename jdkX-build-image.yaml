@@ -25,12 +25,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-#                - zero
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -53,19 +47,10 @@
             filter: 'out/jdkX.tar.gz'
             target: incoming
             flatten: true
-#        - copyartifact:
-#            project: archive-primordial-jdkX
-#            filter: 'out/primordial-jdkX.tar.gz'
-#            target: incoming
-#            flatten: true
         - shell: |
             #!/bin/bash
 
             set -exu
-
-            #export CCACHE_DIR=~/.ccache-${JVM_VARIANT}-${BUILD_TYPE}
-            #ccache -M 1G
-            #ccache -s
 
             ccache_build_opts=--disable-ccache
 
@@ -83,8 +68,6 @@
 
             shopt -s nullglob
 
-
-
             # Configure and build
             mkdir -p build-stage1 build-stage2
 
@@ -95,17 +78,17 @@
 
             if [ $two_stage_build = 1 ]; then
               pushd build-stage1
-              sh ../jdkX/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdkX ${ccache_build_opts}
+              sh ../jdkX/configure } --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdkX ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
 
               pushd build-stage2
-              sh ../jdkX/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk ${ccache_build_opts}
+              sh ../jdkX/configure  --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             else
               pushd build-stage2
-              sh ../jdkX/configure --with-jvm-variants=${JVM_VARIANT} --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
+              sh ../jdkX/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             fi
@@ -113,7 +96,7 @@
             # Archive the result
             rm -rf out
             mkdir out
-            artifact_name=jdkX-${JVM_VARIANT}-${BUILD_TYPE}
+            artifact_name=jdkX-${BUILD_TYPE}
             tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
 
             # Archive test support files.

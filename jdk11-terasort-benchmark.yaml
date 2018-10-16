@@ -22,12 +22,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-                - client
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -52,21 +46,18 @@
 
             NGIGABYTES=1
 
-            # client variant uses server with -XX:TieredStopAtLevel=1
-            # zero is a third possible value.
-            REAL_VARIANT=${JVM_VARIANT/client/server}
 
             CACHE_FILES=$HOME/workspace/jdk-cache-files2
             ## Extract jdk
             rm -rf jdk11*
-            tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/JVM_VARIANT/${REAL_VARIANT}/label/${NODE_NAME}/out/jdk11-${REAL_VARIANT}-${BUILD_TYPE}.tar.gz
+            tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk11-${BUILD_TYPE}.tar.gz
 
-            export JAVA_HOME=${WORKSPACE}/jdk11-${REAL_VARIANT}-${BUILD_TYPE}
+            export JAVA_HOME=${WORKSPACE}/jdk11-${BUILD_TYPE}
             export PATH=${JAVA_HOME}/bin:$PATH
 
             ## Extract Hadoop pre-builts
             rm -rf openjdk8-hadooop-LCA14
-            tar xf incoming/openjdk8-hadoop-LCA14.tar.gz
+            tar xf $CACHE_FILES/openjdk8-hadoop-LCA14.tar.gz
 
             ## Benchmark
             # FIXME
@@ -108,21 +99,14 @@
 
             trap "stop-dfs.sh; stop-yarn.sh" EXIT
 
-            # Use only C1 compiler for client runs.
-            if [ $JVM_VARIANT = "client" ]; then
-                VARIANT_OPT=-XX:TieredStopAtLevel=1
-            else
-                VARIANT_OPT=-Dharmless.property
-            fi
-
             elapsed_time_file=$(mktemp /tmp/benchmark-terasort-XXXXXX.$$)
-            HADOOP_OPTS=${VARIANT_OPT} /usr/bin/time -o $elapsed_time_file -f "%e" terasort ${NGIGABYTES}GB ${NGIGABYTES}GB-sorted
+            /usr/bin/time -o $elapsed_time_file -f "%e" terasort ${NGIGABYTES}GB ${NGIGABYTES}GB-sorted
 
             hadoop fs -rm -R ${NGIGABYTES}GB-sorted
             sed -i 's/\..*//' $elapsed_time_file
             elapsed_time=$(cat $elapsed_time_file)
             date_as_epoch=$(date --date="$(date +'%Y-%m-%d')" +%s)
-            echo "$date_as_epoch,$JVM_VARIANT,$NGIGABYTES,$elapsed_time" > out/terasort-results-${JVM_VARIANT}-${BUILD_TYPE}.csv
+            echo "$date_as_epoch,$NGIGABYTES,$elapsed_time" > out/terasort-results-${BUILD_TYPE}.csv
             rm -rf incoming/${NGIGABYTES}*
     publishers:
         - archive:

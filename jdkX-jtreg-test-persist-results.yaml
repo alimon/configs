@@ -30,12 +30,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-                - client
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -62,7 +56,7 @@
     builders:
         - copyartifact:
             project: jdkX-jtreg-test
-            filter: 'out/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz'
+            filter: 'out/jtreg-results-${JTREG_CATEGORY}-${BUILD_TYPE}.tar.gz'
             target: incoming
             flatten: true
         - copyartifact:
@@ -80,18 +74,18 @@
             PERSIST=$HOME/srv/openjdkX
             export JDK_VERSION=X
 
-            result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JTREG_CATEGORY=${JTREG_CATEGORY},JVM_VARIANT=${JVM_VARIANT},label=${label}/jtreg-results-${JTREG_CATEGORY}-${JVM_VARIANT}-${BUILD_TYPE}.tar.gz
+            result_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JTREG_CATEGORY=${JTREG_CATEGORY},label=${label}/jtreg-results-${JTREG_CATEGORY}-${BUILD_TYPE}.tar.gz
 
-            image_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=server,label=${label}/jdkX-server-${BUILD_TYPE}.tar.gz
+            image_tarball=${WORKSPACE}/incoming/BUILD_TYPE=${BUILD_TYPE},label=${label}/jdkX-${BUILD_TYPE}.tar.gz
 
             : ${YEAR:=$(date +%Y)}
             : ${DAY_OF_YEAR:=$(date +%j)}
 
             basedir=$PERSIST/openjdk-jtreg-nightly-tests
             src_dir=${basedir}/src/${YEAR}/${DAY_OF_YEAR}
-            work_dir=${basedir}/builds/${JVM_VARIANT}-${BUILD_TYPE}/${YEAR}/${DAY_OF_YEAR}/JTwork-${JTREG_CATEGORY}
-            report_dir=${basedir}/reports/${JVM_VARIANT}-${BUILD_TYPE}/${JTREG_CATEGORY}/$(uname -m)/${YEAR}/${DAY_OF_YEAR}/JTreport
-            image_dir=${basedir}/builds/${JVM_VARIANT}-${BUILD_TYPE},label=${label}/${YEAR}/${DAY_OF_YEAR}/images/jdk
+            work_dir=${basedir}/builds/${BUILD_TYPE}/${YEAR}/${DAY_OF_YEAR}/JTwork-${JTREG_CATEGORY}
+            report_dir=${basedir}/reports/${BUILD_TYPE}/${JTREG_CATEGORY}/$(uname -m)/${YEAR}/${DAY_OF_YEAR}/JTreport
+            image_dir=${basedir}/builds/${BUILD_TYPE},label=${label}/${YEAR}/${DAY_OF_YEAR}/images/jdk
 
             rm -rf  ${image_dir}
             mkdir -p ${image_dir}

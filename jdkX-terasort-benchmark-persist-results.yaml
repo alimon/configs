@@ -22,12 +22,6 @@
     axes:
         - axis:
             type: user-defined
-            name: JVM_VARIANT
-            values:
-                - server
-                - client
-        - axis:
-            type: user-defined
             name: BUILD_TYPE
             values:
                 - release
@@ -47,7 +41,7 @@
     builders:
         - copyartifact:
             project: jdkX-terasort-benchmark
-            filter: 'out/terasort-results-${JVM_VARIANT}-${BUILD_TYPE}.csv'
+            filter: 'out/terasort-results-${BUILD_TYPE}.csv'
             target: incoming
             flatten: true
         - shell: |
@@ -57,7 +51,7 @@
 
             PERSIST=$HOME/srv/openjdkX
             export BENCHMARK_RESULTS_DIR=$PERSIST/hadoop-terasort-benchmark-results
-            new_results=incoming/BUILD_TYPE=${BUILD_TYPE},JVM_VARIANT=${JVM_VARIANT},label=${label}/*.csv
+            new_results=incoming/BUILD_TYPE=${BUILD_TYPE},label=${label}/*.csv
             prev_results=$BENCHMARK_RESULTS_DIR/results.csv
 
             # Ensure persistent directory exists.
