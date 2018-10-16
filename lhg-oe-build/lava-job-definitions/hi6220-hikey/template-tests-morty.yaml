@@ -3,10 +3,10 @@ tags:
   - static-ip
   - 4k-hdmi-dongle
   - usb-mouse
-job_name: lhg-oe-eme-clearkey-test-${MANIFEST_BRANCH}-${BUILD_NUMBER}
+job_name: lhg-oe-robotframework-tests-${MANIFEST_BRANCH}-${BUILD_NUMBER}
 timeouts:
   job:
-    minutes: 20
+    minutes: 40
   action:
     minutes: 20
   connection:
@@ -143,12 +143,12 @@ actions:
 - test:
    namespace: tlxc
    timeout:
-     minutes: 20
+     minutes: 40
    definitions:
    - repository: https://git.linaro.org/people/arthur.she/test-definitions.git
      from: git
      path: openembedded/robotframework-lxc.yaml
      name: robotframework-lxc
      params:
-       RF_TEST_CASE: "eme-test/eme-clearkey-test.robot"
-       RF_TEST_CASES_REPO: "https://git.linaro.org/people/arthur.she/lhg-robotframework-test.git"
+       RF_TEST_CASE: "weston-simple-egl/weston-simple-egl-test.robot,gst-wayland-test/gst-wayland-test.robot,browser-test/chromium-browser-test.robot,youtube-test/youtube-test.robot,webgl-test/webgl-test.robot,x-test/xtest-benchmark.robot,x-test/xtest-regression.robot,eme-test/eme-clearkey-test.robot"
+       RF_TEST_CASES_REPO: "https://github.com/linaro-mmwg/lhg-robotframework-test.git"
