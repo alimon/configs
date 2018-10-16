@@ -76,6 +76,20 @@ case "${MACHINE}" in
 esac
 
 if [ $SEND_TESTJOB = true ]; then
+  # Get KernelCI information for repo, branch and commit, enable ex to don't exit if fails and to hide the token.
+  set +ex
+  if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
+    KERNELCI_JSON="$(curl -s -H "Authorization: ${QCOMLT_KERNELCI_TOKEN}" "https://api.kernelci.org/job?job=mainline&git_branch=master&kernel=${KERNEL_VERSION}")"
+  elif [ ${QA_SERVER_PROJECT} = "linux-integration" ]; then
+    KERNELCI_JSON="$(curl -s -H "Authorization: ${QCOMLT_KERNELCI_TOKEN}" "https://api.kernelci.org/job?job=qcom-lt&git_branch=integration-linux-qcomlt&kernel=${KERNEL_VERSION}")"
+  fi
+  set -x
+
+  export KERNEL_REPO="$(echo "${KERNELCI_JSON}" | python -c "import sys, json; print json.load(sys.stdin)['result'][0]['git_url']")"
+  export KERNEL_BRANCH="$(echo "${KERNELCI_JSON}" | python -c "import sys, json; print json.load(sys.stdin)['result'][0]['git_branch']")"
+  export KERNEL_COMMIT="$(echo "${KERNELCI_JSON}" | python -c "import sys, json; print json.load(sys.stdin)['result'][0]['git_commit']")"
+  set -e
+
   python configs/openembedded-lkft/submit_for_testing.py \
       --device-type ${LAVA_DEVICE_TYPE} \
       --build-number ${BUILD_NUMBER} \
