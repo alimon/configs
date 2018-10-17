@@ -1,0 +1,106 @@
+- job:
+    name: lhg-openembedded-playready-rocko
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+            playready-confidential-access:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'rpb-westonchromium-image'
+        - string:
+            name: MANIFEST_URL
+            default: 'https://github.com/linaro-mmwg/lhg-oe-manifests.git'
+        - string:
+            name: MANIFEST_BRANCH_PREFIX
+            default: 'playready/'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'rocko'
+        - string:
+            name: BASE_URL
+            default: 'http://snapshots.linaro.org/'
+        - string:
+            name: PUB_DEST
+            default: 'openembedded/pre-built/lhg-playready/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
+        - string:
+            name: GIT_SSH_COMMAND
+            default: 'ssh -F ${HOME}/lhg-review.sshconfig'
+        - string:
+            name: AUTH_GROUPS
+            default: 'playready-confidential-access'
+    disabled: false
+    node: master
+    display-name: 'MMWG PlayReady - OpenEmbedded (rocko)'
+    triggers:
+        - gerrit:
+            server-name: 'lhg-review.linaro.org'
+            override-votes: true
+            gerrit-build-successful-codereview-value: 1
+            gerrit-build-failed-codereview-value: -1
+            readable-message: true
+            successful-message: 'OE Rocko Build Sanity Check Successful'
+            start-message: 'OE Rocko Build Sanity Check Started'
+            failure-message: 'OE Rocko Build Sanity Check Failed'
+            trigger-for-unreviewed-patches: true
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'lhg/playready'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '3.3.4472'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'optee-playready'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: '3.3.4472'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'lhg/meta-lhg-prop'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'rocko'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+#                - 'hikey960'
+                - 'hikey'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb-wayland
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - '8ed98f80-b4d8-4861-9a8a-15f1e89ba083'
+    builders:
+        - shell:
+            !include-raw: rpb-openembedded/builders-lhg.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/buildinfo-protected.sh
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
