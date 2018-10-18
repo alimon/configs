@@ -16,6 +16,8 @@
                 - job-extended-read
                 - job-configure
                 - job-cancel
+        - github:
+            url: https://github.com/vishalbhoj/android_manifest
     parameters:
         - string:
             name: KERNEL_BRANCH
@@ -25,20 +27,19 @@
     display-name: 'Trigger for LKFT HiKey builds (4.4 branch)'
     scm:
         - git:
-            remotes:
-                - linux-stable-4.4:
-                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-                    refspec: +refs/heads/linux-4.4.y:refs/remotes/origin/linux-4.4.y
-                - android-hikey-linaro-4.4:
-                    url: https://android.googlesource.com/kernel/hikey-linaro
-                    refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            url: https://github.com/linaro-mmwg/optee-clearkey-cdmi.git
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
             branches:
-                - origin/${KERNEL_BRANCH}
+                - ${sha1}
             skip-tag: true
-            wipe-workspace: false
-            reference-repo: "/home/buildslave/srv/linux-stable.git"
+            shallow-clone: true
+            wipe-workspace: true
     triggers:
-        - pollscm: 'H/5 * * * *'
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            auth-id: 'GITHUB_TOKEN'
     wrappers:
         - timestamps
         - build-name:
@@ -46,16 +47,4 @@
     builders:
         - shell: |
             #!/bin/bash -e
-            echo KERNEL_DESCRIBE=$(git describe --always) > lkft_parameters
-            echo SRCREV_kernel=${GIT_COMMIT} >> lkft_parameters
-            cat lkft_parameters
-    publishers:
-        - trigger-parameterized-builds:
-            - project:
-                - 'openembedded-lkft-aosp-4.4'
-              condition: SUCCESS
-              property-file: lkft_parameters
-            - project:
-                - 'lkft-hikey-aosp-4.4'
-              condition: SUCCESS
-              property-file: lkft_parameters
+            ls
