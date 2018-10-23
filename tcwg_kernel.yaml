@@ -185,7 +185,7 @@
     disabled: false
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'TCWG BBB RRv7 Trigger {toolchain_name}-{toolchain_ver} @ {target} @ Linux-{linux}-{linux_config} @ {component}'
+    display-name: 'TCWG BBB RRv7 Trigger Linux-{linux}-{linux_config} @ {target} @ {toolchain_name}-{toolchain_ver} @ {component}'
     workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
     scm:
       - '{component}-scm':
@@ -277,7 +277,7 @@
     disabled: false
     node: tcwg-x86_64-build
     concurrent: false
-    display-name: 'TCWG BBB RRv7 Build {toolchain_name}-{toolchain_ver} @ {target} @ Linux-{linux}-{linux_config}'
+    display-name: 'TCWG BBB RRv7 Build Linux-{linux}-{linux_config} @ {target} @ {toolchain_name}-{toolchain_ver}'
     workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
     scm:
       - jenkins-scripts
@@ -308,7 +308,7 @@
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
             -- \
-            ./jenkins-scripts/tcwg-{toolchain_name}-kernel.sh \
+            ./jenkins-scripts/tcwg_kernel-build.sh \
             @@{toolchain_name}-{toolchain_ver} @@linux-{linux} \
             --mode "jenkins-full" \
             --current_project "$current_project" \
@@ -316,7 +316,7 @@
             --linux_config "{linux_config}" \
             --reset_baseline "$reset_baseline" \
             --target "{target}" \
-            --verbose true || true
+            --toolchain "{toolchain_name}" || true
 
             name="#$BUILD_NUMBER-$current_project"
             if [ -e artifacts/results ]; then
@@ -389,7 +389,7 @@
     disabled: false
     node: tcwg-x86_64-build
     concurrent: false
-    display-name: 'TCWG BBB RRv7 Bisect {toolchain_name}-{toolchain_ver} @ {target} @ Linux-{linux}-{linux_config}'
+    display-name: 'TCWG BBB RRv7 Bisect Linux-{linux}-{linux_config} @ {target} @ {toolchain_name}-{toolchain_ver}'
     workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
     scm:
       - jenkins-scripts
@@ -420,23 +420,23 @@
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
             -- \
-            ./jenkins-scripts/tcwg-bisect-{toolchain_name}-kernel.sh \
+            ./jenkins-scripts/tcwg_kernel-bisect.sh \
             @@{toolchain_name}-{toolchain_ver} @@linux-{linux} \
             --current_project "$current_project" \
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
             --linux_config "{linux_config}" \
             --target "{target}" \
-            --verbose true
+            --toolchain "{toolchain_name}"
 
-            for i in bisect-artifacts/trigger-1-reset-baseline bisect-artifacts/trigger-2-build-master; do
+            for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
                 echo "distro=$distro" >> $i
                 echo "scripts_branch=$scripts_branch" >> $i
               fi
             done
 
-            echo "#$BUILD_NUMBER-$current_project-$(cat bisect-artifacts/first-bad)" > build-name
+            echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
 
             CI_MAIL_RECIPIENTS="tcwg-validation@linaro.org, maxim.kuvyrkov@linaro.org"
             if [ -f bisect-artifacts/first-bad ]; then
@@ -455,25 +455,33 @@
         - build-name-setter:
             name: 'build-name'
             file: true
-        - trigger-builds:
-            - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-              property-file: bisect-artifacts/trigger-1-reset-baseline
-        - trigger-builds:
-            - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-              property-file: bisect-artifacts/trigger-2-build-master
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-1-reset-baseline
+            steps:
+              - trigger-builds:
+                  - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+                    property-file: artifacts/trigger-1-reset-baseline
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-2-build-master
+            steps:
+              - trigger-builds:
+                  - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+                    property-file: artifacts/trigger-2-build-master
         - inject:
             properties-file: ci_mail_parameters
     publishers:
         - archive:
-            artifacts: 'bisect-artifacts/**'
+            artifacts: 'artifacts/**'
             latest-only: false
         - email-ext:
             recipients: '${{CI_MAIL_RECIPIENTS}}'
             content-type: text
             body: |
                 Bisected ${{current_project}} on {target} @ {toolchain_name}-{toolchain_ver} @ linux-{linux}-{linux_config} between bad ${{bad_rev}} and baseline ${{baseline_rev}} .
-                Bisect log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/bisect-artifacts/bisect.log/*view*/
-                Artifacts: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/bisect-artifacts/
+                Bisect log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/artifacts/bisect.log/*view*/
+                Artifacts: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/artifacts/
                 Build URL: ${{PROJECT_URL}}${{BUILD_NUMBER}}/
                 Build log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/consoleText
             always: true
