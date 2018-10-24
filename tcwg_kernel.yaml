@@ -448,11 +448,11 @@
                 *) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, yvan.roux@linaro.org" ;;
               esac
             fi
-            echo "CI_MAIL_RECIPIENTS=$CI_MAIL_RECIPIENTS" > ci_mail_parameters
             # DEBUG OVERRIDE
             if true || [ x"$ROOT_BUILD_CAUSE" != x"SCMTRIGGER" ]; then
-              echo "maxim.kuvyrkov@linaro.org" > ci_mail_parameters
+              CI_MAIL_RECIPIENTS="maxim.kuvyrkov@linaro.org"
             fi
+            echo "CI_MAIL_RECIPIENTS=$CI_MAIL_RECIPIENTS" > ci_mail_parameters
         - build-name-setter:
             name: 'build-name'
             file: true
