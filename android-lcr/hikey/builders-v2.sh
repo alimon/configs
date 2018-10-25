@@ -24,7 +24,6 @@ cp -v /home/buildslave/srv/${BUILD_DIR}/build/out/dist/fip.bin \
       /home/buildslave/srv/${BUILD_DIR}/build/out/dist/l-loader.bin build/out/ || true
 
 cd build/out
-rm -f ramdisk.img
 for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img" "fip.bin" "l-loader.bin" "vendor.img"; do
   ## there are the cases that fip.bin and l-loader.bin not generated
   ## so we add the check before run xz command
