@@ -24,6 +24,63 @@
     node: docker-xenial-aosp
     display-name: 'AOSP P HiKey build with OP-TEE (SWG)'
     concurrent: true
+    triggers:
+        - gerrit:
+            server-name: __ANY__
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-patchsets'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-p-pullreqs'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-p-workarounds'
+                      - compare-type: 'PLAIN'
+                        pattern: 'P-RLCR-PATCHSET'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-p'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-4.9'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-4.14'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-clang-4.9'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-clang-4.14'
+                      - compare-type: 'PLAIN'
+                        pattern: 'swg-mods-p'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-p-preview'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-p-preview'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'linaro.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'optee.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'update-externals.xml'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-p'
     wrappers:
         - timestamps
         - timeout:
