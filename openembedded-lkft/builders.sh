@@ -38,8 +38,9 @@ chmod a+x ${HOME}/bin/repo
 export PATH=${HOME}/bin:${PATH}
 
 # initialize repo if not done already
+export MANIFEST_URL=${MANIFEST_URL:-https://github.com/96boards/oe-rpb-manifest.git}
 if [ ! -e ".repo/manifest.xml" ]; then
-   repo init -u https://github.com/96boards/oe-rpb-manifest.git -b ${MANIFEST_BRANCH}
+   repo init -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH}
 
    # link to shared downloads on persistent disk
    # our builds config is expecting downloads and sstate-cache, here.
@@ -242,9 +243,9 @@ h4. LKFT - OpenEmbedded
 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
-* Manifest URL: "https://github.com/96boards/oe-rpb-manifest.git":https://github.com/96boards/oe-rpb-manifest.git
+* Manifest URL: "${MANIFEST_URL}":${MANIFEST_URL}
 * Manifest branch: ${MANIFEST_BRANCH}
-* Manifest commit: "${MANIFEST_COMMIT}":https://github.com/96boards/oe-rpb-manifest/commit/${MANIFEST_COMMIT}
+* Manifest commit: "${MANIFEST_COMMIT}":${MANIFEST_URL/.git/\/commit}/${MANIFEST_COMMIT}
 EOF
 
 if [ -e "/srv/oe/manifest-changes.txt" ]; then
