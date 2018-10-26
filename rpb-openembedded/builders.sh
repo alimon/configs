@@ -69,6 +69,16 @@ else
     echo "latest build published does not have pinned-manifest.xml, skipping diff report"
 fi
 
+if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
+    cd `grep -rni $GERRIT_PROJECT\" .repo/manifest.xml | grep -Po 'path="\K[^"]*'`
+    if git pull ${GERRIT_URL} ${GERRIT_REFSPEC} | grep -q "Automatic merge failed"; then
+        git reset --hard
+        echo "Error: *** Error patch merge failed"
+        exit 1
+    fi
+    cd -
+fi
+
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
