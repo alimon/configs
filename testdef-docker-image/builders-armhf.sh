@@ -28,4 +28,4 @@ build_img() {
     docker push "$(cat .docker-tag)"
 }
 
-build_img "stretch-arm64-testdef"
+build_img "stretch-armhf-testdef"

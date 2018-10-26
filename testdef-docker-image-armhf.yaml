@@ -1,0 +1,45 @@
+- job:
+    name: testdef-docker-image-armhf
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build-armhf
+    display-name: 'Test Definitions Docker images'
+    scm:
+        - git:
+            # Monitor new tags.
+            url: https://git.linaro.org/qa/test-definitions.git
+            refspec: '+refs/tags/*:refs/remotes/origin/tags/*'
+            branches:
+                - 'refs/tags/*'
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell:
+            !include-raw: testdef-docker-image/builders-armhf.sh
+    publishers:
+        - email:
+            recipients: 'chase.qi@linaro.org'
