@@ -441,15 +441,14 @@
 
             CI_MAIL_RECIPIENTS="tcwg-validation@linaro.org, maxim.kuvyrkov@linaro.org"
             if [ -f bisect-artifacts/first-bad ]; then
-              # Email developers only on successful bisects.
-              CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, ndesaulniers@google.com"
-              case "$current_project" in
-                linux) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, arnd@linaro.org, mark.brown@linaro.org" ;;
-                *) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, yvan.roux@linaro.org" ;;
+              # Email developers on successful bisects.
+              case "{toolchain_name}:$current_project" in
+                gnu:*) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, christophe.lyon@linaro.org" ;;
+                llvm:linux) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, arnd@linaro.org, mark.brown@linaro.org, ndesaulniers@google.com" ;;
+                llvm:llvm) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, adhemerval.zanella@linaro.org, ndesaulniers@google.com, yvan.roux@linaro.org" ;;
               esac
             fi
-            # DEBUG OVERRIDE
-            if true || [ x"$ROOT_BUILD_CAUSE" != x"SCMTRIGGER" ]; then
+            if [ x"$ROOT_BUILD_CAUSE" != x"SCMTRIGGER" ]; then
               CI_MAIL_RECIPIENTS="maxim.kuvyrkov@linaro.org"
             fi
             echo "CI_MAIL_RECIPIENTS=$CI_MAIL_RECIPIENTS" > ci_mail_parameters
