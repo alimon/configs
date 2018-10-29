@@ -1,0 +1,154 @@
+device_type: hi6220-hikey-r2
+job_name: lhg-oe-wifi-tests-${MANIFEST_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 40
+  action:
+    minutes: 20
+  connection:
+    minutes: 5
+priority: high
+visibility: public
+
+metadata:
+  manifest branch: ${MANIFEST_BRANCH}
+  build-url: ${BUILD_URL}
+  build-location: ${BASE_URL}/${PUB_DEST}
+
+protocols:
+  lava-lxc:
+    name: lxc-hikey-test
+    distribution: ubuntu
+    release: xenial
+    arch: amd64
+    verbose: true
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 20
+    to: lxc
+    packages:
+    - wget
+    - unzip
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - "root@(.*):/#"
+    - "hikey:/"
+    timeout:
+      minutes: 5
+    method: lxc
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/android-platform-tools/install.yaml
+      name: install-android-platform-tools-r2600
+      parameters:
+        LINK: 'https://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip'
+
+- deploy:
+    timeout:
+      minutes: 20
+    to: fastboot
+    namespace: hikey-oe
+    connection: lxc
+    images:
+      ptable:
+        url: ${PTABLE_URL}
+        reboot: hard-reset
+      # Reflashing fip.bin doesn't seem to work atm
+      #fastboot:
+      #  url: ${FIP_URL}
+      #  reboot: hard-reset
+      boot:
+        url: ${BOOT_URL}
+        reboot: hard-reset
+      system:
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+    os: oe
+    protocols:
+       lava-lxc:
+       - action: fastboot-deploy
+         request: pre-power-command
+         timeout:
+           minutes: 2
+
+- boot:
+    namespace: hikey-oe
+    auto_login:
+      login_prompt: "login:"
+      username: root
+    prompts:
+    - "root@hikey:~#"
+    timeout:
+      minutes: 5
+    method: grub
+    commands: installed
+    protocols:
+      lava-lxc:
+      - action: grub-sequence-action
+        request: pre-os-command
+        timeout:
+          minutes: 2
+
+- test:
+   namespace: hikey-oe
+   timeout:
+     minutes: 20
+   definitions:
+   - from: inline
+     repository:
+       metadata:
+         format: Lava-Test Test Definition 1.0
+         name: basic-tests
+         description: "Basic tests after hikey boots to the shell prompt"
+       run:
+         steps:
+         - lava-test-case ps --shell ps aux
+         - lava-test-case hikey-dmesg --shell dmesg
+         - lava-test-case weston-status --shell test -f /run/user/1000/weston.log
+     name: basic-tests
+     path: inline/basic-tests.yaml
+
+- test:
+    namespace: hikey-oe
+    name: wifi-test
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/wlan-smoke/wlan-smoke.yaml
+      params:
+        DEVICE: wlan0
+      name: linux-wlan-smoke
+
+- test:
+    namespace: hikey-oe
+    name: wlan-download-test
+    timeout:
+      minutes: 20
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/wlan-download/wlan-download.yaml
+      params:
+        DEVICE: wlan0
+        ETHERNET_DEVICE: eth0
+        SSID_NAME: LAVATESTX
+        SSID_PASSWORD: NepjqGbq
+        FILE_URL: http://testdata.validation.linaro.org/stress/stress-network.img
+        FILE_CHECKSUM: e5c834fbdaa6bfd8eac5eb9404eefdd4
+        TIME_DELAY: 0s
+      name: linux-wlan-download
