@@ -45,7 +45,7 @@ export PATH=${HOME}/bin:${PATH}
 
 # initialize repo if not done already
 if [ ! -e ".repo/manifest.xml" ]; then
-   repo init -u https://github.com/OpenSourceFoundries/lmp-manifest
+   repo init -u https://git.linaro.org/people/vishal.bhoj/microplatform-manifest.git
 
    # link to shared downloads on persistent disk
    # our builds config is expecting downloads and sstate-cache, here.
