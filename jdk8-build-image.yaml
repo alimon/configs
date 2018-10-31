@@ -88,19 +88,32 @@
             which java
             java -version
 
+            EXTRA_CFLAGS="-Wno-error -fno-delete-null-pointer-checks \
+              -fno-lifetime-dse -Wno-deprecated-declarations         \
+              -Wno-maybe-uninitialized -Wno-misleading-indentation \
+              -Wno-shift-negative-value"
+            EXTRA_CPP_FLAGS="-Wno-error -std=gnu++98 \
+              -fno-delete-null-pointer-checks -fno-lifetime-dse \
+              -Wno-deprecated-declarations -Wno-maybe-uninitialized \
+              -Wno-misleading-indentation -Wno-shift-negative-value"
+
             if [ $two_stage_build = 1 ]; then
               pushd build-stage1
-              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk7 ${ccache_build_opts}
+              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk7 \
+                 ${ccache_build_opts} --with-extra-cxxflags="$EXTRA_CPP_FLAGS" --with-extra-cflags="$EXTRA_CFLAGS"
               make images
               popd
 
               pushd build-stage2
-              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image ${ccache_build_opts}
+              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/j2sdk-image \
+                 ${ccache_build_opts} --with-extra-cxxflags="$EXTRA_CPP_FLAGS" --with-extra-cflags="$EXTRA_CFLAGS"
               make images
               popd
             else
               pushd build-stage2
-              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
+              sh ../jdk8u/configure --with-debug-level=${BUILD_TYPE} \
+                ${ccache_build_opts} --with-extra-cxxflags="$EXTRA_CPP_FLAGS" \
+                 --with-extra-cflags="$EXTRA_CFLAGS"
               make images
               popd
             fi
