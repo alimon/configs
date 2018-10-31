@@ -437,10 +437,10 @@
               fi
             done
 
-            echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
-
             CI_MAIL_RECIPIENTS="tcwg-validation@linaro.org, maxim.kuvyrkov@linaro.org"
-            if [ -f bisect-artifacts/first-bad ]; then
+            if [ -f artifacts/first-bad ]; then
+              echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
+
               # Email developers on successful bisects.
               case "{toolchain_name}:$current_project" in
                 gnu:*) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, christophe.lyon@linaro.org" ;;
