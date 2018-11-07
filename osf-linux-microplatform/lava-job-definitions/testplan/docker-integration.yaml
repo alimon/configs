@@ -1,0 +1,27 @@
+{% extends device_type %}
+
+{% set job_timeout = 180 %}
+
+{% block metadata %}
+  {{ super() }}
+  test scope: functional
+{% endblock metadata %}
+
+{% block job_name %}microplatform-{{IMAGES}}-build-{{BUILD_NUMBER}}-docker-integration{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
+
+
+- test:
+    namespace: hikey
+    timeout:
+      minutes: 150
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/docker-integration-test/local-daemon.yaml
+      name: docker-integration-test
+      parameters:
+        RELEASE: "v18.03.0-ce"
+{% endblock test_target %}

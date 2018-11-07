@@ -78,6 +78,12 @@ SOTA_CLIENT_PROV = "aktualizr-implicit-prov"
 OSTREE_BRANCHNAME = "hikey-${BUILD_NUMBER}"
 EOF
 
+# Include additional recipes in the image.
+cat << EOF >> conf/local.conf
+# make is required by docker integration test.
+IMAGE_INSTALL_append = " make "
+EOF
+
 # add useful debug info
 cat conf/{site,auto,local}.conf
 cat ${distro_conf}
