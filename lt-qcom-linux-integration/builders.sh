@@ -226,6 +226,9 @@ case "${MACHINE}" in
 		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/mmcblk0p10
 		SERIAL_CONSOLE=ttyMSM0
+
+		KERNEL_CI_PLATFORM=apq8016-sbc
+		KERNEL_CI_MACH=qcom
 		;;
 	dragonboard820c)
 		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard820c}
@@ -241,6 +244,9 @@ case "${MACHINE}" in
 		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/sda1
 		SERIAL_CONSOLE=ttyMSM0
+
+		KERNEL_CI_PLATFORM=apq8064-db820c
+		KERNEL_CI_MACH=qcom
 		;;
 	sdm845_mtp)
 		KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}
@@ -256,6 +262,10 @@ case "${MACHINE}" in
 		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/sda8 # XXX: using Android userdata since we don't have Linux parttable
 		SERIAL_CONSOLE=ttyMSM0
+
+
+		KERNEL_CI_PLATFORM=sdm845-mtp
+		KERNEL_CI_MACH=qcom
 		;;
 	*)
 		echo "Currently MACHINE: ${MACHINE} isn't supported"
@@ -444,5 +454,8 @@ skales-mkbootimg \
 echo BOOT_FILE=$boot_file >> builders_out_parameters
 echo BOOT_ROOTFS_FILE=$boot_rootfs_file >> builders_out_parameters
 echo ROOTFS_FILE="$(basename $rootfs_file)" >> builders_out_parameters
+
+echo KERNEL_IMAGE="$(basename $KERNEL_IMAGE_URL)" >> builders_out_parameters
+echo KERNEL_DT="$(basename $KERNEL_DT_URL)" >> builders_out_parameters
 
 ls -l out/

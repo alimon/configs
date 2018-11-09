@@ -79,8 +79,10 @@ if [ $SEND_TESTJOB = true ]; then
   set +ex
   if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
     KERNELCI_JSON="$(curl -s -H "Authorization: ${QCOMLT_KERNELCI_TOKEN}" "https://api.kernelci.org/job?job=mainline&git_branch=master&kernel=${KERNEL_VERSION}")"
+    export KERNEL_TREE="mainline"
   elif [ ${QA_SERVER_PROJECT} = "linux-integration" ]; then
     KERNELCI_JSON="$(curl -s -H "Authorization: ${QCOMLT_KERNELCI_TOKEN}" "https://api.kernelci.org/job?job=qcom-lt&git_branch=integration-linux-qcomlt&kernel=${KERNEL_VERSION}")"
+    export KERNEL_TREE="qcom-lt"
   fi
   set -x
 
