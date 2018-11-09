@@ -48,12 +48,7 @@ if [ ! -e ".repo/manifest.xml" ]; then
    ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
 fi
 
-repo sync
-cp .repo/manifest.xml source-manifest.xml
-repo manifest -r -o pinned-manifest.xml
-MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
-
-# FIXME LHG Specific: clone restricted repository, which isn't in the public manifest
+# Some proprietary code is on lhg-review.org server
 cat << EOF > ${HOME}/lhg-review.sshconfig
 Host lhg-review.linaro.org
     User lhg-gerrit-bot
@@ -61,8 +56,11 @@ Host lhg-review.linaro.org
     StrictHostKeyChecking no
 EOF
 chmod 0600 ${HOME}/lhg-review.sshconfig
-rm -rf layers/meta-lhg-prop
-git clone ssh://lhg-review.linaro.org:29418/lhg/meta-lhg-prop layers/meta-lhg-prop
+
+repo sync
+cp .repo/manifest.xml source-manifest.xml
+repo manifest -r -o pinned-manifest.xml
+MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
 
 # record changes since last build, if available
 if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
