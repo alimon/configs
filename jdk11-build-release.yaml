@@ -20,7 +20,7 @@
             artifact-num-to-keep: 5
     disabled: false
     node: j12-qrep-01
-    display-name: 'OpenJDK 11 - Configure and build OpenJDK 11 Release'
+    display-name: 'OpenJDK 11u - Configure and build OpenJDK 11u Release'
     axes:
         - axis:
             type: user-defined
@@ -43,7 +43,7 @@
     builders:
         - copyartifact:
             project: jdk11-update-src-tree
-            filter: 'out/jdk11.tar.gz'
+            filter: 'out/jdk11u.tar.gz'
             target: incoming
             flatten: true
         - shell: |
@@ -53,8 +53,8 @@
 
             # Generate files names dependent on year/month.
             RELEASE=$(date +%y%m)
-            JDKDIR=jdk11-${BUILD_TYPE}-${RELEASE}
-            JDK_SRCDIR=jdk11-src-${RELEASE}
+            JDKDIR=jdk11u-${BUILD_TYPE}-${RELEASE}
+            JDK_SRCDIR=jdk11u-src-${RELEASE}
 
             ccache_build_opts=--disable-ccache
 
@@ -71,11 +71,11 @@
             mkdir out
 
             # Extract sources from upstream job
-            tar xaf incoming/jdk11.tar.gz
+            tar xaf incoming/jdk11u.tar.gz
 
-            mv jdk11 $JDK_SRCDIR
+            mv jdk11u $JDK_SRCDIR
             # Tar up the source before sullying it with a build.
-            tar --exclude=.hg\* -acf out/jdk11-src-${RELEASE}.tar.xz $JDK_SRCDIR
+            tar --exclude=.hg\* -acf out/jdk11u-src-${RELEASE}.tar.xz $JDK_SRCDIR
 
             mv $JDK_SRCDIR $JDKDIR
             shopt -s nullglob
@@ -113,7 +113,7 @@
             fi
 
             # Archive the result
-            artifact_name=jdk11-${BUILD_TYPE}-${RELEASE}
+            artifact_name=jdk11u-${BUILD_TYPE}-${RELEASE}
 
             # This is different from ordinary builds.
             tar -C build-stage2/images --exclude=\*.debuginfo --transform="s!^jdk!$artifact_name!" -acf out/${artifact_name}.tar.xz jdk

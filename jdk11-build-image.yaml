@@ -21,7 +21,7 @@
             artifact-num-to-keep: 5
     disabled: false
     node: j12-qrep-01
-    display-name: 'OpenJDK 11 - Configure and build OpenJDK 11'
+    display-name: 'OpenJDK 11u - Configure and build OpenJDK 11u'
     axes:
         - axis:
             type: user-defined
@@ -44,7 +44,7 @@
     builders:
         - copyartifact:
             project: jdk11-update-src-tree
-            filter: 'out/jdk11.tar.gz'
+            filter: 'out/jdk11u.tar.gz'
             target: incoming
             flatten: true
         - shell: |
@@ -64,7 +64,7 @@
             cd ${WORKSPACE}
 
             # Extract sources from upstream job
-            tar xf incoming/jdk11.tar.gz
+            tar xf incoming/jdk11u.tar.gz
 
             shopt -s nullglob
 
@@ -80,17 +80,17 @@
 
             if [ $two_stage_build = 1 ]; then
               pushd build-stage1
-              sh ../jdk11/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk11 ${ccache_build_opts}
+              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk11 ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
 
               pushd build-stage2
-              sh ../jdk11/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk ${ccache_build_opts}
+              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             else
               pushd build-stage2
-              sh ../jdk11/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
+              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             fi
@@ -98,7 +98,7 @@
             # Archive the result
             rm -rf out
             mkdir out
-            artifact_name=jdk11-${BUILD_TYPE}
+            artifact_name=jdk11u-${BUILD_TYPE}
             tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
 
             # Archive test support files.

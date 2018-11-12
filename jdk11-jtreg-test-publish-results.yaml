@@ -3,7 +3,7 @@
     project-type: freestyle
     defaults: global
     description: |
-        * Results are published to http://openjdk.linaro.org/jdk11/openjdk-jtreg-nightly-tests/
+        * Results are published to http://openjdk.linaro.org/jdk11u/openjdk-jtreg-nightly-tests/
     properties:
         - authorization:
             anonymous:
@@ -31,7 +31,7 @@
             default: 'default'
     disabled: false
     node: j12-qrep-01
-    display-name: 'OpenJDK 11 - Publish jtreg results'
+    display-name: 'OpenJDK 11u - Publish jtreg results'
     wrappers:
         - timestamps
         - ssh-agent-credentials:
@@ -47,9 +47,9 @@
 
             set -ex
 
-            PERSIST=$HOME/srv/openjdk11
+            PERSIST=$HOME/srv/openjdk11u
             SCRIPT_DIR=$PERSIST/openjdk-test-scripts
-            export JDK_VERSION=11
+            export JDK_VERSION=11u
 
             (unset PRIVATE_KEY; env | sort  >$WORKSPACE/env.out)
             tree -fd -L 5 $PERSIST | xz >$WORKSPACE/tree.out.xz

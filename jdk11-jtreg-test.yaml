@@ -27,7 +27,7 @@
             default: 'default'
     disabled: false
     node: j12-qrep-01
-    display-name: 'OpenJDK 11 - Run jtreg tests'
+    display-name: 'OpenJDK 11u - Run jtreg tests'
     axes:
         - axis:
             type: user-defined
@@ -70,16 +70,16 @@
 
             source $DEPS/build-date.sh
 
-            export JDK_VERSION=11
+            export JDK_VERSION=11u
             IMAGE_DIR=${WORKSPACE}/jdk11-${BUILD_TYPE}
-            PERSIST=$HOME/srv/openjdk11
+            PERSIST=$HOME/srv/openjdk11u
 
             JCSTRESS=$DEPS/jcstress.jar
 
-            tar xf $DEPS/jdk11.tar.gz
-            tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk11-${BUILD_TYPE}.tar.gz
+            tar xf $DEPS/jdk11u.tar.gz
+            tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk11u-${BUILD_TYPE}.tar.gz
             tar xf $DEPS/jtreg-build-4.2.0-SNAPSHOT.tar.xz
-            tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk11-${BUILD_TYPE}-support.tar.gz
+            tar xf ~/workspace/jdk11-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk11u-${BUILD_TYPE}-support.tar.gz
 
             # All the output directories and general frobbing
             # output is to match the existing layout as expected
@@ -98,7 +98,7 @@
 
             mkdir -p out ${src_dir} ${work_dir} ${report_dir}
 
-            mv jdk11/* ${src_dir}
+            mv jdk11u/* ${src_dir}
 
             blacklist=${WORKSPACE}/excludes.txt
             jdk_problem_list=${src_dir}/${JTREG_CATEGORY}/test/ProblemList.txt
@@ -120,7 +120,7 @@
             cat ${blacklist}
             echo "---------"
 
-            export JAVA_HOME=${WORKSPACE}/jdk11-${BUILD_TYPE}
+            export JAVA_HOME=${WORKSPACE}/jdk11u-${BUILD_TYPE}
             export PATH=$JAVA_HOME/bin:${PATH}
 
             # For hotspot and jdk we pass a -nativepath: option to jtreg.
