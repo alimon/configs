@@ -82,21 +82,12 @@ actions:
     timeout:
       minutes: 10
     definitions:
-    - from: inline
-      name: install-google-fastboot
-      path: inline/install-google-fastboot.yaml
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: install-fastboot
-          description: "Install fastboot provided by google"
-        run:
-          steps:
-          - wget https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip
-          - unzip -q platform-tools_r26.0.2-linux.zip
-          - ln -s `pwd`/platform-tools/fastboot /usr/bin/fastboot
-          - ln -s `pwd`/platform-tools/adb /usr/bin/adb
-          - fastboot --version
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/android-platform-tools/install.yaml
+      name: install-android-platform-tools-r2602
+      parameters:
+        LINK: 'https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip'
 
 - deploy:
     timeout:
