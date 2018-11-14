@@ -2,7 +2,7 @@
 
 set -e
 
-virtualenv .venv
+virtualenv --python=$(which python2) .venv
 source .venv/bin/activate
 pip install Jinja2 requests urllib3 ruamel.yaml
 
