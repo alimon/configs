@@ -1,5 +1,5 @@
 - job:
-    name: lkft-x15-aosp-4.14
+    name: lkft-hikey-android-9.0-4.14
     project-type: freestyle
     defaults: global
     properties:
@@ -16,42 +16,52 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
+            name: ANDROID_VERSION
+            default: 'P'
+        - string:
+            name: REFERENCE_BUILD_URL
+            default: 'https://snapshots.linaro.org/android/android-lcr-reference-hikey-p/47/'
+        - string:
             name: KERNEL_BRANCH
-            default: 'ti-android-linux-4.14.y'
+            default: 'android-hikey-linaro-4.14'
         - string:
             name: KERNEL_REPO
-            default: 'http://git.ti.com/git/ti-linux-kernel/ti-linux-kernel.git'
+            default: 'https://android.googlesource.com/kernel/hikey-linaro'
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
-            default: 'ti-android-linux-4.14.y-aosp'
-        - string:
-            name: ANDROID_VERSION
-            default: 'aosp-master-08102018'
+            default: 'android-hikey-linaro-4.14-android-9.0'
         - string:
             name: VTS_URL
-            default: 'http://snapshots.linaro.org/96boards/hikey/linaro/aosp-master/885/'
-        - string:
-            name: REFERENCE_BUILD_URL
-            default: 'http://testdata.linaro.org/lkft/aosp/aosp-master-08102018/'
+            default: 'http://people.linaro.org/~yongqin.liu/lkft/pie/vts/9.0_r4/'
         - string:
             name: CTS_URL
-            default: 'http://snapshots.linaro.org/96boards/hikey/linaro/aosp-master/885/'
+            default: 'http://people.linaro.org/~yongqin.liu/lkft/pie/cts/9.0_r3/'
         - string:
             name: TOOLCHAIN
-            default: 'GCC-7.2'
+            default: 'clang-4679922'
+        - string:
+            name: CONFIG_FRAGMENTS_PATH
+            default: 'android-4.14'
         - string:
             name: KERNEL_DESCRIBE
         - string:
             name: SRCREV_kernel
-        - string:
-            name: PUB_DEST
-            name: "android/lkft/${JOB_NAME}/${BUILD_NUMBER}"
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'LKFT x15 - AOSP Master'
+    display-name: 'LKFT - AOSP Stable 4.14 (Android 9.0.0_r10)'
+    scm:
+        - git:
+            url: ${KERNEL_REPO}
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            name: origin
+            branches:
+                - origin/${KERNEL_BRANCH}
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
     wrappers:
         - timestamps
         - build-name:
@@ -74,15 +84,25 @@
     builders:
         - shell:
             !include-raw:
-                - lkft/x15-aosp/builders.sh
-        - inject:
-            properties-file: publish_parameters
+                - lkft/hikey-aosp/builders.sh
         - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O out/BUILD-INFO.txt
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --build-info out/BUILD-INFO.txt \
+              --link-latest \
+              out/ android/lkft/${JOB_NAME}/${BUILD_NUMBER}
+
+            PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
         - shell:
-            !include-raw:
-                - android/linaro-publisher.sh
-        - shell:
-            !include-raw: lkft/x15-aosp/submit_for_testing.sh
+             !include-raw: lkft/hikey-aosp/submit_for_testing.sh
     publishers:
         - logparser:
             parse-rules: '/var/lib/jenkins/userContent/android.parse'
@@ -94,8 +114,8 @@
             script:
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
-            recipients: 'x15-aosp@linaro.org'
-            subject: '[CI] x15: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
+            recipients: 'lkft-maintainers@lists.linaro.org'
+            subject: '[CI] HiKey: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
@@ -107,4 +127,4 @@
                 Errors:
                 ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
             presend-script:
-              !include-raw: openembedded-lkft/presend-script.groovy
+                !include-raw: openembedded-lkft/presend-script.groovy

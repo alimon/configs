@@ -5,7 +5,15 @@ export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
 export PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
 export DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
 export KERNEL_COMMIT=${SRCREV_kernel}
-export ANDROID_VERSION=$(echo $REFERENCE_BUILD_URL | awk -F"/" '{print$(NF-1)}')
+if [ -z "${ANDROID_VERSION}" ]; then
+    export ANDROID_VERSION=$(echo $REFERENCE_BUILD_URL | awk -F"/" '{print$(NF-1)}')
+elif [ "X${ANDROID_VERSION}" = "XP" ]; then
+    # workaround to install openjdk9 for vts and cts test for the line following in noninteractive-tradefed:
+    # https://git.linaro.org/qa/test-definitions.git/tree/automated/android/noninteractive-tradefed/setup.sh#n8
+    export ANDROID_VERSION="aosp-master"
+else
+    export ANDROID_VERSION
+fi
 export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
 export CTS_VERSION=$(echo $CTS_URL | awk -F"/" '{print$(NF-1)}')
 [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
