@@ -11,7 +11,7 @@
                 - job-read
                 - job-extended-read
     disabled: true
-    node: build
+    node: docker-stretch-amd64
     display-name: 'QA manual test definitions sanity check'
     triggers:
         - gerrit:
@@ -38,13 +38,17 @@
         - shell: |
             #!/bin/bash
 
+            set -ex
+
+            sudo apt-get update
+            sudo apt-get install -y python3-pep8 python3-pycodestyle python3-yaml
+
             echo ""
             echo "########################################################################"
             echo "    Gerrit Environment"
             env |grep GERRIT
             echo "########################################################################"
 
-            rm -rf ${WORKSPACE}/*
             echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
 
             git clone -b ${GERRIT_BRANCH} --depth 1 https://git.linaro.org/${GERRIT_PROJECT}
