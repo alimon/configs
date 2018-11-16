@@ -46,12 +46,12 @@
 
             # run check-devices.py
             set -e
-            git clone --depth 1 https://git.linaro.org/lava/lava-server.git ${WORKSPACE}/lava-server
+            git clone --depth 1 https://git.lavasoftware.org/lava/lava.git ${WORKSPACE}/lava
             RUNS=`find . -name devices -type d | xargs dirname`
             for RUN in ${RUNS}; do
                 # skips staging - check that manually.
                 if [ -d ${RUN}/device-types ]; then
-                    ${WORKSPACE}/lava-server/share/check-devices.py  --device-types ${RUN}/device-types --devices ${RUN}/devices
+                    ${WORKSPACE}/lava/share/check-devices.py  --device-types ${RUN}/device-types --devices ${RUN}/devices
                 fi
             done
         - build-name-setter:
