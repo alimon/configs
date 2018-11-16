@@ -1,0 +1,95 @@
+- job:
+    name: android-hikey960-optee-p
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: ART_URL
+            default: https://android-qa-reports.linaro.org/api/
+        - string:
+            name: BUILD_DIR
+            default: r-lcr-oreo
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'AOSP P HiKey960 build with OP-TEE (SWG)'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: __ANY__
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-patchsets'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'get-hikey960-gcc'
+                      - compare-type: 'PLAIN'
+                        pattern: 'get-hikey960-blobs'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey960-optee-p-pullreqs'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey960-p-workarounds'
+                      - compare-type: 'PLAIN'
+                        pattern: 'P-RLCR-PATCHSET'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey960-optee-p'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-4.14'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-clang-4.14'
+                      - compare-type: 'PLAIN'
+                        pattern: 'optee-master-workarounds'
+                      - compare-type: 'PLAIN'
+                        pattern: 'swg-mods-p'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-p-preview'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-p-preview'
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-p-swg'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey960.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'linaro.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'optee.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'update-externals.xml'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey960-optee-p'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+    builders:
+        !include: android-hikey-optee/common/builders.yaml.inc
+    publishers:
+        !include: android-hikey-optee/common/publishers.yaml.inc
