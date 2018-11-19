@@ -1,0 +1,82 @@
+- job:
+    name: lt-qcom-linux-testimages
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'initramfs-bootrr-image'
+        - string:
+            name: MANIFEST_URL
+            default: 'https://github.com/96boards/oe-rpb-manifest.git'
+        - string:
+            name: MANIFEST_BRANCH_PREFIX
+            default: 'qcom/'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'sumo'
+        - string:
+            name: DISTRO
+            default: 'rpb'
+        - string:
+            name: BASE_URL
+            default: 'https://snapshots.linaro.org/'
+    disabled: false
+    node: master
+    display-name: 'Qualcomm LT User space for kernel testing'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'qemuarm64'
+                - 'qemuarm'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+    builders:
+        - shell: |
+            #!/bin/bash
+            echo "PUB_DEST=member-builds/qcomlt/testimages/$(echo ${MACHINE} | sed 's/qemu//')/${BUILD_NUMBER}" > pub_dest_parameters
+        - inject:
+            properties-file: pub_dest_parameters
+        - shell:
+            !include-raw: rpb-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org, anibal.limon@linaro.org'
+            always: true
+            matrix-trigger: only-parent
