@@ -40,7 +40,7 @@
             echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
 
             git clone -b ${GERRIT_BRANCH} --depth 3 https://git.linaro.org/${GERRIT_PROJECT}
-            cd ${GERRIT_PROJECT}
+            cd `basename ${GERRIT_PROJECT}`
             git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
             git checkout -q FETCH_HEAD
 
