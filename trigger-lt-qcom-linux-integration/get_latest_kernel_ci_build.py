@@ -110,7 +110,7 @@ def main():
     rootfs_base_url = os.environ.get('ROOTFS_BASE_URL',
                                 'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
     builds_url = os.environ.get('BUILDS_URL',
-                                'https://snapshots.linaro.org/96boards/%s/linaro/linux-integration/')
+                                'https://snapshots.linaro.org/member-builds/qcomlt/linux-integration/%s/')
 
     image_url = None
     modules_url = None
