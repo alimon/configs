@@ -123,7 +123,7 @@ case "${MACHINE}" in
   juno|stih410-b2260|orangepi-i96)
     ;;
   *)
-    for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
+    for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.ext4.gz); do
       gunzip -k ${rootfs}
       sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
       rm -f ${rootfs%.gz}
