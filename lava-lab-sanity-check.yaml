@@ -40,7 +40,7 @@
             echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
 
             git clone -b ${GERRIT_BRANCH} --depth 3 https://git.linaro.org/${GERRIT_PROJECT}
-            cd *
+            cd ${GERRIT_PROJECT}
             git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
             git checkout -q FETCH_HEAD
 
@@ -50,6 +50,7 @@
             RUNS=`find . -name devices -type d | xargs dirname`
             for RUN in ${RUNS}; do
                 # skips staging - check that manually.
+                echo "Checking ${RUN}"
                 if [ -d ${RUN}/device-types ]; then
                     ${WORKSPACE}/lava/share/check-devices.py  --device-types ${RUN}/device-types --devices ${RUN}/devices
                 fi
