@@ -35,7 +35,7 @@ export PATH=${HOME}/bin:${PATH}
 
 # Install helper packages
 rm -rf build-tools jenkins-tools build-configs build/bionic build/frameworks/base build/system/core build/device build/out build/android-patchsets build/kernel/ti/x15
-rm -fr build/external/optee_test build/external/optee_client build/optee/optee_os
+rm -fr build/external/optee_test build/external/optee_client build/optee/optee_os build/optee/edk2
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-android-build-tools.git build-tools
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
 git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git build-configs
