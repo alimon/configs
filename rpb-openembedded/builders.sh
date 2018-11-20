@@ -94,6 +94,11 @@ cat << EOF >> conf/auto.conf
 INHERIT += "buildstats buildstats-summary"
 EOF
 
+# allow the top level job to append to auto.conf
+if [ -f ${WORKSPACE}/auto.conf ]; then
+    cat ${WORKSPACE}/auto.conf >> conf/auto.conf
+fi
+
 # add useful debug info
 cat conf/{site,auto}.conf
 
