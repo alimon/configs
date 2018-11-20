@@ -23,10 +23,10 @@ export RESIZE_ROOTFS=True
 SEND_TESTJOB=false
 
 case "${MACHINE}" in
-  dragonboard410c|dragonboard820c|sdm845_mtp)
+  apq8016-sbc|apq8096-db820c|sdm845-mtp)
     SEND_TESTJOB=true
 
-    if [ ${MACHINE} = "dragonboard410c" ]; then
+    if [ ${MACHINE} = "apq8016-sbc" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-410c"
       export INSTALL_FASTBOOT=True
 
@@ -37,7 +37,7 @@ case "${MACHINE}" in
 
       export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
 
-    elif [ ${MACHINE} = "dragonboard820c" ]; then
+    elif [ ${MACHINE} = "apq8096-db820c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-820c"
       export INSTALL_FASTBOOT=True
 
@@ -51,7 +51,7 @@ case "${MACHINE}" in
       if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
         SEND_TESTJOB=false
       fi
-    elif [ ${MACHINE} = "sdm845_mtp" ]; then
+    elif [ ${MACHINE} = "sdm845-mtp" ]; then
       export LAVA_DEVICE_TYPE="sdm845-mtp"
       export INSTALL_FASTBOOT=
 

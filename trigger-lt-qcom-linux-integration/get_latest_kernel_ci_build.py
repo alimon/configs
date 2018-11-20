@@ -103,7 +103,7 @@ def main():
                                         'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
     kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
                                            'arm64/defconfig/')
-    machines = os.environ.get('MACHINES', 'dragonboard410c dragonboard820c sdm845_mtp').split()
+    machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c sdm845-mtp').split()
 
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
                                 'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
@@ -118,24 +118,19 @@ def main():
     (ramdisk_url, rootfs_url) = get_ramdisk_rootfs_url(ramdisk_base_url, rootfs_base_url)
 
     for m in machines:
-        if m == 'dragonboard410c':
-            kernel_ci_dt_file = 'dtbs/qcom/apq8016-sbc.dtb'
-        elif m == 'dragonboard820c':
-            kernel_ci_dt_file = 'dtbs/qcom/apq8096-db820c.dtb'
-        elif m == 'sdm845_mtp':
-            kernel_ci_dt_file = 'dtbs/qcom/sdm845-mtp.dtb'
-        else:
-            sys.exit(2)
+        # we can't use '-' in bash variables, so replace with '_' when used in variables
+        mm = m.replace("-", "_")
+        kernel_ci_dt_file = "dtbs/qcom/%s.dtb" % m
 
         (image_url, dt_url, modules_url, version) = get_kernel_ci_build(kernel_ci_base_url,
                                                                         kernel_ci_arch_config, kernel_ci_dt_file)
 
-        print("KERNEL_DT_URL_%s=%s" % (m, dt_url))
+        print("KERNEL_DT_URL_%s=%s" % (mm, dt_url))
         validate_url(dt_url)
 
-        print('RAMDISK_URL_%s=%s' % (m, ramdisk_url))
+        print('RAMDISK_URL_%s=%s' % (mm, ramdisk_url))
         validate_url(ramdisk_url)
-        print('ROOTFS_URL_%s=%s' % (m, rootfs_url))
+        print('ROOTFS_URL_%s=%s' % (mm, rootfs_url))
         validate_url(rootfs_url)
 
         try:

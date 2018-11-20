@@ -210,45 +210,44 @@ if [ -z "${GZ}" ]; then
 	export GZ=gzip
 fi
 
+# Generic/default variables
+KERNEL_CI_PLATFORM=${MACHINE}
+
 # Set per MACHINE configuration
 case "${MACHINE}" in
-	dragonboard410c)
-		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard410c}
-		if [ ! -z "${RAMDISK_URL_dragonboard410c}" ]; then
-			RAMDISK_URL=${RAMDISK_URL_dragonboard410c}
+	apq8016-sbc)
+		KERNEL_DT_URL=${KERNEL_DT_URL_apq8016_sbc}
+		if [ ! -z "${RAMDISK_URL_apq8016_sbc}" ]; then
+			RAMDISK_URL=${RAMDISK_URL_apq8016_sbc}
 		fi
-		if [ ! -z "${ROOTFS_URL_dragonboard410c}" ]; then
-			ROOTFS_URL=${ROOTFS_URL_dragonboard410c}
+		if [ ! -z "${ROOTFS_URL_apq8016_sbc}" ]; then
+			ROOTFS_URL=${ROOTFS_URL_apq8016_sbc}
 		fi
-		FIRMWARE_URL=${FIRMWARE_URL_dragonboard410c}
+		FIRMWARE_URL=${FIRMWARE_URL_apq8016_sbc}
 		BOOTIMG_PAGESIZE=2048
 		BOOTIMG_BASE=0x80000000
 		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/mmcblk0p10
 		SERIAL_CONSOLE=ttyMSM0
-
-		KERNEL_CI_PLATFORM=apq8016-sbc
 		KERNEL_CI_MACH=qcom
 		;;
-	dragonboard820c)
-		KERNEL_DT_URL=${KERNEL_DT_URL_dragonboard820c}
-		if [ ! -z "${RAMDISK_URL_dragonboard820c}" ]; then
-			RAMDISK_URL=${RAMDISK_URL_dragonboard820c}
+	apq8096-db820c)
+		KERNEL_DT_URL=${KERNEL_DT_URL_apq8096_db820c}
+		if [ ! -z "${RAMDISK_URL_apq8096_db820c}" ]; then
+			RAMDISK_URL=${RAMDISK_URL_apq8096_db820c}
 		fi
-		if [ ! -z "${ROOTFS_URL_dragonboard820c}" ]; then
-			ROOTFS_URL=${ROOTFS_URL_dragonboard820c}
+		if [ ! -z "${ROOTFS_URL_apq8096_db820c}" ]; then
+			ROOTFS_URL=${ROOTFS_URL_apq8096_db820c}
 		fi
-		FIRMWARE_URL=${FIRMWARE_URL_dragonboard820c}
+		FIRMWARE_URL=${FIRMWARE_URL_apq8096_db820c}
 		BOOTIMG_PAGESIZE=4096
 		BOOTIMG_BASE=0x80000000
 		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/sda1
 		SERIAL_CONSOLE=ttyMSM0
-
-		KERNEL_CI_PLATFORM=apq8064-db820c
 		KERNEL_CI_MACH=qcom
 		;;
-	sdm845_mtp)
+	sdm845-mtp)
 		KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}
 		if [ ! -z "${RAMDISK_URL_sdm845_mtp}" ]; then
 			RAMDISK_URL=${RAMDISK_URL_sdm845_mtp}
@@ -262,9 +261,6 @@ case "${MACHINE}" in
 		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/sda8 # XXX: using Android userdata since we don't have Linux parttable
 		SERIAL_CONSOLE=ttyMSM0
-
-
-		KERNEL_CI_PLATFORM=sdm845-mtp
 		KERNEL_CI_MACH=qcom
 		;;
 	*)
