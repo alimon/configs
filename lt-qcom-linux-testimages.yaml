@@ -62,6 +62,9 @@
         - shell: |
             #!/bin/bash
             echo "PUB_DEST=member-builds/qcomlt/testimages/$(echo ${MACHINE} | sed 's/qemu//')/${BUILD_NUMBER}" > pub_dest_parameters
+            # ensure that we generate the right image type, by default qemu* only generates .ext4, we need .ext4.gz
+            echo "IMAGE_FSTYPES_remove = \"ext4\"" > auto.conf
+            echo "IMAGE_FSTYPES_append = \" ext4.gz\"" >> auto.conf
         - inject:
             properties-file: pub_dest_parameters
         - shell:
