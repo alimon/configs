@@ -99,7 +99,13 @@ cat conf/{site,auto}.conf
 
 [ "${DISTRO}" = "rpb" ] && IMAGES+=" ${IMAGES_RPB}"
 [ "${DISTRO}" = "rpb-wayland" ] && IMAGES+=" ${IMAGES_RPB_WAYLAND}"
-[ "${MACHINE}" = "am57xx-evm" ] && IMAGES="rpb-console-image"
+
+# These machines only build the basic rpb-console-image
+case "${MACHINE}" in
+  am57xx-evm|intel-core2-32|intel-corei7-64)
+     IMAGES="rpb-console-image"
+     ;;
+esac
 
 time bitbake ${IMAGES}
 
@@ -173,6 +179,10 @@ case "${MACHINE}" in
     # LAVA image is too big for am57xx-evm
     ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
     # FIXME: several dtb files case
+    ;;
+  intel-core2-32|intel-corei7-64)
+    # No LAVA testing on intel-core* machines
+    ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
     ;;
   juno)
     # FIXME: several dtb files case
