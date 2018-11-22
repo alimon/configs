@@ -13,3 +13,10 @@
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell:
+            !include-raw:
+                - android-hikey-optee/common/submit_for_testing.sh
+        - shell: |
+            echo "Build finished"
