@@ -300,10 +300,11 @@
             # Delete artifacts now to avoid re-using stale artifacts if
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
+            mkdir -p artifacts/jenkins
             build_name="#$BUILD_NUMBER-$current_project"
-            echo "$build_name" > build-name
+            echo "$build_name" > artifacts/jenkins/build-name
         - build-name-setter:
-            name: 'build-name'
+            name: 'artifacts/jenkins/build-name'
             file: true
         - shell: |
             #!/bin/bash
@@ -348,9 +349,9 @@
               echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
             fi
 
-            echo "$name" > build-name
+            echo "$name" > artifacts/jenkins/build-name
         - build-name-setter:
-            name: 'build-name'
+            name: 'artifacts/jenkins/build-name'
             file: true
         - conditional-step:
             condition-kind: file-exists
