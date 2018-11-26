@@ -35,7 +35,7 @@ done
 cd -
 
 rm -rf build/out/BUILD-INFO.txt
-wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/template.txt -O build/out/BUILD-INFO.txt
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
 
 # Delete sources after build to save space
 cd build
