@@ -437,7 +437,8 @@
             --bad_rev "$bad_rev" \
             --linux_config "{linux_config}" \
             --target "{target}" \
-            --toolchain "{toolchain_name}"
+            --toolchain "{toolchain_name}" \
+            --ROOT_BUILD_CAUSE "$ROOT_BUILD_CAUSE"
 
             for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
@@ -446,21 +447,6 @@
               fi
             done
 
-            CI_MAIL_RECIPIENTS="tcwg-validation@linaro.org, maxim.kuvyrkov@linaro.org"
-            if [ -f artifacts/first-bad ]; then
-              echo "#$BUILD_NUMBER-$current_project-$(cat artifacts/first-bad)" > build-name
-
-              # Email developers on successful bisects.
-              case "{toolchain_name}:$current_project" in
-                gnu:*) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, christophe.lyon@linaro.org" ;;
-                llvm:linux) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, arnd@linaro.org, mark.brown@linaro.org, ndesaulniers@google.com" ;;
-                llvm:llvm) CI_MAIL_RECIPIENTS="$CI_MAIL_RECIPIENTS, adhemerval.zanella@linaro.org, ndesaulniers@google.com, yvan.roux@linaro.org" ;;
-              esac
-            fi
-            if [ x"$ROOT_BUILD_CAUSE" != x"SCMTRIGGER" ]; then
-              CI_MAIL_RECIPIENTS="maxim.kuvyrkov@linaro.org"
-            fi
-            echo "CI_MAIL_RECIPIENTS=$CI_MAIL_RECIPIENTS" > ci_mail_parameters
         - build-name-setter:
             name: 'build-name'
             file: true
@@ -479,7 +465,7 @@
                   - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
                     property-file: artifacts/trigger-2-build-master
         - inject:
-            properties-file: ci_mail_parameters
+            properties-file: artifacts/ci_mail_parameters
     publishers:
         - archive:
             artifacts: 'artifacts/**'
