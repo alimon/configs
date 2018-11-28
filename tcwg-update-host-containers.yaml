@@ -48,6 +48,8 @@
             name: label
             values:
                 - tcwg-d05-01
+                - tcwg-llvmbot-d05-01
+                - tcwg-llvmbot-thx1-01
                 - tcwg-sq-01
                 - tcwg-sq-02
                 - tcwg-thx1-01
@@ -63,7 +65,12 @@
         - shell: |
             #!/bin/bash
             set -ex
+            case "$label" in
+              tcwg-llvmbot-*) group=tcwg-llvm ;;
+              *) group=all ;;
+            esac
             ./tcwg-update-host-containers.sh \
             --container "host" \
             --distro "$distro" \
+            --group "$group" \
             --verbose "$verbose"
