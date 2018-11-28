@@ -9,6 +9,12 @@
       timeout:
         minutes: {% if job_timeout is defined %}{{ job_timeout-5|int|abs }}{% else %}160{% endif %}
       definitions:
+{% if DEVICE_TYPE == 'hi6220-hikey' %}
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/adb-join-wifi/adb-join-wifi.yaml
+          name: adb-join-wifi
+{% endif %}
         - repository: https://git.linaro.org/qa/test-definitions.git
           from: git
           path: automated/android/apk-automation/apk-automation.yaml
