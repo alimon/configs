@@ -2,3 +2,18 @@
 
 {% set testname = 'cve' %}
 {% set job_timeout = 60 %}
+
+{% block metadata %}
+  {{ super() }}
+  spectre_meltdown_checker_test__url: "git://github.com/speed47/spectre-meltdown-checker.git"
+{% endblock metadata %}
+
+{% block test_target %}
+  {{ super() }}
+    - repository: git://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/spectre-meltdown-checker-test/spectre-meltdown-checker-test.yaml
+      name: spectre-meltdown-checker-test
+      timeout:
+        minutes: 10
+{% endblock test_target %}
