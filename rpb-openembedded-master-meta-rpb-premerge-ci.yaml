@@ -1,0 +1,130 @@
+- job:
+    name: 96boards-reference-platform-openembedded-master-meta-rpb-premerge-ci
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - github:
+            url: https://github.com/96boards/meta-rpb
+    parameters:
+        !include: rpb-openembedded-master-params.yaml.inc
+    disabled: false
+    node: master
+    display-name: 'Premerge CI for meta-rpb Layer in Reference Platform - OpenEmbedded (master)'
+    scm:
+        - git:
+            url: https://github.com/96boards/meta-rpb
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    triggers:
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            white-list-target-branches:
+                - 'master'
+            auth-id: 'GITHUB_TOKEN'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'dragonboard-410c'
+                - 'dragonboard-820c'
+                - 'hikey960'
+                - 'hikey'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+                - rpb-wayland
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-oe-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash
+            PUB_DEST="reference-platform/embedded/premerge-ci/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}"
+            echo "PUB_DEST=${PUB_DEST}" > pub_dest_parameters
+        - inject:
+            properties-file: pub_dest_parameters
+        - shell: |
+            #!/bin/bash
+
+            # Mapping for MACHINE -> DEVICE_TYPE
+            case "${MACHINE}" in
+              am57xx-evm)
+                DEVICE_TYPE=x15
+                ;;
+              dragonboard-410c)
+                DEVICE_TYPE=dragonboard-410c
+                ;;
+              hikey)
+                DEVICE_TYPE=hi6220-hikey-r2
+                ;;
+              juno)
+                DEVICE_TYPE=juno
+                ;;
+              stih410-b2260)
+                DEVICE_TYPE=b2260
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+            esac
+
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
+        - shell:
+            !include-raw: rpb-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
+        - shell:
+            !include-raw: rpb-openembedded/submit_for_testing.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - openembedded-lkft/postbuild.groovy
+# We can only archive files that are located in the workspace
+#        - archive:
+#            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, koen.kooi@linaro.org, nicolas.dechesne@linaro.org, anibal.limon@linaro.org'
+            always: true
+            matrix-trigger: only-parent
