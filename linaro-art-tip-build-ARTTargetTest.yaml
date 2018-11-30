@@ -41,6 +41,9 @@
         - string:
             name: BUILD_CONFIG_FILENAME
             default: 'linaro-art-tip'
+        - string:
+            name: SCRIPT_OPTIONS
+            default: '--default'
     disabled: false
     node: docker-utopic-art
     display-name: 'Tip: Target Test'
@@ -117,7 +120,7 @@
 
             cd ${ANDROID_BUILD_DIR}
             perl scripts/jenkins/test_launcher.pl \
-              scripts/tests/test_art_target.sh --default
+              scripts/tests/test_art_target.sh ${SCRIPT_OPTIONS}
     publishers:
         - email-ext:
             recipients: '${CI_MAIL_RECIPIENTS}'
