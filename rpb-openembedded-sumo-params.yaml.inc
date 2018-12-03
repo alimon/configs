@@ -17,9 +17,6 @@
     name: BASE_URL
     default: 'http://snapshots.linaro.org/'
 - string:
-    name: PUB_DEST
-    default: 'reference-platform/embedded/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
-- string:
     name: LAVA_SERVER
     default: 'validation.linaro.org/RPC2/'
 - string:
