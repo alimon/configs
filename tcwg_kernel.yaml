@@ -470,16 +470,20 @@
         - archive:
             artifacts: 'artifacts/**'
             latest-only: false
-        - email-ext:
-            recipients: '$CI_MAIL_RECIPIENTS'
-            content-type: text
-            body: |
-                Bisected ${{current_project}} on {target} @ {toolchain_name}-{toolchain_ver} @ linux-{linux}-{linux_config} between bad ${{bad_rev}} and baseline ${{baseline_rev}} .
-                Bisect log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/artifacts/bisect.log/*view*/
-                Artifacts: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/artifacts/
-                Build URL: ${{PROJECT_URL}}${{BUILD_NUMBER}}/
-                Build log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/consoleText
-            always: true
+        - conditional-publisher:
+            - condition-kind: file-exists
+              condition-filename: artifacts/ci_mail_parameters
+              action:
+                - email-ext:
+                    recipients: '$CI_MAIL_RECIPIENTS'
+                    content-type: text
+                    body: |
+                      Bisected ${{current_project}} on {target} @ {toolchain_name}-{toolchain_ver} @ linux-{linux}-{linux_config} between bad ${{bad_rev}} and baseline ${{baseline_rev}} .
+                      Bisect log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/artifacts/bisect.log/*view*/
+                      Artifacts: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/artifacts/
+                      Build URL: ${{PROJECT_URL}}${{BUILD_NUMBER}}/
+                      Build log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/consoleText
+                    always: true
 
 
 
