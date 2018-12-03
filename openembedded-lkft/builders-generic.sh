@@ -99,6 +99,11 @@ cat << EOF >> ${distro_conf}
 IMAGE_FSTYPES_remove = "ext4 iso wic"
 EOF
 
+# Set GCC to 7.x
+cat << EOF >> ${distro_conf}
+GCCVERSION = "7.%"
+EOF
+
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" -o "${MACHINE}" = "beaglebone" ] || extra_pkgs="numactl"
 cat << EOF >> conf/local.conf

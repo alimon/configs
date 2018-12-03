@@ -100,6 +100,11 @@ cat << EOF >> ${distro_conf}
 IMAGE_FSTYPES_remove = "ext4 iso wic"
 EOF
 
+# Set GCC to 7.x
+cat << EOF >> ${distro_conf}
+GCCVERSION = "7.%"
+EOF
+
 case "${KERNEL_RECIPE}" in
   linux-*-aosp|linux-*-android-*)
     cat << EOF >> ${distro_conf}
