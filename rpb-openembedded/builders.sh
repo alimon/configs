@@ -70,6 +70,7 @@ else
 fi
 
 if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
+    GERRIT_URL="http://${GERRIT_HOST}/${GERRIT_PROJECT}"
     cd `grep -rni $GERRIT_PROJECT\" .repo/manifest.xml | grep -Po 'path="\K[^"]*'`
     if git pull ${GERRIT_URL} ${GERRIT_REFSPEC} | grep -q "Automatic merge failed"; then
         git reset --hard
