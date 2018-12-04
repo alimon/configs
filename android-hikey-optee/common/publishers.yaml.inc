@@ -3,7 +3,7 @@
             content-type: text
             body: |
                 Build Triggered by:
-                     1. https://git.linaro.org/ci/job/configs.git/tree/trigger-android-daily-builds.yaml
+                     1. https://git.linaro.org/ci/job/configs.git/tree/trigger-android-{daily,weekly}-builds.yaml
                      or
                      2. ${GERRIT_CHANGE_SUBJECT}: ${GERRIT_CHANGE_URL}
                      or
