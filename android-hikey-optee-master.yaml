@@ -15,11 +15,14 @@
             num-to-keep: 60
     parameters:
         - string:
-            name: ART_URL
-            default: https://android-qa-reports.linaro.org/api/
-        - string:
             name: BUILD_DIR
             default: aosp-master
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'lcr'
     disabled: false
     node: docker-xenial-aosp
     display-name: 'AOSP master HiKey build with OP-TEE (SWG)'
@@ -87,6 +90,22 @@
         - timestamps
         - timeout:
             timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+        - credentials-binding:
+            - text:
+                credential-id: AP_SSID
+                variable: AP_SSID
+            - text:
+                credential-id: AP_KEY
+                variable: AP_KEY
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
     builders:
         !include: android-hikey-optee/common/builders.yaml.inc
     publishers:
