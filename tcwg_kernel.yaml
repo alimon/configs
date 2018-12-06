@@ -313,7 +313,9 @@
             --distro $distro \
             -- \
             ./jenkins-scripts/tcwg_kernel-build.sh \
-            @@{toolchain_name}-{toolchain_ver} @@linux-{linux} \
+            %% artifacts/jenkins/manifest.sh \
+            @@ ./jenkins-scripts/tcwg_kernel/{toolchain_name}-{toolchain_ver}.sh \
+            @@ ./jenkins-scripts/tcwg_kernel/linux-{linux}.sh \
             --mode "jenkins-full" \
             --current_project "$current_project" \
             --current_rev "$current_rev" \
@@ -430,7 +432,9 @@
             --distro $distro \
             -- \
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
-            @@{toolchain_name}-{toolchain_ver} @@linux-{linux} \
+            %% manifest.sh \
+            @@ ./jenkins-scripts/tcwg_kernel/{toolchain_name}-{toolchain_ver}.sh \
+            @@ ./jenkins-scripts/tcwg_kernel/linux-{linux}.sh \
             --confirm_failure true \
             --current_project "$current_project" \
             --baseline_rev "$baseline_rev" \
