@@ -438,7 +438,7 @@
             --linux_config "{linux_config}" \
             --target "{target}" \
             --toolchain "{toolchain_name}" \
-            --ROOT_BUILD_CAUSE "$ROOT_BUILD_CAUSE"
+            --BUILD_URL "$BUILD_URL"
 
             for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
@@ -473,11 +473,7 @@
             recipients: '$CI_MAIL_RECIPIENTS'
             content-type: text
             body: |
-              Bisected ${{current_project}} on {target} @ {toolchain_name}-{toolchain_ver} @ linux-{linux}-{linux_config} between bad ${{bad_rev}} and baseline ${{baseline_rev}} .
-              Bisect log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/artifacts/bisect.log/*view*/
-              Artifacts: ${{PROJECT_URL}}${{BUILD_NUMBER}}/artifact/artifacts/
-              Build URL: ${{PROJECT_URL}}${{BUILD_NUMBER}}/
-              Build log: ${{PROJECT_URL}}${{BUILD_NUMBER}}/consoleText
+              $CI_MAIL_BODY
             failure: false
             success: true
             send-to:
