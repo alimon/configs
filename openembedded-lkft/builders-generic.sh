@@ -137,6 +137,9 @@ mv ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
 # FIXME: Remove when upstream has resolved what to do with wordsize.h recursion
 sed -i "s|bits/wordsize.h||" ../layers/openembedded-core/meta/recipes-core/glibc/glibc-package.inc
 
+# The kernel (as of next-20181130) requires fold from the host
+echo "HOSTTOOLS += \"fold\"" >> conf/local.conf
+
 # add useful debug info
 cat conf/{site,auto,local}.conf
 cat ${distro_conf}
