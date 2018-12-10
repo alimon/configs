@@ -80,17 +80,17 @@
 
             if [ $two_stage_build = 1 ]; then
               pushd build-stage1
-              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk11 ${ccache_build_opts}
+              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/primordial-jdk11 ${ccache_build_opts} --disable-warnings-as-errors
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
 
               pushd build-stage2
-              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk ${ccache_build_opts}
+              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk ${ccache_build_opts} --disable-warnings-as-errors
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             else
               pushd build-stage2
-              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
+              sh ../jdk11u/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts} --disable-warnings-as-errors
               make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
               popd
             fi
