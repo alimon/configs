@@ -193,6 +193,9 @@ fi
 # Update kernel recipe SRCREV
 echo "SRCREV_kernel_${MACHINE} = \"${SRCREV_kernel}\"" >> conf/local.conf
 
+# The kernel (as of next-20181130) requires fold from the host
+echo "HOSTTOOLS += \"fold\"" >> conf/local.conf
+
 # add useful debug info
 cat conf/{site,auto}.conf
 cat ${distro_conf}
