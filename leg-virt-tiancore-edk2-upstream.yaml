@@ -65,21 +65,24 @@
             export GCC49_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
             export GCC49_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
 
-            # use Stretch's default cross toolchains as GCC5
+            # use Stretch's default cross toolchains for GCC5 and CLANG3x (binutils)
             export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
             export GCC5_ARM_PREFIX=arm-linux-gnueabihf-
 
-            # reuse the binutils that ship with GCC 4.9 for the CLANG35 builds
-            export CLANG35_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
-            export CLANG35_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
+            export CLANG35_AARCH64_PREFIX=aarch64-linux-gnu-
+            export CLANG35_ARM_PREFIX=arm-linux-gnueabihf-
 
-            # now that we invoke Clang as the linker, it will look for $(TARGET)-ld on the path
-            export PATH=$PATH:${HOME}/srv/toolchain/arm64-tc-14.09/bin:${HOME}/srv/toolchain/arm-tc-14.09/bin
+            export CLANG38_BIN=/usr/lib/llvm-5.0/bin/
+            export CLANG38_AARCH64_PREFIX=aarch64-linux-gnu-
+            export CLANG38_ARM_PREFIX=arm-linux-gnueabihf-
 
             sudo dpkg --add-architecture i386
+            echo "deb http://mirror.bytemark.co.uk/debian stretch-backports main" > stretch-backports.list
+            sudo mv stretch-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends clang python-requests zip libstdc++6:i386 zlib1g:i386 \
                             gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf nasm llvm
+            sudo apt-get install -t stretch-backports -y --no-install-recommends clang-5.0 llvm-5.0-dev
 
             export OUTDIR=${WORKSPACE}/out
 
@@ -101,42 +104,27 @@
                 cd ${WORKSPACE}
                 for type in DEBUG RELEASE NOOPT
                 do
-                    for pkg in Arm ArmPlatform Embedded
+                    for arch in AARCH64 ARM
                     do
-                        for tc in GCC48 GCC49 GCC5
+                        for tc in GCC48 GCC49 GCC5 CLANG35 CLANG38
                         do
-                            build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
-                            build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
+                            for pkg in Arm ArmPlatform Embedded
+                            do
+                                build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
+                            done
+
+                            mkdir -p ${OUTDIR}/QEMU-${arch}/${type}_${tc}
+                            build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
+                            cp Build/ArmVirtQemu-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}_${tc}
+
+                            mkdir -p ${OUTDIR}/QEMU-KERNEL-${arch}/${type}_${tc}
+                            build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemuKernel.dsc -D SECURE_BOOT_ENABLE
+                            cp Build/ArmVirtQemuKernel-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-KERNEL-${arch}/${type}_${tc}
+
+                            mkdir -p ${OUTDIR}/XEN-${arch}/${type}_${tc}
+                            build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
+                            cp Build/ArmVirtXen-${arch}/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-${arch}/${type}_${tc}
                         done
-
-                        #build -a ARM -t CLANG38 -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
-                        build -a AARCH64 -t CLANG35 -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
-                    done
-
-                    for tc in GCC48 GCC49 GCC5 CLANG35
-                    do
-                        mkdir -p ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
-                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
-                        cp Build/ArmVirtQemu-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-AARCH64/${type}_${tc}
-
-                        mkdir -p ${OUTDIR}/QEMU-KERNEL-AARCH64/${type}_${tc}
-                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemuKernel.dsc -D SECURE_BOOT_ENABLE
-                        cp Build/ArmVirtQemuKernel-AARCH64/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-KERNEL-AARCH64/${type}_${tc}
-
-                        mkdir -p ${OUTDIR}/XEN-AARCH64/${type}_${tc}
-                        build -a AARCH64 -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
-                        cp Build/ArmVirtXen-AARCH64/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-AARCH64/${type}_${tc}
-                    done
-
-                    for tc in GCC48 GCC49 GCC5
-                    do
-                        mkdir -p ${OUTDIR}/QEMU-ARM/${type}_${tc}
-                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
-                        cp Build/ArmVirtQemu-ARM/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-ARM/${type}_${tc}
-
-                        mkdir -p ${OUTDIR}/XEN-ARM/${type}_${tc}
-                        build -a ARM -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtXen.dsc
-                        cp Build/ArmVirtXen-ARM/${type}_${tc}/FV/XEN_EFI.fd ${OUTDIR}/XEN-ARM/${type}_${tc}
                     done
 
                     build -t GCC5 -b ${type} -n $NUM_THREADS -a IA32 -p OvmfPkg/OvmfPkgIa32.dsc -D SMM_REQUIRE -D SECURE_BOOT_ENABLE -D TLS_ENABLE -D HTTP_BOOT_ENABLE -D NETWORK_IP6_ENABLE
