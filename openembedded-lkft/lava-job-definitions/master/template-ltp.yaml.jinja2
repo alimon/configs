@@ -2,17 +2,20 @@
 
 {% block metadata %}
   {{ super() }}
+{% for testname in testnames %}
   ltp-{{testname}}-tests__url: "{{LTP_URL | default('unknown')}}"
   ltp-{{testname}}-tests__version: "{{LTP_VERSION | default('unknown')}}"
   ltp-{{testname}}-tests__revision: "{{LTP_REVISION | default('unknown')}}"
+{% endfor %}
 {% endblock metadata %}
 
-{% block job_name %}lkft-ltp-{{testname}}-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
+{% block job_name %}lkft-ltp-{{testnames|join('-')}}-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
 
 {% block test_target %}
   {{ super() }}
 {% block test_target_prep %}
 {% endblock test_target_prep %}
+{% for testname in testnames %}
     - repository: git://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/ltp/ltp.yaml
@@ -27,4 +30,5 @@
       name: ltp-{{testname}}-tests
       timeout:
         minutes: {% if job_timeout is defined %}{{ job_timeout-5|int|abs }}{% else %}60{% endif %}
+{% endfor %}
 {% endblock test_target %}
