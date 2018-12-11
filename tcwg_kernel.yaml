@@ -2,8 +2,11 @@
     name: tcwg_kernel-llvm
     toolchain_name:
       - llvm:
+          binutils_url: no_binutils_url
           binutils_branch: no_binutils_branch
+          gcc_url: no_gcc_url
           gcc_branch: no_gcc_branch
+          llvm_url: https://github.com/llvm-project/llvm-project-20170507.git
     toolchain_ver:
       - master:
           llvm_branch: master
@@ -46,6 +49,9 @@
     name: tcwg_kernel-gnu
     toolchain_name:
       - gnu:
+          binutils_url: git://sourceware.org/git/binutils-gdb.git
+          gcc_url: git://gcc.gnu.org/git/gcc.git
+          llvm_url: no_llvm_url
           llvm_branch: no_llvm_branch
     toolchain_ver:
       - master:
@@ -92,7 +98,7 @@
     name: llvm-scm
     scm:
         - git:
-            url: 'https://github.com/llvm-project/llvm-project-20170507.git'
+            url: '{llvm_url}'
             branches:
               - 'refs/heads/{llvm_branch}'
             basedir: llvm
@@ -109,7 +115,7 @@
     name: binutils-scm
     scm:
         - git:
-            url: 'git://sourceware.org/git/binutils-gdb.git'
+            url: '{binutils_url}'
             branches:
               - 'refs/heads/{binutils_branch}'
             basedir: binutils
@@ -126,7 +132,7 @@
     name: gcc-scm
     scm:
         - git:
-            url: 'git://gcc.gnu.org/git/gcc.git'
+            url: '{gcc_url}'
             branches:
               - 'refs/heads/{gcc_branch}'
             basedir: gcc
@@ -189,8 +195,11 @@
     workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
     scm:
       - '{component}-scm':
+          llvm_url: '{llvm_url}'
           llvm_branch: '{llvm_branch}'
+          binutils_url: '{binutils_url}'
           binutils_branch: '{binutils_branch}'
+          gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
           linux_url: '{linux_url}'
           linux_branch: '{linux_branch}'
@@ -314,8 +323,12 @@
             -- \
             ./jenkins-scripts/tcwg_kernel-build.sh \
             %% artifacts/jenkins/manifest.sh \
-            @@ ./jenkins-scripts/tcwg_kernel/{toolchain_name}-{toolchain_ver}.sh \
-            @@ ./jenkins-scripts/tcwg_kernel/linux-{linux}.sh \
+            ==config[{toolchain_name}] {toolchain_ver} \
+            ==git_repo[binutils] {binutils_url} ==git_branch[binutils] {binutils_branch} \
+            ==git_repo[gcc] {gcc_url} ==git_branch[gcc] {gcc_branch} \
+            ==git_repo[llvm] {llvm_url} ==git_branch[llvm] {llvm_branch} \
+            ==config[linux] {linux} \
+            ==git_repo[linux] {linux_url} ==git_branch[linux] {linux_branch} \
             --mode "jenkins-full" \
             --current_project "$current_project" \
             --current_rev "$current_rev" \
@@ -433,16 +446,21 @@
             -- \
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
             %% manifest.sh \
-            @@ ./jenkins-scripts/tcwg_kernel/{toolchain_name}-{toolchain_ver}.sh \
-            @@ ./jenkins-scripts/tcwg_kernel/linux-{linux}.sh \
             --confirm_failure true \
-            --current_project "$current_project" \
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
+            --BUILD_URL "$BUILD_URL" \
+            -- \
+            ==config[{toolchain_name}] {toolchain_ver} \
+            ==git_repo[binutils] {binutils_url} ==git_branch[binutils] {binutils_branch} \
+            ==git_repo[gcc] {gcc_url} ==git_branch[gcc] {gcc_branch} \
+            ==git_repo[llvm] {llvm_url} ==git_branch[llvm] {llvm_branch} \
+            ==config[linux] {linux} \
+            ==git_repo[linux] {linux_url} ==git_branch[linux] {linux_branch} \
+            --current_project "$current_project" \
             --linux_config "{linux_config}" \
             --target "{target}" \
-            --toolchain "{toolchain_name}" \
-            --BUILD_URL "$BUILD_URL"
+            --toolchain "{toolchain_name}"
 
             for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
