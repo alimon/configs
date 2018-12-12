@@ -2,8 +2,10 @@
 
 {% set job_timeout = 300 %}
 {% block priority %}75{% endblock priority %}
-# for some reason only the last specified module is run
+# for some reason --module m1 --module m2 doesn't work
+# only the last specified module is run
 # i.e. VtsHalKeymasterV3_0Target in this case
-# so this file is currently unused
-{% set testcommand = "vts-hal --module VtsHalGatekeeperV1_0Target --module VtsHalKeymasterV3_0Target" %}
+# so use --include-filter instead
+# re: https://linaro.zendesk.com/agent/tickets/2427
+{% set testcommand = "vts-hal --include-filter VtsHalGatekeeperV1_0Target --include-filter VtsHalKeymasterV3_0Target" %}
 {% set testname = "vts-hal-gatekeeper-keymaster" %}
