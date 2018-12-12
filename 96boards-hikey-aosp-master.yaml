@@ -32,6 +32,9 @@
         - string:
             name: SRCREV_kernel
             default: 'dummy'
+        - string:
+            name: TOOLCHAIN
+            default: 'clang-r346389'
     disabled: false
     node: docker-xenial-aosp
     display-name: '96boards - AOSP Master - HiKey'
@@ -147,14 +150,34 @@
             rm -rf build/out/BUILD-INFO.txt
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
 
-            # Build latest boot.img with latest 4.9 kernel from source and 4.14 kernel from source
+            # Build latest boot.img with latest kernel from source for 4.4, 4.9, 4.14, 4.19 versions
             cd build/
-            export PATH=${PWD}/prebuilts/clang/host/linux-x86/clang-4679922/bin/:${PWD}/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/:${PATH}
+            export PATH=${PWD}/prebuilts/clang/host/linux-x86/${TOOLCHAIN}/bin/:${PWD}/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/:${PATH}
 
             if [ ! -d hikey-linaro ]; then
               git clone https://android.googlesource.com/kernel/hikey-linaro
             fi
             cd hikey-linaro
+
+            # Build 4.19 kernel
+            git checkout android-hikey-linaro-4.19
+            git pull
+            export KERNEL_DESCRIBE_4_19=$(git rev-parse --short HEAD)
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.19/android-base.config
+            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
+            CMD="androidboot.console=ttyFIQ0 androidboot.hardware=hikey firmware_class.path=/vendor/firmware efi=noruntime printk.devkmsg=on buildvariant=userdebug overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab"
+            python mkbootimg \
+               --kernel arch/arm64/boot/Image.gz-dtb \
+               --cmdline console="${CMD}" \
+               --os_version O \
+               --os_patch_level 2016-11-05 \
+               --ramdisk ../out/ramdisk.img \
+               --output ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
+            cp vmlinux ../out/4.19_vmlinux
+            cp .config ../out/4.19_defconfig
+            xz ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
+
+            # Build 4.14 kernel
             git checkout android-hikey-linaro-4.14
             git pull
             rm -rf configs
@@ -221,6 +244,7 @@
             PUB_DEST=96boards/hikey/linaro/aosp-master/${BUILD_NUMBER}
             PUB_SRC=${PWD}/out
             PUB_EXTRA_INC=^[^/]+zip
+            KERNEL_DESCRIBE_4_19=${KERNEL_DESCRIBE_4_19}
             KERNEL_DESCRIBE_4_14=${KERNEL_DESCRIBE_4_14}
             KERNEL_DESCRIBE_4_9=${KERNEL_DESCRIBE_4_9}
             KERNEL_DESCRIBE_4_4=${KERNEL_DESCRIBE_4_4}
@@ -321,6 +345,31 @@
                 --template-path configs/lkft/lava-job-definitions \
                 --template-names template-boot.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml template-cts-displaytestcases.yaml template-vts-kernel-part1.yaml \
                 --quiet
+
+            # Submit jobs for 4.19 kernel
+            cd configs
+            git reset --hard
+            cd -
+            sed -i "s|boot.img.xz|boot-4.19-${KERNEL_DESCRIBE_4_19}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+
+            export KERNEL_BRANCH="android-hikey-linaro-4.19-${KERNEL_DESCRIBE_4_19}"
+            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_19}
+            export SRCREV_kernel=${KERNEL_DESCRIBE_4_19}
+            # submit 4.19 jobs to v.l.o to reduce load on production lkft
+            export LAVA_SERVER=https://validation.linaro.org/RPC2/
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team android-lkft \
+                --env-suffix "_4.19" \
+                --qa-server-project ${QA_SERVER_PROJECT} \
+                --git-commit ${QA_BUILD_VERSION} \
+                --template-path configs/lkft/lava-job-definitions \
+                --template-names template-boot.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml template-cts-displaytestcases.yaml template-vts-kernel-part1.yaml \
+                --quiet
+
 
     publishers:
         - archive:
