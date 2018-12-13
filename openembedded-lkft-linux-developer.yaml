@@ -29,7 +29,7 @@
           and can be <b>tested</b> the same way <b>LKFT</b> runs on the regular
           builds.</p>
         <p>You can compare your test results with existing runs on actual hardware:
-           <b>arm (X15)</b>, <b>arm64 (HiKey)</b> and <b>x86_64 (Xeon
+           <b>arm (X15)</b>, <b>arm64 (HiKey)</b> and <b>x86 (Xeon
            E3-1220)</b>. A description of the hardware can be found
            <a href="https://lkft.linaro.org/boards/">here</a>.</p>
         <p>This is more or less how it goes:
@@ -86,9 +86,10 @@
             choices:
                 - 'hikey'
                 - 'x15'
-                - 'x86'
+                - 'x86_64'
+                - 'i386'
             description: |
-                <b>[MANDATORY]</b> Target machine. Can be hikey (arm64), x15 (arm), or x86 (x86_64).
+                <b>[MANDATORY]</b> Target machine. Can be hikey (arm64), x15 (arm), x86_64, or i386 (32-bits).
         - string:
             name: KERNEL_CONFIG
             default: ''
@@ -98,7 +99,8 @@
                 kernel config will be used:<br/>
                   - defconfig on HiKey<br/>
                   - multi_v7_defconfig on X15<br/>
-                  - x86_64_defconfig on x86<br/>
+                  - x86_64_defconfig on x86_64<br/>
+                  - i386_defconfig on i386<br/>
                 Note: Additional config fragments are added to all defconfigs to ensure build is functional. See
                 <a href="https://ci.linaro.org/job/openembedded-lkft-linux-developer/">the status page</a> for
                 more information.
@@ -165,10 +167,15 @@
                 DEVICE_TYPE=x15
                 [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=multi_v7_defconfig
                 ;;
-              x86)
+              x86_64)
                 MACHINE=intel-corei7-64
                 DEVICE_TYPE=x86
                 [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=x86_64_defconfig
+                ;;
+              i386)
+                MACHINE=intel-core2-32
+                DEVICE_TYPE=i386
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=i386_defconfig
                 ;;
             esac
 
@@ -178,6 +185,7 @@
             KERNEL_CONFIG_aarch64 = "${KERNEL_CONFIG}"
             KERNEL_CONFIG_arm = "${KERNEL_CONFIG}"
             KERNEL_CONFIG_x86-64 = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_x86-32 = "${KERNEL_CONFIG}"
             EOF
 
             echo "IMAGES=rpb-console-image-lkft" > parameters
