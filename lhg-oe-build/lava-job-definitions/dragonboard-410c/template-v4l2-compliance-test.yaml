@@ -1,0 +1,118 @@
+device_type: dragonboard-410c
+job_name: lhg-oe-v4l2-compliance-test-${MANIFEST_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 160
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: high
+visibility: public
+
+metadata:
+  manifest branch: ${MANIFEST_BRANCH}
+  build-url: ${BUILD_URL}
+  build-location: ${BASE_URL}/${PUB_DEST}
+
+protocols:
+  lava-lxc:
+    name: lxc-dragonboard-410c-test
+    distribution: ubuntu
+    release: xenial
+    arch: amd64
+    verbose: true
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    to: lxc
+    packages:
+    - wget
+    - unzip
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - root@(.*):/#
+    - root@linaro-developer:~#
+    timeout:
+      minutes: 5
+    method: lxc
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/android-platform-tools/install.yaml
+      name: install-android-platform-tools-r2600
+      parameters:
+        LINK: 'https://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip'
+
+- deploy:
+    timeout:
+      minutes: 40
+    to: fastboot
+    namespace: dragonboard-410c
+    images:
+      boot:
+        url: ${BOOT_URL}
+      rootfs:
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+    os: oe
+    protocols:
+      lava-lxc:
+      - action: fastboot-deploy
+        request: pre-power-command
+        timeout:
+          minutes: 2
+
+- boot:
+    namespace: dragonboard-410c
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    prompts:
+    - root@(.*):/#
+    - root@dragonboard-410c:~#
+    timeout:
+      minutes: 15
+    method: fastboot
+    protocols:
+      lava-lxc:
+      - action: auto-login-action
+        request: pre-os-command
+        timeout:
+          minutes: 2
+
+- test:
+    namespace: dragonboard-410c
+    timeout:
+      minutes: 30
+    definitions:
+     - repository: https://git.linaro.org/qa/test-definitions.git
+       from: git
+       path: automated/linux/v4l2/v4l2-compliance.yaml
+       parameters:
+         # V4L2 capture device
+         VIDEO_DEVICE: '/dev/video0'
+       name: v4l2-compliance-venus-capture
+       timeout:
+         minutes: 15
+     - repository: https://git.linaro.org/qa/test-definitions.git
+       from: git
+       path: automated/linux/v4l2/v4l2-compliance.yaml
+       parameters:
+         # V4L2 output device
+         VIDEO_DEVICE: '/dev/video1'
+       name: v4l2-compliance-venus-output
+       timeout:
+         minutes: 15
