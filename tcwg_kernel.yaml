@@ -323,6 +323,7 @@
             -- \
             ./jenkins-scripts/tcwg_kernel-build.sh \
             %% artifacts/jenkins/manifest.sh \
+            --BUILD_URL "$BUILD_URL" \
             ==rr[{toolchain_name}_version] {toolchain_ver} \
             ==rr[binutils_url] {binutils_url} ==rr[binutils_rev] {binutils_branch} \
             ==rr[gcc_url] {gcc_url} ==rr[gcc_rev] {gcc_branch} \
@@ -446,10 +447,10 @@
             -- \
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
             %% artifacts/bisect-manifest.sh \
+            --BUILD_URL "$BUILD_URL" \
             --confirm_failure true \
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
-            --BUILD_URL "$BUILD_URL" \
             -- \
             ==rr[{toolchain_name}_version] {toolchain_ver} \
             ==rr[binutils_url] {binutils_url} ==rr[binutils_rev] {binutils_branch} \
