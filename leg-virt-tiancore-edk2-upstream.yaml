@@ -102,6 +102,9 @@
                 git submodule update --init --recursive
 
                 cd ${WORKSPACE}
+
+                rm -rf Build/*
+
                 for type in DEBUG RELEASE NOOPT
                 do
                     for arch in AARCH64 ARM
@@ -110,7 +113,7 @@
                         do
                             for pkg in Arm ArmPlatform
                             do
-                                build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
+                                build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
                             done
 
                             mkdir -p ${OUTDIR}/QEMU-${arch}/${type}_${tc}
