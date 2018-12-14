@@ -445,7 +445,7 @@
             --distro $distro \
             -- \
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
-            %% manifest.sh \
+            %% artifacts/bisect-manifest.sh \
             --confirm_failure true \
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
@@ -486,7 +486,7 @@
                   - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
                     property-file: artifacts/trigger-2-build-master
         - inject:
-            properties-file: artifacts/ci_mail_parameters
+            script-file: artifacts/ci_mail_parameters.sh
     publishers:
         - archive:
             artifacts: 'artifacts/**'
