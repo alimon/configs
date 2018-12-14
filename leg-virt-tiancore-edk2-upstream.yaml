@@ -114,11 +114,11 @@
                             done
 
                             mkdir -p ${OUTDIR}/QEMU-${arch}/${type}_${tc}
-                            build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE
+                            build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE -D NETWORK_IP6_ENABLE -D HTTP_BOOT_ENABLE
                             cp Build/ArmVirtQemu-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}_${tc}
 
                             mkdir -p ${OUTDIR}/QEMU-KERNEL-${arch}/${type}_${tc}
-                            build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemuKernel.dsc -D SECURE_BOOT_ENABLE
+                            build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemuKernel.dsc -D SECURE_BOOT_ENABLE -D NETWORK_IP6_ENABLE -D HTTP_BOOT_ENABLE
                             cp Build/ArmVirtQemuKernel-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-KERNEL-${arch}/${type}_${tc}
 
                             mkdir -p ${OUTDIR}/XEN-${arch}/${type}_${tc}
