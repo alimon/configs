@@ -103,17 +103,15 @@
 
                 cd ${WORKSPACE}
 
-                rm -rf Build/*
-
                 for type in DEBUG RELEASE NOOPT
                 do
                     for arch in AARCH64 ARM
                     do
                         for tc in GCC48 GCC49 GCC5 CLANG35 CLANG38
                         do
-                            for pkg in Arm ArmPlatform
+                            for pkg in ArmPlatform
                             do
-                                build -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
+                                build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
                             done
 
                             mkdir -p ${OUTDIR}/QEMU-${arch}/${type}_${tc}
