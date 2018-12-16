@@ -34,7 +34,7 @@
             default: 'dummy'
         - string:
             name: TOOLCHAIN
-            default: 'clang-4679922'
+            default: 'clang-r346389'
     disabled: false
     node: docker-xenial-aosp
     display-name: '96boards - AOSP Master - HiKey'
@@ -114,7 +114,7 @@
             mkdir -p build
             # Delete sources before build to save space
             cd build/
-            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ hikey-linaro/configs hikey-linaro-4.19/configs
+            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ hikey-linaro/configs hikey-linaro-4.19
             cd -
 
             # Build Android
@@ -154,25 +154,31 @@
             cd build/
             export PATH=${PWD}/prebuilts/clang/host/linux-x86/${TOOLCHAIN}/bin/:${PWD}/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/:${PATH}
 
-
-
-            # git clone the common configs repository which will be used by all kernel versions
-            rm -rf configs
-            git clone --depth=1 https://android.googlesource.com/kernel/configs
-
-            # get the mkbootimg command which will be used to create the boot image by all kernel versions
-            wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py -O mkbootimg
-
             export CLANG_TRIPLE=aarch64-linux-gnu-
             export CROSS_COMPILE=aarch64-linux-android-
             CMD="console=ttyAMA3,115200 androidboot.console=ttyAMA3 androidboot.hardware=hikey firmware_class.path=/vendor/firmware efi=noruntime  printk.devkmsg=on buildvariant=userdebug overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab"
 
+            ######################################################################
             # Build 4.19 kernel
-            if [ ! -d hikey-linaro-4.19 ]; then
-              git clone https://git.linaro.org/people/john.stultz/android-dev.git -b experimental/android-hikey-linaro-4.19 hikey-linaro-4.19
-            fi
+            # hikey-linaro-4.19 is deleted in the above, so we git clone it every time
+            git clone https://git.linaro.org/people/john.stultz/android-dev.git -b experimental/android-hikey-linaro-4.19 hikey-linaro-4.19
             cd hikey-linaro-4.19
-            git pull
+            # apply patch for Image.gz-dtb support
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/14/29514/1 && git cherry-pick FETCH_HEAD
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/15/29515/1 && git cherry-pick FETCH_HEAD
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/16/29516/1 && git cherry-pick FETCH_HEAD
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/17/29517/1 && git cherry-pick FETCH_HEAD
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/18/29518/1 && git cherry-pick FETCH_HEAD
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/19/29519/1 && git cherry-pick FETCH_HEAD
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/20/29520/1 && git cherry-pick FETCH_HEAD
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/21/29521/1 && git cherry-pick FETCH_HEAD
+            git fetch ssh://yongqin.liu@review.linaro.org:29418/people/john.stultz/android-dev refs/changes/22/29522/1 && git cherry-pick FETCH_HEAD
+
+            # git clone the common configs repository which will be used by all kernel versions
+            rm -rf configs
+            git clone --depth=1 https://android.googlesource.com/kernel/configs
+            # get the mkbootimg command which will be used to create the boot image by all kernel versions
+            wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py -O mkbootimg
             export KERNEL_DESCRIBE_4_19=$(git rev-parse --short HEAD)
             ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.19/android-base.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
@@ -186,8 +192,10 @@
             cp vmlinux ../out/4.19_vmlinux
             cp .config ../out/4.19_defconfig
             xz ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
+            # back to the above directory for following kernel compiling
             cd -
 
+            ######################################################################
             # common for 4.4/4.9/4.14
             if [ ! -d hikey-linaro ]; then
                git clone https://android.googlesource.com/kernel/hikey-linaro
@@ -195,6 +203,12 @@
             cd hikey-linaro
             # need to use fetch to get all the new changes
             git fetch --all
+            # common for 4.4/4.9/4.14
+            # git clone the common configs repository which will be used by all kernel versions
+            rm -rf configs
+            git clone --depth=1 https://android.googlesource.com/kernel/configs
+            # get the mkbootimg command which will be used to create the boot image by all kernel versions
+            wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py -O mkbootimg
 
             # Build 4.14 kernel
             git checkout android-hikey-linaro-4.14
