@@ -48,7 +48,7 @@ wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
 
 python mkbootimg \
   --kernel ${PWD}/arch/arm64/boot/Image.gz-dtb \
-  --cmdline console="${CMD}" \
+  --cmdline "${CMD}" \
   --os_version O \
   --os_patch_level 2016-11-05 \
   --ramdisk ramdisk.img \
