@@ -486,8 +486,12 @@
               - trigger-builds:
                   - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
                     property-file: artifacts/trigger-2-build-master
-        - inject:
-            script-file: artifacts/ci_mail_parameters.sh
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/ci_mail_parameters.sh
+            steps:
+              - inject:
+                  script-file: artifacts/ci_mail_parameters.sh
     publishers:
         - archive:
             artifacts: 'artifacts/**'
