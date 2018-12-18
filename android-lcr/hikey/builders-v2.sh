@@ -5,6 +5,8 @@ if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
   exit 1
 fi
 
+source build-configs/${BUILD_CONFIG_FILENAME}
+
 # Clean android-patchsets and repositories in device
 rm -rf build/out build/android-patchsets build/device
 
@@ -34,6 +36,17 @@ for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdat
 done
 cd -
 
+if [ "X${BUILD_VENDOR_FOR_4_4}" = "Xtrue" ]; then
+    cd build/
+    source build/envsetup.sh
+    lunch hikey-userdebug
+    rm -rf out/target/product/hikey
+    make vendorimage TARGET_KERNEL_USE=4.4
+    cp out/target/product/hikey/vendor.img out/vendor-4.4.img
+    xz out/vendor-4.4.img
+    cd -
+fi
+
 rm -rf build/out/BUILD-INFO.txt
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
 
@@ -50,7 +63,6 @@ EOF
 
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 # Construct post-build-lava parameters
-source build-configs/${BUILD_CONFIG_FILENAME}
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEVICE_TYPE=hi6220-hikey
 TARGET_PRODUCT=${TARGET_PRODUCT}
