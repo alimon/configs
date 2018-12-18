@@ -158,7 +158,7 @@
 
             export CLANG_TRIPLE=aarch64-linux-gnu-
             export CROSS_COMPILE=aarch64-linux-android-
-            CMD="console=ttyAMA3,115200 androidboot.console=ttyAMA3 androidboot.hardware=hikey firmware_class.path=/vendor/firmware efi=noruntime  printk.devkmsg=on buildvariant=userdebug overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab"
+            CMDLINE="console=ttyAMA3,115200 androidboot.console=ttyAMA3 androidboot.hardware=hikey firmware_class.path=/vendor/firmware efi=noruntime  printk.devkmsg=on buildvariant=userdebug overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab"
 
             ######################################################################
             # Build 4.19 kernel
@@ -186,7 +186,7 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
-               --cmdline console="${CMD}" \
+               --cmdline "${CMDLINE}" \
                --os_version O \
                --os_patch_level 2016-11-05 \
                --ramdisk ../out/ramdisk.img \
@@ -220,7 +220,7 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
               --kernel arch/arm64/boot/Image.gz-dtb \
-              --cmdline console="${CMD}" \
+              --cmdline "${CMDLINE}" \
               --os_version O \
               --os_patch_level 2016-11-05 \
               --ramdisk ../out/ramdisk.img \
@@ -237,7 +237,7 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
-               --cmdline console="${CMD}" \
+               --cmdline "${CMDLINE}" \
                --os_version O \
                --os_patch_level 2016-11-05 \
                --ramdisk ../out/ramdisk.img \
@@ -254,7 +254,7 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
-               --cmdline console="${CMD}" \
+               --cmdline "${CMDLINE}" \
                --os_version O \
                --os_patch_level 2016-11-05 \
                --ramdisk ../out/ramdisk.img \
