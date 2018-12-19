@@ -11,6 +11,7 @@ source build-configs/${BUILD_CONFIG_FILENAME}
 rm -rf build/out build/android-patchsets build/device
 # clean hikey kernel repositories
 rm -rf build/kernel/linaro
+rm -fr build/.repo/projects/prebuilts/clang/host/linux-x86.git build/prebuilts/clang/host/linux-x8
 
 mkdir -p build/
 cd build/
@@ -42,8 +43,8 @@ if [ "X${BUILD_VENDOR_FOR_4_4}" = "Xtrue" ]; then
     cd build/
     source build/envsetup.sh
     lunch hikey-userdebug
-    rm -rf out/target/product/hikey
-    make vendorimage TARGET_KERNEL_USE=4.4 TARGET_COMPRESSED_KERNEL=false
+    rm -rf out/target/product/hikey/vendor*
+    make vendorimage TARGET_KERNEL_USE=4.4 TARGET_COMPRESSED_KERNEL=false TARGET_BUILD_KERNEL=false HIKEY_USE_DRM_HWCOMPOSER=false
     cp out/target/product/hikey/vendor.img out/vendor-4.4.img
     xz out/vendor-4.4.img
     cd -
