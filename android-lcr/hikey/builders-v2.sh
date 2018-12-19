@@ -9,6 +9,8 @@ source build-configs/${BUILD_CONFIG_FILENAME}
 
 # Clean android-patchsets and repositories in device
 rm -rf build/out build/android-patchsets build/device
+# clean hikey kernel repositories
+rm -rf build/kernel/linaro
 
 mkdir -p build/
 cd build/
