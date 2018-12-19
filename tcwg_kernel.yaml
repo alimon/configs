@@ -392,6 +392,15 @@
     defaults: global
     properties:
       - default_properties
+      - build-blocker:
+          # Run at most 1 bisect job for all configurations.
+          # Bisect jobs can easily run for 5+ hours, and a few of them
+          # can hog the entire TCWG build farm for a long time.  Since
+          # same regression tends to appear in multiple configurations,
+          # run bisections for all configurations in-order.
+          blocking-jobs:
+            - "tcwg_kernel-bisect-*"
+          queue-scanning: 'BUILDABLE'
     parameters:
       - '{toolchain_name}-parameters':
           action: bisect
