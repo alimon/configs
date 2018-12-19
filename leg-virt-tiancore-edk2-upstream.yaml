@@ -70,18 +70,18 @@
             export GCC5_ARM_PREFIX=arm-linux-gnueabihf-
 
             export CLANG35_AARCH64_PREFIX=aarch64-linux-gnu-
-            export CLANG35_ARM_PREFIX=arm-linux-gnueabihf-
+            export CLANG35_ARM_PREFIX=arm-linux-gnueabi-
 
             export CLANG38_BIN=/usr/lib/llvm-5.0/bin/
             export CLANG38_AARCH64_PREFIX=aarch64-linux-gnu-
-            export CLANG38_ARM_PREFIX=arm-linux-gnueabihf-
+            export CLANG38_ARM_PREFIX=arm-linux-gnueabi-
 
             sudo dpkg --add-architecture i386
             echo "deb http://mirror.bytemark.co.uk/debian stretch-backports main" > stretch-backports.list
             sudo mv stretch-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
             sudo apt-get install -y --no-install-recommends clang python-requests zip libstdc++6:i386 zlib1g:i386 \
-                            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf nasm llvm
+                            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf nasm llvm binutils-arm-linux-gnueabi
             sudo apt-get install -t stretch-backports -y --no-install-recommends clang-5.0 llvm-5.0-dev
 
             export OUTDIR=${WORKSPACE}/out
@@ -105,8 +105,6 @@
 
                 for type in DEBUG RELEASE NOOPT
                 do
-                    OPTIONS="-D SECURE_BOOT_ENABLE -D NETWORK_IP6_ENABLE -D HTTP_BOOT_ENABLE"
-
                     for arch in AARCH64 ARM
                     do
                         for tc in GCC48 GCC49 GCC5 CLANG35 CLANG38
@@ -116,17 +114,12 @@
                                 build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ${pkg}Pkg/${pkg}Pkg.dsc
                             done
 
-                            if [ "${arch}${tc}" == "ARMCLANG38" ]
-                            then
-                                OPTIONS=""
-                            fi
-
                             mkdir -p ${OUTDIR}/QEMU-${arch}/${type}_${tc}
-                            build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc $OPTIONS
+                            build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemu.dsc -D SECURE_BOOT_ENABLE -D NETWORK_IP6_ENABLE -D HTTP_BOOT_ENABLE
                             cp Build/ArmVirtQemu-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-${arch}/${type}_${tc}
 
                             mkdir -p ${OUTDIR}/QEMU-KERNEL-${arch}/${type}_${tc}
-                            build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemuKernel.dsc $OPTIONS
+                            build -s -a ${arch} -t ${tc} -b ${type} -n $NUM_THREADS -p ArmVirtPkg/ArmVirtQemuKernel.dsc -D SECURE_BOOT_ENABLE -D NETWORK_IP6_ENABLE -D HTTP_BOOT_ENABLE
                             cp Build/ArmVirtQemuKernel-${arch}/${type}_${tc}/FV/QEMU_EFI.fd ${OUTDIR}/QEMU-KERNEL-${arch}/${type}_${tc}
 
                             mkdir -p ${OUTDIR}/XEN-${arch}/${type}_${tc}
