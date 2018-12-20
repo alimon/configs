@@ -279,10 +279,30 @@ TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 
-# lkft-metadata class generates metadata file, which can be sourced
-for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
-  source lkftmetadata/packages/*/${recipe}/metadata
-done
+if [ "${DISTRO}" = "rpb" ]; then
+  # lkft-metadata class generates metadata file, which can be sourced
+  for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
+    source lkftmetadata/packages/*/${recipe}/metadata
+  done
+else
+  # Generate LKFT metadata
+  mkdir ${WORKSPACE}/lkftmetadata/
+  for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs ${KERNEL_RECIPE}; do
+    tmpfile=$(mktemp)
+    pkg=$(echo $recipe | tr '[a-z]-' '[A-Z]_')
+    bitbake -e ${recipe} | grep -e ^PV= -e ^SRC_URI= -e ^SRCREV= > ${tmpfile}
+    source ${tmpfile}
+    for suri in $SRC_URI; do if [[ ! $suri =~ file:// ]]; then uri=$(echo $suri | cut -d\; -f1); export ${pkg}_URL=$uri; break; fi; done
+    export ${pkg}_VERSION=${PV}
+    export ${pkg}_REVISION=${SRCREV}
+    unset -v PV SRC_URI SRCREV
+    rm ${tmpfile}
+    for v in URL VERSION REVISION; do
+      myvar="${pkg}_${v}"
+      echo "${myvar}=${!myvar}" >> ${WORKSPACE}/lkftmetadata/${recipe}
+    done
+  done
+fi
 
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | sort | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)

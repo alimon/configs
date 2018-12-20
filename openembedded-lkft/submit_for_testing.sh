@@ -23,15 +23,17 @@ if [ -z "${DEVICE_TYPE}" ]; then
 fi
 
 if [ -z "${DRY_RUN}" ]; then
+    METADATA=${WORKSPACE}/lkftmetadata/${KERNEL_RECIPE}
+    [ "${DISTRO}" = "rpb" ] && METADATA=/srv/oe/build/lkftmetadata/packages/*/${KERNEL_RECIPE}/metadata
     case "${QA_SERVER_PROJECT}" in
       linux-mainline-*)
-        source /srv/oe/build/lkftmetadata/packages/*/${KERNEL_RECIPE}/metadata
+        source ${METADATA}
         export KSELFTESTS_URL=${LINUX_GENERIC_MAINLINE_URL}
         export KSELFTESTS_VERSION=${LINUX_GENERIC_MAINLINE_VERSION}
         export KSELFTESTS_REVISION=${KERNEL_COMMIT}
         ;;
       linux-next-*)
-        source /srv/oe/build/lkftmetadata/packages/*/${KERNEL_RECIPE}/metadata
+        source ${METADATA}
         export KSELFTESTS_URL=${LINUX_GENERIC_NEXT_URL}
         export KSELFTESTS_VERSION=${LINUX_GENERIC_NEXT_VERSION}
         export KSELFTESTS_REVISION=${KERNEL_COMMIT}
