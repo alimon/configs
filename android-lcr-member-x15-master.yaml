@@ -1,14 +1,14 @@
 - job:
-    name: android-lcr-member-hikey-n
+    name: android-lcr-member-x15-master
     project-type: freestyle
     defaults: global
     properties:
         - authorization:
             anonymous:
                 - job-read
+                - job-extended-read
             linaro:
                 - job-build
-                - job-extended-read
                 - job-cancel
         - build-discarder:
             days-to-keep: 60
@@ -19,7 +19,7 @@
             default: https://android-qa-reports.linaro.org/api/
         - string:
             name: BUILD_DIR
-            default: m-lcr-nougat
+            default: aosp-master
     disabled: true
     node: docker-xenial-aosp
     display-name: 'DELETE ME'
@@ -31,36 +31,32 @@
                 - change-merged-event
             projects:
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'android/android-patchsets'
+                  project-pattern: 'android-patchsets'
                   branches:
                       - branch-compare-type: 'PLAIN'
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-n-workarounds'
+                        pattern: 'x15-o-workarounds'
                       - compare-type: 'PLAIN'
-                        pattern: 'NOUGAT-MLCR-PATCHSET'
-                      - compare-type: 'PLAIN'
-                        pattern: 'NOUGAT-BOOTTIME-OPTIMIZATIONS-HIKEY'
+                        pattern: 'MASTER-RLCR-PATCHSET'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'device/linaro/common'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-nougat'
+                        branch-pattern: 'linaro-oreo'
                 - project-compare-type: 'PLAIN'
-                  project-pattern: 'linaro-art/platform/manifest'
+                  project-pattern: 'platform/manifest'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-nougat'
+                        branch-pattern: 'linaro-master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey.xml'
+                        pattern: 'x15.xml'
                       - compare-type: 'PLAIN'
                         pattern: 'linaro-pm-extras.xml'
                       - compare-type: 'PLAIN'
                         pattern: 'linaro.xml'
-                      - compare-type: 'PLAIN'
-                        pattern: 'optee.xml'
                       - compare-type: 'PLAIN'
                         pattern: 'update-externals.xml'
                 - project-compare-type: 'PLAIN'
@@ -70,7 +66,7 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'lcr-member-hikey-n'
+                        pattern: 'lcr-member-x15-master'
     wrappers:
         - timestamps
         - timeout:
@@ -79,6 +75,6 @@
                 users:
                     - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
-        !include: android-lcr/hikey/builders.yaml.inc
+        !include: android-lcr/x15/builders.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc
