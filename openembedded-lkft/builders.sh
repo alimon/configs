@@ -75,6 +75,9 @@ rm -rf conf build/conf build/tmp-*glibc/
 export EULA_dragonboard410c=1
 source setup-environment build
 
+########## vvv DISTRO DEPENDANT vvv ##########
+if [ "${DISTRO}" = "rpb" ]; then
+
 # Add job BUILD_NUMBER to output files names
 cat << EOF >> conf/auto.conf
 IMAGE_NAME_append = "-${BUILD_NUMBER}"
@@ -153,6 +156,12 @@ INHERIT += "lkft-metadata"
 LKFTMETADATA_COMMIT = "1"
 EOF
 
+# Update kernel recipe SRCREV
+echo "SRCREV_kernel_${MACHINE} = \"${SRCREV_kernel}\"" >> conf/local.conf
+
+fi
+########## ^^^ DISTRO DEPENDANT ^^^ ##########
+
 # Remove systemd firstboot and machine-id file
 # Backport serialization change from v234 to avoid systemd tty race condition
 # Only on Morty
@@ -190,9 +199,6 @@ elif [ "${MANIFEST_BRANCH}" = "rocko" ]; then
   sed -i "s|bits/wordsize.h||" ../layers/openembedded-core/meta/recipes-core/glibc/glibc-package.inc
 fi
 
-# Update kernel recipe SRCREV
-echo "SRCREV_kernel_${MACHINE} = \"${SRCREV_kernel}\"" >> conf/local.conf
-
 # The kernel (as of next-20181130) requires fold from the host
 echo "HOSTTOOLS += \"fold\"" >> conf/local.conf
 
@@ -201,7 +207,7 @@ cat conf/{site,auto}.conf
 cat ${distro_conf}
 
 # Temporary sstate cleanup to get lkft metadata generated
-bitbake -c cleansstate kselftests-mainline kselftests-next ltp libhugetlbfs
+[ "${DISTRO}" = "rpb" ] && bitbake -c cleansstate kselftests-mainline kselftests-next ltp libhugetlbfs
 
 time bitbake ${IMAGES}
 
