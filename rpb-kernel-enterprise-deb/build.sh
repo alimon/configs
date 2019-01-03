@@ -2,7 +2,7 @@
 
 set -ex
 
-echo "deb https://deb.debian.org/debian stretch-backports main" | sudo tee /etc/apt/sources.list.d/backports.list
+echo "deb http://deb.debian.org/debian stretch-backports main" | sudo tee /etc/apt/sources.list.d/backports.list
 
 sudo apt-get update -q=2
 sudo apt-get install -q -y ccache python-requests quilt cpio rsync dh-exec kernel-wedge/stretch-backports
