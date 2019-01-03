@@ -2,8 +2,11 @@
 
 set -ex
 
+echo "deb https://deb.debian.org/debian stretch-backports main" >/etc/apt/sources.list.d/backports.list
+
 sudo apt-get update -q=2
-sudo apt-get install -q -y ccache python-requests quilt cpio rsync dh-exec
+sudo apt-get install -q -y ccache python-requests quilt cpio rsync dh-exec kernel-wedge/stretch-backports
+sudo apt upgrade -q -y
 
 # Checkout source code
 git clone --depth 1 -b ${DEBIAN_GIT_BRANCH} ${DEBIAN_GIT_URL} debian-pkg
