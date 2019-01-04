@@ -9,7 +9,9 @@ set -ex
 
 # Distro package is too old for Zephyr
 sudo pip3 install pyelftools pykwalify
-# CMake is pre-installed
+# Pre-installed CMake is too old for the latest Zephyr
+# Recent recommendation to users is to install it via PyPI, let'd do the same
+sudo pip3 install cmake
 #cmake_version=3.9.5
 #wget -q https://cmake.org/files/v3.9/cmake-${cmake_version}-Linux-x86_64.tar.gz
 #tar xf cmake-${cmake_version}-Linux-x86_64.tar.gz
