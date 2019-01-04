@@ -6,6 +6,9 @@ sudo apt-get -q=2 update
 sudo apt-get -q=2 -y install python3-pip python-serial python3-serial socat
 
 sudo pip3 install pyelftools
+# Zephyr requires very recent version of CMake. Strangely enough, such
+# can be installed from PyPI.
+sudo pip3 install cmake
 
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
