@@ -97,7 +97,7 @@ AUTOMERGE_CONFIG=$(sed ':a;N;$!ba;s/\n/\\n\\\n/g' ${CONFIG_PATH})
 # * TODO: Add support in ci-merge to create a log (instead of use tee)
 set +e
 set -o pipefail
-yes | ci-merge -l ${INTEGRATION_REPO_PATH} -r ${INTEGRATION_REPO_URL} -i ${INTEGRATION_BRANCH} -c ${RERERE_REPO_URL} | tee automerge.log
+ci-merge -l ${INTEGRATION_REPO_PATH} -r ${INTEGRATION_REPO_URL} -i ${INTEGRATION_BRANCH} -c ${RERERE_REPO_URL} -n | tee automerge.log
 AUTOMERGE_EXIT_CODE=$?
 set +o pipefail
 AUTOMERGE_BRANCH_FAILED=$(grep 'Merge failed' automerge.log | sed ':a;N;$!ba;s/\n/\\n\\\n/g')
