@@ -41,7 +41,7 @@ cd ../
 set -e
 
 # delete any stale folder
-rm -rf clang-src
+rm -rf clang-src hikey-linaro
 
 repo sync -j16 -c
 
