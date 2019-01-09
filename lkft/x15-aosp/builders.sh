@@ -26,7 +26,7 @@ chmod a+x ${HOME}/bin/*
 export PATH=${HOME}/bin:${PATH}
 
 cd ~/srv/aosp-master/build/
-rm -rf .repo/manifests* .repo/local_manifests*
+rm -rf .repo/manifests* .repo/local_manifests* out
 repo init -u http://android.googlesource.com/platform/manifest -b master
 if [ ! -z ${REFERENCE_BUILD_URL} ]; then
   cd .repo/manifests/
