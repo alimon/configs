@@ -139,10 +139,6 @@
             pushd test/suite_harness
             git fetch http://android-review.linaro.org/platform/test/suite_harness refs/changes/23/19623/1 && git cherry-pick FETCH_HEAD 
             popd
-            rm -rf out/target/product/hikey
-            make vendorimage TARGET_KERNEL_USE=4.4
-            cp out/target/product/hikey/vendor.img out/vendor-4.4.img
-            xz out/vendor-4.4.img
             lunch aosp_arm64-userdebug
             make -j"$(nproc)" vts cts
             cp out/host/linux-x86/vts/android-vts.zip out/
@@ -229,22 +225,6 @@
             cp .config ../out/4.9_defconfig
             xz ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img
 
-            # Build 4.4 kernel
-            git checkout android-hikey-linaro-4.4
-            git pull
-            export KERNEL_DESCRIBE_4_4=$(git rev-parse --short HEAD)
-            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig
-            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
-            python mkbootimg \
-               --kernel arch/arm64/boot/Image.gz-dtb \
-               --cmdline "${CMDLINE}" \
-               --os_version O \
-               --os_patch_level 2016-11-05 \
-               --ramdisk ../out/ramdisk.img \
-               --output ../out/boot-4.4-${KERNEL_DESCRIBE_4_4}.img
-            cp vmlinux ../out/4.4_vmlinux
-            cp .config ../out/4.4_defconfig
-            xz ../out/boot-4.4-${KERNEL_DESCRIBE_4_4}.img
             rm -rf configs
             cd ../
 
@@ -292,25 +272,6 @@
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            # Submit jobs for 4.4 kernel
-            sed -i "s|boot.img.xz|boot-4.4-${KERNEL_DESCRIBE_4_4}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-            sed -i "s|vendor.img.xz|vendor-4.4.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-
-            export KERNEL_BRANCH="android-hikey-linaro-4.4-${KERNEL_DESCRIBE_4_4}"
-            export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
-            python configs/openembedded-lkft/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team android-lkft \
-                --env-suffix "_4.4" \
-                --qa-server-project ${QA_SERVER_PROJECT} \
-                --git-commit ${QA_BUILD_VERSION} \
-                --template-path configs/lkft/lava-job-definitions \
-                --template-names template-boot.yaml template-vts-kernel-part1.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml template-cts-displaytestcases.yaml \
-                --quiet
 
             # Submit jobs for 4.9 kernel
             cd configs
