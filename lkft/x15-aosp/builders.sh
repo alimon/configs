@@ -62,7 +62,7 @@ cp -vf kernel/ti/x15/arch/arm/boot/zImage device/ti/beagle_x15-kernel/4.14/zImag
 source build/envsetup.sh
 lunch beagle_x15-userdebug
 make -j$(nproc)
-wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/am57xevm/BUILD-INFO.txt
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/beagle_x15/BUILD-INFO.txt
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
