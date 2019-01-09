@@ -182,11 +182,6 @@
             git checkout android-hikey-linaro-4.19
             git pull
             export KERNEL_DESCRIBE_4_19=$(git rev-parse --short HEAD)
-            # apply patch for Image.gz-dtb support
-            git fetch https://android.googlesource.com/kernel/hikey-linaro refs/changes/69/853169/1 && git cherry-pick FETCH_HEAD
-            git fetch https://android.googlesource.com/kernel/hikey-linaro refs/changes/70/853170/1 && git cherry-pick FETCH_HEAD
-            git fetch https://android.googlesource.com/kernel/hikey-linaro refs/changes/71/853171/2 && git cherry-pick FETCH_HEAD
-            git fetch https://android.googlesource.com/kernel/hikey-linaro refs/changes/72/853172/2 && git cherry-pick FETCH_HEAD
             ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.19/android-base.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
