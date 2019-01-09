@@ -56,18 +56,21 @@ export KERNELDIR=${PWD}
 make ti_sdk_am57x_android_release_defconfig
 make -j$(nproc) zImage dtbs modules
 cd ../../../
+cp -vf kernel/ti/x15/arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb device/ti/beagle_x15-kernel/4.14/am57xx-beagle-x15-revc.dtb
+cp -vf kernel/ti/x15/arch/arm/boot/zImage device/ti/beagle_x15-kernel/4.14/zImage
 
 source build/envsetup.sh
-lunch am57xevm_full-userdebug
+lunch beagle_x15-userdebug
 make -j$(nproc)
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/am57xevm/BUILD-INFO.txt
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
-PUB_SRC=${PWD}/out/target/product/am57xevm/
+PUB_SRC=${PWD}/out/target/product/beagle_x15
 PUB_EXTRA_INC=^[^/]+zip
 EOF
 
 rm -rf .repo/manifests .repo/local_manifests
 rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ kernel/
+rm -fr device/ti/beagle_x15-kernel/
