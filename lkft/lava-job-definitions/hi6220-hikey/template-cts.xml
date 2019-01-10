@@ -1,0 +1,157 @@
+device_type: hi6220-hikey-r2
+job_name: "lkft-android-${KERNEL_BRANCH}-${ANDROID_VERSION}-${BUILD_NUMBER}-cts"
+timeouts:
+  job:
+    minutes: 360
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility:
+  group:
+    - lkft
+
+secrets:
+  ARTIFACTORIAL_TOKEN: "${ARTIFACTORIAL_TOKEN}"
+  AP_SSID: "${AP_SSID}"
+  AP_KEY: "${AP_KEY}"
+
+metadata:
+  android.url: "${REFERENCE_BUILD_URL}"
+  android.version: "${ANDROID_VERSION}"
+  build-location: "${DOWNLOAD_URL}"
+  git branch: "${KERNEL_BRANCH}"
+  git repo: "${KERNEL_REPO}"
+  git commit: "${KERNEL_COMMIT}"
+  git describe: "${KERNEL_DESCRIBE}"
+  build-url: "${BUILD_URL}"
+  cts-manifest: "${CTS_URL}/pinned-manifest.xml"
+  cts-version: "${CTS_VERSION}"
+  cts-plan: "cts-lkft"
+  toolchain: "${TOOLCHAIN}"
+  series: lkft
+
+protocols:
+  lava-lxc:
+    name: lxc-hikey-test
+    distribution: ubuntu
+    release: xenial
+    arch: amd64
+    verbose: true
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 5
+    to: lxc
+    packages:
+    - systemd
+    - systemd-sysv
+    - ca-certificates
+    - wget
+    - unzip
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - ':/'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/android-platform-tools/install.yaml
+      name: install-android-platform-tools-r2600
+      parameters:
+        LINK: 'https://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip'
+
+- deploy:
+    timeout:
+      minutes: 30
+    to: fastboot
+    namespace: droid
+    connection: lxc
+    images:
+      ptable:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/69/hikey/release/ptable-aosp-8g.img
+        reboot: hard-reset
+      boot:
+        url: "${DOWNLOAD_URL}/boot.img.xz"
+        compression: xz
+        reboot: hard-reset
+      vendor:
+        url: "${REFERENCE_BUILD_URL}/vendor.img.xz"
+        compression: xz
+      cache:
+        url: "http://testdata.linaro.org/lkft/aosp/aosp-master-08102018/cache.img.xz"
+        compression: xz
+      userdata:
+        url: "${REFERENCE_BUILD_URL}/userdata.img.xz"
+        compression: xz
+      system:
+        url: "${REFERENCE_BUILD_URL}/system.img.xz"
+        compression: xz
+    os: debian
+    protocols:
+      lava-lxc:
+      - action: fastboot-deploy
+        request: pre-power-command
+        timeout:
+          minutes: 2
+
+- boot:
+    namespace: droid
+    connection: serial
+    prompts:
+    - 'root@(.*):/#'
+    - ':/'
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+    namespace: tlxc
+    connection: lxc
+    timeout:
+      minutes: 300
+    definitions:
+    - from: inline
+      path: android-boot.yaml
+      name: android-boot
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: android-boot
+          description: "android-boot"
+        run:
+          steps:
+            - lava-test-case "android-boot-wait-for-device" --shell adb wait-for-device
+            - lava-test-case "android-boot-sleep-2mins" --shell adb shell sleep 120
+            - lava-test-case "android-boot" --shell adb shell getprop sys.boot_completed
+
+- test:
+    namespace: tlxc
+    connection: lxc
+    timeout:
+      minutes: 300
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/android/noninteractive-tradefed/tradefed.yaml
+      params:
+        TEST_PARAMS: "cts-lkft --disable-reboot --skip-preconditions --skip-device-info"
+        TEST_URL: "${CTS_URL}/android-cts.zip"
+        TEST_PATH: "android-cts"
+        RESULTS_FORMAT: "atomic"
+        ANDROID_VERSION: "${ANDROID_VERSION}"
+      name: "cts-lkft"
