@@ -68,7 +68,7 @@ wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hike
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
 PUB_SRC=${PWD}/out/target/product/beagle_x15
-PUB_EXTRA_INC=^[^/]+zip
+PUB_EXTRA_INC=^[^/]+\.dtb$|MLO
 EOF
 
 rm -rf .repo/manifests .repo/local_manifests
