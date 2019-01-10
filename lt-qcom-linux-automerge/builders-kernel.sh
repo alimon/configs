@@ -34,6 +34,8 @@ if [ ! -z "${AUTOMERGE_BRANCH_FAILED}" ]; then
 	exit 1
 fi
 
+cd ${INTEGRATION_REPO_PATH}
+
 GIT_STATUS=$(git status -s)
 if [ ! -z "${GIT_STATUS}" ]; then
 	echo "ERROR: Automerge repository isn't clean,"
@@ -41,7 +43,6 @@ if [ ! -z "${GIT_STATUS}" ]; then
 	exit 1
 fi
 
-cd ${INTEGRATION_REPO_PATH}
 build_integration_kernel "arm" "multi_v7_defconfig"
 build_integration_kernel "arm64" "defconfig"
 
