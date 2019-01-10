@@ -101,7 +101,13 @@
             mv jdk11u/* ${src_dir}
 
             blacklist=${WORKSPACE}/excludes.txt
-            jdk_problem_list=${src_dir}/test/${JTREG_CATEGORY}/ProblemList.txt
+            # Add jtreg directory level for hotspot only.
+            jdk_problem_list=${src_dir}/test/${JTREG_CATEGORY}
+            if [ $JTREG_CATEGORY = "hotspot" ]; then
+                jdk_problem_list=${jdk_problem_list}/jtreg/ProblemList.txt
+            else
+                jdk_problem_list=${jdk_problem_list}/ProblemList.txt
+            fi
 
             if [ -e $jdk_problem_list ]; then
                 cat $jdk_problem_list > ${blacklist}
