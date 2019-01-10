@@ -58,17 +58,35 @@ make -j$(nproc) zImage dtbs modules
 cd ../../../
 cp -vf kernel/ti/x15/arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb device/ti/beagle_x15-kernel/4.14/am57xx-beagle-x15-revc.dtb
 cp -vf kernel/ti/x15/arch/arm/boot/zImage device/ti/beagle_x15-kernel/4.14/zImage
+cp -vf arch/arm/boot/dts/ti/am57xx-evm-common.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-common.dtbo
+cp -vf arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-reva3.dtbo
+
+# patch for evm board lcd support
+cd device/ti/beagle_x15 && git fetch https://android.googlesource.com/device/ti/beagle-x15 refs/changes/10/866810/3 && git cherry-pick FETCH_HEAD && cd -
 
 source build/envsetup.sh
 lunch beagle_x15-userdebug
 make -j$(nproc)
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/beagle_x15/BUILD-INFO.txt
 
+X15_KERNEL_FILES="
+arch/arm/boot/zImage
+arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb
+arch/arm/boot/dts/ti/am57xx-evm-common.dtbo
+arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo
+vmlinux
+System.map
+"
+for f in ${X15_KERNEL_FILES}; do
+    if [ -f kernel/ti/x15/${f} ]; then
+        cp -vf kernel/ti/x15/${f} out/target/product/beagle_x15/
+    fi
+done
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
 PUB_SRC=${PWD}/out/target/product/beagle_x15
-PUB_EXTRA_INC=^[^/]+\.dtb$|MLO
+PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo)$|MLO|vmlinux|System.map
 EOF
 
 rm -rf .repo/manifests .repo/local_manifests
