@@ -58,8 +58,8 @@ make -j$(nproc) zImage dtbs modules
 cd ../../../
 cp -vf kernel/ti/x15/arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb device/ti/beagle_x15-kernel/4.14/am57xx-beagle-x15-revc.dtb
 cp -vf kernel/ti/x15/arch/arm/boot/zImage device/ti/beagle_x15-kernel/4.14/zImage
-cp -vf arch/arm/boot/dts/ti/am57xx-evm-common.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-common.dtbo
-cp -vf arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-reva3.dtbo
+cp -vf kernel/ti/x15/arch/arm/boot/dts/ti/am57xx-evm-common.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-common.dtbo
+cp -vf kernel/ti/x15/arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-reva3.dtbo
 
 # patch for evm board lcd support
 cd device/ti/beagle_x15 && git fetch https://android.googlesource.com/device/ti/beagle-x15 refs/changes/10/866810/3 && git cherry-pick FETCH_HEAD && cd -
