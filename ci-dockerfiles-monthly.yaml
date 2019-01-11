@@ -1,0 +1,31 @@
+- job:
+    name: ci-dockerfiles-monthly
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 200
+    disabled: false
+    display-name: 'CI docker image monthly rebuild'
+    triggers:
+        - timed: '@monthly'
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: BOT_API_KEY
+                variable: BOT_API_KEY
+    builders:
+        - shell:
+            !include-raw: ci-dockerfiles-deployment/update-images.sh
+    publishers:
+        - email:
+            recipients: systems@linaro.org

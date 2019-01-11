@@ -1,0 +1,37 @@
+- job:
+    name: ci-dockerfile-build
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 200
+    disabled: false
+    display-name: 'Build docker image'
+    parameters:
+        - string:
+            name: image
+            description: 'docker image to build'
+        - label:
+            name: nodelabel
+            description: 'build machine'
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell:
+            !include-raw: ci-dockerfiles-deployment/build-image.sh
+    publishers:
+        - email:
+            recipients: systems@linaro.org
