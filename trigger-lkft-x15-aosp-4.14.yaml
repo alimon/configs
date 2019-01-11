@@ -1,5 +1,5 @@
 - job:
-    name: trigger-lkft-x15-4.14
+    name: trigger-lkft-x15-aosp-4.14
     project-type: freestyle
     defaults: global
     logrotate:
@@ -13,21 +13,21 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: 'ti-android-linux-4.14.y'
+            default: 'android-beagle-x15-4.14'
     disabled: false
     node: master
-    display-name: 'Trigger for LKFT x15 builds (4.14 branch)'
+    display-name: 'Trigger for LKFT x15 builds (AOSP 4.14 branch)'
     scm:
         - git:
             remotes:
-                - ti-android-linux-4.14.y:
-                    url: git://git.ti.com/ti-linux-kernel/ti-linux-kernel.git
-                    refspec: +refs/heads/ti-android-linux-4.14.y:refs/remotes/ti-android-linux-4.14.y/ti-android-linux-4.14.y
+                - android-beagle-x15-4.14:
+                    url: https://android.googlesource.com/kernel/omap
+                    refspec: +refs/heads/android-beagle-x15-4.14:refs/remotes/android-beagle-x15-4.14/android-beagle-x15-4.14
                 - linux-stable-4.14:
                     url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
                     refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable-4.14/linux-4.14.y
             branches:
-                    - ti-android-linux-4.14.y/ti-android-linux-4.14.y
+                    - android-beagle-x15-4.14/android-beagle-x15-4.14
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -47,7 +47,6 @@
     publishers:
         - trigger-parameterized-builds:
             - project:
-                - 'lkft-x15-android-8.1-4.14'
+                - 'lkft-x15-aosp-4.14'
               condition: SUCCESS
               property-file: lkft_parameters
-

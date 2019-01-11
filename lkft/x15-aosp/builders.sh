@@ -52,17 +52,13 @@ export ARCH=arm
 cd kernel/ti/x15/
 export KERNEL_DESCRIBE=$(git rev-parse --short HEAD)
 export KERNELDIR=${PWD}
-./ti_config_fragments/defconfig_builder.sh -t ti_sdk_am57x_android_release
-make ti_sdk_am57x_android_release_defconfig
+make ARCH=arm ti_sdk_am57x_android_release_defconfig
 make -j$(nproc) zImage dtbs modules
 cd ../../../
 cp -vf kernel/ti/x15/arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb device/ti/beagle_x15-kernel/4.14/am57xx-beagle-x15-revc.dtb
 cp -vf kernel/ti/x15/arch/arm/boot/zImage device/ti/beagle_x15-kernel/4.14/zImage
 cp -vf kernel/ti/x15/arch/arm/boot/dts/ti/am57xx-evm-common.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-common.dtbo
 cp -vf kernel/ti/x15/arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-reva3.dtbo
-
-# patch for evm board lcd support
-cd device/ti/beagle_x15 && git fetch https://android.googlesource.com/device/ti/beagle-x15 refs/changes/10/866810/3 && git cherry-pick FETCH_HEAD && cd -
 
 source build/envsetup.sh
 lunch beagle_x15-userdebug
