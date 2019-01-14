@@ -100,8 +100,8 @@
 
             case "$tag_kind" in
                 snapshot)  FLAGS+=" -S" ; dir_suffix="-snap";;
-                candidate) FLAGS+=" -r $rc_num" ;;
-                release)   FLAGS+=" -R" ;;
+                candidate) FLAGS+=" -r $rc_num" ; touch ${WORKSPACE}/trig-bin ;;
+                release)   FLAGS+=" -R" ; touch ${WORKSPACE}/trig-bin ;;
                 *) echo "ERROR: tag_king is missing"; exit 1 ;;
             esac
 
@@ -160,13 +160,18 @@
             - project: tcwg-make-source-tarball
               property-file: ${WORKSPACE}/env.properties
               block: true
-            - project: tcwg-make-and-test-release
-              property-file: ${WORKSPACE}/env.properties
-              predefined-parameters: |
-                  gcc_src=gcc.git~$tag
-                  toolchain_config=$toolchainconf
-                  abe_branch=$abe_branch
-              block: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: ${WORKSPACE}/trig-bin
+            steps:
+            - trigger-builds:
+                - project: tcwg-make-and-test-release
+                  property-file: ${WORKSPACE}/env.properties
+                  predefined-parameters: |
+                      gcc_src=gcc.git~$tag
+                      toolchain_config=$toolchainconf
+                      abe_branch=$abe_branch
+                  block: true
     publishers:
         - email-ext:
             recipients: 'yvan.roux@linaro.org'
