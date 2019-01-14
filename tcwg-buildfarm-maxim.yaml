@@ -195,7 +195,7 @@
             latest-only: false
         - email-ext:
             recipients: 'maxim.kuvyrkov@linaro.org'
-            presend-script: "msg.setContent(new File(build.envVars['WORKSPACE'] + '/artifacts/email.txt').text)"
+            presend-script: "msg.setContent(readFile('artifacts/email.txt').getText(), 'text/plain')"
             failure: true
             success: true
             send-to:
