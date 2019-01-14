@@ -189,12 +189,13 @@
               --log_server "$log_server" \
               --abe_branch "$abe_branch" \
               --binaries "$binaries" > artifacts/email.txt
+              echo "maxim.kuvyrkov@linaro.org" > artifacts/recipients.txt
     publishers:
         - archive:
             artifacts: 'artifacts/*'
             latest-only: false
         - email-ext:
-            recipients: 'maxim.kuvyrkov@linaro.org'
+            recipients: ${FILE,path="artifacts/recipients.txt"}
             content-type: text
             body: |
               ${FILE,path="artifacts/email.txt"}
