@@ -443,10 +443,14 @@
             env | grep "GERRIT\|GIT"
             echo "=== Environment end  ==="
             set -x
+            mkdir -p artifacts/jenkins
             build_name="#$BUILD_NUMBER-$current_project"
-            echo "$build_name" > build-name
+            echo "$build_name" > artifacts/jenkins/build-name
+            # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
+            echo "maxim.kuvyrkov@linaro.org" > artifacts/jenkins/mail-recipients.txt
+            echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
         - build-name-setter:
-            name: 'build-name'
+            name: 'artifacts/jenkins/build-name'
             file: true
         - shell: |
             #!/bin/bash
@@ -479,7 +483,7 @@
               fi
             done
         - build-name-setter:
-            name: 'build-name'
+            name: 'artifacts/jenkins/build-name'
             file: true
         - conditional-step:
             condition-kind: file-exists
@@ -495,23 +499,16 @@
               - trigger-builds:
                   - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
                     property-file: artifacts/trigger-2-build-master
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/ci_mail_parameters.sh
-            steps:
-              - inject:
-                  script-file: artifacts/ci_mail_parameters.sh
     publishers:
         - archive:
             artifacts: 'artifacts/**'
             latest-only: false
         - email-ext:
-            recipients: '$CI_MAIL_RECIPIENTS'
+            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
             content-type: text
             body: |
-              $CI_MAIL_BODY
+              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
             failure: false
             success: true
             send-to:
-              - requester
               - recipients
