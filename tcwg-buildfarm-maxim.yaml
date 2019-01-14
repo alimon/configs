@@ -162,6 +162,7 @@
         - shell: |
             #!/bin/bash
             set -ex
+            mkdir -p artifacts
             echo ./jenkins-scripts/docker-run.sh --distro $build_container_tag \
               $(case "$target" in qemu-*) echo "--qemu $target" ;; esac) \
               -- ./jenkins-scripts/tcwg-buildfarm.sh \
@@ -187,11 +188,18 @@
               --dont_fail "$dont_fail" \
               --log_server "$log_server" \
               --abe_branch "$abe_branch" \
-              --binaries "$binaries" > email.txt
+              --binaries "$binaries" > artifacts/email.txt
     publishers:
         - archive:
             artifacts: 'artifacts/*'
             latest-only: false
+        - email-ext:
+            recipients: 'maxim.kuvyrkov@linaro.org, maxim.kuvyrkov@gmail.com'
+            presend-script: "msg.setContent(new File('email.txt').text)"
+            failure: true
+            success: true
+            send-to:
+              - recipients
         - workspace-cleanup:
             clean-if:
                 - success: true
@@ -199,10 +207,3 @@
                 - failure: false
                 - aborted: false
                 - not-built: false
-        - email-ext:
-            recipients: '$CI_MAIL_RECIPIENTS'
-            presend-script: "msg.setContent(new File('email.txt').text, 'text/plain')"
-            failure: true
-            success: true
-            send-to:
-              - requester
