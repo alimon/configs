@@ -54,7 +54,6 @@ case "${MACHINE}" in
     elif [ ${MACHINE} = "sdm845_mtp" ]; then
       export LAVA_DEVICE_TYPE="sdm845-mtp"
       export INSTALL_FASTBOOT=
-      export LAVA_SERVER="${LKFT_STAGING_LAVA_SERVER}"
 
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
       export WLAN_DEVICE="wlan0"
