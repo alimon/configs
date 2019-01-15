@@ -1,0 +1,71 @@
+- job:
+    name: trigger-private-ci-job-configs
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 200
+    disabled: false
+    node: master
+    display-name: 'Trigger for private CI jobs'
+    triggers:
+        - gerrit:
+            server-name: 'dev-private-review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'ci/job/configs'
+                  branches:
+                    - branch-pattern: 'master'
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: JJB_USER
+                variable: JJB_USER
+        - credentials-binding:
+            - text:
+                credential-id: JJB_PASSWORD
+                variable: JJB_PASSWORD
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_USER
+                variable: LAVA_USER
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_TOKEN
+                variable: LAVA_TOKEN
+        - credentials-binding:
+            - text:
+                credential-id: DEV_PRIVATE_KEY
+                variable: DEV_PRIVATE_KEY
+        - credentials-binding:
+            - text:
+                credential-id: AUTH_TOKEN
+                variable: AUTH_TOKEN
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - shell:
+            !include-raw: trigger-private-ci-job-configs/poll-jobs.sh
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org ben.copeland@linaro.org'
