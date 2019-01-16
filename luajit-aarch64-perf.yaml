@@ -1,0 +1,43 @@
+- job:
+    name: luajit-aarch64-perf
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - bool:
+            name: CI_DEBUG
+            default: true
+            description: 'Whether to print debug message'
+    disabled: false
+    node: jit-01
+    display-name: 'LuaJIT CI Perf (Aarch64)'
+    scm:
+        - git:
+            url: https://github.com/LuaJIT/LuaJIT.git
+            refspec: +refs/heads/v2.1:refs/remotes/origin/v2.1
+            name: origin
+            branches:
+                - refs/heads/v2.1
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+          clean:
+            before: true
+          prune: true
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell:
+            !include-raw: luajit-aarch64-perf/builders.sh
