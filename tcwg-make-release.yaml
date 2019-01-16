@@ -152,9 +152,16 @@
             git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
             . jenkins-scripts/jenkins-helpers.sh
 
+            if [ x"$target" = x"aarch64-linux-gnu_ilp32" ]; then
+              # ILP32 uses close-to-trunk Glibc branch, which needs
+              # newer GNU make.
+              distro="xenial-tcwg-tested"
+            else
+              distro="default"
+            fi
             # Start build container
             builder=$(print_host_for_node $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${builder_arch} --session-host ${builder} > build-container.sh
+            bash -x ./jenkins-scripts/start-container-docker.sh --arch ${builder_arch} --distro $distro --session-host ${builder} > build-container.sh
 
             # Define CONTAINER, CONTAINER_CLEANUP, session_host and session_port
             . ./build-container.sh
