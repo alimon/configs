@@ -159,17 +159,19 @@
                 trap "${CONTAINERS_CLEANUP}" EXIT
             fi
 
-            container_exec ${shell} ${WORKSPACE}/TestRelease.job --tarball "${tarball_url}/${target}/gcc-linaro-*-*-${host}_${target}.tar.xz" --workspace ${WORKSPACE}/linux --tcwg-regression-rev ${tcwg_regression_rev}
+            # We want to run the mingw tests even if the linux toolchain fails its tests, so avoid exiting because of 'set -e'
+            res=0
+            container_exec ${shell} ${WORKSPACE}/TestRelease.job --tarball "${tarball_url}/${target}/gcc-linaro-*-*-${host}_${target}.tar.xz" --workspace ${WORKSPACE}/linux --tcwg-regression-rev ${tcwg_regression_rev} || res=$?
 
             # Test the mingw toolchain on 32 bit host only
             case ${label} in
                 *32*)
                     host=i686-mingw32
-                    container_exec ${shell} ${WORKSPACE}/TestRelease.job --tarball "${tarball_url}/${target}/gcc-linaro-*-*-${host}_${target}.tar.xz" --workspace ${WORKSPACE}/mingw --tcwg-regression-rev ${tcwg_regression_rev}
+                    container_exec ${shell} ${WORKSPACE}/TestRelease.job --tarball "${tarball_url}/${target}/gcc-linaro-*-*-${host}_${target}.tar.xz" --workspace ${WORKSPACE}/mingw --tcwg-regression-rev ${tcwg_regression_rev} || res=$?
                     ;;
             esac
 
-            exit $?
+            exit $res
     publishers:
         - email-ext:
             recipients: 'tcwg-validation@linaro.org'
