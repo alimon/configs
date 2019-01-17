@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-git clone --depth 1 https://git.linaro.org/ci/dockerfiles.git
+git clone https://git.linaro.org/ci/dockerfiles.git
 cd dockerfiles/
 
 images_to_update=""
@@ -13,14 +13,13 @@ for dir in ./*/; do
     echo $shortdir|grep -q tcwg && continue
     # not an image dir
     [ -x $shortdir/build.sh ]||continue
-    pushd $shortdir >/dev/null
-    if find -mtime -30|grep -q "."; then
+    changed=$(git log -1 --oneline --since "1 month" ${shortdir}|wc -l)
+    if [ $changed -eq 1 ]; then
         echo "new: $shortdir"
     else
         echo "nothing new: $shortdir"
         images_to_update="$images_to_update $shortdir"
     fi
-    popd > /dev/null
 done
 
 echo $images_to_update
@@ -28,8 +27,13 @@ echo $images_to_update
 # trigger builds for every non-updated image over the http api
 for image in $images_to_update
 do
-    nodelabel="build-$(echo $image | cut -f2 -d '-')"
-    echo curl -X POST "https://${BOTUSER}:${APITOKEN}@ci.linaro.org/job/ci-dockerfile-build/buildWithParameters?nodelabel=${nodelabel}&image=${image}"
+    arch=$(echo ${image} | cut -f2 -d '-')
+    if [ "$arch" = "aarch64" ]; then
+        arch=arm64
+    fi
+    cat > ../docker_${image}_build.txt << EOF
+nodelabel=build-${arch}
+image=${image}
+EOF
 done
-
 

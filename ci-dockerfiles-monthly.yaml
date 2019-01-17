@@ -19,13 +19,14 @@
         - timed: '@monthly'
     wrappers:
         - timestamps
-        - credentials-binding:
-            - text:
-                credential-id: BOT_API_KEY
-                variable: BOT_API_KEY
     builders:
         - shell:
             !include-raw: ci-dockerfiles-deployment/update-images.sh
+        - trigger-builds:
+            - project: ci-dockerfile-build
+              parameter-factories:
+                - factory: filebuild
+                  file-pattern: docker_*_build.txt
     publishers:
         - email:
             recipients: systems@linaro.org
