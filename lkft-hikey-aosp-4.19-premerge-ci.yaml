@@ -1,5 +1,5 @@
 - job:
-    name: lkft-hikey-android-9.0-4.4
+    name: lkft-hikey-aosp-4.19-premerge-ci
     project-type: freestyle
     defaults: global
     properties:
@@ -16,14 +16,17 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
-            name: ANDROID_VERSION
-            default: 'android-9.0.0_r22'
+           name: ANDROID_VERSION
+           default: 'android-9.0.0_r22'
         - string:
             name: REFERENCE_BUILD_URL
             default: 'https://snapshots.linaro.org/android/android-lcr-reference-hikey-p/75/'
         - string:
             name: KERNEL_BRANCH
-            default: 'android-hikey-linaro-4.4'
+            default: 'mirror-android-4.19'
+        - string:
+            name: UPSTREAM_KERNEL_BRANCH
+            default: 'mirror-android-4.19'
         - string:
             name: KERNEL_REPO
             default: 'https://android.googlesource.com/kernel/hikey-linaro'
@@ -32,7 +35,10 @@
             default: 'https://qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
-            default: 'android-hikey-linaro-4.4-android-9.0'
+            default: 'android-hikey-linaro-4.19-aosp-premerge-ci'
+        - string:
+            name: TOOLCHAIN
+            default: 'clang-r346389b'
         - string:
             name: VTS_URL
             default: 'http://people.linaro.org/~yongqin.liu/lkft/pie/vts/9.0_r4/'
@@ -40,27 +46,24 @@
             name: CTS_URL
             default: 'http://people.linaro.org/~yongqin.liu/lkft/pie/cts/9.0_r3/'
         - string:
-            name: TOOLCHAIN
-            default: 'clang-r346389b'
-        - string:
             name: CONFIG_FRAGMENTS_PATH
-            default: 'p/android-4.4'
+            default: 'android-4.19'
         - string:
             name: KERNEL_DESCRIBE
         - string:
             name: SRCREV_kernel
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'LKFT - AOSP Stable 4.4 (Android 9.0)'
+    display-name: 'LKFT - AOSP 4.19 (Android)'
     scm:
         - git:
             url: ${KERNEL_REPO}
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            refspec: +refs/heads/*:refs/remotes/origin/*
             name: origin
             branches:
-                - origin/${KERNEL_BRANCH}
+                - origin/android-hikey-linaro-4.19
             skip-tag: true
-            shallow-clone: true
+            shallow-clone: false
             wipe-workspace: false
     wrappers:
         - timestamps
