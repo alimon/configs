@@ -38,6 +38,7 @@ chmod a+x ${HOME}/bin/repo
 export PATH=${HOME}/bin:${PATH}
 
 # initialize repo if not done already
+export MANIFEST_URL=${MANIFEST_URL:-https://github.com/96boards/oe-rpb-manifest.git}
 if [ ! -e ".repo/manifest.xml" ]; then
    repo init -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH}
 
@@ -72,7 +73,12 @@ rm -rf conf build/conf build/tmp-*glibc/
 
 # Accept EULA if/when needed
 export EULA_dragonboard410c=1
+
+export SRCREV_kernel=${KERNEL_COMMIT}
 source setup-environment build
+
+########## vvv DISTRO DEPENDANT vvv ##########
+if [ "${DISTRO}" = "rpb" ]; then
 
 # Add job BUILD_NUMBER to output files names
 cat << EOF >> conf/auto.conf
@@ -130,12 +136,12 @@ SERIAL_CONSOLES_append_dragonboard-410c = " 115200;ttyMSM1"
 SERIAL_CONSOLES_append_hikey = " 115200;ttyAMA2"
 EOF
 
+fi
+########## ^^^ DISTRO DEPENDANT ^^^ ##########
+
 custom_kernel_conf=$(find ../layers/meta-96boards/recipes-kernel -name custom-kernel-info.inc)
 mv ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
 ###
-
-# FIXME: Remove when upstream has resolved what to do with wordsize.h recursion
-sed -i "s|bits/wordsize.h||" ../layers/openembedded-core/meta/recipes-core/glibc/glibc-package.inc
 
 # The kernel (as of next-20181130) requires fold from the host
 echo "HOSTTOOLS += \"fold\"" >> conf/local.conf
