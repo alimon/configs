@@ -12,6 +12,11 @@ default_gw=$(ip route show default 0.0.0.0/0 | cut -d' ' -f3)
 sudo sed -i "/^uri_default/d" /etc/libvirt/libvirt.conf
 echo "uri_default = \"qemu+tcp://${default_gw}/system\"" | sudo tee -a /etc/libvirt/libvirt.conf
 
+# create loop device for kpartx
+if ! [ -b /dev/loop0 ]; then
+	mkdir /dev/loop0 b 7 0
+fi
+
 virt-host-validate
 
 sudo virsh pool-list --all
@@ -26,7 +31,7 @@ cleanup_exit()
   cd ${WORKSPACE}
   sudo virsh vol-delete --pool default ${image_name}.img || true
   sudo virsh destroy ${image_name} || true
-  sudo virsh undefine ${image_name} || true
+  sudo virsh undefine --nvram ${image_name} || true
   sudo umount ${mountpoint} || true
   sudo kpartx -dv ${image_name}.img || true
   sudo rm -rf ${mountpoint} || true
