@@ -301,11 +301,7 @@
     builders:
         - shell: |
             #!/bin/bash
-            set -e
-            echo "=== Print out environment for debug purposes ==="
-            env | grep "GERRIT\|GIT"
-            echo "=== Environment end  ==="
-            set -x
+            set -ex
             # Delete artifacts now to avoid re-using stale artifacts if
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
@@ -438,11 +434,10 @@
     builders:
         - shell: |
             #!/bin/bash
-            set -e
-            echo "=== Print out environment for debug purposes ==="
-            env | grep "GERRIT\|GIT"
-            echo "=== Environment end  ==="
-            set -x
+            set -ex
+            # Delete artifacts now to avoid re-using stale artifacts if
+            # below docker-run.sh fails to start up a container.
+            rm -rf artifacts/
             mkdir -p artifacts/jenkins
             build_name="#$BUILD_NUMBER-$current_project"
             echo "$build_name" > artifacts/jenkins/build-name
