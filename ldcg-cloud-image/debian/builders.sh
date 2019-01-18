@@ -47,7 +47,7 @@ sudo virt-install \
   --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
   --disk=pool=default,size=2.0,format=raw \
   --network=network=default, \
-  --osversion debian9 \
+  --os-variant debian9 \
   --memory 2048 \
   --location http://deb.debian.org/debian/dists/stable/main/installer-arm64/ \
   --noreboot
