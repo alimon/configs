@@ -156,7 +156,12 @@
 
             export CLANG_TRIPLE=aarch64-linux-gnu-
             export CROSS_COMPILE=aarch64-linux-android-
-            CMDLINE="console=ttyAMA3,115200 androidboot.console=ttyAMA3 androidboot.hardware=hikey firmware_class.path=/vendor/firmware efi=noruntime  printk.devkmsg=on buildvariant=userdebug overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab"
+            CMDLINE="console=ttyAMA3,115200 androidboot.console=ttyAMA3"
+            CMDLINE="${CMDLINE} androidboot.hardware=hikey firmware_class.path=/vendor/firmware efi=noruntime"
+            CMDLINE="${CMDLINE} printk.devkmsg=on buildvariant=userdebug"
+            CMDLINE="${CMDLINE} overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab_v2"
+            CMDLINE="${CMDLINE} rootwait ro init=/init root=/dev/dm-0"
+            CMDLINE="${CMDLINE} dm=\"system none ro,0 1 android-verity 179:9\""
 
             ######################################################################
             # common for 4.4/4.9/4.14
