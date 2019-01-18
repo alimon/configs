@@ -74,7 +74,9 @@ for device in $(sudo kpartx -avs ${image_name}.img | cut -d' ' -f3); do
   [ "${partition}" = "2" ] && sudo mount /dev/mapper/${device} ${mountpoint}
 done
 
-cp -a ${mountpoint}/boot/*-arm64 out/
+LATEST_KERNEL=$(ls -1 ${mountpoint}/boot/vmlinuz-* | head -n1 | sed -e "s/vmlinuz-//g" -e "s/-.*//g")
+
+cp -a ${mountpoint}/boot/*${LATEST_KERNEL}-arm64 out/
 
 sudo qemu-img convert -c -O qcow2 ${image_name}.img out/debian-erp-cloud-image.qcow2
 sudo chown -R buildslave:buildslave out
