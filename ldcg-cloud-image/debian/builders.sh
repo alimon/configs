@@ -4,6 +4,7 @@ export image_name=$(mktemp -u -p'debian-cloud-image' | sed -e 's+/+-+g')
 export mountpoint=$(mktemp -d /tmp/${image_name}.XXXXXX)
 
 echo "deb http://obs.linaro.org/ERP:/18.06/Debian_9 ./" | sudo tee /etc/apt/sources.list.d/erp-18.06.list
+echo "deb http://obs.linaro.org/ERP:/18.12/Debian_9 ./" | sudo tee /etc/apt/sources.list.d/erp-18.12.list
 
 sudo apt-get -q=2 update
 sudo apt-get -q=2 install -y --no-install-recommends cpio qemu-utils virtinst libvirt-clients iproute2
@@ -46,6 +47,7 @@ sudo virt-install \
   --extra-args "interface=auto noshell auto=true DEBIAN_FRONTEND=text" \
   --disk=pool=default,size=2.0,format=raw \
   --network=network=default, \
+  --osversion debian9 \
   --memory 2048 \
   --location http://deb.debian.org/debian/dists/stable/main/installer-arm64/ \
   --noreboot
