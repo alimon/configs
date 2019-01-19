@@ -1,0 +1,447 @@
+- project:
+    name: tcwg_bmk
+    toolchain_name:
+      - gnu:
+          binutils_url: https://sourceware.org/git/binutils-gdb.git
+          gcc_url: https://gcc.gnu.org/git/gcc.git
+          glibc_url: https://sourceware.org/git/glibc.git
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          linux_branch: linux-4.19.y
+    toolchain_ver:
+      - master:
+          binutils_branch: master
+          gcc_branch: master
+          glibc_branch: master
+      - release:
+          binutils_branch: binutils-2_31-branch
+          gcc_branch: gcc-8-branch
+          glibc_branch: release/2.28/master
+    target:
+      - aarch64
+      - arm
+    component:
+      - binutils
+      - gcc
+      - glibc
+    bmk:
+      - spec2k6
+    cflags:
+      - Os
+    jobs:
+      - 'tcwg_bmk-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+- view:
+    name: tcwg_bmk
+    view-type: list
+    regex: 'tcwg_bmk-b.*'
+
+- scm:
+    name: binutils-scm
+    scm:
+        - git:
+            url: '{binutils_url}'
+            branches:
+              - 'refs/heads/{binutils_branch}'
+            basedir: binutils
+            skip-tag: true
+            sparse-checkout:
+              paths:
+                - README
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: gcc-scm
+    scm:
+        - git:
+            url: '{gcc_url}'
+            branches:
+              - 'refs/heads/{gcc_branch}'
+            basedir: gcc
+            skip-tag: true
+            sparse-checkout:
+              paths:
+                - README
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: glibc-scm
+    scm:
+        - git:
+            url: '{glibc_url}'
+            branches:
+              - 'refs/heads/{glibc_branch}'
+            basedir: glibc
+            skip-tag: true
+            sparse-checkout:
+              paths:
+                - README
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/glibc.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: bmk-scripts
+    scm:
+      - git:
+          url: https://git-us.linaro.org/toolchain/bmk-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $bmk_branch
+          basedir: bmk-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/bmk-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
+
+- property:
+    name: default_properties
+    properties:
+      - authorization:
+          anonymous:
+            - job-read
+            - job-extended-read
+          linaro:
+            - job-build
+            - job-cancel
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 30
+
+- job-template:
+    name: tcwg_bmk-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default_properties
+      - build-blocker:
+          blocking-jobs:
+            - "tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+            - "tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+          queue-scanning: 'ALL'
+    disabled: true
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG Trigger {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} @ {component}'
+    workspace: workspace/tcwg_bmk-{toolchain_name}/$JOB_NAME
+    scm:
+      - '{component}-scm':
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
+          glibc_url: '{glibc_url}'
+          glibc_branch: '{glibc_branch}'
+    triggers:
+      - pollscm:
+          cron: 'H H H/2 * *'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+    builders:
+      - trigger-builds:
+          - project: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+            predefined-parameters: |
+              current_project={component}
+              current_rev=$GIT_COMMIT
+
+- parameter:
+    name: gnu-parameters
+    parameters:
+      - choice:
+          name: current_project
+          choices:
+            - binutils
+            - gcc
+            - glibc
+          description: 'Project to {action}'
+
+- scm:
+    name: jenkins-scripts
+    scm:
+      - git:
+          url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $scripts_branch
+          basedir: jenkins-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
+
+- job-template:
+    name: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default_properties
+      - build-blocker:
+          blocking-jobs:
+            - "tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+          queue-scanning: 'ALL'
+    parameters:
+      - '{toolchain_name}-parameters':
+          action: build
+      - string:
+          name: current_rev
+          default: default
+          description: "Git rev of $current_project to build"
+      - bool:
+          name: reset_baseline
+          default: false
+          description: "Whether to reset baseline to results of this build"
+      - string:
+          name: distro
+          default: xenial
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: master
+          description: 'Scripts revision to use'
+      - string:
+          name: bmk_branch
+          default: tcwg_bmk
+          description: 'Benchmark scripts revision to use'
+    disabled: false
+    node: tcwg-x86_64-build
+    concurrent: false
+    display-name: 'TCWG Build {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    workspace: workspace/tcwg_bmk-build-{toolchain_name}_$EXECUTOR_NUMBER
+    scm:
+      - jenkins-scripts
+      - bmk-scripts
+    wrappers:
+      - timeout:
+          timeout: 600
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            # Delete artifacts now to avoid re-using stale artifacts if
+            # below docker-run.sh fails to start up a container.
+            rm -rf artifacts/
+            mkdir -p artifacts/jenkins
+            build_name="#$BUILD_NUMBER-$current_project"
+            echo "$build_name" > artifacts/jenkins/build-name
+        - build-name-setter:
+            name: 'artifacts/jenkins/build-name'
+            file: true
+        - shell: |
+            #!/bin/bash
+            set -ex
+            ./jenkins-scripts/docker-run.sh \
+            --distro $distro \
+            -- \
+            ./jenkins-scripts/tcwg_bmk-build.sh \
+            %% artifacts/jenkins/manifest.sh \
+            --BUILD_URL "$BUILD_URL" \
+            --BUILD_NUMBER "$BUILD_NUMBER" \
+            ==rr[{toolchain_name}_version] {toolchain_ver} \
+            ==rr[binutils_url] {binutils_url} ==rr[binutils_rev] {binutils_branch} \
+            ==rr[gcc_url] {gcc_url} ==rr[gcc_rev] {gcc_branch} \
+            ==rr[glibc_url] {glibc_url} ==rr[glibc_rev] {glibc_branch} \
+            ==rr[linux_url] {linux_url} ==rr[linux_rev] {linux_branch} \
+            --mode "full" \
+            --current_project "$current_project" \
+            --current_rev "$current_rev" \
+            --reset_baseline "$reset_baseline" \
+            --target "{target}" \
+            --toolchain "{toolchain_name}" &
+            res=0 && wait $! || res=$?
+
+            if [ $res != 0 ]; then
+              touch artifacts/failures
+            fi
+
+            name="#$BUILD_NUMBER-$current_project"
+            if [ -e artifacts/results ]; then
+              name="$name-R$(tail -n1 artifacts/results)"
+            fi
+            if [ -e artifacts/distance-to-baseline ]; then
+              name="$name-B$(cat artifacts/distance-to-baseline)"
+            fi
+            if $reset_baseline; then
+              name="$name-baseline"
+              # Don't trigger bisect if this [possibly failed] build is
+              # the new baseline.
+              rm -f artifacts/trigger-bisect-on-failure
+            fi
+            if [ ! -f artifacts/failures ]; then
+              rm -f artifacts/trigger-bisect-on-failure
+            fi
+            if [ -f artifacts/trigger-bisect-on-failure ]; then
+              name="$name-bisect"
+              echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
+              echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
+              echo "bmk_branch=$bmk_branch" >> artifacts/trigger-bisect-on-failure
+            fi
+
+            echo "$name" > artifacts/jenkins/build-name
+        - build-name-setter:
+            name: 'artifacts/jenkins/build-name'
+            file: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-bisect-on-failure
+            steps:
+              - trigger-builds:
+                  - project: tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+                    property-file: artifacts/trigger-bisect-on-failure
+        - shell: |
+            #!/bin/bash
+            if [ -f artifacts/failures ]; then
+              exit 1
+            fi
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+
+- job-template:
+    name: tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default_properties
+      - build-blocker:
+          # Run at most 1 bisect job for all configurations.
+          # Bisect jobs can easily run for 5+ hours, and a few of them
+          # can hog the entire TCWG build farm for a long time.  Since
+          # same regression tends to appear in multiple configurations,
+          # run bisections for all configurations in-order.
+          blocking-jobs:
+            - "tcwg_bmk-bisect-*"
+          queue-scanning: 'BUILDABLE'
+    parameters:
+      - '{toolchain_name}-parameters':
+          action: bisect
+      - string:
+          name: baseline_rev
+          default: default
+          description: "Baseline revision"
+      - string:
+          name: bad_rev
+          default: default
+          description: "Bad revision"
+      - string:
+          name: distro
+          default: xenial
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: tcwg_bmk
+          description: 'Scripts revision to use'
+      - string:
+          name: bmk_branch
+          default: tcwg_bmk
+          description: 'Benchmark scripts revision to use'
+    disabled: false
+    node: tcwg-x86_64-build
+    concurrent: false
+    display-name: 'TCWG Bisect {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    workspace: workspace/tcwg_bmk-bisect-{toolchain_name}_$EXECUTOR_NUMBER
+    scm:
+      - jenkins-scripts
+      - bmk-scripts
+    wrappers:
+      - timeout:
+          timeout: 1440
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            # Delete artifacts now to avoid re-using stale artifacts if
+            # below docker-run.sh fails to start up a container.
+            rm -rf artifacts/
+            mkdir -p artifacts/jenkins
+            build_name="#$BUILD_NUMBER-$current_project"
+            echo "$build_name" > artifacts/jenkins/build-name
+            # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
+            echo "maxim.kuvyrkov@linaro.org" > artifacts/jenkins/mail-recipients.txt
+            echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
+        - build-name-setter:
+            name: 'artifacts/jenkins/build-name'
+            file: true
+        - shell: |
+            #!/bin/bash
+            set -ex
+            ./jenkins-scripts/docker-run.sh \
+            --distro $distro \
+            -- \
+            ./jenkins-scripts/tcwg_rr-bisect.sh \
+            %% artifacts/manifests/bisect.sh \
+            --BUILD_URL "$BUILD_URL" \
+            --confirm_failure true \
+            --baseline_rev "$baseline_rev" \
+            --bad_rev "$bad_rev" \
+            -- \
+            tcwg_bmk-build.sh \
+            ==rr[{toolchain_name}_version] {toolchain_ver} \
+            ==rr[binutils_url] {binutils_url} ==rr[binutils_rev] {binutils_branch} \
+            ==rr[gcc_url] {gcc_url} ==rr[gcc_rev] {gcc_branch} \
+            ==rr[glibc_url] {glibc_url} ==rr[glibc_rev] {glibc_branch} \
+            ==rr[linux_url] {linux_url} ==rr[linux_rev] {linux_branch} \
+            --current_project "$current_project" \
+            --target "{target}" \
+            --toolchain "{toolchain_name}"
+
+            for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
+              if [ -f $i ]; then
+                echo "distro=$distro" >> $i
+                echo "scripts_branch=$scripts_branch" >> $i
+                echo "bmk_branch=$bmk_branch" >> $i
+              fi
+            done
+        - build-name-setter:
+            name: 'artifacts/jenkins/build-name'
+            file: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-1-reset-baseline
+            steps:
+              - trigger-builds:
+                  - project: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+                    property-file: artifacts/trigger-1-reset-baseline
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-2-build-master
+            steps:
+              - trigger-builds:
+                  - project: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+                    property-file: artifacts/trigger-2-build-master
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+        - email-ext:
+            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
+            content-type: text
+            body: |
+              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
+            failure: true
+            success: true
+            send-to:
+              - recipients
