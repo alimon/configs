@@ -153,7 +153,7 @@
           - project: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
             predefined-parameters: |
               current_project={component}
-              current_rev=$GIT_COMMIT
+              current_branch=$GIT_COMMIT
 
 - parameter:
     name: gnu-parameters
@@ -196,7 +196,7 @@
       - '{toolchain_name}-parameters':
           action: build
       - string:
-          name: current_rev
+          name: current_branch
           default: default
           description: "Git rev of $current_project to build"
       - bool:
@@ -255,13 +255,13 @@
             --BUILD_URL "$BUILD_URL" \
             --BUILD_NUMBER "$BUILD_NUMBER" \
             ==rr[{toolchain_name}_version] {toolchain_ver} \
-            ==rr[binutils_url] {binutils_url} ==rr[binutils_rev] {binutils_branch} \
-            ==rr[gcc_url] {gcc_url} ==rr[gcc_rev] {gcc_branch} \
-            ==rr[glibc_url] {glibc_url} ==rr[glibc_rev] {glibc_branch} \
-            ==rr[linux_url] {linux_url} ==rr[linux_rev] {linux_branch} \
+            ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
+            ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
+            ==rr[glibc_url] {glibc_url} ==rr[glibc_branch] {glibc_branch} \
+            ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
             --mode "full" \
             --current_project "$current_project" \
-            --current_rev "$current_rev" \
+            --current_branch "$current_branch" \
             --reset_baseline "$reset_baseline" \
             --target "{target}" \
             --toolchain "{toolchain_name}" &
@@ -400,10 +400,10 @@
             -- \
             tcwg_bmk-build.sh \
             ==rr[{toolchain_name}_version] {toolchain_ver} \
-            ==rr[binutils_url] {binutils_url} ==rr[binutils_rev] {binutils_branch} \
-            ==rr[gcc_url] {gcc_url} ==rr[gcc_rev] {gcc_branch} \
-            ==rr[glibc_url] {glibc_url} ==rr[glibc_rev] {glibc_branch} \
-            ==rr[linux_url] {linux_url} ==rr[linux_rev] {linux_branch} \
+            ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
+            ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
+            ==rr[glibc_url] {glibc_url} ==rr[glibc_branch] {glibc_branch} \
+            ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
             --current_project "$current_project" \
             --target "{target}" \
             --toolchain "{toolchain_name}"

@@ -215,7 +215,7 @@
           - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
             predefined-parameters: |
               current_project={component}
-              current_rev=$GIT_COMMIT
+              current_branch=$GIT_COMMIT
 
 - parameter:
     name: llvm-parameters
@@ -268,7 +268,7 @@
       - '{toolchain_name}-parameters':
           action: build
       - string:
-          name: current_rev
+          name: current_branch
           default: default
           description: "Git rev of $current_project to build"
       - bool:
@@ -281,7 +281,7 @@
           description: 'Distro image to use'
       - string:
           name: scripts_branch
-          default: master
+          default: maxim
           description: 'Scripts revision to use'
     disabled: false
     node: tcwg-x86_64-build
@@ -321,14 +321,14 @@
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
             ==rr[{toolchain_name}_version] {toolchain_ver} \
-            ==rr[binutils_url] {binutils_url} ==rr[binutils_rev] {binutils_branch} \
-            ==rr[gcc_url] {gcc_url} ==rr[gcc_rev] {gcc_branch} \
-            ==rr[llvm_url] {llvm_url} ==rr[llvm_rev] {llvm_branch} \
+            ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
+            ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
+            ==rr[llvm_url] {llvm_url} ==rr[llvm_branch] {llvm_branch} \
             ==rr[linux_version] {linux} \
-            ==rr[linux_url] {linux_url} ==rr[linux_rev] {linux_branch} \
+            ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
             --mode "jenkins-full" \
             --current_project "$current_project" \
-            --current_rev "$current_rev" \
+            --current_branch "$current_branch" \
             --linux_config "{linux_config}" \
             --reset_baseline "$reset_baseline" \
             --target "{target}" \
@@ -414,7 +414,7 @@
           description: 'Distro image to use'
       - string:
           name: scripts_branch
-          default: master
+          default: maxim
           description: 'Scripts revision to use'
     disabled: false
     node: tcwg-x86_64-build
@@ -461,11 +461,11 @@
             --bad_rev "$bad_rev" \
             -- \
             ==rr[{toolchain_name}_version] {toolchain_ver} \
-            ==rr[binutils_url] {binutils_url} ==rr[binutils_rev] {binutils_branch} \
-            ==rr[gcc_url] {gcc_url} ==rr[gcc_rev] {gcc_branch} \
-            ==rr[llvm_url] {llvm_url} ==rr[llvm_rev] {llvm_branch} \
+            ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
+            ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
+            ==rr[llvm_url] {llvm_url} ==rr[llvm_branch] {llvm_branch} \
             ==rr[linux_version] {linux} \
-            ==rr[linux_url] {linux_url} ==rr[linux_rev] {linux_branch} \
+            ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
             --current_project "$current_project" \
             --linux_config "{linux_config}" \
             --target "{target}" \
