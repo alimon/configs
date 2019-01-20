@@ -342,6 +342,10 @@
           default: default
           description: "Bad revision"
       - string:
+          name: mail_recipients
+          default: default
+          description: "Comma-separated list of email recipients; use 'default' unless testing"
+      - string:
           name: distro
           default: xenial
           description: 'Distro image to use'
@@ -415,6 +419,10 @@
                 echo "bmk_branch=$bmk_branch" >> $i
               fi
             done
+
+            if [ x"$mail_recipients" != x"default" ]; then
+              echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
+            fi
         - build-name-setter:
             name: 'artifacts/jenkins/build-name'
             file: true
