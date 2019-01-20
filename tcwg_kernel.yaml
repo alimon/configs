@@ -460,9 +460,11 @@
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
             %% artifacts/manifests/bisect.sh \
             --BUILD_URL "$BUILD_URL" \
-            --confirm_failure true \
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
+            --build_script "./jenkins-scripts/tcwg_kernel-build.sh" \
+            --ci_config {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
+            --ci_project tcwg_kernel \
             -- \
             ==rr[{toolchain_name}_version] {toolchain_ver} \
             ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
