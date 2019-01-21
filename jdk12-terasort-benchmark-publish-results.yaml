@@ -1,0 +1,67 @@
+- job:
+    name: jdk12-terasort-benchmark-publish-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Results are published to http://openjdk.linaro.org/hadoop-terasort-benchmark-results/
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    parameters:
+        - string:
+            name: ZERO_BASELINE
+            default: '14115'
+        - string:
+            name: SERVER_MAX_JOPS_BASELINE
+            default: '3275'
+        - string:
+            name: SERVER_CRITICAL_JOPS_BASELINE
+            default: '854'
+        - string:
+            name: PUBLISH_DEST
+            default: ''
+        - string:
+            name: PUBLISH_HOST
+            default: ''
+    disabled: false
+    node: j12-qrep-01
+    display-name: 'OpenJDK 12 - Publish terasort benchmark results'
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - ssh-agent-credentials:
+            # openjdk-testing user id
+            users:
+                - '744cffb4-9ce1-4856-b103-9fdda06dad36'
+        - timestamps
+# Replaced by parameters
+#        - inject:
+#            properties-file: '${HOME}/performance-baseline.properties'
+    builders:
+        - shell: |
+            #!/bin/bash
+            PERSIST=$HOME/srv/openjdk12
+            export JDK_VERSION=12
+
+            export BENCHMARK_RESULTS_DIR=$PERSIST/hadoop-terasort-benchmark-results
+            SCRIPT_DIR=$PERSIST/hadoop-test-scripts
+
+            if [ -d $SCRIPT_DIR ]; then
+                (cd $SCRIPT_DIR; git pull)
+            else
+                git clone https://git.linaro.org/leg/openjdk/hadoop-test-scripts.git $SCRIPT_DIR
+            fi
+
+            $SCRIPT_DIR/benchmark-terasort-publish $PUBLISH_DEST
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org stuart.monteith@linaro.org'

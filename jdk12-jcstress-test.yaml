@@ -1,0 +1,92 @@
+- job:
+    name: jdk12-jcstress-test
+    project-type: matrix
+    defaults: global
+    description: |
+        This job runs the http://openjdk.java.net/projects/code-tools/jcstress/ tests.<br>
+        <b>Note:</b> this test currently takes around <b>10 hours</b> to complete<br>
+        This project currently runs the "server" variant only due to the amount of time both tests would take to complete.
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+            openjdk-members:
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    disabled: false
+    node: j12-qrep-01
+    display-name: 'OpenJDK 12 - Run jcstress tests'
+    parameters:
+        - string:
+            name: JCSTRESS_MODE
+            default: 'sanity'
+    axes:
+        - axis:
+            type: user-defined
+
+            name: BUILD_TYPE
+            values:
+                - release
+        - axis:
+            type: slave
+            name: label
+            values:
+                - j12-qrep-01
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: j12-qrep-01
+        - timeout:
+            timeout: 900
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -eu
+
+            TEST_TYPE=all
+            DEPS=$HOME/workspace/jdk12-get-deps
+
+            JCSTRESS_JAR=$DEPS/jcstress.jar
+            rm -rf jdk12*
+            tar xf ~/workspace/jdk12-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk12-${BUILD_TYPE}.tar.gz
+            export JAVA_HOME=${WORKSPACE}/jdk12-${BUILD_TYPE}
+            export PATH=${JAVA_HOME}/bin:${PATH}
+            which java
+            java -version
+
+            # XXX Don't fail the job if jcstress itself fails.
+            set +e
+            java -jar ${JCSTRESS_JAR} -m ${JCSTRESS_MODE}
+
+            test_result=$?
+            set -e
+
+            rm -rf out
+            mkdir out
+
+            out_dirname=jcstress-results-${BUILD_TYPE}
+
+            rm -rf ${out_dirname}
+            mkdir -p ${out_dirname}
+            cp jcstress-results*.bin.gz ${out_dirname}
+            cp -a results ${out_dirname}
+
+            tar czvf out/${out_dirname}.tar.gz ${out_dirname}
+    publishers:
+        - archive:
+            artifacts: 'out/jcstress-results-*.tar.gz'
+        - html-publisher:
+            name: 'HTML Report'
+            dir: 'results'
+            files: 'index.html'
+            keep-all: true

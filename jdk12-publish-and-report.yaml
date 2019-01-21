@@ -1,0 +1,63 @@
+- job:
+    name: jdk12-publish-and-report
+    project-type: multijob
+    defaults: global
+    description: |
+        * This job publishes results and send e-mail reports.
+    logrotate:
+        numToKeep: 10
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: DAYS
+            default: '15'
+        - string:
+            name: YEAR
+            default: 'default'
+        - string:
+            name: DAY_OF_YEAR
+            default: 'default'
+    disabled: false
+    node: master
+    display-name: 'OpenJDK 12 - Publish results and send reports'
+    wrappers:
+        - timestamps
+# Replaced by parameters
+#        - inject:
+#            properties-content: 'DAYS=15'
+    builders:
+        - multijob:
+            name: 'Persist results'
+            condition: SUCCESSFUL
+            projects:
+              - name: jdk12-persist-all-results
+                current-parameters: true
+                kill-phase-on: FAILURE
+        - multijob:
+            name: 'Publish results to openjdk.linaro.org'
+            condition: SUCCESSFUL
+            projects:
+              - name: jdk12-publish-all-results
+                current-parameters: true
+                kill-phase-on: FAILURE
+        - multijob:
+            name: 'Generate e-mail report'
+            condition: SUCCESSFUL
+            projects:
+              - name: jdk12-generate-email-report
+                current-parameters: true
+                kill-phase-on: FAILURE
+        - multijob:
+            name: 'E-mail results'
+            condition: SUCCESSFUL
+            projects:
+              - name: jdk12-email-results
+                current-parameters: true
+                kill-phase-on: FAILURE
