@@ -39,13 +39,19 @@
             project: archive-specjbb2015-product-tarball
             filter: 'out/SPECjbb2015.tgz'
             flatten: true
+        - copyartifact:
+            project: jdk-build-specjbb2015-jdk11
+            filter: 'out/SPECjbb2015-jdk11.tar.gz'
+            flatten: true
         - shell: |
             #!/bin/bash
             set -eu
             PERSIST=$HOME/srv/jdk-cache
             NEW_PERSIST=$PERSIST-new
             OLD_PERSIST=$PERSIST-old
-            mkdir -p $NEW_PERSIST
+
+            # Creating all maintains idempotency.
+            mkdir -p $NEW_PERSIST $OLD_PERSIST $PERSIST
 
             JDK8u=jdk8u-server-release-1804
             JDK10=jdk10-server-release-1804
@@ -66,8 +72,8 @@
             mv ${JDK11} $NEW_PERSIST/jdk11
 
             mv openjdk8-hadoop-LCA14.tar.gz $NEW_PERSIST
-
             mv SPECjbb2015.tgz $NEW_PERSIST
+            mv SPECjbb2015-jdk11.tar.gz $NEW_PERSIST
 
             # Remove the old persist, make the current one the old, and the
             # new one the current one.
