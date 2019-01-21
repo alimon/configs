@@ -27,13 +27,19 @@
             days-to-keep: 30
             num-to-keep: 10
             artifact-num-to-keep: 5
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "jdk11-*"
+                - "jdk8-*"
+                - "jdkX-*"
+            block-level: 'GLOBAL'
     disabled: false
     node: j12-qrep-01
     display-name: 'OpenJDK 12 - Update jdk12 source tree'
     scm:
         - jdk12
     triggers:
-        # Trigger on Saturday, finishes for Monday morning.
         - pollscm:
             cron: '0 7 * * 2,4,6'
     wrappers:
