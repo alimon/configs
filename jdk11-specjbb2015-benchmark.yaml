@@ -38,11 +38,6 @@
         - matrix-tie-parent:
             node: j12-qrep-01
     builders:
-        - copyartifact:
-            project: jdk-build-specjbb2015-jdk11
-            filter: 'out/SPECjbb2015-jdk11.tar.gz'
-            target: incoming
-            flatten: true
         - shell: |
             #!/bin/bash
 
@@ -56,7 +51,8 @@
             java -version
 
             ## Extract specjbb2015 product
-            tar xf incoming/SPECjbb2015-jdk11.tar.gz
+            CACHE_FILES=$HOME/srv/jdk-cache
+            tar xf $CACHE_FILES/SPECjbb2015-jdk11.tar.gz
 
             ## Run test
 
