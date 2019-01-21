@@ -41,13 +41,19 @@
             flatten: true
         - shell: |
             #!/bin/bash
+            set -eu
+            PERSIST=$HOME/srv/jdk-cache
+            NEW_PERSIST=$PERSIST-new
+            OLD_PERSIST=$PERSIST-old
+            mkdir -p $NEW_PERSIST
 
             JDK8u=jdk8u-server-release-1804
             JDK10=jdk10-server-release-1804
             JDK11=jdk11-server-release-1811
 
             rm -rf jdk*
-            wget http://openjdk.linaro.org/releases/${JDK8u}.tar.xz \
+            wget -N
+                 http://openjdk.linaro.org/releases/${JDK8u}.tar.xz \
                  http://openjdk.linaro.org/releases/${JDK10}.tar.xz \
                  http://openjdk.linaro.org/releases/${JDK11}.tar.xz
 
@@ -55,11 +61,19 @@
             tar Jxf ${JDK10}.tar.xz
             tar Jxf ${JDK11}.tar.xz
 
-            mv ${JDK8u} jdk8u
-            mv ${JDK10} jdk10
-            mv ${JDK11} jdk11
+            mv ${JDK8u} $NEW_PERSIST/jdk8u
+            mv ${JDK10} $NEW_PERSIST/jdk10
+            mv ${JDK11} $NEW_PERSIST/jdk11
 
-            find $PWD -maxdepth 1
+            mv openjdk8-hadoop-LCA14.tar.gz $NEW_PERSIST
+
+            mv SPECjbb2015.tgz $NEW_PERSIST
+
+            # Remove the old persist, make the current one the old, and the
+            # new one the current one.
+            rm -rf $OLD_PERSIST
+            mv $PERSIST $OLD_PERSIST
+            mv $NEW_PERSIST $PERSIST
     publishers:
         - email:
             recipients: 'stuart.monteith@linaro.org'
