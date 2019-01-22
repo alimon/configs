@@ -17,9 +17,6 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
-            name: JDK_URL
-            default: 'http://openjdk.linaro.org/releases/jdk9-server-release-1708.tar.xz'
-        - string:
             name: MAVEN_URL
             default: 'http://www.us.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz'
     disabled: false
@@ -41,19 +38,14 @@
             #!/bin/bash
 
             set -exu
+            CACHE_FILES=$HOME/srv/jdk-cache
 
-            rm -rf jdk* apache-maven-*
+            rm -rf apache-maven-*
 
-            wget --progress=dot -e dotbytes=2M ${JDK_URL} ${MAVEN_URL}
-            tar -Jxf jdk*.tar.xz
+            wget --progress=dot -e dotbytes=2M ${MAVEN_URL}
             tar -zxf apache-maven-*.tar.gz
 
-            cd jdk*/lib/security/
-            rm -f cacerts
-            ln -s /etc/ssl/certs/java/cacerts
-
-            cd ${WORKSPACE}/jdk*
-            export JAVA_HOME=${PWD}
+            export JAVA_HOME=$CACHE_FILES/jdk11
 
             cd ${WORKSPACE}/apache-maven-*
             export M3_HOME=${PWD}
