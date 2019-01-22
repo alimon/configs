@@ -477,8 +477,11 @@
             --target "{target}" \
             --toolchain "{toolchain_name}"
 
-            for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
+            for i in artifacts/trigger-0-bisect-again artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
+                if [ x"$i" = x"artifacts/trigger-0-bisect-again" ]; then
+                  echo "mail_recipients=$mail_recipients" >> $i
+                fi
                 echo "distro=$distro" >> $i
                 echo "scripts_branch=$scripts_branch" >> $i
               fi
@@ -490,6 +493,13 @@
         - build-name-setter:
             name: 'artifacts/jenkins/build-name'
             file: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: artifacts/trigger-0-bisect-again
+            steps:
+              - trigger-builds:
+                  - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+                    property-file: artifacts/trigger-0-bisect-again
         - conditional-step:
             condition-kind: file-exists
             condition-filename: artifacts/trigger-1-reset-baseline
