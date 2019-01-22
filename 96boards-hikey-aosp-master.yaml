@@ -232,19 +232,79 @@
 
             rm -rf configs
             cd ../
+            rm -fr hikey-linaro
+
+            # build kernel for x15
+            X15_KERNEL_DIR=kernel/ti/x15
+            rm -fr ${X15_KERNEL_DIR} && mkdir -p ${X15_KERNEL_DIR}
+            git clone -b android-beagle-x15-4.14 https://android.googlesource.com/kernel/omap ${X15_KERNEL_DIR}
+
+            # compile x15 kernel
+            cd ${X15_KERNEL_DIR}
+            export PATH=~/srv/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi/bin:$PATH
+            export KERNEL_DESCRIBE_X15_4_14=$(git rev-parse --short HEAD)
+            make ARCH=arm CROSS_COMPILE=arm-eabi- ti_sdk_am57x_android_release_defconfig
+            make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
+            cd -
+
+            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb device/ti/beagle_x15-kernel/4.14/am57xx-beagle-x15-revc.dtb
+            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/zImage device/ti/beagle_x15-kernel/4.14/zImage
+            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-evm-common.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-common.dtbo
+            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-reva3.dtbo
+
+            source build/envsetup.sh
+            lunch beagle_x15-userdebug
+            make -j$(nproc) droidcore bootfitimage
+            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/beagle_x15/BUILD-INFO.txt
+
+            X15_KERNEL_FILES="
+            arch/arm/boot/zImage
+            arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb
+            arch/arm/boot/dts/ti/am57xx-evm-common.dtbo
+            arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo
+            vmlinux
+            System.map
+            "
+            for f in ${X15_KERNEL_FILES}; do
+                if [ -f ${X15_KERNEL_DIR}/${f} ]; then
+                    cp -vf ${X15_KERNEL_DIR}/${f} out/x15-$(basename ${f})
+                fi
+            done
+
+            X15_IMAGE_FILE="
+            MLO
+            u-boot.img
+            boot.img
+            boot-fit.img
+            userdata.img
+            system.img
+            vendor.img
+            recovery.img
+            ramdisk.img
+            "
+            for f in ${X15_IMAGE_FILE}; do
+                if [ -f out/target/product/beagle_x15/${f} ]; then
+                    cp -vf out/target/product/beagle_x15/${f} out/x15-${f}
+                fi
+            done
+            mv out/x15-boot_fit.img out/x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
+            mv out/x15-boot.img out/x15-boot-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
 
             # Delete sources after build to save space
             rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
+            rm -fr ${X15_KERNEL_DIR}
 
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=96boards/hikey/linaro/aosp-master/${BUILD_NUMBER}
             PUB_SRC=${PWD}/out
-            PUB_EXTRA_INC=^[^/]+zip
+            PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo|zip)$|MLO|vmlinux|System.map
+
             KERNEL_DESCRIBE_4_19=${KERNEL_DESCRIBE_4_19}
             KERNEL_DESCRIBE_4_14=${KERNEL_DESCRIBE_4_14}
             KERNEL_DESCRIBE_4_9=${KERNEL_DESCRIBE_4_9}
             KERNEL_DESCRIBE_4_4=${KERNEL_DESCRIBE_4_4}
+            KERNEL_DESCRIBE_X15_4_14=${KERNEL_DESCRIBE_X15_4_14}
             EOF
         - inject:
             properties-file: publish_parameters
@@ -348,6 +408,34 @@
                 --template-names template-boot.yaml template-vts-kernel-part2.yaml template-vts-kernel-part3.yaml template-vts-kernel-part4.yaml template-cts-armeabi-v7a.yaml template-cts-arm64-v8a.yaml template-cts-displaytestcases.yaml template-vts-kernel-part1.yaml \
                 --quiet
 
+            # submit jobs for X15 4.14 kernel build
+            export DEVICE_TYPE=x15
+            export TOOLCHAIN=gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi
+            export KERNEL_REPO=omap
+            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_X15_4_14}
+            export SRCREV_kernel=${KERNEL_DESCRIBE_X15_4_14}
+
+            # reset the changes done before
+            cd configs && git reset --hard && cd -
+
+            # update templates to use the new image names
+            sed -i "s|boot_fit.img|x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            sed -i "s|system.img|x15-system.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            sed -i "s|userdata.img|x15-userdata.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+            sed -i "s|vendor.img|x15-vendor.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team android-lkft \
+                --env-suffix "_4.14" \
+                --qa-server-project ${QA_SERVER_PROJECT} \
+                --git-commit ${QA_BUILD_VERSION} \
+                --template-path configs/lkft/lava-job-definitions \
+                --template-names template-boot.yaml template-vts-kernel-syscalls.yaml template-cts-displaytestcases.yaml template-vts-kselftest.yaml template-cts.yaml template-vts-kernel-ltp.yaml \
+                --quiet
 
     publishers:
         - archive:
