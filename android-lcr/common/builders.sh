@@ -34,7 +34,7 @@ chmod a+x ${HOME}/bin/*
 export PATH=${HOME}/bin:${PATH}
 
 # Install helper packages
-rm -rf build-tools jenkins-tools build-configs build/bionic build/frameworks/base build/system/core build/device build/out build/android-patchsets build/kernel/ti/x15
+rm -rf build-tools jenkins-tools build-configs build/bionic build/frameworks/base build/system/core build/device build/out build/android-patchsets build/kernel/ti/x15 build/kernel/hikey-linaro build/hardware/interfaces
 rm -fr build/external/optee_test build/external/optee_client build/optee/optee_os build/optee/edk2
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-android-build-tools.git build-tools
 git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
