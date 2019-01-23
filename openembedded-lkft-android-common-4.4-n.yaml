@@ -89,7 +89,7 @@
                 variable: QA_REPORTS_TOKEN
     builders:
         - shell: |
-            #!/bin/bash -ex
+            #!/bin/bash
 
             # Mapping for MACHINE -> DEVICE_TYPE
             case "${MACHINE}" in
@@ -106,11 +106,7 @@
         - inject:
             properties-file: device_type_parameters
         - shell:
-            !include-raw: openembedded-lkft/builders-deps.sh
-        - shell:
             !include-raw: openembedded-lkft/builders.sh
-        - shell:
-            !include-raw: openembedded-lkft/publishers-prepare.sh
         - inject:
             properties-file: post_build_lava_parameters
         - linaro-publish-token
