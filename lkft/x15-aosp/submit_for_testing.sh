@@ -7,6 +7,7 @@ export KERNEL_COMMIT=${SRCREV_kernel}
 export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
 export CTS_VERSION=$(echo $CTS_URL | awk -F"/" '{print$(NF-1)}')
 [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
+[ -z "${BOOTARGS}" ] && export BOOTARGS="androidboot.serialno=\${serial#} console=ttyS2,115200 androidboot.console=ttyS2 androidboot.hardware=beagle_x15board"
 
 if [ ! -z "${KERNEL_DESCRIBE}" ]; then
     export QA_BUILD_VERSION=${KERNEL_DESCRIBE}
@@ -32,8 +33,8 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-team android-lkft \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
-    --template-path configs/lkft/lava-job-definitions \
-    --template-names template-boot.yaml template-vts-kernel-syscalls.yaml template-cts-displaytestcases.yaml template-vts-kselftest.yaml template-cts.yaml template-vts-kernel-ltp.yaml \
+    --testplan-path configs/lkft/lava-job-definitions/x15 \
+    --test-plan template-boot.yaml template-vts-kernel-syscalls.yaml template-cts-displaytestcases.yaml template-vts-kselftest.yaml template-cts.yaml template-vts-kernel-ltp.yaml \
     --quiet
 
 python configs/openembedded-lkft/submit_for_testing.py \
@@ -44,6 +45,6 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-team staging-lkft \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
-    --template-path configs/lkft/lava-job-definitions \
-    --template-names template-vts-staging-kernel.yaml \
+    --testplan-path configs/lkft/lava-job-definitions/x15 \
+    --test-plan template-vts-staging-kernel.yaml \
     --quiet

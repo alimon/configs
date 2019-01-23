@@ -6,4 +6,12 @@
     timeout:
       minutes: 15
     method: fastboot
-
+{% if X15_BOOT_ARGS defined %}
+    commands:
+    - setenv bootargs "{{X15_BOOT_ARGS}}"
+    - run findfdt
+    - run emmc_android_boot
+    method: u-boot
+{% else %}
+    method: fastboot
+{% endif %}

@@ -94,7 +94,15 @@ actions:
     - ':/'
     timeout:
       minutes: 15
+{% if BOOTARGS defined %}
+    commands:
+    - setenv bootargs "{{BOOTARGS}}"
+    - run findfdt
+    - run emmc_android_boot
+    method: u-boot
+{% else %}
     method: fastboot
+{% endif %}
 
 - test:
     namespace: tlxc

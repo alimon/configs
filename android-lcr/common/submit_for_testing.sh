@@ -64,6 +64,7 @@ export VTS_PKG_URL=${VTS_PKG_URL}
 [ -z "${CTS_MODULE_NAME}" ] && export CTS_MODULE_NAME=""
 [ -z "${CTS_PKG_URL}" ] && unset CTS_PKG_URL
 [ -z "${VTS_PKG_URL}" ] && unset VTS_PKG_URL
+[ -z "${X15_BOOT_ARGS}" ] && unset X15_BOOT_ARGS
 [ -z "${ANDROID_VERSION_SUFFIX}" ] && unset ANDROID_VERSION_SUFFIX
 
 
