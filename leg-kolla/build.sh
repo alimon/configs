@@ -6,9 +6,11 @@ kolla_branch=${BRANCH}
 kolla_ldc=${DEVCLOUD}
 kolla_ldc_extras=${DEVCLOUD_EXTRA_PATCHES}
 kolla_options=
+kolla_python=/usr/bin/python2
 
 if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
     branch="stein"
+    kolla_python=/usr/bin/python3
 elif [[ ${kolla_branch} = "stable"* ]]; then
     branch=$(echo ${kolla_branch} | sed -e 's+stable/++g')
 else
@@ -73,7 +75,7 @@ if [[ ! -z ${kolla_ldc} && ! -z ${kolla_ldc_extras} ]]; then
     done
 fi
 
-virtualenv --python=/usr/bin/python2 venv-for-kolla
+virtualenv --python=${kolla_python} venv-for-kolla
 . venv-for-kolla/bin/activate
 
 cd kolla
