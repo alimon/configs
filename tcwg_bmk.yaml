@@ -220,7 +220,7 @@
     node: tcwg-coordinator
     concurrent: false
     display-name: 'TCWG Build {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-    workspace: workspace/tcwg_bmk-build-{toolchain_name}_$EXECUTOR_NUMBER
+    workspace: workspace/tcwg_bmk-build-{toolchain_name}_1
     scm:
       - jenkins-scripts
       - bmk-scripts
@@ -229,9 +229,8 @@
           timeout: 600
       - timestamps
       - ssh-agent-credentials:
-          # tcwg-buildslave user id
           users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+            - 'tcwg-benchmark'
     builders:
         - shell: |
             #!/bin/bash
@@ -373,9 +372,8 @@
           timeout: 1440
       - timestamps
       - ssh-agent-credentials:
-          # tcwg-buildslave user id
           users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+            - 'tcwg-benchmark'
     builders:
         - shell: |
             #!/bin/bash
