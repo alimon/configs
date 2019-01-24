@@ -256,7 +256,7 @@
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
             --BUILD_NUMBER "$BUILD_NUMBER" \
-            --cflags {cflags} \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
             ==rr[init_configuration] true \
             ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
@@ -405,8 +405,8 @@
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
             --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
+            --ci_project tcwg_bmk \
             -- \
-            ==rr[ci_project] tcwg_bmk \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
             ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
