@@ -2,11 +2,8 @@
 
 set -ex
 
-git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
-export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/linux-x86/clang-r328903/bin/:${PATH}
-export CLANG_TRIPLE=aarch64-linux-gnu-
-export CROSS_COMPILE=aarch64-linux-android-
-
+git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9
+export PATH=${PATH}:${PWD}/aarch64-linux-android-4.9/bin/
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   echo "INFO: apt update error - try again in a moment"
@@ -20,8 +17,8 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; th
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
 fi
 
-make ARCH=arm64 CC=clang HOSTCC=clang ${DEFCONFIG}
-make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
+make ARCH=arm64 ${DEFCONFIG}
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux-android- -j$(nproc) -s Image.gz-dtb
 
 wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py -O mkbootimg
 wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
