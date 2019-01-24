@@ -265,9 +265,7 @@
             ==rr[mode] "jenkins-full" \
             ==rr[current_project] "$current_project" \
             ==rr[current_branch] "$current_branch" \
-            ==rr[reset_baseline] "$reset_baseline" \
-            ==rr[target] "{target}" \
-            ==rr[toolchain] "{toolchain_name}" &
+            ==rr[reset_baseline] "$reset_baseline" &
             res=0 && wait $! || res=$?
 
             if [ $res != 0 ]; then
@@ -412,9 +410,7 @@
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
             ==rr[glibc_url] {glibc_url} ==rr[glibc_branch] {glibc_branch} \
             ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
-            ==rr[current_project] "$current_project" \
-            ==rr[target] "{target}" \
-            ==rr[toolchain] "{toolchain_name}"
+            ==rr[current_project] "$current_project"
 
             for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
