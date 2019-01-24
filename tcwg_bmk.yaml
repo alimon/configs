@@ -111,7 +111,7 @@
           anonymous:
             - job-read
             - job-extended-read
-          linaro:
+          tcwg-benchmark:
             - job-build
             - job-cancel
       - build-discarder:
@@ -217,7 +217,7 @@
           default: tcwg_bmk
           description: 'Benchmark scripts revision to use'
     disabled: false
-    node: tcwg-bmk-dev-01
+    node: tcwg-x86_64-dev-01
     concurrent: false
     display-name: 'TCWG Build {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     workspace: workspace/tcwg_bmk-build-{toolchain_name}_1
@@ -229,8 +229,9 @@
           timeout: 600
       - timestamps
       - ssh-agent-credentials:
+          # tcwg-buildslave user id
           users:
-            - 'tcwg-benchmark'
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
     builders:
         - shell: |
             #!/bin/bash
@@ -360,7 +361,7 @@
           default: tcwg_bmk
           description: 'Benchmark scripts revision to use'
     disabled: false
-    node: tcwg-bmk-dev-01
+    node: tcwg-x86_64-dev-01
     concurrent: false
     display-name: 'TCWG Bisect {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     workspace: workspace/tcwg_bmk-bisect-{toolchain_name}_$EXECUTOR_NUMBER
@@ -372,8 +373,9 @@
           timeout: 1440
       - timestamps
       - ssh-agent-credentials:
+          # tcwg-buildslave user id
           users:
-            - 'tcwg-benchmark'
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
     builders:
         - shell: |
             #!/bin/bash
