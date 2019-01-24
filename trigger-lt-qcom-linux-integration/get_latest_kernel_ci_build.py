@@ -37,10 +37,10 @@ def get_kernel_ci_build(url, arch_config, dt_file):
 
 
 def get_ramdisk_rootfs_url(url, rootfs_url):
-    f = urllib2.urlopen('https://ci.linaro.org/job/lt-qcom-openembedded-rpb-sumo/lastSuccessfulBuild/buildNumber')
+    f = urllib2.urlopen('https://ci.linaro.org/job/lt-qcom-linux-testimages/lastSuccessfulBuild/buildNumber')
     last_build = int(f.read())
 
-    url = '%s/%d/rpb' % (url, last_build)
+    url = '%s/%d/' % (url, last_build)
     f = urllib2.urlopen(url)
     page = f.read()
     base_url_p = urlparse.urlparse(url)
@@ -106,28 +106,24 @@ def main():
     machines = os.environ.get('MACHINES', 'dragonboard410c dragonboard820c sdm845_mtp').split()
 
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
-                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/sumo')
+                                'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
     rootfs_base_url = os.environ.get('ROOTFS_BASE_URL',
-                                      'https://snapshots.linaro.org/96boards/%s/linaro/openembedded/sumo')
+                                'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
     builds_url = os.environ.get('BUILDS_URL',
                                 'https://snapshots.linaro.org/96boards/%s/linaro/linux-integration/')
 
     image_url = None
     modules_url = None
     version = None
+    (ramdisk_url, rootfs_url) = get_ramdisk_rootfs_url(ramdisk_base_url, rootfs_base_url)
+
     for m in machines:
         if m == 'dragonboard410c':
             kernel_ci_dt_file = 'dtbs/qcom/apq8016-sbc.dtb'
-            ramdisk_url = ramdisk_base_url % m
-            rootfs_url = rootfs_base_url % m
         elif m == 'dragonboard820c':
             kernel_ci_dt_file = 'dtbs/qcom/apq8096-db820c.dtb'
-            ramdisk_url = ramdisk_base_url % m
-            rootfs_url = rootfs_base_url % m
         elif m == 'sdm845_mtp':
             kernel_ci_dt_file = 'dtbs/qcom/sdm845-mtp.dtb'
-            ramdisk_url = ramdisk_base_url % 'dragonboard410c' # XXX: Use ramdisk from db410c for now
-            rootfs_url = rootfs_base_url % 'dragonboard410c'
         else:
             sys.exit(2)
 
@@ -137,7 +133,6 @@ def main():
         print("KERNEL_DT_URL_%s=%s" % (m, dt_url))
         validate_url(dt_url)
 
-        (ramdisk_url, rootfs_url) = get_ramdisk_rootfs_url(ramdisk_url, rootfs_url)
         print('RAMDISK_URL_%s=%s' % (m, ramdisk_url))
         validate_url(ramdisk_url)
         print('ROOTFS_URL_%s=%s' % (m, rootfs_url))
