@@ -41,6 +41,7 @@ actions:
     - libffi-dev
     - libssl-dev
     - python-lxml
+    - tesseract-ocr
     - git
     os: debian
 
@@ -128,6 +129,10 @@ actions:
          - lava-test-case ps --shell ps aux
          - lava-test-case hikey-dmesg --shell dmesg
          - lava-test-case weston-status --shell test -f /run/user/1000/weston.log
+         # Prevent Weston enter "inactive mode"
+         - echo -e "idle-time=0" >> /etc/xdg/weston/weston.ini
+         - cat /etc/xdg/weston/weston.ini
+         - lava-test-case prevent-weston-enter-inactive-mode-and-restart-it --shell systemctl restart weston@linaro
      name: basic-tests
      path: inline/basic-tests.yaml
 
