@@ -457,5 +457,7 @@ echo ROOTFS_FILE="$(basename $rootfs_file)" >> builders_out_parameters
 
 echo KERNEL_IMAGE="$(basename $KERNEL_IMAGE_URL)" >> builders_out_parameters
 echo KERNEL_DT="$(basename $KERNEL_DT_URL)" >> builders_out_parameters
+echo KERNEL_CI_PLATFORM="${KERNEL_CI_PLATFORM}" >> builders_out_parameters
+echo KERNEL_CI_MACH="${KERNEL_CI_MACH}" >> builders_out_parameters
 
 ls -l out/
