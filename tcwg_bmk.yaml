@@ -27,6 +27,7 @@
       - spec2k6
     cflags:
       - Os
+      - Os_flto
     jobs:
       - 'tcwg_bmk-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
@@ -249,22 +250,24 @@
             set -ex
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
+            --ssh_info true \
             -- \
             ./jenkins-scripts/tcwg_bmk-build.sh \
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
             --BUILD_NUMBER "$BUILD_NUMBER" \
-            ==rr[{toolchain_name}_version] {toolchain_ver} \
+            --cflags {cflags} \
+            ==rr[init_configuration] true \
             ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
             ==rr[glibc_url] {glibc_url} ==rr[glibc_branch] {glibc_branch} \
             ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
-            --mode "full" \
-            --current_project "$current_project" \
-            --current_branch "$current_branch" \
-            --reset_baseline "$reset_baseline" \
-            --target "{target}" \
-            --toolchain "{toolchain_name}" &
+            ==rr[mode] "jenkins-full" \
+            ==rr[current_project] "$current_project" \
+            ==rr[current_branch] "$current_branch" \
+            ==rr[reset_baseline] "$reset_baseline" \
+            ==rr[target] "{target}" \
+            ==rr[toolchain] "{toolchain_name}" &
             res=0 && wait $! || res=$?
 
             if [ $res != 0 ]; then
@@ -394,6 +397,7 @@
             set -ex
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
+            --ssh_info true \
             -- \
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
             %% artifacts/manifests/bisect.sh \
@@ -401,17 +405,16 @@
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
             --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
-            --ci_config {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
-            --ci_project tcwg_bmk \
             -- \
-            ==rr[{toolchain_name}_version] {toolchain_ver} \
+            ==rr[ci_project] tcwg_bmk \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
             ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
             ==rr[glibc_url] {glibc_url} ==rr[glibc_branch] {glibc_branch} \
             ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
-            --current_project "$current_project" \
-            --target "{target}" \
-            --toolchain "{toolchain_name}"
+            ==rr[current_project] "$current_project" \
+            ==rr[target] "{target}" \
+            ==rr[toolchain] "{toolchain_name}"
 
             for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
