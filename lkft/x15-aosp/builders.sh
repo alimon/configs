@@ -9,7 +9,7 @@ git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz zlib1g-dev
+sudo apt-get -q=2 install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz zlib1g-dev coreutils
 
 wget -q http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u45-b14-1_amd64.deb \
   http://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u45-b14-1_amd64.deb \
@@ -88,3 +88,5 @@ EOF
 rm -rf .repo/manifests .repo/local_manifests
 rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ kernel/
 rm -fr device/ti/beagle_x15-kernel/
+
+( cd out && rm -f SHA256SUMS.txt && sha256sum * > SHA256SUMS.txt )
