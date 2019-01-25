@@ -63,11 +63,11 @@
             values:
                 - gcc-master
     triggers:
-        # Every 4 hours at 00:20, 04:20, 08:20, 12:20, 16:20, 20:20
-        - timed: '20 0,4,8,12,16,20 * * *'
+        # Every 8 hours at 00:20, 08:20, 16:20
+        - timed: '20 0,8,16 * * *'
     wrappers:
         - timeout:
-            timeout: 600
+            timeout: 1200
         - timestamps
         - ssh-agent-credentials:
             # tcwg-buildslave user id
