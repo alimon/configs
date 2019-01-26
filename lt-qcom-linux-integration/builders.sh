@@ -212,56 +212,35 @@ fi
 
 # Generic/default variables
 KERNEL_CI_PLATFORM=${MACHINE}
+BOOTIMG_PAGESIZE=2048
+BOOTIMG_BASE=0x80000000
+RAMDISK_BASE=0x84000000
+SERIAL_CONSOLE=ttyMSM0
+KERNEL_CI_MACH=qcom
 
 # Set per MACHINE configuration
 case "${MACHINE}" in
 	apq8016-sbc)
 		KERNEL_DT_URL=${KERNEL_DT_URL_apq8016_sbc}
-		if [ ! -z "${RAMDISK_URL_apq8016_sbc}" ]; then
-			RAMDISK_URL=${RAMDISK_URL_apq8016_sbc}
-		fi
-		if [ ! -z "${ROOTFS_URL_apq8016_sbc}" ]; then
-			ROOTFS_URL=${ROOTFS_URL_apq8016_sbc}
-		fi
+		RAMDISK_URL=${RAMDISK_URL_apq8016_sbc}
+		ROOTFS_URL=${ROOTFS_URL_apq8016_sbc}
 		FIRMWARE_URL=${FIRMWARE_URL_apq8016_sbc}
-		BOOTIMG_PAGESIZE=2048
-		BOOTIMG_BASE=0x80000000
-		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/mmcblk0p10
-		SERIAL_CONSOLE=ttyMSM0
-		KERNEL_CI_MACH=qcom
 		;;
 	apq8096-db820c)
 		KERNEL_DT_URL=${KERNEL_DT_URL_apq8096_db820c}
-		if [ ! -z "${RAMDISK_URL_apq8096_db820c}" ]; then
-			RAMDISK_URL=${RAMDISK_URL_apq8096_db820c}
-		fi
-		if [ ! -z "${ROOTFS_URL_apq8096_db820c}" ]; then
-			ROOTFS_URL=${ROOTFS_URL_apq8096_db820c}
-		fi
+		RAMDISK_URL=${RAMDISK_URL_apq8096_db820c}
+		ROOTFS_URL=${ROOTFS_URL_apq8096_db820c}
 		FIRMWARE_URL=${FIRMWARE_URL_apq8096_db820c}
 		BOOTIMG_PAGESIZE=4096
-		BOOTIMG_BASE=0x80000000
-		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/sda1
-		SERIAL_CONSOLE=ttyMSM0
-		KERNEL_CI_MACH=qcom
 		;;
 	sdm845-mtp)
 		KERNEL_DT_URL=${KERNEL_DT_URL_sdm845_mtp}
-		if [ ! -z "${RAMDISK_URL_sdm845_mtp}" ]; then
-			RAMDISK_URL=${RAMDISK_URL_sdm845_mtp}
-		fi
-		if [ ! -z "${ROOTFS_URL_sdm845_mtp}" ]; then
-			ROOTFS_URL=${ROOTFS_URL_sdm845_mtp}
-		fi
+		RAMDISK_URL=${RAMDISK_URL_sdm845_mtp}
+		ROOTFS_URL=${ROOTFS_URL_sdm845_mtp}
 		FIRMWARE_URL=${FIRMWARE_URL_sdm845_mtp}
-		BOOTIMG_PAGESIZE=2048
-		BOOTIMG_BASE=0x80000000
-		RAMDISK_BASE=0x84000000
 		ROOTFS_PARTITION=/dev/sda8 # XXX: using Android userdata since we don't have Linux parttable
-		SERIAL_CONSOLE=ttyMSM0
-		KERNEL_CI_MACH=qcom
 		;;
 	*)
 		echo "Currently MACHINE: ${MACHINE} isn't supported"
