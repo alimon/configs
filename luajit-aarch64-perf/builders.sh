@@ -59,7 +59,7 @@ njobs () {
 THISBUILDDIR="${WORKSPACE}/build${BUILD_NUMBER}"
 safe mkdir -p "$THISBUILDDIR"/dump
 safe make CCDEBUG="-DUSE_LUA_ASSERT" PREFIX="$THISBUILDDIR"/install install -j "$(njobs)"
-safe ln -sf luajit-* "$THISBUILDDIR"/install/bin/luajit
+safe ln -sf "$THISBUILDDIR"/install/bin/luajit-* "$THISBUILDDIR"/install/bin/luajit
 safe export LUA_PATH="$(ls -d "$THISBUILDDIR"/install/share/luajit*)/?.lua;;"
 # Run a simple test
 safe ./src/luajit -jdump -e "x=0; for i=1,100 do x=x+i end; print(x)"
