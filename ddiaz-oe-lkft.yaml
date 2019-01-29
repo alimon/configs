@@ -114,7 +114,7 @@
                 variable: QA_REPORTS_TOKEN
     builders:
         - shell: |
-            #!/bin/bash
+            #!/bin/bash -x
 
             # Mapping for MACHINE -> DEVICE_TYPE
             case "${MACHINE}" in
@@ -143,6 +143,16 @@
                 [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
             esac
+
+            pwd
+            cat << EOF > ${WORKSPACE}/layers/meta-lkft/recipes-kernel/custom-kernel-info.inc
+            KERNEL_COMMIT = "${KERNEL_SRCREV}"
+            KERNEL_REPO = "${KERNEL_REPO/http*:/git:}"
+            KERNEL_CONFIG_aarch64 = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_arm = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_x86-64 = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_x86-32 = "${KERNEL_CONFIG}"
+            EOF
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
             echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> device_type_parameters
