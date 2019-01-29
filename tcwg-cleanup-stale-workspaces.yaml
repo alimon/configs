@@ -13,15 +13,8 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-        - throttle:
-            max-per-node: 1
-            option: project
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-              - "tcwg-.*"
-            block-level: 'NODE'
-            queue-scanning: 'ALL'
+        - heavy-job:
+            weight: 10
     parameters:
         - string:
             name: days
