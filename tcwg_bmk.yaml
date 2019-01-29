@@ -186,7 +186,7 @@
           glibc_branch: '{glibc_branch}'
     triggers:
       - pollscm:
-          cron: '* * * * *'
+          cron: 'H * * * *'
     wrappers:
         - timeout:
             timeout: 600
@@ -196,6 +196,20 @@
           #!/bin/bash
           set -ex
           env
+          components=(binutils gcc glibc)
+          rm -f trigger-*
+          for i in "" "_1" "_2"; do
+            if eval "[ x\$GIT_COMMIT$i != x\$GIT_PREVIOUS_COMMIT$i ]"; then
+              cat > "trigger-${{components[0]}}" << EOF
+          current_project=${{components[0]}}
+          current_branch=$(eval "\$GIT_COMMIT$i")
+          EOF
+            fi
+            components=("${{components[@]:1}}")
+          done
+          for trigger in trigger-*; do
+            cat $trigger
+          done
 
 - parameter:
     name: gnu-parameters
