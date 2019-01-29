@@ -33,6 +33,8 @@
       - 'tcwg_bmk-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk-experimental-trigger-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+
 - view:
     name: tcwg_bmk
     view-type: list
@@ -155,6 +157,45 @@
             predefined-parameters: |
               current_project={component}
               current_branch=$GIT_COMMIT
+
+- job-template:
+    name: tcwg_bmk-experimental-trigger-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default_properties
+      - build-blocker:
+          blocking-jobs:
+            - "tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+            - "tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+          queue-scanning: 'ALL'
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG Experimental Trigger {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    workspace: workspace/tcwg_bmk-{toolchain_name}/$JOB_NAME
+    scm:
+      - binutils-scm:
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+      - gcc-scm:
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
+      - glibc-scm:
+          glibc_url: '{glibc_url}'
+          glibc_branch: '{glibc_branch}'
+    triggers:
+      - pollscm:
+          cron: '* * * * *'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+    builders:
+      - shell: |
+          #!/bin/bash
+          set -ex
+          env
 
 - parameter:
     name: gnu-parameters
