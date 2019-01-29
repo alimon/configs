@@ -107,6 +107,7 @@
             cat << EOF > config.txt
             BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
             BUILD_CONFIG_BRANCH=master
+            TARGET_KERNEL_USE=4.19
             EOF
             echo config.txt
             export CONFIG=`base64 -w 0 config.txt`
@@ -158,14 +159,11 @@
             export CROSS_COMPILE=aarch64-linux-android-
             CMDLINE="console=ttyAMA3,115200 androidboot.console=ttyAMA3"
             CMDLINE="${CMDLINE} androidboot.hardware=hikey firmware_class.path=/vendor/firmware efi=noruntime"
+            CMDLINE="${CMDLINE} init=/init androidboot.boot_devices=soc/f723d000.dwmmc0"
             CMDLINE="${CMDLINE} printk.devkmsg=on buildvariant=userdebug"
-            CMDLINE="${CMDLINE} overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab_v2"
-            CMDLINE="${CMDLINE} rootwait ro init=/init root=/dev/dm-0"
-            CMDLINE="${CMDLINE} dm=\"system none ro,0 1 android-verity 179:9\""
-            CMDLINE="${CMDLINE} veritykeyid=id:7e4333f9bba00adfe0ede979e28ed1920492b40f"
 
             ######################################################################
-            # common for 4.4/4.9/4.14
+            # common for 4.9/4.14/4.19
             if [ ! -d hikey-linaro ]; then
                git clone https://android.googlesource.com/kernel/hikey-linaro
             fi
@@ -188,14 +186,21 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
-               --cmdline "${CMDLINE}" \
-               --os_version O \
-               --os_patch_level 2016-11-05 \
                --ramdisk ../out/ramdisk.img \
+               --cmdline "${CMDLINE}" \
+               --os_version Q \
+               --os_patch_level 2019-01-05 \
                --output ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
             cp vmlinux ../out/4.19_vmlinux
             cp .config ../out/4.19_defconfig
             xz ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
+
+            # common for 4.9 and 4.14
+            # set verity and system-as-root kernel boot parameters for 4.14 and 4.9
+            CMDLINE="${CMDLINE} overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab_v2"
+            CMDLINE="${CMDLINE} rootwait ro root=/dev/dm-0"
+            CMDLINE="${CMDLINE} dm=\"system none ro,0 1 android-verity 179:9\""
+            CMDLINE="${CMDLINE} veritykeyid=id:7e4333f9bba00adfe0ede979e28ed1920492b40f"
 
             # Build 4.14 kernel
             git checkout android-hikey-linaro-4.14
@@ -206,9 +211,8 @@
             python mkbootimg \
               --kernel arch/arm64/boot/Image.gz-dtb \
               --cmdline "${CMDLINE}" \
-              --os_version O \
-              --os_patch_level 2016-11-05 \
-              --ramdisk ../out/ramdisk.img \
+              --os_version Q \
+              --os_patch_level 2019-01-05 \
               --output ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
             cp vmlinux ../out/4.14_vmlinux
             cp .config ../out/4.14_defconfig
@@ -223,9 +227,8 @@
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
                --cmdline "${CMDLINE}" \
-               --os_version O \
-               --os_patch_level 2016-11-05 \
-               --ramdisk ../out/ramdisk.img \
+               --os_version Q \
+               --os_patch_level 2019-01-05 \
                --output ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img
             cp vmlinux ../out/4.9_vmlinux
             cp .config ../out/4.9_defconfig
