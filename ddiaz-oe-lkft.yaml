@@ -24,19 +24,16 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: 'master'
+            default: ''
         - string:
             name: KERNEL_VERSION
-            default: 'git'
-        - string:
-            name: KERNEL_VERSION_OVERRIDE
-            default: 'mainline'
+            default: ''
         - string:
             name: KERNEL_RECIPE
-            default: 'linux-generic-mainline'
+            default: 'linux-generic'
         - string:
             name: KERNEL_REPO
-            default: 'https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git'
+            default: ''
         - string:
             name: KERNEL_DESCRIBE
         - string:
@@ -54,13 +51,13 @@
             default: 'lkft/rocko'
         - string:
             name: PUB_DEST
-            default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/linux-mainline-ddiaz/${BUILD_NUMBER}'
+            default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/linux-stable-rc-ddiaz/${BUILD_NUMBER}'
         - string:
             name: LAVA_SERVER
             default: 'https://lkft.validation.linaro.org/RPC2/'
         - string:
             name: QA_SERVER
-            default: 'https://qa-reports.linaro.org'
+            default: 'https://staging-qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
             default: 'linux-mainline-oe'
@@ -71,20 +68,22 @@
             name: SKIP_LAVA
             default: ''
         - string:
+            name: LAVA_JOB_PRIORITY
+            default: '70'
+        - string:
             name: SANITY_LAVA_JOB_PRIORITY
             default: '80'
         - matrix-combinations:
             name: MATRIX_COMBINATIONS
     disabled: false
     node: master
-    display-name: 'ddiaz test LKFT - Linux Mainline (OpenEmbedded/rocko)'
+    display-name: 'ddiaz test LKFT - Linux Stable RC (OpenEmbedded/rocko)'
     axes:
         - axis:
             type: user-defined
             name: MACHINE
             values:
                 - 'am57xx-evm'
-                - 'beaglebone'
                 - 'dragonboard-410c'
                 - 'hikey'
                 - 'intel-core2-32'
@@ -121,25 +120,32 @@
             case "${MACHINE}" in
               hikey)
                 DEVICE_TYPE=hi6220-hikey
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
               intel-core2-32)
                 DEVICE_TYPE=i386
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=i386_defconfig
                 ;;
               intel-corei7-64)
                 DEVICE_TYPE=x86
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=x86_64_defconfig
                 ;;
               juno)
                 DEVICE_TYPE=juno-r2
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
               am57xx-evm)
                 DEVICE_TYPE=x15
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=multi_v7_defconfig
                 ;;
               dragonboard-410c)
                 DEVICE_TYPE=dragonboard-410c
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
             esac
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+            echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> device_type_parameters
             echo "#${BUILD_NUMBER}-${SRCREV_kernel:0:8}" > ${WORKSPACE}/version.txt
         - build-name-setter:
             name: 'version.txt'
@@ -171,7 +177,7 @@
             recipients: 'ddiaz@linaro.org'
             matrix-trigger: only-configurations
             aborted: true
-            subject: '[CI] ${MACHINE}: ${KERNEL_VERSION_OVERRIDE} {{SRCREV_kernel}} ${BUILD_STATUS}'
+            subject: '[CI] ${MACHINE}: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
