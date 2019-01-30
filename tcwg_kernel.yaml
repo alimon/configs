@@ -193,7 +193,7 @@
     disabled: false
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'TCWG BBB RRv7 Trigger Linux-{linux}-{linux_config} @ {target} @ {toolchain_name}-{toolchain_ver} @ {component}'
+    display-name: 'TCWG Trigger tcwg_kernel/{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} @ {component}'
     workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
     scm:
       - '{component}-scm':
@@ -288,7 +288,7 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG BBB RRv7 Build Linux-{linux}-{linux_config} @ {target} @ {toolchain_name}-{toolchain_ver}'
+    display-name: 'TCWG Build tcwg_kernel/{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     workspace: workspace/tcwg_kernel-build-{toolchain_name}_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -322,19 +322,15 @@
             ./jenkins-scripts/tcwg_kernel-build.sh \
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
-            ==rr[{toolchain_name}_version] {toolchain_ver} \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
             ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
             ==rr[llvm_url] {llvm_url} ==rr[llvm_branch] {llvm_branch} \
-            ==rr[linux_version] {linux} \
             ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
-            --mode "jenkins-full" \
-            --current_project "$current_project" \
-            --current_branch "$current_branch" \
-            --linux_config "{linux_config}" \
-            --reset_baseline "$reset_baseline" \
-            --target "{target}" \
-            --toolchain "{toolchain_name}" &
+            ==rr[mode] "jenkins-full" \
+            ==rr[current_project] "$current_project" \
+            ==rr[current_branch] "$current_branch" \
+            ==rr[reset_baseline] "$reset_baseline" &
             res=0 && wait $! || res=$?
 
             if [ $res != 0 ]; then
@@ -425,7 +421,7 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG BBB RRv7 Bisect Linux-{linux}-{linux_config} @ {target} @ {toolchain_name}-{toolchain_ver}'
+    display-name: 'TCWG Bisect tcwg_kernel/{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     workspace: workspace/tcwg_kernel-bisect-{toolchain_name}_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -465,19 +461,14 @@
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
             --build_script "./jenkins-scripts/tcwg_kernel-build.sh" \
-            --ci_config {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
-            --ci_project tcwg_kernel \
+            ==rr[ci_project] tcwg_kernel \
             -- \
-            ==rr[{toolchain_name}_version] {toolchain_ver} \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
             ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
             ==rr[llvm_url] {llvm_url} ==rr[llvm_branch] {llvm_branch} \
-            ==rr[linux_version] {linux} \
             ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
-            --current_project "$current_project" \
-            --linux_config "{linux_config}" \
-            --target "{target}" \
-            --toolchain "{toolchain_name}"
+            ==rr[current_project] "$current_project"
 
             for i in artifacts/trigger-0-bisect-again artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
