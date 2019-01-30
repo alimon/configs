@@ -22,6 +22,9 @@ git tag -f v${kernel_deb_pkg_version//\~/-}
 # Build the debian source kernel
 cd ${WORKSPACE}/debian-pkg
 
+# Show top revision
+git log -1
+
 # Use build number as ABI
 sed -i "s/^abiname:.*/abiname: ${BUILD_NUMBER}/g" debian/config/defines
 
