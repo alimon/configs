@@ -72,9 +72,9 @@ safe cd LuaJIT-testsuite/test
 safe "$THISBUILDDIR"/install/bin/luajit test.lua
 
 safe cd $THISBUILDDIR/LuaJIT-testsuite/bench
-safe while read -r bench opts mdsum rest; do if [[ "$rest" = "" ]] ; then "$THISBUILDDIR"/install/bin/luajit $bench.lua $opts > "$THISBUILDDIR"/dump/cor_$bench.dmp; else "$THISBUILDDIR"/install/bin/luajit $bench.lua $opts <$rest > "$THISBUILDDIR"/dump/cor_$bench.dmp; fi; current=`md5sum "$THISBUILDDIR"/dump/cor_$bench.dmp | cut -d ' ' -f 1`;  if [[ "$current" != "$mdsum" ]] ; then echo "$bench: md5sum not matched. Current: $current Expected: $mdsum"; fi; done < TEST_md5sum_arm64.txt
+while read -r bench opts mdsum rest; do if [[ "$rest" = "" ]] ; then "$THISBUILDDIR"/install/bin/luajit $bench.lua $opts > "$THISBUILDDIR"/dump/cor_$bench.dmp; else "$THISBUILDDIR"/install/bin/luajit $bench.lua $opts <$rest > "$THISBUILDDIR"/dump/cor_$bench.dmp; fi; current=`md5sum "$THISBUILDDIR"/dump/cor_$bench.dmp | cut -d ' ' -f 1`;  if [[ "$current" != "$mdsum" ]] ; then echo "$bench: md5sum not matched. Current: $current Expected: $mdsum"; fi; done < TEST_md5sum_arm64.txt
 
-safe while IFS=" " read -r bench opts rest; do if [[ "$rest" = "" ]] ; then x=`{ time "$THISBUILDDIR"/install/bin/luajit  $bench.lua $opts > "$THISBUILDDIR"/dump/perf_$bench.dmp ; } 2>&1 | grep "real" | cut -f 2`; else  x=`{ time "$THISBUILDDIR"/install/bin/luajit  $bench.lua $opts < $rest > "$THISBUILDDIR"/dump/perf_$bench.dmp ; } 2>&1 | grep "real" | cut -f 2`; fi; echo $bench": " $x; done < PARAM_arm64.txt > "$THISBUILDDIR"/dump/bench.txt
+while IFS=" " read -r bench opts rest; do if [[ "$rest" = "" ]] ; then x=`{ time "$THISBUILDDIR"/install/bin/luajit  $bench.lua $opts > "$THISBUILDDIR"/dump/perf_$bench.dmp ; } 2>&1 | grep "real" | cut -f 2`; else  x=`{ time "$THISBUILDDIR"/install/bin/luajit  $bench.lua $opts < $rest > "$THISBUILDDIR"/dump/perf_$bench.dmp ; } 2>&1 | grep "real" | cut -f 2`; fi; echo $bench": " $x; done < PARAM_arm64.txt > "$THISBUILDDIR"/dump/bench.txt
 
 safe cat "$THISBUILDDIR"/dump/bench.txt
 rm $THISBUILDDIR -rf
