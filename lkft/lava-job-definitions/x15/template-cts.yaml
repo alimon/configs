@@ -1,5 +1,5 @@
 device_type: x15
-job_name: "lkft-android-${KERNEL_BRANCH}-${BUILD_NUMBER}-cts-armeabi-v7a"
+job_name: "lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-cts-armeabi-v7a"
 timeouts:
   job:
     minutes: 360
@@ -13,23 +13,23 @@ visibility:
     - lkft
 
 metadata:
-  android.build: "${BUILD_NUMBER}"
-  android.name: "${JOB_NAME}"
-  android.url: "${BUILD_URL}"
-  android.version: "${ANDROID_VERSION}"
-  git branch: "${KERNEL_BRANCH}"
-  git repo: "${KERNEL_REPO}"
-  git commit: "${KERNEL_COMMIT}"
-  git describe: "${KERNEL_DESCRIBE}"
-  cts-manifest: "${CTS_URL}/pinned-manifest.xml"
-  cts-version: "${CTS_VERSION}"
+  android.build: "{{BUILD_NUMBER}}"
+  android.name: "{{JOB_NAME}}"
+  android.url: "{{BUILD_URL}}"
+  android.version: "{{ANDROID_VERSION}}"
+  git branch: "{{KERNEL_BRANCH}}"
+  git repo: "{{KERNEL_REPO}}"
+  git commit: "{{KERNEL_COMMIT}}"
+  git describe: "{{KERNEL_DESCRIBE}}"
+  cts-manifest: "{{CTS_URL}}/pinned-manifest.xml"
+  cts-version: "{{CTS_VERSION}}"
   cts-plan: "cts-lkft"
-  build-url: "${BUILD_URL}"
-  toolchain: "${TOOLCHAIN}"
+  build-url: "{{BUILD_URL}}"
+  toolchain: "{{TOOLCHAIN}}"
   series: lkft
 
 secrets:
-    ARTIFACTORIAL_TOKEN: "${ARTIFACTORIAL_TOKEN}"
+    ARTIFACTORIAL_TOKEN: "{{ARTIFACTORIAL_TOKEN}}"
 
 protocols:
   lava-lxc:
@@ -78,13 +78,13 @@ actions:
     namespace: droid
     images:
       boot:
-        url: "${DOWNLOAD_URL}/boot_fit.img"
+        url: "{{DOWNLOAD_URL}}/boot_fit.img"
       vendor:
-        url: "${DOWNLOAD_URL}/vendor.img"
+        url: "{{DOWNLOAD_URL}}/vendor.img"
       userdata:
-        url: "${DOWNLOAD_URL}/userdata.img"
+        url: "{{DOWNLOAD_URL}}/userdata.img"
       system:
-        url: "${DOWNLOAD_URL}/system.img"
+        url: "{{DOWNLOAD_URL}}/system.img"
 
 - boot:
     namespace: droid
@@ -93,7 +93,7 @@ actions:
     - ':/'
     timeout:
       minutes: 15
-{% if BOOTARGS defined %}
+{% if BOOTARGS is defined %}
     commands:
     - setenv bootargs "{{BOOTARGS}}"
     - run findfdt
@@ -134,8 +134,8 @@ actions:
       path: automated/android/noninteractive-tradefed/tradefed.yaml
       params:
         TEST_PARAMS: "cts-lkft -a armeabi-v7a --disable-reboot --skip-preconditions --skip-device-info --exclude-filter CtsDisplayTestCases"
-        TEST_URL: "${CTS_URL}/android-cts.zip"
+        TEST_URL: "{{CTS_URL}}/android-cts.zip"
         TEST_PATH: "android-cts"
         RESULTS_FORMAT: "atomic"
-        ANDROID_VERSION: "${ANDROID_VERSION}"
+        ANDROID_VERSION: "{{ANDROID_VERSION}}"
       name: "cts-lkft-armeabi-v7a"

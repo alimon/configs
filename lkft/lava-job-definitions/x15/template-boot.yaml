@@ -1,5 +1,5 @@
 device_type: x15
-job_name: "lkft-android-${KERNEL_BRANCH}-${BUILD_NUMBER}-boot"
+job_name: "lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-boot"
 
 timeouts:
   job:
@@ -14,16 +14,16 @@ visibility:
     - lkft
 
 metadata:
-  android.build: "${BUILD_NUMBER}"
-  android.name: "${JOB_NAME}"
-  android.url: "${BUILD_URL}"
-  android.version: "${ANDROID_VERSION}"
-  git branch: "${KERNEL_BRANCH}"
-  git repo: "${KERNEL_REPO}"
-  git commit: "${KERNEL_COMMIT}"
-  git describe: "${KERNEL_DESCRIBE}"
-  build-url: "${BUILD_URL}"
-  toolchain: "${TOOLCHAIN}"
+  android.build: "{{BUILD_NUMBER}}"
+  android.name: "{{JOB_NAME}}"
+  android.url: "{{BUILD_URL}}"
+  android.version: "{{ANDROID_VERSION}}"
+  git branch: "{{KERNEL_BRANCH}}"
+  git repo: "{{KERNEL_REPO}}"
+  git commit: "{{KERNEL_COMMIT}}"
+  git describe: "{{KERNEL_DESCRIBE}}"
+  build-url: "{{BUILD_URL}}"
+  toolchain: "{{TOOLCHAIN}}"
   series: lkft
 
 protocols:
@@ -73,13 +73,13 @@ actions:
     namespace: droid
     images:
       boot:
-        url: "${DOWNLOAD_URL}/boot_fit.img"
+        url: "{{DOWNLOAD_URL}}/boot_fit.img"
       vendor:
-        url: "${DOWNLOAD_URL}/vendor.img"
+        url: "{{DOWNLOAD_URL}}/vendor.img"
       userdata:
-        url: "${DOWNLOAD_URL}/userdata.img"
+        url: "{{DOWNLOAD_URL}}/userdata.img"
       system:
-        url: "${DOWNLOAD_URL}/system.img"
+        url: "{{DOWNLOAD_URL}}/system.img"
 
 - boot:
     namespace: droid
@@ -88,7 +88,7 @@ actions:
     - ':/'
     timeout:
       minutes: 15
-{% if BOOTARGS defined %}
+{% if BOOTARGS is defined %}
     commands:
     - setenv bootargs "{{BOOTARGS}}"
     - run findfdt
