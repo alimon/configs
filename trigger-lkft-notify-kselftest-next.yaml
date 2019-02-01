@@ -1,0 +1,61 @@
+- job:
+    name: trigger-lkft-notify-kselftest-next
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    concurrent: false
+    display-name: 'Trigger LKFT kselftest next report'
+    scm:
+        - git:
+            url: https://github.com/Linaro/lkft-tools.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+    triggers:
+        - timed: '0 * * * *'
+    wrappers:
+        - timeout:
+            timeout: 60
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            pip install --user -r requirements.txt
+
+            python ./bin/trigger_generate_next_kselftest_report.py
+
+        - trigger-builds:
+            - project: lkft-notify-kselftest-next
+              block: false
+              parameter-factories:
+                  - factory: filebuild
+                    file-pattern: "*.build_notify_parameters"
+                    no-files-found-action: SKIP
+
+    publishers:
+        - workspace-cleanup:
+             include:
+              - "*_parameters"
+        - email:
+             recipients: 'dan.rue@linaro.org anders.roxell@linaro.org'

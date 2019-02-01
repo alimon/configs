@@ -1,0 +1,71 @@
+- job:
+    name: lkft-notify-kselftest-next
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: BUILD_ID
+            description: 'Next build API ID; i.e. 13138'
+        - string:
+            name: EMAIL_DESTINATION
+            description: 'Email address to notify, instead of default behavior'
+            default: "dan.rue@linaro.org,anders.roxell@linaro.org"
+        - bool:
+            name: DRY_RUN
+            description: 'Do not notify; just run and echo the report to the console'
+            default: False
+    disabled: false
+    node: master
+    concurrent: false
+    display-name: 'LKFT Notify kselftest on next'
+    scm:
+        - git:
+            url: https://github.com/Linaro/lkft-tools.git
+            refspec: +refs/heads/*:refs/remotes/origin/*
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+    wrappers:
+        - timeout:
+            timeout: 60
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            python ./bin/generate_next_kselftest_report.py --build ${BUILD_ID}
+
+            # Append default email addresses
+            echo -n ${EMAIL_DESTIONATION} > email.to
+
+    publishers:
+        - email-ext:
+            # Send custom email generated in jenkins job
+            recipients: ${FILE,path="email.to"}
+            subject: ${FILE,path="email.subject"}
+            content-type: text
+            body: |
+                ${FILE,path="email.body"}
+            presend-script: "if (${DRY_RUN} == true){logger.println(\"DRY_RUN is set; skipping email notification\"); cancel = true}"
+            success: true
+            failure: false
+        - email:
+             recipients: 'dan.rue@linaro.org anders.roxell@linaro.org'
