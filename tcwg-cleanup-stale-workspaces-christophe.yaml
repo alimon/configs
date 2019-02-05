@@ -1,0 +1,112 @@
+- job:
+    name: tcwg-cleanup-stale-workspaces-christophe
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+        - throttle:
+            max-per-node: 1
+            option: project
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+              - "tcwg.*"
+            block-level: 'NODE'
+            queue-scanning: 'ALL'
+    parameters:
+        - string:
+            name: days
+            default: '3'
+            description: 'Delete workspace more then days old.  To effectively disable time check use 0.'
+        - bool:
+            name: dry_run
+            default: 'false'
+            description: 'Whether to do a dry-run'
+        - string:
+            name: workspace_top
+            default: '/home/tcwg-buildslave/workspace'
+            description: 'Top-level workspace directory.  Can be used to delete workspaces for specific jobs.  Do not override unless you understand what you are doing.'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts branch to use'
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG ZZZ Cleanup stale workspaces Christophe'
+    triggers:
+        - timed: '@daily'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/changes/*:refs/remotes/changes/*
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+            clean:
+                before: true
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - tcwg-apm-01
+                - tcwg-apm-02
+                - tcwg-apm-03
+                - tcwg-apm-04
+                - tcwg-d05-01
+                - tcwg-sq-01
+                - tcwg-sq-02
+                - tcwg-thx1-01
+                - tcwg-tk1-01
+                - tcwg-tk1-02
+                - tcwg-tk1-03
+                - tcwg-tk1-04
+                - tcwg-tx1-01
+                - tcwg-tx1-02
+                - tcwg-tx1-03
+                - tcwg-tx1-04
+                - tcwg-x86_64-build-01
+                - tcwg-x86_64-build-02
+                - tcwg-x86_64-build-03
+                - tcwg-x86_64-build-04
+                - tcwg-x86_64-build-05
+                - tcwg-x86_64-build-06
+                - tcwg-x86_64-build-07
+                - tcwg-x86_64-build-08
+                - tcwg-x86_64-dev-01
+                - tcwg-x86_64-dev-02
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            ./tcwg-cleanup-stale-workspaces.sh --days $days --dry_run $dry_run --workspace_top $workspace_top
+    publishers:
+        - email-ext:
+            recipients: tcwg-validation@linaro.org
+            aborted: true
