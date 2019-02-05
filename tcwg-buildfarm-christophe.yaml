@@ -1,3 +1,9 @@
+- wrapper:
+    name: critical-block-exclusion
+    wrappers:
+       - exclusion:
+           resources:
+               - workspace-${NODENAME}
 - job:
     name: tcwg-buildfarm-christophe
     project-type: matrix
@@ -164,7 +170,9 @@
                 variable: TCWG_SES_PASSWORD
         - build-name:
             name: '#${BUILD_NUMBER}-${displaytag}'
+        - critical-block-exclusion
     builders:
+        - critical-block-start
         - shell: |
             #!/bin/bash
             set -ex
@@ -200,6 +208,7 @@
               --test_container_tag "$test_container_tag" \
               --binaries "$binaries" \
               --dryrun "$dryrun"
+        - critical-block-end
     publishers:
         - archive:
             artifacts: 'artifacts/*'
