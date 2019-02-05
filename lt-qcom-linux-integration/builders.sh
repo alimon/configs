@@ -242,6 +242,20 @@ case "${MACHINE}" in
 		FIRMWARE_URL=${FIRMWARE_URL_sdm845_mtp}
 		ROOTFS_PARTITION=/dev/sda8 # XXX: using Android userdata since we don't have Linux parttable
 		;;
+	qcs404-evb-1000)
+		KERNEL_DT_URL=${KERNEL_DT_URL_qcs404_evb_1000}
+		RAMDISK_URL=${RAMDISK_URL_qcs404_evb_1000}
+		ROOTFS_URL=${ROOTFS_URL_qcs404_evb_1000}
+		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_1000}
+		ROOTFS_PARTITION=/dev/mmcblk0p26
+		;;
+	qcs404-evb-4000)
+		KERNEL_DT_URL=${KERNEL_DT_URL_qcs404_evb_4000}
+		RAMDISK_URL=${RAMDISK_URL_qcs404_evb_4000}
+		ROOTFS_URL=${ROOTFS_URL_qcs404_evb_4000}
+		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_4000}
+		ROOTFS_PARTITION=/dev/mmcblk0p26
+		;;
 	*)
 		echo "Currently MACHINE: ${MACHINE} isn't supported"
 		exit 1

@@ -103,7 +103,7 @@ def main():
                                         'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
     kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
                                            'arm64/defconfig/gcc-7/')
-    machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c sdm845-mtp').split()
+    machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c sdm845-mtp qcs404-evb-1000 qcs404-evb-4000').split()
 
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
                                 'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
