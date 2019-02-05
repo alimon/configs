@@ -10,7 +10,7 @@ import dateutil.parser
 from bs4 import BeautifulSoup, SoupStrainer
 
 
-def get_kernel_ci_build(url, arch_config, dt_file):
+def get_kernel_ci_build(url, arch_config):
     f = urllib2.urlopen(url)
     page = f.read()
     soup = BeautifulSoup(page, "html.parser")
@@ -29,7 +29,7 @@ def get_kernel_ci_build(url, arch_config, dt_file):
     url = url + last_build.contents[0].text + arch_config
 
     image_url = url + 'Image'
-    dt_url = url + dt_file
+    dt_url = url + "dtbs"
     modules_url = url + 'modules.tar.xz'
     version = last_build.contents[0].text[0:-1] # remove last / char
 
@@ -103,7 +103,7 @@ def main():
                                         'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
     kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
                                            'arm64/defconfig/gcc-7/')
-    machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c sdm845-mtp qcs404-evb-1000 qcs404-evb-4000').split()
+    machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c').split()
 
     ramdisk_job_url = os.environ.get('RAMDISK_JOB_URL',
                                 'https://ci.linaro.org/job/lt-qcom-linux-testimages/')
@@ -117,24 +117,23 @@ def main():
     version = None
     (ramdisk_url, rootfs_url) = get_ramdisk_rootfs_url(ramdisk_base_url, ramdisk_job_url)
 
+    print('RAMDISK_URL=%s' % ramdisk_url)
+    validate_url(ramdisk_url)
+    print('ROOTFS_URL=%s' % rootfs_url)
+    validate_url(rootfs_url)
+
+    (image_url, dt_url, modules_url, version) = get_kernel_ci_build(kernel_ci_base_url,
+                                                                        kernel_ci_arch_config)
+
+    print("KERNEL_DT_URL=%s" % dt_url)
+
+    # Check that all DTBS exist
     for m in machines:
-        # we can't use '-' in bash variables, so replace with '_' when used in variables
-        mm = m.replace("-", "_")
-        kernel_ci_dt_file = "dtbs/qcom/%s.dtb" % m
-
-        (image_url, dt_url, modules_url, version) = get_kernel_ci_build(kernel_ci_base_url,
-                                                                        kernel_ci_arch_config, kernel_ci_dt_file)
-
-        print("KERNEL_DT_URL_%s=%s" % (mm, dt_url))
-        validate_url(dt_url)
-
-        print('RAMDISK_URL_%s=%s' % (mm, ramdisk_url))
-        validate_url(ramdisk_url)
-        print('ROOTFS_URL_%s=%s' % (mm, rootfs_url))
-        validate_url(rootfs_url)
+        dt_file_url = dt_url + "/qcom/%s.dtb" % m
+        validate_url(dt_file_url)
 
         try:
-            validate_if_already_built((builds_url % m), (image_url, dt_url, modules_url,
+            validate_if_already_built((builds_url % m), (image_url, dt_file_url, modules_url,
                                       ramdisk_url, rootfs_url))
         except urllib2.HTTPError as e:
             # 404 can happen when no previous build exists
