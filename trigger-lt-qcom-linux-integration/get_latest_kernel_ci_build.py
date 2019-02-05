@@ -36,8 +36,8 @@ def get_kernel_ci_build(url, arch_config, dt_file):
     return (image_url, dt_url, modules_url, version)
 
 
-def get_ramdisk_rootfs_url(url, rootfs_url):
-    f = urllib2.urlopen('https://ci.linaro.org/job/lt-qcom-linux-testimages/lastSuccessfulBuild/buildNumber')
+def get_ramdisk_rootfs_url(url, job_url):
+    f = urllib2.urlopen(job_url + "lastSuccessfulBuild/buildNumber")
     last_build = int(f.read())
 
     url = '%s/%d/' % (url, last_build)
@@ -105,9 +105,9 @@ def main():
                                            'arm64/defconfig/gcc-7/')
     machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c sdm845-mtp qcs404-evb-1000 qcs404-evb-4000').split()
 
+    ramdisk_job_url = os.environ.get('RAMDISK_JOB_URL',
+                                'https://ci.linaro.org/job/lt-qcom-linux-testimages/')
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
-                                'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
-    rootfs_base_url = os.environ.get('ROOTFS_BASE_URL',
                                 'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
     builds_url = os.environ.get('BUILDS_URL',
                                 'https://snapshots.linaro.org/member-builds/qcomlt/linux-integration/%s/')
@@ -115,7 +115,7 @@ def main():
     image_url = None
     modules_url = None
     version = None
-    (ramdisk_url, rootfs_url) = get_ramdisk_rootfs_url(ramdisk_base_url, rootfs_base_url)
+    (ramdisk_url, rootfs_url) = get_ramdisk_rootfs_url(ramdisk_base_url, ramdisk_job_url)
 
     for m in machines:
         # we can't use '-' in bash variables, so replace with '_' when used in variables
