@@ -54,7 +54,7 @@
 
             ccache_build_opts=--disable-ccache
 
-            rm -rf jdk* primordial-jdk* build*
+            rm -rf jdk* primordial-jdk* build* out
 
             cd $HOME/srv/jdk-cache/jdk11
             export JAVA_HOME=${PWD}
@@ -70,8 +70,8 @@
 
 
 
-            # Configure and build
-            mkdir -p build-stage1 build-stage2
+            # Configure and build.
+            mkdir -p build-stage1 build-stage2 out
 
             two_stage_build=0
 
@@ -96,8 +96,6 @@
             fi
 
             # Archive the result
-            rm -rf out
-            mkdir out
             artifact_name=jdk12-${BUILD_TYPE}
             tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
 

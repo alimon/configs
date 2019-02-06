@@ -14,6 +14,7 @@
             openjdk-members:
                 - job-build
                 - job-cancel
+                - job-workspace
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 10
@@ -58,7 +59,7 @@
 
             ccache_build_opts=--disable-ccache
 
-            rm -rf jdk* primordial-jdk* build*
+            rm -rf jdk* primordial-jdk* build* out
 
             cd $HOME/srv/jdk-cache/jdk10
             export JAVA_HOME=${PWD}
@@ -66,9 +67,6 @@
             export PATH=${JAVA_HOME}/bin:${PATH}
 
             cd ${WORKSPACE}
-
-            # Setup archive directory
-            mkdir out
 
             # Extract sources from upstream job
             tar xaf incoming/jdk11u.tar.gz
@@ -80,8 +78,8 @@
             mv $JDK_SRCDIR $JDKDIR
             shopt -s nullglob
 
-            # Configure and build
-            mkdir -p build-stage1 build-stage2
+            # Configure and build.
+            mkdir -p build-stage1 build-stage2 out
 
             two_stage_build=0
 
