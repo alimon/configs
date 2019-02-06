@@ -22,14 +22,12 @@ context:
       rootfs:
         image_arg: -drive format=raw,file={rootfs},if=virtio -m 4096 -smp 4 -nographic
         url: {{EXT4_IMAGE_URL}}
-        sha256sum: {{ROOTFS_EXT4_SHA256SUM}}
         compression: gz
         apply-overlay: true
         sparse: false
       kernel:
         image_arg: -kernel {kernel} --append "console=ttyAMA0 root=/dev/vda rw"
         url: {{KERNEL_URL}}
-        sha256sum: {{KERNEL_IMG_SHA256SUM}}
         type: image
     os: oe
 {% endblock deploy_target %}
