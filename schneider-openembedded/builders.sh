@@ -130,6 +130,12 @@ case "${MACHINE}" in
   am57xx-evm|intel-core2-32|intel-corei7-64)
      IMAGES="rpb-console-image"
      ;;
+  rzn1d*)
+    # Temporary sstate cleanup to force binaries to be re-generated each time
+    set +e
+    bitbake -c cleansstate u-boot-rzn1 linux-rzn1
+    set -e
+    ;;
 esac
 
 time bitbake ${IMAGES}
