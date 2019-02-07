@@ -1,61 +1,34 @@
 - project:
-    name: tcwg_bmk
+    name: tcwg_gnu
     toolchain_name:
       - gnu:
-          binutils_url: https://sourceware.org/git/binutils-gdb.git
           gcc_url: https://gcc.gnu.org/git/gcc.git
-          glibc_url: https://sourceware.org/git/glibc.git
-          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-          linux_branch: linux-4.19.y
-          init_configuration: 'false'
+          init_configuration: 'true'
     toolchain_ver:
       - master:
-          binutils_branch: master
           gcc_branch: master
-          glibc_branch: master
       - release:
-          binutils_branch: binutils-2_31-branch
           gcc_branch: gcc-8-branch
-          glibc_branch: release/2.28/master
     target:
-      - aarch64
-      - arm
+      - aarch64:
+          node: tcwg-sq_64-build
+      - arm:
+          node: tcwg-sq_32-build
     component:
-      - binutils
       - gcc
-      - glibc
-    bmk:
-      - spec2k6
-    cflags:
-      - Os
-      - Os_LTO
+    bootstrap_config:
+      - bootstrap
+      - bootstrap_ubsan
+      - bootstrap_O3
     jobs:
-      - 'tcwg_bmk-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-      - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-      - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-
+      - 'tcwg_gnu-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+      - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+      - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
 - view:
-    name: tcwg_bmk
+    name: tcwg_gnu
     view-type: list
-    regex: 'tcwg_bmk-b.*'
+    regex: 'tcwg_gnu-b.*'
 
-- scm:
-    name: binutils-scm
-    scm:
-        - git:
-            url: '{binutils_url}'
-            branches:
-              - 'refs/heads/{binutils_branch}'
-            basedir: binutils
-            skip-tag: true
-            sparse-checkout:
-              paths:
-                - README
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
 - scm:
     name: gcc-scm
     scm:
@@ -73,46 +46,14 @@
             clean:
               before: true
             prune: true
-- scm:
-    name: glibc-scm
-    scm:
-        - git:
-            url: '{glibc_url}'
-            branches:
-              - 'refs/heads/{glibc_branch}'
-            basedir: glibc
-            skip-tag: true
-            sparse-checkout:
-              paths:
-                - README
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/glibc.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- scm:
-    name: bmk-scripts
-    scm:
-      - git:
-          url: https://git-us.linaro.org/toolchain/bmk-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $bmk_branch
-          basedir: bmk-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/bmk-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
-
 - property:
     name: default_properties
     properties:
       - authorization:
-          tcwg-benchmark:
+          anonymous:
             - job-read
             - job-extended-read
+          linaro:
             - job-build
             - job-cancel
       - build-discarder:
@@ -120,29 +61,25 @@
           num-to-keep: 30
 
 - job-template:
-    name: tcwg_bmk-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_gnu-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
     project-type: freestyle
     defaults: global
     properties:
       - default_properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
-            - "tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+            - "tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
+            - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
           queue-scanning: 'ALL'
     disabled: false
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'TCWG Trigger {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} @ {component}'
-    workspace: workspace/tcwg_bmk-{toolchain_name}/$JOB_NAME
+    display-name: 'TCWG Trigger {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config} @ {component}'
+    workspace: workspace/tcwg_gnu-{toolchain_name}/$JOB_NAME
     scm:
       - '{component}-scm':
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
-          glibc_url: '{glibc_url}'
-          glibc_branch: '{glibc_branch}'
     triggers:
       - pollscm:
           cron: 'H H * * *'
@@ -152,7 +89,7 @@
         - timestamps
     builders:
       - trigger-builds:
-          - project: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+          - project: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
             predefined-parameters: |
               current_project={component}
               current_branch=$GIT_COMMIT
@@ -163,9 +100,7 @@
       - choice:
           name: current_project
           choices:
-            - binutils
             - gcc
-            - glibc
           description: 'Project to {action}'
 
 - scm:
@@ -185,14 +120,14 @@
           prune: true
 
 - job-template:
-    name: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
     project-type: freestyle
     defaults: global
     properties:
       - default_properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+            - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
           queue-scanning: 'ALL'
     parameters:
       - '{toolchain_name}-parameters':
@@ -211,20 +146,15 @@
           description: 'Distro image to use'
       - string:
           name: scripts_branch
-          default: tcwg_bmk
+          default: tcwg_gnu
           description: 'Scripts revision to use'
-      - string:
-          name: bmk_branch
-          default: tcwg_bmk
-          description: 'Benchmark scripts revision to use'
     disabled: false
-    node: tcwg-x86_64-dev-01
+    node: '{node}'
     concurrent: false
-    display-name: 'TCWG Build {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-    workspace: workspace/tcwg_bmk-build-{toolchain_name}_$EXECUTOR_NUMBER
+    display-name: 'TCWG Build {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+    workspace: workspace/tcwg_gnu-build-{toolchain_name}_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
-      - bmk-scripts
     wrappers:
       - timeout:
           timeout: 600
@@ -251,20 +181,13 @@
             set -ex
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
-            --ssh_info true \
             -- \
-            ./jenkins-scripts/tcwg_bmk-build.sh \
+            ./jenkins-scripts/tcwg_gnu-build.sh \
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
-            --BUILD_NUMBER "$BUILD_NUMBER" \
-            --scripts_branch "$scripts_branch" \
-            --bmk_branch "$bmk_branch" \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config} \
             ==rr[init_configuration] {init_configuration} \
-            ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
-            ==rr[glibc_url] {glibc_url} ==rr[glibc_branch] {glibc_branch} \
-            ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
             ==rr[mode] "jenkins-full" \
             ==rr[current_project] "$current_project" \
             ==rr[current_branch] "$current_branch" \
@@ -295,7 +218,6 @@
               name="$name-bisect"
               echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
               echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
-              echo "bmk_branch=$bmk_branch" >> artifacts/trigger-bisect-on-failure
             fi
 
             echo "$name" > artifacts/jenkins/build-name
@@ -307,7 +229,7 @@
             condition-filename: artifacts/trigger-bisect-on-failure
             steps:
               - trigger-builds:
-                  - project: tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+                  - project: tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
                     property-file: artifacts/trigger-bisect-on-failure
         - shell: |
             #!/bin/bash
@@ -320,7 +242,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
     project-type: freestyle
     defaults: global
     properties:
@@ -332,7 +254,7 @@
           # same regression tends to appear in multiple configurations,
           # run bisections for all configurations in-order.
           blocking-jobs:
-            - "tcwg_bmk-bisect-*"
+            - "tcwg_gnu-bisect-*"
           queue-scanning: 'BUILDABLE'
     parameters:
       - '{toolchain_name}-parameters':
@@ -355,20 +277,15 @@
           description: 'Distro image to use'
       - string:
           name: scripts_branch
-          default: tcwg_bmk
+          default: tcwg_gnu
           description: 'Scripts revision to use'
-      - string:
-          name: bmk_branch
-          default: tcwg_bmk
-          description: 'Benchmark scripts revision to use'
     disabled: false
-    node: tcwg-x86_64-dev-01
+    node: '{node}'
     concurrent: false
-    display-name: 'TCWG Bisect {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-    workspace: workspace/tcwg_bmk-bisect-{toolchain_name}_$EXECUTOR_NUMBER
+    display-name: 'TCWG Bisect {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+    workspace: workspace/tcwg_gnu-bisect-{toolchain_name}_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
-      - bmk-scripts
     wrappers:
       - timeout:
           timeout: 1440
@@ -388,7 +305,7 @@
             build_name="#$BUILD_NUMBER-$current_project"
             echo "$build_name" > artifacts/jenkins/build-name
             # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
-            echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
+            echo "prathamesh.kulkarni@linaro.org" > artifacts/jenkins/mail-recipients.txt
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
         - build-name-setter:
             name: 'artifacts/jenkins/build-name'
@@ -398,32 +315,23 @@
             set -ex
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
-            --ssh_info true \
             -- \
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
             %% artifacts/manifests/bisect.sh \
             --BUILD_URL "$BUILD_URL" \
             --baseline_rev "$baseline_rev" \
             --bad_rev "$bad_rev" \
-            --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
+            --build_script "./jenkins-scripts/tcwg_gnu-build.sh" \
+            --ci_project tcwg_gnu \
             -- \
-            --BUILD_NUMBER "$BUILD_NUMBER" \
-            --scripts_branch "$scripts_branch" \
-            --bmk_branch "$bmk_branch" \
-            ==rr[ci_project] tcwg_bmk \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
-            ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
             ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
-            ==rr[glibc_url] {glibc_url} ==rr[glibc_branch] {glibc_branch} \
-            ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
-            --current_project "$current_project" \
             ==rr[current_project] "$current_project"
 
             for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
                 echo "distro=$distro" >> $i
                 echo "scripts_branch=$scripts_branch" >> $i
-                echo "bmk_branch=$bmk_branch" >> $i
               fi
             done
 
@@ -438,14 +346,14 @@
             condition-filename: artifacts/trigger-1-reset-baseline
             steps:
               - trigger-builds:
-                  - project: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+                  - project: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
                     property-file: artifacts/trigger-1-reset-baseline
         - conditional-step:
             condition-kind: file-exists
             condition-filename: artifacts/trigger-2-build-master
             steps:
               - trigger-builds:
-                  - project: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+                  - project: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
                     property-file: artifacts/trigger-2-build-master
     publishers:
         - archive:
