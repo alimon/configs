@@ -23,6 +23,16 @@ git clone -b ${GERRIT_BRANCH} --depth 2 ssh://git@dev-private-review.linaro.org/
 cd *
 git fetch ssh://git@dev-private-review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
 git checkout -q FETCH_HEAD
+# Overlay changes on top of ci/job/configs
+case ${GERRIT_PROJECT} in
+	lkft/ci/job/configs)
+		cd ..
+		git clone https://git.linaro.org/ci/job/configs.git ci-job-configs
+		rsync -axv --exclude=.git ${GERRIT_PROJECT}/ ci-job-configs/
+		cd ci-job-configs
+		git add . && git commit -m "Import changes from ${GERRIT_PROJECT}"
+		;;
+esac
 
 export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
 export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
