@@ -31,6 +31,7 @@ case ${GERRIT_PROJECT} in
 		cp -axf -t ci-job-configs gerrit-project/*
 		cd ci-job-configs
 		git add . && git commit -m "Import changes from ${GERRIT_PROJECT}"
+		export GERRIT_PATCHSET_REVISION=$(git rev-parse HEAD)
 		;;
 esac
 
