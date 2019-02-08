@@ -90,7 +90,6 @@
       - gcc
       - linux
     jobs:
-      - 'tcwg_kernel-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
 - view:
@@ -289,7 +288,7 @@
             branch_opt=""
             i=1
             for c in {components}; do
-              eval "b=\$${{c}}_branch"
+              eval "b=\$$$${{c}}_branch"
               if [ x"$b" = x"default" ]; then
                 eval "b=\$GIT_COMMIT_$i"
                 build_name="$build_name-$c"
