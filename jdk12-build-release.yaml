@@ -60,6 +60,7 @@
             ccache_build_opts=--disable-ccache
 
             rm -rf jdk* primordial-jdk* build* out
+            mkdir -p build-stage1 build-stage2 out
 
             cd $HOME/srv/jdk-cache/jdk11
             export JAVA_HOME=${PWD}
@@ -79,8 +80,6 @@
             shopt -s nullglob
 
             # Configure and build.
-            mkdir -p build-stage1 build-stage2 out
-
             two_stage_build=0
 
             which java
