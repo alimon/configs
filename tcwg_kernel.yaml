@@ -330,8 +330,10 @@
             echo "$build_name" > artifacts/jenkins/build-name
 
             for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
-              echo "distro=$distro" >> $i
-              echo "scripts_branch=$scripts_branch" >> $i
+              if [ -f $i ]; then
+                echo "distro=$distro" >> $i
+                echo "scripts_branch=$scripts_branch" >> $i
+              fi
             done
         - build-name-setter:
             name: 'artifacts/jenkins/build-name'
