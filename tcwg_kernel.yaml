@@ -323,30 +323,26 @@
             fi
             if $reset_baseline; then
               build_name="$build_name-baseline"
-              # Don't trigger bisect if this [possibly failed] build is
-              # the new baseline.
-              rm -f artifacts/trigger-bisect-on-failure
             fi
-            if [ ! -f artifacts/failures ]; then
-              rm -f artifacts/trigger-bisect-on-failure
-            fi
-            if [ -f artifacts/trigger-bisect-on-failure ]; then
+            if [ -f artifacts/trigger-bisect ]; then
               build_name="$build_name-bisect"
-              echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
-              echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
             fi
-
             echo "$build_name" > artifacts/jenkins/build-name
+
+            for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
+              echo "distro=$distro" >> $i
+              echo "scripts_branch=$scripts_branch" >> $i
+            done
         - build-name-setter:
             name: 'artifacts/jenkins/build-name'
             file: true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-bisect-on-failure
-            steps:
-              - trigger-builds:
-                  - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-                    property-file: artifacts/trigger-bisect-on-failure
+        - trigger-builds:
+            - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+              parameter-factories:
+                - factory: filebuild
+                  file-pattern: artifacts/trigger-build-*
+            - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+              property-file: artifacts/trigger-bisect
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
