@@ -1,55 +1,57 @@
-- project:
-    name: tcwg_kernel-llvm
-    toolchain_name:
-      - llvm:
-          binutils_url: no_binutils_url
-          binutils_branch: no_binutils_branch
-          gcc_url: no_gcc_url
-          gcc_branch: no_gcc_branch
-          llvm_url: https://github.com/llvm/llvm-project.git
-          node: tcwg-x86_64-build
-    toolchain_ver:
-      - master:
-          llvm_branch: master
-      - release:
-          llvm_branch: release/8.x
-    target:
-      - aarch64
-      - arm
-    linux:
-      - next:
-          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-          linux_branch: master
-      - mainline:
-          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-          linux_branch: master
-      - stable:
-          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-          linux_branch: linux-4.20.y
-      - lts:
-          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-          linux_branch: linux-4.19.y
-    linux_config:
-      - defconfig
-      - allmodconfig
-      - allyesconfig
-      - allnoconfig
-    component:
-      - llvm
-      - linux
-    jobs:
-      - 'tcwg_kernel-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-      - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-      - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-- view:
-    name: tcwg_kernel-llvm
-    view-type: list
-    regex: 'tcwg_kernel-b.*-llvm.*'
+#- project:
+#    name: tcwg_kernel-llvm
+#    toolchain_name:
+#      - llvm:
+#          components: llvm linux
+#          binutils_url: no_binutils_url
+#          binutils_branch: no_binutils_branch
+#          gcc_url: no_gcc_url
+#          gcc_branch: no_gcc_branch
+#          llvm_url: https://github.com/llvm/llvm-project.git
+#          node: tcwg-x86_64-build
+#    toolchain_ver:
+#      - master:
+#          llvm_branch: master
+#      - release:
+#          llvm_branch: release/8.x
+#    target:
+#      - aarch64
+#      - arm
+#    linux:
+#      - next:
+#          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+#          linux_branch: master
+#      - mainline:
+#          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+#          linux_branch: master
+#      - stable:
+#          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+#          linux_branch: linux-4.20.y
+#      - lts:
+#          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+#          linux_branch: linux-4.19.y
+#    linux_config:
+#      - defconfig
+#      - allmodconfig
+#      - allyesconfig
+#      - allnoconfig
+#    component:
+#      - llvm
+#      - linux
+#    jobs:
+#      - 'tcwg_kernel-trigger-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}-{component}'
+#      - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+#      - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+#- view:
+#    name: tcwg_kernel-llvm
+#    view-type: list
+#    regex: 'tcwg_kernel-.*-llvm.*'
 
 - project:
     name: tcwg_kernel-gnu
     toolchain_name:
       - gnu:
+          components: binutils gcc linux
           binutils_url: https://sourceware.org/git/binutils-gdb.git
           gcc_url: https://gcc.gnu.org/git/gcc.git
           llvm_url: no_llvm_url
@@ -94,7 +96,7 @@
 - view:
     name: tcwg_kernel-gnu
     view-type: list
-    regex: 'tcwg_kernel-b.*-gnu.*'
+    regex: 'tcwg_kernel-.*-gnu.*'
 
 - scm:
     name: llvm-scm
@@ -105,10 +107,7 @@
               - 'refs/heads/{llvm_branch}'
             basedir: llvm
             skip-tag: true
-            sparse-checkout:
-              paths:
-                - llvm/README.txt
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project-20170507.git
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project.git
             wipe-workspace: false
             clean:
               before: true
@@ -122,9 +121,6 @@
               - 'refs/heads/{binutils_branch}'
             basedir: binutils
             skip-tag: true
-            sparse-checkout:
-              paths:
-                - README
             reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
             wipe-workspace: false
             clean:
@@ -139,14 +135,20 @@
               - 'refs/heads/{gcc_branch}'
             basedir: gcc
             skip-tag: true
-            sparse-checkout:
-              paths:
-                - README
             reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
             wipe-workspace: false
             clean:
               before: true
             prune: true
+- scm:
+    name: gnu-scm
+    scm:
+      - binutils-scm:
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+      - gcc-scm:
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
 - scm:
     name: linux-scm
     scm:
@@ -156,9 +158,6 @@
               - 'refs/heads/{linux_branch}'
             basedir: linux
             skip-tag: true
-            sparse-checkout:
-              paths:
-                - README
             reference-repo: /home/tcwg-buildslave/snapshots-ref/linux.git
             wipe-workspace: false
             clean:
@@ -183,62 +182,28 @@
     name: tcwg_kernel-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
-    properties:
-      - default_properties
-      - build-blocker:
-          blocking-jobs:
-            - "tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
-            - "tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
-          queue-scanning: 'ALL'
-    disabled: false
-    node: tcwg-coordinator
-    concurrent: false
-    display-name: 'TCWG Trigger tcwg_kernel/{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} @ {component}'
-    workspace: workspace/tcwg_kernel-{toolchain_name}/$JOB_NAME
-    scm:
-      - '{component}-scm':
-          llvm_url: '{llvm_url}'
-          llvm_branch: '{llvm_branch}'
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
-          linux_url: '{linux_url}'
-          linux_branch: '{linux_branch}'
-    triggers:
-      - pollscm:
-          cron: 'H H */2 * *'
-    wrappers:
-        - timeout:
-            timeout: 600
-        - timestamps
-    builders:
-      - trigger-builds:
-          - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-            predefined-parameters: |
-              current_project={component}
-              current_branch=$GIT_COMMIT
+    disabled: true
+    display-name: 'DELETE ME'
 
 - parameter:
     name: llvm-parameters
     parameters:
-      - choice:
-          name: current_project
-          choices:
-            - llvm
-            - linux
-          description: 'Project to {action}'
+      - string:
+          name: llvm_branch
+          default: default
+          description: "llvm branch or sha1 to build"
 
 - parameter:
     name: gnu-parameters
     parameters:
-      - choice:
-          name: current_project
-          choices:
-            - binutils
-            - gcc
-            - linux
-          description: 'Project to {action}'
+      - string:
+          name: binutils_branch
+          default: default
+          description: "binutils branch or sha1 to build"
+      - string:
+          name: gcc_branch
+          default: default
+          description: "gcc branch or sha1 to build"
 
 - scm:
     name: jenkins-scripts
@@ -267,12 +232,11 @@
             - "tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
           queue-scanning: 'ALL'
     parameters:
-      - '{toolchain_name}-parameters':
-          action: build
+      - '{toolchain_name}-parameters'
       - string:
-          name: current_branch
+          name: linux_branch
           default: default
-          description: "Git rev of $current_project to build"
+          description: "linux branch or sha1 to build"
       - bool:
           name: reset_baseline
           default: false
@@ -283,7 +247,7 @@
           description: 'Distro image to use'
       - string:
           name: scripts_branch
-          default: master
+          default: rr-many
           description: 'Scripts revision to use'
     disabled: false
     node: '{node}'
@@ -292,6 +256,19 @@
     workspace: workspace/tcwg_kernel-build-{toolchain_name}_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
+      - '{toolchain_name}-scm':
+          llvm_url: '{llvm_url}'
+          llvm_branch: '{llvm_branch}'
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
+      - linux-scm:
+          linux_url: '{linux_url}'
+          linux_branch: '{linux_branch}'
+    triggers:
+      - pollscm:
+          cron: 'H H * * *'
     wrappers:
       - timeout:
           timeout: 600
@@ -308,28 +285,33 @@
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
             mkdir -p artifacts/jenkins
-            build_name="#$BUILD_NUMBER-$current_project"
-            echo "$build_name" > artifacts/jenkins/build-name
-        - build-name-setter:
-            name: 'artifacts/jenkins/build-name'
-            file: true
-        - shell: |
-            #!/bin/bash
-            set -ex
+            build_name="#$BUILD_NUMBER"
+            branch_opt=""
+            i=1
+            for c in {components}; do
+              eval "b=\$${{c}}_branch"
+              if [ x"$b" = x"default" ]; then
+                eval "b=\$GIT_COMMIT_$i"
+                build_name="$build_name-$c"
+              fi
+              branch_opt="branch_opt ==rr[${{c}}_branch] $b"
+              i=$(($i+1))
+            done
+
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
             -- \
             ./jenkins-scripts/tcwg_kernel-build.sh \
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-            ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
-            ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
-            ==rr[llvm_url] {llvm_url} ==rr[llvm_branch] {llvm_branch} \
-            ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
+            ==rr[components] "{components}"
+            ==rr[llvm_url] {llvm_url} \
+            ==rr[binutils_url] {binutils_url} \
+            ==rr[gcc_url] {gcc_url} \
+            ==rr[linux_url] {linux_url} \
+            $branch_opt \
             ==rr[mode] "jenkins-full" \
-            ==rr[current_project] "$current_project" \
-            ==rr[current_branch] "$current_branch" \
             ==rr[reset_baseline] "$reset_baseline" &
             res=0 && wait $! || res=$?
 
@@ -337,15 +319,11 @@
               touch artifacts/failures
             fi
 
-            name="#$BUILD_NUMBER-$current_project"
             if [ -e artifacts/results ]; then
-              name="$name-R$(tail -n1 artifacts/results)"
-            fi
-            if [ -e artifacts/distance-to-baseline ]; then
-              name="$name-B$(cat artifacts/distance-to-baseline)"
+              build_name="$build_name-R$(tail -n1 artifacts/results)"
             fi
             if $reset_baseline; then
-              name="$name-baseline"
+              build_name="$build_name-baseline"
               # Don't trigger bisect if this [possibly failed] build is
               # the new baseline.
               rm -f artifacts/trigger-bisect-on-failure
@@ -354,12 +332,12 @@
               rm -f artifacts/trigger-bisect-on-failure
             fi
             if [ -f artifacts/trigger-bisect-on-failure ]; then
-              name="$name-bisect"
+              build_name="$build_name-bisect"
               echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
               echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
             fi
 
-            echo "$name" > artifacts/jenkins/build-name
+            echo "$build_name" > artifacts/jenkins/build-name
         - build-name-setter:
             name: 'artifacts/jenkins/build-name'
             file: true
@@ -396,15 +374,17 @@
             - "tcwg_kernel-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
-      - '{toolchain_name}-parameters':
-          action: bisect
+      - string:
+          name: current_project
+          default: ""
+          description: "Project to bisect"
       - string:
           name: baseline_rev
-          default: default
+          default: ""
           description: "Baseline revision"
       - string:
           name: bad_rev
-          default: default
+          default: ""
           description: "Bad revision"
       - string:
           name: mail_recipients
@@ -416,7 +396,7 @@
           description: 'Distro image to use'
       - string:
           name: scripts_branch
-          default: master
+          default: rr-many
           description: 'Scripts revision to use'
     disabled: false
     node: '{node}'
