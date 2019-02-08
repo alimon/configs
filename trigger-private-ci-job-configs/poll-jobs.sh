@@ -19,16 +19,16 @@ bash -c "ssh-keyscan  -t rsa -p 29418 dev-private-review.linaro.org >> \
 
 rm -rf ${WORKSPACE}/*
 
-git clone -b ${GERRIT_BRANCH} --depth 2 ssh://git@dev-private-review.linaro.org/${GERRIT_PROJECT}
-cd *
+git clone -b ${GERRIT_BRANCH} --depth 2 ssh://git@dev-private-review.linaro.org/${GERRIT_PROJECT} gerrit-project
+cd gerrit-project
 git fetch ssh://git@dev-private-review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
 git checkout -q FETCH_HEAD
 # Overlay changes on top of ci/job/configs
 case ${GERRIT_PROJECT} in
 	lkft/ci/job/configs)
 		cd ..
-		git clone https://git.linaro.org/ci/job/configs.git ci-job-configs
-		rsync -axv --exclude=.git ${GERRIT_PROJECT}/ ci-job-configs/
+		git clone --depth 1 https://git.linaro.org/ci/job/configs.git ci-job-configs
+		cp -axf -t ci-job-configs gerrit-project/*
 		cd ci-job-configs
 		git add . && git commit -m "Import changes from ${GERRIT_PROJECT}"
 		;;
