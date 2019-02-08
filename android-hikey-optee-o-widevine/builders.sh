@@ -70,7 +70,7 @@ fi
 cd ../../
 
 cd vendor
-git clone ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/widevine/android widevine -b oc-mr1
+git clone ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/widevine/android widevine -b mirrors/oc-mr1
 cd widevine/
 if [ "${GERRIT_PROJECT}" == "widevine/android" ]; then
     git pull ssh://lhg-gerrit-bot@dev-private-review.linaro.org:29418/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
