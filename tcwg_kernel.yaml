@@ -291,6 +291,8 @@
               eval "b=\$$$${{c}}_branch"
               if [ x"$b" = x"default" ]; then
                 eval "b=\$GIT_COMMIT_$i"
+              fi
+              if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
               fi
               branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
