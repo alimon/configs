@@ -1,69 +1,19 @@
-#- project:
-#    name: tcwg_kernel-llvm
-#    toolchain_name:
-#      - llvm:
-#          components: llvm linux
-#          binutils_url: no_binutils_url
-#          binutils_branch: no_binutils_branch
-#          gcc_url: no_gcc_url
-#          gcc_branch: no_gcc_branch
-#          llvm_url: https://github.com/llvm/llvm-project.git
-#          node: tcwg-x86_64-build
-#    toolchain_ver:
-#      - master:
-#          llvm_branch: master
-#      - release:
-#          llvm_branch: release/8.x
-#    target:
-#      - aarch64
-#      - arm
-#    linux:
-#      - next:
-#          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
-#          linux_branch: master
-#      - mainline:
-#          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-#          linux_branch: master
-#      - stable:
-#          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-#          linux_branch: linux-4.20.y
-#      - lts:
-#          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-#          linux_branch: linux-4.19.y
-#    linux_config:
-#      - defconfig
-#      - allmodconfig
-#      - allyesconfig
-#      - allnoconfig
-#    component:
-#      - llvm
-#      - linux
-#    jobs:
-#      - 'tcwg_kernel-trigger-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}-{component}'
-#      - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-#      - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-#- view:
-#    name: tcwg_kernel-llvm
-#    view-type: list
-#    regex: 'tcwg_kernel-.*-llvm.*'
-
 - project:
-    name: tcwg_kernel-gnu
+    name: tcwg_kernel-llvm
     toolchain_name:
-      - gnu:
-          components: binutils gcc linux
-          binutils_url: https://sourceware.org/git/binutils-gdb.git
-          gcc_url: https://gcc.gnu.org/git/gcc.git
-          llvm_url: no_llvm_url
-          llvm_branch: no_llvm_branch
-          node: tcwg-x86_64-1-cam
+      - llvm:
+          components: llvm linux
+          binutils_url: no_binutils_url
+          binutils_branch: no_binutils_branch
+          gcc_url: no_gcc_url
+          gcc_branch: no_gcc_branch
+          llvm_url: https://github.com/llvm/llvm-project.git
+          node: tcwg-x86_64-build
     toolchain_ver:
       - master:
-          binutils_branch: master
-          gcc_branch: master
+          llvm_branch: master
       - release:
-          binutils_branch: binutils-2_31-branch
-          gcc_branch: gcc-8-branch
+          llvm_branch: release/8.x
     target:
       - aarch64
       - arm
@@ -86,12 +36,64 @@
       - allyesconfig
       - allnoconfig
     component:
-      - binutils
-      - gcc
+      - llvm
       - linux
+    jobs:
+      - 'tcwg_kernel-trigger-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}-{component}'
+
+- project:
+    name: tcwg_kernel-gnu
+    toolchain_name:
+      - llvm:
+          components: llvm linux
+          binutils_url: no_binutils_url
+          gcc_url: no_gcc_url
+          llvm_url: https://github.com/llvm/llvm-project.git
+          node: tcwg-x86_64-build
+      - gnu:
+          components: binutils gcc linux
+          binutils_url: https://sourceware.org/git/binutils-gdb.git
+          gcc_url: https://gcc.gnu.org/git/gcc.git
+          llvm_url: no_llvm_url
+          node: tcwg-x86_64-1-cam
+    toolchain_ver:
+      - master:
+          binutils_branch: master
+          gcc_branch: master
+          llvm_branch: master
+      - release:
+          binutils_branch: binutils-2_31-branch
+          gcc_branch: gcc-8-branch
+          llvm_branch: release/8.x
+    target:
+      - aarch64
+      - arm
+    linux:
+      - next:
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+          linux_branch: master
+      - mainline:
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+          linux_branch: master
+      - stable:
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          linux_branch: linux-4.20.y
+      - lts:
+          linux_url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
+          linux_branch: linux-4.19.y
+    linux_config:
+      - defconfig
+      - allmodconfig
+      - allyesconfig
+      - allnoconfig
     jobs:
       - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+
+- view:
+    name: tcwg_kernel-llvm
+    view-type: list
+    regex: 'tcwg_kernel-.*-llvm.*'
 - view:
     name: tcwg_kernel-gnu
     view-type: list
@@ -178,7 +180,7 @@
           num-to-keep: 30
 
 - job-template:
-    name: tcwg_kernel-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    name: tcwg_kernel-trigger-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}-{component}
     project-type: freestyle
     defaults: global
     disabled: true
