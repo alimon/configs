@@ -294,8 +294,8 @@
               fi
               if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
+                branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
               fi
-              branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
               i=$(($i+1))
             done
 
@@ -306,7 +306,6 @@
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
-            ==rr[components] "{components}" \
             ==rr[llvm_url] {llvm_url} \
             ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url} \
@@ -443,11 +442,10 @@
             ==rr[ci_project] tcwg_kernel \
             -- \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
-            ==rr[binutils_url] {binutils_url} ==rr[binutils_branch] {binutils_branch} \
-            ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
-            ==rr[llvm_url] {llvm_url} ==rr[llvm_branch] {llvm_branch} \
-            ==rr[linux_url] {linux_url} ==rr[linux_branch] {linux_branch} \
-            ==rr[current_project] "$current_project"
+            ==rr[llvm_url] {llvm_url} \
+            ==rr[binutils_url] {binutils_url} \
+            ==rr[gcc_url] {gcc_url} \
+            ==rr[linux_url] {linux_url}
 
             for i in artifacts/trigger-0-bisect-again artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
               if [ -f $i ]; then
@@ -465,27 +463,13 @@
         - build-name-setter:
             name: 'artifacts/jenkins/build-name'
             file: true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-0-bisect-again
-            steps:
-              - trigger-builds:
-                  - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-                    property-file: artifacts/trigger-0-bisect-again
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-1-reset-baseline
-            steps:
-              - trigger-builds:
-                  - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-                    property-file: artifacts/trigger-1-reset-baseline
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-2-build-master
-            steps:
-              - trigger-builds:
-                  - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-                    property-file: artifacts/trigger-2-build-master
+        - trigger-builds:
+            - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+              parameter-factories:
+                - factory: filebuild
+                  file-pattern: artifacts/trigger-build-*
+            - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+              property-file: artifacts/trigger-bisect
     publishers:
         - archive:
             artifacts: 'artifacts/**'
