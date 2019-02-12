@@ -182,6 +182,10 @@
             git checkout android-hikey-linaro-4.19
             git pull
             export KERNEL_DESCRIBE_4_19=$(git rev-parse --short HEAD)
+
+            # temporary workaround to support hdmi dongle in lava lab
+            git revert --no-edit 34d2e7a0f456c1ebf47ff2f33b2ce96062906110
+
             ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.19/android-base.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
@@ -206,6 +210,10 @@
             git checkout android-hikey-linaro-4.14
             git pull
             export KERNEL_DESCRIBE_4_14=$(git rev-parse --short HEAD)
+
+            # temporary workaround to support hdmi dongle in lava lab
+            git revert --no-edit 758837f46cb40e3c604bd3f8e609ef7e9f861370
+
             ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.14/android-base.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
