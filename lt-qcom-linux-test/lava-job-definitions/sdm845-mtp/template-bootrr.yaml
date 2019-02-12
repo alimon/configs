@@ -12,7 +12,7 @@ visibility: public
 
 metadata:
   source: https://git.linaro.org/ci/job/configs.git
-  path: lt-qcom-linux-integration/lava-job-definitions/${LAVA_DEVICE_TYPE}/template-bootrr.yaml
+  path: lt-qcom-linux-test/lava-job-definitions/${LAVA_DEVICE_TYPE}/template-bootrr.yaml
   image.type: 'kernel-ci'
   image.url: "${BOOT_URL}"
   kernel.tree: "${KERNEL_TREE}"
@@ -72,6 +72,7 @@ actions:
     - gzip
     - git
     - mktemp
+    - fastboot
     os: debian
 
 - boot:
@@ -115,23 +116,11 @@ actions:
           - then
           -     configs_dir=$$(mktemp -d /tmp/configs.XXXX)
           -     git clone --depth 1 http://git.linaro.org/ci/job/configs.git $$configs_dir 
-          -     $$configs_dir/lt-qcom-linux-integration/copy_test_overlay.sh /lava-lxc/${LXC_BOOT_FILE} $$overlay_file
+          -     $$configs_dir/lt-qcom-linux-test/copy_test_overlay.sh /lava-lxc/${LXC_BOOT_FILE} $$overlay_file
           -     echo "apply_test_overlay:" "pass"
           - else
           -     echo "apply_test_overlay:" "skip"
           - fi
-
-- test:
-    namespace: tlxc
-    timeout:
-      minutes: 10
-    definitions:
-    - repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      path: automated/linux/android-platform-tools/install.yaml
-      name: install-android-platform-tools-r2602
-      parameters:
-        LINK: 'https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip'
 
 - deploy:
     timeout:
@@ -142,12 +131,6 @@ actions:
       boot:
         url: lxc:///${LXC_BOOT_FILE}
     os: oe
-    protocols:
-        lava-lxc:
-        - action: fastboot-deploy
-          request: pre-power-command
-          timeout:
-              minutes: 2
 
 - boot:
     namespace: ${LAVA_DEVICE_TYPE}

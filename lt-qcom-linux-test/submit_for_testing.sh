@@ -92,7 +92,7 @@ if [ $SEND_TESTJOB = true ]; then
       --qa-server-team qcomlt \
       --qa-server-project ${QA_SERVER_PROJECT} \
       --git-commit ${BUILD_NUMBER} \
-      --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
+      --template-path configs/lt-qcom-linux-test/lava-job-definitions \
       --template-names template-bootrr.yaml
 
   python configs/openembedded-lkft/submit_for_testing.py \
@@ -103,7 +103,7 @@ if [ $SEND_TESTJOB = true ]; then
       --qa-server-team qcomlt \
       --qa-server-project ${QA_SERVER_PROJECT} \
       --git-commit ${BUILD_NUMBER} \
-      --template-path configs/lt-qcom-linux-integration/lava-job-definitions \
+      --template-path configs/lt-qcom-linux-test/lava-job-definitions \
       --template-base-pre base_template-functional.yaml \
       --template-names template-functional.yaml
 fi

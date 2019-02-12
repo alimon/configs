@@ -95,16 +95,16 @@
                 variable: QCOMLT_KERNELCI_TOKEN
     builders:
         - shell:
-            !include-raw: lt-qcom-linux-integration/builders-deps.sh
+            !include-raw: lt-qcom-linux-test/builders-deps.sh
         - shell:
-            !include-raw: lt-qcom-linux-integration/builders.sh
+            !include-raw: lt-qcom-linux-test/builders.sh
         - inject:
             properties-file: builders_out_parameters
         - linaro-publish-token
         - shell:
-            !include-raw: lt-qcom-linux-integration/publishers.sh
+            !include-raw: lt-qcom-linux-test/publishers.sh
         - shell:
-            !include-raw: lt-qcom-linux-integration/submit_for_testing.sh
+            !include-raw: lt-qcom-linux-test/submit_for_testing.sh
     publishers:
         - groovy-postbuild:
             script:
