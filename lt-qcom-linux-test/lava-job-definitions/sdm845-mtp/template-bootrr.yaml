@@ -180,10 +180,9 @@ actions:
           name: qcomlt-${QA_SERVER_PROJECT}-bootrr
         run:
           steps:
-          - if [ "${LAVA_DEVICE_TYPE}" == "dragonboard-410c" ]; then
-          -     qcom,apq8016-sbc
-          - elif [ "${LAVA_DEVICE_TYPE}" == "dragonboard-820c" ]; then
-          -     arrow,apq8096-db820c
-          - elif [ "${LAVA_DEVICE_TYPE}" == "sdm845-mtp" ]; then
-          -     qcom,sdm845-mtp
-          - fi
+          - for TEST in $$(tr "\0" "\n" < /proc/device-tree/compatible); do
+          -     if [ -x "/usr/bin/$${TEST}" ]; then
+          - 	    /usr/bin/$${TEST}
+          -     fi
+          - done
+          - echo ~~~~~~~~~~~~~~~~~~~~~
