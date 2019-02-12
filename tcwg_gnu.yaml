@@ -173,9 +173,6 @@
             mkdir -p artifacts/jenkins
             build_name="#$BUILD_NUMBER-$current_project"
             echo "$build_name" > artifacts/jenkins/build-name
-            echo DEBUG JENKINS NODE SETTING
-            hostname
-            /sbin/ifconfig
         - build-name-setter:
             name: 'artifacts/jenkins/build-name'
             file: true
@@ -185,6 +182,7 @@
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
             --label {node} \
+            --node $NODE_NAME \
             -- \
             ./jenkins-scripts/tcwg_gnu-build.sh \
             %% artifacts/jenkins/manifest.sh \
@@ -320,6 +318,7 @@
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
             --label {node} \
+            --node $NODE_NAME \
             -- \
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
             %% artifacts/manifests/bisect.sh \
