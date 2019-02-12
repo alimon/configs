@@ -202,11 +202,11 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+          - project: tcwg_kernel-build-{ci_config}
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+          - project: tcwg_kernel-bisect-{ci_config}
             property-file: artifacts/trigger-bisect
 
 - job-template:
@@ -311,7 +311,8 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-        - trigger-followup-builds
+        - trigger-followup-builds:
+            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -401,7 +402,8 @@
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
-        - trigger-followup-builds
+        - trigger-followup-builds:
+            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
