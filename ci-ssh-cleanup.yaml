@@ -1,0 +1,22 @@
+- job:
+    name: ci-ssh-cleanup
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    node: master
+    display-name: 'CI clean stray ssh-agents on master'
+    triggers:
+        - timed : '@daily'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            kill $(ps -eo pid,etime,comm,user,tty|grep ssh-agent |awk '$2~/-/ {if ($2>4) print $1}')
+    publishers:
+        - email:
+            recipients: 'linaro-infrastructure-errors@lists.linaro.org'
