@@ -56,6 +56,54 @@
     view-type: list
     regex: 'tcwg_kernel-.*-gnu.*'
 
+- property:
+    name: default-properties
+    properties:
+      - authorization:
+          anonymous:
+            - job-read
+            - job-extended-read
+          linaro:
+            - job-build
+            - job-cancel
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 30
+
+- parameter:
+    name: llvm-parameters
+    parameters:
+      - string:
+          name: llvm_branch
+          default: default
+          description: "llvm branch or sha1 to build"
+- parameter:
+    name: gnu-parameters
+    parameters:
+      - string:
+          name: binutils_branch
+          default: default
+          description: "binutils branch or sha1 to build"
+      - string:
+          name: gcc_branch
+          default: default
+          description: "gcc branch or sha1 to build"
+- parameter:
+    name: default-parameters
+    parameters:
+      - string:
+          name: mail_recipients
+          default: default
+          description: "Comma-separated list of email recipients; use 'default' unless testing"
+      - string:
+          name: distro
+          default: xenial
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: rr-many
+          description: 'Scripts revision to use'
+
 - scm:
     name: llvm-scm
     scm:
@@ -121,41 +169,6 @@
             clean:
               before: true
             prune: true
-
-- property:
-    name: default_properties
-    properties:
-      - authorization:
-          anonymous:
-            - job-read
-            - job-extended-read
-          linaro:
-            - job-build
-            - job-cancel
-      - build-discarder:
-          days-to-keep: 30
-          num-to-keep: 30
-
-- parameter:
-    name: llvm-parameters
-    parameters:
-      - string:
-          name: llvm_branch
-          default: default
-          description: "llvm branch or sha1 to build"
-
-- parameter:
-    name: gnu-parameters
-    parameters:
-      - string:
-          name: binutils_branch
-          default: default
-          description: "binutils branch or sha1 to build"
-      - string:
-          name: gcc_branch
-          default: default
-          description: "gcc branch or sha1 to build"
-
 - scm:
     name: jenkins-scripts
     scm:
@@ -172,12 +185,36 @@
             before: true
           prune: true
 
+- builder:
+    name: trigger-followup-builds
+    builders:
+      - build-name-setter:
+          name: 'artifacts/jenkins/build-name'
+          file: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
+            if [ -f $i ]; then
+              echo "mail_recipients=$mail_recipients" >> $i
+              echo "distro=$distro" >> $i
+              echo "scripts_branch=$scripts_branch" >> $i
+            fi
+          done
+      - trigger-builds:
+          - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+            parameter-factories:
+              - factory: filebuild
+                file-pattern: artifacts/trigger-build-*
+          - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+            property-file: artifacts/trigger-bisect
+
 - job-template:
     name: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
-      - default_properties
+      - default-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
@@ -192,14 +229,7 @@
           name: reset_baseline
           default: false
           description: "Whether to reset baseline to results of this build"
-      - string:
-          name: distro
-          default: xenial
-          description: 'Distro image to use'
-      - string:
-          name: scripts_branch
-          default: rr-many
-          description: 'Scripts revision to use'
+      - default-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -281,23 +311,7 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-
-            for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
-              if [ -f $i ]; then
-                echo "distro=$distro" >> $i
-                echo "scripts_branch=$scripts_branch" >> $i
-              fi
-            done
-        - build-name-setter:
-            name: 'artifacts/jenkins/build-name'
-            file: true
-        - trigger-builds:
-            - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-              parameter-factories:
-                - factory: filebuild
-                  file-pattern: artifacts/trigger-build-*
-            - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-              property-file: artifacts/trigger-bisect
+        - trigger-followup-builds
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -313,7 +327,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default_properties
+      - default-properties
       - build-blocker:
           # Run at most 1 bisect job for all configurations.
           # Bisect jobs can easily run for 5+ hours, and a few of them
@@ -336,18 +350,7 @@
           name: bad_rev
           default: ""
           description: "Bad revision"
-      - string:
-          name: mail_recipients
-          default: default
-          description: "Comma-separated list of email recipients; use 'default' unless testing"
-      - string:
-          name: distro
-          default: xenial
-          description: 'Distro image to use'
-      - string:
-          name: scripts_branch
-          default: rr-many
-          description: 'Scripts revision to use'
+      - default-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -376,12 +379,7 @@
             # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
             echo "maxim.kuvyrkov@linaro.org" > artifacts/jenkins/mail-recipients.txt
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
-        - build-name-setter:
-            name: 'artifacts/jenkins/build-name'
-            file: true
-        - shell: |
-            #!/bin/bash
-            set -ex
+
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
             -- \
@@ -400,29 +398,10 @@
             ==rr[gcc_url] {gcc_url} \
             ==rr[linux_url] {linux_url}
 
-            for i in artifacts/trigger-0-bisect-again artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
-              if [ -f $i ]; then
-                if [ x"$i" = x"artifacts/trigger-0-bisect-again" ]; then
-                  echo "mail_recipients=$mail_recipients" >> $i
-                fi
-                echo "distro=$distro" >> $i
-                echo "scripts_branch=$scripts_branch" >> $i
-              fi
-            done
-
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
-        - build-name-setter:
-            name: 'artifacts/jenkins/build-name'
-            file: true
-        - trigger-builds:
-            - project: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-              parameter-factories:
-                - factory: filebuild
-                  file-pattern: artifacts/trigger-build-*
-            - project: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-              property-file: artifacts/trigger-bisect
+        - trigger-followup-builds
     publishers:
         - archive:
             artifacts: 'artifacts/**'
