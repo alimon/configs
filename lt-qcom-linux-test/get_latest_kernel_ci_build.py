@@ -46,7 +46,7 @@ def get_ramdisk_rootfs_url(url, job_url):
     base_url_p = urlparse.urlparse(url)
     base_url = "%s://%s" % (base_url_p.scheme, base_url_p.netloc)
 
-    ramdisk_rex = re.compile('initramfs-bootrr-image-.*\.rootfs\.cpio\.gz$')
+    ramdisk_rex = re.compile('initramfs-test-image-.*\.rootfs\.cpio\.gz$')
     ramdisk_url = ''
     soup = BeautifulSoup(page, "html.parser", parse_only=SoupStrainer("a"))
     for line in soup.find_all('a', href=True):
