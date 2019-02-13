@@ -42,9 +42,13 @@
                 - gcc5
                 - gcc6
                 - gcc7
+                - gcc8
                 - latest-rel
                 - master
             description: 'Toolchain version; should be support ABE config'
+        - file:
+            name: manifest.txt
+            description: 'Manifest'
         - bool:
             name: verbose
             default: false
@@ -89,11 +93,13 @@
             abe_branch=tested
             distro=xenial-tcwg-tested
             eval $extra_options
+            cat $(pwd)/manifest.txt
             ./docker-run.sh --distro "$distro" -- ./tcwg-dev-build.sh \
             --abe_branch "$abe_branch" \
             --release_name "$release_name" \
             --target "$target" \
             --version "$version" \
+            --manifest "$(pwd)/manifest.txt" \
             --verbose "$verbose"
     publishers:
         - archive:
