@@ -268,13 +268,15 @@
 
             # compile pvrsrvkm.ko
             KERNEL_PVR_DIR=${X15_KERNEL_DIR}/modules/eurasia_km/eurasiacon/build/linux2/omap_android
-            KERNEL_CROSS_COMPILE=${ANDROID_ROOT}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
+            unset CROSS_COMPILE
+            PVR_CROSS_COMPILE=${ANDROID_ROOT}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
             cd ${KERNEL_PVR_DIR} && \
                 make -j$(nproc) \
                      JAVAC=/bin/true \
                      ARCH=arm \
                      TARGET_DEVICE=am57xevm \
-                     KERNEL_CROSS_COMPILE=${KERNEL_CROSS_COMPILE} \
+                     CROSS_COMPILE=${PVR_CROSS_COMPILE} \
+                     KERNEL_CROSS_COMPILE=${PVR_CROSS_COMPILE} \
                      EXCLUDED_APIS="composerhal,camerahal,unittests,sensorhal" \
                      BUILD_PROP=${X15_KERNEL_DIR}/modules/eurasia_km/build.prop \
                      KERNELDIR=${X15_KERNEL_DIR} && \
