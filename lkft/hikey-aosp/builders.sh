@@ -29,9 +29,9 @@ if echo "${JOB_NAME}" | grep premerge; then
 fi
 
 # temporary workaround to support hdmi dongle in lava lab
-if echo "${KERNEL_BRANCH}" | grep "-4.14"; then
+if echo "${KERNEL_BRANCH}" | grep "\-4.14"; then
   git revert --no-edit 758837f46cb40e3c604bd3f8e609ef7e9f861370
-elif echo "${KERNEL_BRANCH}" | grep "-4.19"; then
+elif echo "${KERNEL_BRANCH}" | grep "\-4.19"; then
   git revert --no-edit 34d2e7a0f456c1ebf47ff2f33b2ce96062906110
 fi
 
