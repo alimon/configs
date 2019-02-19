@@ -16,6 +16,17 @@
     node: master
     concurrent: false
     display-name: 'CI Dockerfiles build/publish deployment'
+    scm:
+        - git:
+            url: https://review.linaro.org/${GERRIT_PROJECT}
+            refspec: ${GERRIT_REFSPEC}
+            branches:
+                - ${GERRIT_BRANCH}
+            skip-tag: true
+            clean:
+                before: true
+            choosing-strategy: gerrit
+            basedir: dockerfiles
     triggers:
         - gerrit:
             server-name: 'review.linaro.org'
@@ -65,4 +76,4 @@
             !include-raw: ci-dockerfiles-deployment/builders.sh
     publishers:
         - email:
-            recipients: riku.voipio@linaro.org, fathi.boudra@linaro.org
+            recipients: linaro-infrastructure-errors@lists.linaro.org

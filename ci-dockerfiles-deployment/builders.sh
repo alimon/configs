@@ -19,10 +19,7 @@ echo "    Gerrit Environment"
 env |grep '^GERRIT'
 echo "########################################################################"
 
-rm -rf ${WORKSPACE}/*
-
-git clone -b ${GERRIT_BRANCH} --depth 2 https://review.linaro.org/${GERRIT_PROJECT}
-cd *
+cd dockerfiles/
 
 git_previous_commit=$(git rev-parse HEAD~1)
 git_commit=$(git rev-parse HEAD)
