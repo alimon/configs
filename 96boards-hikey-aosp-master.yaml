@@ -184,6 +184,7 @@
             git checkout android-hikey-linaro-4.19
             git pull
             export KERNEL_DESCRIBE_4_19=$(git rev-parse --short HEAD)
+            export KERNEL_VERSION_4_19=$(make kernelversion)
 
             # temporary workaround to support hdmi dongle in lava lab
             git revert --no-edit 34d2e7a0f456c1ebf47ff2f33b2ce96062906110
@@ -212,6 +213,7 @@
             git checkout android-hikey-linaro-4.14
             git pull
             export KERNEL_DESCRIBE_4_14=$(git rev-parse --short HEAD)
+            export KERNEL_VERSION_4_14=$(make kernelversion)
 
             # temporary workaround to support hdmi dongle in lava lab
             git revert --no-edit 758837f46cb40e3c604bd3f8e609ef7e9f861370
@@ -232,6 +234,7 @@
             git checkout android-hikey-linaro-4.9
             git pull
             export KERNEL_DESCRIBE_4_9=$(git rev-parse --short HEAD)
+            export KERNEL_VERSION_4_9=$(make kernelversion)
             ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.9/android-base.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
@@ -257,6 +260,7 @@
             cd ${X15_KERNEL_DIR}
             export PATH=~/srv/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi/bin:$PATH
             export KERNEL_DESCRIBE_X15_4_14=$(git rev-parse --short HEAD)
+            export KERNEL_VERSION_X15_4_14=$(make kernelversion)
             make ARCH=arm CROSS_COMPILE=arm-eabi- ti_sdk_am57x_android_release_defconfig
             make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
             cd -
@@ -341,6 +345,12 @@
             KERNEL_DESCRIBE_4_9=${KERNEL_DESCRIBE_4_9}
             KERNEL_DESCRIBE_4_4=${KERNEL_DESCRIBE_4_4}
             KERNEL_DESCRIBE_X15_4_14=${KERNEL_DESCRIBE_X15_4_14}
+
+            KERNEL_VERSION_4_19=${KERNEL_VERSION_4_19}
+            KERNEL_VERSION_4_14=${KERNEL_VERSION_4_14}
+            KERNEL_VERSION_4_9=${KERNEL_VERSION_4_9}
+            KERNEL_VERSION_4_4=${KERNEL_VERSION_4_4}
+            KERNEL_VERSION_X15_4_14=${KERNEL_VERSION_X15_4_14}
             EOF
         - inject:
             properties-file: publish_parameters
@@ -380,7 +390,7 @@
             cd -
             sed -i "s|boot.img.xz|boot-4.9-${KERNEL_DESCRIBE_4_9}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
-            export KERNEL_BRANCH="android-hikey-linaro-4.9-${KERNEL_DESCRIBE_4_9}"
+            export KERNEL_BRANCH="android-hikey-linaro-${KERNEL_VERSION_4_9}-${KERNEL_DESCRIBE_4_9}"
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_9}
             export SRCREV_kernel=${KERNEL_DESCRIBE_4_9}
             python configs/openembedded-lkft/submit_for_testing.py \
@@ -402,7 +412,7 @@
             cd -
             sed -i "s|boot.img.xz|boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
-            export KERNEL_BRANCH="android-hikey-linaro-4.14-${KERNEL_DESCRIBE_4_14}"
+            export KERNEL_BRANCH="android-hikey-linaro-${KERNEL_VERSION_4_14}-${KERNEL_DESCRIBE_4_14}"
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_14}
             export SRCREV_kernel=${KERNEL_DESCRIBE_4_14}
             # submit 4.14 jobs to v.l.o to reduce load on production lkft
@@ -426,7 +436,7 @@
             cd -
             sed -i "s|boot.img.xz|boot-4.19-${KERNEL_DESCRIBE_4_19}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
-            export KERNEL_BRANCH="android-hikey-linaro-4.19-${KERNEL_DESCRIBE_4_19}"
+            export KERNEL_BRANCH="android-hikey-linaro-${KERNEL_VERSION_4_19}-${KERNEL_DESCRIBE_4_19}"
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_19}
             export SRCREV_kernel=${KERNEL_DESCRIBE_4_19}
             # submit 4.19 jobs to v.l.o to reduce load on production lkft
@@ -450,7 +460,7 @@
             export KERNEL_REPO=omap
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_X15_4_14}
             export SRCREV_kernel=${KERNEL_DESCRIBE_X15_4_14}
-            export KERNEL_BRANCH="android-beagle-x15-4.14-${KERNEL_DESCRIBE_X15_4_14}"
+            export KERNEL_BRANCH="android-beagle-x15-${KERNEL_VERSION_X15_4_14}-${KERNEL_DESCRIBE_X15_4_14}"
             # submit x15 jobs to lkf.v.l.o instance
             export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
 
