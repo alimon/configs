@@ -16,3 +16,6 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; th
 fi
 
 export GZ=pigz
+
+rm -rf configs
+git clone --depth 1 http://git.linaro.org/ci/job/configs.git

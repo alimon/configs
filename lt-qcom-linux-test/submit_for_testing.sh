@@ -2,9 +2,6 @@
 
 set -ex
 
-rm -rf configs
-git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
 # Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
 pip install --user --force-reinstall jinja2-cli ruamel.yaml
 
