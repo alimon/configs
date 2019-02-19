@@ -217,6 +217,9 @@ cat ${distro_conf}
 
 time bitbake ${IMAGES}
 
+# Disable network for AUTOREV
+echo 'BB_SRCREV_POLICY = "cache"' >> conf/local.conf
+
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
 # Prepare files to publish
