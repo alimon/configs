@@ -35,8 +35,6 @@ case "${MACHINE}" in
       export WLAN_TIME_DELAY="0s"
       export ETH_DEVICE="eth0"
 
-      export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
-
     elif [ ${MACHINE} = "apq8096-db820c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-820c"
       export INSTALL_FASTBOOT=True
@@ -45,8 +43,6 @@ case "${MACHINE}" in
       export WLAN_DEVICE="wlp1s0"
       export WLAN_TIME_DELAY="15s"
       export ETH_DEVICE="enP2p1s0"
-
-      export BOOT_OS_PROMPT=\'root@dragonboard-820c:~#\'
 
       if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
         SEND_TESTJOB=false
@@ -59,9 +55,6 @@ case "${MACHINE}" in
       export WLAN_DEVICE="wlan0"
       export WLAN_TIME_DELAY="0s"
       export ETH_DEVICE="eth0"
-
-      # XXX: We are using db410c OE userspace
-      export BOOT_OS_PROMPT=\'root@dragonboard-410c:~#\'
 
       if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
         SEND_TESTJOB=false

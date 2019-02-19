@@ -18,7 +18,6 @@ actions:
     - simg2img
     - e2fsprogs
     - gzip
-    - fastboot
     os: debian
 
 - boot:
@@ -39,7 +38,7 @@ actions:
       boot:
         url: ${BOOT_ROOTFS_URL}
         compression: ${BOOT_ROOTFS_URL_COMP}
-      userdata:
+      rootfs:
         url: ${ROOTFS_URL}
         compression: ${ROOTFS_URL_COMP}
     os: oe
@@ -78,6 +77,18 @@ actions:
           -     echo "resize_rootfs:" "pass"
           - fi
 
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/android-platform-tools/install.yaml
+      name: install-android-platform-tools-r2602
+      parameters:
+        LINK: 'https://dl.google.com/android/repository/platform-tools_r26.0.2-linux.zip'
+
 - deploy:
     timeout:
       minutes: 40
@@ -86,10 +97,16 @@ actions:
     images:
       boot:
         url: lxc:///${LXC_BOOT_ROOTFS_FILE}
-      userdata:
+      rootfs:
         url: lxc:///${LXC_ROOTFS_FILE}
         apply-overlay: true
     os: oe
+    protocols:
+        lava-lxc:
+        - action: fastboot-deploy
+          request: pre-power-command
+          timeout:
+              minutes: 2
 
 - boot:
     namespace: ${LAVA_DEVICE_TYPE}
@@ -101,3 +118,9 @@ actions:
     timeout:
       minutes: 15
     method: fastboot
+    protocols:
+      lava-lxc:
+      - action: auto-login-action
+        request: pre-os-command
+        timeout:
+          minutes: 2
