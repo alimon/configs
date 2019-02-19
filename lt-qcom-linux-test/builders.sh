@@ -276,13 +276,7 @@ if [[ ! -z "${BOOTRR_GIT_REPO}" ]]; then
 	ramdisk_file=$overlayed_ramdisk_file
 fi
 
-# Create boot image (bootrr), overlay the init script to setup the ramdisk
-init_file=init
-cp configs/lt-qcom-linux-test/initscripts/init.sh ./$init_file
-chmod +x ./$init_file
-overlayed_ramdisk_file="out/$(overlay_ramdisk_from_file "$init_file" "init_ramdisk")"
-rm -f $init_file
-
+# Create boot image (bootrr), uses systemd autologin root
 boot_file=boot-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
 skales-mkbootimg \
 	--kernel $kernel_file \
@@ -292,7 +286,7 @@ skales-mkbootimg \
 	--pagesize "${BOOTIMG_PAGESIZE}" \
 	--base "${BOOTIMG_BASE}" \
 	--ramdisk_base "${RAMDISK_BASE}" \
-	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
+	--cmdline "root=/dev/ram0 init=/sbin/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
 
 # Create boot image (functional), sdm845-mtp requires an initramfs to mount the rootfs and then
 # exec switch_rootfs, use the same method in other boards too
