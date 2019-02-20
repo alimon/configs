@@ -20,7 +20,7 @@ export RESIZE_ROOTFS=True
 SEND_TESTJOB=false
 
 case "${MACHINE}" in
-  apq8016-sbc|apq8096-db820c|sdm845-mtp)
+  apq8016-sbc|apq8096-db820c|sdm845-mtp|qcs404-evb-1000)
     SEND_TESTJOB=true
 
     if [ ${MACHINE} = "apq8016-sbc" ]; then
@@ -46,6 +46,18 @@ case "${MACHINE}" in
       fi
     elif [ ${MACHINE} = "sdm845-mtp" ]; then
       export LAVA_DEVICE_TYPE="sdm845-mtp"
+      export INSTALL_FASTBOOT=
+
+      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
+      export WLAN_DEVICE="wlan0"
+      export WLAN_TIME_DELAY="0s"
+      export ETH_DEVICE="eth0"
+
+      if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
+        SEND_TESTJOB=false
+      fi
+    elif [ ${MACHINE} = "qcs404-evb-1000" ]; then
+      export LAVA_DEVICE_TYPE="qcs404-evb-1k"
       export INSTALL_FASTBOOT=
 
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
