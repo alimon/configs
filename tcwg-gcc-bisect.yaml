@@ -81,7 +81,8 @@
             git config --global user.name "TCWG BuildSlave"
 
             # Start build container
-            bash -x ./jenkins-scripts/start-container-docker.sh --node $NODE_NAME --distro ${build_container_tag} --prefix build_ > build-container.sh
+            builder=$(print_host_for_node $NODE_NAME)
+            bash -x ./jenkins-scripts/start-container-docker.sh --session-host ${builder} --distro ${build_container_tag} --prefix build_ > build-container.sh
 
             # Define build_CONTAINER_RSH and build_container_cleanup
             . ./build-container.sh
