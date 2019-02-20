@@ -7,6 +7,7 @@ trap cleanup_exit INT TERM EXIT
 cleanup_exit()
 {
     rm -rf ${HOME}/.docker
+    rm -f ${WORKSPACE}/{log,config.json,version.txt}
 }
 
 mkdir -p ${HOME}/.docker
@@ -19,6 +20,7 @@ echo "    Gerrit Environment"
 env |grep '^GERRIT'
 echo "########################################################################"
 
+rm -f ${WORKSPACE}/{log,config.json,version.txt}
 cd dockerfiles/
 
 git_previous_commit=$(git rev-parse HEAD~1)
