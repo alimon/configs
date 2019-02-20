@@ -74,7 +74,6 @@
 
             rm -rf jenkins-scripts
             git clone --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
-            . jenkins-scripts/jenkins-helpers.sh
 
             # Configure git user info to make git stash happy. It is
             # used during the second build, because the sources are
@@ -83,8 +82,8 @@
             git config --global user.name "TCWG BuildSlave"
 
             # Start build container
-            builder=$(print_host_for_node $NODE_NAME)
-            bash -x ./jenkins-scripts/start-container-docker.sh --session-host ${builder} --distro ${build_container_tag} --prefix build_ > build-container.sh
+            # Force amd64 arch to workaround a bug in jenkins-helpers.sh
+            bash -x ./jenkins-scripts/start-container-docker.sh --arch amd64 --node $NODE_NAME --distro ${build_container_tag} --prefix build_ > build-container.sh
 
             # Define build_CONTAINER_RSH and build_container_cleanup
             . ./build-container.sh
