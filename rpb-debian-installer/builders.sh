@@ -9,10 +9,31 @@ Pin-Priority: 500
 EOF
 sudo cp linaro.pref /etc/apt/preferences.d/
 
-sudo apt-get update -q
+# d-i build is triggered from rpb-kernel-latest-metapackage job with
+# kernel_abi_version given as argument
+# we loop waiting for OBS to build package so we can generate d-i with latest
+# kernel
+# if not done in 2h then let it try to do build or fail
 
-# Find kernel abi
-KERNEL_ABI=`apt-cache show linux-image-reference-arm64 | grep -m 1 Depends | sed -e "s/.*linux-image-//g" -e "s/-arm64.*//g"`
+for loop_counter in $(seq 1 12)
+do
+	sleep 600
+
+	sudo apt-get update -q
+
+	# Find kernel abi
+	KERNEL_ABI=`apt-cache show linux-image-reference-arm64 | grep -m 1 Depends | sed -e "s/.*linux-image-//g" -e "s/-arm64.*//g"`
+
+
+	# if called directly from CI then kernel_abi_version may be unset
+	if [ -z $kernel_abi_version ]; then
+		kernel_abi_version=$KERNEL_ABI
+	fi
+
+	if [ $KERNEL_ABI == $kernel_abi_version ]; then
+		break;
+	fi
+done
 
 # Build the installer
 DEB_INSTALLER_VERSION="20170615+deb9u2"

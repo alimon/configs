@@ -62,6 +62,7 @@
             cat > ${WORKSPACE}/build-package <<EOF
             source=${BUILD_URL}/artifact/$(echo *.dsc)
             repo=${TARGET_REPO}
+            kernel_abi_version=${kernel_abi_version}
             EOF
     publishers:
         - archive:
@@ -70,6 +71,9 @@
             allow-empty: true
         - trigger-parameterized-builds:
             - project: build-package-obs
+              property-file: build-package
+              condition: SUCCESS
+            - project: rpb-debian-installer-staging
               property-file: build-package
               condition: SUCCESS
         - email:
