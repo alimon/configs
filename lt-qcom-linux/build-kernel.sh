@@ -16,8 +16,8 @@ export PATH=${tcbindir}:$PATH
 pushd ${WORKSPACE}/linux
 
 # bring in stable and mainline tags
-git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
-git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable.git
+#git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
+#git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable.git
 
 KERNEL_DESCRIBE=$(git describe --always)
 
@@ -38,6 +38,7 @@ EOF
 
 # Config
 if [ -f ./chromeos/scripts/prepareconfig ] && [ -f chromeos/config/$ARCH/"${KERNEL_CONFIGS}.flavour.config" ]; then
+    mkdir build
     ./chromeos/scripts/prepareconfig ${KERNEL_CONFIGS} build/.config
     make O=build olddefconfig
 else
