@@ -1,5 +1,5 @@
 - job:
-    name: lt-qcom-linux
+    name: lt-qcom-linux-build
     project-type: matrix
     defaults: global
     properties:
@@ -20,33 +20,15 @@
             name: KERNEL_REPO_URL
             default: 'https://git.linaro.org/landing-teams/working/qualcomm/kernel.git'
         - string:
-            name: KERNEL_CONFIGS_arm64
-            default: 'defconfig distro.config'
+            name: KERNEL_CONFIGS
         - string:
-            name: KERNEL_CONFIGS_arm
-            default: 'multi_v7_defconfig distro.config'
-        - string:
-            name: KERNEL_BUILD_TARGET
-            default: 'deb-pkg'
-        - string:
-            name: KERNEL_DESCRIBE
-        - string:
-            name: KERNEL_VERSION
+            name: ARCH
         - string:
             name: KERNEL_BRANCH
         - string:
-            name: TARGET_REPO
-            default: 'linaro-overlay-sid'
-        - string:
-            name: KDEB_CHANGELOG_DIST
-            default: 'sid'
+            name: PUB_DEST
+            default: "member-builds/qcomlt/kernel/${BUILD_NUMBER}"
     axes:
-        - axis:
-            type: user-defined
-            name: ARCH
-            values:
-                - arm
-                - arm64
         - axis:
             type: slave
             name: label
@@ -56,7 +38,7 @@
         sequential: false
     disabled: false
     node: master
-    display-name: 'Qualcomm LT Dragonboard Linux kernel build'
+    display-name: 'Qualcomm LT Linux kernel build'
     scm:
         - git:
             url: ${KERNEL_REPO_URL}
@@ -79,11 +61,10 @@
             sudo apt-get update
             sudo apt-get install -y ccache bc kmod cpio
         - shell:
-            !include-raw: lt-qcom-linux/builders.sh
-        - trigger-builds:
-            - project: 'build-package-obs'
-              property-file: params
-              block: true
+            !include-raw: lt-qcom-linux/build-kernel.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-linux-test/publishers.sh
     publishers:
         - email-ext:
             recipients: 'nicolas.dechesne@linaro.org anibal.limon@linaro.org'
