@@ -25,6 +25,10 @@
             description: 'build machine'
     wrappers:
         - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
         - credentials-binding:
             - text:
                 credential-id: DOCKER_AUTH
@@ -34,4 +38,4 @@
             !include-raw: ci-dockerfiles-deployment/build-image.sh
     publishers:
         - email:
-            recipients: systems@linaro.org
+            recipients: linaro-infrastructure-errors@lists.linaro.org
