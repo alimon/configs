@@ -116,6 +116,14 @@
             type: checkbox
             value: 'kselftests,libhugetlbfs,ltp'
             multi-select-delimiter: ' '
+        - extended-choice:
+            name: USE_KSELFTEST_RELEASE
+            description: |
+                [OPTIONAL] Use latest released version of Kselftests. Useful for Linux Stable branches.
+                  - mainline<br/>
+            type: checkbox
+            value: 'mainline'
+            multi-select-delimiter: ' '
         - string:
             name: NOTIFICATION_EMAIL
             default: ''
@@ -194,6 +202,9 @@
             KERNEL_CONFIG_x86 = "${KERNEL_CONFIG}"
             EOF
 
+            KSELFTEST_PATH="/opt/kselftests/default-in-kernel/"
+            [ -n "${USE_KSELFTEST_RELEASE}" ] && KSELFTEST_PATH="/opt/kselftests/mainline/"
+
             echo "IMAGES=rpb-console-image-lkft" > parameters
             echo "MANIFEST_URL=https://github.com/96boards/oe-rpb-manifest.git" >> parameters
             echo "MANIFEST_BRANCH=lkft/rocko" >> parameters
@@ -207,6 +218,7 @@
             echo "QA_SERVER_PROJECT=linux-developer-oe" >> parameters
             echo "KERNEL_SRCREV=${KERNEL_SRCREV}" >> parameters
             echo "KERNEL_RECIPE=linux-generic" >> parameters
+            echo "KSELFTEST_PATH=${KSELFTEST_PATH}" >> parameters
             cat parameters
 
             echo "#${BUILD_NUMBER}-${KERNEL_SRCREV:0:8}" > ${WORKSPACE}/version.txt
