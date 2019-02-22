@@ -55,6 +55,6 @@ make -j$(nproc) O=build INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=./INSTALL_MOD_PATH 
 cp build/.config ${WORKSPACE}/out/kernel.config
 cp build/{System.map,vmlinux} ${WORKSPACE}/out/
 cp build/arch/$ARCH/boot/Image* ${WORKSPACE}/out
-(cd build/arch/$ARCH/boot/dts && cp -a --parents $(find . -name *.dtb) ${WORKSPACE}/out/dtbs
+(cd build/arch/$ARCH/boot/dts && cp -a --parents $(find . -name *.dtb) ${WORKSPACE}/out/dtbs)
 
 popd
