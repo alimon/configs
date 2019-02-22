@@ -28,8 +28,16 @@
         - string:
             name: PUB_DEST
             default: "member-builds/qcomlt/kernel/${BUILD_NUMBER}"
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
     disabled: false
-    node: docker-stretch-amd64
+    node: master
     display-name: 'Qualcomm LT Linux kernel build'
     scm:
         - git:
