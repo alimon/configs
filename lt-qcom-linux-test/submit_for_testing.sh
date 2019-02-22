@@ -52,10 +52,6 @@ case "${MACHINE}" in
       export WLAN_DEVICE="wlan0"
       export WLAN_TIME_DELAY="0s"
       export ETH_DEVICE="eth0"
-
-      if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
-        SEND_TESTJOB=false
-      fi
     elif [ ${MACHINE} = "qcs404-evb-1000" ]; then
       export LAVA_DEVICE_TYPE="qcs404-evb-1k"
       export INSTALL_FASTBOOT=
