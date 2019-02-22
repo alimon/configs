@@ -200,7 +200,7 @@ elif [ "${MANIFEST_BRANCH}" = "rocko" ]; then
 fi
 
 # Place generic kernel definitions (if needed)
-custom_kernel_conf=$(find ../layers/meta-96boards/recipes-kernel -name custom-kernel-info.inc)
+custom_kernel_conf=$(find ../layers/meta-lkft/recipes-kernel -name custom-kernel-info.inc)
 if [ -e ${WORKSPACE}/custom-kernel-info.inc.tmp ]; then
     mv -v ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
 fi

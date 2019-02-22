@@ -139,7 +139,7 @@ EOF
 fi
 ########## ^^^ DISTRO DEPENDANT ^^^ ##########
 
-custom_kernel_conf=$(find ../layers/meta-96boards/recipes-kernel -name custom-kernel-info.inc)
+custom_kernel_conf=$(find ../layers/meta-lkft/recipes-kernel -name custom-kernel-info.inc)
 mv ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
 ###
 
