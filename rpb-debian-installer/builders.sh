@@ -46,6 +46,8 @@ EOF
 cat ../../localudebs >> pkg-lists/local
 cp ../../default-preseed .
 
+sed -i -e 's/virtio-modules.*//g' pkg-lists/netboot/arm64.cfg
+
 fakeroot make build_netboot
 cd ../..
 
