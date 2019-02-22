@@ -1,21 +1,31 @@
 - project:
     name: tcwg_bmk
     toolchain_name:
+      - llvm:
+          components: llvm
+          binutils_url: no_binutils_url
+          gcc_url: no_gcc_url
+          glibc_url: no_glibc_url
+          llvm_url: https://github.com/llvm/llvm-project.git
+          init_configuration: 'true'
       - gnu:
           components: binutils gcc glibc
           binutils_url: https://sourceware.org/git/binutils-gdb.git
           gcc_url: https://gcc.gnu.org/git/gcc.git
           glibc_url: https://sourceware.org/git/glibc.git
+          llvm_url: no_llvm_url
           init_configuration: 'false'
     toolchain_ver:
       - master:
           binutils_branch: master
           gcc_branch: master
           glibc_branch: master
+          llvm_branch: master
       - release:
           binutils_branch: binutils-2_31-branch
           gcc_branch: gcc-8-branch
           glibc_branch: release/2.28/master
+          llvm_branch: release/8.x
     target:
       - aarch64
       - arm
@@ -33,6 +43,20 @@
     view-type: list
     regex: 'tcwg_bmk-.*'
 
+- scm:
+    name: llvm-scm
+    scm:
+        - git:
+            url: '{llvm_url}'
+            branches:
+              - 'refs/heads/{llvm_branch}'
+            basedir: llvm
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
 - scm:
     name: binutils-scm
     scm:
@@ -76,6 +100,18 @@
               before: true
             prune: true
 - scm:
+    name: gnu-scm
+    scm:
+      - binutils-scm:
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+      - gcc-scm:
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
+      - glibc-scm:
+          glibc_url: '{glibc_url}'
+          glibc_branch: '{glibc_branch}'
+- scm:
     name: bmk-scripts
     scm:
       - git:
@@ -105,6 +141,13 @@
           num-to-keep: 30
 
 - parameter:
+    name: llvm-parameters
+    parameters:
+      - string:
+          name: llvm_branch
+          default: default
+          description: "llvm branch or sha1 to build"
+- parameter:
     name: gnu-parameters
     parameters:
       - string:
@@ -119,7 +162,6 @@
           name: glibc_branch
           default: default
           description: "glibc branch or sha1 to build"
-
 - parameter:
     name: default-parameters
     parameters:
@@ -206,9 +248,7 @@
     scm:
       - jenkins-scripts
       - bmk-scripts
-      - binutils-scm
-      - gcc-scm
-      - glibc-scm
+      - '{toolchain_name}-scm'
     triggers:
       - pollscm:
           cron: 'H H * * *'
@@ -257,6 +297,7 @@
             ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url} \
             ==rr[glibc_url] {glibc_url} \
+            ==rr[llvm_url] {llvm_url} \
             $branch_opt \
             ==rr[mode] "jenkins-full" \
             ==rr[reset_baseline] "$reset_baseline" &
@@ -365,7 +406,8 @@
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
             ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url} \
-            ==rr[glibc_url] {glibc_url}
+            ==rr[glibc_url] {glibc_url} \
+            ==rr[llvm_url] {llvm_url}
 
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
