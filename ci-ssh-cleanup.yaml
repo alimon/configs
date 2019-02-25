@@ -16,7 +16,8 @@
     builders:
         - shell: |
             #!/bin/bash -e
-            kill $(ps -eo pid,etime,comm,user,tty|grep ssh-agent |awk '$2~/-/ {if ($2>4) print $1}')
+            pids=$(ps -eo pid,etime,comm,user,tty|grep ssh-agent |awk '$2~/-/ {if ($2>4) print $1}')
+            [ -z "$pids" ] || kill $pids
     publishers:
         - email:
             recipients: 'linaro-infrastructure-errors@lists.linaro.org'
