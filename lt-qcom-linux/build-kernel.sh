@@ -58,3 +58,7 @@ cp build/arch/$ARCH/boot/Image* ${WORKSPACE}/out
 (cd build/arch/$ARCH/boot/dts && cp -a --parents $(find . -name *.dtb) ${WORKSPACE}/out/dtbs)
 
 popd
+
+# publish builds by branch
+BRANCH_NAME_URL=$(echo ${KERNEL_BRANCH} | sed -e 's/[^A-Za-z0-9._-]/_/g')
+echo "PUB_DEST=member-builds/qcomlt/kernel/${BRANCH_NAME_URL}/${BUILD_NUMBER}" > pub_dest_parameters
