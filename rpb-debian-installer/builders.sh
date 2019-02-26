@@ -17,8 +17,6 @@ sudo cp linaro.pref /etc/apt/preferences.d/
 
 for loop_counter in $(seq 1 12)
 do
-	sleep 600
-
 	sudo apt-get update -q
 
 	# Find kernel abi
@@ -33,6 +31,8 @@ do
 	if [ $KERNEL_ABI == $kernel_abi_version ]; then
 		break;
 	fi
+
+	sleep 600
 done
 
 # Build the installer
