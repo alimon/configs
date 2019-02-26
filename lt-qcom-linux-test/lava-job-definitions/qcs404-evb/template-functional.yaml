@@ -1,0 +1,128 @@
+- test:
+    namespace: ${LAVA_DEVICE_TYPE}
+    name: qcomlt-smoke
+    timeout:
+      minutes: 10
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/smoke/smoke.yaml
+      params:
+              TESTS: ${SMOKE_TESTS}
+      name: linux-smoke
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/usb-smoke/usb-smoke-test.yaml
+      name: linux-usb-smoke
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/hci-smoke/hci-smoke.yaml
+      params:
+              BOOT: auto
+      name: linux-hci-smoke
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/wlan-smoke/wlan-smoke.yaml
+      params:
+        DEVICE: ${WLAN_DEVICE}
+      name: linux-wlan-smoke
+
+- test:
+    namespace: ${LAVA_DEVICE_TYPE}
+    name: qcomlt-wlan-download
+    timeout:
+      minutes: 20
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/wlan-download/wlan-download.yaml
+      params:
+        DEVICE: ${WLAN_DEVICE}
+        ETHERNET_DEVICE: ${ETH_DEVICE}
+        SSID_NAME: LAVATESTX
+        SSID_PASSWORD: NepjqGbq
+        FILE_URL: http://testdata.validation.linaro.org/stress/stress-network.img
+        FILE_CHECKSUM: e5c834fbdaa6bfd8eac5eb9404eefdd4
+        TIME_DELAY: ${WLAN_TIME_DELAY}
+      name: linux-wlan-download
+
+- test:
+    namespace: ${LAVA_DEVICE_TYPE}
+    name: qcomlt-storage
+    timeout:
+      minutes: 65
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/dd-wr-speed/dd-wr-speed.yaml
+      name: linux-dd-wr-speed
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/device-read-perf/device-read-perf.yaml
+      name: linux-device-read-perf
+
+- test:
+    namespace: ${LAVA_DEVICE_TYPE}
+    name: qcomlt-pm-qa
+    timeout:
+      minutes: 15
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/pm-qa/pm-qa.yaml
+      name: linux-pm-qa
+      params:
+        TESTS: ${PM_QA_TESTS}
+
+device_type: ${LAVA_DEVICE_TYPE}
+job_name: lt-qcom-${QA_SERVER_PROJECT}-functional-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 150
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom-linux-test/lava-job-definitions/${LAVA_DEVICE_TYPE}/template-functional.yaml
+  image.type: 'kernel-ci'
+  image.url: "${BOOT_URL}"
+  kernel.tree: "${KERNEL_TREE}"
+  kernel.version: "${KERNEL_VERSION}"
+  kernel.endian: 'little'
+  kernel.defconfig: 'defconfig'
+  kernel.defconfig_base: 'defconfig'
+  kernel.arch_defconfig: 'arm64_defconfig'
+  platform.dtb: "${KERNEL_DT}"
+  platform.dtb_short: "${KERNEL_DT}"
+  platform.fastboot: true
+  platform.name: "${KERNEL_CI_PLATFORM}"
+  platform.mach: "${KERNEL_CI_MACH}"
+  test.plan: 'qcom-functional'
+  git repo: "${KERNEL_REPO}"
+  git branch: "${KERNEL_BRANCH}"
+  git commit: "${KERNEL_COMMIT}"
+  git describe: "${KERNEL_VERSION}"
+  device.type: "${KERNEL_CI_PLATFORM}"
+  job.arch: 'arm64'
+  job.name: lt-qcom-${QA_SERVER_PROJECT}-bootrr-${BUILD_NUMBER}
+  job.kernel_url: "${KERNEL_IMAGE_URL}"
+  job.kernel_image: "${KERNEL_IMAGE}"
+  job.modules_url: "${KERNEL_MODULES_URL}"
+  job.initrd_url: "${RAMDISK_URL}"
+  job.nfsrootfs_url: ''
+  job.dtb_url: "${KERNEL_DT_URL}"
+
+notify:
+  criteria:
+    status: finished
+  callback:
+    url: https://api.kernelci.org/callback/lava/test?lab_name=lab-qcom&status={STATUS}&status_string={STATUS_STRING}
+    method: POST
+    dataset: all
+    token: kernelci-lab-qcom-callback
+    content-type: json

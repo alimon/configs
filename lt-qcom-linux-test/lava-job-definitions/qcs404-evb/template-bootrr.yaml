@@ -1,0 +1,188 @@
+device_type: ${LAVA_DEVICE_TYPE}
+job_name: lt-qcom-${QA_SERVER_PROJECT}-bootrr-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 90
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: high
+visibility: public
+
+metadata:
+  source: https://git.linaro.org/ci/job/configs.git
+  path: lt-qcom-linux-test/lava-job-definitions/${LAVA_DEVICE_TYPE}/template-bootrr.yaml
+  image.type: 'kernel-ci'
+  image.url: "${BOOT_URL}"
+  kernel.tree: "${KERNEL_TREE}"
+  kernel.version: "${KERNEL_VERSION}"
+  kernel.endian: 'little'
+  kernel.defconfig: 'defconfig'
+  kernel.defconfig_base: 'defconfig'
+  kernel.arch_defconfig: 'arm64_defconfig'
+  platform.dtb: "${KERNEL_DT}"
+  platform.dtb_short: "${KERNEL_DT}"
+  platform.fastboot: true
+  platform.name: "${KERNEL_CI_PLATFORM}"
+  platform.mach: "${KERNEL_CI_MACH}"
+  test.plan: 'qcom-bootrr'
+  git repo: "${KERNEL_REPO}"
+  git branch: "${KERNEL_BRANCH}"
+  git commit: "${KERNEL_COMMIT}"
+  git describe: "${KERNEL_VERSION}"
+  device.type: "${KERNEL_CI_PLATFORM}"
+  job.arch: 'arm64'
+  job.name: lt-qcom-${QA_SERVER_PROJECT}-bootrr-${BUILD_NUMBER}
+  job.kernel_url: "${KERNEL_IMAGE_URL}"
+  job.kernel_image: "${KERNEL_IMAGE}"
+  job.modules_url: "${KERNEL_MODULES_URL}"
+  job.initrd_url: "${RAMDISK_URL}"
+  job.nfsrootfs_url: ''
+  job.dtb_url: "${KERNEL_DT_URL}"
+
+notify:
+  criteria:
+    status: finished
+  callback:
+    url: https://api.kernelci.org/callback/lava/test?lab_name=lab-qcom&status={STATUS}&status_string={STATUS_STRING}
+    method: POST
+    dataset: all
+    token: kernelci-lab-qcom-callback
+    content-type: json
+
+protocols:
+  lava-lxc:
+    name: lxc-${LAVA_DEVICE_TYPE}-test
+    template: debian
+    distribution: debian
+    release: stretch
+
+actions:
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 5
+    to: lxc
+    packages:
+    - wget
+    - unzip
+    - abootimg
+    - cpio
+    - gzip
+    - git
+    - mktemp
+    - fastboot
+    os: debian
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'root@linaro-developer:~#'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- deploy:
+    timeout:
+      minutes: 40
+    to: download
+    namespace: ${LAVA_DEVICE_TYPE}
+    images:
+      boot:
+        url: ${BOOT_URL}
+        compression: ${BOOT_URL_COMP}
+        apply-overlay: true
+    os: oe
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 30
+    definitions:
+    - from: inline
+      name: ${LAVA_DEVICE_TYPE}-apply-test-overlay
+      path: inline/${LAVA_DEVICE_TYPE}-apply-test-overlay.yaml
+      repository:
+        metadata:
+          description: ${LAVA_DEVICE_TYPE} apply test overlay
+          format: Lava-Test Test Definition 1.0
+          name: ${LAVA_DEVICE_TYPE}-apply-test-overlay
+        run:
+          steps:
+          - overlay_file=/lava-lxc/overlays/${LAVA_DEVICE_TYPE}/overlay.tar.gz
+          - if [ -f $$overlay_file ]
+          - then
+          -     configs_dir=$$(mktemp -d /tmp/configs.XXXX)
+          -     git clone --depth 1 http://git.linaro.org/ci/job/configs.git $$configs_dir
+          -     $$configs_dir/lt-qcom-linux-test/copy_test_overlay.sh /lava-lxc/${LXC_BOOT_FILE} $$overlay_file
+          -     echo "apply_test_overlay:" "pass"
+          - else
+          -     echo "apply_test_overlay:" "skip"
+          - fi
+
+- deploy:
+    timeout:
+      minutes: 40
+    to: fastboot
+    namespace: ${LAVA_DEVICE_TYPE}
+    images:
+      boot:
+        url: lxc:///${LXC_BOOT_FILE}
+    os: oe
+
+- boot:
+    namespace: ${LAVA_DEVICE_TYPE}
+    prompts:
+    - 'linaro-test .*#'
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+    namespace: ${LAVA_DEVICE_TYPE}
+    name: qcomlt-${QA_SERVER_PROJECT}-smoke
+    timeout:
+      minutes: 5
+    definitions:
+    - from: inline
+      name: qcomlt-${QA_SERVER_PROJECT}-smoke
+      path: inline/qcomlt-${QA_SERVER_PROJECT}-smoke.yaml
+      repository:
+        metadata:
+          description: QCOM LT linux test smoke
+          format: Lava-Test Test Definition 1.0
+          name: qcomlt-${QA_SERVER_PROJECT}-smoke
+        run:
+          steps:
+          - uname -a
+          - df
+          - free
+          - ls -l /dev
+          - ls -l /sys
+          - ls -l /proc
+          - echo "linux_test_smoke:" "pass"
+
+- test:
+    namespace: ${LAVA_DEVICE_TYPE}
+    name: qcomlt-${QA_SERVER_PROJECT}-bootrr
+    timeout:
+      minutes: 5
+    definitions:
+    - from: inline
+      name: qcomlt-${QA_SERVER_PROJECT}-bootrr
+      path: inline/qcomlt-${QA_SERVER_PROJECT}-bootrr.yaml
+      repository:
+        metadata:
+          description: QCOM LT linux test bootrr
+          format: Lava-Test Test Definition 1.0
+          name: qcomlt-${QA_SERVER_PROJECT}-bootrr
+        run:
+          steps:
+          - for TEST in $$(tr "\0" "\n" < /proc/device-tree/compatible); do
+          -     if [ -x "/usr/bin/$${TEST}" ]; then
+          -         /usr/bin/$${TEST}
+          -     fi
+          - done
+          - echo ~~~~~~~~~~~~~~~~~~~~~
