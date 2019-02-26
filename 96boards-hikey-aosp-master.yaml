@@ -256,6 +256,11 @@
             rm -fr ${X15_KERNEL_DIR} && mkdir -p ${X15_KERNEL_DIR}
             git clone -b android-beagle-x15-4.14 https://android.googlesource.com/kernel/omap ${X15_KERNEL_DIR}
 
+            # workaround for the adb root/adb reboot kernel panic problem
+            cd ${X15_KERNEL_DIR} && \
+                git revert --no-edit 65d9e9821b86155dc810ff08c12cc29c7fabbca9 && \
+                cd -
+
             # compile x15 kernel
             cd ${X15_KERNEL_DIR}
             export PATH=~/srv/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi/bin:$PATH
