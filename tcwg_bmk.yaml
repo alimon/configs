@@ -34,9 +34,16 @@
     cflags:
       - Os
       - Os_LTO
+      - Oz
+      - Oz_LTO
     jobs:
       - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    exclude:
+      - toolchain_name: gnu
+        cflags: Oz
+      - toolchain_name: gnu
+        cflags: Oz_LTO
 
 - view:
     name: tcwg_bmk
