@@ -1,6 +1,5 @@
 #!/bin/bash -e
 
-git clone https://git.linaro.org/ci/dockerfiles.git
 cd dockerfiles/
 
 images_to_update=""

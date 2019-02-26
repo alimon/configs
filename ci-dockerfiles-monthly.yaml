@@ -17,6 +17,13 @@
     display-name: 'CI docker image monthly rebuild'
     triggers:
         - timed: '@monthly'
+    scm:
+        - git:
+            url: https://git.linaro.org/ci/dockerfiles.git
+            basedir: dockerfiles
+            skip-tag: true
+            clean:
+                before: true
     wrappers:
         - timestamps
     builders:
