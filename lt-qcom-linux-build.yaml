@@ -20,11 +20,11 @@
             name: KERNEL_REPO_URL
             default: 'https://git.linaro.org/landing-teams/working/qualcomm/kernel.git'
         - string:
+            name: KERNEL_BRANCH
+        - string:
             name: KERNEL_CONFIGS
         - string:
             name: ARCH
-        - string:
-            name: KERNEL_BRANCH
     axes:
         - axis:
             type: slave
@@ -39,14 +39,17 @@
     scm:
         - git:
             url: ${KERNEL_REPO_URL}
-            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
+            refspec: +refs/heads/release/*:refs/remotes/origin/release/*
             name: origin
             branches:
-                - refs/heads/${KERNEL_BRANCH}
+                - refs/heads/release/chromiumos-4.14-r2
+                - refs/heads/release/chromiumos-4.14-r3
             basedir: linux
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
     wrappers:
         - timestamps
         - build-name:
@@ -57,6 +60,26 @@
             set -ex
             sudo apt-get update
             sudo apt-get install -y ccache bc kmod cpio
+
+            if [ -z "${KERNEL_BRANCH}" ]; then
+                KERNEL_BRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||')
+                KERNEL_CONFIGS="chromiumos-qualcomm"
+                ARCH="arm64"
+            fi
+
+            if [[ -z "${KERNEL_BRANCH}" || -z "${KERNEL_CONFIGS}" || -z "${ARCH}" ]]; then
+                echo "ERROR: Required build parameters aren't set"
+                echo "KERNEL_BRANCH: ${KERNEL_BRANCH}"
+                echo "KERNEL_CONFIGS: ${KERNEL_CONFIGS}"
+                echo "ARCH: ${ARCH}"
+                exit 1
+            fi
+
+            echo "KERNEL_BRANCH=${KERNEL_BRANCH}" > build_parameters
+            echo "KERNEL_CONFIGS=${KERNEL_CONFIGS}" >> build_parameters
+            echo "ARCH=${ARCH}" >> build_parameters
+        - inject:
+            properties-file: build_parameters
         - shell:
             !include-raw: lt-qcom-linux/build-kernel.sh
         - inject:
