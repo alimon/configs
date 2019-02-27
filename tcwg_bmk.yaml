@@ -118,6 +118,21 @@
       - glibc-scm:
           glibc_url: '{glibc_url}'
           glibc_branch: '{glibc_branch}'
+- scm:
+    name: bmk-scripts
+    scm:
+      - git:
+          url: https://git-us.linaro.org/toolchain/bmk-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $bmk_branch
+          basedir: bmk-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/bmk-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
 
 - property:
     name: default-properties
@@ -239,6 +254,7 @@
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
+      - bmk-scripts
       - '{toolchain_name}-scm':
           llvm_url: '{llvm_url}'
           llvm_branch: '{llvm_branch}'
@@ -269,7 +285,7 @@
             mkdir -p artifacts/jenkins
             build_name="#$BUILD_NUMBER"
             branch_opt=""
-            i=1
+            i=2
             for c in {components}; do
               eval "b=\$$$${{c}}_branch"
               if [ x"$b" = x"default" ]; then
@@ -364,6 +380,7 @@
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
+      - bmk-scripts
     wrappers:
       - timeout:
           timeout: 1440
