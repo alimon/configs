@@ -13,6 +13,17 @@
     disabled: false
     node: master
     display-name: 'CI job configs sanity check'
+    scm:
+        - git:
+            url: https://review.linaro.org/${GERRIT_PROJECT}
+            refspec: ${GERRIT_REFSPEC}
+            branches:
+                - ${GERRIT_BRANCH}
+            skip-tag: true
+            clean:
+                before: true
+            choosing-strategy: gerrit
+            basedir: configs
     triggers:
         - gerrit:
             server-name: 'review.linaro.org'
@@ -44,12 +55,7 @@
             env |grep '^GERRIT'
             echo "########################################################################"
 
-            rm -rf ${WORKSPACE}/*
-
-            git clone -b ${GERRIT_BRANCH} --depth 2 https://review.linaro.org/${GERRIT_PROJECT}
-            cd *
-            git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
-            git checkout -q FETCH_HEAD
+            cd configs/
 
             # FIXME run-jjb.py was meant to be used for deployment only
             # use JJB 'test' command instead of 'update' command
