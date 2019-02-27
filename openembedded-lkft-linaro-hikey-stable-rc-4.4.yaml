@@ -25,6 +25,9 @@
             name: KERNEL_VERSION
             default: '4.4'
         - string:
+            name: KERNEL_VERSION_OVERRIDE
+            default: '${KERNEL_VERSION}'
+        - string:
             name: KERNEL_RECIPE
             default: 'linux-hikey-lts-rc'
         - string:
@@ -58,13 +61,20 @@
             name: QA_SERVER_PROJECT
             default: 'linaro-hikey-stable-rc-4.4-oe'
         - string:
+            name: KSELFTEST_PATH
+            default: '/opt/kselftests/mainline/'
+        - string:
             name: SKIP_LAVA
             default: ''
         - string:
-            presend-script:
-                !include-raw: openembedded-lkft/presend-script.groovy
             name: LAVA_JOB_PRIORITY
             default: '78'
+        - string:
+            name: SANITY_LAVA_JOB_PRIORITY
+            default: '80'
+        - string:
+            name: TEST_SUITES
+            default: 'all'
     disabled: false
     node: master
     display-name: 'LKFT - Linux Stable RC 4.4 + HiKey (OpenEmbedded/rocko)'
