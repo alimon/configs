@@ -125,13 +125,13 @@ case "${MACHINE}" in
 		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_1000}
 
 		# Use userdata for now.
-		ROOTFS_PARTITION=/dev/mmcblk0p53
+		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
 		;;
 	qcs404-evb-4000)
 		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_4000}
 
 		# Use userdata for now.
-		ROOTFS_PARTITION=/dev/mmcblk0p56
+		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
 		;;
 	*)
 		echo "Currently MACHINE: ${MACHINE} isn't supported"
