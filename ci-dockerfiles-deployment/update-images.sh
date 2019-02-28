@@ -30,9 +30,13 @@ do
     if [ "$arch" = "aarch64" ]; then
         arch=arm64
     fi
-    cat > ../docker_${image}_build.txt << EOF
+    if [ "$arch" = "amd64" -o "$arch" = "arm64" -o "$arch" = "armhf" ]; then
+        cat > ../docker_${image}_build.txt << EOF
 nodelabel=build-${arch}
 image=${image}
 EOF
+    else
+        echo "unknown arch: $arch in $image"
+    fi
 done
 
