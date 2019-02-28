@@ -40,7 +40,7 @@ case "${DEFCONFIG}" in
   hikey960_defconfig)
     python mkbootimg \
       --kernel ${PWD}/arch/arm64/boot/Image.gz-dtb \
-      --cmdline "androidboot.hardware=hikey960 console=ttyAMA3,115200 androidboot.console=ttyAMA3,115200 firmware_class.path=/vendor/firmware loglevel=15 buildvariant=userdebug overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab" \
+      --cmdline "androidboot.hardware=hikey960 firmware_class.path=/vendor/firmware loglevel=15 buildvariant=userdebug overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab" \
       --base 0x0 --tags_offset 0x07a00000 --kernel_offset 0x00080000 \
       --ramdisk_offset 0x07c00000 \
       --os_version P \
