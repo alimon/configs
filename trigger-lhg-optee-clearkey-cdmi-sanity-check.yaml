@@ -28,11 +28,15 @@
     triggers:
         - github-pull-request:
             github-hooks: true
+            white-list-target-branches:
+                - 'chromium-53.0.2785.143'
             permit-all: true
             auth-id: 'GITHUB_TOKEN'
     wrappers:
         - timestamps
     builders:
+        - trigger-builds:
+                - project: 'lhg-oe-build'
         - shell: |
             #!/bin/bash -e
             echo "#${BUILD_NUMBER}-${ghprbActualCommit:0:8}" > ${WORKSPACE}/version.txt
