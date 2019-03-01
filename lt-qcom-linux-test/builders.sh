@@ -119,7 +119,9 @@ case "${MACHINE}" in
 		;;
 	sdm845-mtp)
 		FIRMWARE_URL=${FIRMWARE_URL_sdm845_mtp}
-		ROOTFS_PARTITION=/dev/sda8 # XXX: using Android userdata since we don't have Linux parttable
+
+		# XXX: using Android userdata since we don't have Linux parttable
+		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
 		;;
 	qcs404-evb-1000)
 		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_1000}
