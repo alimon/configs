@@ -20,4 +20,4 @@
         - fingerprint:
             files: 'build/fingerprints/*'
         - email:
-            recipients: 'vishal.bhoj@linaro.org fathi.boudra@linaro.org daniel.diaz@linaro.org'
+            recipients: 'yongqin.liu@linaro.org tom.gall@linaro.org milosz.wasilewski@linaro.org victor.chong@linaro.org'
