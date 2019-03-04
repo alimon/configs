@@ -25,6 +25,9 @@
             name: KERNEL_CONFIGS
         - string:
             name: ARCH
+        - string:
+            name: PUB_DEST
+            default: "member-builds/qcomlt/kernel/${BUILD_NUMBER}"
     axes:
         - axis:
             type: slave
@@ -59,8 +62,6 @@
             sudo apt-get install -y ccache bc kmod cpio
         - shell:
             !include-raw: lt-qcom-linux/build-kernel.sh
-        - inject:
-            properties-file: pub_dest_parameters
         - linaro-publish-token
         - shell:
             !include-raw: lt-qcom-linux-test/publishers.sh
