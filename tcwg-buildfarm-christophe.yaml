@@ -13,9 +13,6 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 100
-        - lockable-resources:
-            resources: ${NODENAME}
-            number: 1
     parameters:
         - string:
             name: override
@@ -171,7 +168,10 @@
         - shell: |
             #!/bin/bash
             set -ex
-            ./jenkins-scripts/docker-run.sh \
+
+            ( flock -n 9
+            sleep 30
+            echo ./jenkins-scripts/docker-run.sh \
               --label $label \
               --node $NODE_NAME \
               --distro $build_container_tag \
@@ -203,6 +203,7 @@
               --test_container_tag "$test_container_tag" \
               --binaries "$binaries" \
               --dryrun "$dryrun"
+              ) 9 > /tmp/tcwg-workspace-cleanup.lock
     publishers:
         - archive:
             artifacts: 'artifacts/*'
