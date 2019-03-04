@@ -36,6 +36,59 @@ def get_kernel_ci_build(url, arch_config):
     return (image_url, dt_url, modules_url, version)
 
 
+def _find_last_build_in_linaro_ci(url):
+    last_build = -1
+    rex = re.compile('(?P<last_build>\d+)')
+    f = urllib2.urlopen(url)
+    page = f.read()
+    soup = BeautifulSoup(page, "html.parser")
+    div = soup.find(id="content")
+    latest_found = False
+    for tr in div.select('table > tr'):
+        if latest_found:
+            m = rex.search(tr.text)
+            if m:
+                last_build = int(m.group('last_build'))
+                break
+        if 'latest' in tr.text:
+            latest_found = True
+
+    return last_build
+
+
+def get_linaro_ci_build(url):
+    last_build = _find_last_build_in_linaro_ci(url)
+    if last_build == -1:
+        print('ERROR: Unable to find last build (%s)' % url)
+        sys.exit(1)
+
+    url = '%s/%d/' % (url, last_build)
+    f = urllib2.urlopen(url)
+    page = f.read()
+
+    image_url = url + 'Image'
+    dt_url = url + "dtbs"
+    modules_url = url + 'kernel-modules.tar.xz'
+
+    repo = ''
+    branch = ''
+    version = ''
+    rex = re.compile("^(?P<name>.*): (?P<var>.*)$")
+    soup = BeautifulSoup(page, "html.parser")
+    div = soup.find(id="content")
+    for li in div.select('p > ul > li'):
+        m = rex.search(li.text)
+        if m:
+            if 'KERNEL_REPO_URL' == m.group('name'):
+                repo = m.group('var')
+            if 'KERNEL_BRANCH' == m.group('name'):
+                branch = m.group('var')
+            if 'KERNEL_DESCRIBE' == m.group('name'):
+                version = m.group('var')
+
+    return (image_url, dt_url, modules_url, version)
+
+
 def get_ramdisk_rootfs_url(url, job_url):
     f = urllib2.urlopen(job_url + "lastSuccessfulBuild/buildNumber")
     last_build = int(f.read())
@@ -99,12 +152,17 @@ def validate_if_already_built(url, artifacts_urls):
 
 
 def main():
+    kernel_build_type = os.environ.get('KERNEL_BUILD_TYPE', 'KERNEL_CI')
+
     kernel_ci_base_url = os.environ.get('KERNEL_CI_BASE_URL',
                                         'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
     kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
                                            'arm64/defconfig/gcc-7/')
-    machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c').split()
 
+    linaro_ci_base_url = os.environ.get('LINARO_CI_BASE_URL',
+                                        'https://snapshots.linaro.org/member-builds/qcomlt/kernel/')
+
+    machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c').split()
     ramdisk_job_url = os.environ.get('RAMDISK_JOB_URL',
                                 'https://ci.linaro.org/job/lt-qcom-linux-testimages/')
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
@@ -122,8 +180,14 @@ def main():
     print('ROOTFS_URL=%s' % rootfs_url)
     validate_url(rootfs_url)
 
-    (image_url, dt_url, modules_url, version) = get_kernel_ci_build(kernel_ci_base_url,
+    if kernel_build_type == 'KERNEL_CI':
+        (image_url, dt_url, modules_url, version) = get_kernel_ci_build(kernel_ci_base_url,
                                                                         kernel_ci_arch_config)
+    elif kernel_build_type == 'LINARO_CI':
+        (image_url, dt_url, modules_url, version) = get_linaro_ci_build(linaro_ci_base_url)
+    else:
+        print('ERROR: Kernel build type (%s) isn\'t supported' % kernel_build_type)
+        sys.exit(1)
 
     print("KERNEL_DT_URL=%s" % dt_url)
 
