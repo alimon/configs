@@ -1,0 +1,58 @@
+- job:
+    name: trigger-lt-qcom-linux-build
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    disabled: false
+    node: build
+    display-name: 'Trigger for Qualcomm LT kernel build'
+    scm:
+        - git:
+            url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
+            refspec: +refs/heads/release/*:refs/remotes/origin/release/*
+            name: origin
+            branches:
+                - refs/heads/release/chromiumos-4.14-r2
+                - refs/heads/release/chromiumos-4.14-r3
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash 
+            set -ex
+
+            KERNEL_BRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||')
+            KERNEL_CONFIGS="chromiumos-qualcomm"
+            ARCH="arm64"
+
+            echo "KERNEL_BRANCH=${KERNEL_BRANCH}" > build_parameters
+            echo "KERNEL_CONFIGS=${KERNEL_CONFIGS}" >> build_parameters
+            echo "ARCH=${ARCH}" >> build_parameters
+
+            cat build_parameters
+    publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'lt-qcom-linux-build'
+              condition: SUCCESS
+              property-file: build_parameters

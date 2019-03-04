@@ -39,17 +39,14 @@
     scm:
         - git:
             url: ${KERNEL_REPO_URL}
-            refspec: +refs/heads/release/*:refs/remotes/origin/release/*
+            refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/origin/${KERNEL_BRANCH}
             name: origin
             branches:
-                - refs/heads/release/chromiumos-4.14-r2
-                - refs/heads/release/chromiumos-4.14-r3
+                - refs/heads/${KERNEL_BRANCH}
             basedir: linux
             skip-tag: true
-            shallow-clone: false
+            shallow-clone: true
             wipe-workspace: false
-    triggers:
-        - pollscm: 'H/5 * * * *'
     wrappers:
         - timestamps
         - build-name:
@@ -60,26 +57,6 @@
             set -ex
             sudo apt-get update
             sudo apt-get install -y ccache bc kmod cpio
-
-            if [ -z "${KERNEL_BRANCH}" ]; then
-                KERNEL_BRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||')
-                KERNEL_CONFIGS="chromiumos-qualcomm"
-                ARCH="arm64"
-            fi
-
-            if [[ -z "${KERNEL_BRANCH}" || -z "${KERNEL_CONFIGS}" || -z "${ARCH}" ]]; then
-                echo "ERROR: Required build parameters aren't set"
-                echo "KERNEL_BRANCH: ${KERNEL_BRANCH}"
-                echo "KERNEL_CONFIGS: ${KERNEL_CONFIGS}"
-                echo "ARCH: ${ARCH}"
-                exit 1
-            fi
-
-            echo "KERNEL_BRANCH=${KERNEL_BRANCH}" > build_parameters
-            echo "KERNEL_CONFIGS=${KERNEL_CONFIGS}" >> build_parameters
-            echo "ARCH=${ARCH}" >> build_parameters
-        - inject:
-            properties-file: build_parameters
         - shell:
             !include-raw: lt-qcom-linux/build-kernel.sh
         - inject:
