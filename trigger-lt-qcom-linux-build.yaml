@@ -1,30 +1,4 @@
 - scm:
-    name: chromiumos-4.14-r1
-    scm:
-        - git:
-            url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
-            refspec: +refs/heads/release/*:refs/remotes/origin/release/*
-            name: origin
-            branches:
-                - refs/heads/release/chromiumos-4.14-r1
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-
-- scm:
-    name: chromiumos-4.14-r2
-    scm:
-        - git:
-            url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
-            refspec: +refs/heads/release/*:refs/remotes/origin/release/*
-            name: origin
-            branches:
-                - refs/heads/release/chromiumos-4.14-r2
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-
-- scm:
     name: chromiumos-4.14-r3
     scm:
         - git:
@@ -59,8 +33,6 @@
     node: build
     display-name: 'Trigger for Qualcomm LT kernel build'
     scm:
-        - chromiumos-4.14-r1
-        - chromiumos-4.14-r2
         - chromiumos-4.14-r3
     triggers:
         - pollscm: 'H/5 * * * *'
