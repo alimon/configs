@@ -1,16 +1,3 @@
-- scm:
-    name: chromiumos-4.14
-    scm:
-        - git:
-            url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
-            refspec: +refs/heads/release/*:refs/remotes/origin/release/*
-            name: origin
-            branches:
-                - refs/heads/release/chromiumos-4.14-r*
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-
 - job:
     name: trigger-lt-qcom-linux-build
     project-type: freestyle
@@ -18,6 +5,13 @@
     logrotate:
         daysToKeep: 30
         numToKeep: 30
+    parameters:
+        - string:
+            name: KERNEL_REPO_URL
+            default: 'https://git.linaro.org/landing-teams/working/qualcomm/kernel.git'
+        - string:
+            name: KERNEL_BRANCHES
+            default: 'release/chromiumos-4.14-r*'
     properties:
         - authorization:
             anonymous:
@@ -33,7 +27,15 @@
     node: build
     display-name: 'Trigger for Qualcomm LT kernel build'
     scm:
-        - chromiumos-4.14
+        - git:
+            url: https://git.linaro.org/git/landing-teams/working/qualcomm/kernel.git
+            refspec: +refs/heads/release/*:refs/remotes/origin/release/*
+            name: origin
+            branches:
+                - refs/heads/release/*
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
     triggers:
         - pollscm: 'H/5 * * * *'
     wrappers:
@@ -45,15 +47,24 @@
             #!/bin/bash 
             set -ex
 
-            KERNEL_BRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||')
-            KERNEL_CONFIGS="chromiumos-qualcomm"
-            ARCH="arm64"
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            python configs/trigger-lt-qcom-linux-build/get_branch_to_build.py \
+              > branch_to_build
+        - inject:
+            properties-file: branch_to_build
+        - shell: |
+            #!/bin/bash 
+            set -ex
 
-            echo "KERNEL_BRANCH=${KERNEL_BRANCH}" > build_parameters
-            echo "KERNEL_CONFIGS=${KERNEL_CONFIGS}" >> build_parameters
-            echo "ARCH=${ARCH}" >> build_parameters
-
-            cat build_parameters
+            echo "${KERNEL_BRANCH}" | grep -q "release/chromiumos-4.14-r*"
+            if [ $? -eq 0 ]; then
+                echo "KERNEL_REPO_URL=${KERNEL_REPO_URL}" > build_parameters
+                echo "KERNEL_BRANCH=${KERNEL_BRANCH}" >> build_parameters
+                echo "KERNEL_CONFIGS=chromiumos-qualcomm" >> build_parameters
+                echo "ARCH=arm64" >> build_parameters
+                cat build_parameters
+            fi
     publishers:
         - trigger-parameterized-builds:
             - project:
