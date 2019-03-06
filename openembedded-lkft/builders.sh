@@ -208,6 +208,11 @@ fi
 # The kernel (as of next-20181130) requires fold from the host
 echo "HOSTTOOLS += \"fold\"" >> conf/local.conf
 
+# Workaround for missing juno-r2.dtb in Linux 4.4
+if [ "${KERNEL_VERSION}" = "4.4" ] && [ "${MACHINE}" = "juno" ]; then
+  echo 'KERNEL_DEVICETREE_remove_juno = "arm/juno-r2.dtb"' >> conf/local.conf
+fi
+
 # add useful debug info
 cat conf/{site,auto}.conf
 cat ${distro_conf}
