@@ -365,13 +365,13 @@
           default: ""
           description: "Project to bisect"
       - string:
-          name: baseline_rev
-          default: ""
-          description: "Baseline revision"
+          name: baseline_branch
+          default: "baseline"
+          description: "Baseline branch or sha1"
       - string:
-          name: bad_rev
+          name: bad_branch
           default: ""
-          description: "Bad revision"
+          description: "Bad branch or sha1"
       - default-parameters
     disabled: false
     node: tcwg-x86_64-dev-01
@@ -411,8 +411,8 @@
             %% artifacts/manifests/bisect.sh \
             --BUILD_URL "$BUILD_URL" \
             --current_project "$current_project" \
-            --baseline_rev "$baseline_rev" \
-            --bad_rev "$bad_rev" \
+            --baseline_branch "$baseline_branch" \
+            --bad_branch "$bad_branch" \
             --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
             -- \
             --scripts_branch "$scripts_branch" \
