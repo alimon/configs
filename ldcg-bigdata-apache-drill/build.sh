@@ -14,7 +14,8 @@ cd drill
 
 mvn clean -X package -Pdeb -Prpm -DskipTests
 
+mkdir -p out/
 cp distribution/target/apache-drill-*/*.deb out/
-cp distribution/target/apache-drill-*/noarch/*.rpm out/
+cp distribution/target/rpm/apache-drill/RPMS/noarch/*.rpm out/
 
 sudo chown -R buildslave:buildslave out
