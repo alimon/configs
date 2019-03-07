@@ -15,8 +15,6 @@
           node: tcwg-apm_64-build
       - arm:
           node: tcwg-apm_32-build
-    component:
-      - gcc
     bootstrap_config:
       - bootstrap
       - bootstrap_ubsan
@@ -25,7 +23,6 @@
       - bootstrap_O1
       - bootstrap_debug
     jobs:
-      - 'tcwg_gnu-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
       - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
       - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
 - view:
@@ -60,40 +57,6 @@
       - build-discarder:
           days-to-keep: 30
           num-to-keep: 30
-
-- job-template:
-    name: tcwg_gnu-trigger-{component}-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
-    project-type: freestyle
-    defaults: global
-    properties:
-      - default-properties
-      - build-blocker:
-          blocking-jobs:
-            - "tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
-            - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
-          queue-scanning: 'ALL'
-    disabled: true
-    node: tcwg-coordinator
-    concurrent: false
-    display-name: 'DELETE ME'
-    workspace: workspace/tcwg_gnu-{toolchain_name}/$JOB_NAME
-    scm:
-      - '{component}-scm':
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
-    triggers:
-      - pollscm:
-          cron: 'H H * * *'
-    wrappers:
-        - timeout:
-            timeout: 600
-        - timestamps
-    builders:
-      - trigger-builds:
-          - project: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
-            predefined-parameters: |
-              current_project={component}
-              current_branch=$GIT_COMMIT
 
 - parameter:
     name: gnu-parameters
