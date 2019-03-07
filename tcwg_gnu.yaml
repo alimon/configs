@@ -2,6 +2,7 @@
     name: tcwg_gnu
     toolchain_name:
       - gnu:
+          components: gcc
           gcc_url: https://gcc.gnu.org/git/gcc.git
           init_configuration: 'false'
     toolchain_ver:
@@ -30,7 +31,7 @@
 - view:
     name: tcwg_gnu
     view-type: list
-    regex: 'tcwg_gnu-b.*'
+    regex: 'tcwg_gnu-.*'
 
 - scm:
     name: gcc-scm
@@ -41,16 +42,13 @@
               - 'refs/heads/{gcc_branch}'
             basedir: gcc
             skip-tag: true
-            sparse-checkout:
-              paths:
-                - README
             reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
             wipe-workspace: false
             clean:
               before: true
             prune: true
 - property:
-    name: default_properties
+    name: default-properties
     properties:
       - authorization:
           anonymous:
@@ -68,16 +66,16 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default_properties
+      - default-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
             - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
           queue-scanning: 'ALL'
-    disabled: false
+    disabled: true
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'TCWG Trigger {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config} @ {component}'
+    display-name: 'DELETE ME'
     workspace: workspace/tcwg_gnu-{toolchain_name}/$JOB_NAME
     scm:
       - '{component}-scm':
@@ -100,11 +98,25 @@
 - parameter:
     name: gnu-parameters
     parameters:
-      - choice:
-          name: current_project
-          choices:
-            - gcc
-          description: 'Project to {action}'
+      - string:
+          name: gcc_branch
+          default: default
+          description: "gcc branch or sha1 to build"
+- parameter:
+    name: default-parameters
+    parameters:
+      - string:
+          name: mail_recipients
+          default: default
+          description: "Comma-separated list of email recipients; use 'default' unless testing"
+      - string:
+          name: distro
+          default: xenial
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: tcwg_gnu
+          description: 'Scripts revision to use'
 
 - scm:
     name: jenkins-scripts
@@ -122,42 +134,60 @@
             before: true
           prune: true
 
+- builder:
+    name: trigger-followup-builds
+    builders:
+      - build-name-setter:
+          name: 'artifacts/jenkins/build-name'
+          file: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
+            if [ -f $i ]; then
+              echo "mail_recipients=$mail_recipients" >> $i
+              echo "distro=$distro" >> $i
+              echo "scripts_branch=$scripts_branch" >> $i
+            fi
+          done
+      - trigger-builds:
+          - project: tcwg_bmk-build-{ci_config}
+            parameter-factories:
+              - factory: filebuild
+                file-pattern: artifacts/trigger-build-*
+          - project: tcwg_bmk-bisect-{ci_config}
+            property-file: artifacts/trigger-bisect
+
 - job-template:
     name: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
     project-type: freestyle
     defaults: global
     properties:
-      - default_properties
+      - default-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
           queue-scanning: 'ALL'
     parameters:
-      - '{toolchain_name}-parameters':
-          action: build
-      - string:
-          name: current_branch
-          default: default
-          description: "Git rev of $current_project to build"
+      - '{toolchain_name}-parameters'
       - bool:
           name: reset_baseline
           default: false
           description: "Whether to reset baseline to results of this build"
-      - string:
-          name: distro
-          default: xenial
-          description: 'Distro image to use'
-      - string:
-          name: scripts_branch
-          default: tcwg_gnu
-          description: 'Scripts revision to use'
+      - default-parameters
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG Build {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
-    workspace: workspace/tcwg_gnu-build-{toolchain_name}_$EXECUTOR_NUMBER
+    display-name: 'TCWG Build tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+    workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
+      - gcc-scm:
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
+    triggers:
+      - pollscm:
+          cron: 'H H * * *'
     wrappers:
       - timeout:
           timeout: 600
@@ -174,14 +204,21 @@
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
             mkdir -p artifacts/jenkins
-            build_name="#$BUILD_NUMBER-$current_project"
-            echo "$build_name" > artifacts/jenkins/build-name
-        - build-name-setter:
-            name: 'artifacts/jenkins/build-name'
-            file: true
-        - shell: |
-            #!/bin/bash
-            set -ex
+            build_name="#$BUILD_NUMBER"
+            branch_opt=""
+            i=1
+            for c in {components}; do
+              eval "b=\$$$${{c}}_branch"
+              if [ x"$b" = x"default" ]; then
+                eval "b=\$GIT_COMMIT_$i"
+              fi
+              if [ x"$b" != x"baseline" ]; then
+                build_name="$build_name-$c"
+                branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
+              fi
+              i=$(($i+1))
+            done
+
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
             --label {node} \
@@ -192,50 +229,28 @@
             --BUILD_URL "$BUILD_URL" \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config} \
             ==rr[init_configuration] {init_configuration} \
-            ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
+            ==rr[gcc_url] {gcc_url} \
+            $branch_opt \
             ==rr[mode] "jenkins-full" \
-            ==rr[current_project] "$current_project" \
-            ==rr[current_branch] "$current_branch" \
-            --reset_baseline "$reset_baseline" &
+            ==rr[reset_baseline] "$reset_baseline" &
             res=0 && wait $! || res=$?
 
             if [ $res != 0 ]; then
               touch artifacts/failures
             fi
 
-            name="#$BUILD_NUMBER-$current_project"
             if [ -e artifacts/results ]; then
-              name="$name-R$(tail -n1 artifacts/results)"
-            fi
-            if [ -e artifacts/distance-to-baseline ]; then
-              name="$name-B$(cat artifacts/distance-to-baseline)"
+              build_name="$build_name-R$(tail -n1 artifacts/results)"
             fi
             if $reset_baseline; then
-              name="$name-baseline"
-              # Don't trigger bisect if this [possibly failed] build is
-              # the new baseline.
-              rm -f artifacts/trigger-bisect-on-failure
+              build_name="$build_name-baseline"
             fi
-            if [ ! -f artifacts/failures ]; then
-              rm -f artifacts/trigger-bisect-on-failure
+            if [ -f artifacts/trigger-bisect ]; then
+              build_name="$build_name-bisect"
             fi
-            if [ -f artifacts/trigger-bisect-on-failure ]; then
-              name="$name-bisect"
-              echo "distro=$distro" >> artifacts/trigger-bisect-on-failure
-              echo "scripts_branch=$scripts_branch" >> artifacts/trigger-bisect-on-failure
-            fi
-
-            echo "$name" > artifacts/jenkins/build-name
-        - build-name-setter:
-            name: 'artifacts/jenkins/build-name'
-            file: true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-bisect-on-failure
-            steps:
-              - trigger-builds:
-                  - project: tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
-                    property-file: artifacts/trigger-bisect-on-failure
+            echo "$build_name" > artifacts/jenkins/build-name
+        - trigger-followup-builds:
+            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -251,7 +266,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default_properties
+      - default-properties
       - build-blocker:
           # Run at most 1 bisect job for all configurations.
           # Bisect jobs can easily run for 5+ hours, and a few of them
@@ -262,33 +277,24 @@
             - "tcwg_gnu-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
-      - '{toolchain_name}-parameters':
-          action: bisect
       - string:
-          name: baseline_rev
-          default: default
-          description: "Baseline revision"
+          name: current_project
+          default: ""
+          description: "Project to bisect"
       - string:
-          name: bad_rev
-          default: default
-          description: "Bad revision"
+          name: baseline_branch
+          default: "baseline"
+          description: "Baseline branch or sha1"
       - string:
-          name: mail_recipients
-          default: default
-          description: "Comma-separated list of email recipients; use 'default' unless testing"
-      - string:
-          name: distro
-          default: xenial
-          description: 'Distro image to use'
-      - string:
-          name: scripts_branch
-          default: tcwg_gnu
-          description: 'Scripts revision to use'
+          name: bad_branch
+          default: ""
+          description: "Bad branch or sha1"
+      - default-parameters
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG Bisect {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
-    workspace: workspace/tcwg_gnu-bisect-{toolchain_name}_$EXECUTOR_NUMBER
+    display-name: 'TCWG Bisect tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+    workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
     wrappers:
@@ -312,12 +318,7 @@
             # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
             echo "prathamesh.kulkarni@linaro.org" > artifacts/jenkins/mail-recipients.txt
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
-        - build-name-setter:
-            name: 'artifacts/jenkins/build-name'
-            file: true
-        - shell: |
-            #!/bin/bash
-            set -ex
+
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
             --label {node} \
@@ -326,42 +327,20 @@
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
             %% artifacts/manifests/bisect.sh \
             --BUILD_URL "$BUILD_URL" \
-            --baseline_rev "$baseline_rev" \
-            --bad_rev "$bad_rev" \
+            --current_project "$current_project" \
+            --baseline_branch "$baseline_branch" \
+            --bad_branch "$bad_branch" \
             --build_script "./jenkins-scripts/tcwg_gnu-build.sh" \
-            --ci_project tcwg_gnu \
             -- \
+            ==rr[ci_project] tcwg_gnu \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
-            ==rr[gcc_url] {gcc_url} ==rr[gcc_branch] {gcc_branch} \
-            ==rr[current_project] "$current_project"
-
-            for i in artifacts/trigger-1-reset-baseline artifacts/trigger-2-build-master; do
-              if [ -f $i ]; then
-                echo "distro=$distro" >> $i
-                echo "scripts_branch=$scripts_branch" >> $i
-              fi
-            done
+            ==rr[gcc_url] {gcc_url}
 
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
-        - build-name-setter:
-            name: 'artifacts/jenkins/build-name'
-            file: true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-1-reset-baseline
-            steps:
-              - trigger-builds:
-                  - project: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
-                    property-file: artifacts/trigger-1-reset-baseline
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: artifacts/trigger-2-build-master
-            steps:
-              - trigger-builds:
-                  - project: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
-                    property-file: artifacts/trigger-2-build-master
+        - trigger-followup-builds:
+            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
