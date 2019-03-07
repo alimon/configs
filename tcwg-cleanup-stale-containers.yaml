@@ -1,6 +1,6 @@
 - job:
     name: tcwg-cleanup-stale-containers
-    project-type: matrix
+    project-type: freestyle
     defaults: global
     properties:
         - authorization:
@@ -17,10 +17,13 @@
             max-per-node: 1
             option: project
     parameters:
-        - string:
+        - label:
             name: slave_list
-            default: 'tcwg-apm-01 tcwg-apm-02 tcwg-apm-03 tcwg-apm-04 tcwg-d05-01 tcwg-sq-01 tcwg-sq-02 tcwg-thx1-01 tcwg-tk1-01 tcwg-tk1-02 tcwg-tk1-03 tcwg-tk1-04 tcwg-tk1-09 tcwg-tx1-01 tcwg-tx1-02 tcwg-tx1-03 tcwg-tx1-04 tcwg-tx1-05 tcwg-x86_64-build-01 tcwg-x86_64-build-02 tcwg-x86_64-build-03 tcwg-x86_64-build-04 tcwg-x86_64-build-05 tcwg-x86_64-build-06 tcwg-x86_64-build-07 tcwg-x86_64-build-08 tcwg-x86_64-build-09 tcwg-x86_64-build-10 tcwg-x86_64-dev-01 tcwg-x86_64-dev-02 tcwg-bmk-dev-01 tcwg-bmk-dev-02'
-            description: 'List of slaves to run on -- should be a subset of slave axis'
+            default: tcwg-apm_64-build || tcwg-apm_64-test || tcwg-bmk-coordinator || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1 || tcwg-tx1 || tcwg-x86_64-build || tcwg-x86_64-cam
+            all-nodes: true
+            matching-label: 'allCases'
+            node-eligibility: 'ignore-offline'
+            description: 'Machines to run on'
         - string:
             name: cleanup_running_hours
             default: '10'
@@ -49,10 +52,9 @@
             name: scripts_branch
             default: refs/heads/master
             description: 'Scripts revision to use'
-    disabled: true
-    node: tcwg-coordinator
+    disabled: false
     concurrent: false
-    display-name: 'DELETE ME'
+    display-name: 'TCWG CCC Cleanup stale containers'
     triggers:
         - timed: '@daily'
     scm:
@@ -64,60 +66,10 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
-    axes:
-        - axis:
-            type: slave
-            name: label
-            values:
-                - tcwg-apm-01
-                - tcwg-apm-02
-                - tcwg-apm-03
-                - tcwg-apm-04
-                - tcwg-d05-01
-                - tcwg-sq-01
-                - tcwg-sq-02
-                - tcwg-thx1-01
-                - tcwg-tk1-01
-                - tcwg-tk1-02
-                - tcwg-tk1-03
-                - tcwg-tk1-04
-                - tcwg-tk1-09
-                - tcwg-tx1-01
-                - tcwg-tx1-02
-                - tcwg-tx1-03
-                - tcwg-tx1-04
-                - tcwg-tx1-05
-                - tcwg-x86_64-build-01
-                - tcwg-x86_64-build-02
-                - tcwg-x86_64-build-03
-                - tcwg-x86_64-build-04
-                - tcwg-x86_64-build-05
-                - tcwg-x86_64-build-06
-                - tcwg-x86_64-build-07
-                - tcwg-x86_64-build-08
-                - tcwg-x86_64-build-09
-                - tcwg-x86_64-build-10
-                - tcwg-x86_64-dev-01
-                - tcwg-x86_64-dev-02
-                - tcwg-bmk-dev-01
-                - tcwg-bmk-dev-02
-        - axis:
-            type: dynamic
-            name: slave
-            values:
-                - slave_list
-    execution-strategy:
-        combination-filter: |
-            label==slave
-        sequential: false
     wrappers:
         - timeout:
             timeout: 600
         - timestamps
-        - ssh-agent-credentials:
-            # tcwg-buildslave user id
-            users:
-                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
         - build-name:
             name: '#${BUILD_NUMBER}'
     builders:
@@ -125,7 +77,7 @@
             #!/bin/bash
 
             set -ex
-            case "$label" in
+            case "$NODE_NAME" in
               tcwg-bmk-dev-*)
                 # tcwg-bmk-dev-* nodes are hosted on dev-* machines, aka
                 # tcwg-x86_64-dev-* nodes.  We only need to cleanup ssh-agent
