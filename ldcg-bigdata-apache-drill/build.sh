@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 echo "deb http://obs.linaro.org/ERP:/18.06/Debian_9 ./" | sudo tee /etc/apt/sources.list.d/erp-18.06.list
 echo "deb http://obs.linaro.org/ERP:/18.12/Debian_9 ./" | sudo tee /etc/apt/sources.list.d/erp-18.12.list
@@ -14,8 +14,8 @@ cd drill
 
 mvn clean -X package -Pdeb -Prpm -DskipTests
 
-mkdir -p out/
-cp distribution/target/apache-drill-*/*.deb out/
-cp distribution/target/rpm/apache-drill/RPMS/noarch/*.rpm out/
+mkdir -p ${WORKSPACE}/out
+cp -a distribution/target/apache-drill-*/*.deb ${WORKSPACE}/out/
+cp -a distribution/target/rpm/apache-drill/RPMS/noarch/*.rpm ${WORKSPACE}/out/
 
-sudo chown -R buildslave:buildslave out
+sudo chown -R buildslave:buildslave ${WORKSPACE}/out
