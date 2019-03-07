@@ -1,0 +1,99 @@
+- job:
+    name: tcwg-cleanup-stale-containers-maxim
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+        - throttle:
+            max-per-node: 1
+            option: project
+    parameters:
+        - label:
+            name: slave_list
+            default: tcwg-x86_64-build
+            all-nodes: true
+            matching-label: 'success'
+            description: 'Label to run on'
+        - string:
+            name: cleanup_running_hours
+            default: '10'
+            description: 'Delete containers that are more then "hours" old.  Use "0" to disable time check.  Use negative values for dry-run.'
+        - string:
+            name: cleanup_stopped_hours
+            default: '240'
+            description: 'Delete containers that are more then "hours" old.  Use "0" to disable the cleanup.  Use negative values for dry-run.'
+        - string:
+            name: cleanup_ssh_agent_hours
+            default: '48'
+            description: 'Kill ssh-agent processes that are more then "hours" old.  Use "0" to disable time check.'
+        - bool:
+            name: cleanup_volumes
+            default: 'false'
+            description: 'Whether to cleanup dangling volumes'
+        - bool:
+            name: cleanup_images
+            default: 'true'
+            description: 'Whether to cleanup images'
+        - bool:
+            name: verbose
+            default: 'false'
+            description: 'Whether to be verbose'
+        - string:
+            name: scripts_branch
+            default: refs/heads/master
+            description: 'Scripts revision to use'
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG ZZZ Cleanup stale containers -- Maxim'
+    triggers:
+        - timed: '@daily'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - ssh-agent-credentials:
+            # tcwg-buildslave user id
+            users:
+                - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+            case "$label" in
+              tcwg-bmk-dev-*)
+                # tcwg-bmk-dev-* nodes are hosted on dev-* machines, aka
+                # tcwg-x86_64-dev-* nodes.  We only need to cleanup ssh-agent
+                # processes for tcwg-benchmark user, so disable all other
+                # cleanups.
+                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours 0 --cleanup-stopped-hours 0 --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes false --cleanup-images false --verbose $verbose || true
+                ;;
+              *)
+                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
+                ;;
+            esac
+    publishers:
+        - email-ext:
+            recipients: tcwg-validation@linaro.org
+            aborted: true
