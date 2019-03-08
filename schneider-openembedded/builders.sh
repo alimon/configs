@@ -151,7 +151,6 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 # FIXME: IMAGE_FSTYPES_remove doesn't work
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
-      ${DEPLOY_DIR_IMAGE}/*.rootfs.wic \
       ${DEPLOY_DIR_IMAGE}/*.iso \
       ${DEPLOY_DIR_IMAGE}/*.stimg
 
