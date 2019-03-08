@@ -186,9 +186,6 @@
             export KERNEL_DESCRIBE_4_19=$(git rev-parse --short HEAD)
             export KERNEL_VERSION_4_19=$(make kernelversion)
 
-            # temporary workaround to support hdmi dongle in lava lab
-            git revert --no-edit 34d2e7a0f456c1ebf47ff2f33b2ce96062906110
-
             ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.19/android-base.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
@@ -214,9 +211,6 @@
             git pull
             export KERNEL_DESCRIBE_4_14=$(git rev-parse --short HEAD)
             export KERNEL_VERSION_4_14=$(make kernelversion)
-
-            # temporary workaround to support hdmi dongle in lava lab
-            git revert --no-edit 758837f46cb40e3c604bd3f8e609ef7e9f861370
 
             ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.14/android-base.config
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
@@ -256,16 +250,15 @@
             rm -fr ${X15_KERNEL_DIR} && mkdir -p ${X15_KERNEL_DIR}
             git clone -b android-beagle-x15-4.14 https://android.googlesource.com/kernel/omap ${X15_KERNEL_DIR}
 
-            # workaround for the adb root/adb reboot kernel panic problem
-            cd ${X15_KERNEL_DIR} && \
-                git revert --no-edit 65d9e9821b86155dc810ff08c12cc29c7fabbca9 && \
-                cd -
-
             # compile x15 kernel
             cd ${X15_KERNEL_DIR}
             export PATH=~/srv/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi/bin:$PATH
             export KERNEL_DESCRIBE_X15_4_14=$(git rev-parse --short HEAD)
             export KERNEL_VERSION_X15_4_14=$(make kernelversion)
+
+            # workaround for the adb root/adb reboot kernel panic problem
+            git revert --no-edit 65d9e9821b86155dc810ff08c12cc29c7fabbca9
+
             make ARCH=arm CROSS_COMPILE=arm-eabi- ti_sdk_am57x_android_release_defconfig
             make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
             cd -
