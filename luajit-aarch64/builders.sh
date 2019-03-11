@@ -56,13 +56,47 @@ njobs () {
 ########## LuaJIT build and test ##########
 
 # Build and install
-safe make CCDEBUG="-DUSE_LUA_ASSERT" PREFIX="${WORKSPACE}"/install install -j "$(njobs)"
-safe export LUA_PATH="$(ls -d "${WORKSPACE}"/install/share/luajit*)/?.lua;;"
-
+THISBUILDDIR="${WORKSPACE}/build${BUILD_NUMBER}"
+safe mkdir -p "$THISBUILDDIR"/dump
+safe make CCDEBUG="-DUSE_LUA_ASSERT" PREFIX="$THISBUILDDIR"/install install -j "$(njobs)"
+safe ln -sf "$THISBUILDDIR"/install/bin/luajit-* "$THISBUILDDIR"/install/bin/luajit
+safe export LUA_PATH="$(ls -d "$THISBUILDDIR"/install/share/luajit*)/?.lua;;"
 # Run a simple test
 safe ./src/luajit -jdump -e "x=0; for i=1,100 do x=x+i end; print(x)"
 
-# Additional internal test which doesn't exist everywhere
-if make -n test > /dev/null; then
-  safe make test
-fi
+TESTSUITE_GIT_URL=https://github.com/SameeraDes/LuaJIT-test-cleanup.git
+
+safe cd $THISBUILDDIR
+safe git clone $TESTSUITE_GIT_URL LuaJIT-testsuite
+safe cd LuaJIT-testsuite/test
+safe "$THISBUILDDIR"/install/bin/luajit test.lua
+
+safe cd $THISBUILDDIR/LuaJIT-testsuite/bench
+while read -r bench opts mdsum rest; do
+	if [[ "$rest" = "" ]] ; then
+		"$THISBUILDDIR"/install/bin/luajit $bench.lua $opts > "$THISBUILDDIR"/dump/cor_$bench.dmp
+	else
+		"$THISBUILDDIR"/install/bin/luajit $bench.lua $opts <$rest > "$THISBUILDDIR"/dump/cor_$bench.dmp
+	fi
+	current=`md5sum "$THISBUILDDIR"/dump/cor_$bench.dmp | cut -d ' ' -f 1`;
+	if [[ "$current" != "$mdsum" ]] ; then
+		echo "$bench: md5sum not matched. Current: $current Expected: $mdsum"
+	fi
+done < TEST_md5sum_arm64.txt
+
+while IFS=" " read -r bench opts rest; do
+	if [[ "$rest" = "" ]] ; then
+		x=`{ time "$THISBUILDDIR"/install/bin/luajit  $bench.lua $opts > "$THISBUILDDIR"/dump/perf_$bench.dmp ; } 2>&1 | grep "real" | cut -f 2`
+	else
+		x=`{ time "$THISBUILDDIR"/install/bin/luajit  $bench.lua $opts < $rest > "$THISBUILDDIR"/dump/perf_$bench.dmp ; } 2>&1 | grep "real" | cut -f 2`
+	fi
+	echo $bench": " $x
+done < PARAM_arm64.txt > "$THISBUILDDIR"/dump/bench.txt
+
+safe cat "$THISBUILDDIR"/dump/bench.txt
+rm $THISBUILDDIR -rf
+
+### Additional internal test which doesn't exist everywhere
+##if make -n test > /dev/null; then
+##  safe make test
+##fi

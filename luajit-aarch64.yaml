@@ -22,17 +22,22 @@
             description: 'Whether to print debug message'
     disabled: false
     node: docker-jessie-arm64
-    display-name: 'LuaJIT CI (Aarch64)'
+    display-name: 'LuaJIT CI (Official Repository)'
     scm:
         - git:
-            url: https://github.com/cbaylis/luajit-aarch64/
-            refspec: +refs/heads/aarch64-v2.1-new:refs/remotes/origin/aarch64-v2.1-new
+            url: https://github.com/LuaJIT/LuaJIT.git
+            refspec: +refs/heads/v2.1:refs/remotes/origin/v2.1
             name: origin
             branches:
-                - refs/heads/aarch64-v2.1-new
+                - refs/heads/v2.1
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
+          clean:
+            before: true
+          prune: true
+    triggers:
+        - pollscm: 'H/5 * * * *'
     wrappers:
         - timestamps
         - build-name:
