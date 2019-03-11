@@ -24,7 +24,7 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: build
+    node: master
     display-name: 'Trigger for Qualcomm LT kernel build'
     scm:
         - git:
@@ -32,12 +32,13 @@
             refspec: +refs/heads/release/*:refs/remotes/origin/release/*
             name: origin
             branches:
-                - refs/heads/release/*
+                - refs/heads/release/.*
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
     triggers:
-        - pollscm: 'H/5 * * * *'
+        - pollscm:
+            cron: 'H/5 * * * *'
     wrappers:
         - timestamps
         - build-name:
