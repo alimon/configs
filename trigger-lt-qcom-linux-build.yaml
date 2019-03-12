@@ -58,9 +58,7 @@
             set -ex
 
             KERNEL_CONFIGS=defconfig
-
-            echo "${KERNEL_BRANCH}" | grep -q "release/chromiumos-4.14-r*"
-            if [ $? -eq 0 ]; then
+            if echo "${KERNEL_BRANCH}" | grep -q "release/chromiumos-4.14-r.*"; then
                 KERNEL_CONFIGS=chromiumos-qualcomm
             fi
 
