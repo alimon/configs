@@ -1,6 +1,6 @@
 device_type: rzn1
 
-job_name: MBL ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: Schneider Electric RZN1 ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 timeouts:
   job:
     minutes: 10
@@ -11,10 +11,6 @@ timeouts:
 priority: medium
 visibility: public
 
-context:
-  extra_kernel_args: " 8250.nr_uarts=1"
-  console_device: "ttyS0"
-
 actions:
 - deploy:
     timeout:
@@ -24,59 +20,39 @@ actions:
     kernel:
       url: ${KERNEL_URL}
       type: uimage
-    modules:
-      url: ${MODULES_URL}
-      compression: gz
-    nfsrootfs:
-      url: ${NFSROOTFS_URL}
-      compression: xz
-    dtb:
-      url: ${DTB_URL}
-
 - boot:
+    timeout:
+      minutes: 10
     method: u-boot
-    commands: nfs
+    commands: fit
     auto_login:
       login_prompt: 'login:'
       username: root
+      password_prompt: "Password:"
+      password: "P@ssword-1"
+      login_commands:
+      - P@ssword-1
+      - azertAZERT12345
+      - azertAZERT12345
+      - azertAZERT12345
     prompts:
-    - 'root@rzn1-snarc:~#'
-    timeout:
-      minutes: 5
+    - "Current password: "
+    - "New password: "
+    - "Retype new password: " 
+    - "root@rzn1-snarc:"
+    transfer_overlay:
+      download_command: unset http_proxy ; dhclient eth1 ; cd /tmp ; wget
+      unpack_command: tar -C / -xzf
+
 
 - test:
     timeout:
       minutes: 5
     definitions:
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: basic-test
-          description: "Basic test"
-        run:
-          steps:
-            - uname -a
-      name: mbl-test
-      path: inline/mbl-test.yaml
-    - path: automated/linux/mbl/mbl_auto.yaml
-      repository: https://git.linaro.org/landing-teams/working/mbl/test-definitions
-      history: false
-      name: mbl_auto
+    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
       from: git
-      branch: linaro-mbl
-    - path: automated/linux/badblocks/badblocks.yaml
-      repository: https://git.linaro.org/landing-teams/working/mbl/test-definitions
-      history: false
-      name: badblocks
-      from: git
-      branch: linaro-mbl
-    - path: automated/linux/memtester/memtester.yaml
-      repository: https://git.linaro.org/landing-teams/working/mbl/test-definitions
-      history: false
-      name: memtester
-      from: git
-      branch: linaro-mbl
+      path: lava-test-shell/smoke-tests-basic.yaml
+      name: smoke-tests 
 
 metadata:
   machine: ${MACHINE}
