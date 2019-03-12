@@ -1,6 +1,6 @@
 - job:
     name: tcwg-cleanup-stale-workspaces
-    project-type: matrix
+    project-type: freestyle
     defaults: global
     properties:
         - authorization:
@@ -25,7 +25,7 @@
     parameters:
         - label:
             name: node_list
-            default: tcwg-apm_64-build || tcwg-apm_64-test || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1 || tcwg-tx1 || tcwg-x86_64-build || tcwg-x86_64-cam
+            default: tcwg-apm_64-build || tcwg-apm_64-test || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1_32-build || tcwg-x86_64-build || tcwg-x86_64-cam
             all-nodes: true
             matching-label: 'allCases'
             node-eligibility: 'ignore-offline'
@@ -46,10 +46,10 @@
             name: scripts_branch
             default: master
             description: 'Scripts branch to use'
-    disabled: true
+    disabled: false
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'DELETE ME'
+    display-name: 'TCWG CCC Cleanup stale workspaces'
     triggers:
         - timed: '@daily'
     scm:
