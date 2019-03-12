@@ -47,6 +47,10 @@ for sb in search_branches:
                     f.write("%s\n" % last_revision)
 
                 revision = last_revision
+                try:
+                    previous_revision = revisions[-1]
+                except:
+                    pass
                 build = True
                 break
 
