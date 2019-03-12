@@ -5,12 +5,12 @@ if (manager.build.result == hudson.model.Result.SUCCESS) {
   def configs = manager.envVars["KERNEL_CONFIGS"]
   def arch = manager.envVars["ARCH"]
 
-  def desc = "&nbsp;Trigger settings:<br />"
-  desc += "&nbsp;Repository: ${repo}<br />"
-  desc += "&nbsp;Branch: ${branch}<br />"
-  desc += "&nbsp;Revision: ${revision}<br />"
-  desc += "&nbsp;Configs: ${configs}<br />"
-  desc += "&nbsp;Arch: ${arch}<br />"
+  def desc = "&nbsp;<h2>Trigger settings</h2><br />"
+  desc += "&nbsp;<b>Repository:</b> ${repo}<br />"
+  desc += "&nbsp;<b>Branch:</b> ${branch}<br />"
+  desc += "&nbsp;<b>Revision:</b> ${revision}<br />"
+  desc += "&nbsp;<b>Configs:</b> ${configs}<br />"
+  desc += "&nbsp;<b>Arch:</b> ${arch}<br />"
 
   manager.build.setDescription(desc)
 }
