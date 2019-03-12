@@ -18,12 +18,13 @@ search_branches = os.environ['KERNEL_BRANCHES'].split()
 remote_branches = subprocess.check_output("git branch -r", shell=True).split()
 
 build = False
+remote_name = os.getenv('GIT_REMOTE_NAME', 'origin')
 branch_name = ''
 for sb in search_branches:
     if (build):
         break
 
-    rex = re.compile("origin/(?P<branch_name>%s)" % sb)
+    rex = re.compile("%s/(?P<branch_name>%s)" % (remote_name, sb))
     for rb in remote_branches:
         s = rex.search(rb)
         if s:
