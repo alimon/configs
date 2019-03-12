@@ -222,20 +222,25 @@ case "${MACHINE}" in
     ;;
 esac
 
+
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
-MANIFEST_COMMIT=${MANIFEST_COMMIT}
+MANIFEST_COMMIT=${BUILD_NUMBER}
 BOOT_URL=${BASE_URL}${PUB_DEST}/${BOOT_IMG}
 ROOTFS_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
 ROOTFS_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_IMG}
 ROOTFS_DESKTOP_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DESKTOP_IMG}
 SYSTEM_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
-KERNEL_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
+KERNEL_URL=${BASE_URL}${PUB_DEST}/fitImage-1.0-r0-rzn1-snarc.itb
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
 NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TARXZ_IMG}
 RECOVERY_IMAGE_URL=${BASE_URL}${PUB_DEST}/juno-oe-uboot.zip
 LXC_BOOT_IMG=${BOOT_IMG}
 LXC_ROOTFS_IMG=$(basename ${ROOTFS_IMG} .gz)
 EOF
+
+if [ ${MACHINE} = "rzn1d" ]; then
+	echo "DEVICE_TYPE=rzn1" >> ${WORKSPACE}/post_build_lava_parameters
+fi
