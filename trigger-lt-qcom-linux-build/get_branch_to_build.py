@@ -54,6 +54,11 @@ if build:
     print("KERNEL_BRANCH=%s" % branch_name)
     print("KERNEL_PREVIOUS_REVISION=%s" % previous_revision)
     print("KERNEL_REVISION=%s" % revision)
+
+    print("GIT_BRANCH=%s/%s" % (remote_name, branch_name))
+    print("GIT_COMMIT=%s" % revision)
+    print("GIT_PREVIOUS_COMMIT=%s" % previous_revision)
+    print("GIT_PREVIOUS_SUCCESSFUL_COMMIT=%s" % previous_revision)
     sys.exit(0)
 
 sys.exit(1)
