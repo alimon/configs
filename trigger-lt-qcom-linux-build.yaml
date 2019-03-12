@@ -70,6 +70,10 @@
 
             cat build_parameters
     publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - trigger-lt-qcom-linux-build/postbuild.groovy
         - trigger-parameterized-builds:
             - project:
                 - 'lt-qcom-linux-build'
