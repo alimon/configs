@@ -15,5 +15,5 @@ python configs/openembedded-lkft/submit_for_testing.py \
   --qa-server-team ${QA_SERVER_TEAM} \
   --qa-server-project ${QA_SERVER_PROJECT} \
   --git-commit ${MANIFEST_COMMIT} \
-  --template-path configs/schneider-openembedded/lava-job-definitions/${DEVICE_TYPE} \
+  --template-path configs/schneider-openembedded/lava-job-definitions/ \
   --template-names template.yaml
