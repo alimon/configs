@@ -20,6 +20,8 @@ remote_branches = subprocess.check_output("git branch -r", shell=True).split()
 build = False
 remote_name = os.getenv('GIT_REMOTE_NAME', 'origin')
 branch_name = ''
+previous_revision = ''
+revision = ''
 for sb in search_branches:
     if (build):
         break
@@ -44,11 +46,14 @@ for sb in search_branches:
                 with open(file_name, 'a+') as f:
                     f.write("%s\n" % last_revision)
 
+                revision = last_revision
                 build = True
                 break
 
 if build:
     print("KERNEL_BRANCH=%s" % branch_name)
+    print("KERNEL_PREVIOUS_REVISION=%s" % previous_revision)
+    print("KERNEL_REVISION=%s" % revision)
     sys.exit(0)
 
 sys.exit(1)
