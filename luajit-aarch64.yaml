@@ -1,6 +1,6 @@
 - job:
     name: luajit-aarch64
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     properties:
         - authorization:
@@ -20,9 +20,16 @@
             name: CI_DEBUG
             default: true
             description: 'Whether to print debug message'
-    disabled: true
-    node: docker-jessie-arm64
-    display-name: 'DELETE ME'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-jessie-arm64
+                - docker-jessie-armhf
+                - docker-jessie-amd64
+    disabled: false
+    display-name: 'LuaJIT CI (Official Repository)'
     scm:
         - git:
             url: https://github.com/LuaJIT/LuaJIT.git
