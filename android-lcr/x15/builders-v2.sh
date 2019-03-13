@@ -18,10 +18,12 @@ if [[ ${JOB_NAME} == "android-lcr-member-x15-n" || ${JOB_NAME} == "android-lcr-m
   wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/x15/build-info/template.txt -O build/out/BUILD-INFO.txt
 fi
 
-# export KERNEL_DESCRIBE variant for lkft-x15-android-8.1-4.14.yaml build
-cd build/kernel/ti/x15/
-export KERNEL_DESCRIBE=$(git rev-parse --short HEAD)
-cd -
+if [[ ${JOB_NAME} == "lkft-x15-android-8.1-4.14" ]]; then
+    # export KERNEL_DESCRIBE variant for lkft-x15-android-8.1-4.14.yaml build
+    cd build/kernel/ti/x15/
+    export KERNEL_DESCRIBE=$(git rev-parse --short HEAD)
+    cd -
+fi
 
 # Delete sources after build to save space
 cd build
