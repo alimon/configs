@@ -13,7 +13,7 @@
     parameters:
         - string:
             name: KERNEL_BRANCH
-            default: 'android-4.14'
+            default: 'android-4.14-p-hikey'
     disabled: false
     node: master
     display-name: 'Trigger for LKFT HiKey builds (4.14 branch) Premerge CI'
@@ -21,13 +21,10 @@
         - git:
             remotes:
                 - android-4.14:
-                    url: https://android.googlesource.com/kernel/hikey-linaro
-                    refspec: +refs/heads/mirror-android-4.14:refs/remotes/android-4.14/mirror-android-4.14
-                - linux-stable-4.14:
-                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-                    refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable-4.14/linux-4.14.y
+                    url: https://github.com/tom-gall/hikey-linaro
+                    refspec: +refs/heads/${KERNEL_BRANCH}:refs/remotes/android-4.14/${KERNEL_BRANCH}
             branches:
-                - android-4.14/mirror-android-4.14
+                - android-4.14/${KERNEL_BRANCH}
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false

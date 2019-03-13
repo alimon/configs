@@ -24,18 +24,12 @@ git clone --depth=1 https://android.googlesource.com/platform/prebuilts/gcc/linu
 git clone --depth=1 https://android.googlesource.com/platform/prebuilts/clang/host/linux-x86
 export PATH=${PWD}/aarch64-linux-android-4.9/bin/:${PWD}/linux-x86/${TOOLCHAIN}/bin/:${PATH}
 
-if echo "${JOB_NAME}" | grep premerge; then
-   git merge --no-edit remotes/origin/${UPSTREAM_KERNEL_BRANCH}
+configs_url=https://android.googlesource.com/kernel/configs
+# for not 4.19 premerge ci builds. we use linaro android kernel configs
+if echo "${JOB_NAME}" | grep premerge && ! echo "${KERNEL_BRANCH}" | grep "\-4.19"; then
+    configs_url="https://github.com/tom-gall/LinaroAndroidKernelConfigs"
 fi
-
-# temporary workaround to support hdmi dongle in lava lab
-if echo "${KERNEL_BRANCH}" | grep "\-4.14"; then
-  git revert --no-edit 758837f46cb40e3c604bd3f8e609ef7e9f861370
-elif echo "${KERNEL_BRANCH}" | grep "\-4.19"; then
-  git revert --no-edit 34d2e7a0f456c1ebf47ff2f33b2ce96062906110
-fi
-
-git clone --depth=1 https://android.googlesource.com/kernel/configs
+git clone --depth=1 ${configs_url} configs
 
 if [ -z "${ANDROID_VERSION}" ]; then
     export ANDROID_VERSION=$(echo $REFERENCE_BUILD_URL | awk -F"/" '{print$(NF-1)}')
@@ -51,7 +45,13 @@ fi
 mkdir -p out
 export CLANG_TRIPLE=aarch64-linux-gnu-
 export CROSS_COMPILE=aarch64-linux-android-
-ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/${CONFIG_FRAGMENTS_PATH}/android-base.config
+
+# for not 4.19 premerge ci builds. we use linaro android kernel configs
+if echo "${JOB_NAME}" | grep premerge && ! echo "${KERNEL_BRANCH}" | grep "\-4.19"; then
+    ARCH=arm64 scripts/kconfig/merge_config.sh configs/${CONFIG_FRAGMENTS_PATH}/hikey_defconfig
+else
+    ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/${CONFIG_FRAGMENTS_PATH}/android-base.config
+fi
 cp .config out/defconfig
 make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
 
