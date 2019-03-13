@@ -118,8 +118,6 @@
             # Delete sources before build to save space
             cd build/
             rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ hikey-linaro/configs hikey-linaro-4.19
-            # delete the configs left last time
-            rm -fr configs
             # delete this kernel repository as we have patches applied
             rm -fr hikey-linaro
             cd -
@@ -174,9 +172,6 @@
             # need to use fetch to get all the new changes
             git fetch --all
 
-            # git clone the common configs repository which will be used by all kernel versions
-            rm -rf configs
-            git clone --depth=1 https://android.googlesource.com/kernel/configs
             # get the mkbootimg command which will be used to create the boot image by all kernel versions
             wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py -O mkbootimg
 
@@ -186,7 +181,7 @@
             export KERNEL_DESCRIBE_4_19=$(git rev-parse --short HEAD)
             export KERNEL_VERSION_4_19=$(make kernelversion)
 
-            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.19/android-base.config
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
@@ -212,7 +207,7 @@
             export KERNEL_DESCRIBE_4_14=$(git rev-parse --short HEAD)
             export KERNEL_VERSION_4_14=$(make kernelversion)
 
-            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.14/android-base.config
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
               --kernel arch/arm64/boot/Image.gz-dtb \
@@ -229,7 +224,7 @@
             git pull
             export KERNEL_DESCRIBE_4_9=$(git rev-parse --short HEAD)
             export KERNEL_VERSION_4_9=$(make kernelversion)
-            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig configs/android-4.9/android-base.config
+            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
