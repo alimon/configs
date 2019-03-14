@@ -1,6 +1,6 @@
 - job:
     name: tcwg-update-host-containers
-    project-type: matrix
+    project-type: freestyle
     defaults: global
     properties:
         - authorization:
@@ -17,6 +17,13 @@
             max-per-node: 1
             option: project
     parameters:
+        - label:
+            name: nodes
+            default: tcwg-d05_64-build || tcwg-llvmbot || tcwg-sq_64-build || tcwg-thx1_64-build || tcwg-tk1_32-build || tcwg-x86_64-build-09 || tcwg-x86_64-build-10
+            all-nodes: true
+            matching-label: 'allCases'
+            node-eligibility: 'ignore-offline'
+            description: 'Machines to run on'
         - string:
             name: distro
             default: 'xenial'
@@ -29,10 +36,10 @@
             name: scripts_branch
             default: master
             description: 'Scripts revision to use'
-    disabled: true
+    disabled: false
     node: tcwg-coordinator
     concurrent: false
-    display-name: 'DELETE ME'
+    display-name: 'TCWG CCC Update host containers'
     scm:
         - git:
             url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
@@ -42,21 +49,6 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
-    axes:
-        - axis:
-            type: slave
-            name: label
-            values:
-                - tcwg-d05-01
-                - tcwg-llvmbot-d05-01
-                - tcwg-llvmbot-thx1-01
-                - tcwg-sq-01
-                - tcwg-sq-02
-                - tcwg-thx1-01
-                - tcwg-x86_64-build-09
-                - tcwg-x86_64-build-10
-    execution-strategy:
-        sequential: false
     wrappers:
         - timeout:
             timeout: 600
@@ -67,7 +59,7 @@
         - shell: |
             #!/bin/bash
             set -ex
-            case "$label" in
+            case "$NODE_NAME" in
               tcwg-llvmbot-*) group=tcwg-llvm ;;
               *) group=all ;;
             esac
