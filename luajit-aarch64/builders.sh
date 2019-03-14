@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -ex
+
 ########## Helper functions ##########
 
 # Message prefix
@@ -61,7 +63,7 @@ case $arch in
 x86_64)
 	arch=x86
 	;;
-armhf)
+armv71)
 	arch=arm
 	;;
 aarch64)
