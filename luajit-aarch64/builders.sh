@@ -55,7 +55,7 @@ njobs () {
 
 ########## LuaJIT build and test ##########
 
-arch=$(uname -i)
+arch=$(uname -m)
 
 case $arch in
 x86_64)
