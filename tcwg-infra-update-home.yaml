@@ -20,12 +20,14 @@
             days-to-keep: 30
             num-to-keep: 30
     parameters:
-        - string:
-            name: machines_list
-            default: 'tcwg-apm-01.tcwglab tcwg-apm-02.tcwglab tcwg-apm-03.tcwglab tcwg-apm-04.tcwglab tcwg-tx1-01.tcwglab tcwg-tx1-02.tcwglab tcwg-tx1-03.tcwglab tcwg-tx1-04.tcwglab tcwg-tx1-05.tcwglab tcwg-tx1-06.tcwglab tcwg-tx1-07.tcwglab tcwg-tx1-08.tcwglab tcwg-tk1-01.tcwglab tcwg-tk1-02.tcwglab tcwg-tk1-03.tcwglab tcwg-tk1-04.tcwglab tcwg-tk1-05.tcwglab tcwg-tk1-06.tcwglab tcwg-tk1-07.tcwglab tcwg-tk1-08.tcwglab tcwg-tk1-09.tcwglab build-01.tcwglab build-02.tcwglab build-03.tcwglab build-04.tcwglab build-05.tcwglab build-06.tcwglab build-07.tcwglab build-08.tcwglab dev-01.tcwglab dev-02.tcwglab'
-            description: 'Machines to run on, see https://ci.linaro.org/job/tcwg-buildslave-command'
+        - label:
+            name: nodes
+            default: tcwg-apm_64-build || tcwg-apm_64-test || tcwg-bmk-coordinator || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1_32-build || tcwg-x86_64-build || tcwg-x86_64-cam
+            all-nodes: true
+            matching-label: 'allCases'
+            node-eligibility: 'all'
+            description: 'Machines to run on'
     disabled: false
-    node: tcwg-coordinator
     concurrent: false
     display-name: 'TCWG CCC Update TCWG Infra /home files'
     triggers:
@@ -49,21 +51,19 @@
             timeout: 600
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}'
+            name: '#${BUILD_NUMBER}-${NODE_NAME}'
     builders:
-        - trigger-builds:
-            - project: 'tcwg-buildslave-command'
-              predefined-parameters: |
-                machines_list=$machines_list
-                command=dir=$(mktemp -d); ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD > $dir.tar; tar x --strip-components=2 -f $dir.tar -C $dir tcwg-base/home-data; rsync -aL $dir/tcwg-buildslave/ /home/tcwg-buildslave/; rm -rf $dir/ $dir.tar
-                target_user=tcwg-buildslave
-              block: true
-            - project: 'tcwg-buildslave-command'
-              predefined-parameters: |
-                machines_list=$machines_list
-                command=dir=$(mktemp -d); ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true; git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD > $dir.tar; tar x --strip-components=2 -f $dir.tar -C $dir tcwg-base/home-data; rsync -aL $dir/tcwg-benchmark/ /home/tcwg-benchmark/; rm -rf $dir/ $dir.tar
-                target_user=tcwg-benchmark
-              block: true
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            dir=$(mktemp -d)
+            ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true
+            git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD > $dir.tar
+            tar x --strip-components=2 -f $dir.tar -C $dir tcwg-base/home-data
+            rsync -aL $dir/$USER/ /home/$USER/
+            rm -rf $dir/ $dir.tar
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
