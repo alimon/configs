@@ -25,6 +25,9 @@
             name: KERNEL_VERSION
             default: '4.4'
         - string:
+            name: KERNEL_VERSION_OVERRIDE
+            default: '${KERNEL_VERSION}'
+        - string:
             name: KERNEL_RECIPE
             default: 'linux-generic-stable-rt'
         - string:
@@ -38,10 +41,13 @@
             name: MAKE_KERNELVERSION
         - string:
             name: IMAGES
-            default: 'rpb-console-image'
+            default: 'rpb-console-image-lkft'
+        - string:
+            name: MANIFEST_URL
+            default: 'https://github.com/96boards/oe-rpb-manifest.git'
         - string:
             name: MANIFEST_BRANCH
-            default: 'morty'
+            default: 'lkft/rocko'
         - string:
             name: PUB_DEST
             default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/linux-stable-rt-${KERNEL_VERSION}/${BUILD_NUMBER}'
@@ -55,8 +61,22 @@
             name: QA_SERVER_PROJECT
             default: 'TBD'
         - string:
+            name: KSELFTEST_PATH
+            default: '/opt/kselftests/mainline/'
+        - string:
             name: SKIP_LAVA
             default: '1'
+        - string:
+            name: LAVA_JOB_PRIORITY
+            default: '60'
+        - string:
+            name: SANITY_LAVA_JOB_PRIORITY
+            default: '80'
+        - string:
+            name: TEST_SUITES
+            default: 'all'
+        - matrix-combinations:
+            name: MATRIX_COMBINATIONS
     disabled: false
     node: master
     display-name: 'LKFT - Linux Stable RT 4.4 (OpenEmbedded/morty)'
@@ -70,12 +90,12 @@
             type: user-defined
             name: DISTRO
             values:
-                - rpb
+                - lkft
         - axis:
             type: slave
             name: label
             values:
-                - docker-stretch-amd64
+                - docker-lkft
     execution-strategy:
         sequential: false
     wrappers:
@@ -95,8 +115,17 @@
 
             # Mapping for MACHINE -> DEVICE_TYPE
             case "${MACHINE}" in
+              intel-core2-32)
+                DEVICE_TYPE=i386
+                ;;
+              intel-corei7-64)
+                DEVICE_TYPE=x86
+                ;;
               juno)
                 DEVICE_TYPE=juno-r2
+                ;;
+              am57xx-evm)
+                DEVICE_TYPE=x15
                 ;;
             esac
 
@@ -125,6 +154,7 @@
         - email-ext:
             recipients: 'lkft-maintainers@lists.linaro.org'
             matrix-trigger: only-configurations
+            aborted: true
             subject: '[CI] ${MACHINE}: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
