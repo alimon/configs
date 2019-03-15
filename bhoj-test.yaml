@@ -16,8 +16,6 @@
                 - job-extended-read
                 - job-configure
                 - job-cancel
-        - github:
-            url: https://github.com/vishalbhoj/android_manifest
     parameters:
         - string:
             name: KERNEL_BRANCH
@@ -25,26 +23,39 @@
     disabled: false
     node: master
     display-name: 'Trigger for LKFT HiKey builds (4.4 branch)'
-    scm:
-        - git:
-            url: https://github.com/linaro-mmwg/optee-clearkey-cdmi.git
-            refspec: +refs/pull/*:refs/remotes/origin/pr/*
-            name: origin
-            branches:
-                - ${sha1}
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: true
-    triggers:
-        - github-pull-request:
-            github-hooks: true
-            permit-all: true
-            auth-id: 'GITHUB_TOKEN'
     wrappers:
         - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: JJB_USER
+                variable: JJB_USER
+        - credentials-binding:
+            - text:
+                credential-id: JJB_PASSWORD
+                variable: JJB_PASSWORD
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_USER
+                variable: LAVA_USER
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_TOKEN
+                variable: LAVA_TOKEN
+        - credentials-binding:
+            - text:
+                credential-id: LT_QCOM_KEY
+                variable: LT_QCOM_KEY
+        - credentials-binding:
+            - text:
+                credential-id: AUTH_TOKEN
+                variable: AUTH_TOKEN
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell: |
             #!/bin/bash -e
             echo hi
+            git clone https://git.linaro.org/people/vishal.bhoj/kernel-testing-configs.git
+            cd kernel-testing-configs
+            source test-params/test-kernel-ci-project
+            . ./generate-jjb-configs.sh
