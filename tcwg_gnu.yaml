@@ -12,9 +12,11 @@
           gcc_branch: gcc-8-branch
     target:
       - aarch64:
-          node: tcwg-apm_64-build
+          node: tcwg-apm_64-build || tcwg-sq_64-build
+          docker_arch: arm64
       - arm:
-          node: tcwg-apm_32-build
+          node: tcwg-apm_32-build || tcwg-sq_32-build
+          docker_arch: armhf
     bootstrap_config:
       - bootstrap
       - bootstrap_ubsan
@@ -184,7 +186,7 @@
 
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
-            --label {node} \
+            --arch {docker_arch} \
             --node $NODE_NAME \
             -- \
             ./jenkins-scripts/tcwg_gnu-build.sh \
@@ -284,7 +286,7 @@
 
             ./jenkins-scripts/docker-run.sh \
             --distro $distro \
-            --label {node} \
+            --arch {docker_arch} \
             --node $NODE_NAME \
             -- \
             ./jenkins-scripts/tcwg_kernel-bisect.sh \
