@@ -95,8 +95,12 @@
         - trigger-builds:
             - project: tcwg-buildslave-command
               predefined-parameters: |
-                nodes=tcwg-apm_64-build || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1_32-build || tcwg-x86_64-build || tcwg-x86_64-cam
                 command=set -ex; for snapshots_dir in $HOME/snapshots-ref $HOME/llvm-reference; do rsync -az --delete $NODE_NAME.tcwglab:$snapshots_dir-new/ $snapshots_dir-new/; flock -x $snapshots_dir.lock -c "rsync -a --del ${snapshots_dir}-new/ $snapshots_dir/"; done
+              parameter-factories:
+                - factory: allnodesforlabel
+                  name: nodes
+                  node-label: tcwg-apm_64-build || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1_32-build || tcwg-x86_64-build || tcwg-x86_64-cam
+                  ignore-offline-nodes: true
               block: true
     publishers:
         - email-ext:
