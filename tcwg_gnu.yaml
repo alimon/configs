@@ -4,7 +4,6 @@
       - gnu:
           components: gcc
           gcc_url: https://gcc.gnu.org/git/gcc.git
-          init_configuration: 'false'
     toolchain_ver:
       - master:
           gcc_branch: master
@@ -18,12 +17,22 @@
           node: tcwg-apm_32-build || tcwg-sq_32-build
           docker_arch: armhf
     bootstrap_config:
-      - bootstrap
-      - bootstrap_ubsan
-      - bootstrap_O3
-      - bootstrap_lto
-      - bootstrap_O1
-      - bootstrap_debug
+      - bootstrap:
+          init_configuration: 'false'
+      - bootstrap_ubsan:
+          init_configuration: 'false'
+      - bootstrap_O3:
+          init_configuration: 'false'
+      - bootstrap_lto:
+          init_configuration: 'false'
+      - bootstrap_O1:
+          init_configuration: 'false'
+      - bootstrap_debug:
+          init_configuration: 'false'
+      - bootstrap_profiled:
+          init_configuration: 'true'
+      - bootstrap_profiled_lto:
+          init_configuration: 'true'
     jobs:
       - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
       - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
