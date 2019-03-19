@@ -1,18 +1,15 @@
 - project:
     name: tcwg_bmk
+    binutils_url: https://sourceware.org/git/binutils-gdb.git
+    gcc_url: https://gcc.gnu.org/git/gcc.git
+    glibc_url: https://sourceware.org/git/glibc.git
     toolchain_name:
       - llvm:
-          components: llvm
-          binutils_url: no_binutils_url
-          gcc_url: no_gcc_url
-          glibc_url: no_glibc_url
+          components: binutils gcc glibc llvm
           llvm_url: https://github.com/llvm/llvm-project.git
           init_configuration: 'true'
       - gnu:
           components: binutils gcc glibc
-          binutils_url: https://sourceware.org/git/binutils-gdb.git
-          gcc_url: https://gcc.gnu.org/git/gcc.git
-          glibc_url: https://sourceware.org/git/glibc.git
           llvm_url: no_llvm_url
           init_configuration: 'true'
     toolchain_ver:
@@ -50,20 +47,6 @@
     view-type: list
     regex: 'tcwg_bmk-.*'
 
-- scm:
-    name: llvm-scm
-    scm:
-        - git:
-            url: '{llvm_url}'
-            branches:
-              - 'refs/heads/{llvm_branch}'
-            basedir: llvm
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
 - scm:
     name: binutils-scm
     scm:
@@ -107,6 +90,20 @@
               before: true
             prune: true
 - scm:
+    name: clang-scm
+    scm:
+        - git:
+            url: '{llvm_url}'
+            branches:
+              - 'refs/heads/{llvm_branch}'
+            basedir: llvm
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
     name: gnu-scm
     scm:
       - binutils-scm:
@@ -118,6 +115,19 @@
       - glibc-scm:
           glibc_url: '{glibc_url}'
           glibc_branch: '{glibc_branch}'
+- scm:
+    name: llvm-scm
+    scm:
+      - gnu-scm:
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
+          glibc_url: '{glibc_url}'
+          glibc_branch: '{glibc_branch}'
+      - clang-scm:
+          llvm_url: '{llvm_url}'
+          llvm_branch: '{llvm_branch}'
 - scm:
     name: bmk-scripts
     scm:
