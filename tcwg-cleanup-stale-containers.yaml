@@ -36,9 +36,12 @@
             name: cleanup_ssh_agent_hours
             default: '48'
             description: 'Kill ssh-agent processes that are more then "hours" old.  Use "0" to disable time check.'
-        - bool:
+        - choice:
             name: cleanup_volumes
-            default: 'false'
+            choices:
+              - 'node_default'
+              - 'false'
+              - 'true'
             description: 'Whether to cleanup dangling volumes'
         - bool:
             name: cleanup_images
@@ -83,12 +86,31 @@
                 # tcwg-x86_64-dev-* nodes.  We only need to cleanup ssh-agent
                 # processes for tcwg-benchmark user, so disable all other
                 # cleanups.
-                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours 0 --cleanup-stopped-hours 0 --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes false --cleanup-images false --verbose $verbose || true
+                cleanup_running_hours=0
+                cleanup_stopped_hours=0
+                cleanup_volumes=false
+                cleanup_images=false
+                ignore_result=true
                 ;;
               *)
-                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
+                ignore_result=false
                 ;;
             esac
+
+            case "$cleanup_volumes:$NODE_NAME" in
+              node_default:tcwg-d05-*|node_default:tcwg-dev-*|node_default:tcwg-thx1-*)
+                cleanup_volumes=false
+                ;;
+              *)
+                cleanup_volumes=true
+                ;;
+            esac
+
+            ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose &
+            res=0 && wait $! || res=$?
+            if [ x"$res" != 0 ]; then
+              $ignore_result
+            fi
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
