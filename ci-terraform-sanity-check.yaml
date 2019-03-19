@@ -1,0 +1,59 @@
+- job:
+    name: ci-terraform-sanity-check
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'CI terraform sanity check'
+    scm:
+        - git:
+            url: https://review.linaro.org/${GERRIT_PROJECT}
+            refspec: ${GERRIT_REFSPEC}
+            branches:
+                - ${GERRIT_BRANCH}
+            skip-tag: true
+            clean:
+                before: true
+            choosing-strategy: gerrit
+            basedir: configs
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'infrastructure/terraform'
+                  branches:
+                    - branch-pattern: 'master'
+            silent-start: true
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: TERRAFORM_BOT_ID
+                variable: TERRAFORM_BOT_ID
+            - text:
+                credential-id: TERRAFORM_BOT_KEY
+                variable: TERRAFORM_BOT_KEY
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - shell:
+            !include-raw: ci-terraform-sanity-check/builders.sh
+
+    publishers:
+        - email:
+            recipients: 'infrastructure-errors@lists.linaro.org'
