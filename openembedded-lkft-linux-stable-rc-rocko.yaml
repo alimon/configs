@@ -1,0 +1,268 @@
+- job:
+    name: openembedded-lkft-linux-stable-rc-rocko
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+            daniel.diaz@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'rpb-console-image-lkft'
+        - string:
+            name: MANIFEST_URL
+            default: 'https://github.com/96boards/oe-rpb-manifest.git'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'lkft/rocko'
+        - string:
+            name: PUB_DEST
+            default: 'openembedded/lkft/lkft/rocko/${MACHINE}/${DISTRO}/linux-stable-rc/${KERNEL_BRANCH}/${BUILD_NUMBER}'
+        - string:
+            name: LAVA_SERVER
+            default: 'https://lkft.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://staging-qa-reports.linaro.org'
+        - string:
+            name: KSELFTEST_PATH
+            default: '/opt/kselftests/mainline/'
+        - string:
+            name: SKIP_LAVA
+            default: ''
+        - string:
+            name: LAVA_JOB_PRIORITY
+            default: '35'
+        - string:
+            name: SANITY_LAVA_JOB_PRIORITY
+            default: '80'
+        - string:
+            name: TEST_SUITES
+            default: 'all'
+        - matrix-combinations:
+            name: MATRIX_COMBINATIONS
+    disabled: false
+    node: master
+    display-name: 'LKFT - Linux Stable (OpenEmbedded/rocko)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'am57xx-evm'
+                - 'dragonboard-410c'
+                - 'hikey'
+                - 'intel-core2-32'
+                - 'intel-corei7-64'
+                - 'juno'
+        - axis:
+            type: user-defined
+            name: KERNEL_BRANCH
+            values:
+                - 'linux-4.4.y'
+                - 'linux-4.9.y'
+                - 'linux-4.14.y'
+                - 'linux-4.19.y'
+                - 'linux-4.20.y'
+                - 'linux-5.0.y'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - lkft
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-lkft
+    execution-strategy:
+        sequential: false
+    triggers:
+        - timed: '@monthly'
+    wrappers:
+        - timeout:
+            timeout: 180
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash -x
+
+            # Mapping for KERNEL_BRANCH -> KERNEL_VERSION
+            KERNEL_RECIPE=linux-generic-stable-rc
+            case "${KERNEL_BRANCH}" in
+              linux-4.4.y)
+                KERNEL_VERSION=4.4
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                QA_SERVER_PROJECT=linux-stable-rc-4.4-oe
+                if [ "${MACHINE}" = "hikey" ]; then
+                  # Not "stable", though...
+                  KERNEL_RECIPE=linux-hikey-lts-rc
+                  KERNEL_REPO=https://git.linaro.org/lkft/arm64-stable-rc.git
+                  QA_SERVER_PROJECT=linaro-hikey-stable-rc-4.4-oe
+                fi
+                ;;
+              linux-4.9.y)
+                KERNEL_VERSION=4.9
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                QA_SERVER_PROJECT=linux-stable-rc-4.9-oe
+                ;;
+              linux-4.14.y)
+                KERNEL_VERSION=4.14
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                QA_SERVER_PROJECT=linux-stable-rc-4.14-oe
+                ;;
+              linux-4.19.y)
+                KERNEL_VERSION=4.19
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                QA_SERVER_PROJECT=linux-stable-rc-4.19-oe
+                ;;
+              linux-4.20.y)
+                KERNEL_VERSION=4.20
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                QA_SERVER_PROJECT=linux-stable-rc-4.20-oe
+                ;;
+              linux-5.0.y)
+                KERNEL_VERSION=5.0
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                QA_SERVER_PROJECT=linux-stable-rc-5.0-oe
+                ;;
+              mainline)
+                KERNEL_VERSION=git
+                KERNEL_VERSION_OVERRIDE=mainline
+                KERNEL_RECIPE=linux-generic-mainline
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+                GIT_BRANCH=master
+                QA_SERVER_PROJECT=linux-mainline-oe
+                ;;
+              next)
+                KERNEL_VERSION=git
+                KERNEL_VERSION_OVERRIDE=next
+                KERNEL_RECIPE=linux-generic-next
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+                GIT_BRANCH=master
+                QA_SERVER_PROJECT=linux-next-oe
+                ;;
+            esac
+            KERNEL_VERSION_OVERRIDE=${KERNEL_VERSION_OVERRIDE:-${KERNEL_VERSION}}
+            GIT_BRANCH=${GIT_BRANCH:-${KERNEL_BRANCH}}
+
+            git clone --reference-if-able "${HOME}/srv/linux.git" -o origin "${KERNEL_REPO}" "${WORKSPACE}/linux"
+
+            cd "${WORKSPACE}/linux"
+            git remote add torvalds https://github.com/torvalds/linux.git
+            git remote add linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+            git fetch --multiple torvalds linux-stable
+
+            git checkout "origin/${GIT_BRANCH}"
+            SRCREV_kernel="$(git rev-parse HEAD)"
+            MAKE_KERNELVERSION="$(make kernelversion)"
+            kernel_major="$(echo ${MAKE_KERNELVERSION} | cut -d\. -f1)"
+            kernel_minor="$(echo ${MAKE_KERNELVERSION} | cut -d\. -f2)"
+            if echo "${MAKE_KERNELVERSION}" | grep -q "rc"; then
+              kernel_minor=$((kernel_minor - 1))
+            fi
+            KERNEL_DESCRIBE=$(git describe --always)
+
+            # Mapping for MACHINE -> DEVICE_TYPE
+            case "${MACHINE}" in
+              hikey)
+                DEVICE_TYPE=hi6220-hikey
+                ;;
+              intel-core2-32)
+                DEVICE_TYPE=i386
+                ;;
+              intel-corei7-64)
+                DEVICE_TYPE=x86
+                ;;
+              juno)
+                DEVICE_TYPE=juno-r2
+                ;;
+              am57xx-evm)
+                DEVICE_TYPE=x15
+                ;;
+              dragonboard-410c)
+                DEVICE_TYPE=dragonboard-410c
+                ;;
+            esac
+
+            BRANCH_PREFIX="${MANIFEST_BRANCH/lkft\//}-"
+            (
+              echo "KERNEL_VERSION=${KERNEL_VERSION}"
+              echo "KERNEL_VERSION_OVERRIDE=${KERNEL_VERSION_OVERRIDE}"
+              echo "KERNEL_RECIPE=${KERNEL_RECIPE}"
+              echo "KERNEL_REPO=${KERNEL_REPO}"
+              echo "DEVICE_TYPE=${DEVICE_TYPE}"
+              echo "KERNEL_DESCRIBE=${BRANCH_PREFIX}${KERNEL_DESCRIBE}"
+              echo "SRCREV_kernel=${SRCREV_kernel}"
+              echo "MAKE_KERNELVERSION=${MAKE_KERNELVERSION}"
+              echo "QA_SERVER_PROJECT=${QA_SERVER_PROJECT}"
+            ) > "${WORKSPACE}/preset_parameters"
+            echo "#${BUILD_NUMBER}-${KERNEL_VERSION}-${SRCREV_kernel:0:8}" > "${WORKSPACE}/version.txt"
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - inject:
+            properties-file: preset_parameters
+        - shell:
+            !include-raw: openembedded-lkft/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: openembedded-lkft/publishers.sh
+        - shell:
+            !include-raw: openembedded-lkft/submit_for_testing.sh
+        - shell:
+            !include-raw: openembedded-lkft/qemu-testjobs.sh
+        - inject:
+            properties-file: qemu_device_type_parameters
+        - shell:
+            !include-raw: openembedded-lkft/submit_for_testing.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+                  - openembedded-lkft/postbuild.groovy
+        - email-ext:
+            recipients: 'daniel.diaz@linaro.org'
+            matrix-trigger: only-configurations
+            aborted: true
+            subject: '[rocko] ${MACHINE}: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+                Git branch: ${KERNEL_BRANCH}
+                Git URL: ${KERNEL_REPO}
+                Git commit: ${SRCREV_kernel}
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+            presend-script:
+                !include-raw: openembedded-lkft/presend-script.groovy
