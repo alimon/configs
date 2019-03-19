@@ -1,0 +1,65 @@
+- job:
+    name: trigger-lt-qcom-linux-release
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: RELEASE_BASE_URL
+            default: 'http://snapshots.linaro.org/member-builds/qcomlt/kernel/'
+        - string:
+            name: RELEASE_NAMES
+            default: 'release_chromiumos-4.14-r1 release_chromiumos-4.14-r2 release_chromiumos-4.14-r3 release_chromiumos-4.14-r4 release_qcomlt-4.14'
+        - string:
+            name: MACHINES
+            default: 'apq8016-sbc apq8096-db820c sdm845-mtp qcs404-evb-1000 qcs404-evb-4000'
+    disabled: false
+    node: master
+    display-name: 'Trigger for LT Qualcomm Linux Release build'
+    triggers:
+        - timed: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            pip install --user python-dateutil beautifulsoup4
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            python configs/trigger-lt-qcom-linux-release/get_latest_kernel_release_build.py \
+              > release_parameters
+        - inject:
+            properties-file: release_parameters
+        - shell: |
+            #!/bin/bash
+
+            export KERNEL_BUILD_TYPE="LINARO_CI"
+            export LINARO_CI_BASE_URL="${RELEASE_URL}"
+
+            echo "RELEASE_NAME=${RELEASE_NAME}" > lt_qcom_parameters
+            python configs/lt-qcom-linux-test/get_latest_kernel_build.py \
+              >> lt_qcom_parameters
+        - inject:
+            properties-file: lt_qcom_parameters
+    publishers:
+        - trigger-parameterized-builds:
+            - project: lt-qcom-linux-release
+              condition: SUCCESS
+              property-file: lt_qcom_parameters
