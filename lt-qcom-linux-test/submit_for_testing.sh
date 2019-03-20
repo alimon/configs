@@ -41,9 +41,6 @@ case "${MACHINE}" in
       export WLAN_TIME_DELAY="15s"
       export ETH_DEVICE="enP2p1s0"
 
-      if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
-        SEND_TESTJOB=false
-      fi
     elif [ ${MACHINE} = "sdm845-mtp" ]; then
       export LAVA_DEVICE_TYPE="sdm845-mtp"
       export INSTALL_FASTBOOT=
