@@ -24,8 +24,8 @@ readonly out_krait=out/target/product/arm_krait
 readonly out_armv8=out/target/product/armv8
 readonly out_host=out/host/linux-x86
 
-tar -cJf test-arm-fs.txz ${out_host}/bin/ ${out_host}/framework/ ${out_krait}/data/ ${out_krait}/system/ ${out_krait}/dex_bootjars/system/framework/arm/boot.oat
-tar -cJf test-armv8-fs.txz ${out_host}/bin/ ${out_host}/framework/ ${out_armv8}/data/ ${out_armv8}/system/ ${out_armv8}/dex_bootjars/system/framework/arm64/boot.oat
+tar -cJf test-arm-fs.txz ${out_host}/bin/ ${out_host}/framework/ ${out_krait}/data/ ${out_krait}/system/
+tar -cJf test-armv8-fs.txz ${out_host}/bin/ ${out_host}/framework/ ${out_armv8}/data/ ${out_armv8}/system/
 
 mkdir -p pub
 mv ${WORKSPACE}/*.xml *.txz pub/
