@@ -1,0 +1,49 @@
+- view:
+    name: autoware
+    view-type: list
+    regex: 'autoware-.*'
+- job:
+    name: autoware-ros-kinetic
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+        - github:
+            url: https://github.com/CPFL/Autoware
+    disabled: false
+    node: docker-ros-builder
+    display-name: 'Autoware - ROS (kinetic)'
+    scm:
+        - git:
+            url: https://github.com/CPFL/Autoware.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+            submodule:
+                recursive: true
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell:
+            !include-raw: autoware-ros-kinetic/builders.sh
+    publishers:
+        - logparser:
+            use-project-rules: false
+            parse-rules: '/var/jenkins_home/userContent/autoware-log-parser-rules.txt'
+            unstable-on-warning: false
+            fail-on-error: false
