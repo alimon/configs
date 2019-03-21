@@ -15,8 +15,8 @@ export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
 files=$(git diff --name-only ${GIT_PREVIOUS_COMMIT} ${GIT_COMMIT})
 echo Changes in: ${files}
 changed_dirs=$(dirname ${files})
-export AWS_ACCESS_KEY_ID=${TERRAFORM_BOT_ID}
-export AWS_SECRET_ACCESS_KEY=${TERRAFORM_BOT_KEY}
+export AWS_ACCESS_KEY_ID
+export AWS_SECRET_ACCESS_KEY
 for dir in ${changed_dirs}; do
     cd $dir
     terraform init
