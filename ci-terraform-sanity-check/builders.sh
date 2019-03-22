@@ -8,7 +8,7 @@ update_terraform()
     then
         (
         cd /tmp
-        wget https://releases.hashicorp.com/terraform/${TFVERS}/terraform_${TFVERS}_linux_amd64.zip
+        wget -q https://releases.hashicorp.com/terraform/${TFVERS}/terraform_${TFVERS}_linux_amd64.zip
         unzip terraform_${TFVERS}_linux_amd64.zip
         cp terraform ~/.local/bin/terraform_${TFVERS}
         chmod a+x ~/.local/bin/terraform_${TFVERS}
@@ -34,6 +34,7 @@ echo Changes in: ${files}
 changed_dirs=$(dirname ${files}|uniq)
 export AWS_ACCESS_KEY_ID
 export AWS_SECRET_ACCESS_KEY
+export PATH=${PATH}:${HOME}/.local/bin
 
 update_terraform
 
