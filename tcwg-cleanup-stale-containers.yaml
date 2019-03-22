@@ -108,7 +108,7 @@
 
             ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose &
             res=0 && wait $! || res=$?
-            if [ x"$res" != 0 ]; then
+            if [ x"$res" != "x0" ]; then
               $ignore_result
             fi
     publishers:
