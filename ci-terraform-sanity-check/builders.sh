@@ -19,13 +19,6 @@ update_terraform()
 
 set -e
 
-echo ""
-echo "########################################################################"
-echo "    Gerrit Environment"
-env |grep '^GERRIT'
-echo "########################################################################"
-
-
 cd terraform/
 export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
 export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
@@ -40,7 +33,7 @@ update_terraform
 
 for dir in ${changed_dirs}; do
     cd $dir
-    terraform init
+    terraform init > /dev/null
     terraform plan --var-file *.tfvars -out demo.plan
     cd ..
 done
