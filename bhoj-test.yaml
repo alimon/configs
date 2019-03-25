@@ -16,10 +16,6 @@
                 - job-extended-read
                 - job-configure
                 - job-cancel
-    parameters:
-        - string:
-            name: KERNEL_BRANCH
-            default: 'android-hikey-linaro-4.4'
     disabled: false
     node: master
     display-name: 'Trigger for LKFT HiKey builds (4.4 branch)'
@@ -52,29 +48,22 @@
         - credentials-binding:
             - text:
                 credential-id: QA_REPORTS_TOKEN
-                variable: QA_REPORTS_TOKEN
+                variable: SQUAD_AUTH_TOKEN
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell: |
             #!/bin/bash -e
-            rm -rf kernel-testing-configs
-            git clone https://git.linaro.org/people/vishal.bhoj/kernel-testing-configs.git
-            cat kernel-testing-configs/test-params/test-kernel-ci-project
+            rm -rf configs
+            git clone https://git.linaro.org/people/vishal.bhoj/configs.git
+            cat configs/kernel-testing-configs/test-params/test-kernel-ci-project
         - inject:
-            properties-file: kernel-testing-configs/test-params/test-kernel-ci-project
+            properties-file: configs/kernel-testing-configs/test-params/test-kernel-ci-project
         - shell: |
             #!/bin/bash -e
-            cd kernel-testing-configs
-            ./generate-jjb-config.sh $QA_REPORTS_TOKEN
-            cat *.yaml
-            git add .
-            git commit -m "Added new jobs"
-            wget https://git.linaro.org/ci/job/configs.git/plain/run-jjb.py
+            cd configs/kernel-testing-configs
+            ./generate-jjb-config.sh
             export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
             export GIT_COMMIT=$(git rev-parse HEAD)
-            jenkins-jobs --version
-            git log
-            git clone https://git.linaro.org/ci/job/configs.git
-            cp -rf configs/* .
+            cd ../
             python run-jjb.py
