@@ -16,7 +16,7 @@
     disabled: false
     node: tcwg-coordinator
     retry-count: 3
-    concurrent: true
+    concurrent: false
     display-name: 'TCWG Trigger GCC trunk bootstrap with UBSAN'
     triggers:
         # Every Saturday at 20:00
@@ -36,7 +36,7 @@
             set -ex
 
             cat << EOF > buildfarm_parameters
-            override=--set buildconfig=bootstrap-ubsan
+            override=--set buildconfig=bootstrap-ubsan gcc=gcc.git~master --extraconfigdir ../config/latest-rel
             log_name=${JOB_NAME}-${BUILD_NUMBER}/@@host@@.\$target
             abe_branch=tested
             scripts_branch=tested
