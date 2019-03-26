@@ -85,6 +85,17 @@
 
             export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
             export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
+
+            KERNEL_TEST_CONFIG=$(git show --pretty="format:" --name-only | grep "kernel-testing-configs/test-params")
+            if [ ! -z ${KERNEL_TEST_CONFIG} ];'
+              source ${KERNEL_TEST_CONFIG}
+              export KERNEL_BRANCH KERNEL_REPO DUT EMAIL_ADDRESS
+              cd kernel-testing-configs
+              ./generate-jjb-configs.sh
+              export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
+              export GIT_COMMIT=$(git rev-parse HEAD)
+            fi
+
             jenkins-jobs --version
             python run-jjb.py
     publishers:

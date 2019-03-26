@@ -36,5 +36,5 @@ fi
 
 git add ../openembedded-lkft-developer-ci-${DEVELOPER_JOB_NAME}.yaml ../  ../trigger-openembedded-lkft-developer-ci-${DEVELOPER_JOB_NAME}.yaml
 git commit -m "Added new jobs for ${DEVELOPER_JOB_NAME}"
-wget https://raw.githubusercontent.com/vishalbhoj/tools/master/squad/create_project.py
+wget https://raw.githubusercontent.com/chase-qi/tools/master/squad/create_project.py
 python create_project.py -p ${DEVELOPER_JOB_NAME} -g lkft
