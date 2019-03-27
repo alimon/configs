@@ -23,10 +23,10 @@
             default: '${KERNEL_BRANCH}'
         - string:
             name: KERNEL_VERSION
-            default: '4.19'
+            default: ''
         - string:
             name: KERNEL_RECIPE
-            default: 'linux-generic-stable-rc'
+            default: 'linux-generic'
         - string:
             name: KERNEL_REPO
             default: '${KERNEL_REPO}'
@@ -116,25 +116,43 @@
             case "${MACHINE}" in
               hikey)
                 DEVICE_TYPE=hi6220-hikey
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
               intel-core2-32)
                 DEVICE_TYPE=i386
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=i386_defconfig
                 ;;
               intel-corei7-64)
                 DEVICE_TYPE=x86
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=x86_64_defconfig
                 ;;
               juno)
                 DEVICE_TYPE=juno-r2
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
               am57xx-evm)
                 DEVICE_TYPE=x15
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=multi_v7_defconfig
                 ;;
               dragonboard-410c)
                 DEVICE_TYPE=dragonboard-410c
+                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
             esac
 
+            pwd
+            cat << EOF > ${WORKSPACE}/custom-kernel-info.inc.tmp
+            KERNEL_COMMIT = "${SRCREV_kernel}"
+            KERNEL_REPO = "${KERNEL_REPO/http*:/git:}"
+            KERNEL_CONFIG_aarch64 = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_arm = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_x86-64 = "${KERNEL_CONFIG}"
+            KERNEL_CONFIG_x86 = "${KERNEL_CONFIG}"
+            EOF
+            cat ${WORKSPACE}/custom-kernel-info.inc.tmp
+
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+            echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> device_type_parameters
             echo "#${BUILD_NUMBER}-${SRCREV_kernel:0:8}" > ${WORKSPACE}/version.txt
         - build-name-setter:
             name: 'version.txt'
