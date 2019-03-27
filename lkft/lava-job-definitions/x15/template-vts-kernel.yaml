@@ -1,8 +1,9 @@
 device_type: x15
-job_name: "lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-cts"
+job_name: "lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-vts-kernel"
+
 timeouts:
   job:
-    minutes: 240
+    minutes: 180
   action:
     minutes: 15
   connection:
@@ -21,9 +22,9 @@ metadata:
   git repo: "{{KERNEL_REPO}}"
   git commit: "{{KERNEL_COMMIT}}"
   git describe: "{{KERNEL_DESCRIBE}}"
-  cts-manifest: "{{CTS_URL}}/pinned-manifest.xml"
-  cts-version: "{{CTS_VERSION}}"
-  cts-plan: "cts-lkft"
+  vts-manifest: "{{VTS_URL}}/pinned-manifest.xml"
+  vts-version: "{{VTS_VERSION}}"
+  vts-plan: "vts-kernel"
   build-url: "{{BUILD_URL}}"
   toolchain: "{{TOOLCHAIN}}"
   series: lkft
@@ -107,7 +108,7 @@ actions:
     namespace: tlxc
     connection: lxc
     timeout:
-      minutes: 10
+      minutes: 300
     definitions:
     - from: inline
       path: android-boot.yaml
@@ -124,18 +125,19 @@ actions:
             - lava-test-case "android-boot" --shell adb shell getprop sys.boot_completed
 
 - test:
-    namespace: tlxc
-    connection: lxc
-    timeout:
-      minutes: 240
-    definitions:
-    - repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      path: automated/android/noninteractive-tradefed/tradefed.yaml
-      params:
-        TEST_PARAMS: "cts-lkft -a armeabi-v7a --disable-reboot --skip-preconditions --skip-device-info"
-        TEST_URL: "{{CTS_URL}}/android-cts.zip"
-        TEST_PATH: "android-cts"
-        RESULTS_FORMAT: "atomic"
-        ANDROID_VERSION: "{{ANDROID_VERSION}}"
-      name: "cts-lkft"
+      namespace: tlxc
+      connection: lxc
+      timeout:
+        minutes: 180
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/noninteractive-tradefed/tradefed.yaml
+          params:
+                TEST_URL: "{{VTS_URL}}/android-vts.zip"
+                TEST_PARAMS: "vts-kernel --skip-device-info"
+                TEST_PATH: "android-vts"
+                RESULTS_FORMAT: "atomic"
+                ANDROID_VERSION: "{{ANDROID_VERSION}}"
+                TEST_REBOOT_EXPECTED: "true"
+          name: vts-test

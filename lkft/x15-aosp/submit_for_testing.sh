@@ -34,7 +34,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${QA_BUILD_VERSION} \
     --testplan-path configs/lkft/lava-job-definitions/x15 \
-    --test-plan template-boot.yaml template-vts-kernel-syscalls.yaml template-cts-displaytestcases.yaml template-vts-kselftest.yaml template-cts.yaml template-vts-kernel-ltp.yaml \
+    --test-plan template-boot.yaml template-vts-kernel.yaml template-cts.yaml \
     --quiet
 
 python configs/openembedded-lkft/submit_for_testing.py \
