@@ -61,12 +61,6 @@ if [ -n ${kolla_ldc} ]; then
     git clone --depth 1 https://git.linaro.org/leg/sdi/kolla/ldc-overlay.git Linaro-overlay
 fi
 
-if [ ${kolla_branch} == "master" ]; then
-    # enable ERP:staging repo
-    echo "deb http://obs.linaro.org/ERP:/staging/Debian_9/ ./" >>kolla/docker/base/sources.list.debian
-    sed -i -e "s+'https://bintray.com/user/downloadSubjectPublicKey?username=bintray',+'https://bintray.com/user/downloadSubjectPublicKey?username=bintray','http://obs.linaro.org/ERP:/staging/Debian_9/Release.key',+g" kolla/docker/base/Dockerfile.j2
-fi
-
 # Apply extra patches to the kolla source code that haven't
 # been merged into the stable/queens branch.
 if [[ ! -z ${kolla_ldc} && ! -z ${kolla_ldc_extras} ]]; then
