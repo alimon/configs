@@ -90,7 +90,9 @@
             export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
             export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
 
+            set +e
             KERNEL_TEST_CONFIG=$(git show --pretty="format:" --name-only | grep "kernel-testing-configs/test-params")
+            set -e
             if [ ! -z ${KERNEL_TEST_CONFIG} ];then
               source ${KERNEL_TEST_CONFIG}
               export KERNEL_BRANCH KERNEL_REPO DUT EMAIL_ADDRESS
