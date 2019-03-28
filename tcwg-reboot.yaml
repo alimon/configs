@@ -1,0 +1,61 @@
+- job:
+    name: tcwg-reboot
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+        - throttle:
+            max-per-node: 1
+            option: project
+        - build-blocker:
+            blocking-jobs:
+              - "tcwg.*"
+            block-level: 'NODE'
+    parameters:
+        - label:
+            name: node_list
+            default: tcwg-apm_64-build || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1_32-build
+            all-nodes: true
+            matching-label: 'allCases'
+            node-eligibility: 'ignore-offline'
+            description: 'Machines to run on'
+        - bool:
+            name: dry_run
+            default: 'false'
+            description: 'Whether to do a dry-run'
+    disabled: false
+    concurrent: true
+    display-name: 'TCWG CCC Reboot periodically'
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${NODE_NAME}'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            if $dry_run ; then
+                DRYRUN=echo
+            else
+                DRYRUN=
+            fi
+            $DRYRUN sudo reboot
+    publishers:
+        - email-ext:
+            recipients: tcwg-validation@linaro.org
+            aborted: true
