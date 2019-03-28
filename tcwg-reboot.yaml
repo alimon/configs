@@ -56,7 +56,7 @@
             fi
 
             # We need to access the real machine, not the Jenkins container
-            $DRYRUN ssh -p22 root@localhost reboot
+            $DRYRUN ssh -p22 -o StrictHostKeyChecking=no root@localhost reboot
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
