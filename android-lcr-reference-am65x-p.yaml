@@ -1,5 +1,5 @@
 - job:
-    name: android-lcr-reference-x15-p
+    name: android-lcr-reference-am65x-p
     project-type: freestyle
     defaults: global
     properties:
@@ -25,10 +25,10 @@
             default: 'https://qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
-            default: 'lcr-reference-x15-p'
+            default: 'lcr-reference-am65x-p'
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'Reference LCR Android Pie build for X15'
+    display-name: 'Reference LCR Android Pie build for AM65X'
     concurrent: true
     triggers:
         - gerrit:
@@ -43,7 +43,7 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'x15-p-workarounds'
+                        pattern: 'am65x-p-workarounds'
                       - compare-type: 'PLAIN'
                         pattern: 'P-RLCR-PATCHSET'
                 - project-compare-type: 'PLAIN'
@@ -68,7 +68,7 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'lcr-reference-x15-p'
+                        pattern: 'lcr-reference-am65x-p'
     wrappers:
         - timestamps
         - timeout:
@@ -84,6 +84,6 @@
                 credential-id: ARTIFACTORIAL_TOKEN
                 variable: ARTIFACTORIAL_TOKEN
     builders:
-        !include: android-lcr/x15/builders-v2-jinja2.yaml.inc
+        !include: android-lcr/am65x/builders-v2-jinja2.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc
