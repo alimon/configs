@@ -54,7 +54,9 @@
             else
                 DRYRUN=
             fi
-            $DRYRUN sudo reboot
+
+            # We need to access the real machine, not the Jenkins container
+            $DRYRUN ssh -p22 root@localhost reboot
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
