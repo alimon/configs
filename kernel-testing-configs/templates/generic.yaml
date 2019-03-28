@@ -141,9 +141,10 @@
             esac
 
             # Convert Git repo to Bitbake's Git URI format
-            kernel_repo=$(echo ${KERNEL_REPO} | sed -e 's#\(ssh://\|https\?://\)#git://#')
+            # kernel_repo=$(echo ${KERNEL_REPO} | sed -e 's#\(ssh://\|https\?://\)#git://#')
             # Determine Git connection protocol to use
-            kernel_protocol=$(echo ${KERNEL_REPO} | grep -o '.*://' | sed -e 's#://##')
+            # kernel_protocol=$(echo ${KERNEL_REPO} | grep -o '.*://' | sed -e 's#://##')
+            kernel_protocol = git
 
             pwd
             cat << EOF > ${WORKSPACE}/custom-kernel-info.inc.tmp
