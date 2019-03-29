@@ -38,9 +38,12 @@
         - shell: |
             #!/bin/bash -e
             git clean -fdx
+            MAKE_KERNELVERSION=$(make kernelversion)
+            KERNEL_VERSION=$(echo ${MAKE_KERNELVERSION} | cut -f1,2 -d'.')
             echo KERNEL_DESCRIBE=$(git describe --always) >> lkft_parameters
             echo SRCREV_kernel=${GIT_COMMIT} >> lkft_parameters
-            echo MAKE_KERNELVERSION=$(make kernelversion) >> lkft_parameters
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> lkft_parameters
+            echo KERNEL_VERSION=${KERNEL_VERSION} >> lkft_parameters
             cat lkft_parameters
     publishers:
         - trigger-parameterized-builds:
