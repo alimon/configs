@@ -1,0 +1,28 @@
+{% extends "lcr.jinja2" %}
+
+{% block device_type %}am65x{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    timeout:
+      minutes: 25
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      boot:
+        url: {{DOWNLOAD_URL}}/boot_fit.img
+      userdata:
+        url: {{ANDROID_DATA}}
+      system:
+        url: {{ANDROID_SYSTEM}}
+      vendor:
+        url: {{DOWNLOAD_URL}}/vendor.img
+{% endblock deploy_target %}
+
+{% block boot_target %}
+{% include "devices/am65x-boot" %}
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}
