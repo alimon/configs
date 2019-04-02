@@ -56,8 +56,8 @@ context:
             - ls /dev/disk/by-id/ -l
             - export TMPDISK=$(ls /dev/disk/by-id/ata-TOSHIBA_MG03ACA100_*)
             - echo "y" | mkfs -t ext4 ${TMPDISK}
-            - mkdir -p /ltp-tmp
-            - mount ${TMPDISK} /ltp-tmp || lava-test-raise "mount failed job exit"
+            - mkdir -p /scratch
+            - mount ${TMPDISK} /scratch || lava-test-raise "mount failed job exit"
             - df -h
             - mount
       name: prep-tmp-disk
