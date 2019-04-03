@@ -32,6 +32,7 @@ export PATH=${PATH}:${HOME}/.local/bin
 update_terraform
 
 for dir in ${changed_dirs}; do
+    [ "${dir}" = "." ] && continue
     cd $dir
     terraform init > /dev/null
     terraform plan --var-file *.tfvars -out demo.plan
