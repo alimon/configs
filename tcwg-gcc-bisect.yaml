@@ -93,7 +93,7 @@
             trap "cleanup_all_containers" EXIT
 
             # Jenkins puts the parameters in the environment
-            ${build_CONTAINER_RSH} "cd ${WORKSPACE} && EXP=$EXP TESTNAME=$TESTNAME TARGET=$TARGET CPU=$CPU FPU=$FPU MODE=$MODE GOOD=$GOOD BAD=$BAD ${shell} ${WORKSPACE}/jenkins-scripts/abe-bisect.sh"
+            ${build_CONTAINER_RSH} "cd ${WORKSPACE} && EXP=$EXP TESTNAME=$TESTNAME TARGET=$TARGET CPU=$CPU FPU=$FPU MODE=$MODE GOOD=$GOOD BAD=$BAD BUILD_URL=$BUILD_URL ${shell} ${WORKSPACE}/jenkins-scripts/abe-bisect.sh"
     publishers:
         - email-ext:
             recipients: 'christophe.lyon@linaro.org'
