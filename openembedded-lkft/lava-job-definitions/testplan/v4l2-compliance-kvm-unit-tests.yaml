@@ -1,11 +1,11 @@
 {% extends device_type %}
 
-{% set job_timeout = 30 %}
+{% set job_timeout = 40 %}
 {% block metadata %}
   {{ super() }}
 {% endblock metadata %}
 
-{% block job_name %}lkft-v4l2-compliance-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
+{% block job_name %}lkft-v4l2-compliance-kvm-unit-tests-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
 
 {% block test_target %}
   {{ super() }}
@@ -17,4 +17,13 @@
         VIDEO_DRIVER: vivid.ko
       timeout:
         minutes: 10
+
+    - repository: https://github.com/Linaro/test-definitions.git
+      from: git
+      path: automated/linux/kvm-unit-tests/kvm-unit-tests.yaml
+      name: kvm-unit-tests
+      parameters:
+        SKIP_INSTALL: 'true'
+      timeout:
+        minutes: 20
 {% endblock test_target %}
