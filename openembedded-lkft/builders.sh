@@ -20,7 +20,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="virtualenv python-pip android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail libelf-dev pxz pigz coreutils"
+pkg_list="virtualenv python-pip android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail libelf-dev xz-utils pigz coreutils"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
@@ -246,7 +246,7 @@ case "${MACHINE}" in
     ;;
   intel-core2-32|intel-corei7-64)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
-      pxz ${rootfs}
+      xz -T0 ${rootfs}
     done
     ;;
   *)
