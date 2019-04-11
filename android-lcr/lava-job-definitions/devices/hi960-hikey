@@ -1,0 +1,20 @@
+{% extends "lcr.jinja2" %}
+
+{% block device_type %}hi960-hikey-r2{% endblock %}
+
+{% block secrets %}
+  {{ super() }}
+  AP_SSID: "{{AP_SSID}}"
+  AP_KEY: "{{AP_KEY}}"
+{% endblock %}
+
+{% block deploy_target %}
+{% include "devices/hi960-hikey-deploy" %}
+{% endblock deploy_target %}
+
+{% block boot_target %}
+{% include "devices/hi960-hikey-boot" %}
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}

@@ -1,0 +1,28 @@
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      boot:
+        reboot: hard-reset
+        url: {{DOWNLOAD_URL}}/boot.img.xz
+        compression: xz
+      dts:
+        url: {{DOWNLOAD_URL}}/dt.img
+      userdata:
+        url: {{ANDROID_DATA}}
+        compression: xz
+      system:
+        url: {{ANDROID_SYSTEM}}
+        compression: xz
+      vendor:
+        url: {{DOWNLOAD_URL}}/vendor.img.xz
+        compression: xz
+    protocols:
+      lava-lxc:
+      - action: fastboot-deploy
+        request: pre-power-command
+        timeout:
+          minutes: 2
