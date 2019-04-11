@@ -1,5 +1,5 @@
 - job:
-    name: android-hikey-optee-p
+    name: android-lcr-reference-hikey960-p
     project-type: freestyle
     defaults: global
     properties:
@@ -22,10 +22,10 @@
             default: 'https://qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
-            default: 'android-hikey-optee-p'
+            default: 'lcr-reference-hikey960-p'
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'AOSP P HiKey build with OP-TEE (SWG)'
+    display-name: 'Reference LCR Android P build for HiKey960'
     concurrent: true
     triggers:
         - gerrit:
@@ -40,11 +40,9 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-optee-p-pullreqs'
-                      - compare-type: 'PLAIN'
                         pattern: 'hikey-hikey960-commonp-p'
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-p-workarounds'
+                        pattern: 'hikey960-p-workarounds'
                       - compare-type: 'PLAIN'
                         pattern: 'P-RLCR-PATCHSET'
                       - compare-type: 'PLAIN'
@@ -57,12 +55,6 @@
                         pattern: 'hikey-clang-4.9'
                       - compare-type: 'PLAIN'
                         pattern: 'hikey-clang-4.14'
-                      - compare-type: 'PLAIN'
-                        pattern: 'optee-master-workarounds'
-                      - compare-type: 'PLAIN'
-                        pattern: 'swg-mods-p'
-                      - compare-type: 'PLAIN'
-                        pattern: 'swg-kmgk-common'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'device/linaro/common'
                   branches:
@@ -72,7 +64,7 @@
                   project-pattern: 'platform/manifest'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-p-swg'
+                        branch-pattern: 'linaro-p-preview'
                   file-paths:
                       - compare-type: 'PLAIN'
                         pattern: 'hikey.xml'
@@ -89,7 +81,7 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-optee-p'
+                        pattern: 'lcr-reference-hikey960-p'
     wrappers:
         - timestamps
         - timeout:
@@ -111,6 +103,6 @@
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
     builders:
-        !include: android-hikey-optee/common/builders.yaml.inc
+        !include: android-lcr/hikey/builders-v2-jinja2.yaml.inc
     publishers:
-        !include: android-hikey-optee/common/publishers.yaml.inc
+        !include: android-lcr/common/publishers.yaml.inc

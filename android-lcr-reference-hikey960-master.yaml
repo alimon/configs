@@ -1,14 +1,14 @@
 - job:
-    name: android-hikey-optee-p
+    name: android-lcr-reference-hikey960-master
     project-type: freestyle
     defaults: global
     properties:
         - authorization:
             anonymous:
                 - job-read
-                - job-extended-read
             linaro:
                 - job-build
+                - job-extended-read
                 - job-cancel
         - build-discarder:
             days-to-keep: 60
@@ -16,16 +16,16 @@
     parameters:
         - string:
             name: BUILD_DIR
-            default: r-lcr-oreo
+            default: aosp-master
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
-            default: 'android-hikey-optee-p'
+            default: 'lcr-reference-hikey960-master'
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'AOSP P HiKey build with OP-TEE (SWG)'
+    display-name: 'AOSP master build for HiKey960'
     concurrent: true
     triggers:
         - gerrit:
@@ -40,39 +40,27 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-optee-p-pullreqs'
+                        pattern: 'hikey960-master-workarounds'
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-hikey960-commonp-p'
+                        pattern: 'MASTER-RLCR-PATCHSET'
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-p-workarounds'
-                      - compare-type: 'PLAIN'
-                        pattern: 'P-RLCR-PATCHSET'
-                      - compare-type: 'PLAIN'
-                        pattern: 'hikey-optee-p'
+                        pattern: 'hikey-optee-master'
                       - compare-type: 'PLAIN'
                         pattern: 'hikey-optee-4.9'
                       - compare-type: 'PLAIN'
                         pattern: 'hikey-optee-4.14'
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-clang-4.9'
-                      - compare-type: 'PLAIN'
-                        pattern: 'hikey-clang-4.14'
-                      - compare-type: 'PLAIN'
                         pattern: 'optee-master-workarounds'
-                      - compare-type: 'PLAIN'
-                        pattern: 'swg-mods-p'
-                      - compare-type: 'PLAIN'
-                        pattern: 'swg-kmgk-common'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'device/linaro/common'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-p-preview'
+                        branch-pattern: 'linaro-q-preview'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'platform/manifest'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-p-swg'
+                        branch-pattern: 'linaro-master'
                   file-paths:
                       - compare-type: 'PLAIN'
                         pattern: 'hikey.xml'
@@ -89,7 +77,7 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey-optee-p'
+                        pattern: 'lcr-reference-hikey-master'
     wrappers:
         - timestamps
         - timeout:
@@ -105,12 +93,12 @@
                 credential-id: AP_KEY
                 variable: AP_KEY
             - text:
-                credential-id: ARTIFACTORIAL_TOKEN
-                variable: ARTIFACTORIAL_TOKEN
-            - text:
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
     builders:
-        !include: android-hikey-optee/common/builders.yaml.inc
+        !include: android-lcr/hikey/builders-v2-jinja2.yaml.inc
     publishers:
-        !include: android-hikey-optee/common/publishers.yaml.inc
+        !include: android-lcr/common/publishers.yaml.inc
