@@ -1,0 +1,77 @@
+device_type: imx7s-warp
+
+job_name: WaRP7 ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 100
+  action:
+    minutes: 50
+  connection:
+    minutes: 20
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 50
+    to: u-boot-ums
+    os: oe
+    image:
+      url: ${IMAGE_URL}
+      compression: gz
+      root_partition: 2
+
+- boot:
+    method: u-boot
+    commands: ums
+    auto_login:
+      login_prompt: 'imx7s-warp login:'
+      username: 'root'
+    prompts:
+      - 'root@imx7s-warp:~#'
+    timeout:
+      minutes: 50
+- test:
+    timeout:
+      minutes: 50
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: uname-test
+          description: "uname test"
+        run:
+          steps:
+            - uname -a
+      name: uname-test
+      path: inline/uname-test.yaml
+    - path: automated/linux/badblocks/badblocks.yaml
+      repository: https://git@git.linaro.org/qa/test-definitions.git
+      history: false
+      name: badblocks
+      from: git
+      branch: master
+    - path: automated/linux/memtester/memtester.yaml
+      repository: https://git@git.linaro.org/qa/test-definitions.git
+      history: false
+      name: memtester
+      from: git
+      branch: master
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose
