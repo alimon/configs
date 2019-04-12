@@ -48,7 +48,7 @@
             default: 'https://github.com/96boards/oe-rpb-manifest.git'
         - string:
             name: MANIFEST_BRANCH
-            default: 'lkft/rocko'
+            default: 'lkft/sumo'
         - string:
             name: PUB_DEST
             default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/linux-stable-rc-ddiaz/${BUILD_NUMBER}'
@@ -77,7 +77,7 @@
             name: MATRIX_COMBINATIONS
     disabled: false
     node: master
-    display-name: 'ddiaz test LKFT - Linux Stable RC (OpenEmbedded/rocko)'
+    display-name: 'ddiaz test LKFT - Linux Stable RC (OpenEmbedded/sumo)'
     axes:
         - axis:
             type: user-defined
@@ -185,10 +185,10 @@
                   - rpb-openembedded/postbuild.groovy
                   - openembedded-lkft/postbuild.groovy
         - email-ext:
-            recipients: 'ddiaz@linaro.org'
+            recipients: 'daniel.diaz@linaro.org'
             matrix-trigger: only-configurations
             aborted: true
-            subject: '[CI] ${MACHINE}: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
+            subject: '[DD] ${MACHINE}: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
