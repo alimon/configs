@@ -32,33 +32,6 @@ actions:
       - 'root@imx7s-warp:~#'
     timeout:
       minutes: 50
-- test:
-    timeout:
-      minutes: 50
-    definitions:
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: uname-test
-          description: "uname test"
-        run:
-          steps:
-            - uname -a
-      name: uname-test
-      path: inline/uname-test.yaml
-    - path: automated/linux/badblocks/badblocks.yaml
-      repository: https://git@git.linaro.org/qa/test-definitions.git
-      history: false
-      name: badblocks
-      from: git
-      branch: master
-    - path: automated/linux/memtester/memtester.yaml
-      repository: https://git@git.linaro.org/qa/test-definitions.git
-      history: false
-      name: memtester
-      from: git
-      branch: master
 
 metadata:
   machine: ${MACHINE}
