@@ -5,6 +5,7 @@ git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
 # Used by DB410C's template:
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
+export IMAGE_URL=${PUBLISH_SERVER}${PUB_DEST}/${DISK_IMG}
 
 [ -z "${DEVICE_TYPE}" ] || \
 python configs/openembedded-lkft/submit_for_testing.py \
