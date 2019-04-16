@@ -5,6 +5,7 @@ git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
 # Used by DB410C's template:
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
+export DISK_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "${IMAGES}-${MACHINE}-*-${BUILD_NUMBER}.rootfs.wic.gz" | xargs -r basename)
 export IMAGE_URL=${PUBLISH_SERVER}${PUB_DEST}/${DISK_IMG}
 
 [ -z "${DEVICE_TYPE}" ] || \
