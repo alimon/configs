@@ -59,8 +59,13 @@
                 DRYRUN=
             fi
 
-            # We need to access the real machine, not the Jenkins container
-            $DRYRUN ssh -p22 -o StrictHostKeyChecking=no root@localhost reboot
+            if [ -f "/.dockerenv" ]; then
+              # We need to access the real machine, not the Jenkins container
+              user=root
+            else
+              user=$USER
+            fi
+            $DRYRUN ssh -p22 -o StrictHostKeyChecking=no $user@localhost sudo reboot
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
