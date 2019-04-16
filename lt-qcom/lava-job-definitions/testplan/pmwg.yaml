@@ -1,8 +1,14 @@
-- test:
-    namespace: ${DEVICE_TYPE}
-    timeout:
-      minutes: 5
-    definitions:
+{% extends device_type %}
+
+{% set job_timeout = 90 %}
+{% block metadata %}
+  {{ super() }}
+{% endblock metadata %}
+
+{% block job_name %}lt-qcom-{{OS_INFO}}-pmwg-{{BUILD_NUMBER}}{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
     - from: inline
       repository:
         metadata:
@@ -16,22 +22,23 @@
           - systemctl restart ssh.service
       name: ssh-enable-target-login-inline
       path: inline/ssh-enable-target-login.yaml
+      timeout:
+        minutes: 5
+{% endblock test_target %}
 
+{% block test_lxc %}
 - test:
     namespace: tlxc
     timeout:
-      minutes: 10
+      minutes: {% if job_timeout is defined %}{{ job_timeout }}{% else %}60{% endif %}
     definitions:
     - repository: https://git.linaro.org/lava-team/refactoring.git
       from: git
       path: testdefs/arm-probe.yaml
       name: arm-probe
+      timeout:
+        minutes: 10
 
-- test:
-    namespace: tlxc
-    timeout:
-      minutes: 60
-    definitions:
     - from: inline
       repository:
         metadata:
@@ -48,6 +55,9 @@
           - echo $$TARGET_IP lava-target-ip >> /etc/hosts
       name: prep-inline
       path: inline/prep.yaml
+      timeout:
+        minutes: 10
+
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/workload-automation/workload-automation.yaml
@@ -57,24 +67,16 @@
         WA_EXTENSION_PATHS: /energy-probe-ext
         ARTIFACTORIAL_URL: https://archive.validation.linaro.org/artifacts/team/qcomlt/
       name: linux-pmwg
+      timeout:
+        minutes: 60
+{% endblock test_lxc %}
 
-device_type: ${DEVICE_TYPE}
-job_name: lt-qcom-${OS_INFO}-pmwg-${BUILD_NUMBER}
-timeouts:
-  job:
-    minutes: 90
-  action:
-    minutes: 15
-  connection:
-    minutes: 2
-priority: medium
-visibility:
+{% block visibility %}
   group:
     - linaro
+{% endblock visibility %}
 
+{% block settings %}
 secrets:
-  ARTIFACTORIAL_TOKEN: "${ARTIFACTORIAL_TOKEN}"
-
-metadata:
-  source: https://git.linaro.org/ci/job/configs.git
-  path: lt-qcom/lava-job-definitions/${DEVICE_TYPE}/template-pmwg.yaml
+  ARTIFACTORIAL_TOKEN: "{{ARTIFACTORIAL_TOKEN}}"
+{% endblock settings %}

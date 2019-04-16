@@ -1,19 +1,19 @@
-# XXX: This test manifests are the same of qcomlt test plans
-# used in test-runner, the LAVA dispatcher currently doesn't support
-# test plans.
-#
-# git.linaro.org/qa/test-definitions.git - plans/qcomlt
-- test:
-    namespace: ${DEVICE_TYPE}
-    name: qcomlt-smoke
-    timeout:
-      minutes: 10
-    definitions:
+{% extends device_type %}
+
+{% set job_timeout = 120 %}
+{% block metadata %}
+  {{ super() }}
+{% endblock metadata %}
+
+{% block job_name %}lt-qcom-{{OS_INFO}}-main-{{BUILD_NUMBER}}{% endblock job_name %}
+
+{% block test_target %}
+  {{ super() }}
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/smoke/smoke.yaml
       params:
-              TESTS: ${SMOKE_TESTS}
+              TESTS: {{SMOKE_TESTS}}
       name: linux-smoke
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
@@ -28,12 +28,6 @@
       path: automated/linux/device-tree/device-tree.yaml
       name: linux-device-tree
 
-- test:
-    namespace: ${DEVICE_TYPE}
-    name: qcomlt-bench
-    timeout:
-      minutes: 65
-    definitions:
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/dd-wr-speed/dd-wr-speed.yaml
@@ -70,42 +64,15 @@
       path: automated/linux/pi-stress/pi-stress.yaml
       name: linux-pi-stress
 
-- test:
-    namespace: ${DEVICE_TYPE}
-    name: qcomlt-pm-qa
-    timeout:
-      minutes: 15
-    definitions:
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/pm-qa/pm-qa.yaml
       name: linux-pm-qa
       params:
-        TESTS: ${PM_QA_TESTS}
+        TESTS: {{PM_QA_TESTS}}
 
-- test:
-    namespace: ${DEVICE_TYPE}
-    name: qcomlt-containers
-    timeout:
-      minutes: 5
-    definitions:
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
       path: automated/linux/docker/docker.yaml
       name: linux-containers
-
-device_type: ${DEVICE_TYPE}
-job_name: lt-qcom-${OS_INFO}-${BUILD_NUMBER}
-timeouts:
-  job:
-    minutes: 120
-  action:
-    minutes: 15
-  connection:
-    minutes: 2
-priority: medium
-visibility: public
-
-metadata:
-  source: https://git.linaro.org/ci/job/configs.git
-  path: lt-qcom/lava-job-definitions/${DEVICE_TYPE}/template.yaml
+{% endblock test_target %}
