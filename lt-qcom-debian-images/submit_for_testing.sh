@@ -1,7 +1,16 @@
 #!/bin/bash
 
-rm -rf configs
-git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+if [ -z "${DRY_RUN}" ]; then
+  rm -rf configs
+  git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+  export CONFIG_PATH=$(realpath configs)
+
+  # Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
+  pip install --user --force-reinstall jinja2-cli ruamel.yaml
+else
+  export CONFIG_PATH=$(realpath ../)
+fi
 
 # main parameters
 export DEPLOY_OS=debian
@@ -15,6 +24,7 @@ else
 	exit 0
 fi
 export BOOT_OS_PROMPT=\'root@linaro-alip:~#\'
+export LAVA_JOB_PRIORITY="medium"
 
 # boot and rootfs parameters
 export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz
@@ -27,9 +37,6 @@ export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
 # XXX: the debian rootfs images are build small as possible, resize
 # to be able install LAVA test overlay
 export RESIZE_ROOTFS=True
-
-# Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
-pip install --user --force-reinstall jinja2-cli ruamel.yaml
 
 # Tests settings, thermal isn't work well in debian/db410c causes stall
 if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
@@ -50,7 +57,10 @@ else
 fi
 export SMOKE_TESTS="pwd, lsb_release -a, uname -a, ip a, lscpu, vmstat, lsblk"
 
-python configs/openembedded-lkft/submit_for_testing.py \
+LAVA_TEMPLATE_PATH=${CONFIG_PATH}/lt-qcom/lava-job-definitions
+cd ${LAVA_TEMPLATE_PATH}
+
+python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
     --build-number ${BUILD_NUMBER} \
     --lava-server ${LAVA_SERVER} \
@@ -58,12 +68,13 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-team qcomlt \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${BUILD_NUMBER} \
-    --template-path configs/lt-qcom/lava-job-definitions \
-    --template-base-pre base_template.yaml \
-    --template-names template.yaml template-wifi.yaml template-bt.yaml
+    --template-path "${LAVA_TEMPLATE_PATH}" \
+    --testplan-path "${LAVA_TEMPLATE_PATH}" \
+    ${DRY_RUN} \
+    --test-plan testplan/main.yaml testplan/wifi.yaml testplan/bt.yaml
 
 # Submit to PMWG Lava server because it has special hw to do energy probes
-python configs/openembedded-lkft/submit_for_testing.py \
+python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
     --build-number ${BUILD_NUMBER} \
     --lava-server ${PMWG_LAVA_SERVER} \
@@ -71,6 +82,7 @@ python configs/openembedded-lkft/submit_for_testing.py \
     --qa-server-team qcomlt \
     --qa-server-project ${QA_SERVER_PROJECT} \
     --git-commit ${BUILD_NUMBER} \
-    --template-path configs/lt-qcom/lava-job-definitions \
-    --template-base-pre base_template.yaml \
-    --template-names template-pmwg.yaml
+    --template-path "${LAVA_TEMPLATE_PATH}" \
+    --testplan-path "${LAVA_TEMPLATE_PATH}" \
+    ${DRY_RUN} \
+    --test-plan testplan/pmwg.yaml
