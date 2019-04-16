@@ -225,10 +225,13 @@
           name: linux_branch
           default: default
           description: "linux branch or sha1 to build"
-      - bool:
-          name: reset_baseline
-          default: false
-          description: "Whether to reset baseline to results of this build"
+      - choice:
+          name: update_baseline
+          choices:
+            - update
+            - reset
+            - init
+          description: "What to do with baseline in this build"
       - default-parameters
     disabled: false
     node: '{node}'
@@ -294,7 +297,7 @@
             ==rr[linux_url] {linux_url} \
             $branch_opt \
             ==rr[mode] "jenkins-full" \
-            ==rr[reset_baseline] "$reset_baseline" &
+            ==rr[update_baseline] "$update_baseline" &
             res=0 && wait $! || res=$?
 
             if [ $res != 0 ]; then
@@ -304,8 +307,8 @@
             if [ -e artifacts/results ]; then
               build_name="$build_name-R$(tail -n1 artifacts/results)"
             fi
-            if $reset_baseline; then
-              build_name="$build_name-baseline"
+            if [ x"$update_baseline" != x"update" ]; then
+              build_name="$build_name-$update_baseline"
             fi
             if [ -f artifacts/trigger-bisect ]; then
               build_name="$build_name-bisect"
