@@ -65,10 +65,19 @@
             else
               user=$USER
             fi
-            $DRYRUN ssh -p22 -o StrictHostKeyChecking=no $user@localhost sudo reboot
+            $DRYRUN ssh -p22 -o StrictHostKeyChecking=no $user@localhost sudo reboot || true
+            # We expect non-zero exit when node is rebooted.  If we get here
+            # that means we have a failure (unless $dry_run, of course).
+            if $dry_run; then
+              false
+            else
+              true
+            fi
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
             content-type: text
             subject: '[CI-NOTIFY]: ${PROJECT_NAME} on ${NODE_NAME} - Build # ${BUILD_NUMBER} ${BUILD_STATUS}'
             aborted: true
+            failure: false
+            success: true
