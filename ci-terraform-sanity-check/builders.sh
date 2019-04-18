@@ -42,6 +42,8 @@ for dir in ${changed_dirs}; do
     if compgen -G "*.tfvars" > /dev/null; then
         echo "adding vars files to commandline"
         vars="--var-file *.tfvars"
+    else
+        vars=""
     fi
     terraform init > /dev/null
     terraform plan $vars -out demo.plan
