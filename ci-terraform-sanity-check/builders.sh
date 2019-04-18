@@ -34,8 +34,17 @@ update_terraform
 for dir in ${changed_dirs}; do
     [ "${dir}" = "." ] && continue
     cd $dir
+    echo "================= $dir =========================="
+    if ! compgen -G "*.tf" > /dev/null; then
+        echo "no terraform files in this directory, skipping"
+        continue
+    fi
+    if compgen -G "*.tfvars" > /dev/null; then
+        echo "adding vars files to commandline"
+        vars="--var-file *.tfvars"
+    fi
     terraform init > /dev/null
-    terraform plan --var-file *.tfvars -out demo.plan
+    terraform plan $vars -out demo.plan
     cd ..
 done
 
