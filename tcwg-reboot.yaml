@@ -61,7 +61,10 @@
 
             if [ -f "/.dockerenv" ]; then
               # We need to access the real machine, not the Jenkins container
-              user=root
+              case "$NODE_NAME" in
+                tcwg-tk1-*) user=$USER ;;
+                *) user=root ;;
+              esac
             else
               user=$USER
             fi
