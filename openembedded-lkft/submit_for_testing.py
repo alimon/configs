@@ -1,5 +1,6 @@
 import argparse
 import os
+import re
 import requests
 import sys
 import StringIO
@@ -35,7 +36,8 @@ def parse_template(yaml_string):
     # to catch it
     output = StringIO.StringIO()
     yaml.dump(yaml.load(yaml_string), output)
-    return output.getvalue()
+    # strip empty lines from output
+    return re.sub(r'^\s*$\n', '', output.getvalue(), flags=re.MULTILINE)
 
 def get_job_name(lava_job_string):
     '''
