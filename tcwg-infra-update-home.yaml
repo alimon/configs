@@ -22,7 +22,7 @@
     parameters:
         - label:
             name: nodes
-            default: tcwg-apm_64-build || tcwg-apm_64-test || tcwg-bmk-coordinator || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1_32-build || tcwg-x86_64-build || tcwg-x86_64-cam
+            default: tcwg-apm_64-build || tcwg-apm_64-test || tcwg-bmk-coordinator || tcwg-bmk-tk1_32 || tcwg-bmk-tx1_64 || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-thx1-01 || tcwg-tk1_32-build || tcwg-x86_64-build || tcwg-x86_64-cam
             all-nodes: true
             matching-label: 'allCases'
             node-eligibility: 'all'
@@ -67,7 +67,13 @@
             ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true
             git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD > $dir.tar
             tar x --strip-components=2 -f $dir.tar -C $dir tcwg-base/home-data
-            rsync -aL $dir/$USER/ /home/$USER/
+
+            case "$NODE_NAME" in
+              tcwg-bmk-dev-*) rsync_dest="" ;;
+              tcwg-bmk-*) rsync_dest="tcwg-${NODE_NAME##tcwg-bmk-}.tcwglab:" ;;
+              *) rsync_dest="" ;;
+            esac
+            rsync -aL $dir/$USER/ $rsync_dest/home/$USER/
             rm -rf $dir/ $dir.tar
     publishers:
         - email-ext:
