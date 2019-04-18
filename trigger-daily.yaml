@@ -1,0 +1,21 @@
+- job:
+    name: trigger-daily
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger to launch daily rebuilds'
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'ledge-oe'
