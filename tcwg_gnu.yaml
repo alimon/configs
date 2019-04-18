@@ -2,12 +2,14 @@
     name: tcwg_gnu
     toolchain_name:
       - gnu:
-          components: gcc
+          binutils_url: https://sourceware.org/git/binutils-gdb.git
           gcc_url: https://gcc.gnu.org/git/gcc.git
     toolchain_ver:
       - master:
+          binutils_branch: master
           gcc_branch: master
       - release:
+          binutils_branch: binutils-2_32-branch
           gcc_branch: gcc-8-branch
     target:
       - aarch64:
@@ -16,24 +18,49 @@
       - arm:
           node: tcwg-apm_32-build || tcwg-sq_32-build
           docker_arch: armhf
-    bootstrap_config:
-      - bootstrap
-      - bootstrap_ubsan
-      - bootstrap_O3
-      - bootstrap_lto
-      - bootstrap_O1
-      - bootstrap_debug
-      - bootstrap_profiled
-      - bootstrap_profiled_lto
-      - bootstrap_profiled_lto_lean
+    type_of_test:
+      - bootstrap:
+          components: gcc
+      - bootstrap_ubsan:
+          components: gcc
+      - bootstrap_O3:
+          components: gcc
+      - bootstrap_lto:
+          components: gcc
+      - bootstrap_O1:
+          components: gcc
+      - bootstrap_debug:
+          components: gcc
+      - bootstrap_profiled:
+          components: gcc
+      - bootstrap_profiled_lto:
+          components: gcc
+      - bootstrap_profiled_lto_lean:
+          components: gcc
+      - check-binutils:
+          components: binutils
     jobs:
-      - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
-      - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+      - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+      - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
 - view:
     name: tcwg_gnu
     view-type: list
     regex: 'tcwg_gnu-.*'
 
+- scm:
+    name: binutils-scm
+    scm:
+        - git:
+            url: '{binutils_url}'
+            branches:
+              - 'refs/heads/{binutils_branch}'
+            basedir: binutils
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
 - scm:
     name: gcc-scm
     scm:
@@ -65,6 +92,10 @@
 - parameter:
     name: gnu-parameters
     parameters:
+      - string:
+          name: binutils_branch
+          default: default
+          description: "binutils branch or sha1 to build"
       - string:
           name: gcc_branch
           default: default
@@ -126,14 +157,14 @@
             property-file: artifacts/trigger-bisect
 
 - job-template:
-    name: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
+    name: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
     project-type: freestyle
     defaults: global
     properties:
       - default-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}"
+            - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}"
           queue-scanning: 'ALL'
     parameters:
       - '{toolchain_name}-parameters'
@@ -148,10 +179,13 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG Build tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+    display-name: 'TCWG Build tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
+      - binutils-scm:
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
       - gcc-scm:
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
@@ -197,7 +231,7 @@
             ./jenkins-scripts/tcwg_gnu-build.sh \
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config} \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{type_of_test} \
             ==rr[gcc_url] {gcc_url} \
             $branch_opt \
             ==rr[mode] "jenkins-full" \
@@ -219,7 +253,7 @@
             fi
             echo "$build_name" > artifacts/jenkins/build-name
         - trigger-followup-builds:
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -231,7 +265,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}
+    name: tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
     project-type: freestyle
     defaults: global
     properties:
@@ -262,7 +296,7 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG Bisect tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+    display-name: 'TCWG Bisect tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -302,14 +336,15 @@
             --build_script "./jenkins-scripts/tcwg_gnu-build.sh" \
             -- \
             ==rr[ci_project] tcwg_gnu \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config} \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{type_of_test} \
+            ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url}
 
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
         - trigger-followup-builds:
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
+            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
