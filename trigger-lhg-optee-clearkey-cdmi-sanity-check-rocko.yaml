@@ -1,0 +1,45 @@
+- job:
+    name: trigger-lhg-optee-clearkey-cdmi-sanity-check-rocko
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+        - github:
+            url: https://github.com/linaro-mmwg/optee-clearkey-cdmi
+    disabled: false
+    node: master
+    display-name: 'Trigger for ClearKey CDMI for OP TEE/LinaroCDM sanity check'
+    scm:
+        - git:
+            url: https://github.com/linaro-mmwg/optee-clearkey-cdmi.git
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    triggers:
+        - github-pull-request:
+            github-hooks: true
+            white-list-target-branches:
+                - 'master'
+            permit-all: true
+            auth-id: 'GITHUB_TOKEN'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+                - project: 'lhg-oe-rocko'
+        - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${ghprbActualCommit:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
