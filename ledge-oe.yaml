@@ -1,6 +1,6 @@
 - job:
     name: ledge-oe
-    project-type: freestyle
+    project-type: matrix
     defaults: global
     properties:
         - authorization:
@@ -20,9 +20,6 @@
             num-to-keep: 10
     parameters:
         - string:
-            name: MACHINE
-            default: 'ledge-ti-am572x'
-        - string:
             name: DISTRO
             default: 'rpb'
         - string:
@@ -30,13 +27,25 @@
             default: 'master'
         - string:
             name: PUB_DEST
-            default: 'components/ledge/oe/${BUILD_NUMBER}'
+            default: 'components/ledge/oe/${MACHINE}/${BUILD_NUMBER}'
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
     disabled: false
     node: docker-stretch-amd64
     display-name: 'LEDGE OE build'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'ledge-ti-am572x'
+                - 'ledge-stm32mp157c-dk2'
+                - 'ledge-qemux86-64'
+                - 'ledge-qemuarm'
+                - 'ledge-qemuarm64'
+    execution-strategy:
+        sequential: false
     wrappers:
         - timestamps
     builders:
