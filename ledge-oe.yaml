@@ -32,7 +32,7 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
     disabled: false
-    node: docker-stretch-amd64
+    node: master
     display-name: 'LEDGE OE build'
     axes:
         - axis:
@@ -44,6 +44,11 @@
                 - 'ledge-qemux86-64'
                 - 'ledge-qemuarm'
                 - 'ledge-qemuarm64'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
     execution-strategy:
         sequential: false
     wrappers:
