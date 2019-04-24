@@ -1,0 +1,76 @@
+device_type: dragonboard-410c
+tags:
+  - chamelium
+job_name: lhg-oe-igt-test-${MANIFEST_BRANCH}-${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 120
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  manifest branch: ${MANIFEST_BRANCH}
+  build-url: ${BUILD_URL}
+  build-location: ${BASE_URL}/${PUB_DEST}
+
+actions:
+- deploy:
+    timeout:
+      minutes: 45
+    to: fastboot
+    images:
+      boot:
+        url: ${BOOT_URL}
+        compression: gz
+      rootfs:
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+
+- boot:
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    prompts:
+    - 'root@dragonboard-410c:~#'
+    timeout:
+      minutes: 5
+    method: fastboot
+
+- test:
+    timeout:
+      minutes: 20
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: basic-tests
+          description: "Basic tests after dragonboard-410c boots to the shell prompt"
+        run:
+          steps:
+          - ifconfig -a
+          - lava-test-case ping-google --shell ping -c4 www.google.com
+          - lava-test-case ping-chamelium --shell ping -c4 ${CHAMELIUM_IP}
+          - cat /sys/kernel/debug/dri/0/clients
+          # Stop Weston, otherwise igt-gpu-tools wouldn't run
+          - lava-test-case stop-weston --shell systemctl stop weston@linaro systemd-logind
+          - cat /sys/kernel/debug/dri/0/clients
+      name: basic-tests
+      path: inline/basic-tests.yaml
+
+- test:
+    timeout:
+      minutes: 25
+    definitions:
+    - repository: https://github.com/Linaro/test-definitions.git
+      from: git
+      path: automated/linux/igt/igt-chamelium-test.yaml
+      name: igt-chamelium-test
+      params:
+        CHAMELIUM_IP: ${CHAMELIUM_IP}
+        IGT_DIR: "/usr/share/igt-gpu-tools"
