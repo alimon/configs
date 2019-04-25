@@ -144,6 +144,8 @@ for conf_filename in filelist:
                 raise ValueError("command has failed with code '%s'" % proc.returncode)
 
             for filename in data.splitlines():
+                if not filename.startswith(os.path.splitext(conf_filename)[0]):
+                    raise ValueError("filename and job name does not follow the naming convention")
                 try:
                     xmlroot = xml.etree.ElementTree.parse('out/' + filename).getroot()
                     disabled = next(xmlroot.iterfind('disabled')).text
