@@ -51,6 +51,14 @@ def url_path = '/api/submit/' +
                manager.envVars["KERNEL_DESCRIBE"] +
                '/' +
                device_type
+def url_path_sanity = '/api/submit/' +
+               qa_server_team +
+               '/' +
+               manager.envVars["QA_SERVER_PROJECT"] + '-sanity' +
+               '/' +
+               manager.envVars["KERNEL_DESCRIBE"] +
+               '/' +
+               device_type
 
 def error_log = ""
 manager.build.logFile.eachLine { line ->
@@ -73,6 +81,12 @@ def postBody = [
 http.headers['Auth-Token'] = auth_token
 
 http.post(path: url_path,
+          body: postBody,
+          requestContentType: URLENC ) { resp ->
+  println "POST Success: ${resp.statusLine}"
+  assert resp.statusLine.statusCode == 201
+}
+http.post(path: url_path_sanity,
           body: postBody,
           requestContentType: URLENC ) { resp ->
   println "POST Success: ${resp.statusLine}"
