@@ -69,6 +69,7 @@ if [ -z "${DRY_RUN}" ]; then
 fi
 
 [ -n "${FULL_TEST_TEMPLATES}" ] && unset FULL_TEST_TEMPLATES
+[ -n "${QEMU_TEST_TEMPLATES}" ] && unset QEMU_TEST_TEMPLATES
 [ -z "${TEST_SUITES}" ] && TEST_SUITES=all
 TEMPLATE_PATH=""
 TEST_FILES=""
@@ -124,9 +125,11 @@ for test in ${TEST_FILES}; do
         fi
     else
         FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
+        QEMU_TEST_TEMPLATES="${QEMU_TEST_TEMPLATES} testplan/${test}"
     fi
 done
 
+# Submit sanity jobs
 if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "i386" ]];then
     # Save original priority
     export FULL_LAVA_JOB_PRIORITY=${LAVA_JOB_PRIORITY}
@@ -150,6 +153,40 @@ if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "
 
     # reset LAVA_JOB_PRIORITY to default
     export LAVA_JOB_PRIORITY=${FULL_LAVA_JOB_PRIORITY}
+fi
+
+# Submit QEMU jobs
+QEMU_DEVICE_TYPE=""
+case "${DEVICE_TYPE}" in
+  x15)
+    QEMU_DEVICE_TYPE=qemu_arm
+    ;;
+  hi6220-hikey)
+    QEMU_DEVICE_TYPE=qemu_arm64
+    ;;
+  i386)
+    QEMU_DEVICE_TYPE=qemu_i386
+    ;;
+  x86)
+    QEMU_DEVICE_TYPE=qemu_x86_64
+    ;;
+esac
+if [ ! -z "${QEMU_DEVICE_TYPE}" ]; then
+  # submit_for_testing.py sends the current environment to jinja, and jinja
+  # templates rely on DEVICE_TYPE. so we have to actually set DEVICE_TYPE here.
+  export ORIGINAL_DEVICE_TYPE=${DEVICE_TYPE}
+  export DEVICE_TYPE=${QEMU_DEVICE_TYPE}
+  python ${BASE_PATH}/submit_for_testing.py \
+    --device-type ${QEMU_DEVICE_TYPE} \
+    --build-number ${BUILD_NUMBER} \
+    --lava-server ${LAVA_SERVER} \
+    --qa-server ${QA_SERVER} \
+    --qa-server-team ${QA_SERVER_TEAM} \
+    --qa-server-project ${QA_SERVER_PROJECT} \
+    --git-commit ${QA_BUILD_VERSION} \
+    ${DRY_RUN} \
+    --test-plan ${QEMU_TEST_TEMPLATES}
+  export DEVICE_TYPE=${ORIGINAL_DEVICE_TYPE}
 fi
 
 # Submit full test run

@@ -64,7 +64,7 @@ export TOOLCHAIN="arm-linaro-linux-gnueabi linaro-6.2"
 
 export DRY_RUN=true
 
-for device in $(ls lava-job-definitions/devices); do
+for device in hi6220-hikey i386 x86 juno-r2 x15 dragonboard-410c; do
     export DEVICE_TYPE=$device
     bash submit_for_testing.sh
 done
