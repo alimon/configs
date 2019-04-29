@@ -68,27 +68,17 @@
                 esac
 
             # Scrambled indentation because of here-doc
-                cat << EOF > compare_results_parameters
+                cat << EOF >> binutils_parameters
             ref_logs=${JOB_NAME}-${ref_build_num}
             new_logs=${JOB_NAME}-${BUILD_NUMBER}
             pass_thresh=0.66
             show_results=false
             EOF
-            else
-                rm -f compare_results_parameters
             fi
         - trigger-builds:
             - project: tcwg-binutils
               property-file: binutils_parameters
               block: true
-        - conditional-step:
-            condition-kind: file-exists
-            condition-filename: compare_results_parameters
-            steps:
-                - trigger-builds:
-                    - project: tcwg-compare-results
-                      property-file: compare_results_parameters
-                      block: true
     publishers:
         - workspace-cleanup:
              include:

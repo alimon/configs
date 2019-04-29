@@ -42,6 +42,22 @@
             name: log_server
             default: dev-01.tcwglab:/home/tcwg-buildslave/logs
             description: 'Log_Server'
+        - string:
+            name: ref_logs
+            default: ''
+            description: 'Reference log directory on $log_server - enables results comparison'
+        - string:
+            name: new_logs
+            default: ''
+            description: 'Log directory on $log_server - used for results comparison'
+        - string:
+            name: pass_thresh
+            default: '0.95'
+            description: 'Pass threshold, below which the comparison returns an error - used for results comparison'
+        - bool:
+            name: show_results
+            default: true
+            description: 'Show results in the console - used for results comparison'
     disabled: false
     node: tcwg-coordinator
     retry-count: 3
@@ -189,10 +205,31 @@
             du -sh build-$target
             rm -rf build-$target || true
 
+            # Trigger results comparison if requested
+            if [ "x$ref_logs" != "x" ]; then
+            # Scrambled indentation because of here-doc
+                cat << EOF > compare_results_parameters
+            ref_logs=${ref_logs}
+            new_logs=${new_logs}
+            pass_thresh=${pass_thresh}
+            show_results=${show_results}
+            EOF
+            else
+                rm -f compare_results_parameters
+            fi
+
             if $dont_fail; then
                 result="0"
             fi
             exit $result
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: compare_results_parameters
+            steps:
+                - trigger-builds:
+                    - project: tcwg-compare-results
+                      property-file: compare_results_parameters
+                      block: true
     publishers:
         - email-ext:
             recipients: 'christophe.lyon@linaro.org'
