@@ -165,7 +165,8 @@
             basedir="${log_server#*:}"
             log_server="${log_server%:*}"
             eval dir=${log_name}
-            ssh ${log_server} mkdir -p ${basedir}/${dir}
+            ${BUILD_SHELL} -c "ssh ${log_server} mkdir -p ${basedir}/${dir}"
+
             # gcc-compare-results handles only .xz files, so compress
             # them before upload. Since the file are created inside a
             # container, the uid/gid may differ from the host's and
@@ -180,7 +181,7 @@
                 cp $log artifacts/
             done
             xz artifacts/*.sum artifacts/*.log
-            scp artifacts/*.sum.xz artifacts/*.log.xz ${log_server}:${basedir}/${dir}/
+            ${BUILD_SHELL} -c "scp artifacts/*.sum.xz artifacts/*.log.xz ${log_server}:${basedir}/${dir}/"
 
             echo BUILD FINISHED $(date)
 
