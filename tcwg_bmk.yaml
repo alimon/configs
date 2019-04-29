@@ -7,11 +7,9 @@
       - llvm:
           components: binutils gcc glibc llvm
           llvm_url: https://github.com/llvm/llvm-project.git
-          init_configuration: 'true'
       - gnu:
           components: binutils gcc glibc
           llvm_url: no_llvm_url
-          init_configuration: 'true'
     toolchain_ver:
       - master:
           binutils_branch: master
@@ -324,7 +322,6 @@
             --scripts_branch "$scripts_branch" \
             --bmk_branch "$bmk_branch" \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
-            ==rr[init_configuration] {init_configuration} \
             ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url} \
             ==rr[glibc_url] {glibc_url} \

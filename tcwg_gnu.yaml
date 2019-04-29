@@ -19,24 +19,15 @@
           node: tcwg-apm_32-build || tcwg-sq_32-build
           docker_arch: armhf
     bootstrap_config:
-      - bootstrap:
-          init_configuration: 'false'
-      - bootstrap_ubsan:
-          init_configuration: 'false'
-      - bootstrap_O3:
-          init_configuration: 'false'
-      - bootstrap_lto:
-          init_configuration: 'false'
-      - bootstrap_O1:
-          init_configuration: 'false'
-      - bootstrap_debug:
-          init_configuration: 'false'
-      - bootstrap_profiled:
-          init_configuration: 'true'
-      - bootstrap_profiled_lto:
-          init_configuration: 'true'
-      - bootstrap_profiled_lto_lean:
-          init_configuration: 'true'
+      - bootstrap
+      - bootstrap_ubsan
+      - bootstrap_O3
+      - bootstrap_lto
+      - bootstrap_O1
+      - bootstrap_debug
+      - bootstrap_profiled
+      - bootstrap_profiled_lto
+      - bootstrap_profiled_lto_lean
     jobs:
       - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
       - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config}'
@@ -209,7 +200,6 @@
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bootstrap_config} \
-            ==rr[init_configuration] {init_configuration} \
             ==rr[gcc_url] {gcc_url} \
             $branch_opt \
             ==rr[mode] "jenkins-full" \
