@@ -21,7 +21,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
 
-pkg_list="bc ccache chrpath cpio diffstat gawk git expect pkg-config python-requests python-crypto texinfo wget zlib1g-dev libglib2.0-dev libpixman-1-dev python python3 sudo"
+pkg_list="bc ccache chrpath cpio diffstat gawk git expect pkg-config python-requests python-crypto texinfo wget zlib1g-dev libglib2.0-dev libpixman-1-dev python python3 sudo libelf-dev"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
