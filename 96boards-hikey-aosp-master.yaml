@@ -252,9 +252,6 @@
             export KERNEL_DESCRIBE_X15_4_14=$(git rev-parse --short HEAD)
             export KERNEL_VERSION_X15_4_14=$(make kernelversion)
 
-            # workaround for the adb root/adb reboot kernel panic problem
-            git revert --no-edit 65d9e9821b86155dc810ff08c12cc29c7fabbca9
-
             make ARCH=arm CROSS_COMPILE=arm-eabi- ti_sdk_am57x_android_release_defconfig
             make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
             cd -
