@@ -20,14 +20,14 @@
             num-to-keep: 10
     parameters:
         - string:
-            name: DISTRO
-            default: 'rpb'
+            name: IMAGES
+            default: 'ledge-minimal ledge-gateway ledge-iot'
         - string:
             name: MANIFEST_BRANCH
             default: 'master'
         - string:
             name: PUB_DEST
-            default: 'components/ledge/oe/${MACHINE}/${BUILD_NUMBER}'
+            default: 'components/ledge/oe/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
         - string:
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
@@ -44,6 +44,12 @@
                 - 'ledge-qemux86-64'
                 - 'ledge-qemuarm'
                 - 'ledge-qemuarm64'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+                - rpb-sota
         - axis:
             type: slave
             name: label
