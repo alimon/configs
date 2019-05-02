@@ -1,5 +1,6 @@
 #!/bin/bash -e
 
+rm -f docker_*_build.txt
 cd dockerfiles/
 
 images_to_update=""
