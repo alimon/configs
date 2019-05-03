@@ -9,6 +9,13 @@ priority: medium
 visibility: public
 
 actions:
+- deploy:
+    timeout:
+      minutes: 5
+    to: tftp
+    kernel:
+      url: ${KERNEL_URL}
+      type: uimage
 - boot:
     timeout:
       minutes: 1
@@ -85,8 +92,30 @@ actions:
         name: cmp-100000-200000-10
         successes:
         - message: "Total of 16 word\\(s\\) were the same"
+    - name: dhcp-cmds
+      prompts: ["=> ", "/ # "]
+      script:
       # dhcp
-      - command: dhcp
+      - command:
+      - command: setenv autoload no ; dhcp
         name: dhcp
         successes:
-        - message: DHCP client bound to address
+        - message: "DHCP client bound to address"
+    - name: tftp-cmds
+      prompts: ["=> ", "/ # "]
+      script:
+      # TFTP
+      - command:
+      - command: setenv serverip {SERVER_IP} ; tftp {KERNEL_ADDR} {KERNEL}
+        name: tftp
+        successes:
+        - message: "Bytes transferred ="
+    - name: nand-commands
+      prompts: ["=> ", "/ # "]
+      script:
+      # nand
+      - command:
+      - command: nand info
+        name: nand-info
+        successes:
+        - message: "nand0, sector size 128 KiB"
