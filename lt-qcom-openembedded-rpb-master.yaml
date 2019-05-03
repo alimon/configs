@@ -1,0 +1,106 @@
+- job:
+    name: lt-qcom-openembedded-rpb-master
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'rpb-console-image rpb-console-image-test'
+        - string:
+            name: IMAGES_RPB
+            default: 'rpb-desktop-image rpb-desktop-image-test'
+        - string:
+            name: IMAGES_RPB_WAYLAND
+            default: 'rpb-weston-image rpb-weston-image-test'
+        - string:
+            name: MANIFEST_URL
+            default: 'https://github.com/96boards/oe-rpb-manifest.git'
+        - string:
+            name: MANIFEST_BRANCH_PREFIX
+            default: 'qcom/'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'master'
+        - string:
+            name: BASE_URL
+            default: 'https://snapshots.linaro.org/'
+    disabled: false
+    node: master
+    display-name: 'Qualcomm OpenEmbedded RPB (master)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'dragonboard-410c'
+                - 'dragonboard-820c'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+                - rpb-wayland
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # some machine names we use on 96boards are slightly different
+            case "${MACHINE}" in
+              dragonboard-410c)
+                MACHINE=dragonboard410c
+                ;;
+              dragonboard-820c)
+                MACHINE=dragonboard820c
+                ;;
+            esac
+
+            echo "PUB_DEST=96boards/${MACHINE}/linaro/openembedded/${MANIFEST_BRANCH}/${BUILD_NUMBER}/${DISTRO}" > pub_dest_parameters
+        - inject:
+            properties-file: pub_dest_parameters
+        - shell:
+            !include-raw: rpb-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org, anibal.limon@linaro.org'
+            always: true
+            matrix-trigger: only-parent
