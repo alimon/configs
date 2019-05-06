@@ -87,8 +87,9 @@
 
             git config --global user.email "ci_notify@linaro.org"
             git config --global user.name "Linaro CI"
-            git revert --no-edit 20ebc74d51a1542e4290abf5ac9e32b524f891d1
-            git revert --no-edit d0455063e17c07841eb40b8e755f4c9241506de5
+            ## Revert "hikey/hikey960_defconfig: Remove FBDEV_EMULATION support for drm_hwcomposer"
+            ## https://android-review.linaro.org/c/kernel/hikey-linaro/+/20431
+            git fetch "http://android-review.linaro.org/kernel/hikey-linaro" refs/changes/31/20431/1 && git cherry-pick FETCH_HEAD
 
         - shell:
             !include-raw:
