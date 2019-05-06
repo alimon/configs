@@ -11,6 +11,10 @@
 
     Optional variables:
     QA_SERVER_TEAM: This becomes the group in qa-reports. It defaults to 'lkft'
+    KERNEL_REPO: metadata - git repo url. Defaults to 'unknown'.
+    KERNEL_COMMIT: metadata - git commit sha. Defaults to 'unknown'.
+    KERNEL_BRANCH: metadata - git branch. Defaults to 'unknown'.
+    MAKE_KERNELVERSION: metadata - result of 'make kernelversion'. Defaults to 'unknown'.
 
     If the jenkins job is successful, a 'build/build_process' test result will
     be set to 'pass' in qa-reports, otherwise it will get a 'fail' result.
@@ -76,7 +80,17 @@ def http = new HTTPBuilder(base_url)
 def postBody = [
     tests: '{"build/build_process": "'+ build_process +'"}',
     log: error_log,
-    metadata: '{"job_id": "' + device_type +'-'+ manager.build.number + '"}'
+    metadata:
+        // This is fussy, but I thought it was easier than figuring out how to
+        // add JsonOutput
+        """{
+            "job_id": "${device_type}-${manager.build.number}",
+            "git branch": "${manager.envVars.get("KERNEL_BRANCH", "unknown")}",
+            "git repo": "${manager.envVars.get("KERNEL_REPO", "unknown")}",
+            "git commit": "${manager.envVars.get("KERNEL_COMMIT", "unknown")}",
+            "git describe": "${manager.envVars.get("KERNEL_DESCRIBE", "unknown")}",
+            "make_kernelversion": "${manager.envVars.get("MAKE_KERNELVERSION", "unknown")}"
+        }"""
 ]
 http.headers['Auth-Token'] = auth_token
 
