@@ -532,8 +532,13 @@
                 --test-plan template-boot.yaml template-vts-kernel.yaml template-cts.yaml \
                 --quiet
 
+            # submit jobs for x15 4.19 kernel build
             # reset the changes done before
             cd configs && git reset --hard && cd -
+
+            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_X15_4_19}
+            export SRCREV_kernel=${KERNEL_DESCRIBE_X15_4_19}
+            export KERNEL_BRANCH="android-beagle-x15-${KERNEL_VERSION_X15_4_19}-${KERNEL_DESCRIBE_X15_4_19}"
 
             # update templates to use the new image names
             sed -i "s|boot_fit.img|x15-boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
