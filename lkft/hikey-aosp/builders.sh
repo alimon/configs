@@ -28,6 +28,8 @@ configs_url=https://android.googlesource.com/kernel/configs
 # for not 4.19 premerge ci builds. we use linaro android kernel configs
 if echo "${JOB_NAME}" | grep premerge && ! echo "${KERNEL_BRANCH}" | grep "\-4.19"; then
     configs_url="https://github.com/tom-gall/LinaroAndroidKernelConfigs"
+elif echo "${JOB_NAME}" | grep premerge && echo "${KERNEL_BRANCH}" | grep "\-4.19"; then
+    git merge --no-edit remotes/origin/${KERNEL_BRANCH}
 fi
 git clone --depth=1 ${configs_url} configs
 
