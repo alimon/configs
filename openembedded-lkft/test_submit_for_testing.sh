@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# This 'test' script generates all job templates from lava-job-definitions,
+# verifies that they are valid YAML, and saves them all to ./tmp/. When making
+# lava job template changes in lava-job-definitions, run this beforehand, save
+# /tmp to a new path, and then run it after and diff the directories to see the
+# effects the change had on the job definitions.
+#
+# These generated templates can also be verified by lava by using the following
+# commandline, which requires lavacli to be configured with authentication
+# against some LAVA host.
+#
+#    drue@xps:~/src/configs/openembedded-lkft$ rm -rf tmp && ./test_submit_for_testing.sh && for file in $(find tmp -name '*.yaml'); do echo $file && lavacli -i therub jobs validate $file || break; done
+
 set -e
 
 virtualenv --python=$(which python2) .venv
