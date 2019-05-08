@@ -1,0 +1,86 @@
+device_type: x15
+tags:
+  - chamelium
+job_name: lhg-oe-igt-test-${MANIFEST_BRANCH}-${BUILD_NUMBER} 
+timeouts:
+  job:
+    minutes: 45
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+metadata:
+  manifest branch: ${MANIFEST_BRANCH}
+  build-url: ${BUILD_URL}
+  build-location: ${BASE_URL}/${PUB_DEST}
+
+context:
+  test_character_delay: 10
+
+actions:
+- deploy:
+    timeout:
+      minutes: 25
+    to: fastboot
+    images:
+      userdata:
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+    os: oe
+
+- boot:
+    auto_login:
+      login_prompt: 'am57xx-evm login:'
+      username: root
+    prompts:
+    - 'root@am57xx-evm:'
+    commands:
+    - run findfdt
+    - setenv console ttyS2,115200n8
+    - setenv mmcdev 1
+    - setenv bootpart 1:9
+    - run mmcboot
+    timeout:
+      minutes: 15
+    method: u-boot
+
+- test:
+    timeout:
+      minutes: 30
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: basic-tests
+          description: Basic tests after X15 boots to the shell prompt
+        run:
+          steps:
+          - lava-test-case target-ps --shell ps aux
+          - lava-test-case target-dmesg --shell dmesg
+          - lava-test-case target-ifconfig --shell ifconfig -a
+          - lava-test-case target-ping-google --shell ping -c4 www.google.com
+          - df -h
+          - lava-test-case ping-chamelium --shell ping -c4 ${CHAMELIUM_IP}
+          # Stop Weston, otherwise igt-gpu-tools wouldn't run
+          - lava-test-case stop-weston --shell systemctl stop weston@linaro systemd-logind
+          - cat /sys/kernel/debug/dri/0/clients
+      name: target-basic-test
+      path: inline/target-basic-test.yaml
+
+
+- test:
+    timeout:
+      minutes: 25
+    definitions:
+    - repository: https://github.com/Linaro/test-definitions.git
+      from: git
+      path: automated/linux/igt/igt-chamelium-test.yaml
+      name: igt-chamelium-test
+      params:
+        CHAMELIUM_IP: ${CHAMELIUM_IP}
+        IGT_DIR: "/usr/share/igt-gpu-tools"
