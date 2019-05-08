@@ -119,6 +119,10 @@ for test in ${TEST_FILES}; do
         if [[ ${DEVICE_TYPE} = "x86" ]];then
             FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         fi
+    elif [[ ${test} = "kvm-unit-tests.yaml" ]];then
+        if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x86" ]];then
+            FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
+        fi
     elif [[ ${test} = "ssuite.yaml" ]];then
         if [[ ${DEVICE_TYPE} = "x86" ]];then
             FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
