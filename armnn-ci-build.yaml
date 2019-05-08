@@ -1,0 +1,25 @@
+- job:
+    name: armnn-ci-build
+    project-type: freestyle
+    defaults: global
+    description: |
+        Updates source and builds ArmNN frequently to ensure builds are successful.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+    disabled: false
+    node: docker-stretch-arm64
+    display-name: 'Arm NN - CI Build'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: armnn-ci-build/builders.sh
+#FIXME need to figure out the artifacts to publish
+#        - shell:
+#            !include-raw: rpb-openembedded/publishers.sh
