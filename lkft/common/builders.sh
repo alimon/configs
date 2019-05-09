@@ -21,14 +21,15 @@ fi
 pip install --user --force-reinstall ruamel.yaml
 
 
-BUILD_DIR=${BUILD_DIR:-${JOB_NAME}}
-if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
-  sudo mkdir -p /home/buildslave/srv/${BUILD_DIR}
-  sudo chmod 777 /home/buildslave/srv/${BUILD_DIR}
-fi
-cd /home/buildslave/srv/${BUILD_DIR}
-rm -fr out/${ANDROID_BUILD_CONFIG}
+#BUILD_DIR=${BUILD_DIR:-${JOB_NAME}}
+#if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
+#  sudo mkdir -p /home/buildslave/srv/${BUILD_DIR}
+#  sudo chmod 777 /home/buildslave/srv/${BUILD_DIR}
+#fi
+#cd /home/buildslave/srv/${BUILD_DIR}
+#rm -fr out/${ANDROID_BUILD_CONFIG}
 
+echo ==LIUYQ=PWD==${PWD}===
 wget https://android-git.linaro.org/android-build-configs.git/plain/lkft/linaro-lkft.sh?h=lkft -O linaro-lkft.sh
 chmod +x linaro-lkft.sh
 ./linaro-lkft.sh -c "${ANDROID_BUILD_CONFIG}"

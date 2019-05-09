@@ -14,7 +14,7 @@ else
     export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
 fi
 
-echo ${PWD}
+echo ==LIUYQ=submitjob=PWD=${PWD}===
 
 rm -rf configs
 
