@@ -12,7 +12,9 @@
     Optional variables:
     QA_SERVER_TEAM: This becomes the group in qa-reports. It defaults to 'lkft'
     KERNEL_REPO: metadata - git repo url. Defaults to 'unknown'.
-    KERNEL_COMMIT: metadata - git commit sha. Defaults to 'unknown'.
+    SRCREV_kernel/KERNEL_COMMIT: metadata - git commit sha. Checks for
+        SRCREV_kernel, falls through to KERNEL_COMMIT, and then finally defaults
+        to 'unknown'.
     KERNEL_BRANCH: metadata - git branch. Defaults to 'unknown'.
     MAKE_KERNELVERSION: metadata - result of 'make kernelversion'. Defaults to 'unknown'.
 
@@ -21,14 +23,19 @@
 
     To test changes to this script:
     - Set up a local jenkins container
-    - Create a job
+    - Create a freestyle job
     - Add QA_REPORTS_TOKEN 'secret text' under 'Use secret text(s) or file(s)
     - Untick 'Inject nevironment variables to the build process'
       - Paste the following (for example) into the 'Properties Content':
           DEVICE_TYPE=x15
           QA_SERVER=https://staging-qa-reports.linaro.org
           QA_SERVER_PROJECT=linux-mainline-oe
-          KERNEL_DESCRIBE=v4.20.1
+          KERNEL_DESCRIBE=v5.1
+          QA_SERVER_TEAM=lkft
+          KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+          SRCREV_kernel=e93c9c99a629c61837d5a7fc2120cd2b6c70dbdd
+          KERNEL_BRANCH=master
+          MAKE_KERNELVERSION=5.1.0
     - Enable Groovy Postbuild and paste this script in
 
     A build error log is extracted from the jenkins log using a regular
@@ -88,6 +95,7 @@ def postBody = [
             "git branch": "${manager.envVars.get("KERNEL_BRANCH", "unknown")}",
             "git repo": "${manager.envVars.get("KERNEL_REPO", "unknown")}",
             "git commit": "${manager.envVars.get("KERNEL_COMMIT", "unknown")}",
+            "git commit": "${manager.envVars.get("SRCREV_kernel", manager.envVars.get("KERNEL_COMMIT", "unknown"))}",
             "git describe": "${manager.envVars.get("KERNEL_DESCRIBE", "unknown")}",
             "make_kernelversion": "${manager.envVars.get("MAKE_KERNELVERSION", "unknown")}"
         }"""
