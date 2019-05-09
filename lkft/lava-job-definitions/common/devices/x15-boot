@@ -1,0 +1,16 @@
+- boot:
+    namespace: target
+    prompts:
+    - 'root@(.*):/#'
+    - ':/'
+    timeout:
+      minutes: 15
+{% if X15_BOOT_ARGS is defined %}
+    commands:
+    - setenv bootargs "{{X15_BOOT_ARGS}}"
+    - run findfdt
+    - run emmc_android_boot
+    method: u-boot
+{% else %}
+    method: fastboot
+{% endif %}
