@@ -1,19 +1,3 @@
-{% extends device_type %}
+{% extends "master/template-kvm-unit-tests.yaml.jinja2" %}
 
 {% set job_timeout = 25 %}
-{% block metadata %}
-  {{ super() }}
-{% endblock metadata %}
-
-{% block job_name %}lkft-kvm-unit-tests-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
-
-{% block test_target %}
-  {{ super() }}
-
-    - repository: https://github.com/Linaro/test-definitions.git
-      from: git
-      path: automated/linux/kvm-unit-tests/kvm-unit-tests.yaml
-      name: kvm-unit-tests
-      parameters:
-        SKIP_INSTALL: 'true'
-{% endblock test_target %}
