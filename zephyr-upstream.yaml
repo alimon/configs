@@ -121,44 +121,44 @@
               --link-latest \
               out/${PLATFORM} components/kernel/zephyr/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
 
-        - shell: |
-            #!/bin/bash -ex
-
-            case "${PLATFORM}" in
-              frdm_k64f)
-                export DEVICE_TYPE=frdm-k64f
-                ;;
-              frdm_kw41z)
-                export DEVICE_TYPE=frdm-kw41z
-                ;;
-              disco_l475_iot1)
-                export DEVICE_TYPE=disco-l475-iot1
-                ;;
-              qemu_cortex_m3)
-                export DEVICE_TYPE=qemu
-                ;;
-              *)
-                echo "Skip DEVICE_TYPE for ${PLATFORM}"
-                ;;
-            esac
-
-            rm -rf configs
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            [ "${ROOT_BUILD_CAUSE}" = "SCMTRIGGER" ] && unset DEVICE_TYPE
-            [ -z "${DEVICE_TYPE}" ] || \
-            python configs/zephyr-upstream/submit_for_testing.py \
-                --board-name ${PLATFORM} \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --build-url ${BUILD_URL} \
-                --branch-name ${BRANCH} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team lite \
-                --qa-server-project zephyr-upstream \
-                --gcc-variant ${ZEPHYR_TOOLCHAIN_VARIANT} \
-                --git-commit ${GIT_COMMIT_ID}
+#        - shell: |
+#            #!/bin/bash -ex
+#
+#            case "${PLATFORM}" in
+#              frdm_k64f)
+#                export DEVICE_TYPE=frdm-k64f
+#                ;;
+#              frdm_kw41z)
+#                export DEVICE_TYPE=frdm-kw41z
+#                ;;
+#              disco_l475_iot1)
+#                export DEVICE_TYPE=disco-l475-iot1
+#                ;;
+#              qemu_cortex_m3)
+#                export DEVICE_TYPE=qemu
+#                ;;
+#              *)
+#                echo "Skip DEVICE_TYPE for ${PLATFORM}"
+#                ;;
+#            esac
+#
+#            rm -rf configs
+#            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+#
+#            [ "${ROOT_BUILD_CAUSE}" = "SCMTRIGGER" ] && unset DEVICE_TYPE
+#            [ -z "${DEVICE_TYPE}" ] || \
+#            python configs/zephyr-upstream/submit_for_testing.py \
+#                --board-name ${PLATFORM} \
+#                --device-type ${DEVICE_TYPE} \
+#                --build-number ${BUILD_NUMBER} \
+#                --build-url ${BUILD_URL} \
+#                --branch-name ${BRANCH} \
+#                --lava-server ${LAVA_SERVER} \
+#                --qa-server ${QA_SERVER} \
+#                --qa-server-team lite \
+#                --qa-server-project zephyr-upstream \
+#                --gcc-variant ${ZEPHYR_TOOLCHAIN_VARIANT} \
+#                --git-commit ${GIT_COMMIT_ID}
 
     publishers:
         - archive:
