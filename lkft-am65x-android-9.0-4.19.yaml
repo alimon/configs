@@ -53,20 +53,22 @@
                 - lkft/common/builders.sh
         - linaro-publish-token
         - shell: |
-            #!/bin/bash
+            #!/bin/bash -ex
 
-            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O out/BUILD-INFO.txt
+            JOB_OUT=/home/buildslave/srv/${BUILD_DIR}/out/${ANDROID_BUILD_CONFIG}
+            pwd
+            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${JOB_OUT}/BUILD-INFO.txt
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --server ${PUBLISH_SERVER} \
-              --build-info out/BUILD-INFO.txt \
+              --build-info ${JOB_OUT}/BUILD-INFO.txt \
               --link-latest \
               --include "^(defconfig|pinned-manifest.xml|SHA256SUMS.txt)$" \
               --include "^(boot_fit.img|vendor.img)$" \
-              out/${ANDROID_BUILD_CONFIG} android/lkft/${JOB_NAME}/${BUILD_NUMBER}
+              ${JOB_OUT} android/lkft/${JOB_NAME}/${BUILD_NUMBER}
 
             PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
         - shell:

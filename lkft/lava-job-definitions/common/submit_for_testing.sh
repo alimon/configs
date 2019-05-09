@@ -14,7 +14,10 @@ else
     export QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
 fi
 
+echo ${PWD}
+
 rm -rf configs
+
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
 config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${ANDROID_BUILD_CONFIG}?h=lkft"
