@@ -220,7 +220,7 @@ case "${MACHINE}" in
   rzn1|rzn1d)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
-    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-${MACHINE}*-${BUILD_NUMBER}.dtb" | xargs -r basename)
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-${MACHINE}*-bestla-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
   *)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
