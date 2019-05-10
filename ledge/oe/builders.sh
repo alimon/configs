@@ -76,6 +76,13 @@ DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
 find ${DEPLOY_DIR_IMAGE} -type l -delete
 
+# QEMU images are 22G remove them before uploading
+rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
+      ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
+      ${DEPLOY_DIR_IMAGE}/*.rootfs.wic* \
+      ${DEPLOY_DIR_IMAGE}/*.iso \
+      ${DEPLOY_DIR_IMAGE}/*.stimg
+
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
 sed -i "s|${DEPLOY_DIR_IMAGE}/||" MD5SUMS.txt
