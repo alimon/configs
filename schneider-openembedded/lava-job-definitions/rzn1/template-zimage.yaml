@@ -1,6 +1,6 @@
 device_type: rzn1
 
-job_name: Schneider Electric RZN1 FIT Image Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: Schneider Electric RZN1 zImage NFS Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 timeouts:
   job:
     minutes: 10
@@ -18,8 +18,13 @@ actions:
     to: tftp
     os: oe
     kernel:
-      url: ${KERNEL_FIT_URL}
-      type: uimage
+      url: ${KERNEL_ZIMAGE_URL}
+      type: zimage
+    dtb:
+      url: ${DTB_URL}
+    nfsrootfs:
+      url: ${NFSROOTFS_URL}
+      compression: bz2
 - boot:
     timeout:
       minutes: 10
