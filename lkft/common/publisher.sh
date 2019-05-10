@@ -5,6 +5,8 @@ wget ${config_url} -O ${ANDROID_BUILD_CONFIG}
 source ${ANDROID_BUILD_CONFIG}
 
 JOB_OUT_PUBLISH=out/${ANDROID_BUILD_CONFIG}/publish
+rm -fr ${JOB_OUT_PUBLISH} && mkdir -p ${JOB_OUT_PUBLISH}
+
 wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${JOB_OUT_PUBLISH}/BUILD-INFO.txt
 
 PUBLISH_COMMON_FILES="pinned-manifest.xml defconfig SHA256SUMS.txt"
