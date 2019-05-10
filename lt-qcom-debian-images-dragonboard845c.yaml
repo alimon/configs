@@ -1,0 +1,107 @@
+- job:
+    name: lt-qcom-debian-images-dragonboard845c
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: VENDOR
+            default: 'linaro'
+        - string:
+            name: OS_FLAVOUR
+            default: 'buster'
+        - string:
+            name: PLATFORM_NAME
+            default: 'dragonboard-845c'
+        - string:
+            name: FAI_BOARD_CLASS
+            default: 'DB845C'
+        - string:
+            name: ROOTFS
+            default: 'developer,1800M alip,3G'
+        - string:
+            name: ROOTFS_PARTLABEL
+            default: 'userdata'
+        - string:
+            name: DTBS
+            default: 'qcom/sdm845-db845c.dtb'
+        - string:
+            name: SERIAL_CONSOLE
+            default: 'ttyMSM0'
+        - string:
+            name: BOOTIMG_PAGESIZE
+            default: '4096'
+        - string:
+            name: PUB_DEST
+            default: "96boards/dragonboard845c/${VENDOR}/debian/${BUILD_NUMBER}"
+        - string:
+            name: BOOTIMG_BASE
+            default: '0x80000000'
+        - string:
+            name: BOOTIMG_KERNEL_OFFSET
+            default: '0x8000'
+        - string:
+            name: BOOTIMG_RAMDISK_OFFSET
+            default: '0x1000000'
+        - string:
+            name: BOOTIMG_TAGS_OFFSET
+            default: '0x100'
+        - string:
+            name: REPO_URL
+            default: 'https://git.linaro.org/ci/fai.git'
+    disabled: false
+    node: docker-stretch-arm64
+    display-name: 'Qualcomm Debian based images for Snapdragon 845'
+    scm:
+        - git:
+            url: ${REPO_URL}
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
+        - ssh-agent-credentials:
+            users:
+                - 'LT_QUALCOMM_PRIVATE_KEY_SSH'
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-debian-images/builders-fai.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-debian-images/publishers.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+                  - openembedded-lkft/postbuild.groovy
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org qa-team@linaro.org anibal.limon@linaro.org'
+            always: true
