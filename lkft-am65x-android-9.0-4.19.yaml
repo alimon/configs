@@ -67,14 +67,14 @@
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[CI] HiKey: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
+            subject: '[lkft-android] ${ANDROID_BUILD_CONFIG}: ${KERNEL_BRANCH} ${KERNEL_COMMIT} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
                 Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
                 Git branch: ${KERNEL_BRANCH}
                 Git URL: ${KERNEL_REPO}
-                Git commit: ${SRCREV_kernel}
+                Git commit: ${KERNEL_COMMIT}
 
                 Errors:
                 ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
