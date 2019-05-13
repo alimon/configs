@@ -14,7 +14,7 @@ for build_config in ${ANDROID_BUILD_CONFIG}; do
     source ${build_config}
 
     for f in ${PUBLISH_COMMON_FILES} ${PUBLISH_FILES}; do
-        mv -v out/${ANDROID_BUILD_CONFIG}/${f} ${JOB_OUT_PUBLISH}/${build_config}-${f}
+        mv -v out/${build_config}/${f} ${JOB_OUT_PUBLISH}/${build_config}-${f}
     done
 done
 
