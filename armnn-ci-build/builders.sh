@@ -1,7 +1,9 @@
-sudo apt -q=2 update
-sudo apt -q=2 install -y --no-install-recommends scons cmake git g++ gcc autoconf curl libtool valgrind libpthread-stubs0-dev
+#!/bin/bash
 
-mkdir armnn-tflite && cd armnn-tflite
+set -ex
+
+sudo apt -q=2 update
+sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git autoconf curl libtool libpthread-stubs0-dev
 
 git clone --depth 1 https://github.com/Arm-software/ComputeLibrary.git
 git clone --depth 1 https://github.com/Arm-software/armnn
@@ -10,13 +12,13 @@ git clone --depth 1 https://github.com/tensorflow/tensorflow.git
 git clone --depth 1 https://github.com/google/flatbuffers.git
 wget -q https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_*.tar.bz2
 
-cd ${WORKSPACE}/armnn-tflite/ComputeLibrary
+cd ${WORKSPACE}/ComputeLibrary
 #need to add if loops for opencl=1 embed_kernels=1 and neon=1
 scons -u -j$(nproc) arch=arm64-v8a extra_cxx_flags="-fPIC" benchmark_tests=1 validation_tests=1
 
 #build Boost
-cd ${WORKSPACE}/armnn-tflite/boost_*
-./bootstrap.sh 
+cd ${WORKSPACE}/boost_1_64_0
+./bootstrap.sh
 ./b2  \
   --build-dir=${WORKSPACE}/boost_1_64_0/build toolset=gcc link=static cxxflags=-fPIC \
   --with-filesystem \
@@ -25,7 +27,7 @@ cd ${WORKSPACE}/armnn-tflite/boost_*
   --with-program_options install --prefix=${WORKSPACE}/boost
 
 #build Protobuf
-cd ${WORKSPACE}/armnn-tflite/protobuf
+cd ${WORKSPACE}/protobuf
 git submodule update --init --recursive
 ./autogen.sh
 ./configure --prefix=${WORKSPACE}/protobuf-host
@@ -33,16 +35,18 @@ make -j$(nproc)
 make install
 
 #generate tensorflow protobuf library
-cd ${WORKSPACE}/armnn-tflite/tensorflow
-../armnn/scripts/generate_tensorflow_protobuf.sh ../tensorflow-protobuf ../protobuf-host
+cd ${WORKSPACE}/tensorflow
+${WORKSPACE}/armnn/scripts/generate_tensorflow_protobuf.sh \
+  ${WORKSPACE}/tensorflow-protobuf \
+  ${WORKSPACE}/protobuf-host
 
 #build google flatbuffer libraries
-cd ${WORKSPACE}/armnn-tflite/flatbuffers
+cd ${WORKSPACE}/flatbuffers
 cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
 make -j$(nproc)
 
 #Build Arm NN
-cd ${WORKSPACE}/armnn-tflite/armnn
+cd ${WORKSPACE}/armnn
 mkdir build
 cd build
 cmake .. \
