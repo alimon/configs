@@ -200,9 +200,8 @@ elif [ "${MANIFEST_BRANCH}" = "rocko" ]; then
 fi
 
 # Place generic kernel definitions (if needed)
-custom_kernel_conf=$(find ../layers/meta-lkft/recipes-kernel -name custom-kernel-info.inc)
 if [ -e ${WORKSPACE}/custom-kernel-info.inc.tmp ]; then
-    mv -v ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
+    mv -v ${WORKSPACE}/custom-kernel-info.inc.tmp conf/custom-kernel-info.inc
 fi
 
 # The kernel (as of next-20181130) requires fold from the host
