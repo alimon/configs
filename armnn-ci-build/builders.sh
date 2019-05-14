@@ -30,9 +30,9 @@ cd ${WORKSPACE}/boost_1_64_0
 cd ${WORKSPACE}/protobuf
 git submodule update --init --recursive
 ./autogen.sh
-./configure --prefix=${WORKSPACE}/protobuf-host
+./configure --prefix=/usr
 make -j$(nproc)
-make install
+make install DESTDIR=${WORKSPACE}/protobuf-host
 
 #generate tensorflow protobuf library
 cd ${WORKSPACE}/tensorflow
@@ -61,3 +61,10 @@ cmake .. \
   -DFLATBUFFERS_ROOT=${WORKSPACE}/flatbuffers \
   -DFLATBUFFERS_LIBRARY=${WORKSPACE}/flatbuffers/libflatbuffers.a
 make -j$(nproc)
+
+cd ${WORKSPACE}
+rm -rf boost_*.tar.bz2 boost_* protobuf tensorflow
+find ${WORKSPACE} -type f -name *.o -delete
+
+tar -cJf /tmp/armnn.tar.xz ${WORKSPACE}
+mv /tmp/armnn.tar.xz ${WORKSPACE}
