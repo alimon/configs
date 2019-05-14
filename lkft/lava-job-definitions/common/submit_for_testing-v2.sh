@@ -32,6 +32,7 @@ function check_environments(){
 
     [ -z "${PUBLISH_FILES}" ] && exit_with_msg "PUBLISH_FILES is required to be defined."
 
+    return 0
 }
 
 
