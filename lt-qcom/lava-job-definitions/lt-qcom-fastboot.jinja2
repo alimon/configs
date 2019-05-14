@@ -1,5 +1,13 @@
 {% extends "lkft-fastboot.jinja2" %}
 
+{% if install_packages is undefined %}{% set install_packages = true %}{% endif %}
+{% if install_fastboot is undefined %}{% set install_fastboot = true %}{% endif %}
+{% if rootfs is undefined %}{% set rootfs = true %}{% endif %}
+{% if rootfs_label is undefined %}{% set rootfs_label = 'rootfs' %}{% endif %}
+{% if pre_power_command is undefined %}{% set pre_power_command = true %}{% endif %}
+{% if pre_os_command is undefined %}{% set pre_os_command = true %}{% endif %}
+{% if auto_login is undefined %}{% set auto_login = true %}{% endif %}
+
 {% block protocols %}
 protocols:
   lava-lxc:
@@ -17,6 +25,7 @@ protocols:
     timeout:
       minutes: 15
     to: lxc
+{% if install_packages == true %}
     packages:
     - wget
     - unzip
@@ -24,6 +33,7 @@ protocols:
     - simg2img
     - e2fsprogs
     - gzip
+{% endif %}
     os: debian
 
 - boot:
@@ -34,6 +44,7 @@ protocols:
       minutes: 5
     method: lxc
 
+{% if install_fastboot == true %}
 - test:
     namespace: tlxc
     timeout:
@@ -45,6 +56,7 @@ protocols:
       name: install-android-platform-tools-r2600
       parameters:
         LINK: 'https://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip'
+{% endif %}
 
 {% block deploy_target %}
 - deploy:
@@ -56,11 +68,14 @@ protocols:
       boot:
         url: {{BOOT_URL}}
         compression: {{BOOT_URL_COMP}}
-      rootfs:
+{% if rootfs == true %}
+      {{ rootfs_label }}:
         url: {{ROOTFS_URL}}
         compression: {{ROOTFS_URL_COMP}}
+{% endif %}
     os: {{DEPLOY_OS}}
 
+{% if rootfs == true %}
 - test:
     namespace: tlxc
     timeout:
@@ -94,6 +109,7 @@ protocols:
           -     img2simg {{LXC_ROOTFS_FILE}}.ext4 {{LXC_ROOTFS_FILE}}
           -     echo "resize_rootfs:" "pass"
           - fi
+{% endif %}
 
 - deploy:
     timeout:
@@ -103,36 +119,44 @@ protocols:
     images:
       boot:
         url: lxc:///{{LXC_BOOT_FILE}}
-      rootfs:
+{% if rootfs == true %}
+      {{ rootfs_label }}:
         url: lxc:///{{LXC_ROOTFS_FILE}}
         apply-overlay: true
+{% endif %}
     os: {{DEPLOY_OS}}
+{% if pre_power_command == true %}
     protocols:
         lava-lxc:
         - action: fastboot-deploy
           request: pre-power-command
           timeout:
               minutes: 2
+{% endif %}
 {% endblock deploy_target %}
 
 {% block boot_target %}
 - boot:
     namespace: target
+{% if auto_login == true %}
     auto_login:
       login_prompt: 'login:'
       username: 'root'
+{% endif %}
     prompts:
-    - 'root@(.*):/#'
+    - 'root@(.*):[/~]#'
     - {{BOOT_OS_PROMPT}}
     timeout:
       minutes: 15
     method: fastboot
+{% if pre_os_command == true %}
     protocols:
       lava-lxc:
       - action: auto-login-action
         request: pre-os-command
         timeout:
           minutes: 2
+{% endif %}
 {% endblock boot_target %}
 
 {% block test_target %}
