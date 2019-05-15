@@ -2,20 +2,16 @@
 
 set -ex
 
-# Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
-pip install --user --force-reinstall jinja2-cli ruamel.yaml
+if [ -z "${DRY_RUN}" ]; then
+  rm -rf configs
+  git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+  export CONFIG_PATH=$(realpath configs)
 
-export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_FILE}
-export BOOT_URL_COMP=
-export LXC_BOOT_FILE=$(basename ${BOOT_URL})
-
-export BOOT_ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_ROOTFS_FILE}
-export BOOT_ROOTFS_URL_COMP=
-export LXC_BOOT_ROOTFS_FILE=$(basename ${BOOT_ROOTFS_URL})
-export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
-export ROOTFS_URL_COMP="gz"
-export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
-export RESIZE_ROOTFS=True
+  # Install jinja2-cli and ruamel.yaml, required by submit_for_testing.py
+  pip install --user --force-reinstall jinja2-cli ruamel.yaml
+else
+  export CONFIG_PATH=$(realpath ../)
+fi
 
 SEND_TESTJOB=false
 
@@ -25,7 +21,6 @@ case "${MACHINE}" in
 
     if [ ${MACHINE} = "apq8016-sbc" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-410c"
-      export INSTALL_FASTBOOT=True
 
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
       export WLAN_DEVICE="wlan0"
@@ -34,7 +29,6 @@ case "${MACHINE}" in
 
     elif [ ${MACHINE} = "apq8096-db820c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-820c"
-      export INSTALL_FASTBOOT=True
 
       export PM_QA_TESTS="cpufreq cputopology"
       export WLAN_DEVICE="wlp1s0"
@@ -43,7 +37,6 @@ case "${MACHINE}" in
 
     elif [ ${MACHINE} = "sdm845-mtp" ]; then
       export LAVA_DEVICE_TYPE="sdm845-mtp"
-      export INSTALL_FASTBOOT=
 
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
       export WLAN_DEVICE="wlan0"
@@ -51,7 +44,6 @@ case "${MACHINE}" in
       export ETH_DEVICE="eth0"
     elif [ ${MACHINE} = "qcs404-evb-1000" ]; then
       export LAVA_DEVICE_TYPE="qcs404-evb-1k"
-      export INSTALL_FASTBOOT=
 
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
       export WLAN_DEVICE="wlan0"
@@ -63,7 +55,6 @@ case "${MACHINE}" in
       fi
     elif [ ${MACHINE} = "qcs404-evb-4000" ]; then
       export LAVA_DEVICE_TYPE="qcs404-evb-4k"
-      export INSTALL_FASTBOOT=
 
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
       export WLAN_DEVICE="wlan0"
@@ -101,18 +92,16 @@ if [ $SEND_TESTJOB = true ]; then
   export KERNEL_COMMIT="$(echo "${KERNELCI_JSON}" | python -c "import sys, json; print json.load(sys.stdin)['result'][0]['git_commit']")"
   set -e
 
-  python configs/openembedded-lkft/submit_for_testing.py \
-      --device-type ${LAVA_DEVICE_TYPE} \
-      --build-number ${BUILD_NUMBER} \
-      --lava-server ${LAVA_SERVER} \
-      --qa-server ${QA_SERVER} \
-      --qa-server-team qcomlt \
-      --qa-server-project ${QA_SERVER_PROJECT} \
-      --git-commit ${BUILD_NUMBER} \
-      --template-path configs/lt-qcom-linux-test/lava-job-definitions \
-      --template-names template-bootrr.yaml
+  LAVA_TEMPLATE_PATH=${CONFIG_PATH}/lt-qcom/lava-job-definitions
+  cd ${LAVA_TEMPLATE_PATH}
 
-  python configs/openembedded-lkft/submit_for_testing.py \
+  export DEPLOY_OS=oe
+
+  export LAVA_JOB_PRIORITY="high"
+  export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_FILE}
+  export BOOT_URL_COMP=
+  export LXC_BOOT_FILE=$(basename ${BOOT_URL})
+  python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
       --device-type ${LAVA_DEVICE_TYPE} \
       --build-number ${BUILD_NUMBER} \
       --lava-server ${LAVA_SERVER} \
@@ -120,7 +109,29 @@ if [ $SEND_TESTJOB = true ]; then
       --qa-server-team qcomlt \
       --qa-server-project ${QA_SERVER_PROJECT} \
       --git-commit ${BUILD_NUMBER} \
-      --template-path configs/lt-qcom-linux-test/lava-job-definitions \
-      --template-base-pre base_template-functional.yaml \
-      --template-names template-functional.yaml
+      --template-path "${LAVA_TEMPLATE_PATH}" \
+      --testplan-path "${LAVA_TEMPLATE_PATH}" \
+      ${DRY_RUN} \
+      --test-plan testplan/kernel-bootrr.yaml
+
+  export LAVA_JOB_PRIORITY="medium"
+  export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_ROOTFS_FILE}
+  export BOOT_URL_COMP=
+  export LXC_BOOT_FILE=$(basename ${BOOT_URL})
+  export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
+  export ROOTFS_URL_COMP="gz"
+  export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
+  export RESIZE_ROOTFS=True
+  python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
+      --device-type ${LAVA_DEVICE_TYPE} \
+      --build-number ${BUILD_NUMBER} \
+      --lava-server ${LAVA_SERVER} \
+      --qa-server ${QA_SERVER} \
+      --qa-server-team qcomlt \
+      --qa-server-project ${QA_SERVER_PROJECT} \
+      --git-commit ${BUILD_NUMBER} \
+      --template-path "${LAVA_TEMPLATE_PATH}" \
+      --testplan-path "${LAVA_TEMPLATE_PATH}" \
+      ${DRY_RUN} \
+      --test-plan testplan/kernel-functional.yaml
 fi
