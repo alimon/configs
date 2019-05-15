@@ -30,9 +30,9 @@ cd ${WORKSPACE}/boost_1_64_0
 cd ${WORKSPACE}/protobuf
 git submodule update --init --recursive
 ./autogen.sh
-./configure --prefix=/usr
+./configure --prefix=${WORKSPACE}/protobuf-host
 make -j$(nproc)
-make install DESTDIR=${WORKSPACE}/protobuf-host
+make install
 
 #generate tensorflow protobuf library
 cd ${WORKSPACE}/tensorflow
