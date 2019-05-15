@@ -7,6 +7,7 @@
 {% if pre_power_command is undefined %}{% set pre_power_command = true %}{% endif %}
 {% if pre_os_command is undefined %}{% set pre_os_command = true %}{% endif %}
 {% if auto_login is undefined %}{% set auto_login = true %}{% endif %}
+{% if apply_overlay_bootimg is undefined %}{% set apply_overlay_bootimg = false %}{% endif %}
 
 {% block protocols %}
 protocols:
@@ -33,6 +34,10 @@ protocols:
     - simg2img
     - e2fsprogs
     - gzip
+    - cpio
+    - git
+    - mktemp
+    - abootimg
 {% endif %}
     os: debian
 
@@ -68,6 +73,9 @@ protocols:
       boot:
         url: {{BOOT_URL}}
         compression: {{BOOT_URL_COMP}}
+{% if apply_overlay_bootimg == true %}
+        apply-overlay: true
+{% endif %}
 {% if rootfs == true %}
       {{ rootfs_label }}:
         url: {{ROOTFS_URL}}
@@ -108,6 +116,34 @@ protocols:
           -     resize2fs {{LXC_ROOTFS_FILE}}.ext4 "$final_size"K
           -     img2simg {{LXC_ROOTFS_FILE}}.ext4 {{LXC_ROOTFS_FILE}}
           -     echo "resize_rootfs:" "pass"
+          - fi
+{% endif %}
+
+{% if apply_overlay_bootimg == true %}
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 30
+    definitions:
+    - from: inline
+      name: apply-test-overlay-bootimg
+      path: inline/apply-test-overlay-bootimg.yaml
+      repository:
+        metadata:
+          description: Apply test overlay to Andoid boot image ramdisk
+          format: Lava-Test Test Definition 1.0
+          name: apply-test-overlay-bootimg
+        run:
+          steps:
+          - overlay_file=/lava-lxc/overlays/target/overlay.tar.gz
+          - if [ -f $overlay_file ]
+          - then
+          -     configs_dir=$(mktemp -d /tmp/configs.XXXX)
+          -     git clone --depth 1 http://git.linaro.org/ci/job/configs.git $configs_dir 
+          -     $configs_dir/lt-qcom-linux-test/copy_test_overlay.sh /lava-lxc/{{LXC_BOOT_FILE}} $overlay_file
+          -     echo "apply_test_overlay_bootimg:" "pass"
+          - else
+          -     echo "apply_test_overlay_bootimg:" "skip"
           - fi
 {% endif %}
 
