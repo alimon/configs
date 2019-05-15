@@ -121,7 +121,6 @@ if [ $SEND_TESTJOB = true ]; then
   export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
   export ROOTFS_URL_COMP="gz"
   export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
-  export RESIZE_ROOTFS=True
   python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
       --device-type ${LAVA_DEVICE_TYPE} \
       --build-number ${BUILD_NUMBER} \

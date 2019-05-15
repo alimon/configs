@@ -34,10 +34,6 @@ export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${VENDOR}-${OS_FLAVOUR}-alip-${PL
 export ROOTFS_URL_COMP="gz"
 export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
 
-# XXX: the debian rootfs images are build small as possible, resize
-# to be able install LAVA test overlay
-export RESIZE_ROOTFS=True
-
 # Tests settings, thermal isn't work well in debian/db410c causes stall
 if [ "${DEVICE_TYPE}" = "dragonboard-410c" ]; then
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"

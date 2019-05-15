@@ -20,7 +20,6 @@ export OS_INFO=openembedded-${DISTRO}-${MANIFEST_BRANCH}
 export BOOT_URL_COMP=
 export LXC_BOOT_FILE=$(basename ${BOOT_URL})
 
-export RESIZE_ROOTFS=
 export LAVA_JOB_PRIORITY="medium"
 
 case "${MACHINE}" in
