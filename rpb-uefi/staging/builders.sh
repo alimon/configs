@@ -40,7 +40,7 @@ UEFI_TOOLS_GIT_BRANCH=master
 #EDK2_GIT_URL=https://github.com/tianocore/edk2.git
 EDK2_GIT_URL=https://git.linaro.org/uefi/linaro-edk2.git
 EDK2_GIT_VERSION=$EDK2_VERSION
-ATF_GIT_URL=https://github.com/ARM-software/arm-trusted-firmware.git
+ATF_GIT_URL=https://git.trustedfirmware.org/TF-A/trusted-firmware-a.git
 ATF_GIT_VERSION=$ATF_VERSION
 ## Temporarily switch to a dev tree/branch
 OPEN_PLATFORM_PKG_GIT_URL=https://git.linaro.org/uefi/OpenPlatformPkg.git
