@@ -124,7 +124,7 @@ for test in ${TEST_FILES}; do
             FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         fi
     elif [[ ${test} = "ssuite.yaml" ]];then
-        if [[ ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "x15" ]];then
+        if [[ ${DEVICE_TYPE} = "x86" ]];then
             FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         fi
     else
