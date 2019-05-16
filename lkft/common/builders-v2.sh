@@ -24,9 +24,11 @@ if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
 fi
 cd /home/buildslave/srv/${BUILD_DIR}
 
+# clean the workspace to avoid repo sync problem
+rm -fr kernel/ti/4.19 prebuilts/linaro-prebuilts/
+
 wget https://android-git.linaro.org/android-build-configs.git/plain/lkft/linaro-lkft.sh?h=lkft -O linaro-lkft.sh
 chmod +x linaro-lkft.sh
-rm -fr kernel/ti/4.19
 for build_config in ${ANDROID_BUILD_CONFIG}; do
     rm -fr out/${build_config}
     ./linaro-lkft.sh -c "${build_config}"
