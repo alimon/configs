@@ -97,6 +97,13 @@
                 credential-id: QCOMLT_KERNELCI_TOKEN
                 variable: QCOMLT_KERNELCI_TOKEN
     builders:
+        - shell: |
+            #!/bin/bash
+            echo ${MACHINES} | grep ${MACHINE}
+            if [ $? -ne 0 ]; then
+                echo "MACHINE ${MACHINE} not requested to build."
+                exit 0
+            fi
         - shell:
             !include-raw: lt-qcom-linux-test/builders-deps.sh
         - shell:
