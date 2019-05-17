@@ -1,0 +1,34 @@
+- job:
+    name: trigger-lt-qcom-openembedded-images-warrior
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 1
+            num-to-keep: 30
+            artifact-num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for Qualcomm OE builds (warrior)'
+    scm:
+        - repo:
+            manifest-url: https://github.com/96boards/oe-rpb-manifest.git
+            manifest-branch: qcom/warrior
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'lt-qcom-openembedded-rpb-warrior'
