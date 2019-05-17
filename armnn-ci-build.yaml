@@ -21,10 +21,9 @@
     builders:
         - shell:
             !include-raw: armnn-ci-build/builders.sh
-#FIXME need to figure out the artifacts to publish
-#        - shell:
-#            !include-raw: rpb-openembedded/publishers.sh
-#
+        - linaro-publish-token
+        - shell:
+            !include-raw: armnn-ci-build/publishers.sh
     publishers:
         - archive:
-            artifacts: '*.tar.xz'
+            artifacts: 'armnn-snapshot/*.tar.xz'
