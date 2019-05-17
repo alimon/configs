@@ -123,6 +123,11 @@
             # For git_rev_parse
             . ./jenkins-scripts/jenkins-helpers.sh
 
+            commit_msg=$(git -C gcc log --pretty=%b -n1 $GERRIT_PATCHSET_REVISION | grep DO_NOT_RUN_VALIDATION)
+            if [ "x$commit_msg" = "xDO_NOT_RUN_VALIDATION" ]; then
+              exit 0
+            fi
+
             abe_rev=$(git_rev_parse abe $abe_branch)
             gcc_patch_rev=$(git_rev_parse gcc $GERRIT_PATCHSET_REVISION)
             if [ x"$gcc_orig" = x"gcc_patch_prev" ]; then
@@ -181,13 +186,21 @@
             log_server=$log_server
             dryrun=$dryrun
             EOF
-        - trigger-builds:
-            - project: tcwg-buildfarm
-              parameter-factories:
-                - factory: filebuild
-                  file-pattern: gcc_*_parameters
-              block: true
-        - trigger-builds:
-            - project: tcwg-compare-results
-              property-file: compare_results_parameters
-              block: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: gcc_orig_parameters
+            steps:
+              - trigger-builds:
+                  - project: tcwg-buildfarm
+                    parameter-factories:
+                      - factory: filebuild
+                        file-pattern: gcc_*_parameters
+                    block: true
+        - conditional-step:
+            condition-kind: file-exists
+            condition-filename: gcc_orig_parameters
+            steps:
+              - trigger-builds:
+                  - project: tcwg-compare-results
+                    property-file: compare_results_parameters
+                    block: true
