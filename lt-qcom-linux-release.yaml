@@ -18,6 +18,9 @@
                 - job-cancel
     parameters:
         - string:
+            name: MACHINES
+            default: 'apq8016-sbc apq8096-db820c sdm845-mtp qcs404-evb-1000 qcs404-evb-4000'
+        - string:
             name: KERNEL_IMAGE_URL
             default: ''
         - string:
@@ -70,14 +73,10 @@
     display-name: 'Qualcomm LT Linux Release kernel build'
     axes:
         - axis:
-            type: user-defined
+            type: dynamic
             name: MACHINE
             values:
-                - 'apq8016-sbc'
-                - 'apq8096-db820c'
-                - 'sdm845-mtp'
-                - 'qcs404-evb-1000'
-                - 'qcs404-evb-4000'
+                - MACHINES
         - axis:
             type: slave
             name: label
@@ -97,13 +96,6 @@
                 credential-id: QCOMLT_KERNELCI_TOKEN
                 variable: QCOMLT_KERNELCI_TOKEN
     builders:
-        - shell: |
-            #!/bin/bash
-            echo ${MACHINES} | grep ${MACHINE}
-            if [ $? -ne 0 ]; then
-                echo "MACHINE ${MACHINE} not requested to build."
-                exit 1
-            fi
         - shell:
             !include-raw: lt-qcom-linux-test/builders-deps.sh
         - shell:
