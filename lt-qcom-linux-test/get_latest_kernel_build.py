@@ -224,7 +224,7 @@ def main():
     print("KERNEL_MODULES_URL=%s" % modules_url)
     validate_url(modules_url)
     print("KERNEL_VERSION=%s" % version)
-    print("MACHINES=\"%s\"" % ' '.join(machines))
+    print("MACHINES=%s" % ' '.join(machines))
 
 
 if __name__ == '__main__':
