@@ -56,6 +56,8 @@ actions:
       name: docker-integration
       from: git
       branch: master
+      parameters:
+        SKIP_INSTALL: True
     - path: automated/linux/docker/docker.yaml
       repository: https://git@git.linaro.org/qa/test-definitions.git
       history: false
@@ -64,18 +66,23 @@ actions:
       branch: master
       parameters:
         IMAGE: "arm32v7/ubuntu"
+        SKIP_INSTALL: True
     - path: automated/linux/badblocks/badblocks.yaml
       repository: https://git@git.linaro.org/qa/test-definitions.git
       history: false
       name: badblocks
       from: git
       branch: master
+      parameters:
+        SKIP_INSTALL: True
     - path: automated/linux/memtester/memtester.yaml
       repository: https://git@git.linaro.org/qa/test-definitions.git
       history: false
       name: memtester
       from: git
       branch: master
+      parameters:
+        SKIP_INSTALL: True
 
 metadata:
   machine: ${MACHINE}
