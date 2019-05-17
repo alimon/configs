@@ -170,6 +170,8 @@ def main():
     builds_url = os.environ.get('BUILDS_URL',
                                 'https://snapshots.linaro.org/member-builds/qcomlt/linux-integration/%s/')
 
+    machine_avail = os.environ.get('KERNEL_BUILD_MACHINE_AVAIL', False)
+
     image_url = None
     modules_url = None
     version = None
@@ -191,10 +193,20 @@ def main():
 
     print("KERNEL_DT_URL=%s" % dt_url)
 
-    # Check that all DTBS exist
-    for m in machines:
+    # Check that all DTBS exist, if machine_avail is set only remove from final
+    # machine list.
+    for m in machines[:]:
         dt_file_url = dt_url + "/qcom/%s.dtb" % m
-        validate_url(dt_file_url)
+        try:
+            validate_url(dt_file_url)
+        except urllib2.HTTPError as err:
+            if err.code == 404:
+                if machine_avail:
+                    machines.remove(m)
+                else:
+                    raise Exception("DTB not found: %s" % dt_file_url)
+            else:
+                raise
 
         try:
             validate_if_already_built((builds_url % m), (image_url, dt_file_url, modules_url,
@@ -204,11 +216,15 @@ def main():
             if e.code != 404:
                 raise
 
+    if machine_avail and not machines:
+        raise Exception("No machines available to build")
+
     print("KERNEL_IMAGE_URL=%s" % image_url)
     validate_url(image_url)
     print("KERNEL_MODULES_URL=%s" % modules_url)
     validate_url(modules_url)
     print("KERNEL_VERSION=%s" % version)
+    print("MACHINES=\"%s\"" % ' '.join(machines))
 
 
 if __name__ == '__main__':

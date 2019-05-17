@@ -52,10 +52,12 @@
 
             export KERNEL_BUILD_TYPE="LINARO_CI"
             export LINARO_CI_BASE_URL="${RELEASE_URL}"
+            export KERNEL_BUILD_MACHINE_AVAIL=True
 
             echo "RELEASE_NAME=${RELEASE_NAME}" > lt_qcom_parameters
             python configs/lt-qcom-linux-test/get_latest_kernel_build.py \
               >> lt_qcom_parameters
+            cat lt_qcom_parameters
         - inject:
             properties-file: lt_qcom_parameters
     publishers:
