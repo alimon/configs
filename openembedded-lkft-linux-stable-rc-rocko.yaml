@@ -59,7 +59,7 @@
             default: 'all'
         - matrix-combinations:
             name: MATRIX_COMBINATIONS
-            filter: '!(KERNEL_BRANCH == "linux-4.4.y" && (MACHINE == "hikey" | MACHINE == "dragonboard-410c"))'
+            filter: '!(KERNEL_BRANCH == "linux-4.4.y" && MACHINE == "dragonboard-410c")'
     disabled: false
     node: master
     display-name: 'LKFT - Linux Stable (OpenEmbedded/rocko)'
@@ -70,7 +70,6 @@
             values:
                 - 'am57xx-evm'
                 - 'dragonboard-410c'
-                - 'hikey'
                 - 'intel-core2-32'
                 - 'intel-corei7-64'
                 - 'juno'
@@ -120,12 +119,6 @@
                 KERNEL_VERSION=4.4
                 KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
                 QA_SERVER_PROJECT=linux-stable-rc-4.4-oe
-                if [ "${MACHINE}" = "hikey" ]; then
-                  # Not "stable", though...
-                  KERNEL_RECIPE=linux-hikey-lts-rc
-                  KERNEL_REPO=https://git.linaro.org/lkft/arm64-stable-rc.git
-                  QA_SERVER_PROJECT=linaro-hikey-stable-rc-4.4-oe
-                fi
                 ;;
               linux-4.9.y)
                 KERNEL_VERSION=4.9
