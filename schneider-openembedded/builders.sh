@@ -246,8 +246,5 @@ NFSROOTFS_DEV_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DEV_TAR_BZ2}
 RECOVERY_IMAGE_URL=${BASE_URL}${PUB_DEST}/juno-oe-uboot.zip
 LXC_BOOT_IMG=${BOOT_IMG}
 LXC_ROOTFS_IMG=$(basename ${ROOTFS_IMG} .gz)
+DEVICE_TYPE=${MACHINE}
 EOF
-
-if [ ${MACHINE} = "rzn1d" ]; then
-	echo "DEVICE_TYPE=rzn1" >> ${WORKSPACE}/post_build_lava_parameters
-fi
