@@ -29,7 +29,7 @@
           and can be <b>tested</b> the same way <b>LKFT</b> runs on the regular
           builds.</p>
         <p>You can compare your test results with existing runs on actual hardware:
-           <b>arm (X15)</b>, <b>arm64 (HiKey)</b> and <b>x86 (Xeon
+           <b>arm (X15)</b>, <b>arm64 (Juno)</b> and <b>x86 (Xeon
            E3-1220)</b>. A description of the hardware can be found
            <a href="https://lkft.linaro.org/boards/">here</a>.</p>
         <p>This is more or less how it goes:
@@ -55,9 +55,9 @@
           (Please note that you need to log-in to Jenkins first if you haven't.)</p>
         <p>Note that these config fragments are added to your defconfig:
           <ul>
-            <li><a href="https://github.com/96boards/meta-96boards/blob/master/recipes-kernel/linux/linux-hikey-aosp/distro-overrides.config">distro</a></li>
-            <li><a href="https://github.com/96boards/meta-96boards/blob/master/recipes-kernel/linux/linux-hikey-aosp/systemd.config">systemd</a></li>
-            <li><a href="https://github.com/96boards/meta-96boards/blob/master/recipes-kernel/linux/linux-hikey-aosp/lkft.config">lkft</a></li>
+            <li><a href="https://github.com/Linaro/meta-lkft/blob/sumo/recipes-kernel/linux/files/distro-overrides.config">distro</a></li>
+            <li><a href="https://github.com/Linaro/meta-lkft/blob/sumo/recipes-kernel/linux/files/systemd.config">systemd</a></li>
+            <li><a href="https://github.com/Linaro/meta-lkft/blob/sumo/recipes-kernel/linux/files/lkft.config">lkft</a></li>
             <li><a href="https://github.com/torvalds/linux/blob/master/Makefile#L1182">kselftest-merge</a></li>
           </ul>
         </p>
@@ -84,12 +84,12 @@
         - choice:
             name: TARGET_MACHINE
             choices:
-                - 'hikey'
+                - 'juno'
                 - 'x15'
                 - 'x86_64'
                 - 'i386'
             description: |
-                <b>[MANDATORY]</b> Target machine. Can be hikey (arm64), x15 (arm), x86_64, or i386 (32-bits).
+                <b>[MANDATORY]</b> Target machine. Can be juno (arm64), x15 (arm), x86_64, or i386 (32-bits).
         - string:
             name: KERNEL_CONFIG
             default: ''
@@ -97,7 +97,7 @@
                 <b>[OPTIONAL]</b> Kernel config file<br/>
                 File to use from arch/${ARCH}/configs/ as base kernel configuration. If ommited the default
                 kernel config will be used:<br/>
-                  - defconfig on HiKey<br/>
+                  - defconfig on Juno<br/>
                   - multi_v7_defconfig on X15<br/>
                   - x86_64_defconfig on x86_64<br/>
                   - i386_defconfig on i386<br/>
@@ -162,12 +162,9 @@
             # Mapping for TARGET_MACHINE -> MACHINE/DEVICE_TYPE
             # Set a default config if it isn't given
             case "${TARGET_MACHINE}" in
-              hikey)
-                MACHINE=hikey
-                DEVICE_TYPE=hi6220-hikey
-                # or Juno? (it is supported from in 4.4 kernel while HiKey isn't)
-                #MACHINE=juno
-                #DEVICE_TYPE=juno-r2
+              juno)
+                MACHINE=juno
+                DEVICE_TYPE=juno-r2
                 [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
               x15)
