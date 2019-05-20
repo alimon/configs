@@ -165,7 +165,7 @@ case "${DEVICE_TYPE}" in
   x15)
     QEMU_DEVICE_TYPE=qemu_arm
     ;;
-  hi6220-hikey)
+  juno-r2)
     QEMU_DEVICE_TYPE=qemu_arm64
     ;;
   i386)
