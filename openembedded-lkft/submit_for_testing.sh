@@ -124,8 +124,12 @@ for test in ${TEST_FILES}; do
             FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         fi
     elif [[ ${test} = "ssuite.yaml" ]];then
-        if [[ ${DEVICE_TYPE} = "x86" ]];then
-            FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
+        if [[ ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "x15" ]];then
+            if [[ ${DEVICE_TYPE} = "x15" && "${MAKE_KERNELVERSION}" == 4.4* ]];then
+                echo "no testplan for ${DEVICE_TYPE} and kernel verison: ${MAKE_KERNELVERSION}"
+            else
+                FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
+            fi
         fi
     elif [[ ${test} = "network-basic-tests.yaml" ]];then
         if [[ ${DEVICE_TYPE} != "dragonboard-410c" ]];then
