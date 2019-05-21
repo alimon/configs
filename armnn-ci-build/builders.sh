@@ -67,5 +67,6 @@ rm -rf boost_*.tar.bz2 boost_* protobuf tensorflow
 find ${WORKSPACE} -type f -name *.o -delete
 
 tar -cJf /tmp/armnn.tar.xz ${WORKSPACE}
-mkdir ${WORKSPACE}/armnn-snapshot
-mv /tmp/armnn.tar.xz ${WORKSPACE}/armnn-snapshot
+mkdir ${WORKSPACE}/out
+mv /tmp/armnn.tar.xz ${WORKSPACE}/out
+cd ${WORKSPACE}/out && sha256sum > SHA256SUMS.txt

@@ -12,7 +12,6 @@
         - build-discarder:
             days-to-keep: 90
             num-to-keep: 90
-            artifact-num-to-keep: 1
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Arm NN - CI Build'
@@ -22,8 +21,14 @@
         - shell:
             !include-raw: armnn-ci-build/builders.sh
         - linaro-publish-token
-        - shell:
-            !include-raw: armnn-ci-build/publishers.sh
-    publishers:
-        - archive:
-            artifacts: 'armnn-snapshot/*.tar.xz'
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --link-latest \
+              out/ components/armnn/${BUILD_NUMBER}
