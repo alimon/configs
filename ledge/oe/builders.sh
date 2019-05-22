@@ -31,6 +31,9 @@ fi
 sudo locale-gen en_US.UTF-8 && sudo update-locale LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
+# install required python modules
+pip install --user --force-reinstall Jinja2 ruamel.yaml
+
 set -ex
 
 # Store the home repository
