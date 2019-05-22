@@ -8,6 +8,7 @@ fi
 
 # Clean android-patchsets and repositories in device
 rm -rf build/out build/android-patchsets build/device
+rm -fr build/external/u-boot
 mkdir -p build
 
 # Build Android
