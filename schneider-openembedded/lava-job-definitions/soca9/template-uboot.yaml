@@ -113,7 +113,8 @@ actions:
       # dhcp
       - command:
       - command: run FPGA_INIT
-        successes: "FPGA updated to correct revision."
+        successes:
+        - message: "FPGA updated to correct revision."
         name: fpga_init
       - command: setenv autoload no ; dhcp
         name: dhcp
@@ -124,7 +125,7 @@ actions:
       script:
       # TFTP
       - command:
-      - command: setenv serverip {SERVER_IP} ; tftp {KERNEL_ADDR} {KERNEL}
+      - command: setenv serverip {SERVER_IP} ; tftp 0x01000000 {KERNEL}
         name: tftp
         successes:
         - message: "Bytes transferred ="
