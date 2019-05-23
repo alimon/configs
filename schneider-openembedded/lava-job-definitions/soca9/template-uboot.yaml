@@ -11,11 +11,26 @@ visibility: public
 actions:
 - deploy:
     timeout:
+      minutes: 10
+    to: flasher
+    images:
+      image:
+        url: https://images.validation.linaro.org/people.linaro.org/~remi.duraffort/soca9-disk.img.bz2
+        compression: bz2
+
+- deploy:
+    timeout:
       minutes: 5
     to: tftp
     kernel:
-      url: ${KERNEL_FIT_URL}
-      type: uimage
+      url: ${KERNEL_ZIMAGE_URL}
+      type: zimage
+    dtb:
+      url: ${DTB_URL}
+    nfsrootfs:
+      url: ${NFSROOTFS_DEV_URL}
+      compression: bz2 
+
 - boot:
     timeout:
       minutes: 1
@@ -59,20 +74,20 @@ actions:
         name: print-default-base-address-offset
         successes:
         - message: "Base Address: 0x"
-      - command: base 80000000
-        name: set-address-offset-0x80000000
+      - command: base 00000000
+        name: set-address-offset-0x00000000
         successes:
-        - message: "Base Address: 0x80000000"
+        - message: "Base Address: 0x00000000"
       - command: base
-        name: check-address-offset-0x80000000
+        name: check-address-offset-0x00000000
         successes:
-        - message: "Base Address: 0x80000000"
+        - message: "Base Address: 0x00000000"
       # crc32 - checksum calculation
       - command: mw.b 00000000 aa 400
-      - command: crc 80000000 400
+      - command: crc 00000000 400
         name: compute-CRC32-checksum
         successes:
-        - message: "crc32 for 80000000 ... 800003ff ==> 3c6f327d"
+        - message: "crc32 for 00000000 ... 000003ff ==> 3c6f327d"
       # mw - memory write
       # md - memory display
       - command: mw 100000 aabbccdd 10
@@ -97,6 +112,9 @@ actions:
       script:
       # dhcp
       - command:
+      - command: run FPGA_INIT
+        successes: "FPGA updated to correct revision."
+        name: fpga_init
       - command: setenv autoload no ; dhcp
         name: dhcp
         successes:
