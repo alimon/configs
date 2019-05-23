@@ -6,7 +6,7 @@ git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 # Used by DB410C's template:
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 
-if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
+if [ "${DEVICE_TYPE}" == "rzn1d" ] || [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
 	  --build-number ${BUILD_NUMBER} \
@@ -30,7 +30,7 @@ if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
 	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
 	  --template-names template-fit.yaml
 fi
-if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
+if [ "${DEVICE_TYPE}" == "rzn1d" ] || [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
 	  --build-number ${BUILD_NUMBER} \

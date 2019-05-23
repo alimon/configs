@@ -1,0 +1,68 @@
+device_type: soca9
+job_name: Schneider Electric SocA9 zImage NFS Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 30
+
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 10
+    to: flasher
+    images:
+      image:
+        url: https://images.validation.linaro.org/people.linaro.org/~remi.duraffort/soca9-disk.img.bz2
+        compression: bz2
+
+- deploy:
+    timeout:
+      minutes: 5
+    to: tftp
+    os: oe
+    kernel:
+      url: ${KERNEL_ZIMAGE_URL}
+      type: zimage
+    dtb:
+      url: ${DTB_URL}
+    nfsrootfs:
+      url: ${NFSROOTFS_DEV_URL}
+      compression: bz2 
+
+- boot:
+    timeout:
+      minutes: 1
+    method: bootloader
+    bootloader: u-boot
+    commands: []
+    prompts: ['=>']
+
+
+- test:
+    timeout:
+      minutes: 20
+    interactive:
+    - name: basic-cmds
+      prompts: ["=> ", "/ # "]
+      script:
+      - command: run FPGA_INIT
+        name: fpga_init
+      - command: env set serverip {SERVER_IP}
+        name: serverip
+      - command: setenv autoload no
+        name: autoload-off
+      - command: dhcp
+        name: dhcp
+      - command: tftp $loadaddr {KERNEL}
+        name: kernel
+      - command: tftp $fdtaddr {DTB}
+        name: dtb
+      - command: env set bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'
+        name: cmdline
+      - command: bootz $loadaddr - $fdtaddr
+        name: bootz
+        successes:
+        - message: "snarc-soca9 login:"
