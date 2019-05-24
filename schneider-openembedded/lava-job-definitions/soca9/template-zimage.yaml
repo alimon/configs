@@ -54,13 +54,13 @@ actions:
         name: autoload-off
       - command: dhcp
         name: dhcp
-      - command: tftp $loadaddr {KERNEL}
+      - command: "tftp $loadaddr {KERNEL}"
         name: kernel
-      - command: tftp $fdtaddr {DTB}
+      - command: "tftp $fdtaddr {DTB}"
         name: dtb
       - command: env set bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'
         name: cmdline
-      - command: bootz $loadaddr - $fdtaddr
+      - command: "bootz $loadaddr - $fdtaddr"
         name: bootz
         successes:
         - message: "snarc-soca9 login:"
