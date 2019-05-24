@@ -156,6 +156,14 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
+  soca9)
+    # re-create the SoCA9 DTB with a shorter filename
+    pushd ${DEPLOY_DIR_IMAGE}
+    mv zImage-*snarc_${MACHINE}*_bestla_512m*.dtb zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb
+    rm zImage-*snarc_${MACHINE}*_bestla_[12]G*.dtb
+    rm zImage-*snarc_${MACHINE}*_freja_*.dtb
+    popd
+    ;;
   juno|stih410-b2260|orangepi-i96)
     ;;
   *)
