@@ -1,0 +1,42 @@
+- job:
+    name: fai-test
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: FAI_CLASS
+            default: 'BUSTER,DEBIAN,LINARO,QCOM,DEVELOPER,DB410C,RAW'
+        - string:
+            name: REPO_URL
+            default: 'https://git.linaro.org/ci/fai.git'
+        - string:
+            name: ROOTFS_SIZE
+            default: '3G'
+        - string:
+            name: BRANCH
+            default: 'master'
+        - label:
+            name: buildslave
+            default: 'docker-stretch-arm64'
+    disabled: false
+    node: master
+    display-name: 'Linaro FAI'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}'
+    builders:
+        - shell:
+            !include-raw: fai/builders.sh
