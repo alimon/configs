@@ -1,0 +1,70 @@
+- job:
+    name: ledge-armhf-debian
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: VENDOR
+            default: 'linaro'
+        - string:
+            name: OS_FLAVOUR
+            default: 'buster'
+        - string:
+            name: PLATFORM_NAME
+            default: 'unknown'
+        - string:
+            name: ROOTFS
+            default: 'iot,1800M'
+        - string:
+            name: PUB_DEST
+            default: '96boards/ledge/${VENDOR}/debian/${BUILD_NUMBER}'
+    disabled: false
+    node: docker-stretch-armhf
+    display-name: 'Debian based images for Ledge'
+    scm:
+        - git:
+            url: https://git.linaro.org/ci/fai.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell:
+            !include-raw: ledge-debian/builders-fai.sh
+        - linaro-publish-token
+        - shell: |
+            # Publish to snapshots
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+                 --server ${PUBLISH_SERVER} \
+                 --link-latest \
+                 out ${PUB_DEST}
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+        - email:
+            recipients: 'maxim.uvarov@linaro.org ilias.apalodimas@linaro.org christophe.priouzeau@linaro.org'
+            always: true
+
