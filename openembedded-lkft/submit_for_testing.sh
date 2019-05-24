@@ -127,6 +127,10 @@ for test in ${TEST_FILES}; do
         if [[ ${DEVICE_TYPE} = "x86" ]];then
             FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         fi
+    elif [[ ${test} = "network-basic-tests.yaml" ]];then
+        if [[ ${DEVICE_TYPE} != "dragonboard-410c" ]];then
+            FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
+        fi
     else
         FULL_TEST_TEMPLATES="${FULL_TEST_TEMPLATES} testplan/${test}"
         QEMU_TEST_TEMPLATES="${QEMU_TEST_TEMPLATES} testplan/${test}"
