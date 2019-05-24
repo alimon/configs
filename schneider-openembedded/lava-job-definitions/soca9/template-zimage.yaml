@@ -54,13 +54,13 @@ actions:
         name: autoload-off
       - command: dhcp
         name: dhcp
-      - command: "tftp {KERNEL_ADDR} {KERNEL}"
+      - command: "tftp 0x01000000 {KERNEL}"
         name: kernel
-      - command: "tftp {DTB_ADDR} {DTB}"
+      - command: "tftp 0x00000100 {DTB}"
         name: dtb
       - command: env set bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'
         name: cmdline
-      - command: "bootz {KERNEL_ADDR} - {DTB_ADDR}"
+      - command: "bootz 0x01000000 - 0x00000100"
         name: bootz
         successes:
         - message: "snarc-soca9 login:"
