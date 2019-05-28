@@ -15,14 +15,17 @@
             num-to-keep: 60
     parameters:
         - string:
-            name: ART_URL
-            default: https://android-qa-reports.linaro.org/api/
-        - string:
             name: BUILD_DIR
             default: aosp-master
         - string:
             name: BUILD_CONFIG_FILENAME
             default: lcr-reference-hikey-master
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'lcr-reference-hikey-master-premerge'
     disabled: true
     node: docker-xenial-aosp
     display-name: 'Premerge  CI job to test patch for HiKey AOSP Master build'
@@ -46,7 +49,7 @@
                   project-pattern: 'device/linaro/common'
                   branches:
                       - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'linaro-oreo'
+                        branch-pattern: 'linaro-q-preview'
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'platform/manifest'
                   branches:
@@ -64,7 +67,20 @@
         - ssh-agent-credentials:
                 users:
                     - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+        - credentials-binding:
+            - text:
+                credential-id: AP_SSID
+                variable: AP_SSID
+            - text:
+                credential-id: AP_KEY
+                variable: AP_KEY
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
     builders:
-        !include: android-lcr/hikey/builders-v2.yaml.inc
+        !include: android-lcr/hikey/builders-v2-jinja2.yaml.inc
     publishers:
         !include: android-lcr/common/publishers.yaml.inc
