@@ -7,6 +7,10 @@ sudo apt-get -q=2 -y install git ninja-build g++ g++-multilib gperf python3-ply 
 
 set -ex
 
+# pip as shipped by distro may be not up to date enough to support some
+# quirky PyPI packages, specifically cmake was caught like that.
+sudo pip3 install --upgrade pip
+
 # Distro package is too old for Zephyr
 sudo pip3 install pyelftools pykwalify
 # Pre-installed CMake is too old for the latest Zephyr
