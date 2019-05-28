@@ -126,7 +126,7 @@
             # For git_rev_parse
             . ./jenkins-scripts/jenkins-helpers.sh
 
-            commit_msg=$(git -C gcc log --pretty=%b -n1 $GERRIT_PATCHSET_REVISION | grep DO_NOT_RUN_VALIDATION)
+            commit_msg=$(git -C gcc log --pretty=%b -n1 $GERRIT_PATCHSET_REVISION | grep DO_NOT_RUN_VALIDATION) || true
             if [ "x$commit_msg" = "xDO_NOT_RUN_VALIDATION" ]; then
               exit 0
             fi
