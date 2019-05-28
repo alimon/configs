@@ -5,6 +5,10 @@ sudo apt-get -q=2 update
 #sudo apt-get -q=2 -y install git g++ libc6-dev-i386 g++-multilib python3-ply python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler
 sudo apt-get -q=2 -y install python3-pip python-serial python3-serial socat
 
+# pip as shipped by distro may be not up to date enough to support some
+# quirky PyPI packages, specifically cmake was caught like that.
+sudo pip3 install --upgrade pip
+
 sudo pip3 install pyelftools
 # Zephyr requires very recent version of CMake. Strangely enough, such
 # can be installed from PyPI.
