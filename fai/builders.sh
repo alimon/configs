@@ -39,7 +39,7 @@ sudo fai-diskimage -v --cspace $(pwd) \
      --hostname linaro \
      -S ${ROOTFS_SIZE} \
      --class $(echo SAVECACHE,${FAI_CLASS} | tr '[:lower:]' '[:upper:]') \
-     builddir/linaro-test-fai-${BUILD_NUMBER}.img.raw
+     ${WORKSPACE}/builddir/linaro-test-fai-${BUILD_NUMBER}.img.raw
 
 if grep -E '^(ERROR:|WARNING: These unknown packages are removed from the installation list|Exit code task_)' /var/log/fai/linaro/last/fai.log
 then
