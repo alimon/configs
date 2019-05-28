@@ -35,6 +35,10 @@ cd fai
 
 git log -1
 
+if [ -n "${GERRIT_CHANGE}" ]; then
+    git pull https://review.linaro.org/ci/fai ${GERRIT_CHANGE}
+fi
+
 sudo fai-diskimage -v --cspace $(pwd) \
      --hostname linaro \
      -S ${ROOTFS_SIZE} \
