@@ -36,7 +36,7 @@ git clean -fdx
 if [ -n "${GIT_COMMIT}" ]; then
   git checkout ${GIT_COMMIT}
 fi
-echo "GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)" > env_var_parameters
+echo "GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)" > ${WORKSPACE}/env_var_parameters
 
 head -5 Makefile
 
