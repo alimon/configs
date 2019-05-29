@@ -24,7 +24,14 @@ sudo pip3 install cmake
 #rm -rf cmake-${cmake_version}-Linux-x86_64
 #cmake -version
 
-git clone -b ${BRANCH} https://github.com/zephyrproject-rtos/zephyr.git ${WORKSPACE}
+sudo pip3 install west
+west --version
+
+git clone -b ${BRANCH} https://github.com/zephyrproject-rtos/zephyr.git
+west init -l zephyr/
+west update
+
+cd zephyr
 git clean -fdx
 if [ -n "${GIT_COMMIT}" ]; then
   git checkout ${GIT_COMMIT}
@@ -44,7 +51,7 @@ export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.10.0"
 
 # Set build environment variables
 export LANG=C.UTF-8
-ZEPHYR_BASE=${WORKSPACE}
+ZEPHYR_BASE=${WORKSPACE}/zephyr
 PATH=${ZEPHYR_BASE}/scripts:${PATH}
 OUTDIR=${HOME}/srv/zephyr/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}
 export LANG ZEPHYR_BASE PATH
