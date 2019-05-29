@@ -75,6 +75,7 @@ time ${ZEPHYR_BASE}/scripts/sanitycheck \
   --build-only \
   --outdir ${OUTDIR} \
   --enable-slow \
+  --subset=1/100 \
   -x=USE_CCACHE=${USE_CCACHE}
 
 cd ${ZEPHYR_BASE}
@@ -89,12 +90,12 @@ rsync -avm \
   --include=zephyr.elf \
   --include='*/' \
   --exclude='*' \
-  ${OUTDIR}/${PLATFORM} out/
+  ${OUTDIR}/${PLATFORM} ${WORKSPACE}/out/
 find ${OUTDIR}/${PLATFORM} -type f -name 'zephyr.config' -delete
 # If there are support files, ship them.
 BOARD_CONFIG=$(find "${ZEPHYR_BASE}/boards/" -type f -name "${PLATFORM}_defconfig")
 BOARD_DIR=$(dirname ${BOARD_CONFIG})
-test -d "${BOARD_DIR}/support" && rsync -avm "${BOARD_DIR}/support" "out/${PLATFORM}"
+test -d "${BOARD_DIR}/support" && rsync -avm "${BOARD_DIR}/support" "${WORKSPACE}/out/${PLATFORM}"
 
 CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
 CCACHE_DIR=${CCACHE_DIR} ccache -s
