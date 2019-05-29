@@ -62,7 +62,7 @@ echo "########################################################################"
 echo "    sanitycheck"
 echo "########################################################################"
 
-time ${WORKSPACE}/scripts/sanitycheck \
+time ${ZEPHYR_BASE}/scripts/sanitycheck \
   --platform ${PLATFORM} \
   --inline-logs \
   --build-only \
@@ -70,7 +70,7 @@ time ${WORKSPACE}/scripts/sanitycheck \
   --enable-slow \
   -x=USE_CCACHE=${USE_CCACHE}
 
-cd ${WORKSPACE}
+cd ${ZEPHYR_BASE}
 # OUTDIR is already per-platform, but it may get contaminated with unrelated
 # builds e.g. due to bugs in sanitycheck script. It however stores builds in
 # per-platform named subdirs under its --outdir (${OUTDIR} in our case), so
@@ -85,7 +85,7 @@ rsync -avm \
   ${OUTDIR}/${PLATFORM} out/
 find ${OUTDIR}/${PLATFORM} -type f -name 'zephyr.config' -delete
 # If there are support files, ship them.
-BOARD_CONFIG=$(find "${WORKSPACE}/boards/" -type f -name "${PLATFORM}_defconfig")
+BOARD_CONFIG=$(find "${ZEPHYR_BASE}/boards/" -type f -name "${PLATFORM}_defconfig")
 BOARD_DIR=$(dirname ${BOARD_CONFIG})
 test -d "${BOARD_DIR}/support" && rsync -avm "${BOARD_DIR}/support" "out/${PLATFORM}"
 
