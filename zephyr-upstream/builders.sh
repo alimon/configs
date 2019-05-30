@@ -96,5 +96,10 @@ BOARD_CONFIG=$(find "${ZEPHYR_BASE}/boards/" -type f -name "${PLATFORM}_defconfi
 BOARD_DIR=$(dirname ${BOARD_CONFIG})
 test -d "${BOARD_DIR}/support" && rsync -avm "${BOARD_DIR}/support" "${WORKSPACE}/out/${PLATFORM}"
 
+cd ${WORKSPACE}/
+echo "=== contents of ${WORKSPACE}/out/ ==="
+find out
+echo "=== end of contents of ${WORKSPACE}/out/ ==="
+
 CCACHE_DIR=${CCACHE_DIR} ccache -M 30G
 CCACHE_DIR=${CCACHE_DIR} ccache -s

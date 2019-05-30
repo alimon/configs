@@ -209,7 +209,7 @@ def main():
     headers = {
         "Auth-Token": args.qa_token
     }
-    os.chdir(os.getenv('WORKSPACE') + '/zephyr')
+    os.chdir(os.getenv('WORKSPACE'))
     print('CWD: {}'.format(os.getcwd()))
     print(os.listdir('.'))
     test_list = generate_test_list(args.board_name, args.device_type)
