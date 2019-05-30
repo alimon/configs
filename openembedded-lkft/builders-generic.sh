@@ -74,7 +74,7 @@ rm -rf conf build/conf build/tmp-*glibc/
 # Accept EULA if/when needed
 export EULA_dragonboard410c=1
 
-export SRCREV_kernel=${KERNEL_SRCREV}
+[ -v KERNEL_SRCREV ] && export SRCREV_kernel="${KERNEL_SRCREV}"
 source setup-environment build
 
 ########## vvv DISTRO DEPENDANT vvv ##########
@@ -340,7 +340,7 @@ esac
 cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
 {
   "kernel_repo" : "${KERNEL_REPO}",
-  "kernel_commit_id" : "${KERNEL_COMMIT}",
+  "kernel_commit_id" : "${SRCREV_kernel}",
   "make_kernelversion" : "${MAKE_KERNELVERSION}",
   "kernel_branch" : "${KERNEL_BRANCH}",
   "kernel_describe" : "${KERNEL_DESCRIBE}",
@@ -373,7 +373,7 @@ RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/juno-oe-uboot.zip
 NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_TARXZ_IMG}
 EXT4_IMAGE_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_EXT4}
 HDD_URL=${BASE_URL}/${PUB_DEST}/${HDD_IMG}
-KERNEL_COMMIT=${KERNEL_COMMIT}
+KERNEL_COMMIT=${SRCREV_kernel}
 KERNEL_CONFIG_URL=${BASE_URL}/${PUB_DEST}/config
 KERNEL_DEFCONFIG_URL=${BASE_URL}/${PUB_DEST}/defconfig
 KSELFTESTS_MAINLINE_URL=${KSELFTESTS_MAINLINE_URL}
