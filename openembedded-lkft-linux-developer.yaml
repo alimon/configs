@@ -201,6 +201,7 @@
 
             KSELFTEST_PATH="/opt/kselftests/default-in-kernel/"
             [ -n "${USE_KSELFTEST_RELEASE}" ] && KSELFTEST_PATH="/opt/kselftests/mainline/"
+            [ -z "${TEST_SUITES}" ] && TEST_SUITES="none"
 
             echo "IMAGES=rpb-console-image-lkft" > parameters
             echo "MANIFEST_URL=https://github.com/96boards/oe-rpb-manifest.git" >> parameters
@@ -216,6 +217,7 @@
             echo "KERNEL_SRCREV=${KERNEL_SRCREV}" >> parameters
             echo "KERNEL_RECIPE=linux-generic" >> parameters
             echo "KSELFTEST_PATH=${KSELFTEST_PATH}" >> parameters
+            echo "TEST_SUITES=${TEST_SUITES}" >> parameters
             cat parameters
 
             echo "#${BUILD_NUMBER}-${KERNEL_SRCREV:0:8}" > ${WORKSPACE}/version.txt
