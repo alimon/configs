@@ -14,6 +14,9 @@ sudo pip3 install pyelftools
 # can be installed from PyPI.
 sudo pip3 install cmake
 
+sudo pip3 install west
+west --version
+
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
 git clone --depth 1 ${GIT_URL} -b ${BRANCH} ${WORKSPACE}

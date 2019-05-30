@@ -1,4 +1,6 @@
 git clone --depth 1 ${ZEPHYR_GIT_URL} -b ${ZEPHYR_BRANCH} zephyr
+west init -l zephyr/
+west update
 (cd zephyr; git clean -fdx)
 . zephyr/zephyr-env.sh
 
