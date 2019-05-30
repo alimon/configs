@@ -20,7 +20,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="virtualenv python-pip android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail libelf-dev pxz pigz"
+pkg_list="virtualenv python-pip android-tools-fsutils chrpath cpio diffstat gawk libmagickwand-dev libmath-prime-util-perl libsdl1.2-dev libssl-dev python-requests texinfo vim-tiny whiptail libelf-dev xz-utils pigz coreutils"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
@@ -100,6 +100,14 @@ cat << EOF >> ${distro_conf}
 PREFERRED_PROVIDER_virtual/kernel = "${KERNEL_RECIPE}"
 EOF
 
+case "${KERNEL_RECIPE}" in
+  linux-hikey-aosp|linux-generic-android-common-o*|linux-generic-lsk*|linux-generic-stable*)
+    cat << EOF >> ${distro_conf}
+PREFERRED_VERSION_${KERNEL_RECIPE} = "${KERNEL_VERSION}+git%"
+EOF
+    ;;
+esac
+
 # Set the image types to use
 cat << EOF >> ${distro_conf}
 IMAGE_FSTYPES_remove = "ext4 iso wic"
@@ -109,6 +117,14 @@ EOF
 cat << EOF >> ${distro_conf}
 GCCVERSION = "7.%"
 EOF
+
+case "${KERNEL_RECIPE}" in
+  linux-*-aosp|linux-*-android-*)
+    cat << EOF >> ${distro_conf}
+CONSOLE = "ttyFIQ0"
+EOF
+    ;;
+esac
 
 # Include additional recipes in the image
 [ "${MACHINE}" = "am57xx-evm" -o "${MACHINE}" = "beaglebone" ] || extra_pkgs="numactl"
@@ -136,22 +152,78 @@ SERIAL_CONSOLES_append_dragonboard-410c = " 115200;ttyMSM1"
 SERIAL_CONSOLES_append_hikey = " 115200;ttyAMA2"
 EOF
 
+# Enable lkft-metadata class
+cat << EOF >> conf/local.conf
+INHERIT += "lkft-metadata"
+LKFTMETADATA_COMMIT = "1"
+EOF
+
+# Update kernel recipe SRCREV
+echo "SRCREV_kernel_${MACHINE} = \"${SRCREV_kernel}\"" >> conf/local.conf
+
 fi
 ########## ^^^ DISTRO DEPENDANT ^^^ ##########
 
+# Remove systemd firstboot and machine-id file
+# Backport serialization change from v234 to avoid systemd tty race condition
+# Only on Morty
+if [ "${MANIFEST_BRANCH}" = "morty" ]; then
+  mkdir -p ../layers/meta-96boards/recipes-core/systemd/systemd
+  wget -q http://people.linaro.org/~fathi.boudra/backport-v234-e266c06-v230.patch \
+    -O ../layers/meta-96boards/recipes-core/systemd/systemd/backport-v234-e266c06-v230.patch
+
+  cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd/e2fsck.conf
+[options]
+# This will prevent e2fsck from stopping boot just because the clock is wrong
+broken_system_clock = 1
+EOF
+
+  cat << EOF >> ../layers/meta-96boards/recipes-core/systemd/systemd_%.bbappend
+FILESEXTRAPATHS_prepend := "\${THISDIR}/\${PN}:"
+
+SRC_URI += "\\
+    file://backport-v234-e266c06-v230.patch \\
+    file://e2fsck.conf \\
+"
+
+PACKAGECONFIG_remove = "firstboot"
+
+do_install_append() {
+    # Install /etc/e2fsck.conf to avoid boot stuck by wrong clock time
+    install -m 644 -p -D \${WORKDIR}/e2fsck.conf \${D}\${sysconfdir}/e2fsck.conf
+
+    rm -f \${D}\${sysconfdir}/machine-id
+}
+
+FILES_\${PN} += "\${sysconfdir}/e2fsck.conf "
+EOF
+elif [ "${MANIFEST_BRANCH}" = "rocko" ]; then
+  sed -i "s|bits/wordsize.h||" ../layers/openembedded-core/meta/recipes-core/glibc/glibc-package.inc
+fi
+
 custom_kernel_conf=$(find ../layers/meta-lkft/recipes-kernel -name custom-kernel-info.inc)
 mv ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
-###
 
 # The kernel (as of next-20181130) requires fold from the host
 echo "HOSTTOOLS += \"fold\"" >> conf/local.conf
+
+# Workaround for missing juno-r2.dtb in Linux 4.4
+if [ "${KERNEL_VERSION}" = "4.4" ] && [ "${MACHINE}" = "juno" ]; then
+  echo 'KERNEL_DEVICETREE_remove_juno = "arm/juno-r2.dtb"' >> conf/local.conf
+fi
 
 # add useful debug info
 cat conf/{site,auto,local}.conf
 cat ${distro_conf}
 cat ${custom_kernel_conf}
 
+# Temporary sstate cleanup to get lkft metadata generated
+[ "${DISTRO}" = "rpb" ] && bitbake -c cleansstate kselftests-mainline kselftests-next ltp libhugetlbfs
+
 time bitbake ${IMAGES}
+
+# Disable network for AUTOREV
+echo 'BB_SRCREV_POLICY = "cache"' >> conf/local.conf
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
@@ -174,7 +246,7 @@ case "${MACHINE}" in
     ;;
   intel-core2-32|intel-corei7-64)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
-      pxz ${rootfs}
+      xz -T0 ${rootfs}
     done
     ;;
   *)
@@ -221,23 +293,30 @@ TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 
-mkdir ${WORKSPACE}/lkftmetadata/
-for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs ${KERNEL_RECIPE}; do
-  #source lkftmetadata/packages/*/${recipe}/metadata
-  tmpfile=$(mktemp)
-  pkg=$(echo $recipe | tr '[a-z]-' '[A-Z]_')
-  bitbake -e ${recipe} | grep -e ^PV= -e ^SRC_URI= -e ^SRCREV= > ${tmpfile}
-  source ${tmpfile}
-  for suri in $SRC_URI; do if [[ ! $suri =~ file:// ]]; then uri=$(echo $suri | cut -d\; -f1); export ${pkg}_URL=$uri; break; fi; done
-  export ${pkg}_VERSION=${PV}
-  export ${pkg}_REVISION=${SRCREV}
-  unset -v PV SRC_URI SRCREV
-  rm ${tmpfile}
-  for v in URL VERSION REVISION; do
-    myvar="${pkg}_${v}"
-    echo "${myvar}=${!myvar}" >> ${WORKSPACE}/lkftmetadata/${recipe}
+if [ "${DISTRO}" = "rpb" ]; then
+  # lkft-metadata class generates metadata file, which can be sourced
+  for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs; do
+    source lkftmetadata/packages/*/${recipe}/metadata
   done
-done
+else
+  # Generate LKFT metadata
+  mkdir ${WORKSPACE}/lkftmetadata/
+  for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs ${KERNEL_RECIPE}; do
+    tmpfile=$(mktemp)
+    pkg=$(echo $recipe | tr '[a-z]-' '[A-Z]_')
+    bitbake -e ${recipe} | grep -e ^PV= -e ^SRC_URI= -e ^SRCREV= > ${tmpfile}
+    source ${tmpfile}
+    for suri in $SRC_URI; do if [[ ! $suri =~ file:// ]]; then uri=$(echo $suri | cut -d\; -f1); export ${pkg}_URL=$uri; break; fi; done
+    export ${pkg}_VERSION=${PV}
+    export ${pkg}_REVISION=${SRCREV}
+    unset -v PV SRC_URI SRCREV
+    rm ${tmpfile}
+    for v in URL VERSION REVISION; do
+      myvar="${pkg}_${v}"
+      echo "${myvar}=${!myvar}" >> ${WORKSPACE}/lkftmetadata/${recipe}
+    done
+  done
+fi
 
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | sort | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
@@ -261,8 +340,8 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "kernel_repo" : "${KERNEL_REPO}",
   "kernel_commit_id" : "${KERNEL_COMMIT}",
   "make_kernelversion" : "${MAKE_KERNELVERSION}",
+  "kernel_branch" : "${KERNEL_BRANCH}",
   "kernel_describe" : "${KERNEL_DESCRIBE}",
-  "build_location" : "${BASE_URL}/${PUB_DEST}"
   "kselftest_mainline_url" : "${KSELFTESTS_MAINLINE_URL}",
   "kselftest_mainline_version" : "${KSELFTESTS_MAINLINE_VERSION}",
   "kselftest_next_url" : "${KSELFTESTS_NEXT_URL}",
@@ -275,6 +354,7 @@ cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
   "libhugetlbfs_revision" : "${LIBHUGETLBFS_REVISION}",
   "build_arch" : "${TUNE_FEATURES}",
   "compiler" : "${TARGET_SYS} ${GCCVERSION}",
+  "build_location" : "${BASE_URL}/${PUB_DEST}"
 }
 EOF
 
