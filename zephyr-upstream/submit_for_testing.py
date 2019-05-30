@@ -68,7 +68,7 @@ def file_list(path, fname):
 def build_only():
     # Parse testcase.yaml to exclude build only tests.
     # testcase.yaml file path example: tests/drivers/build_all/testcase.yaml
-    testcases_yaml = file_list('tests', 'testcase.yaml')
+    testcases_yaml = file_list('zephyr/tests', 'testcase.yaml')
     build_only_tests = []
     for testcase_yaml in testcases_yaml:
         with open(testcase_yaml) as f:
