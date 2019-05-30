@@ -75,7 +75,6 @@ time ${ZEPHYR_BASE}/scripts/sanitycheck \
   --build-only \
   --outdir ${OUTDIR} \
   --enable-slow \
-  --subset=1/20 \
   -x=USE_CCACHE=${USE_CCACHE}
 
 cd ${ZEPHYR_BASE}
