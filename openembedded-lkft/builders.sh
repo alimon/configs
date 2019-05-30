@@ -73,6 +73,8 @@ rm -rf conf build/conf build/tmp-*glibc/
 
 # Accept EULA if/when needed
 export EULA_dragonboard410c=1
+
+[ -v KERNEL_SRCREV ] && export SRCREV_kernel="${KERNEL_SRCREV}"
 source setup-environment build
 
 ########## vvv DISTRO DEPENDANT vvv ##########
