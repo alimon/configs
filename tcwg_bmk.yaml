@@ -31,6 +31,10 @@
       - Os_LTO
       - Oz
       - Oz_LTO
+      - O2
+      - O2_LTO
+      - O3
+      - O3_LTO
     jobs:
       - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
@@ -191,7 +195,7 @@
           description: 'Distro image to use'
       - string:
           name: scripts_branch
-          default: master
+          default: refs/changes/67/31667/1
           description: 'Scripts revision to use'
       - string:
           name: bmk_branch
@@ -259,7 +263,7 @@
             - init
           description: "What to do with baseline in this build"
       - default-parameters
-    disabled: true
+    disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: false
     display-name: 'TCWG Build tcwg_bmk/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
@@ -384,7 +388,7 @@
           default: ""
           description: "Bad branch or sha1"
       - default-parameters
-    disabled: true
+    disabled: false
     node: tcwg-x86_64-dev-01
     concurrent: false
     display-name: 'TCWG Bisect tcwg_bmk/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
