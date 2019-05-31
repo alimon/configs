@@ -99,13 +99,6 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
-# QEMU images are 22G remove them before uploading
-rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
-      ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
-      ${DEPLOY_DIR_IMAGE}/*.rootfs.wic* \
-      ${DEPLOY_DIR_IMAGE}/*.iso \
-      ${DEPLOY_DIR_IMAGE}/*.stimg
-
 # FIXME: Sparse and converted images here, until it gets done by OE
 case "${MACHINE}" in
   juno)
@@ -124,6 +117,13 @@ case "${MACHINE}" in
     done
     ;;
 esac
+
+# QEMU images are 22G remove them before uploading
+rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
+      ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
+      ${DEPLOY_DIR_IMAGE}/*.rootfs.wic* \
+      ${DEPLOY_DIR_IMAGE}/*.iso \
+      ${DEPLOY_DIR_IMAGE}/*.stimg
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
