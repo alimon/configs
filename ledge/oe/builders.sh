@@ -109,8 +109,8 @@ case "${MACHINE}" in
     done
     ;;
   *)
-    for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
-      pigz -d -k ${rootfs}
+    for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4; do
+      pigz -k ${rootfs}
       sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
       rm -f ${rootfs%.gz}
       pigz -9 ${rootfs%.ext4.gz}.img
