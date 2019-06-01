@@ -295,10 +295,21 @@ EOF
   mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE}
 fi
 
-GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
-TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
-TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
-STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
+# Save Bitbake environment
+mkdir ${WORKSPACE}/lkftmetadata/
+bb_env=$(mktemp)
+bitbake -e > "${bb_env}"
+(
+  grep "^GCCVERSION=" "${bb_env}"
+  grep "^TARGET_SYS=" "${bb_env}"
+  grep "^TUNE_FEATURES=" "${bb_env}"
+  grep "^STAGING_KERNEL_DIR=" "${bb_env}"
+) > "${WORKSPACE}/lkftmetadata/bitbake"
+rm -v "${bb_env}"
+
+set -a
+source "${WORKSPACE}/lkftmetadata/bitbake"
+set +a
 
 if [ "${DISTRO}" = "rpb" ]; then
   # lkft-metadata class generates metadata file, which can be sourced
@@ -307,7 +318,6 @@ if [ "${DISTRO}" = "rpb" ]; then
   done
 else
   # Generate LKFT metadata
-  mkdir ${WORKSPACE}/lkftmetadata/
   for recipe in kselftests-mainline kselftests-next ltp libhugetlbfs ${KERNEL_RECIPE}; do
     tmpfile=$(mktemp)
     pkg=$(echo $recipe | tr '[a-z]-' '[A-Z]_')
