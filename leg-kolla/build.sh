@@ -78,6 +78,9 @@ pip install -r requirements.txt
 
 mkdir -p ${WORKSPACE}/kolla/logs/debian-source
 
+# if job fails then remove-images job will be triggered to do cleanup
+echo "kolla_tag=${kolla_tag}" >${WORKSPACE}/remove.parameters
+
 kolla_namespace=linaro
 ./tools/build.py --base debian \
                  --format none \
@@ -99,3 +102,6 @@ cat list-of-images
 wc -l list-of-images
 
 echo "kolla_tag=${kolla_tag}" >${WORKSPACE}/push.parameters
+
+# job succedded so do not remove images yet (push will do it)
+rm ${WORKSPACE}/remove.parameters

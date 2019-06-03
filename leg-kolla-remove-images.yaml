@@ -1,5 +1,5 @@
 - job:
-    name: leg-kolla-push-images
+    name: leg-kolla-remove-images
     project-type: freestyle
     defaults: global
     properties:
@@ -16,12 +16,12 @@
             num-to-keep: 30
     parameters:
         - file:
-            name: push.parameters
-            description: "tag of images to push"
+            name: remove.parameters
+            description: "tag of images to remove"
     disabled: false
     node: leg-aarch64
     concurrent: false
-    display-name: 'LEG Kolla images publish'
+    display-name: 'LEG Kolla images local removal'
     wrappers:
         - timestamps
         - copy-to-slave:
@@ -34,11 +34,7 @@
                 variable: DOCKER_AUTH
     builders:
         - shell:
-            !include-raw: leg-kolla-push-images/build.sh
-        - trigger-builds:
-            - project:
-                - 'leg-kolla-remove-images'
-              property-file: "remove.parameters"
+            !include-raw: leg-kolla-remove-images/build.sh
     publishers:
         - email:
             recipients: 'marcin.juszkiewicz@linaro.org riku.voipio@linaro.org fathi.boudra@linaro.org ldcg-team@linaro.org'

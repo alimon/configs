@@ -64,3 +64,6 @@ done
 echo "Uploaded: ${pushed} out of ${total}"
 echo "Attempts: ${attempts}"
 echo "Errors: ${errors}"
+
+# And now we can call job to remove pushed images
+echo "kolla_tag=${kolla_tag}" >${WORKSPACE}/remove.parameters
