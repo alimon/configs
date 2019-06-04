@@ -199,13 +199,6 @@
             xz ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
             BOOT-4.19_IMG_SHA256SUM=$(sha256sum ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img.xz | cut -d\  -f1)
 
-            # common for 4.9 and 4.14
-            # set verity and system-as-root kernel boot parameters for 4.14 and 4.9
-            CMDLINE="${CMDLINE} overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab_v2"
-            CMDLINE="${CMDLINE} rootwait ro root=/dev/dm-0"
-            CMDLINE="${CMDLINE} dm=\"system none ro,0 1 android-verity 179:9\""
-            CMDLINE="${CMDLINE} veritykeyid=id:7e4333f9bba00adfe0ede979e28ed1920492b40f"
-
             # Build 4.14 kernel
             git checkout android-hikey-linaro-4.14
             git pull
@@ -216,6 +209,7 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
               --kernel arch/arm64/boot/Image.gz-dtb \
+              --ramdisk ../out/ramdisk.img \
               --cmdline "${CMDLINE}" \
               --os_version Q \
               --os_patch_level 2019-01-05 \
@@ -224,6 +218,13 @@
             cp .config ../out/4.14_defconfig
             xz ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
             BOOT-4.14_IMG_SHA256SUM=$(sha256sum ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz | cut -d\  -f1)
+
+            # only 4.9 supports system-as-root kernel boot parameters
+            # set verity and system-as-root kernel boot parameters for 4.9
+            CMDLINE="${CMDLINE} overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab_v2"
+            CMDLINE="${CMDLINE} rootwait ro root=/dev/dm-0"
+            CMDLINE="${CMDLINE} dm=\"system none ro,0 1 android-verity 179:9\""
+            CMDLINE="${CMDLINE} veritykeyid=id:7e4333f9bba00adfe0ede979e28ed1920492b40f"
 
             # Build 4.9 kernel
             git checkout android-hikey-linaro-4.9
