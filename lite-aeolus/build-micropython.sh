@@ -14,6 +14,14 @@ full_testsuite() {
 }
 
 cd ports/zephyr
+
+if [ ${PLATFORM} = "qemu_x86" ]; then
+    # Build and run binary with embedded testsuite
+    ./run-builtin-testsuite.sh
+    make clean
+fi
+
+
 if small_rom ${PLATFORM}; then
     ./make-minimal BOARD=${PLATFORM}
 elif full_testsuite ${PLATFORM}; then
@@ -23,9 +31,6 @@ else
 fi
 
 if [ ${PLATFORM} = "qemu_x86" ]; then
-    # Build and run binary with embedded testsuite
-    ./run-builtin-testsuite.sh
-
     # Run testsuite via piping scripts to REPL - doesn't work reliably
     # with QEMU, will likely be removed
     rm -f /tmp/slip.sock
