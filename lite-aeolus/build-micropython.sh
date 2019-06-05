@@ -23,6 +23,11 @@ else
 fi
 
 if [ ${PLATFORM} = "qemu_x86" ]; then
+    # Build and run binary with embedded testsuite
+    ./run-builtin-testsuite.sh
+
+    # Run testsuite via piping scripts to REPL - doesn't work reliably
+    # with QEMU, will likely be removed
     rm -f /tmp/slip.sock
     (socat PTY,link=/tmp/slip.dev UNIX-LISTEN:/tmp/slip.sock &)
     make BOARD=${PLATFORM} test
