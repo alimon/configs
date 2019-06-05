@@ -197,7 +197,7 @@
             cp vmlinux ../out/4.19_vmlinux
             cp .config ../out/4.19_defconfig
             xz ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
-            BOOT-4.19_IMG_SHA256SUM=$(sha256sum ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img.xz | cut -d\  -f1)
+            BOOT_4_19_IMG_SHA256SUM=$(sha256sum ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img.xz | cut -d\  -f1)
 
             # Build 4.14 kernel
             git checkout android-hikey-linaro-4.14
@@ -217,7 +217,7 @@
             cp vmlinux ../out/4.14_vmlinux
             cp .config ../out/4.14_defconfig
             xz ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
-            BOOT-4.14_IMG_SHA256SUM=$(sha256sum ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz | cut -d\  -f1)
+            BOOT_4_14_IMG_SHA256SUM=$(sha256sum ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz | cut -d\  -f1)
 
             # only 4.9 supports system-as-root kernel boot parameters
             # set verity and system-as-root kernel boot parameters for 4.9
@@ -242,7 +242,7 @@
             cp vmlinux ../out/4.9_vmlinux
             cp .config ../out/4.9_defconfig
             xz ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img
-            BOOT-4.9_IMG_SHA256SUM=$(sha256sum ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img.xz | cut -d\  -f1)
+            BOOT_4_9_IMG_SHA256SUM=$(sha256sum ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img.xz | cut -d\  -f1)
 
             rm -rf configs
             cd ../
@@ -406,9 +406,9 @@
             KERNEL_VERSION_4_4=${KERNEL_VERSION_4_4}
             KERNEL_VERSION_X15_4_14=${KERNEL_VERSION_X15_4_14}
             KERNEL_VERSION_X15_4_19=${KERNEL_VERSION_X15_4_19}
-            BOOT-4.9_IMG_SHA256SUM=${BOOT-4.9_IMG_SHA256SUM}
-            BOOT-4.19_IMG_SHA256SUM=${BOOT-4.19_IMG_SHA256SUM}
-            BOOT-4.14_IMG_SHA256SUM=${BOOT-4.14_IMG_SHA256SUM}
+            BOOT_4_9_IMG_SHA256SUM=${BOOT_4_9_IMG_SHA256SUM}
+            BOOT_4_19_IMG_SHA256SUM=${BOOT_4_19_IMG_SHA256SUM}
+            BOOT_4_14_IMG_SHA256SUM=${BOOT_4_14_IMG_SHA256SUM}
             SYSTEM_IMG_SHA256SUM=${SYSTEM_IMG_SHA256SUM}
             USERDATA_IMG_SHA256SUM=${USERDATA_IMG_SHA256SUM}
             VENDOR_IMG_SHA256SUM=${VENDOR_IMG_SHA256SUM}
@@ -454,7 +454,7 @@
             export KERNEL_BRANCH="android-hikey-linaro-${KERNEL_VERSION_4_9}-${KERNEL_DESCRIBE_4_9}"
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_9}
             export SRCREV_kernel=${KERNEL_DESCRIBE_4_9}
-            export BOOT_IMG_SHA256SUM=${BOOT-4.9_IMG_SHA256SUM}
+            export BOOT_IMG_SHA256SUM=${BOOT_4_9_IMG_SHA256SUM}
             python configs/openembedded-lkft/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
@@ -477,7 +477,7 @@
             export KERNEL_BRANCH="android-hikey-linaro-${KERNEL_VERSION_4_14}-${KERNEL_DESCRIBE_4_14}"
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_14}
             export SRCREV_kernel=${KERNEL_DESCRIBE_4_14}
-            export BOOT_IMG_SHA256SUM=${BOOT-4.14_IMG_SHA256SUM}
+            export BOOT_IMG_SHA256SUM=${BOOT_4_14_IMG_SHA256SUM}
             # submit 4.14 jobs to v.l.o to reduce load on production lkft
             export LAVA_SERVER=https://validation.linaro.org/RPC2/
             python configs/openembedded-lkft/submit_for_testing.py \
@@ -500,7 +500,7 @@
             export KERNEL_BRANCH="android-hikey-linaro-${KERNEL_VERSION_4_19}-${KERNEL_DESCRIBE_4_19}"
             export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_19}
             export SRCREV_kernel=${KERNEL_DESCRIBE_4_19}
-            export BOOT_IMG_SHA256SUM=${BOOT-4.19_IMG_SHA256SUM}
+            export BOOT_IMG_SHA256SUM=${BOOT_4_19_IMG_SHA256SUM}
             # submit 4.19 jobs to v.l.o to reduce load on production lkft
             export LAVA_SERVER=https://validation.linaro.org/RPC2/
             python configs/openembedded-lkft/submit_for_testing.py \
