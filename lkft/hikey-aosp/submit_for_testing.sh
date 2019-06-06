@@ -42,11 +42,14 @@ if curl --output /dev/null --silent --head --fail "${REFERENCE_BUILD_URL}/SHA256
         export SYSTEM_IMG_SHA256SUM
     else
         sed -i '/SYSTEM_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+    fi
+
     if ! test -z "${VENDOR_IMG_SHA256SUM}"; then
         export VENDOR_IMG_SHA256SUM
     else
         sed -i '/VENDOR_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
     fi
+
     if ! test -z "${USERDATA_IMG_SHA256SUM}"; then
         export USERDATA_IMG_SHA256SUM
     else
