@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 export DEVICE_TYPE=hi6220-hikey
 export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
@@ -34,27 +34,32 @@ if echo ${KERNEL_BRANCH} | grep "4.4"; then
    sed -i "s|vendor.img.xz|vendor-4.4.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 fi
 
+rm -f reference_build_url_SHA256SUMS.txt
 if curl --output /dev/null --silent --head --fail "${REFERENCE_BUILD_URL}/SHA256SUMS.txt"; then
     curl  -o reference_build_url_SHA256SUMS.txt "${REFERENCE_BUILD_URL}/SHA256SUMS.txt"
     sed -i '/BOOT_IMG_SHA256SUM/d' reference_build_url_SHA256SUMS.txt
-    source reference_build_url_SHA256SUMS.txt
-    if ! test -z "${SYSTEM_IMG_SHA256SUM}"; then
+fi
+
+[ -z "${BOOT_IMG_SHA256SUM}" ] && export BOOT_IMG_SHA256SUM=$(sha256sum out/boot.img.xz | cut -d\  -f1)
+
+[ -f reference_build_url_SHA256SUMS.txt ] && source reference_build_url_SHA256SUMS.txt
+
+if ! test -z  "${SYSTEM_IMG_SHA256SUM}"; then
         export SYSTEM_IMG_SHA256SUM
-    else
-        sed -i '/SYSTEM_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-    fi
+else
+    sed -i '/SYSTEM_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+fi
 
-    if ! test -z "${VENDOR_IMG_SHA256SUM}"; then
-        export VENDOR_IMG_SHA256SUM
-    else
-        sed -i '/VENDOR_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-    fi
+if ! test -z "${VENDOR_IMG_SHA256SUM}"; then
+    export VENDOR_IMG_SHA256SUM
+else
+    sed -i '/VENDOR_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
+fi
 
-    if ! test -z "${USERDATA_IMG_SHA256SUM}"; then
-        export USERDATA_IMG_SHA256SUM
-    else
-        sed -i '/USERDATA_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-    fi
+if ! test -z "${USERDATA_IMG_SHA256SUM}"; then
+    export USERDATA_IMG_SHA256SUM
+else
+    sed -i '/USERDATA_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 fi
 
 python configs/openembedded-lkft/submit_for_testing.py \
