@@ -20,6 +20,7 @@ update_terraform()
 set -e
 
 cd terraform/
+topdir=$(pwd)
 export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
 export GIT_COMMIT=${GERRIT_PATCHSET_REVISION}
 files=$(git diff --name-only ${GIT_PREVIOUS_COMMIT} ${GIT_COMMIT})
@@ -37,7 +38,6 @@ for dir in ${changed_dirs}; do
         echo "skipping module dir ${dir}"
         continue
     fi
-    pushd
     cd $dir
     echo "================= $dir =========================="
     if ! compgen -G "*.tf" > /dev/null; then
@@ -52,6 +52,6 @@ for dir in ${changed_dirs}; do
     fi
     terraform init > /dev/null
     terraform plan $vars -out demo.plan
-    popd
+    cd $topdir
 done
 
