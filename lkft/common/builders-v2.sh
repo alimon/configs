@@ -28,7 +28,7 @@ fi
 cd /home/buildslave/srv/${BUILD_DIR}
 
 # clean the workspace to avoid repo sync problem
-rm -fr kernel/ti/4.19 prebuilts/linaro-prebuilts/
+rm -fr kernel/ti/4.19 prebuilts/linaro-prebuilts/ kernel/common/mainline
 
 wget https://android-git.linaro.org/android-build-configs.git/plain/lkft/linaro-lkft.sh?h=lkft -O linaro-lkft.sh
 chmod +x linaro-lkft.sh
