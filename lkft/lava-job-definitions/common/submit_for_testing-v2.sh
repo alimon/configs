@@ -53,7 +53,11 @@ function submit_jobs_for_config(){
     export TEST_CTS_VERSION=$(echo ${TEST_CTS_URL} | awk -F"/" '{print$(NF-1)}')
 
     for f in ${PUBLISH_FILES}; do
-        sed -i "s/${f}/${build_config}-${f}/" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
+        # DOWNLOAD_URL is where the generated files stored
+        # replace REFERENCE_BUILD_URL with DOWNLOAD_URL
+        sed -i "s|{{REFERENCE_BUILD_URL}}/${f}|{{DOWNLOAD_URL}}/$f|" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
+        # replace file name in job template with new file name generated
+        sed -i "s|{{DOWNLOAD_URL}}/${f}|{{DOWNLOAD_URL}}/${build_config}-$f|" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
     done
     python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
         --device-type ${TEST_DEVICE_TYPE} \
