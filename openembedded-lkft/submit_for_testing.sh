@@ -184,7 +184,7 @@ case "${DEVICE_TYPE}" in
     QEMU_DEVICE_TYPE=qemu_x86_64
     ;;
 esac
-if [ ! -z "${QEMU_DEVICE_TYPE}" ]; then
+if [ ! -z "${QEMU_DEVICE_TYPE}" ] && [ ! -z "${QEMU_TEST_TEMPLATES}" ]; then
   # submit_for_testing.py sends the current environment to jinja, and jinja
   # templates rely on DEVICE_TYPE. so we have to actually set DEVICE_TYPE here.
   export ORIGINAL_DEVICE_TYPE=${DEVICE_TYPE}
@@ -203,7 +203,7 @@ if [ ! -z "${QEMU_DEVICE_TYPE}" ]; then
 fi
 
 # Submit full test run
-if [ ! -z "${FULL_TEST_TEMPLATES}" ]; then
+if [ ! -z "${FULL_TEST_TEMPLATES}" ] && [ ! -z "${FULL_TEST_TEMPLATES}" ]; then
   python ${BASE_PATH}/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
     --build-number ${BUILD_NUMBER} \
