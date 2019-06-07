@@ -33,6 +33,11 @@ update_terraform
 
 for dir in ${changed_dirs}; do
     [ "${dir}" = "." ] && continue
+    if [[ ${dir} == modules* ]]; then
+        echo "skipping module dir ${dir}"
+        continue
+    fi
+    pushd
     cd $dir
     echo "================= $dir =========================="
     if ! compgen -G "*.tf" > /dev/null; then
@@ -47,6 +52,6 @@ for dir in ${changed_dirs}; do
     fi
     terraform init > /dev/null
     terraform plan $vars -out demo.plan
-    cd ..
+    popd
 done
 
