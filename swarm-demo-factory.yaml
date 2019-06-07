@@ -1,0 +1,41 @@
+- job:
+    name: swarm-demo-factory
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    disabled: false
+    display-name: 'Test swarm'
+    parameters:
+        - string:
+            name: jobs
+            description: 'number of jobs to submit'
+            default: "10"
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+            #
+            rm -f swarm_*_build.txt
+            for number in $(seq 1 ${jobs})
+            do
+                echo "number=${number}" > swarm_${number}_build.txt
+            done
+        - trigger-builds:
+            - project: swarm-demo
+              parameter-factories:
+                - factory: filebuild
+                  file-pattern: swarm_*_build.txt
+    publishers:
+        - email:
+            recipients: linaro-infrastructure-errors@lists.linaro.org

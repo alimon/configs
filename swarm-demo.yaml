@@ -1,0 +1,36 @@
+- job:
+    name: swarm-demo
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    disabled: false
+    display-name: 'Dummy job to run in swarm'
+    node: docker-stretch-amd64-swarm
+    concurrent: true
+    parameters:
+        - string:
+            name: number
+            description: 'just something to make each job unique'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+            #
+            echo "swarm build $number"
+            sleep 120
+            echo "slept two minutes"
+    publishers:
+        - email:
+            recipients: linaro-infrastructure-errors@lists.linaro.org
