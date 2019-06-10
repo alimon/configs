@@ -19,6 +19,10 @@
             num-to-keep: 90
         - github:
             url: https://git.mlplatform.org/ml/armnn.git
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'staging.validation.linaro.org/'
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Arm NN - CI Build'
@@ -27,6 +31,9 @@
     builders:
         - shell:
             !include-raw: armnn-ci-build/builders.sh
+        - build-name-setter:
+            template: '#${BUILD_NUMBER}-${GIT_COMMIT_ID}'
+            macro: true
         - linaro-publish-token
         - shell: |
             #!/bin/bash
@@ -39,3 +46,20 @@
             time python ${HOME}/bin/linaro-cp.py \
               --link-latest \
               out/ components/armnn/${BUILD_NUMBER}
+        - shell: |
+            #!/bin/bash -ex
+
+            export DEVICE_TYPE=hi960-hikey
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            [ -z "${DEVICE_TYPE}" ] || \
+            python configs/armnn-ci-build/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --qa-server-team staging-lkft \
+                --qa-server-project armnn-ci-build \
+                --lava-server ${LAVA_SERVER} \
+                --git-commit ${GIT_COMMIT_ID} \
+                --template-names armnn-template.yaml
