@@ -27,14 +27,22 @@
     bmk:
       - spec2k6
     cflags:
-      - Os
-      - Os_LTO
-      - Oz
-      - Oz_LTO
-      - O2
-      - O2_LTO
-      - O3
-      - O3_LTO
+      - Os:
+          cron_schedule: H H * * *
+      - Os_LTO:
+          cron_schedule: H H * * *
+      - Oz:
+          cron_schedule: H H * * *
+      - Oz_LTO:
+          cron_schedule: H H * * *
+      - O2:
+          cron_schedule: H H */2 * *
+      - O2_LTO:
+          cron_schedule: H H */2 * *
+      - O3:
+          cron_schedule: H H */2 * *
+      - O3_LTO:
+          cron_schedule: H H */2 * *
     jobs:
       - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
@@ -282,7 +290,7 @@
           glibc_branch: '{glibc_branch}'
     triggers:
       - pollscm:
-          cron: 'H H * * *'
+          cron: '{cron_schedule}'
     wrappers:
       - timeout:
           timeout: 600
