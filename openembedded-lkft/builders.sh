@@ -215,8 +215,14 @@ if [ "${KERNEL_VERSION}" = "4.4" ] && [ "${MACHINE}" = "juno" ]; then
 fi
 
 # add useful debug info
-cat conf/{site,auto}.conf
-cat ${distro_conf}
+for f in conf/{site,auto,local}.conf ${distro_conf} ${custom_kernel_conf}; do
+  if [ -f ${f} ]; then
+    echo "=== contents of $f ==="
+    cat ${f}
+  else
+    echo "=== not existent: $f ==="
+  fi
+done
 
 # Temporary sstate cleanup to get lkft metadata generated
 [ "${DISTRO}" = "rpb" ] && bitbake -c cleansstate kselftests-mainline kselftests-next ltp libhugetlbfs
