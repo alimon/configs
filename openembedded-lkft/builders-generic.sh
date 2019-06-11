@@ -201,8 +201,10 @@ elif [ "${MANIFEST_BRANCH}" = "rocko" ]; then
   sed -i "s|bits/wordsize.h||" ../layers/openembedded-core/meta/recipes-core/glibc/glibc-package.inc
 fi
 
-custom_kernel_conf=$(find ../layers/meta-lkft/recipes-kernel -name custom-kernel-info.inc)
-mv ${WORKSPACE}/custom-kernel-info.inc.tmp ${custom_kernel_conf}
+# Place generic kernel definitions (if needed)
+if [ -e ${WORKSPACE}/custom-kernel-info.inc.tmp ]; then
+    mv -v ${WORKSPACE}/custom-kernel-info.inc.tmp conf/custom-kernel-info.inc
+fi
 
 # The kernel (as of next-20181130) requires fold from the host
 echo "HOSTTOOLS += \"fold\"" >> conf/local.conf
