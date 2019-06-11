@@ -11,12 +11,6 @@ echo "########################################################################"
 git config --global user.name "Linaro CI"
 git config --global user.email "ci_notify@linaro.org"
 
-# Add SSH server signatures to known_hosts list.
-bash -c "ssh-keyscan dev-private-git.linaro.org >  ${HOME}/.ssh/known_hosts"
-bash -c "ssh-keyscan dev-private-review.linaro.org >>  ${HOME}/.ssh/known_hosts"
-bash -c "ssh-keyscan  -t rsa -p 29418 dev-private-review.linaro.org >> \
-	${HOME}/.ssh/known_hosts"
-
 rm -rf ${WORKSPACE}/*
 
 git clone -b ${GERRIT_BRANCH} --depth 2 ssh://git@dev-private-review.linaro.org/${GERRIT_PROJECT} gerrit-project
