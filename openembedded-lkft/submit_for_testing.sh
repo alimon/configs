@@ -8,7 +8,7 @@ set -ex
 [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
 [ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=lkft
 [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
-[ -z "${TDEFINITIONS_REVISION}" ] && export TDEFINITIONS_REVISION="2019.05"
+[ -z "${TDEFINITIONS_REVISION}" ] && export TDEFINITIONS_REVISION="kselftest-5.1"
 
 if [ -n "${DRY_RUN}" ]; then
     export DRY_RUN="--dry-run --template-path lava-job-definitions --testplan-path lava-job-definitions/ --quiet"
