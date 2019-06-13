@@ -28,21 +28,21 @@
       - spec2k6
     cflags:
       - Os:
-          cron_schedule: H H * * *
+          cron_schedule: H H H/2 * *
       - Os_LTO:
-          cron_schedule: H H * * *
+          cron_schedule: H H H/2 * *
       - Oz:
-          cron_schedule: H H * * *
+          cron_schedule: H H H/2 * *
       - Oz_LTO:
-          cron_schedule: H H * * *
+          cron_schedule: H H H/2 * *
       - O2:
-          cron_schedule: H H H/2 * *
+          cron_schedule: H H H/3 * *
       - O2_LTO:
-          cron_schedule: H H H/2 * *
+          cron_schedule: H H H/3 * *
       - O3:
-          cron_schedule: H H H/2 * *
+          cron_schedule: H H H/3 * *
       - O3_LTO:
-          cron_schedule: H H H/2 * *
+          cron_schedule: H H H/3 * *
     jobs:
       - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
@@ -266,9 +266,9 @@
       - choice:
           name: update_baseline
           choices:
-            - init
             - update
             - reset
+            - init
           description: "What to do with baseline in this build"
       - default-parameters
     disabled: false
