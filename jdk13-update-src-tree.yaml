@@ -1,0 +1,100 @@
+- scm:
+    name: jdk13
+    scm:
+        - hg:
+            url: https://hg.openjdk.java.net/jdk/jdk13
+            clean: true
+            subdir: jdk13
+- job:
+    name: jdk13-update-src-tree
+    project-type: freestyle
+    defaults: global
+    description: |
+        This job polls upstream Mercurial servers for changes and,<br>
+        if there are any, triggers "jdk13-build-and-test".<br>
+        Note: this job archives the src which is later required by the jtreg<br>
+        report and publish job. The build-date.sh artefact contains shell<br>
+        variables for the day and day-of-year the source was archived.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "jdk11-.*"
+                - "jdk8-.*"
+                - "jdkX-.*"
+            block-level: 'GLOBAL'
+    disabled: false
+    node: j12-qrep-01
+    display-name: 'OpenJDK 13 - Update jdk13 source tree'
+    scm:
+        - jdk13
+    triggers:
+        - pollscm:
+            cron: '0 7 * * 2,4,6'
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -eu
+
+            rm -rf out
+            mkdir out
+
+            pushd jdk13
+            #find . -name BOM -exec rm {} \;
+            #commit_id=$(hg identify | awk '{print $1}')
+            #echo "jdk13-${commit_id}" | tee -a BOM
+
+            #for i in corba jaxp jaxws langtools jdk hotspot nashorn; do
+            #  pushd $i
+            #  commit_id=$(hg identify | awk '{print $1}')
+            #  dir=$(basename $PWD)
+            #  echo "${dir}-${commit_id}" | tee -a ../BOM
+            #  popd
+            #done
+
+            ## Pull out subdirectory HG versions
+            echo BOM for $(hg paths default) > BOM
+            echo -e Subdir\\tHash\\t\\tTag\\tTag hash >> BOM
+            echo -e .\\t$(hg head --template '{node|short}\t' tip; hg tags --template="{tag}\t{node|short}\n" | grep -ve '^tip' | head -n1) >>BOM
+
+            cp BOM $WORKSPACE/out
+
+            popd
+
+            : ${YEAR:=$(date +%Y)}
+            : ${DAY_OF_YEAR:=$(date +%j)}
+
+            : ${YEAR_YESTERDAY:=$YEAR}
+            : ${DAY_OF_YEAR_YESTERDAY:=$((10#$DAY_OF_YEAR - 1))}
+
+            echo "YEAR=${YEAR}" >dates.prop
+            echo "DAY_OF_YEAR=${DAY_OF_YEAR}" >>dates.prop
+
+            echo "export YEAR=${YEAR}" > out/build-date.sh
+            echo "export DAY_OF_YEAR=${DAY_OF_YEAR}" >> out/build-date.sh
+
+            tar --exclude=.hg -acf out/jdk13.tar.gz jdk13
+    publishers:
+        - archive:
+            artifacts: 'out/jdk13.tar.gz, out/build-date.sh, out/BOM'
+        - fingerprint:
+            files: 'out/*'
+            record-artifacts: true
+        - trigger-parameterized-builds:
+            - project: jdk13-build-and-test
+              condition: SUCCESS
+              property-file: dates.prop

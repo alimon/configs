@@ -1,0 +1,112 @@
+- job:
+    name: jdk13-terasort-benchmark
+    project-type: matrix
+    defaults: global
+    description: |
+        * Runs the terasort benchmark.
+    properties:
+        - authorization:
+            linaro:
+                - job-read
+            openjdk-members:
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    disabled: false
+    node: j12-qrep-01
+    display-name: 'OpenJDK 13 - Run terasort benchmark'
+    axes:
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - release
+        - axis:
+            type: slave
+            name: label
+            values:
+                - j12-qrep-01
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: j12-qrep-01
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            NGIGABYTES=1
+
+
+            CACHE_FILES=$HOME/srv/jdk-cache
+            ## Extract jdk
+            rm -rf jdk13*
+            tar xf ~/workspace/jdk13-build-image/BUILD_TYPE/${BUILD_TYPE}/label/${NODE_NAME}/out/jdk13-${BUILD_TYPE}.tar.gz
+
+            export JAVA_HOME=${WORKSPACE}/jdk13-${BUILD_TYPE}
+            export PATH=${JAVA_HOME}/bin:$PATH
+
+            ## Extract Hadoop pre-builts
+            rm -rf openjdk8-hadooop-LCA14
+            tar xf $CACHE_FILES/openjdk8-hadoop-LCA14.tar.gz
+
+            rm -rf incoming; mkdir -p incoming
+            ## Benchmark
+            (cd incoming; tar xf ~/srv/hadoop-terasort-reference-files/${NGIGABYTES}GB.tar.gz)
+
+            TERAGEN_BASELINE_DIR=${WORKSPACE}/incoming
+            HADOOP_DIR=${WORKSPACE}/openjdk8-hadoop-LCA14
+
+            rm -rf out
+            mkdir out
+
+            sed -i '/^export JAVA_HOME=/d' ${HADOOP_DIR}/conf/hadoop-env.sh
+            echo "export JAVA_HOME=$JAVA_HOME" >> ${HADOOP_DIR}/conf/hadoop-env.sh
+            sed -i 's|/work/${user.name}/hadoop-tmp|${user.home}/hadoop/tmp|' ${HADOOP_DIR}/conf/core-site.xml
+
+            source ${HADOOP_DIR}/env.sh
+
+            which hadoop
+            which java
+            which hdfs
+            java -version
+
+            stop-dfs.sh
+            stop-yarn.sh
+
+            rm -rf ${HOME}/hadoop
+            mkdir -p ${HOME}/hadoop/tmp
+            hdfs namenode -format -force
+            start-dfs.sh
+            start-yarn.sh
+
+            # Need time for the datanodes to materialise.
+            sleep 30
+            jps
+
+            hadoop fs -mkdir -p /user/$USER
+            hadoop fs -copyFromLocal $TERAGEN_BASELINE_DIR/${NGIGABYTES}GB /user/$USER
+
+            trap "stop-dfs.sh; stop-yarn.sh" EXIT
+
+            elapsed_time_file=$(mktemp /tmp/benchmark-terasort-XXXXXX.$$)
+            /usr/bin/time -o $elapsed_time_file -f "%e" terasort ${NGIGABYTES}GB ${NGIGABYTES}GB-sorted
+
+            hadoop fs -rm -R ${NGIGABYTES}GB-sorted
+            sed -i 's/\..*//' $elapsed_time_file
+            elapsed_time=$(cat $elapsed_time_file)
+            date_as_epoch=$(date --date="$(date +'%Y-%m-%d')" +%s)
+            echo "$date_as_epoch,$NGIGABYTES,$elapsed_time" > out/terasort-results-${BUILD_TYPE}.csv
+            rm -rf incoming/${NGIGABYTES}*
+    publishers:
+        - archive:
+            artifacts: 'out/terasort-results-*.csv'

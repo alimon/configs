@@ -1,0 +1,59 @@
+- job:
+    name: jdk13-specjbb2015-benchmark-publish-results
+    project-type: freestyle
+    defaults: global
+    description: |
+        * Reports are published to http://openjdk.linaro.org/jdk13/SPECjbb2015-results/
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+    parameters:
+        - string:
+            name: ZERO_BASELINE
+            default: '14115'
+        - string:
+            name: SERVER_MAX_JOPS_BASELINE
+            default: '4090'
+        - string:
+            name: SERVER_CRITICAL_JOPS_BASELINE
+            default: '1015'
+        - string:
+            name: PUBLISH_DEST
+            default: ''
+        - string:
+            name: PUBLISH_HOST
+            default: ''
+    disabled: false
+    node: j12-qrep-01
+    display-name: 'OpenJDK 13 - Publish SPECjbb2015 benchmark results'
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            # openjdk-testing user id
+                users:
+                    - '744cffb4-9ce1-4856-b103-9fdda06dad36'
+# Replaced by parameters
+#        - inject:
+#            properties-file: '${HOME}/performance-baseline.properties'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+            PERSIST=$HOME/srv/openjdk13
+            export TOP_DIR=$PERSIST
+            export SPECJBB_PRODUCT_HOME=$PERSIST/SPECjbb2015
+
+            $PERSIST/specjbb-test-scripts/specjbb-publish $PUBLISH_DEST
+    publishers:
+        - email:
+            recipients: 'fathi.boudra@linaro.org stuart.monteith@linaro.org'
