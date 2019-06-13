@@ -1,0 +1,64 @@
+- job:
+    name: lt-qcom-bootloader-dragonboard845c
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: BRANCH
+            default: 'master'
+        - string:
+            name: QCOM_LINUX_FIRMWARE
+            default: 'http://snapshots.linaro.org/96boards/dragonboard845c/qualcomm/firmware/RB3_firmware_20190529180356.zip'
+        - string:
+            name: QCOM_LINUX_FIRMWARE_MD5
+            default: '00914a93dbfb6bb4b6dbcc70c8161cf6'
+        - string:
+            name: QCOM_LINUX_FIRMWARE_LICENSE_MD5
+            default: 'cbbe399f2c983ad51768f4561587f000'
+        - string:
+            name: PUB_DEST
+            default: '96boards/dragonboard845c/linaro/rescue/${BUILD_NUMBER}'
+    disabled: false
+    node: docker-stretch-amd64
+    display-name: 'Qualcomm bootloader for DragonBoard 845c'
+    scm:
+        - git:
+            url: https://git.linaro.org/landing-teams/working/qualcomm/db-boot-tools.git
+            refspec: +refs/heads/${BRANCH}:refs/remotes/origin/${BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${BRANCH}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-bootloader/dragonboard845c/builders.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+        - email:
+            recipients: 'fathi.boudra@linaro.org'
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org anibal.limon@linaro.org'
+            failure: true
+            still-failing: true
