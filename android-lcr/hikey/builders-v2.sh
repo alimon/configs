@@ -50,6 +50,17 @@ if [ "X${BUILD_VENDOR_FOR_4_4}" = "Xtrue" ]; then
     cd -
 fi
 
+if [ "X${BUILD_VENDOR_HIKEY960_FBDEV}" = "Xtrue" ]; then
+    cd build/
+    source build/envsetup.sh
+    lunch hikey960-userdebug
+    rm -rf out/target/product/hikey960/vendor*
+    make vendorimage TARGET_KERNEL_USE=4.9 TARGET_COMPRESSED_KERNEL=false TARGET_BUILD_KERNEL=false HIKEY_USE_DRM_HWCOMPOSER=false
+    cp out/target/product/hikey960/vendor.img out/vendor-4.9.img
+    xz out/vendor-4.9.img
+    cd -
+fi
+
 rm -rf build/out/BUILD-INFO.txt
 wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
 
