@@ -9,7 +9,7 @@ kolla_options=
 kolla_python=/usr/bin/python2
 
 if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
-    branch="stein"
+    branch="train"
     kolla_python=/usr/bin/python3
 elif [[ ${kolla_branch} = "stable"* ]]; then
     branch=$(echo ${kolla_branch} | sed -e 's+stable/++g')
