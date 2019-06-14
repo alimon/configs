@@ -44,7 +44,7 @@ if [ "X${BUILD_VENDOR_FOR_4_4}" = "Xtrue" ]; then
     source build/envsetup.sh
     lunch hikey-userdebug
     rm -rf out/target/product/hikey/vendor*
-    make vendorimage TARGET_KERNEL_USE=4.4 TARGET_COMPRESSED_KERNEL=false TARGET_BUILD_KERNEL=false HIKEY_USE_DRM_HWCOMPOSER=false
+    make vendorimage TARGET_KERNEL_USE=4.4 TARGET_COMPRESSED_KERNEL=true TARGET_BUILD_KERNEL=false HIKEY_USE_DRM_HWCOMPOSER=false
     cp out/target/product/hikey/vendor.img out/vendor-4.4.img
     xz out/vendor-4.4.img
     cd -
