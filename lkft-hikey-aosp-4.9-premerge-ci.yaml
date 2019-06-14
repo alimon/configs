@@ -16,35 +16,11 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
-           name: ANDROID_VERSION
-           default: 'android-9.0.0_r34'
+            name: BUILD_DIR
+            default: lkft
         - string:
-            name: REFERENCE_BUILD_URL
-            default: 'https://snapshots.linaro.org/android/android-lcr-reference-hikey-p/130/'
-        - string:
-            name: KERNEL_BRANCH
-            default: 'android-4.9-p-hikey'
-        - string:
-            name: KERNEL_REPO
-            default: 'https://github.com/tom-gall/hikey-linaro'
-        - string:
-            name: QA_SERVER
-            default: 'https://qa-reports.linaro.org'
-        - string:
-            name: QA_SERVER_PROJECT
-            default: 'android-hikey-linaro-4.9-aosp-premerge-ci'
-        - string:
-            name: TOOLCHAIN
-            default: 'clang-r353983c'
-        - string:
-            name: VTS_URL
-            default: 'http://people.linaro.org/~yongqin.liu/lkft/pie/vts/9.0_r8/'
-        - string:
-            name: CTS_URL
-            default: 'http://people.linaro.org/~yongqin.liu/lkft/pie/cts/9.0_r7/'
-        - string:
-            name: CONFIG_FRAGMENTS_PATH
-            default: 'P/4.9'
+            name: ANDROID_BUILD_CONFIG
+            default: 'lkft-hikey-android-9.0-4.9-lts lkft-hikey960-android-9.0-4.9-lts'
         - string:
             name: KERNEL_DESCRIBE
         - string:
@@ -52,20 +28,10 @@
     disabled: false
     node: docker-xenial-aosp
     display-name: 'LKFT - AOSP 4.9 premerge CI'
-    scm:
-        - git:
-            url: ${KERNEL_REPO}
-            refspec: +refs/heads/*:refs/remotes/origin/*
-            name: origin
-            branches:
-                - origin/${KERNEL_BRANCH}
-            skip-tag: true
-            shallow-clone: false
-            wipe-workspace: false
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+            name: '#${BUILD_NUMBER}-${ENV,var="KERNEL_DESCRIBE"}'
         - timeout:
             timeout: 500
         - credentials-binding:
@@ -83,26 +49,12 @@
                 variable: AP_KEY
     builders:
         - shell:
-            !include-raw:
-                - lkft/hikey-aosp/builders.sh
+            !include-raw: lkft/common/builders-v2.sh
         - linaro-publish-token
-        - shell: |
-            #!/bin/bash
-
-            wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O out/BUILD-INFO.txt
-
-            # Publish
-            test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python ${HOME}/bin/linaro-cp.py \
-              --server ${PUBLISH_SERVER} \
-              --build-info out/BUILD-INFO.txt \
-              --link-latest \
-              out/ android/lkft/${JOB_NAME}/${BUILD_NUMBER}
-
-            PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
         - shell:
-            !include-raw: lkft/hikey-aosp/submit_for_testing.sh
+            !include-raw: lkft/common/publisher-v2.sh
+        - shell:
+            !include-raw: lkft/lava-job-definitions/common/submit_for_testing-v2.sh
     publishers:
         - logparser:
             parse-rules: '/var/jenkins_home/userContent/android.parse'
@@ -115,7 +67,7 @@
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[CI] HiKey: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
+            subject: '[CI] HiKey/HiKey960 4.9 Premerge: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText

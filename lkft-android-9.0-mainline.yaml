@@ -31,7 +31,7 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${SRCREV_kernel,length=8}'
+            name: '#${BUILD_NUMBER}-${ENV,var="KERNEL_DESCRIBE"}'
         - timeout:
             timeout: 500
         - credentials-binding:
@@ -67,14 +67,14 @@
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[lkft-android] lkft-android-9.0-mainline: ${KERNEL_BRANCH} ${KERNEL_COMMIT} ${BUILD_STATUS}'
+            subject: '[lkft-android] lkft-android-9.0-mainline: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
                 Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
                 Git branch: ${KERNEL_BRANCH}
                 Git URL: ${KERNEL_REPO}
-                Git commit: ${KERNEL_COMMIT}
+                Git commit: ${SRCREV_kernel}
 
                 Errors:
                 ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
