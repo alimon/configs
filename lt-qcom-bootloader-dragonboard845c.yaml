@@ -28,6 +28,18 @@
             name: QCOM_LINUX_FIRMWARE_LICENSE_MD5
             default: 'cbbe399f2c983ad51768f4561587f000'
         - string:
+            name: ABL_GIT_LINARO
+            default: 'https://git.linaro.org/landing-teams/working/qualcomm/abl.git'
+        - string:
+            name: ABL_GIT_REL
+            default: 'release/LE.UM.2.3.7-09200-sda845.0'
+        - string:
+            name: ABL_CLANG_GIT
+            default: 'https://source.codeaurora.org/quic/la/platform/prebuilts/clang/host/linux-x86'
+        - string:
+            name: ABL_CLANG_REL
+            default: 'LA.UM.7.9.r1-07300-sm6150.0'
+        - string:
             name: PUB_DEST
             default: '96boards/dragonboard845c/linaro/rescue/${BUILD_NUMBER}'
     disabled: false
@@ -45,6 +57,17 @@
             wipe-workspace: false
     wrappers:
         - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: LT_QCOM_KEY
+                variable: LT_QCOM_KEY
+        - credentials-binding:
+            - text:
+                credential-id: AUTH_TOKEN
+                variable: AUTH_TOKEN
+        - ssh-agent-credentials:
+                users:
+                    - 'LT_QUALCOMM_PRIVATE_KEY_SSH'
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:

@@ -49,16 +49,57 @@ sed -i \
     -e '/NON-HLOS.bin/d' \
     bootloaders-linux/rawprogram*.xml
 
+# gcc toolchain
+toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
+tcdir=${HOME}/srv/toolchain
+tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
+
+# Clang
+git clone ${ABL_CLANG_GIT} --depth 1 -b ${ABL_CLANG_REL} ${WORKSPACE}/clang
+
+# get and build abl
+git clone --depth 1 ${ABL_GIT_LINARO} -b ${ABL_GIT_REL} abl
+pushd abl
+mkdir -p out/edk2
+make all \
+     BOOTLOADER_OUT=out/edk2 \
+     BUILD_SYSTEM_ROOT_IMAGE=0 \
+     VERIFIED_BOOT=0 \
+     VERIFIED_BOOT_2=0 \
+     VERIFIED_BOOT_LE=0 \
+     USER_BUILD_VARIANT=0 \
+     DISABLE_PARALLEL_DOWNLOAD_FLASH=1 \
+     ABL_USE_SDLLVM=false \
+     ABL_SAFESTACK=false \
+     CLANG_BIN=${WORKSPACE}/clang/clang-4691093/bin/ \
+     CLANG_PREFIX="aarch64-linux-gnu-" \
+     CLANG_GCC_TOOLCHAIN=$(tcbindir)/aarch64-linux-gnu-gcc \
+     TARGET_ARCHITECTURE=AARCH64 \
+     BOARD_BOOTLOADER_PRODUCT_NAME="SuperEDK2k"
+
+# get the signing tools, and sign
+# add SSH server signatures to known_hosts list.
+bash -c "ssh-keyscan dev-private-git.linaro.org >  ${HOME}/.ssh/known_hosts"
+bash -c "ssh-keyscan dev-private-review.linaro.org >>  ${HOME}/.ssh/known_hosts"
+git clone --depth 1 ssh://git@dev-private-git.linaro.org/landing-teams/working/qualcomm/sectools.git
+
+python2 sectools/sectools.py secimage -v \
+        -c sectools/config/sdm845/sdm845_secimage.xml \
+        -g abl -i abl.elf -o out -sa
+popd
+
 # bootloader_ufs_linux
 cp -a LICENSE \
    dragonboard845c/linux/flashall \
    bootloaders-linux/* \
+   abl/out/sdm845/abl/abl.elf \
    out/${BOOTLOADER_UFS_LINUX}
 
 # bootloader_ufs_aosp
 cp -a LICENSE \
    dragonboard845c/aosp/flashall \
    bootloaders-linux/* \
+   abl/out/sdm845/abl/abl.elf \
    out/${BOOTLOADER_UFS_AOSP}
 
 # Final preparation of archives for publishing
