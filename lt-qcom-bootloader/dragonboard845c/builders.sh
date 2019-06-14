@@ -53,6 +53,7 @@ sed -i \
 toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
 tcdir=${HOME}/srv/toolchain
 tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
+export PATH=${tcbindir}:${PATH}
 
 # Clang
 git clone ${ABL_CLANG_GIT} --depth 1 -b ${ABL_CLANG_REL} ${WORKSPACE}/clang
