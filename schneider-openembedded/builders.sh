@@ -142,6 +142,8 @@ time bitbake ${IMAGES}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
+ls -al ${DEPLOY_DIR_IMAGE}/*
+
 # Prepare files to publish
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
 find ${DEPLOY_DIR_IMAGE} -type l -delete
@@ -156,6 +158,14 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
+  rzn1d)
+    pushd ${DEPLOY_DIR_IMAGE}/optee
+    mv optee-os.itb ${DEPLOY_DIR_IMAGE}
+    mv optee-os.cms ${DEPLOY_DIR_IMAGE}
+    mv tee-pager.bin ${DEPLOY_DIR_IMAGE}
+    rm -rf optee
+    popd
+    ;;
   soca9)
     # re-create the SoCA9 DTB with a shorter filename
     pushd ${DEPLOY_DIR_IMAGE}
@@ -176,6 +186,8 @@ case "${MACHINE}" in
     done
     ;;
 esac
+
+ls -al ${DEPLOY_DIR_IMAGE}/*
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
