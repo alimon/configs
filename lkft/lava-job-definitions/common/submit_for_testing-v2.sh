@@ -59,9 +59,14 @@ function submit_jobs_for_config(){
         # replace file name in job template with new file name generated
         sed -i "s|{{DOWNLOAD_URL}}/${f}|{{DOWNLOAD_URL}}/${build_config}-$f|" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
     done
-    OPT_ENV_SUFFIX=""
-    if [ -z "{TEST_QA_SERVER_ENV_SUFFIX}" ] && [ "X${TEST_QA_SERVER_ENV_SUFFIX_ENABLED}" == "Xtrue" ]; then
-        OPT_ENV_SUFFIX="--env-suffix ${TEST_QA_SERVER_ENV_SUFFIX}"
+
+    # set OPT_ENVIRONMENT to empty by default, to make openembedded-lkft/submit_for_testing.py
+    # use the device type as the qa-report server environment
+    # and use the value of TEST_QA_SERVER_ENVIRONMENT as the qa-report server environment
+    # if it is sepecified explicitly
+    OPT_ENVIRONMENT=""
+    if [ -n "${TEST_QA_SERVER_ENVIRONMENT}" ] && [ "X${TEST_QA_SERVER_ENVIRONMENT_ENABLED}" == "Xtrue" ]; then
+        OPT_ENVIRONMENT="--environment ${TEST_QA_SERVER_ENVIRONMENT}"
     fi
     python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
         --device-type ${TEST_DEVICE_TYPE} \
@@ -69,7 +74,7 @@ function submit_jobs_for_config(){
         --lava-server ${TEST_LAVA_SERVER} \
         --qa-server ${TEST_QA_SERVER} \
         --qa-server-team android-lkft \
-        ${OPT_ENV_SUFFIX} \
+        ${OPT_ENVIRONMENT} \
         --qa-server-project ${TEST_QA_SERVER_PROJECT} \
         --git-commit ${QA_BUILD_VERSION} \
         --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common \
