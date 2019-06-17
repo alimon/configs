@@ -98,6 +98,10 @@ def main():
                         help="Device type in LAVA",
                         dest="device_type",
                         required=True)
+    parser.add_argument("--environment",
+                        help="User specified the environment name, prefix or suffix won't be used",
+                        dest="environment",
+                        default="")
     parser.add_argument("--env-prefix",
                         help="Prefix for the environment name",
                         dest="env_prefix",
@@ -191,7 +195,16 @@ def main():
     qa_server_team = args.qa_server_team
     qa_server_project = args.qa_server_project
     qa_server_build = args.git_commit
-    qa_server_env = args.env_prefix + args.device_type + args.env_suffix
+
+    if not args.environment:
+        # when user not specify value for the environment option,
+        # use the device_type as before
+        qa_server_env = args.env_prefix + args.device_type + args.env_suffix
+    else:
+        # when user specified value for the environment option,
+        # use the user specified value
+        qa_server_env = args.environment
+
     qa_server_api = "%s/api/submitjob/%s/%s/%s/%s" % (
         qa_server_base,
         qa_server_team,
