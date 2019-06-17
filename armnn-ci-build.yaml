@@ -31,9 +31,16 @@
     builders:
         - shell:
             !include-raw: armnn-ci-build/builders.sh
+        - shell: |
+            #!/bin/bash -e
+            GIT_COMMIT=$(git rev-parse --short=8 HEAD)
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+            echo "#${BUILD_NUMBER}-${GIT_COMMIT}" > ${WORKSPACE}/version.txt 
         - build-name-setter:
-            template: '#${BUILD_NUMBER}-${GIT_COMMIT_ID}'
-            macro: true
+            name: 'version.txt'
+            file: true
+        - inject:
+            properties-file: device_type_parameters
         - linaro-publish-token
         - shell: |
             #!/bin/bash
@@ -61,5 +68,4 @@
                 --qa-server-team staging-lkft \
                 --qa-server-project armnn-ci-build \
                 --lava-server ${LAVA_SERVER} \
-                --git-commit ${GIT_COMMIT_ID} \
-                --template-names armnn-template.yaml
+                --git-commit ${GIT_COMMIT}
