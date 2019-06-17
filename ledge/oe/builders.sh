@@ -101,7 +101,13 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse and converted images here, until it gets done by OE
 case "${MACHINE}" in
-  juno)
+  ledge-ti-am572x)
+    for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.ext4.gz); do
+      pigz -d -k ${rootfs}
+      sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
+      rm -f ${rootfs%.gz}
+      pigz -9 ${rootfs%.ext4.gz}.img
+    done
     ;;
   intel-core2-32|intel-corei7-64)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
