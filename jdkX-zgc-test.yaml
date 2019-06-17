@@ -1,0 +1,143 @@
+- job:
+    name: jdkX-zgc-test
+    project-type: matrix
+    defaults: global
+    description: |
+        * Configures and builds jdkX (ie, bin/java, bin/javac, et al) in debug mode before running SPECjbb2015.
+        * The source tarball is copied from the jdkX-update-src-tree job.<br>
+        * As we are the maintainers of ZGC on aarch64, we need to look after this.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            openjdk-members:
+                - job-build
+                - job-cancel
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 10
+            artifact-num-to-keep: 5
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+                - "jdk13-.*"
+                - "jdk12-.*"
+                - "jdk11-.*"
+                - "jdk8-.*"
+            block-level: 'GLOBAL'
+    disabled: false
+    node: j12-qrep-01
+    display-name: 'OpenJDK JDK - ZGC Debug Test'
+    axes:
+        - axis:
+            type: user-defined
+            name: BUILD_TYPE
+            values:
+                - fastdebug
+        - axis:
+            type: slave
+            name: label
+            values:
+                - j12-qrep-01
+    execution-strategy:
+        sequential: true
+    wrappers:
+        - workspace-cleanup:
+            dirmatch: false
+        - timestamps
+        - matrix-tie-parent:
+            node: j12-qrep-01
+    triggers:
+        - pollscm:
+            cron: '0 20 * * 1,3,5'
+    builders:
+        - copyartifact:
+            project: jdkX-update-src-tree
+            filter: 'out/jdkX.tar.gz'
+            target: incoming
+            flatten: true
+        - shell: |
+            #!/bin/bash
+
+            set -exu
+
+            ccache_build_opts=--disable-ccache
+
+            rm -rf jdk* primordial-jdk* build* out
+
+            cd $HOME/srv/jdk-cache/jdk12
+            export JAVA_HOME=${PWD}
+
+            export PATH=${JAVA_HOME}/bin:${PATH}
+
+            cd ${WORKSPACE}
+
+            # Extract sources from upstream job
+            tar xf incoming/jdkX.tar.gz
+
+            shopt -s nullglob
+
+            # Configure and build.
+            mkdir -p build-stage1 build-stage2 out
+
+            two_stage_build=0
+
+            which java
+            java -version
+
+            pushd build-stage2
+              sh ../jdkX/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts} --with-native-debug-symbols=internal
+              make images
+            popd
+
+            #tar -C build-stage2/images/jdk --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
+
+            # Now run test with ZGC.
+
+            export PATH=$PWD/build-stage2/images/jdk/bin:$PATH
+
+            ## Extract specjbb2015 product
+            CACHE_FILES=$HOME/srv/jdk-cache
+            tar xf $CACHE_FILES/SPECjbb2015-jdk11.tar.gz
+
+            # Run test
+
+            SPECJBB_PRODUCT_HOME=SPECjbb2015-1.00
+
+            # This commented-out invocation is a quick test that
+            # takes about 10 minutes to complete - which can be
+            # useful when debugging.
+
+            #(cd $SPECJBB_PRODUCT_HOME; \
+            # time java \
+            #   -Dspecjbb.controller.rtcurve.duration.min=500 \
+            #   -Dspecjbb.controller.rtcurve.duration.max=1500 \
+            #   -Dspecjbb.controller.type=PRESET \
+            #   -Dspecjbb.controller.preset.ir=4000 \
+            #   -Dspecjbb.controller.preset.duration=100 \
+            #   -jar specjbb2015.jar -m composite)
+
+            (cd $SPECJBB_PRODUCT_HOME;
+             java -XX:+UseLargePages \
+                  -XX:-UseBiasedLocking \
+                  -Xmx16g \
+                  -XX:+UnlockExperimentalVMOptions \
+                  -XX:+UseZGC \
+                  -XX:-UseBiasedLocking \
+                  -XX:+UnlockDiagnosticVMOptions \
+                  -XX:+ZVerifyForwarding \
+                  -XX:+ZVerifyMarking \
+                  -XX:+ZVerifyViews \
+                  -XX:+ZVerifyLoadBarriers \
+                  -Dspecjbb.controller.rtcurve.duration.min=500 \
+                  -Dspecjbb.controller.rtcurve.duration.max=1500 \
+                  -Dspecjbb.controller.type=PRESET \
+                  -Dspecjbb.controller.preset.ir=40000 \
+                  -Dspecjbb.controller.preset.duration=100 \
+                  -jar specjbb2015.jar \
+                  -ikv -m composite)
+    publishers:
+        - email:
+            recipients: 'stuart.monteith@linaro.org'
