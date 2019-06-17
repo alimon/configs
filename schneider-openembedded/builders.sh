@@ -133,7 +133,7 @@ case "${MACHINE}" in
   rzn1d*)
     # Temporary sstate cleanup to force binaries to be re-generated each time
     set +e
-    bitbake -c cleansstate u-boot-rzn1 u-boot-rzn1-spkg linux-rzn1
+    bitbake -c cleansstate u-boot-rzn1 u-boot-rzn1-spkg linux-rzn1 optee-os optee-client optee-test mbedtls
     set -e
     ;;
 esac
