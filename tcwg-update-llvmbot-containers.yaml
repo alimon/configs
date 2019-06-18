@@ -1,0 +1,104 @@
+- job:
+    name: tcwg-update-llvmbot-containers
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 100
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+              - "ci-dockerfiles-deployment"
+            queue-scanning: 'ALL'
+        - throttle:
+            max-per-node: 1
+            option: project
+    parameters:
+        - label:
+            name: nodes
+            default: tcwg-llvmbot
+            all-nodes: true
+            matching-label: 'allCases'
+            node-eligibility: 'ignore-offline'
+            description: 'Machines to run on'
+        - string:
+            name: distro
+            default: 'default'
+            description: 'Distro version to use'
+        - string:
+            name: master
+            default: 'default'
+            description: 'LLVM buildmaster to use: silent or normal'
+        - bool:
+            name: verbose
+            default: 'true'
+            description: 'Whether to be verbose'
+        - string:
+            name: scripts_branch
+            default: master
+            description: 'Scripts revision to use'
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG CCC Update llvmbot containers'
+    scm:
+        - git:
+            url: https://git-us.linaro.org/toolchain/jenkins-scripts.git
+            refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+            branches:
+                - ${scripts_branch}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'ci/dockerfiles'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'tcwg-tested'
+            silent-start: true
+    wrappers:
+        - timeout:
+            timeout: 600
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: TCWG_LLVMBOT_PASSWORD
+                variable: TCWG_LLVMBOT_PASSWORD
+        - build-name:
+            name: '#${BUILD_NUMBER}-${NODE_NAME}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+
+            case "$master:$GERRIT_BRANCH" in
+              default:tcwg-tested) master=normal ;;
+              default:*) master=silent ;;
+            esac
+            case "$distro:$GERRIT_BRANCH" in
+              default:tcwg-tested) distro=xenial-tcwg-tested ;;
+              default:*) distro=xenial ;;
+            esac
+
+            ./tcwg-update-llvmbot-containers.sh \
+            --NODE_NAME "$NODE_NAME" \
+            --distro "$distro" \
+            --master "$master" \
+            --password "$TCWG_LLVMBOT_PASSWORD" \
+            --verbose "$verbose"
