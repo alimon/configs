@@ -161,9 +161,6 @@ case "${MACHINE}" in
   rzn1d)
     pushd ${DEPLOY_DIR_IMAGE}/optee
     mv optee-os.itb ${DEPLOY_DIR_IMAGE}
-    mv optee-os.cms ${DEPLOY_DIR_IMAGE}
-    mv tee-pager.bin ${DEPLOY_DIR_IMAGE}
-    rm -rf optee
     popd
     ;;
   soca9)
