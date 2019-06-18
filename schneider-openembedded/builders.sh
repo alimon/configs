@@ -158,11 +158,6 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  rzn1d)
-    pushd ${DEPLOY_DIR_IMAGE}/optee
-    mv optee-os.itb ${DEPLOY_DIR_IMAGE}
-    popd
-    ;;
   soca9)
     # re-create the SoCA9 DTB with a shorter filename
     pushd ${DEPLOY_DIR_IMAGE}
