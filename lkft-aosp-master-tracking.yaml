@@ -324,8 +324,16 @@
                     cp -vf out/target/product/beagle_x15/${f} out/x15-${f}
                 fi
             done
+
             mv out/x15-boot_fit.img out/x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
             mv out/x15-vendor.img out/x15-vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
+
+            cd out/
+            [ -n "x15-system.img" ] && X15_SYSTEM_IMG_SHA256SUM=$(sha256sum x15-system.img | cut -d\  -f1)
+            [ -n "x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img" ] && X15_BOOT_FIT_4_14_IMG_SHA256SUM=$(sha256sum x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img | cut -d\  -f1)
+            [ -n "x15-userdata.img" ] && X15_USERDATA_IMG_SHA256SUM=$(sha256sum x15-userdata.img | cut -d\  -f1)
+            [ -n "x15-vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img" ] && X15_VENDOR_4_14_IMG_SHA256SUM=$(sha256sum x15-vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img | cut -d\  -f1)
+            cd -
 
             #######################################
             # compile x15 4.19 kernel
@@ -383,6 +391,11 @@
             mv out/x15-boot_fit.img out/x15-boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img
             mv out/x15-vendor.img out/x15-vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img
 
+            cd out/
+            [ -n "x15-vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img" ] && X15_VENDOR_4_19_IMG_SHA256SUM=$(sha256sum x15-vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img | cut -d\  -f1)
+            [ -n "x15-boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img" ] && X15_BOOT_FIT_4_19_IMG_SHA256SUM=$(sha256sum x15-boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img | cut -d\  -f1)
+            cd -
+
             # Delete sources after build to save space
             rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
             rm -fr ${X15_KERNEL_DIR}
@@ -412,6 +425,12 @@
             SYSTEM_IMG_SHA256SUM=${SYSTEM_IMG_SHA256SUM}
             USERDATA_IMG_SHA256SUM=${USERDATA_IMG_SHA256SUM}
             VENDOR_IMG_SHA256SUM=${VENDOR_IMG_SHA256SUM}
+            X15_SYSTEM_IMG_SHA256SUM=${X15_SYSTEM_IMG_SHA256SUM}
+            X15_USERDATA_IMG_SHA256SUM=${X15_USERDATA_IMG_SHA256SUM}
+            X15_VENDOR_4_14_IMG_SHA256SUM=${X15_VENDOR_4_14_IMG_SHA256SUM}
+            X15_VENDOR_4_19_IMG_SHA256SUM=${X15_VENDOR_4_19_IMG_SHA256SUM}
+            X15_BOOT_FIT_4_14_IMG_SHA256SUM=${X15_BOOT_FIT_4_14_IMG_SHA256SUM}
+            X15_BOOT_FIT_4_19_IMG_SHA256SUM=${X15_BOOT_FIT_4_19_IMG_SHA256SUM}
             EOF
         - inject:
             properties-file: publish_parameters
@@ -535,6 +554,8 @@
             sed -i "s|system.img|x15-system.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
             sed -i "s|userdata.img|x15-userdata.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
+            export X15_BOOT_FIT_IMG_SHA256SUM=${X15_BOOT_FIT_4_14_IMG_SHA256SUM}
+            export X15_VENDOR_IMG_SHA256SUM=${X15_VENDOR_4_14_IMG_SHA256SUM}
             python configs/openembedded-lkft/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
@@ -562,6 +583,8 @@
             sed -i "s|system.img|x15-system.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
             sed -i "s|userdata.img|x15-userdata.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 
+            export X15_BOOT_FIT_IMG_SHA256SUM=${X15_BOOT_FIT_4_19_IMG_SHA256SUM}
+            export X15_VENDOR_IMG_SHA256SUM=${X15_VENDOR_4_19_IMG_SHA256SUM}
             python configs/openembedded-lkft/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
