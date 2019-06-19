@@ -24,7 +24,15 @@ actions:
     timeout:
       minutes: 10
     method: u-boot
-    commands: fit
+    commands:
+      - setenv autoload no
+      - dhcp
+      - dhcp
+      - env print
+      - setenv serverip {SERVER_IP}
+      - tftp {KERNEL_ADDR} {KERNEL}
+      - run LINUX_BOOTARGS
+      - bootm {KERNEL_ADDR}#conf@1 
     auto_login:
       login_prompt: 'login:'
       username: root

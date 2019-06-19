@@ -29,7 +29,16 @@ actions:
     timeout:
       minutes: 10
     method: u-boot
-    commands: nfs
+    commands:
+      - setenv autoload no
+      - dhcp
+      - dhcp
+      - env print
+      - setenv serverip {SERVER_IP}
+      - tftp {KERNEL_ADDR} {KERNEL}
+      - tftp {DTB_ADDR} {DTB}
+      - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
+      - '{BOOTX}'
     auto_login:
       login_prompt: 'login:'
       username: root
