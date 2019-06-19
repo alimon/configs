@@ -99,6 +99,11 @@ cat << EOF >> conf/local.conf
 CMDLINE_remove = "quiet"
 EOF
 
+# Accept freescale EULA
+cat << EOF >> conf/local.conf
+ACCEPT_FSL_EULA = "1"
+EOF
+
 # add useful debug info
 cat conf/{site,auto}.conf
 
