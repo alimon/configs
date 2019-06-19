@@ -3,8 +3,11 @@ job_name: Schneider Electric SocA9 zImage NFS Test ${MACHINE} ${MANIFEST_BRANCH}
 
 timeouts:
   job:
-    minutes: 30
-
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 2
 priority: medium
 visibility: public
 
@@ -22,45 +25,66 @@ actions:
     timeout:
       minutes: 5
     to: tftp
+    os: oe
     kernel:
       url: ${KERNEL_ZIMAGE_URL}
       type: zimage
     dtb:
       url: ${DTB_URL}
     nfsrootfs:
-      url: ${NFSROOTFS_DEV_URL}
+      url: ${NFSROOTFS_URL}
       compression: bz2
 
 - boot:
     timeout:
-      minutes: 1
-    method: bootloader
-    bootloader: u-boot
-    commands: []
-    prompts: ['=>']
-
+      minutes: 10
+    method: u-boot
+    commands:
+      - run FPGA_INIT
+      - setenv autoload no
+      - dhcp
+      - dhcp
+      - env print
+      - setenv serverip {SERVER_IP}
+      - tftp 0x01000000 {KERNEL}
+      - tftp 0x00000100 {DTB}
+      - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
+      - '{BOOTX}'
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: "Password:"
+      password: "P@ssword-1"
+    prompts:
+    - "root@snarc-soca9:"
 - test:
     timeout:
-      minutes: 20
-    interactive:
-    - name: basic-cmds
-      prompts: ["=> ", "/ # "]
-      script:
-      - command: run FPGA_INIT
-        name: fpga_init
-      - command: env set serverip {SERVER_IP}
-        name: serverip
-      - command: setenv autoload no
-        name: autoload-off
-      - command: dhcp
-        name: dhcp
-      - command: "tftp 0x01000000 {KERNEL}"
-        name: kernel
-      - command: "tftp 0x00000100 {DTB}"
-        name: dtb
-      - command: env set bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'
-        name: cmdline
-      - command: "bootz 0x01000000 - 0x00000100"
-        name: bootz
-        successes:
-        - message: "snarc-soca9 login:"
+      minutes: 60
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: uname-test
+          description: "uname test"
+        run:
+          steps:
+            - uname -a
+      name: uname-test
+      path: inline/uname-test.yaml
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose

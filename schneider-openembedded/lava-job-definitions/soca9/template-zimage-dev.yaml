@@ -1,6 +1,6 @@
-device_type: rzn1d
+device_type: soca9
+job_name: Schneider Electric SocA9 zImage Dev NFS Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
-job_name: Schneider Electric RZN1D zImage NFS Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 timeouts:
   job:
     minutes: 100
@@ -14,6 +14,15 @@ visibility: public
 actions:
 - deploy:
     timeout:
+      minutes: 10
+    to: flasher
+    images:
+      image:
+        url: https://images.validation.linaro.org/people.linaro.org/~remi.duraffort/soca9-disk.img.bz2
+        compression: bz2
+
+- deploy:
+    timeout:
       minutes: 5
     to: tftp
     os: oe
@@ -23,20 +32,22 @@ actions:
     dtb:
       url: ${DTB_URL}
     nfsrootfs:
-      url: ${NFSROOTFS_URL}
+      url: ${NFSROOTFS_DEV_URL}
       compression: bz2
+
 - boot:
     timeout:
       minutes: 10
     method: u-boot
     commands:
+      - run FPGA_INIT
       - setenv autoload no
       - dhcp
       - dhcp
       - env print
       - setenv serverip {SERVER_IP}
-      - tftp {KERNEL_ADDR} {KERNEL}
-      - tftp {DTB_ADDR} {DTB}
+      - tftp 0x01000000 {KERNEL}
+      - tftp 0x00000100 {DTB}
       - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
       - '{BOOTX}'
     auto_login:
@@ -45,7 +56,7 @@ actions:
       password_prompt: "Password:"
       password: "P@ssword-1"
     prompts:
-    - "root@rzn1-snarc:"
+    - "root@snarc-soca9:"
 - test:
     timeout:
       minutes: 60
@@ -61,6 +72,22 @@ actions:
             - uname -a
       name: uname-test
       path: inline/uname-test.yaml
+    - path: automated/linux/badblocks/badblocks.yaml
+      repository: https://git@git.linaro.org/qa/test-definitions.git
+      history: false
+      name: badblocks
+      from: git
+      branch: master
+      parameters:
+        SKIP_INSTALL: True
+    - path: automated/linux/memtester/memtester.yaml
+      repository: https://git@git.linaro.org/qa/test-definitions.git
+      history: false
+      name: memtester
+      from: git
+      branch: master
+      parameters:
+        SKIP_INSTALL: True
 
 metadata:
   machine: ${MACHINE}

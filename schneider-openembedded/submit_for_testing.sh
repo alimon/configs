@@ -42,7 +42,7 @@ if [ "${DEVICE_TYPE}" == "rzn1d" ] || [ "${DEVICE_TYPE}" == "soca9" ]; then
 	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
 	  --template-names template-zimage.yaml
 fi
-if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
+if [ "${DEVICE_TYPE}" == "rzn1d" ] || [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
 	  --build-number ${BUILD_NUMBER} \
