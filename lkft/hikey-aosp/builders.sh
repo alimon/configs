@@ -57,8 +57,8 @@ fi
 cp .config out/defconfig
 make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
 
-wget -q https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py -O mkbootimg
-wget -q ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
+wget https://android-git.linaro.org/platform/system/core.git/plain/mkbootimg/mkbootimg.py?id=1e40c30b0cc0f2ae007dacc64fe08af52cc731e3 -O mkbootimg
+wget ${REFERENCE_BUILD_URL}/ramdisk.img -O ramdisk.img
 
 python mkbootimg \
   --kernel ${PWD}/arch/arm64/boot/Image.gz-dtb \
