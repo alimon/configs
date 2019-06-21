@@ -25,7 +25,8 @@ unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) \
       "*/11-keymaster/keymaster64.mbn" \
       "*/13-sec/sec.dat" \
       "*/14-storsec/storsec.mbn" \
-      "*/15-tz/tz.mbn"
+      "*/15-tz/tz.mbn" \
+      "*/40-qupv3fw/qupv3fw.elf"
 
 BOOTLOADER_UFS_LINUX=dragonboard-845c-bootloader-ufs-linux-${BUILD_NUMBER}
 BOOTLOADER_UFS_AOSP=dragonboard-845c-bootloader-ufs-aosp-${BUILD_NUMBER}
@@ -126,6 +127,7 @@ This page provides the bootloaders packages for the Dragonboard 845c. There are 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
 * Linux proprietary bootloaders package: $(basename ${QCOM_LINUX_FIRMWARE})
+* "ABL source code"::$ABL_GIT_LINARO/log/?h=$(echo $ABL_GIT_REL | sed -e 's/+/\%2b/g')
 EOF
 
 # Publish
