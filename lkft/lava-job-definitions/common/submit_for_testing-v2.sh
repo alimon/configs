@@ -65,7 +65,7 @@ function submit_jobs_for_config(){
     # and use the value of TEST_QA_SERVER_ENVIRONMENT as the qa-report server environment
     # if it is sepecified explicitly
     OPT_ENVIRONMENT=""
-    if [ -n "${TEST_QA_SERVER_ENVIRONMENT}" ] && [ "X${TEST_QA_SERVER_ENVIRONMENT_ENABLED}" == "Xtrue" ]; then
+    if [ -n "${TEST_QA_SERVER_ENVIRONMENT}" ] && echo "X${TEST_QA_SERVER_ENVIRONMENT_ENABLED}" | grep -i "Xtrue"; then
         OPT_ENVIRONMENT="--environment ${TEST_QA_SERVER_ENVIRONMENT}"
     fi
     python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
