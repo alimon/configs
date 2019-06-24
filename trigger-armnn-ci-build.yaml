@@ -29,5 +29,10 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - shell: |
+            #!/bin/bash -e
+            git clean -fdx
+            echo GIT_COMMIT=${GIT_REVISION, length=8} >> armnn_ci_parameters
         - trigger-builds:
             - project: 'armnn-ci-build'
+              property-file: armnn_ci_parameters

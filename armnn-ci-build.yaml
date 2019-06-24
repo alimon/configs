@@ -23,6 +23,8 @@
         - string:
             name: LAVA_SERVER
             default: 'staging.validation.linaro.org/'
+        - string:
+            name: GIT_COMMIT
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Arm NN - CI Build'
@@ -33,12 +35,7 @@
             !include-raw: armnn-ci-build/builders.sh
         - shell: |
             #!/bin/bash -e
-            GIT_COMMIT=$(git rev-parse --short=8 HEAD)
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
-            echo "#${BUILD_NUMBER}-${GIT_COMMIT}" > ${WORKSPACE}/version.txt 
-        - build-name-setter:
-            name: 'version.txt'
-            file: true
         - inject:
             properties-file: device_type_parameters
         - linaro-publish-token
