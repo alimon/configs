@@ -127,7 +127,7 @@ This page provides the bootloaders packages for the Dragonboard 845c. There are 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
 * Linux proprietary bootloaders package: $(basename ${QCOM_LINUX_FIRMWARE})
-* "ABL source code"::$ABL_GIT_LINARO/log/?h=$(echo $ABL_GIT_REL | sed -e 's/+/\%2b/g')
+* "ABL source code":$ABL_GIT_LINARO/log/?h=$(echo $ABL_GIT_REL | sed -e 's/+/\%2b/g')
 EOF
 
 # Publish
