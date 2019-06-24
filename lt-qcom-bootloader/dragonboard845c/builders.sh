@@ -11,9 +11,6 @@ echo "${QCOM_LINUX_FIRMWARE_MD5}  $(basename ${QCOM_LINUX_FIRMWARE})" > MD5
 md5sum -c MD5
 
 unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) \
-      "*/00-gpt/gpt_*" \
-      "*/01-firehose_xml/patch*.xml" \
-      "*/01-firehose_xml/rawprogram?.xml" \
       "*/02-firehose_prog/prog_firehose_ddr.elf" \
       "*/04-aop/aop.mbn" \
       "*/05-BTFM/BTFM.bin" \
@@ -39,16 +36,11 @@ mv LICENSE.qcom.txt LICENSE
 echo "${QCOM_LINUX_FIRMWARE_LICENSE_MD5}  LICENSE" > MD5
 md5sum -c MD5
 
-# process rawprogram commands files
-sed -i \
-    -e '/sda845-persist.ext4/d' \
-    -e '/sda845-sysfs.ext4/d' \
-    -e '/sda845-systemrw.ext4/d' \
-    -e '/sda845-cache.ext4/d' \
-    -e '/sda845-usrfs.ext4/d' \
-    -e '/sda845-boot.img/d' \
-    -e '/NON-HLOS.bin/d' \
-    bootloaders-linux/rawprogram*.xml
+# Create ptable and rawprogram/patch command files
+git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/partioning_tool.git ptool
+(cd ptool && git log -1)
+(mkdir ptool/linux && cd ptool/linux && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard845c/linux/partition.xml)
+(mkdir ptool/aosp && cd ptool/aosp && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard845c/aosp/partition.xml)
 
 # gcc toolchain
 toolchain_url=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
@@ -96,6 +88,7 @@ cp -a LICENSE \
    dragonboard845c/linux/flashall \
    bootloaders-linux/* \
    abl/out/sdm845/abl/abl.elf \
+   ptool/linux/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin} \
    out/${BOOTLOADER_UFS_LINUX}
 
 # bootloader_ufs_aosp
@@ -103,6 +96,7 @@ cp -a LICENSE \
    dragonboard845c/aosp/flashall \
    bootloaders-linux/* \
    abl/out/sdm845/abl/abl.elf \
+   ptool/aosp/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin} \
    out/${BOOTLOADER_UFS_AOSP}
 
 # Final preparation of archives for publishing
@@ -129,6 +123,9 @@ Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
 * Linux proprietary bootloaders package: $(basename ${QCOM_LINUX_FIRMWARE})
 * "ABL source code":$ABL_GIT_LINARO/commit/?id=$ABL_GIT_COMMIT
+* Partition table:
+** "Linux":$GIT_URL/tree/dragonboard845c/linux/partition.xml?id=$GIT_COMMIT
+** "AOSP":$GIT_URL/tree/dragonboard845c/aosp/partition.xml?id=$GIT_COMMIT
 EOF
 
 # Publish
