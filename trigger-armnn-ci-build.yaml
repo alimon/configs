@@ -32,7 +32,9 @@
         - shell: |
             #!/bin/bash -e
             git clean -fdx
-            echo GIT_COMMIT=${GIT_REVISION, length=8} >> armnn_ci_parameters
-        - trigger-builds:
+            echo GIT_COM_ID=${GIT_REVISION, length=8} >> armnn_ci_parameters
+            cat armnn_ci_parameters
+    publishers:
+        - trigger-parameterized-builds:
             - project: 'armnn-ci-build'
               property-file: armnn_ci_parameters
