@@ -62,6 +62,7 @@ git clone ${ABL_CLANG_GIT} --depth 1 -b ${ABL_CLANG_REL} ${WORKSPACE}/clang
 # get and build abl
 git clone --depth 1 ${ABL_GIT_LINARO} -b ${ABL_GIT_REL} abl
 pushd abl
+ABL_GIT_COMMIT=$(git rev-parse HEAD)
 mkdir -p out/edk2
 make all \
      BOOTLOADER_OUT=out/edk2 \
@@ -127,7 +128,7 @@ This page provides the bootloaders packages for the Dragonboard 845c. There are 
 Build description:
 * Build URL: "$BUILD_URL":$BUILD_URL
 * Linux proprietary bootloaders package: $(basename ${QCOM_LINUX_FIRMWARE})
-* "ABL source code":$ABL_GIT_LINARO/log/?h=$(echo $ABL_GIT_REL | sed -e 's/+/\%2b/g')
+* "ABL source code":$ABL_GIT_LINARO/commit/?id=$ABL_GIT_COMMIT
 EOF
 
 # Publish
