@@ -5,7 +5,7 @@ set -ex
 rm -rf configs
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-PRODUCTION_LAVA_TEST_JOBS="template-tests-${MANIFEST_BRANCH}.yaml template-wifi-tests.yaml"
+PRODUCTION_LAVA_TEST_JOBS="template-robotframework-tests.yaml template-wifi-tests.yaml"
 STAGING_LAVA_TEST_JOBS=""
 
 case "${DEVICE_TYPE}" in
