@@ -19,7 +19,7 @@ fi
 pip install --user --force-reinstall ruamel.yaml
 
 sudo apt-get update
-sudo apt-get install -y selinux-utils
+sudo apt-get install -y selinux-utils cpio
 
 if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
   sudo mkdir -p /home/buildslave/srv/${BUILD_DIR}
