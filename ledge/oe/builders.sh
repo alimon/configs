@@ -102,6 +102,9 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 # FIXME: Sparse and converted images here, until it gets done by OE
 case "${MACHINE}" in
   ledge-ti-am572x)
+    ls -l ${DEPLOY_DIR_IMAGE}
+    ls -l ${DEPLOY_DIR_IMAGE}/../
+    whoami
     for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.ext4.gz); do
       pigz -d -k ${rootfs}
       sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
