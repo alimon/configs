@@ -139,6 +139,19 @@
                   -Dspecjbb.controller.preset.duration=100 \
                   -jar specjbb2015.jar \
                   -ikv -m composite)
+
+            # Do a sanity run of JCStress
+            DEPS=$HOME/workspace/jdkX-get-deps
+
+            JCSTRESS_JAR=$DEPS/jcstress.jar
+            java -jar ${JCSTRESS_JAR} -m sanity
+
     publishers:
         - email:
             recipients: 'stuart.monteith@linaro.org'
+        - html-publisher:
+            name: 'HTML Report'
+            dir: 'results'
+            files: 'index.html'
+            keep-all: true
+
