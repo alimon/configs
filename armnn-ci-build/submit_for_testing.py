@@ -92,7 +92,7 @@ def main():
             sys.exit(1)
 
         template = Template(test_template)
-        lava_job = template.substitute(os.environ)
+        lava_job = template.safe_substitute(os.environ)
         print(lava_job)
         try:
             data = {
