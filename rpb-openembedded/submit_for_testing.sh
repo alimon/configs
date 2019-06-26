@@ -1,7 +1,18 @@
 #!/bin/bash
 
+[ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
+[ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="25"
+[ -z "${SANITY_LAVA_JOB_PRIORITY}" ] && export SANITY_LAVA_JOB_PRIORITY="30"
+[ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
+[ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=rpb
+[ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
+[ -z "${TDEFINITIONS_REVISION}" ] && export TDEFINITIONS_REVISION="kselftest-5.1"
+[ -z "${MANIFEST_COMMIT}" ] && export MANIFEST_COMMIT="HEAD"
+
 rm -rf configs
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+# for manual run from current directory
+#git clone --depth 1 . configs
 
 # Used by DB410C's template:
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}

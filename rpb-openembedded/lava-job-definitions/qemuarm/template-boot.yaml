@@ -1,0 +1,60 @@
+device_type: qemu
+job_name: RPB OE boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 45
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: 25
+visibility: public
+ 
+context:
+  arch: arm
+  netdevice: tap
+  machine: virt,highmem=off
+  cpu: cortex-a15
+  guestfs_interface: virtio
+  extra_kernel_args: \"${KERNEL_ARGS}\"
+
+actions:
+- deploy:
+    namespace: target
+    timeout:
+      minutes: 15
+    to: tmpfs
+    images:
+      rootfs:
+        image_arg: -drive id=disk0,file={rootfs},if=none,format=raw -device virtio-blk-device,drive=disk0 -m 1024 -nographic
+        url: ${EXT4_IMAGE_URL}
+        compression: gz
+        apply-overlay: true
+        sparse: false
+      kernel:
+        image_arg: -kernel {kernel} --append "console=ttyAMA0 root=/dev/vda rw"
+        url: ${KERNEL_URL}
+        type: image
+    os: oe
+
+- boot:
+    namespace: target
+    timeout:
+      minutes: 15
+    method: qemu
+    media: tmpfs
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      login_commands:
+        - su
+    prompts:
+    - root@(.*):~#
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${BASE_URL}${PUB_DEST}
