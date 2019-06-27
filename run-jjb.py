@@ -92,7 +92,7 @@ for filename in data.splitlines():
         for tempname in files:
             filelist.append(tempname)
 
-# Remove dplicate entries in the list
+# Remove duplicate entries in the list
 filelist = list(set(filelist))
 
 for conf_filename in filelist:
@@ -144,8 +144,9 @@ for conf_filename in filelist:
                 raise ValueError("command has failed with code '%s'" % proc.returncode)
 
             for filename in data.splitlines():
-                if not filename.startswith(os.path.splitext(conf_filename)[0]):
-                    raise ValueError("filename and job name does not follow the naming convention")
+                conf_name=os.path.splitext(conf_filename)[0]
+                if not filename.startswith(conf_name):
+                    raise ValueError("Job name %s does not match the file it is in: %s" % (filename, conf_name))
                 try:
                     xmlroot = xml.etree.ElementTree.parse('out/' + filename).getroot()
                     disabled = next(xmlroot.iterfind('disabled')).text
