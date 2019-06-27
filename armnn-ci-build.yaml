@@ -28,6 +28,13 @@
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Arm NN - CI Build'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'hi960-hikey'
+                - 'synquacer'
     wrappers:
         - timestamps
     builders:
@@ -35,7 +42,21 @@
             !include-raw: armnn-ci-build/builders.sh
         - shell: |
             #!/bin/bash -e
+
+            case "${MACHINE}" in
+                hikey)
+                    DEVICE_TYPE=hi960-hikey
+                    ;;
+                synquacer)
+                    DEVICE_TYPE=synquacer
+                    ;;
+                *)
+                    echo "Skip DEVICE_TYPE for ${MACHINE}"
+                    ;;
+            esac
+
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+
         - inject:
             properties-file: device_type_parameters
         - linaro-publish-token
@@ -52,8 +73,6 @@
               out/ components/armnn/${BUILD_NUMBER}
         - shell: |
             #!/bin/bash -ex
-
-            export DEVICE_TYPE=hi960-hikey
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git

@@ -1,0 +1,78 @@
+device_type: synquacer
+
+job_name: synquacer-debian-armnn-test
+timeouts:
+  job:
+    minutes: 90
+  action:
+   minutes: 60
+
+priority: medium
+visibility: public
+
+actions:
+
+  - deploy:
+      timeout:
+        minutes: 10
+      to: tftp
+      kernel:
+          url: http://images.validation.linaro.org/synquacer/hc/vmlinuz
+          type: zimage
+      nfsrootfs:
+          url: http://images.validation.linaro.org/synquacer/hc/rootfs.tar.xz
+          compression: xz
+          prefix: binary/
+      ramdisk:
+          url: http://images.validation.linaro.org/synquacer/hc/initrd.img
+          compression: gz
+      os: debian
+
+  - boot:
+      timeout:
+        minutes: 15
+      method: grub
+      commands: nfs
+      parameters:
+        shutdown-message: "reboot: Restarting system"
+      auto_login:
+        login_prompt: 'login:'
+        username: root
+        password_prompt: 'Password:'
+        password: Linaro123
+      prompts:
+        - '\(initramfs\)'
+        - 'root@linaro-test'
+        - 'root@linaro-developer:'
+        - 'root@lng(.*)'
+        - 'root@local(.*)'
+        - 'localhost(.*)' 
+
+  - test:
+      timeout:
+        minutes: 15
+      definitions:
+        - repository:
+            metadata:
+              format: Lava-Test Test Definition 1.0
+              name: armnn test
+              description: "armnn test"
+              os:
+              - debian
+              scope:
+              - functional
+            run:
+              steps:
+              - dhclient
+              - wget https://snapshots.linaro.org/components/armnn/latest/armnn.tar.xz
+              - tar xf armnn.tar.xz
+              - cd home/buildslave/workspace/armnn-ci-build
+              - export BASEDIR=`pwd`
+              - cd $BASEDIR/armnn/build
+              - ln -s $BASEDIR/protobuf-host/lib/libprotobuf.so.15 ./libprotobuf.so.15
+              - export LD_LIBRARY_PATH=`pwd`
+              - chmod a+x UnitTests
+              - ./UnitTests
+          from: inline
+          path: inline/armnn.yaml
+          name: armnn
