@@ -88,7 +88,7 @@ cp -a LICENSE \
    dragonboard845c/linux/flashall \
    bootloaders-linux/* \
    abl/out/sdm845/abl/abl.elf \
-   ptool/linux/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin} \
+   ptool/linux/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin,gpt_both?.bin} \
    out/${BOOTLOADER_UFS_LINUX}
 
 # bootloader_ufs_aosp
@@ -96,7 +96,7 @@ cp -a LICENSE \
    dragonboard845c/aosp/flashall \
    bootloaders-linux/* \
    abl/out/sdm845/abl/abl.elf \
-   ptool/aosp/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin} \
+   ptool/aosp/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin,gpt_both?.bin} \
    out/${BOOTLOADER_UFS_AOSP}
 
 # Final preparation of archives for publishing
