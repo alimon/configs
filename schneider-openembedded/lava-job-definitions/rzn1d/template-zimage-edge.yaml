@@ -1,0 +1,86 @@
+device_type: rzn1d
+
+job_name: Schneider Electric RZN1D zImage Dev NFS Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 5
+    to: tftp
+    os: oe
+    kernel:
+      url: ${KERNEL_ZIMAGE_URL}
+      type: zimage
+    dtb:
+      url: ${DTB_URL}
+    nfsrootfs:
+      url: ${NFSROOTFS_DEV_URL}
+      compression: bz2
+- boot:
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+      - setenv autoload no
+      - dhcp
+      - dhcp
+      - env print
+      - setenv serverip {SERVER_IP}
+      - tftp {KERNEL_ADDR} {KERNEL}
+      - tftp {DTB_ADDR} {DTB}
+      - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
+      - '{BOOTX}'
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    prompts:
+    - "root@rzn1-snarc:"
+- test:
+    timeout:
+      minutes: 60
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: uname-test
+          description: "uname test"
+        run:
+          steps:
+            - uname -a
+      name: uname-test
+      path: inline/uname-test.yaml
+    - path: automated/linux/docker/docker.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: docker
+      from: git
+      branch: master
+      parameters:
+        IMAGE: "arm32v7/ubuntu"
+        SKIP_INSTALL: True
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose
