@@ -1,0 +1,148 @@
+- job:
+    name: openembedded-lkft-sdk
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: KERNEL_RECIPE
+            default: 'linux-dummy'
+        - string:
+            name: IMAGES
+            default: 'meta-toolchain'
+        - string:
+            name: MANIFEST_URL
+            default: 'https://github.com/96boards/oe-rpb-manifest.git'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'lkft/sumo'
+        - string:
+            name: PUB_DEST
+            default: 'openembedded/lkft/sdk/sumo/${MACHINE}/${BUILD_NUMBER}'
+        - matrix-combinations:
+            name: MATRIX_COMBINATIONS
+    disabled: false
+    node: master
+    display-name: 'LKFT - SDK (OpenEmbedded/sumo)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'am57xx-evm'
+                - 'intel-corei7-64'
+                - 'juno'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - lkft
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-lkft
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 180
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            sudo mkdir -p /srv/oe
+            sudo chown buildslave:buildslave /srv/oe
+            cd /srv/oe
+
+            if [ -f "${HOME}/bin/repo" ]; then
+              chmod a+x "${HOME}/bin/repo"
+            fi
+            export PATH="${HOME}/bin:${PATH}"
+
+            # initialize repo if not done already
+            export MANIFEST_URL="${MANIFEST_URL:-https://github.com/96boards/oe-rpb-manifest.git}"
+            if [ ! -e ".repo/manifest.xml" ]; then
+               repo init -u "${MANIFEST_URL}" -b "${MANIFEST_BRANCH}"
+
+               mkdir -p "${HOME}/srv/oe/downloads" "${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH}"
+               mkdir -p build
+               ln -s "${HOME}/srv/oe/downloads" .
+               ln -s "${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH}" sstate-cache
+            fi
+
+            repo sync
+
+            rm -rf conf build
+
+            # Accept EULA if/when needed
+            export EULA_dragonboard410c=1
+
+            source setup-environment build
+
+            # add useful debug info
+            for f in conf/{site,auto,local,lkft-kernel}.conf; do
+              if [ -f ${f} ]; then
+                echo "=== content of ${f} ==="
+                cat ${f}
+              else
+                echo "=== not existent: ${f} ==="
+              fi
+            done
+
+            time bitbake ${IMAGES}
+
+            DEPLOY_DIR_IMAGE="$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk"
+
+            echo "DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}" >> "${WORKSPACE}/parameters"
+        - inject:
+            properties-file: parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: openembedded-lkft/publishers.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+        - email-ext:
+            recipients: 'daniel.diaz@linaro.org'
+            matrix-trigger: only-configurations
+            aborted: true
+            subject: '[SDK] ${MACHINE}: ${BUILD_STATUS}'
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+                Git branch: ${KERNEL_BRANCH}
+                Git URL: ${KERNEL_REPO}
+                Git commit: ${SRCREV_kernel}
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+            presend-script:
+                !include-raw: openembedded-lkft/presend-script.groovy
