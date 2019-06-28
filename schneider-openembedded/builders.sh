@@ -136,6 +136,9 @@ case "${MACHINE}" in
     bitbake -c cleansstate u-boot-rzn1 u-boot-rzn1-spkg linux-rzn1 optee-os optee-client optee-test mbedtls
     set -e
     ;;
+  soca9)
+    IMAGES="$(echo $IMAGES | sed -e 's/dip-image-dev//')"
+    ;;
 esac
 
 time bitbake ${IMAGES}
