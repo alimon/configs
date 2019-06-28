@@ -236,6 +236,7 @@ case "${MACHINE}" in
   rzn1|rzn1d)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
+    ROOTFS_EDGE_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-${MACHINE}*-bestla-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-rzn1*-*-${BUILD_NUMBER}.bin" | xargs -r basename)
     ;;
@@ -265,6 +266,7 @@ KERNEL_ZIMAGE_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
 NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TAR_BZ2}
 NFSROOTFS_DEV_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DEV_TAR_BZ2}
+NFSROOTFS_EDGE_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EDGE_TAR_BZ2}
 RECOVERY_IMAGE_URL=${BASE_URL}${PUB_DEST}/juno-oe-uboot.zip
 LXC_BOOT_IMG=${BOOT_IMG}
 LXC_ROOTFS_IMG=$(basename ${ROOTFS_IMG} .gz)
