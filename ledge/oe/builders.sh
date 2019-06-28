@@ -107,7 +107,7 @@ case "${MACHINE}" in
     ls -l ${DEPLOY_DIR_IMAGE}/../
     whoami
     for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.ext4.gz); do
-      gunzip -k ${rootfs}
+      gunzip -f -k ${rootfs}
       sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
       rm -f ${rootfs%.gz}
       pigz -9 ${rootfs%.ext4.gz}.img
