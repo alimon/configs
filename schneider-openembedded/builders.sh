@@ -137,7 +137,7 @@ case "${MACHINE}" in
     set -e
     ;;
   soca9)
-    IMAGES="$(echo $IMAGES | sed -e 's/dip-image-dev//')"
+    IMAGES="$(echo $IMAGES | sed -e 's/dip-image-edge//')"
     ;;
 esac
 
