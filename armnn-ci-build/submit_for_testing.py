@@ -59,7 +59,6 @@ def main():
     args, _ = parser.parse_known_args()
 
 
-    print(os.environ)
     qa_server_base = args.qa_server
     if not (qa_server_base.startswith("http://") or qa_server_base.startswith("https://")):
         qa_server_base = "https://" + qa_server_base
