@@ -90,6 +90,28 @@ OSF_LMP_GIT_URL = "github.com"
 OSF_LMP_GIT_NAMESPACE = "opensourcefoundries/"
 EOF
 
+# Add job BUILD_NUMBER to output files names
+cat << EOF >> conf/auto.conf
+IMAGE_NAME_append = "-${BUILD_NUMBER}"
+KERNEL_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
+MODULE_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
+DT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
+BOOT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
+EOF
+
+# get build stats to make sure that we use sstate properly
+cat << EOF >> conf/auto.conf
+INHERIT += "buildstats buildstats-summary"
+EOF
+
+# allow the top level job to append to auto.conf
+if [ -f ${WORKSPACE}/auto.conf ]; then
+    cat ${WORKSPACE}/auto.conf >> conf/auto.conf
+fi
+
+# add useful debug info
+cat conf/{site,auto}.conf
+
 time bitbake ${IMAGES}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
@@ -175,6 +197,7 @@ TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 
+ls -lh  ${DEPLOY_DIR_IMAGE}
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*${MACHINE}-*${BUILD_NUMBER}*.img" | sort | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}-*.bin" | xargs -r basename)
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
@@ -220,6 +243,7 @@ DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 MANIFEST_COMMIT=${MANIFEST_COMMIT}
 BASE_URL=${BASE_URL}
 BOOT_URL=${BASE_URL}/${PUB_DEST}/${BOOT_IMG}
+ROOTFS_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_IMG}
 SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 KERNEL_URL=${BASE_URL}/${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}/${PUB_DEST}/${DTB_IMG}
