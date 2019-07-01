@@ -9,7 +9,7 @@ update_terraform()
         (
         cd /tmp
         wget -q https://releases.hashicorp.com/terraform/${TFVERS}/terraform_${TFVERS}_linux_amd64.zip
-        unzip terraform_${TFVERS}_linux_amd64.zip
+        unzip -o terraform_${TFVERS}_linux_amd64.zip
         cp terraform ~/.local/bin/terraform_${TFVERS}
         chmod a+x ~/.local/bin/terraform_${TFVERS}
         ln -sf terraform_${TFVERS}  ~/.local/bin/terraform
