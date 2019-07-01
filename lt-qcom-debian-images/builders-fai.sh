@@ -158,6 +158,9 @@ git commit --allow-empty -m "Import build ${BUILD_NUMBER}"
 git push origin debian/${PLATFORM_NAME}
 cd ..
 
+# get ROOTFS from FAI config
+ROOTFS_PARTLABEL=$(grep --color=never -Po  "^ROOTFS_PARTLABEL=\K.*" class/${FAI_BOARD_CLASS}.var)
+
 # Create boot image
 cat out/vmlinuz-* out/$(basename ${DTBS}) > Image.gz+dtb
 mkbootimg \
