@@ -2,7 +2,7 @@
 
 update_terraform()
 {
-    export TFVERS=0.11.13
+    export TFVERS=0.11.14
     mkdir -p ̃~/.local/bin
     if [ ! -x ~/.local/bin/terraform_${TFVERS} ]
     then
@@ -52,6 +52,7 @@ for dir in ${changed_dirs}; do
     fi
     terraform init > /dev/null
     terraform plan $vars -out demo.plan
+    terraform 0.12checklist
     cd $topdir
 done
 
