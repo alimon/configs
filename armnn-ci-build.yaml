@@ -28,13 +28,7 @@
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Arm NN - CI Build'
-    axes:
-        - axis:
-            type: user-defined
-            name: MACHINE
-            values:
-                - 'hi960-hikey'
-                - 'synquacer'
+
     wrappers:
         - timestamps
         - credentials-binding:
@@ -46,21 +40,7 @@
             !include-raw: armnn-ci-build/builders.sh
         - shell: |
             #!/bin/bash -e
-
-            case "${MACHINE}" in
-                hikey)
-                    DEVICE_TYPE=hi960-hikey
-                    ;;
-                synquacer)
-                    DEVICE_TYPE=synquacer
-                    ;;
-                *)
-                    echo "Skip DEVICE_TYPE for ${MACHINE}"
-                    ;;
-            esac
-
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
-
         - inject:
             properties-file: device_type_parameters
         - linaro-publish-token
@@ -78,10 +58,21 @@
         - shell: |
             #!/bin/bash -ex
 
+            export DEVICE_TYPE=hi960-hikey
+
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            [ -z "${DEVICE_TYPE}" ] || \
+            python configs/armnn-ci-build/submit_for_testing.py \
+                --device-type ${DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --qa-server-team staging-lkft \
+                --qa-server-project armnn-ci-build \
+                --lava-server ${LAVA_SERVER} \
+                --git-commit ${GIT_COM_ID}
+
+            export DEVICE_TYPE=synquacer
+
             python configs/armnn-ci-build/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
