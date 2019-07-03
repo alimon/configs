@@ -35,13 +35,28 @@ function check_environments(){
     return 0
 }
 
+function get_value_from_config_file(){
+    local key=$1 && shift
+    local f_config=$1 && shift
+
+    local key_line=$(grep "${key}=" "${f_config}"|tail -n1|tr -d '"')
+    if [ -z "key_line" ]; then
+        return
+    fi
+    local value=$(echo "${key_line}"|cut -d= -f2-)
+    if [ -z "${value}" ]; then
+        return
+    else
+        echo "${value}"
+    fi
+}
 
 function submit_jobs_for_config(){
     local build_config=$1 && shift
     # clean environments
     unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
-    unset PUBLISH_FILES
+    unset PUBLISH_FILES TEST_OTHER_PLANS
 
     config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${build_config}?h=lkft"
     wget ${config_url} -O ${build_config}
@@ -81,6 +96,47 @@ function submit_jobs_for_config(){
         --test-plan template-boot.yaml template-vts-kernel.yaml template-cts.yaml \
         ${OPT_DRY_RUN} \
         --quiet
+
+    if [ -n "${TEST_OTHER_PLANS}" ]; then
+        for plan in ${TEST_OTHER_PLANS}; do
+            templates=$(get_value_from_config_file "TEST_TEMPLATES_${plan}" "${build_config}")
+            if [ -z "${templates}" ]; then
+                echo "No templates specified for plan ${plan} with variable of TEST_TEMPLATES_${plan}"
+                continue
+            fi
+
+            lava_server=$(get_value_from_config_file "TEST_LAVA_SERVER_${plan}" "${build_config}")
+            if [ -z "${lava_server}" ]; then
+                lava_server="${TEST_LAVA_SERVER}"
+            fi
+            qa_server=$(get_value_from_config_file "TEST_QA_SERVER_${plan}" "${build_config}")
+            if [ -z "${qa_server}" ]; then
+                qa_server="${TEST_QA_SERVER}"
+            fi
+            qa_server_team=$(get_value_from_config_file "TEST_QA_SERVER_TEAM_${plan}" "${build_config}")
+            if [ -z "${qa_server_team}" ]; then
+                qa_server_team="android-lkft"
+            fi
+            qa_server_project=$(get_value_from_config_file "TEST_QA_SERVER_PROJECT_${plan}" "${build_config}")
+            if [ -z "${qa_server_project}" ]; then
+                qa_server_project="${TEST_QA_SERVER_PROJECT}"
+            fi
+
+            python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
+                --device-type ${TEST_DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${lava_server} \
+                --qa-server ${qa_server} \
+                --qa-server-team ${qa_server_team} \
+                ${OPT_ENVIRONMENT} \
+                --qa-server-project ${qa_server_project} \
+                --git-commit ${QA_BUILD_VERSION} \
+                --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common \
+                --test-plan ${templates} \
+                ${OPT_DRY_RUN} \
+                --quiet
+        done
+    fi
 }
 
 function submit_jobs(){

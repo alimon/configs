@@ -1,0 +1,72 @@
+{% extends device_type %}
+{% block job_name %}lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-pmwg-vellamo{% endblock job_name %}
+
+{% block job_gobal_timeout %}
+timeouts:
+  job:
+    minutes: 420
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+  connections:
+    lava-test-shell:
+      seconds: 10
+{% endblock job_gobal_timeout %}
+
+{% block test_target %}
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/android/workload-automation3/aep-install.yaml
+      name: aep-install
+      parameters:
+        AEP_CONFIG_REF: wa3_support
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 360
+    definitions:
+    - repository: https://git.linaro.org/people/vincent.guittot/test-definitions.git
+      from: git
+      path: automated/android/workload-automation3/workload-automation.yaml
+      parameters:
+         WA_TAG: master
+         WA_EXTENSION_PATHS: "/root/energy-probe-ext"
+         WA_TEMPLATES_REPO: "https://git.linaro.org/power/wa3-lava.git"
+         TEMPLATES_BRANCH: master
+         BUILD_TOOLS_URL: "http://testdata.linaro.org/apks/pmwg/build-tools.tar.gz"
+         WA_HOME_URL: "http://testdata.linaro.org/apks/pmwg/workload_automation_home_v0.8.tar.gz"
+         AGENDA: "agenda/android-vellamo-aep.yaml"
+         CONFIG: "config/generic-android.yaml"
+         OUTPUT: /root/output
+      name: wa-lxc-test
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 45
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/aep-pre-post/lisa-postprocessing.yaml
+      name: lisa-postprocessing
+      parameters:
+        LISA_REPOSITORY: https://github.com/vingu-linaro/lisa
+        LISA_REF: support_python_command_line_post_processing
+        LISA_SCRIPT: ipynb/wltests/sched-evaluation-full.py
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: private-pmwg@lists.linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose
+{% endblock test_target %}
