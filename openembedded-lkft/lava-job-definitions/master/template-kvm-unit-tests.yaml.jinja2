@@ -1,5 +1,10 @@
 {% extends device_type %}
 
+{% block global_settings %}
+{{ super() }}
+  extra_kernel_args: 'kvm.enable_vmware_backdoor=1 kvm.force_emulation_prefix=1'
+{% endblock global_settings %}
+
 {% set job_timeout = 25 %}
 {% block metadata %}
   {{ super() }}
