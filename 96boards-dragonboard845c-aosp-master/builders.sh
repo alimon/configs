@@ -40,6 +40,7 @@ git clone https://android-git.linaro.org/git/platform/manifest.git local_manifes
 cd -
 
 repo sync -j$(nproc) -c -f
+source build/envsetup.sh
 lunch linaro_db845c-userdebug
 make -j$(nproc)
 cd out/target/product/linaro_db845c/
