@@ -38,9 +38,9 @@ cd .repo
 git clone https://android-git.linaro.org/git/platform/manifest.git .repo/local_manifests -b db845c
 cd -
 
-repo sync -j(nproc) -c -f
+repo sync -j$(nproc) -c -f
 lunch linaro_db845c-userdebug
-make -j(nproc)
+make -j$(nproc)
 cd out/target/product/linaro_db845c/
 
 # Publish parameters
