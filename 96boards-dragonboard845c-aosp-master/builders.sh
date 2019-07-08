@@ -34,7 +34,7 @@ chmod a+x ${HOME}/bin/*
 export PATH=${HOME}/bin:${PATH}
 
 repo init -u https://android.googlesource.com/platform/manifest 
-cd manifest
+cd .repo
 git clone https://android-git.linaro.org/git/platform/manifest.git .repo/local_manifests -b db845c
 cd -
 
