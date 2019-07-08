@@ -35,6 +35,7 @@ export PATH=${HOME}/bin:${PATH}
 
 repo init -u https://android.googlesource.com/platform/manifest 
 cd .repo
+rm -rf local_manifests
 git clone https://android-git.linaro.org/git/platform/manifest.git .repo/local_manifests -b db845c
 cd -
 
