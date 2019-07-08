@@ -38,7 +38,6 @@
     wrappers:
         - timestamps
     builders:
-        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -49,7 +48,9 @@
 
             mkdir out
             mv *.zip MD5SUMS out/
-
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
