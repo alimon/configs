@@ -263,36 +263,9 @@
             make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
             cd -
 
-            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb device/ti/beagle_x15-kernel/4.14/am57xx-beagle-x15-revc.dtb
-            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/zImage device/ti/beagle_x15-kernel/4.14/zImage
-            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-evm-common.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-common.dtbo
-            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo device/ti/beagle_x15-kernel/4.14/am57xx-evm-reva3.dtbo
-
-            # compile pvrsrvkm.ko
-            # defined OUT according to info from modules/eurasia_km/eurasiacon/build/linux2/config/core.mk
-            PVR_MODULE_OUT=${X15_KERNEL_DIR}/modules/eurasia_km/eurasiacon/binary2_omap_android_release
-            PVRSRVKM_KO_PATH=${PVR_MODULE_OUT}/target_armv7-a/pvrsrvkm.ko
-            KERNEL_PVR_DIR=${X15_KERNEL_DIR}/modules/eurasia_km/eurasiacon/build/linux2/omap_android
-            unset CROSS_COMPILE
-            PVR_CROSS_COMPILE=${ANDROID_ROOT}/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9/bin/arm-linux-androideabi-
-            cd ${KERNEL_PVR_DIR} && \
-                make -j$(nproc) \
-                     JAVAC=/bin/true \
-                     ARCH=arm \
-                     TARGET_DEVICE=am57xevm \
-                     CROSS_COMPILE=${PVR_CROSS_COMPILE} \
-                     KERNEL_CROSS_COMPILE=${PVR_CROSS_COMPILE} \
-                     EXCLUDED_APIS="composerhal,camerahal,unittests,sensorhal" \
-                     BUILD_PROP=${X15_KERNEL_DIR}/modules/eurasia_km/build.prop \
-                     OUT=${PVR_MODULE_OUT} \
-                     KERNELDIR=${X15_KERNEL_DIR} && \
-                cd -
-
-            cp -v ${PVRSRVKM_KO_PATH} device/ti/beagle_x15-kernel/4.14/pvrsrvkm.ko
-
             source build/envsetup.sh
             lunch beagle_x15-userdebug
-            make -j$(nproc) droidcore bootfitimage
+            KERNELDIR=${X15_KERNEL_DIR} make -j$(nproc)
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/beagle_x15/BUILD-INFO.txt
 
             X15_KERNEL_FILES="
@@ -338,15 +311,12 @@
             #######################################
             # compile x15 4.19 kernel
             #######################################
-            DIR_PREBUILT_KERNEL=device/ti/beagle_x15-kernel/4.19
-            mkdir -p ${DIR_PREBUILT_KERNEL}
             cd ${X15_KERNEL_DIR}
             git checkout android-beagle-x15-4.19 && git pull
             make mrproper
 
             export KERNEL_DESCRIBE_X15_4_19=$(git rev-parse --short HEAD)
             export KERNEL_VERSION_X15_4_19=$(make kernelversion)
-
 
             ## revert the change of Revert "usb: gadget: ffs: Fix BUG when userland exits with submitted AIO transfers"
             git revert --no-edit 8b87305f816cf58b7a4c840b2bedfd37a8c06254
@@ -355,15 +325,10 @@
             make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
             cd -
 
-            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb ${DIR_PREBUILT_KERNEL}/am57xx-beagle-x15-revc.dtb
-            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/zImage ${DIR_PREBUILT_KERNEL}/zImage
-            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-evm-common.dtbo ${DIR_PREBUILT_KERNEL}/am57xx-evm-common.dtbo
-            cp -vf ${X15_KERNEL_DIR}/arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo ${DIR_PREBUILT_KERNEL}/am57xx-evm-reva3.dtbo
-            cp -v ${X15_KERNEL_DIR}/drivers/gpu/pvr/pvrsrvkm.ko ${DIR_PREBUILT_KERNEL}/pvrsrvkm.ko
-
             source build/envsetup.sh
             lunch beagle_x15-userdebug
-            TARGET_KERNEL_USE=4.19 make -j$(nproc) bootfitimage vendorimage
+            # only need to re-create the boot_fit.img and vendor.img for 4.19 here
+            KERNELDIR=${X15_KERNEL_DIR}  make -j$(nproc) bootfitimage vendorimage
 
             X15_KERNEL_FILES="
             arch/arm/boot/zImage
