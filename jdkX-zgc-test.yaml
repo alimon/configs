@@ -143,7 +143,9 @@
             DEPS=$HOME/workspace/jdkX-get-deps
 
             JCSTRESS_JAR=$DEPS/jcstress.jar
-            java -jar ${JCSTRESS_JAR} -m sanity
+            java -jar ${JCSTRESS_JAR} \
+                -jvmArgs "-XX:+UnlockExperimentalVMOptions -XX:+UseZGC " \
+                -m sanity
 
     publishers:
         - email:
