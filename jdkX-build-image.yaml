@@ -84,18 +84,22 @@
 
               pushd build-stage2
               sh ../jdkX/configure  --with-debug-level=${BUILD_TYPE} --with-boot-jdk=${WORKSPACE}/build-stage1/images/jdk ${ccache_build_opts}
-              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
+              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native test-image-hotspot-gtest
               popd
             else
               pushd build-stage2
               sh ../jdkX/configure --with-debug-level=${BUILD_TYPE} ${ccache_build_opts}
-              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native
+              make images build-test-hotspot-jtreg-native build-test-jdk-jtreg-native test-image-hotspot-gtest
               popd
             fi
 
             # Archive the result
             artifact_name=jdkX-${BUILD_TYPE}
             tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
+
+            # Copy gtest materials to the correct place.
+            mkdir -p support/test/hotspot/gtest/server
+            cp -r hotspot/variant-server/libjvm/gtest/gtestLauncher hotspot/variant-server/libjvm/gtest/libjvm.so support/test/hotspot/gtest/server
 
             # Archive test support files.
             tar -C build-stage2/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
