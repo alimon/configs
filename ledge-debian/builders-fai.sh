@@ -59,7 +59,7 @@ for rootfs in ${ROOTFS}; do
     sudo fai-diskimage -v --cspace $(pwd) \
          --hostname linaro-${rootfs} \
          -S ${rootfs_sz} \
-         --class $(echo SAVECACHE,${OS_FLAVOUR},DEBIAN,LINARO,LEDGE,${rootfs},RAW | tr '[:lower:]' '[:upper:]') \
+         --class $(echo SAVECACHE,${OS_FLAVOUR},DEBIAN,LINARO,LEDGE,${rootfs} | tr '[:lower:]' '[:upper:]') \
          builddir/work.raw
 
     sudo cp /var/log/fai/linaro-${rootfs}/last/fai.log fai-${rootfs}.log
