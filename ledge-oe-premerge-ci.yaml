@@ -1,0 +1,141 @@
+- job:
+    name: ledge-oe-premerge-ci
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - github:
+            url: https://github.com/Linaro/meta-ledge
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'ledge-gateway ledge-iot'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'thud'
+        - string:
+            name: PUB_DEST
+            default: 'components/ledge/oe/pemerge-ci/${MACHINE}/${BUILD_NUMBER}/${DISTRO}'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'ledge'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'ledge'
+        - string:
+            name: AUTH_GROUPS
+            default: 'linaro'
+        - string:
+            name: KERNEL_ARGS
+            default: 'selinux=0'
+    disabled: false
+    node: master
+    display-name: 'Pre merge CI for LEDGE OE build'
+    scm:
+        - git:
+            url: https://github.com/Linaro/meta-ledge
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    triggers:
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            white-list-target-branches:
+                - 'master'
+            auth-id: 'GITHUB_TOKEN'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'ledge-stm32mp157c-dk2'
+                - 'ledge-qemux86-64'
+                - 'ledge-qemuarm'
+                - 'ledge-qemuarm64'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - rpb
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 180
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # Mapping for MACHINE -> DEVICE_TYPE
+            case "${MACHINE}" in
+              ledge-ti-am572x)
+                DEVICE_TYPE=x15
+                ;;
+              ledge-qemux86-64)
+                DEVICE_TYPE=x86
+                ;;
+              ledge-qemuarm)
+                DEVICE_TYPE=qemuarm
+                ;;
+              ledge-qemuarm64)
+                DEVICE_TYPE=qemuarm64
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+            esac
+
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
+        - shell:
+            !include-raw: ledge/oe/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/buildinfo-protected.sh
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
+        - shell:
+            !include-raw: rpb-openembedded/submit_for_testing.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - openembedded-lkft/postbuild.groovy
+        - email:
+            recipients: 'maxim.uvarov@linaro.org ilias.apalodimas@linaro.org christophe.priouzeau@linaro.org'
