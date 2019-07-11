@@ -100,8 +100,10 @@
             tar -C build-stage2/images/jdk --exclude=\*.diz --transform="s!^./!$artifact_name/!" -acf out/${artifact_name}.tar.gz .
 
             # Copy gtest materials to the correct place.
-            mkdir -p support/test/hotspot/gtest/server
-            cp -r hotspot/variant-server/libjvm/gtest/gtestLauncher hotspot/variant-server/libjvm/gtest/libjvm.so support/test/hotspot/gtest/server
+            ( cd build-stage2
+              mkdir -p support/test/hotspot/gtest/server
+              cp -r hotspot/variant-server/libjvm/gtest/gtestLauncher hotspot/variant-server/libjvm/gtest/libjvm.so support/test/hotspot/gtest/server
+            )
 
             # Archive test support files.
             tar -C build-stage2/ --exclude=hotspot/jtreg/native/support/\* --transform="s!^support/!${artifact_name}-support/support/!" -acf out/${artifact_name}-support.tar.gz support/test
