@@ -264,6 +264,12 @@
         - archive:
             artifacts: 'artifacts/**'
             latest-only: false
+    publishers:
+        - email-ext:
+            recipients: 'tcwg-gcc@linaro.org'
+            aborted: true
+            failure: false
+            success: false
 
 - job-template:
     name: tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
@@ -357,5 +363,6 @@
               ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
             failure: true
             success: true
+            aborted: true
             send-to:
               - recipients
