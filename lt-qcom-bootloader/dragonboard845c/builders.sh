@@ -23,6 +23,8 @@ unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) \
       "*/13-sec/sec.dat" \
       "*/14-storsec/storsec.mbn" \
       "*/15-tz/tz.mbn" \
+      "*/16-xbl/xbl.elf" \
+      "*/16-xbl/xbl_config.elf" \
       "*/40-qupv3fw/qupv3fw.elf"
 
 BOOTLOADER_UFS_LINUX=dragonboard-845c-bootloader-ufs-linux-${BUILD_NUMBER}
