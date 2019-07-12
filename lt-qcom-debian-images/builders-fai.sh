@@ -162,6 +162,11 @@ cd ..
 ROOTFS_PARTLABEL=$(grep --color=never -Po  "^ROOTFS_PARTLABEL=\K.*" class/${FAI_BOARD_CLASS}.var)
 
 # Create boot image
+KERNEL_CMDLINE="root=/dev/disk/by-partlabel/${ROOTFS_PARTLABEL} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
+if [ "${PLATFORM_NAME}" == "dragonboard-845c" ]; then
+    KERNEL_CMDLINE="${KERNEL_CMDLINE} clk_ignore_unused pd_ignore_unused"
+fi
+
 cat out/vmlinuz-* out/$(basename ${DTBS}) > Image.gz+dtb
 mkbootimg \
     --kernel Image.gz+dtb \
@@ -172,5 +177,5 @@ mkbootimg \
     --kernel_offset "${BOOTIMG_KERNEL_OFFSET}" \
     --ramdisk_offset "${BOOTIMG_RAMDISK_OFFSET}" \
     --tags_offset "${BOOTIMG_TAGS_OFFSET}" \
-    --cmdline "root=/dev/disk/by-partlabel/${ROOTFS_PARTLABEL} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8"
+    --cmdline "${KERNEL_CMDLINE}"
 pigz -9 out/boot-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img
