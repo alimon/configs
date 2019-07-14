@@ -29,20 +29,28 @@
     cflags:
       - Os:
           cron_schedule: H H H/2 * *
+          disabled: false
       - Os_LTO:
           cron_schedule: H H H/2 * *
+          disabled: false
       - Oz:
           cron_schedule: H H H/2 * *
+          disabled: false
       - Oz_LTO:
           cron_schedule: H H H/2 * *
+          disabled: false
       - O2:
           cron_schedule: H H H/3 * *
+          disabled: true
       - O2_LTO:
           cron_schedule: H H H/3 * *
+          disabled: true
       - O3:
           cron_schedule: H H H/3 * *
+          disabled: true
       - O3_LTO:
           cron_schedule: H H H/3 * *
+          disabled: true
     jobs:
       - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
@@ -271,7 +279,7 @@
             - init
           description: "What to do with baseline in this build"
       - default-parameters
-    disabled: false
+    disabled: '{disabled}'
     node: tcwg-x86_64-dev-01
     concurrent: false
     display-name: 'TCWG Build tcwg_bmk/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
@@ -396,7 +404,7 @@
           default: ""
           description: "Bad branch or sha1"
       - default-parameters
-    disabled: false
+    disabled: '{disabled}'
     node: tcwg-x86_64-dev-01
     concurrent: false
     display-name: 'TCWG Bisect tcwg_bmk/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
