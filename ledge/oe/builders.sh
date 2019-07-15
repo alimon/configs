@@ -204,12 +204,15 @@ ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_
 ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
 HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" | xargs -r basename)
+INITRD_URL=""
 case "${MACHINE}" in
   am57xx-evm)
     # QEMU arm 32bit needs the zImage file, not the uImage file.
     # KERNEL_IMG is not used for the real hardware itself.
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*${MACHINE}-*${BUILD_NUMBER}.bin" | xargs -r basename)
     ;;
+  ledge-synquacer)
+	  INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
   juno)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
@@ -267,6 +270,7 @@ LIBHUGETLBFS_REVISION=${LIBHUGETLBFS_REVISION}
 MAKE_KERNELVERSION=${MAKE_KERNELVERSION}
 TOOLCHAIN="${TARGET_SYS} ${GCCVERSION}"
 KERNEL_ARGS="${KERNEL_ARGS}"
+INITRD_URL="${INITRD_URL}"
 EOF
 
 cat ${WORKSPACE}/post_build_lava_parameters

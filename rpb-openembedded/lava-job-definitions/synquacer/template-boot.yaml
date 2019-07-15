@@ -1,0 +1,58 @@
+device_type: ${DEVICE_TYPE}
+job_name: RPB OE boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 45
+  action:
+    minutes: 10
+  connection:
+    minutes: 20
+
+priority: medium
+visibility: public
+
+context:
+  test_character_delay: 10
+  extra_kernel_args: \"${KERNEL_ARGS}\"
+
+actions:
+- deploy:
+    namespace: target
+    timeout:
+      minutes: 15
+    to: tftp
+    kernel:
+      url: ${KERNEL_URL}
+    nfsrootfs:
+      url: ${NFSROOTFS_URL}
+      compression: xz
+    ramdisk:
+        url: \"${INITRD_URL}\"
+        compression: gz
+    os: oe
+
+- boot:
+    role:
+        - developerbox
+    timeout:
+        minutes: 90
+    method: grub
+    parameters:
+        shutdown-message: "reboot: Restarting system"
+    commands:
+        - insmod efinet
+        - net_ls_addr
+        - 'linux (tftp,{SERVER_IP})/{KERNEL}  root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 ip=dhcp ${KERNEL_ARGS}'
+        - initrd (tftp,{SERVER_IP})/{RAMDISK}
+        - clear
+        - boot
+    prompts:
+        - 'root@(.*)'
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${BASE_URL}${PUB_DEST}
