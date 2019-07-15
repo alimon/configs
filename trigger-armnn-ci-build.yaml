@@ -22,23 +22,6 @@
             submodule:
                 recursive: true
     triggers:
-        - gerrit:
-            trigger-on:
-              - patchset-created-event:
-                  exclude-drafts: true
-                  exclude--trivial-rebase: true
-                  exclude-no-code-change: true
-            projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: 'ml/armnn'
-                branches:
-                  - branch-compare-type: 'PLAIN'
-                    branch-pattern: 'master'
-            skip-vote:
-                    successful: true
-                    failed: false
-            server-name: review.mlplatform.org
-
         - pollscm:
             cron: 'H/5 * * * *'
     wrappers:
