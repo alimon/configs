@@ -43,22 +43,23 @@ unzip -j $(basename ${QCOM_LINUX_FIRMWARE}) "*/LICENSE"
 echo "${QCOM_LINUX_FIRMWARE_LICENSE_MD5}  LICENSE" > MD5
 md5sum -c MD5
 
+# Create ptable and rawprogram/patch command files
+git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/partioning_tool.git ptool
+(cd ptool && git log -1)
+(mkdir ptool/linux && cd ptool/linux && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard820c/linux/partition.xml)
+(mkdir ptool/aosp && cd ptool/aosp && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard820c/aosp/partition.xml)
+
 # bootloader_ufs_linux
 cp -a LICENSE \
    dragonboard820c/linux/flashall \
    lk_ufs_boot/build-msm8996/emmc_appsboot.mbn \
    bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0_8096.bin,tz.mbn,xbl.elf} \
    bootloaders-linux/prog_ufs_firehose_8996_ddr.elf \
-   dragonboard820c/linux/{rawprogram,patch}.xml \
-   dragonboard820c/linux/gpt_{main,backup}*.bin \
-   dragonboard820c/linux/zeros_*.bin \
+   ptool/linux/{rawprogram,patch}?.xml \
+   ptool/linux/gpt_{main,backup,both}?.bin \
+   ptool/linux/zeros_*.bin \
    dragonboard820c/ufs-provision_toshiba.xml \
    out/${BOOTLOADER_UFS_LINUX}
-
-# create gpt_both files which are just the concatenation of primary and backup GPT headers
-for i in out/${BOOTLOADER_UFS_LINUX}/gpt_main*.bin ; do
-    cat $i $(echo $i | sed 's/main/backup/') > $(echo $i | sed 's/main/both/')
-done
 
 # bootloader_ufs_aosp
 cp -a LICENSE \
@@ -66,16 +67,11 @@ cp -a LICENSE \
    lk_ufs_boot/build-msm8996/emmc_appsboot.mbn \
    bootloaders-linux/{cmnlib64.mbn,cmnlib.mbn,devcfg.mbn,hyp.mbn,keymaster.mbn,pmic.elf,rpm.mbn,sbc_1.0_8096.bin,tz.mbn,xbl.elf} \
    bootloaders-linux/prog_ufs_firehose_8996_ddr.elf \
-   dragonboard820c/aosp/{rawprogram,patch}.xml \
-   dragonboard820c/aosp/gpt_{main,backup}*.bin \
-   dragonboard820c/aosp/zeros_*.bin \
+   ptool/aosp/{rawprogram,patch}?.xml \
+   ptool/aosp/gpt_{main,backup,both}?.bin \
+   ptool/aosp/zeros_*.bin \
    dragonboard820c/ufs-provision_toshiba.xml \
    out/${BOOTLOADER_UFS_AOSP}
-
-# create gpt_both files which are just the concatenation of primary and backup GPT headers
-for i in out/${BOOTLOADER_UFS_AOSP}/gpt_main*.bin ; do
-    cat $i $(echo $i | sed 's/main/backup/') > $(echo $i | sed 's/main/both/')
-done
 
 # sdcard_rescue
 cp -a LICENSE out/${SDCARD_RESCUE}
@@ -115,6 +111,9 @@ Build description:
 ** "SD rescue boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_SD_RESCUE | sed -e 's/+/\%2b/g')
 ** "UFS Linux boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_UFS_BOOT | sed -e 's/+/\%2b/g')
 * Tools version: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
+* Partition table:
+** "Linux":$GIT_URL/tree/dragonboard820c/linux/partition.xml?id=$GIT_COMMIT
+** "AOSP":$GIT_URL/tree/dragonboard820c/aosp/partition.xml?id=$GIT_COMMIT
 EOF
 
 # Publish
