@@ -18,7 +18,6 @@ else
 fi
 
 if [ ! -z "${kolla_ldc}" ]; then
-    kolla_profile="devcloud"
 
     patches_count=0
     if [ ! -z ${kolla_ldc_extras} ]; then
@@ -31,10 +30,9 @@ if [ ! -z "${kolla_ldc}" ]; then
         kolla_tag=ldc-${branch}-${BUILD_NUMBER}-p${patches_count}
     fi
 
-    kolla_options="--template-override ../Linaro-overlay/linaro-override-${branch}.j2"
+    kolla_options="--template-override ../Linaro-overlay/linaro-override-${branch}.j2  --profile devcloud "
 
 else
-    kolla_profile="linaro"
     kolla_tag=${branch}-${BUILD_NUMBER}
 fi
 
@@ -87,7 +85,6 @@ kolla_namespace=linaro
                  ${kolla_options} \
                  --logs-dir logs/debian-source \
                  --config-file ${WORKSPACE}/linaro.conf \
-                 --profile ${kolla_profile} \
                  --pull \
                  --retries ${RETRIES_OPT} \
                  --threads ${THREADS_OPT} \
