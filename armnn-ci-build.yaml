@@ -44,6 +44,10 @@
             default: 'https://validation.linaro.org/RPC2/'
         - string:
             name: GIT_COM_ID
+        - string:
+            name: GERRIT_CHANGE_NUMBER
+        - string:
+            name: GERRIT_PATCHSET_NUMBER
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Arm NN - CI Build'
@@ -78,6 +82,13 @@
             #!/bin/bash -ex
 
             export DEVICE_TYPE=hi960-hikey
+            
+            if [ -z "$GIT_COM_ID" ]
+            then
+                LAVA_ID=${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}
+            else
+                LAVA_ID=$GIT_COM_ID
+            fi
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
@@ -88,7 +99,7 @@
                 --qa-server-team armnn \
                 --qa-server-project armnn \
                 --lava-server ${LAVA_SERVER} \
-                --git-commit ${GIT_COM_ID}
+                --git-commit ${LAVA_ID}
 
             export DEVICE_TYPE=synquacer
 
@@ -98,4 +109,4 @@
                 --qa-server-team armnn \
                 --qa-server-project armnn \
                 --lava-server ${LAVA_SERVER} \
-                --git-commit ${GIT_COM_ID}
+                --git-commit ${LAVA_ID}
