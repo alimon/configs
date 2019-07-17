@@ -45,6 +45,8 @@ source build/envsetup.sh
 lunch linaro_db845c-userdebug
 make -j$(nproc)
 
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/linaro_db845c/BUILD-INFO.txt
+
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_DEST=96boards/dragonboard845c/linaro/aosp-master/${BUILD_NUMBER}
