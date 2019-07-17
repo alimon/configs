@@ -7,6 +7,18 @@ sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git
 
 git clone --depth 1 https://github.com/Arm-software/ComputeLibrary.git
 git clone --depth 1 https://github.com/Arm-software/armnn
+
+if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
+    cd armnn
+    GERRIT_URL="http://${GERRIT_HOST}/${GERRIT_PROJECT}"
+    if git pull ${GERRIT_URL} ${GERRIT_REFSPEC} | grep -q "Automatic merge failed"; then
+        git reset --hard
+        echo "Error: *** Error patch merge failed"
+        exit 1
+    fi
+fi
+
+cd
 git clone --depth 1 -b v3.5.0 https://github.com/google/protobuf.git
 git clone --depth 1 https://github.com/tensorflow/tensorflow.git
 git clone --depth 1 https://github.com/google/flatbuffers.git
