@@ -65,6 +65,8 @@
             properties-file: automerge_result_variables
         - shell:
             !include-raw: lt-qcom-linux-automerge/builders-kernel.sh
+        - inject:
+            properties-file: kernel-build_result_variables
     publishers:
         - email-ext:
             recipients: 'qcomlt-patches@lists.linaro.org'
@@ -82,5 +84,8 @@
                 ${AUTOMERGE_BRANCH_FAILED}
                 Automerge configuration:
                 ${AUTOMERGE_CONFIG}
+
+                DTBS warnings:
+                ${DTBS_WARNINGS}
             presend-script:
                 !include-raw: lt-qcom-linux-automerge/presend-script.groovy

@@ -20,6 +20,9 @@ function build_integration_kernel()
 
 	make distclean
 	make ${KERNEL_CONFIGS}
+
+	# build QCOM DTBS with warnings
+	make W=1 arch/arm64/boot/dts/qcom/  2>&1 | tee -a qcom-dtbs.log
 	make -j$(nproc)
 }
 
@@ -49,3 +52,5 @@ build_integration_kernel "arm64" "defconfig"
 if [ ! -z ${KERNEL_CI_REPO_URL} ]; then
 	git push -f ${KERNEL_CI_REPO_URL} ${INTEGRATION_BRANCH}:${KERNEL_CI_BRANCH}
 fi
+
+echo "DTBS_WARNINGS=$(sed -n "s/.*: Warning (\(.*\)):.*/\1/p" qcom-dtbs.log | sort | uniq -c | sort -nr)" > kernel-build_result_variables
