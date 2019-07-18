@@ -1,0 +1,105 @@
+- scm:
+    name: art
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/art.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: bionic
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/bionic.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: build
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/build.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: vixl
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/linaro-art/platform/external/vixl.git
+            branches:
+                - origin/master
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- job:
+    name: linaro-art-tip-build-ARTBuild
+    project-type: freestyle
+    defaults: global
+    description: >
+      Builds arm and arm64 dependencies to run the art-tests on a target device.
+      The compressed archives are published on the Linaro publish server.
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro-android-builders:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-art:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-workspace
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    #parameters:
+        #- string:
+            #name: BUILD_CONFIG_FILENAME
+            #default: 'linaro-art-tip'
+    disabled: false
+    node: docker-utopic-art
+    display-name: 'Tip: build ART & deps'
+    concurrent: true
+    scm:
+        - art
+        - bionic
+        - build
+        - vixl
+    triggers:
+        - pollscm: 'H 3 * * *'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - linaro-publish-token
+        - shell:
+            !include-raw:
+                - linaro-art/build/builders.sh
+    publishers:
+        - archive:
+            artifacts: '*.txt, *.xml, *.json'
+        - groovy-postbuild:
+            script:
+              !include-raw:
+                - linaro-art/global.groovy
