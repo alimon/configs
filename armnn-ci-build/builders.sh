@@ -7,6 +7,10 @@ sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git
 
 git clone --depth 1 https://github.com/Arm-software/ComputeLibrary.git
 git clone --depth 1 https://github.com/Arm-software/armnn
+git clone --depth 1 -b v3.5.0 https://github.com/google/protobuf.git
+git clone --depth 1 https://github.com/tensorflow/tensorflow.git
+git clone --depth 1 https://github.com/google/flatbuffers.git
+wget -q https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_*.tar.bz2
 
 if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
     cd armnn
@@ -17,12 +21,6 @@ if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; the
         exit 1
     fi
 fi
-
-cd
-git clone --depth 1 -b v3.5.0 https://github.com/google/protobuf.git
-git clone --depth 1 https://github.com/tensorflow/tensorflow.git
-git clone --depth 1 https://github.com/google/flatbuffers.git
-wget -q https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_*.tar.bz2
 
 cd ${WORKSPACE}/ComputeLibrary
 #need to add if loops for opencl=1 embed_kernels=1 and neon=1
