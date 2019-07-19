@@ -7,7 +7,7 @@ if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
 fi
 
 # Clean android-patchsets and repositories in device
-rm -rf build/out build/android-patchsets build/device
+rm -rf build/out build/android-patchsets build/device build/build-info
 rm -fr build/external/u-boot
 mkdir -p build
 

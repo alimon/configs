@@ -13,6 +13,9 @@ rm -rf build/out build/android-patchsets build/device
 rm -rf build/kernel/linaro
 rm -fr build/.repo/projects/prebuilts/clang/host/linux-x86.git build/prebuilts/clang/host/linux-x8
 
+# clean build-info directory which depends on systemtarball, is not suppported by aosp master
+rm -rf build/build-info
+
 mkdir -p build/
 cd build/
 wget https://dl.google.com/dl/android/aosp/linaro-hikey-20170523-4b9ebaff.tgz
