@@ -1,0 +1,108 @@
+- job:
+    name: android-lcr-reference-hikey960-master-car
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-build
+                - job-extended-read
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 60
+            num-to-keep: 60
+    parameters:
+        - string:
+            name: BUILD_DIR
+            default: aosp-master
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'lcr-reference-hikey960-master-car'
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'AOSP master build for HiKey960-Car'
+    concurrent: true
+    triggers:
+        - gerrit:
+            server-name: __ANY__
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-patchsets'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey960-master-car'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey960-master-workarounds'
+                      - compare-type: 'PLAIN'
+                        pattern: 'MASTER-RLCR-PATCHSET'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-master'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-4.9'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey-optee-4.14'
+                      - compare-type: 'PLAIN'
+                        pattern: 'optee-master-workarounds'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'device/linaro/common'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-q-preview'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'platform/manifest'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'linaro-master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey960-car.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'hikey.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'linaro.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'optee.xml'
+                      - compare-type: 'PLAIN'
+                        pattern: 'update-externals.xml'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'android-build-configs'
+                  branches:
+                      - branch-compare-type: 'PLAIN'
+                        branch-pattern: 'master'
+                  file-paths:
+                      - compare-type: 'PLAIN'
+                        pattern: 'lcr-reference-hikey960-master-car'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+                users:
+                    - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+        - credentials-binding:
+            - text:
+                credential-id: AP_SSID
+                variable: AP_SSID
+            - text:
+                credential-id: AP_KEY
+                variable: AP_KEY
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
+    builders:
+        !include: android-lcr/hikey/builders-v2-jinja2.yaml.inc
+    publishers:
+        !include: android-lcr/common/publishers.yaml.inc
