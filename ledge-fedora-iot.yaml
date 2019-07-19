@@ -1,0 +1,108 @@
+- job:
+    name: ledge-fedora-iot
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 10
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'default'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'master'
+        - string:
+            name: PUB_DEST
+            default: 'components/ledge/fedora/${MACHINE}/${BUILD_NUMBER}'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'ledge'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'ledge'
+        - string:
+            name: AUTH_GROUPS
+            default: 'linaro'
+        - string:
+            name: KERNEL_ARGS
+            default: 'selinux=0'
+    disabled: false
+    node: master
+    display-name: 'LEDGE OE build'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'x86-64'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 180
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            # Mapping for MACHINE -> DEVICE_TYPE
+            case "${MACHINE}" in
+              x86-64)
+                DEVICE_TYPE=x86
+                ;;
+              *)
+                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                ;;
+            esac
+
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
+        - shell:
+            !include-raw: fedora-iot/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/buildinfo-protected.sh
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
+        - shell:
+            !include-raw: rpb-openembedded/submit_for_testing.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - openembedded-lkft/postbuild.groovy
+        - email:
+            recipients: 'maxim.uvarov@linaro.org ilias.apalodimas@linaro.org christophe.priouzeau@linaro.org'
