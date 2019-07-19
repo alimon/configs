@@ -37,7 +37,7 @@ if [ ! -z "${AUTOMERGE_BRANCH_FAILED}" ]; then
 	exit 1
 fi
 
-cd ${INTEGRATION_REPO_PATH}
+pushd ${INTEGRATION_REPO_PATH}
 
 GIT_STATUS=$(git status -s)
 if [ ! -z "${GIT_STATUS}" ]; then
@@ -49,8 +49,13 @@ fi
 build_integration_kernel "arm" "multi_v7_defconfig"
 build_integration_kernel "arm64" "defconfig"
 
+# record QCOM DTBS warnings, for all builds
+DTBS_WARNINGS=$(sed -n "s/.*: Warning (\(.*\)):.*/\1/p" qcom-dtbs.log | sort | uniq -c | sort -nr)
+
 if [ ! -z ${KERNEL_CI_REPO_URL} ]; then
 	git push -f ${KERNEL_CI_REPO_URL} ${INTEGRATION_BRANCH}:${KERNEL_CI_BRANCH}
 fi
 
-echo "DTBS_WARNINGS=$(sed -n "s/.*: Warning (\(.*\)):.*/\1/p" qcom-dtbs.log | sort | uniq -c | sort -nr)" > kernel-build_result_variables
+popd
+
+echo "DTBS_WARNINGS=${DTBS_WARNINGS}" > kernel-build_result_variables
