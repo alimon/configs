@@ -50,7 +50,7 @@ build_integration_kernel "arm" "multi_v7_defconfig"
 build_integration_kernel "arm64" "defconfig"
 
 # record QCOM DTBS warnings, for all builds
-DTBS_WARNINGS=$(sed -n "s/.*: Warning (\(.*\)):.*/\1/p" qcom-dtbs.log | sort | uniq -c | sort -nr)
+DTBS_WARNINGS=$(sed -n "s/.*: Warning (\(.*\)):.*/\1/p" qcom-dtbs.log | sort | uniq -c | sort -nr | sed ':a;N;$!ba;s/\n/\\n\\\n/g')
 
 if [ ! -z ${KERNEL_CI_REPO_URL} ]; then
 	git push -f ${KERNEL_CI_REPO_URL} ${INTEGRATION_BRANCH}:${KERNEL_CI_BRANCH}
