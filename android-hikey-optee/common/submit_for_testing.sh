@@ -16,7 +16,14 @@ if [ -n "${DRY_RUN}" ]; then
     ## path of this android-lcr/common/submit_for_testing.sh
     ## make BASE_PATH to point to the configs directory
     PARENT_DIR=$(cd $(dirname $0); pwd)
-    export BASE_PATH=${PARENT_DIR}/../../
+    BASE_PATH=${PARENT_DIR}/../../
+    if [ ! -e ${BASE_PATH}/openembedded-lkft/submit_for_testing.py ]; then
+        ## called via jenkins
+        rm -rf configs
+        git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+        BASE_PATH=`pwd`/configs
+    fi
+    export BASE_PATH
 else
     ## called via jenkins
     rm -rf configs
@@ -64,10 +71,11 @@ export VTS_PKG_URL=${VTS_PKG_URL}
 [ -z "${CTS_MODULE_NAME}" ] && export CTS_MODULE_NAME=""
 [ -z "${CTS_PKG_URL}" ] && unset CTS_PKG_URL
 [ -z "${VTS_PKG_URL}" ] && unset VTS_PKG_URL
+[ -z "${X15_BOOT_ARGS}" ] && unset X15_BOOT_ARGS
 [ -z "${ANDROID_VERSION_SUFFIX}" ] && unset ANDROID_VERSION_SUFFIX
 
 
-[ ! -z ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
+[ -n ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
 
 DEVICE_PLAN=${PLAN_CHANGE:-"plan_change_swg_${DEVICE_TYPE}"}
 if [ ! -n "$GERRIT_PROJECT" ]; then

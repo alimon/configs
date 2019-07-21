@@ -1,8 +1,3 @@
-        - shell: |
-            CI_MAIL_RECIPIENTS="victor.chong@linaro.org"
-            echo "CI_MAIL_RECIPIENTS=${CI_MAIL_RECIPIENTS}" > env_var_parameters
-        - inject:
-            properties-file: env_var_parameters
         - shell:
             !include-raw:
                 - android-lcr/common/builders.sh
@@ -13,5 +8,8 @@
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh
-        - shell: |
-            echo "Build finished"
+        - inject:
+            properties-file: post_build_lava_parameters
+        - shell:
+            !include-raw:
+                - android-hikey-optee/common/submit_for_testing.sh
