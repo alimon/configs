@@ -1,0 +1,40 @@
+- job:
+    name: llp-test
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 10
+            num-to-keep: 10
+    disabled: false
+    display-name: 'Test job to upload files to LLP'
+    node: docker-stretch-amd64
+    wrappers:
+        - timestamps
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+            mkdir -p upload
+            for n in {1..1000}; do
+                dd if=/dev/urandom of=upload/file$( printf %03d "$n" ).bin bs=1 count=$(( RANDOM + 1024 ))
+            done
+        - shell: |
+            # Publish
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server http://snapshots-staging.ctt.linaro.org
+              --api_version 3 \
+              --link-latest \
+              upload test/ infrastructure/$(date +%M)
+    publishers:
+        - email:
+            recipients: linaro-infrastructure-errors@lists.linaro.org
