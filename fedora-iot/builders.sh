@@ -4,9 +4,9 @@ set -e
 
 # workaround EDK2 is confused by the long path used during the build
 # and truncate files name expected by VfrCompile
-sudo mkdir -p /srv/oe
-sudo chown buildslave:buildslave /srv/oe
-cd /srv/oe
+sudo mkdir -p /srv/build
+sudo chown buildslave:buildslave /srv/build
+cd /srv/build
 
 trap cleanup_exit INT TERM EXIT
 
@@ -39,6 +39,8 @@ if [ -z "${WORKSPACE}" ]; then
   export WORKSPACE=${PWD}
 fi
 
+git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+cd configs/fedora-iot/
 pwd
 ls
 sudo ./build_fiot.sh
@@ -105,7 +107,7 @@ ROOTFS_SPARSE_BUILD_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 KERNEL_URL=${BASE_URL}/${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}/${PUB_DEST}/${DTB_IMG}
-RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/juno-oe-uboot.zip
+RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/none.zip
 NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_TARXZ_IMG}
 EXT4_IMAGE_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_EXT4}
 HDD_URL=${BASE_URL}/${PUB_DEST}/${HDD_IMG}
