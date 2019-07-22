@@ -6,7 +6,7 @@ sudo apt -q=2 update
 sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git autoconf curl libtool libpthread-stubs0-dev
 
 git clone --depth 1 https://github.com/Arm-software/ComputeLibrary.git
-git clone --depth 1 https://github.com/Arm-software/armnn
+git clone https://github.com/Arm-software/armnn
 git clone --depth 1 -b v3.5.0 https://github.com/google/protobuf.git
 git clone --depth 1 https://github.com/tensorflow/tensorflow.git
 git clone --depth 1 https://github.com/google/flatbuffers.git
