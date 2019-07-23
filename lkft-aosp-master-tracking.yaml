@@ -140,7 +140,6 @@
             cd -
             pushd build/
             source build/envsetup.sh
-            lunch hikey-userdebug
             pushd test/suite_harness
             git fetch http://android-review.linaro.org/platform/test/suite_harness refs/changes/23/19623/1 && git cherry-pick FETCH_HEAD
             popd
@@ -263,11 +262,20 @@
             make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
             cd -
 
+            # clean the output for beagle_x15
+            # and check why the system/apex/com.android.runtime was created
+            # which should not be created
+            echo "debug=TARGET_FLATTEN_APEX=${TARGET_FLATTEN_APEX}=""
+            rm -fr out/target/product/beagle_x15
             source build/envsetup.sh
             lunch beagle_x15-userdebug
             KERNELDIR=${X15_KERNEL_DIR} make -j$(nproc)
-            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/beagle_x15/BUILD-INFO.txt
 
+            if [ -d out/target/product/beagle_x15/system/apex/com.android.runtime ]; then
+                echo "out/target/product/beagle_x15/system/apex/com.android.runtime was created"
+            else
+                echo "out/target/product/beagle_x15/system/apex/com.android.runtime was not created"
+            fi
             X15_KERNEL_FILES="
             arch/arm/boot/zImage
             arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb
