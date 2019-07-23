@@ -43,6 +43,10 @@
             default: 'refs/remotes/origin/tested'
             description: 'Branch to pull jenkins-script from'
         - bool:
+            name: useninja
+            default: true
+            description: 'Whether or not to use ninja for the release (works for releases > 9.0.0)'
+        - bool:
             name: testsuite
             default: true
             description: 'Whether or not to trigger a test-suite with this build.'
@@ -162,6 +166,7 @@
                 --candidate=${candidate} \
                 --buildjobs=${buildjobs} \
                 --toolchain=${toolchain} \
+                --use-ninja=${useninja} \
                 $toolchain_file_option $compiler_option" || ret=$?
 
             if [ $ret -ne 0 ]; then
