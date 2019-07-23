@@ -140,6 +140,8 @@ case "${MACHINE}" in
       xz -T0 ${rootfs}
     done
     ;;
+  ledge-synquacer)
+    ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4; do
       pigz -k ${rootfs}
