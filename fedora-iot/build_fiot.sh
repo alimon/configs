@@ -1,13 +1,17 @@
 #!/bin/sh
 
+set -e
+
 IMG="Fedora-IoT-30-20190515.1.x86_64.raw.xz"
 URL="https://dl.fedoraproject.org/pub/alt/iot/30/IoT/x86_64/images"
 wget -c ${URL}/${IMG}
 xz -d ${IMG}
 
+sudo losetup
 sudo losetup -P -f ${IMG}
 
 LOOP="losetup |grep  ${IMG} |cut -d " " -f 1"
+sudo mkdir ./mnt
 sudo mount /dev/${LOOP}p1 ./mnt/
 sudo sed -i 's/options/options console=ttyS0,115200/' ./mnt/loader/entries/ostree-1-fedora-iot.conf
 
