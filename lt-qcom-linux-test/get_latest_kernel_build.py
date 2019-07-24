@@ -157,7 +157,7 @@ def main():
     kernel_ci_base_url = os.environ.get('KERNEL_CI_BASE_URL',
                                         'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
     kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
-                                           'arm64/defconfig/gcc-7/')
+                                           'arm64/defconfig/gcc-8/')
 
     linaro_ci_base_url = os.environ.get('LINARO_CI_BASE_URL',
                                         'https://snapshots.linaro.org/member-builds/qcomlt/kernel/')
