@@ -244,6 +244,7 @@ case "${MACHINE}" in
   soca9)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
+    WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb" | xargs -r basename)
     ;;
   *)
@@ -266,6 +267,7 @@ OPTEE_ITB_URL=${BASE_URL}${PUB_DEST}/optee/optee-os.itb
 UBOOT_ITB_URL=${BASE_URL}${PUB_DEST}/ubootfitImage-2017.01-r0-rzn1d.itb
 KERNEL_FIT_URL=${BASE_URL}${PUB_DEST}/fitImage-1.0-r0-rzn1-snarc.itb
 KERNEL_ZIMAGE_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
+WIC_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_IMG}
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
 NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TAR_BZ2}
 NFSROOTFS_DEV_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DEV_TAR_BZ2}

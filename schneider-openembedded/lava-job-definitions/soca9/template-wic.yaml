@@ -1,0 +1,66 @@
+device_type: soca9
+job_name: Schneider Electric SocA9 dip-image WIC Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+timeouts:
+  job:
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+actions:
+- deploy:
+    timeout:
+      minutes: 10
+    to: flasher
+    images:
+      image:
+        url: ${WIC_IMAGE_URL}
+        compression: bz2
+- boot:
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - run linux_sd
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: "Password:"
+      password: "P@ssword-1"
+    prompts:
+    - "root@snarc-soca9:"
+    transfer_overlay:
+      download_command: udhcpc; cd /tmp ; wget
+      unpack_command: tar -C / -xzf
+- test:
+    timeout:
+      minutes: 60
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: uname-test
+          description: uname test
+        run:
+          steps:
+          - uname -a
+      name: uname-test
+      path: inline/uname-test.yaml
+metadata:
+  machine: soca9
+  manifest branch: rmh-warrior
+  manifest commit: 191
+  build url: https://ci.linaro.org/job/schneider-openembedded-sumo/DISTRO=dip,MACHINE=soca9,label=docker-stretch-amd64/191/
+  build location: https://snapshots.linaro.org/openembedded/schneider/rmh-warrior/soca9/191/dip
+notify:
+  recipients:
+  - to:
+      method: email
+      email: ryan.harkin@linaro.org
+  criteria:
+    status: complete
+  verbosity: verbose
+
