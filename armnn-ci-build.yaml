@@ -22,21 +22,21 @@
 
     triggers:
         - gerrit:
+            gerrit-build-failed-verified-value: -1
             trigger-on:
-              - patchset-created-event:
-                  exclude-drafts: true
-                  exclude--trivial-rebase: true
-                  exclude-no-code-change: true
+                - patchset-created-event:
+                    exclude-drafts: true
+                    exclude-trivial-rebase: true
+                    exclude-no-code-change: true
             projects:
-              - project-compare-type: 'PLAIN'
-                project-pattern: 'ml/armnn'
-                branches:
-                  - branch-compare-type: 'PLAIN'
-                    branch-pattern: 'master'
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'ml/armnn'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
             skip-vote:
                     successful: true
                     failed: false
-            gerrit-build-failed-verified-value: -1
             server-name: review.mlplatform.org
 
     parameters:
