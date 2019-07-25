@@ -47,34 +47,32 @@ unzip -j $(basename ${QCOM_LINUX_FIRMWARE}) "*/LICENSE"
 echo "${QCOM_LINUX_FIRMWARE_LICENSE_MD5}  LICENSE" > MD5
 md5sum -c MD5
 
+# Create ptable and rawprogram/patch command files
+git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/partioning_tool.git ptool
+(cd ptool && git log -1)
+(mkdir ptool/linux && cd ptool/linux && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard410c/linux/partition.xml)
+(mkdir ptool/aosp && cd ptool/aosp && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard410c/aosp/partition.xml)
+
 # bootloader_emmc_linux
 cp -a LICENSE \
    dragonboard410c/linux/flashall \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
    bootloaders-linux/prog_emmc_firehose_8916.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
-   dragonboard410c/linux/{rawprogram,patch}.xml \
-   dragonboard410c/linux/gpt_{main,backup}0.bin \
+   ptool/linux/{rawprogram,patch}?.xml \
+   ptool/linux/gpt_{main,backup,both}?.bin \
+   ptool/linux/zeros_*.bin \
    out/${BOOTLOADER_EMMC_LINUX}
-
-# no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
-sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/linux/partitions.txt
-sudo sgdisk -bgpt.bin gpt.img
-# NOTE: gpt_both0.bin here does not relate to gpt_main0/gpt_backup0 that exist from db-boot-tools
-#       gpt_both0 is generated from partition.txt and the others from partition.xml
-./mkgpt -d -i gpt.bin -o out/${BOOTLOADER_EMMC_LINUX}/gpt_both0.bin
 
 # bootloader_emmc_aosp
 cp -a LICENSE \
    dragonboard410c/aosp/flashall \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
+   ptool/aosp/{rawprogram,patch}?.xml \
+   ptool/aosp/gpt_{main,backup,both}?.bin \
+   ptool/aosp/zeros_*.bin \
    out/${BOOTLOADER_EMMC_AOSP}
-
-# no need to set the eMMC size here. Fastboot will patch the last partition and grow it until last sector
-sudo ./mksdcard -x -g -o gpt.img -p dragonboard410c/aosp/partitions.txt
-sudo sgdisk -bgpt.bin gpt.img
-./mkgpt -d -i gpt.bin -o out/${BOOTLOADER_EMMC_AOSP}/gpt_both0.bin
 
 # bootloader_sd_linux
 cp -a LICENSE \
@@ -122,6 +120,9 @@ Build description:
 ** "SD Linux boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_SD_BOOT | sed -e 's/+/\%2b/g')
 ** "eMMC Linux boot":$LK_GIT_LINARO/log/?h=$(echo $LK_GIT_REL_EMMC_BOOT | sed -e 's/+/\%2b/g')
 * Tools version: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
+* Partition table:
+** "Linux":$GIT_URL/tree/dragonboard410c/linux/partition.xml?id=$GIT_COMMIT
+** "AOSP":$GIT_URL/tree/dragonboard410c/aosp/partition.xml?id=$GIT_COMMIT
 EOF
 
 # Publish
