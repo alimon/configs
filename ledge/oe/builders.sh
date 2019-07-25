@@ -216,6 +216,13 @@ case "${MACHINE}" in
   ledge-synquacer)
 	  INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
     ;;
+  ledge-stm32mp157c-dk2)
+	  cd ${DEPLOY_DIR_IMAGE}
+	  tar -cpzf ../ledge-stm32mp157c-dk2.tar.gz .
+	  mv ../ledge-stm32mp157c-dk2.tar.gz .
+	  cd -
+	  RIMAGE=ledge-stm32mp157c-dk2.tar.gz
+    ;;
   juno)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
@@ -253,7 +260,7 @@ ROOTFS_SPARSE_BUILD_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 KERNEL_URL=${BASE_URL}/${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}/${PUB_DEST}/${DTB_IMG}
-RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/juno-oe-uboot.zip
+RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/${RIMAGE}
 NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_TARXZ_IMG}
 EXT4_IMAGE_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_EXT4}
 HDD_URL=${BASE_URL}/${PUB_DEST}/${HDD_IMG}
