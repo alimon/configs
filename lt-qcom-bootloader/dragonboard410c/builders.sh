@@ -9,7 +9,7 @@ wget -q ${QCOM_LINUX_FIRMWARE}
 echo "${QCOM_LINUX_FIRMWARE_MD5}  $(basename ${QCOM_LINUX_FIRMWARE})" > MD5
 md5sum -c MD5
 
-unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*" "*/loaders/*"
+unzip -j -d bootloaders-linux $(basename ${QCOM_LINUX_FIRMWARE}) "*/bootloaders-linux/*" "*/cdt-linux/*" "*/loaders/*" "*/efs-seed/*"
 
 # Get the Android compiler
 git clone ${LK_GCC_GIT} --depth 1 -b ${LK_GCC_REL} android-gcc
@@ -59,6 +59,7 @@ cp -a LICENSE \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
    bootloaders-linux/prog_emmc_firehose_8916.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
+   bootloaders-linux/fs_image_linux.tar.gz.mbn.img \
    ptool/linux/{rawprogram,patch}?.xml \
    ptool/linux/gpt_{main,backup,both}?.bin \
    ptool/linux/zeros_*.bin \
@@ -69,6 +70,7 @@ cp -a LICENSE \
    dragonboard410c/aosp/flashall \
    lk_emmc_boot/build-msm8916/emmc_appsboot.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
+   bootloaders-linux/fs_image_linux.tar.gz.mbn.img \
    ptool/aosp/{rawprogram,patch}?.xml \
    ptool/aosp/gpt_{main,backup,both}?.bin \
    ptool/aosp/zeros_*.bin \
@@ -78,6 +80,7 @@ cp -a LICENSE \
 cp -a LICENSE \
    lk_sd_boot/build-msm8916/emmc_appsboot.mbn \
    bootloaders-linux/{NON-HLOS.bin,rpm.mbn,sbl1.mbn,tz.mbn,hyp.mbn,sbc_1.0_8016.bin} \
+   bootloaders-linux/fs_image_linux.tar.gz.mbn.img \
    out/${BOOTLOADER_SD_LINUX}
 
 # sdcard_rescue
