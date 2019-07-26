@@ -8,8 +8,8 @@ BUILDDIR='builddir'
 cleanup_exit()
 {
   cd ${WORKSPACE}
-  sudo kpartx -dv /"$BUILDDIR"/work.raw || true
-  sudo umount -f /"$BUILDDIR"||true
+  sudo kpartx -dv "$BUILDDIR"/work.raw || true
+  sudo umount -f "$BUILDDIR"||true
 }
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
@@ -72,11 +72,11 @@ for rootfs in ${ROOTFS}; do
     fi
 
     # snatch the rootfs and bootfs for lava
-    for device in $(sudo kpartx -avs /"$BUILDDIR"/work.raw | cut -d' ' -f3); do
+    for device in $(sudo kpartx -avs "$BUILDDIR"/work.raw | cut -d' ' -f3); do
         partition=$(echo ${device} | cut -d'p' -f3)
-        sudo dd if=/dev/mapper/${device} of=/"$BUILDDIR"/partition.raw bs=512
+        sudo dd if=/dev/mapper/${device} of=${BUILDDIR}/partition.raw bs=512
         if [ "${partition}" = "2" ]; then
-            sudo mount -o loop /"$BUILDDIR"/partition.raw /mnt
+            sudo mount -o loop "$BUILDDIR"/partition.raw /mnt
             #kvers=$(ls /mnt/boot/vmlinuz-*|sed -e 's,.*vmlinuz-,,'|sort -rV|head -1)
             #cp /mnt/boot/vmlinuz-${kvers} out/vmlinuz
             #cp /mnt/boot/initrd.img-${kvers}  out/initrd
@@ -85,12 +85,11 @@ for rootfs in ${ROOTFS}; do
             sudo chroot /mnt dpkg -l > out/${image_name}.packages
             sudo umount -f /mnt
         fi
-        sudo rm -f /"$BUILDDIR"/partition.raw
+        sudo rm -f "$BUILDDIR"/partition.raw
     done
-    sudo kpartx -dv /"$BUILDDIR"/work.raw
-    cp /"$BUILDDIR"/work.raw out/${image_name}.sd
+    sudo kpartx -dv "$BUILDDIR"/work.raw
+    cp "$BUILDDIR"/work.raw out/${image_name}.sd
 
     # Compress image(s)
     pigz -9 out/rootfs-${image_name}.tar out/${image_name}.sd
 done
-
