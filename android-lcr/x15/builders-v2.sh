@@ -16,6 +16,9 @@ cp -a /home/buildslave/srv/${BUILD_DIR}/build/out/*.json /home/buildslave/srv/${
 
 if [[ ${JOB_NAME} == "android-lcr-member-x15-n" || ${JOB_NAME} == "android-lcr-member-x15-n-premerge-ci" ]]; then
   wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/x15/build-info/template.txt -O build/out/BUILD-INFO.txt
+else
+  rm -rf build/out/BUILD-INFO.txt
+  wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
 fi
 
 if [[ ${JOB_NAME} == "lkft-x15-android-8.1-4.14" ]]; then
