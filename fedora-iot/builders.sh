@@ -46,7 +46,7 @@ ls
 sudo ./build_fiot.sh
 
 DEPLOY_DIR_IMAGE=`pwd`/deploy
-
+sudo chmod 777 ${DEPLOY_DIR_IMAGE}
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters

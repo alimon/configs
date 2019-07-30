@@ -6,18 +6,21 @@
 sudo guestfish --rw -a $1 << 'EOF'
  run
  list-filesystems
- mount /dev/sda1 /
- cat /loader.0/entries/ostree-1-fedora-iot.conf | sed 's/options/options console=ttyS0,115200/'  > /tmp/ostree-1-fedora-iot.conf
- copy-in  /tmp/ostree-1-fedora-iot.conf /loader.0/entries/
- cat /loader.0/entries/ostree-1-fedora-iot.conf
 
  !mkdir -p deploy
- tar-out / - | gzip >  deploy/boot.tar.gz
+
+ mount /dev/sda1 /
+ tar-out / - | gzip >  deploy/boot_efi.tar.gz
  umount /
 
  mount /dev/sda2 /
+ tar-out / - | gzip >  deploy/boot.tar.gz
+ umount /
+
+ mount /dev/sda3 /
  tar-out / - | gzip >  deploy/rootfs.tar.gz
  umount /
+
 EOF
 
 cd deploy

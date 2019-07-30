@@ -53,6 +53,7 @@
             name: MACHINE
             values:
                 - 'x86-64'
+                - 'aarch64'
         - axis:
             type: slave
             name: label
@@ -79,8 +80,14 @@
             case "${MACHINE}" in
               x86-64)
                 DEVICE_TYPE=x86
+                IMG="Fedora-IoT-30-20190515.1.x86_64.raw.xz"
+                URL="https://dl.fedoraproject.org/pub/alt/iot/30/IoT/x86_64/images"
                 ;;
-              *)
+              aarch64)
+               DEVICE_TYPE=qemu_arm64
+               IMG="Fedora-IoT-30-20190515.1.aarch64.raw.xz"
+               URL="https://dl.fedoraproject.org/pub/alt/iot/30/IoT/aarch64/images/Fedora-IoT-30-20190515.1.aarch64.raw.xz"
+               *)
                 echo "Skip DEVICE_TYPE for ${MACHINE}"
                 ;;
             esac
