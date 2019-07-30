@@ -45,8 +45,7 @@ pwd
 ls
 sudo ./build_fiot.sh
 
-sudo mv ./deploy ${DEPLOY_DIR_IMAGE}
-
+DEPLOY_DIR_IMAGE=`pwd`/deploy
 
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
