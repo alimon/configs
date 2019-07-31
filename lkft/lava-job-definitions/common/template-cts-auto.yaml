@@ -1,0 +1,38 @@
+{% extends device_type %}
+
+{% block job_name %}lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-cts-auto{% endblock job_name %}
+
+{% block job_gobal_timeout %}
+timeouts:
+  job:
+    minutes: 360
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+{% endblock job_gobal_timeout %}
+
+{% block job_specific_metadata %}
+  cts-manifest: "{{TEST_CTS_URL}}/pinned-manifest.xml"
+  cts-version: "{{TEST_CTS_VERSION}}"
+  cts-plan: "cts-lkft"
+{% endblock job_specific_metadata %}
+
+{% block test_target %}
+- test:
+    namespace: tlxc
+    connection: lxc
+    timeout:
+      minutes: 360
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/android/noninteractive-tradefed/tradefed.yaml
+      params:
+        TEST_PARAMS: "cts -m CtsCarTestCases --disable-reboot"
+        TEST_URL: "{{TEST_CTS_URL}}/android-cts.zip"
+        TEST_PATH: "android-cts"
+        RESULTS_FORMAT: "atomic"
+        ANDROID_VERSION: "{{ANDROID_VERSION}}"
+      name: "cts-lkft"
+{% endblock test_target %}

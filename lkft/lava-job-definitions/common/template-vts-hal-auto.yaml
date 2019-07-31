@@ -1,0 +1,38 @@
+{% extends device_type %}
+{% block job_name %}lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-vts-hal-auto{% endblock job_name %}
+
+{% block job_gobal_timeout %}
+timeouts:
+  job:
+    minutes: 360
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+{% endblock job_gobal_timeout %}
+
+{% block job_specific_metadata %}
+  vts-manifest: "{{TEST_VTS_URL}}/pinned-manifest.xml"
+  vts-version: "{{TEST_VTS_VERSION}}"
+  vts-plan: "vts-kernel"
+{% endblock job_specific_metadata %}
+
+{% block test_target %}
+- test:
+      namespace: tlxc
+      connection: lxc
+      timeout:
+        minutes: 360
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/noninteractive-tradefed/tradefed.yaml
+          params:
+                TEST_URL: "{{TEST_VTS_URL}}/android-vts.zip"
+                TEST_PARAMS: "vts-hal-auto"
+                TEST_PATH: "android-vts"
+                RESULTS_FORMAT: "atomic"
+                ANDROID_VERSION: "{{ANDROID_VERSION}}"
+                TEST_REBOOT_EXPECTED: "true"
+          name: vts-test
+{% endblock test_target %}
