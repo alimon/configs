@@ -39,11 +39,16 @@ if [ -z "${WORKSPACE}" ]; then
   export WORKSPACE=${PWD}
 fi
 
+echo ${IMG}
+pwd
+source ./build.env
+echo ${IMG}
+
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 cd configs/fedora-iot/
 pwd
 ls
-sudo ./build_fiot.sh
+sudo -E ./build_fiot.sh
 
 DEPLOY_DIR_IMAGE=`pwd`/deploy
 sudo chmod 777 ${DEPLOY_DIR_IMAGE}
