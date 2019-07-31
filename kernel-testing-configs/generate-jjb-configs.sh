@@ -5,7 +5,7 @@ if [[ -z ${KERNEL_BRANCH} || -z ${KERNEL_REPO} || -z ${EMAIL_ADDRESS} ]]; then
 	exit 1
 fi
 
-DEVELOPER_JOB_NAME=$(echo ${EMAIL_ADDRESS} | cut -d'@' -f1)-${KERNEL_BRANCH}
+DEVELOPER_JOB_NAME=$(echo ${EMAIL_ADDRESS} | cut -d'@' -f1)-$(sed -s "s/\//-/g" <<< ${KERNEL_BRANCH})
 
 cp templates/trigger-generic.yaml ../trigger-openembedded-lkft-developer-ci-${DEVELOPER_JOB_NAME}.yaml
 cp templates/generic.yaml ../openembedded-lkft-developer-ci-${DEVELOPER_JOB_NAME}.yaml
