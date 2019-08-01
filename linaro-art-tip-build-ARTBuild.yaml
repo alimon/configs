@@ -65,10 +65,36 @@
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
-    #parameters:
-        #- string:
-            #name: BUILD_CONFIG_FILENAME
-            #default: 'linaro-art-tip'
+    parameters:
+        - string:
+            name: BUILD_CONFIG_REPO
+            default: 'git://android-git.linaro.org/android-build-configs.git'
+        - string:
+            name: BUILD_CONFIG_BRANCH
+            default: 'master'
+        - string:
+            name: BUILD_CONFIG_FILENAME
+            default: 'linaro-art-tip-short'
+        - string:
+            name: ART_BUILD_SCRIPTS_REFSPEC
+            description: |-
+              Git refspec to get ART build scripts from.
+              To use a gerrit patch specify this to the appropriate patch
+              ref and the ART_BUILD_SCRIPTS_REF to FETCH_HEAD.
+              Example - refs/changes/81/20281/23
+            default: 'refs/changes/81/20281/23'
+            # TODO: once patch above merged, change the default to below
+            #default: '+refs/heads/*:refs/remotes/origin/*'
+        - string:
+            name: ART_BUILD_SCRIPTS_REF
+            description: |-
+              Git branch to get pipeline scripts from.
+              To use a gerrit patch specify ART_BUILD_SCRIPTS_REFSPEC to the appropriate patch
+              ref and this to FETCH_HEAD.
+              Example - master or FETCH_HEAD
+            default: 'FETCH_HEAD'
+            # TODO: once patch above merged, change the default to below
+            #default: 'master'
     disabled: false
     node: docker-utopic-art
     display-name: 'Tip: build ART & deps'

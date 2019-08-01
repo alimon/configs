@@ -1,41 +1,23 @@
 #!/bin/bash -xe
 
-sudo apt-get update
-sudo apt-get install -y python-requests
-
 # Build scripts
 ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
-
 mkdir -p "${ANDROID_BUILD_DIR}"
-cd "${ANDROID_BUILD_DIR}"
 
-git config --global user.email "linaro-art-ci@linaro.org"
-git config --global user.name "Linaro ART CI"
+ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
+git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+git -C ${ART_BUILD_SCRIPTS_DIR} fetch --tags --progress origin ${ART_BUILD_SCRIPTS_REFSPEC}
+git -C ${ART_BUILD_SCRIPTS_DIR} checkout ${ART_BUILD_SCRIPTS_REF}
 
-rm -f "${WORKSPACE}/"*.{txt,log,csv}
+cd ${ART_BUILD_SCRIPTS_DIR}/jenkins
+./setup_host.sh
+./setup_android.sh
 
-# Use the `master-art` short manifest for ART only dependencies.
-repo init --depth=1 \
-  -u https://android.googlesource.com/platform/manifest \
-  -b master-art
+./test_launcher.pl ./build_target.sh --target arm_krait-eng
+./test_launcher.pl ./build_target.sh --target armv8-eng
 
-( rm -rf .repo/local_manifests && \
-  git clone ssh://git@dev-private-git.linaro.org/linaro-art/platform/manifest.git -b master-art \
-  .repo/local_manifests )
-
-repo sync -j10 --current-branch --force-sync --detach --force-remove-dirty
-
-# build_target.sh & --skip-build on target_test.sh
-repo download -c "linaro-art/art-build-scripts" 20281/23
-
-if [[ -v GERRIT_CHANGE_NUMBER ]]; then
-  repo download "$GERRIT_PROJECT" "$GERRIT_CHANGE_NUMBER/$GERRIT_PATCHSET_NUMBER"
-fi
-
-repo manifest -r -o "${WORKSPACE}/pinned-manifest.xml"
-
-scripts/jenkins/test_launcher.pl scripts/jenkins/build_target.sh --target arm_krait-eng
-scripts/jenkins/test_launcher.pl scripts/jenkins/build_target.sh --target armv8-eng
+sudo apt-get update
+sudo apt-get install -y python-requests
 
 mkdir -p pub
 mv *.tar.xz pub/
