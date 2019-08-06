@@ -24,7 +24,7 @@ sudo apt-get install -y python-requests
 
 mkdir -p pub
 mv *.tar.xz pub/
-cp "${WORKSPACE}/*.xml" pub/
+cp "${WORKSPACE}/"*.xml pub/
 PUB_DEST="${PUB_DEST:-/android/${JOB_NAME}/${BUILD_NUMBER}}"
 
 # Publish
