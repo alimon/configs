@@ -3,7 +3,7 @@
 set -ex
 
 trap cleanup_exit INT TERM EXIT
-BUILDDIR='builddir'
+BUILDDIR='tmp'
 
 cleanup_exit()
 {
