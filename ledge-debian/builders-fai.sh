@@ -8,8 +8,9 @@ LOOPDEV='loop4'
 
 cleanup_exit()
 {
-  cd ${WORKSPACE}
-  sudo umount -f "$BUILDDIR" || true
+    cd ${WORKSPACE}
+    sudo losetup -d /dev/"$LOOPDEV" || true
+    sudo umount -f "$BUILDDIR" || true
 }
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
@@ -78,7 +79,7 @@ for rootfs in ${ROOTFS}; do
     # our build procedure in the future
     device="$LOOPDEV"'p2'
 
-    sudo mount -o loop /dev/"$device" /mnt/
+    sudo mount /dev/"$device" /mnt/
     sudo tar caf out/rootfs-${image_name}.tar /mnt
     sudo chroot /mnt dpkg -l > out/${image_name}.packages
     sudo umount -f /mnt
