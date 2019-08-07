@@ -4,7 +4,7 @@ set -ex
 
 trap cleanup_exit INT TERM EXIT
 BUILDDIR='/tmp'
-LOOPDEV='loop0'
+LOOPDEV='loop4'
 
 cleanup_exit()
 {
@@ -73,7 +73,7 @@ for rootfs in ${ROOTFS}; do
 
     # create rootfs
     # TODO add kernel from OE builds + EFI directory structure
-    sudo losetup -P /dev/"$LOOPDEV"
+    sudo losetup -P /dev/"$LOOPDEV" "$BUILDDIR"/work.raw
     # rootfs is on the last partition. This might need to change depending on
     # our build procedure in the future
     device="$LOOPDEV"'p2'
