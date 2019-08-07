@@ -21,7 +21,7 @@
             default: '17.10-rc1'
             description: 'target firmware version'
     disabled: false
-    node: docker-stretch-arm64-leg
+    node: docker-buster-arm64-leg
     display-name: 'Reference Platform - Enterprise firmware'
     scm:
         - git:
@@ -40,9 +40,8 @@
 
             set -e
 
-            echo "deb http://obs.linaro.org/ERP:/18.06/Debian_9 ./" | sudo tee /etc/apt/sources.list.d/erp-18.06.list
             sudo apt-get -q=2 update
-            sudo apt-get -q=2 install -y --no-install-recommends acpica-tools gcc-arm-linux-gnueabihf libssl-dev
+            sudo apt-get -q=2 install -y --no-install-recommends acpica-tools gcc-arm-linux-gnueabihf libssl-dev uuid-dev nasm
 
             ./build.sh -D FIRMWARE_VER=${FIRMWARE_VER} -D FIRMWARE_VENDOR=Linaro
         - linaro-publish-token
