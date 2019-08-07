@@ -4,12 +4,12 @@ set -ex
 
 trap cleanup_exit INT TERM EXIT
 BUILDDIR='/tmp'
+LOOPDEV='loop0'
 
 cleanup_exit()
 {
   cd ${WORKSPACE}
-  sudo kpartx -dv "$BUILDDIR"/work.raw || true
-  sudo umount -f "$BUILDDIR"||true
+  sudo umount -f "$BUILDDIR" || true
 }
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
@@ -44,7 +44,7 @@ EOF
 
 # speed up FAI
 test -d "$BUILDDIR" || mkdir "$BUILDDIR"
-sudo mount -t tmpfs -o size=6G tmpfs "$BUILDDIR"
+sudo mount -t tmpfs tmpfs "$BUILDDIR"
 
 sudo cp tools/udevadm /sbin
 
@@ -73,16 +73,17 @@ for rootfs in ${ROOTFS}; do
 
     # create rootfs
     # TODO add kernel from OE builds + EFI directory structure
-    sudo kpartx -as "$BUILDDIR"/work.raw
-    # rootfs is on the last partition
-    device=$(sudo kpartx -l $BUILDDIR/work.raw | cut -d : -f1 | tail -n1)
+    sudo losetup -P /dev/"$LOOPDEV"
+    # rootfs is on the last partition. This might need to change depending on
+    # our build procedure in the future
+    device="$LOOPDEV"'p2'
 
-    sudo mount -o loop /dev/mapper/$device /mnt/
+    sudo mount -o loop /dev/"$device" /mnt/
     sudo tar caf out/rootfs-${image_name}.tar /mnt
     sudo chroot /mnt dpkg -l > out/${image_name}.packages
     sudo umount -f /mnt
 
-    sudo kpartx -dv "$BUILDDIR"/work.raw
+    sudo losetup -d /dev/"$LOOPDEV"
     # cp "$BUILDDIR"/work.raw out/${image_name}.sd
 
     # Compress image(s)
