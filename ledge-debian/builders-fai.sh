@@ -4,7 +4,7 @@ set -ex
 
 trap cleanup_exit INT TERM EXIT
 BUILDDIR='/tmp'
-LOOPDEV='loop4'
+LOOPDEV='loop0'
 
 cleanup_exit()
 {
@@ -71,6 +71,12 @@ for rootfs in ${ROOTFS}; do
         rm -rf out/
         exit 1
     fi
+
+    # linux has 8 loop devices by default
+    for loop_no in $(seq 0 7); do
+        sudo losetup /dev/loop$loop_no
+        [ $? -ne 0 ] && LOOPDEV='loop'$loop_no && break
+    done
 
     # create rootfs
     # TODO add kernel from OE builds + EFI directory structure
