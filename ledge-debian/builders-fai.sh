@@ -4,12 +4,12 @@ set -ex
 
 trap cleanup_exit INT TERM EXIT
 BUILDDIR='/tmp'
-LOOPDEV='loop0'
+LOOPDEV='/dev/loop0'
 
 cleanup_exit()
 {
     cd ${WORKSPACE}
-    sudo losetup -d /dev/"$LOOPDEV" || true
+    sudo losetup -d "$LOOPDEV" || true
     sudo umount -f "$BUILDDIR" || true
 }
 
@@ -72,25 +72,20 @@ for rootfs in ${ROOTFS}; do
         exit 1
     fi
 
-    # linux has 8 loop devices by default
-    for loop_no in $(seq 0 7); do
-        sudo losetup /dev/loop$loop_no
-        [ $? -ne 0 ] && LOOPDEV='loop'$loop_no && break
-    done
-
+	LOOPDEV=$(losetup --find)
     # create rootfs
     # TODO add kernel from OE builds + EFI directory structure
-    sudo losetup -P /dev/"$LOOPDEV" "$BUILDDIR"/work.raw
+    sudo losetup -P "$LOOPDEV" "$BUILDDIR"/work.raw
     # rootfs is on the last partition. This might need to change depending on
     # our build procedure in the future
     device="$LOOPDEV"'p2'
 
-    sudo mount /dev/"$device" /mnt/
+    sudo mount "$device" /mnt/
     sudo tar caf out/rootfs-${image_name}.tar /mnt
     sudo chroot /mnt dpkg -l > out/${image_name}.packages
     sudo umount -f /mnt
 
-    sudo losetup -d /dev/"$LOOPDEV"
+    sudo losetup -d "$LOOPDEV"
     # cp "$BUILDDIR"/work.raw out/${image_name}.sd
 
     # Compress image(s)
