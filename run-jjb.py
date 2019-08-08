@@ -66,7 +66,7 @@ if main_action == 'test':
     jjb_delete_args.insert(0, 'echo')
 
 try:
-    git_args = ['git', 'diff', '--name-only',
+    git_args = ['git', 'diff', '--raw',
                 os.environ.get('GIT_PREVIOUS_COMMIT'),
                 os.environ.get('GIT_COMMIT')]
     proc = subprocess.Popen(git_args,
@@ -84,8 +84,19 @@ if proc.returncode != 0:
 
 filelist = []
 files = []
-for filename in data.splitlines():
+for line in data.splitlines():
+    # Format of the git-diff; we only need OPERATION and FILE1
+    #
+    # :<OLD MODE> <NEW MODE> <OLD REF> <NEW REF> <OPERATION> <FILE1> <FILE2>
+    elems = line.split()
+    operation = elems[4][0]
+    filename = elems[5]
+
     if filename.endswith('.yaml') and '/' not in filename:
+        # No point trying to test deleted jobs because they don't exist any
+        # more.
+        if operation == 'D':
+            continue
         filelist.append(filename)
     else:
         files = findparentfiles(filename)
