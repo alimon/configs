@@ -72,7 +72,7 @@ for rootfs in ${ROOTFS}; do
         exit 1
     fi
 
-	LOOPDEV=$(losetup --find)
+	LOOPDEV=$(sudo losetup --find)
     # create rootfs
     # TODO add kernel from OE builds + EFI directory structure
     sudo losetup -P "$LOOPDEV" "$BUILDDIR"/work.raw
