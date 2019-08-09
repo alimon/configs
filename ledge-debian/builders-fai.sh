@@ -70,10 +70,9 @@ for rootfs in ${ROOTFS}; do
         exit 1
     fi
 
-    LOOPDEV=$(sudo losetup --find)
     # create rootfs
     # TODO add kernel from OE builds + EFI directory structure
-    sudo losetup -P "$LOOPDEV" "$BUILDDIR"/work.raw
+    LOOPDEV=$(sudo losetup -f -P --show ${BUILDDIR}/work.raw)
     # rootfs is on the last partition. This might need to change depending on
     # our build procedure in the future
     device="$LOOPDEV"'p2'
