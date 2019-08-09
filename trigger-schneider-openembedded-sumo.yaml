@@ -1,0 +1,34 @@
+- job:
+    name: trigger-schneider-openembedded-sumo
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build
+    display-name: 'Trigger for Schneider Openembedded project (linaro-sumo)'
+    scm:
+        - git:
+            url: https://github.com/zephyrproject-rtos/zephyr.git
+            refspec: +refs/heads/linaro-sumo:refs/remotes/origin/linaro-sumo
+            name: origin
+            branches:
+                - refs/heads/linaro-sumo
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H 12,6 * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - trigger-builds:
+            - project: 'schneider-openembedded-sumo'
+              predefined-parameters: GIT_COMMIT=${GIT_COMMIT}
