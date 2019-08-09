@@ -44,8 +44,8 @@ echo "Testing IMG: ${IMG}"
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 cd configs/fedora-iot/
 
-export URL=`echo ${URL} | sed 's/%arch%/${MACHINE}/'`
-export IMG=`echo ${IMG} | sed 's/%arch%/${MACHINE}/'`
+export URL="https://dl.fedoraproject.org/pub/alt/iot/30/IoT/${MACHINE}/images"
+export IMG="Fedora-IoT-30-20190515.1.${MACHINE}.raw.xz"
 echo "Building ${DEVICE_TYPE} image: ${URL}/${IMG}"
 
 sudo -E ./build_fiot.sh
