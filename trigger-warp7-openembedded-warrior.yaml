@@ -1,0 +1,27 @@
+- job:
+    name: trigger-warp7-openembedded-warrior
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for WaRP7 - OpenEmbedded (warrior)'
+    scm:
+        - repo:
+            manifest-url: https://git.linaro.org/people/ryan.harkin/oe-rpb-manifest.git
+            manifest-branch: warrior
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'warp7-openembedded-warrior'
