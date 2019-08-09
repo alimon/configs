@@ -18,6 +18,12 @@
             num-to-keep: 10
     parameters:
         - string:
+            name: URL
+            default: 'https://dl.fedoraproject.org/pub/alt/iot/30/IoT/%arch%/images'
+        - string:
+            name: IMG
+            default: 'Fedora-IoT-30-20190515.1.%arch%.raw.xz'
+        - string:
             name: IMAGES
             default: 'default'
         - string:
@@ -76,24 +82,6 @@
         - shell: |
             #!/bin/bash
 
-            # Mapping for MACHINE -> DEVICE_TYPE
-            case "${MACHINE}" in
-              x86-64)
-                export DEVICE_TYPE=x86
-                export IMG="Fedora-IoT-30-20190515.1.x86_64.raw.xz"
-                export URL="https://dl.fedoraproject.org/pub/alt/iot/30/IoT/x86_64/images"
-                ;;
-              aarch64)
-               export DEVICE_TYPE=qemu_arm64
-               export IMG="Fedora-IoT-30-20190515.1.aarch64.raw.xz"
-               export URL="https://dl.fedoraproject.org/pub/alt/iot/30/IoT/aarch64/images"
-                ;;
-               *)
-                echo "Skip DEVICE_TYPE for ${MACHINE}"
-                ;;
-            esac
-
-            pwd
             echo "Building ${DEVICE_TYPE} image: ${URL}/${IMG}"
 
             echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters

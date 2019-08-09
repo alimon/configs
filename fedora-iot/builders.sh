@@ -43,6 +43,11 @@ echo "Testing IMG: ${IMG}"
 
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 cd configs/fedora-iot/
+
+export URL=`echo ${URL} | sed 's/%arch%/${MACHINE}/'`
+export IMG=`echo ${IMG} | sed 's/%arch%/${MACHINE}/'`
+echo "Building ${DEVICE_TYPE} image: ${URL}/${IMG}"
+
 sudo -E ./build_fiot.sh
 
 DEPLOY_DIR_IMAGE=`pwd`/deploy
