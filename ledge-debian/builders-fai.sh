@@ -3,14 +3,13 @@
 set -ex
 
 trap cleanup_exit INT TERM EXIT
-BUILDDIR='/tmp'
+BUILDDIR="$WORKSPACE/builddir"
 LOOPDEV='/dev/loop0'
 
 cleanup_exit()
 {
     cd ${WORKSPACE}
     sudo losetup -d "$LOOPDEV" || true
-    sudo umount -f "$BUILDDIR" || true
 }
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
@@ -43,9 +42,8 @@ Build description:
 * FAI commit: "$GIT_COMMIT":$GIT_URL/commit/?id=$GIT_COMMIT
 EOF
 
-# speed up FAI
-test -d "$BUILDDIR" || mkdir "$BUILDDIR"
-sudo mount -t tmpfs tmpfs "$BUILDDIR"
+# Don't use tmpfs to speedup FAI. armhf nodes only have 2GB of ram
+test -d "$BUILDDIR" || mkdir -p "$BUILDDIR"
 
 sudo cp tools/udevadm /sbin
 
@@ -72,7 +70,7 @@ for rootfs in ${ROOTFS}; do
         exit 1
     fi
 
-	LOOPDEV=$(sudo losetup --find)
+    LOOPDEV=$(sudo losetup --find)
     # create rootfs
     # TODO add kernel from OE builds + EFI directory structure
     sudo losetup -P "$LOOPDEV" "$BUILDDIR"/work.raw
