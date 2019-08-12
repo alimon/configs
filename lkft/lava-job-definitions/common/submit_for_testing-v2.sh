@@ -67,6 +67,10 @@ function submit_jobs_for_config(){
     export TEST_VTS_VERSION=$(echo ${TEST_VTS_URL} | awk -F"/" '{print$(NF-1)}')
     export TEST_CTS_VERSION=$(echo ${TEST_CTS_URL} | awk -F"/" '{print$(NF-1)}')
 
+    ## clean up the old changes for last build
+    ## so that the url could be updated as expected
+    git reset --hard
+
     for f in ${PUBLISH_FILES}; do
         # DOWNLOAD_URL is where the generated files stored
         # replace REFERENCE_BUILD_URL with DOWNLOAD_URL
