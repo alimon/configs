@@ -23,4 +23,6 @@ EOF
 cd deploy
 tar -xzf boot.tar.gz --strip-components=3 --wildcards --no-anchored 'vmlinuz*'
 tar -xzf boot.tar.gz --strip-components=3 --wildcards --no-anchored 'initramfs*'
+virt-make-fs --size=+200M rootfs.tar.gz rootfs.ext2.img
+pigz rootfs.ext2.img
 cd -

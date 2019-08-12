@@ -73,10 +73,10 @@ EOF
 
 ls -lh  ${DEPLOY_DIR_IMAGE}
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*${MACHINE}-*${BUILD_NUMBER}*.img" | sort | xargs -r basename)
-KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*vmlinu**" | xargs -r basename)
-ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
-ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
-ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "fiot-rootfs*" | xargs -r basename)
+KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*vmlinu*" | xargs -r basename)
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rootfs.img.gz" | xargs -r basename)
+ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rootfs.ext2.img" | xargs -r basename)
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rootfs.tar.gz" | xargs -r basename)
 HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" | xargs -r basename)
 INITRD_URL=$(find ${DEPLOY_DIR_IMAGE} -type f -name "initram*" | xargs -r basename)
 
