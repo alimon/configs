@@ -53,39 +53,41 @@
             !include-raw: ledge-debian/builders-fai.sh
 
         - shell: |
-                 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-                 DEPLOY_DIR_IMAGE=`pwd`/out
-                 BASE_URL="https://snapshots.linaro.org"
-                 BOOT_URL=
-                 ROOTFS_SPARSE_BUILD_URL=
-                 KERNEL_URL="https://snapshots.linaro.org/components/ledge/oe/ledge-synquacer/latest/rpb/Image-*-ledge-synquacer-*.bin"
-                 DTB_URL=
-                 RECOVERY_IMAGE_URL=
-                 NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/rootfs-linaro-buster-iot-unknown-*.tar.gz
-                 EXT4_IMAGE_URL=
-                 HDD_URL=
-                 KERNEL_COMMIT=
-                 KERNEL_CONFIG_URL=
-                 KERNEL_DEFCONFIG_URL=
-                 KSELFTESTS_MAINLINE_URL=
-                 KSELFTESTS_MAINLINE_VERSION=
-                 KSELFTESTS_NEXT_URL=
-                 KSELFTESTS_NEXT_VERSION=
-                 LTP_URL=
-                 LTP_VERSION=
-                 LTP_REVISION=
-                 LIBHUGETLBFS_URL=
-                 LIBHUGETLBFS_VERSION=
-                 LIBHUGETLBFS_REVISION=
-                 MAKE_KERNELVERSION=
-                 TOOLCHAIN=
-                 KERNEL_ARGS="selinux=0"
-                 INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
-                 EOF
+            #!/bin/bash
+            cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+            DEPLOY_DIR_IMAGE=`pwd`/out
+            BASE_URL="https://snapshots.linaro.org"
+            BOOT_URL=
+            ROOTFS_SPARSE_BUILD_URL=
+            KERNEL_URL="https://snapshots.linaro.org/components/ledge/oe/ledge-synquacer/latest/rpb/Image-*-ledge-synquacer-*.bin"
+            DTB_URL=
+            RECOVERY_IMAGE_URL=
+            NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/rootfs-linaro-buster-iot-unknown-*.tar.gz
+            EXT4_IMAGE_URL=
+            HDD_URL=
+            KERNEL_COMMIT=
+            KERNEL_CONFIG_URL=
+            KERNEL_DEFCONFIG_URL=
+            KSELFTESTS_MAINLINE_URL=
+            KSELFTESTS_MAINLINE_VERSION=
+            KSELFTESTS_NEXT_URL=
+            KSELFTESTS_NEXT_VERSION=
+            LTP_URL=
+            LTP_VERSION=
+            LTP_REVISION=
+            LIBHUGETLBFS_URL=
+            LIBHUGETLBFS_VERSION=
+            LIBHUGETLBFS_REVISION=
+            MAKE_KERNELVERSION=
+            TOOLCHAIN=
+            KERNEL_ARGS="selinux=0"
+            INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
+            EOF
         - inject:
             properties-file: post_build_lava_parameters
         - linaro-publish-token
         - shell: |
+            #!/bin/bash
             # Publish to snapshots
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
@@ -94,21 +96,42 @@
                  --link-latest \
                  out ${PUB_DEST}
         - shell: |
-                rm -rf configs
-                git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            #!/bin/bash
 
-                DEVICE_TYPE=synquacer
+            if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
+                 echo "INFO: apt update error - try again in a moment"
+                 sleep 15
+                 sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
+            fi
 
-                python configs/openembedded-lkft/submit_for_testing.py \
-                        --device-type ${DEVICE_TYPE} \
-                        --build-number ${BUILD_NUMBER} \
-                        --lava-server ${LAVA_SERVER} \
-                        --qa-server ${QA_SERVER} \
-                        --qa-server-team ${QA_SERVER_TEAM} \
-                        --qa-server-project ${QA_SERVER_PROJECT} \
-                        --git-commit ${MANIFEST_COMMIT} \
-                        --template-path configs/rpb-openembedded/lava-job-definitions \
-                        --template-names template-boot.yaml
+            pkg_list="chrpath cpio diffstat gawk git expect pkg-config python-pip python-requests python-crypto libpixman-1-dev python python3"
+            if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
+                 echo "INFO: apt install error - try again in a moment"
+                 sleep 15
+                 sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
+            fi
+
+            sudo locale-gen en_US.UTF-8 && sudo update-locale LANG=en_US.UTF-8
+            export LC_ALL=en_US.UTF-8
+
+            # install required python modules
+            pip install --user --force-reinstall Jinja2 ruamel.yaml
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            DEVICE_TYPE=synquacer
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+                 --device-type ${DEVICE_TYPE} \
+                 --build-number ${BUILD_NUMBER} \
+                 --lava-server ${LAVA_SERVER} \
+                 --qa-server ${QA_SERVER} \
+                 --qa-server-team ${QA_SERVER_TEAM} \
+                 --qa-server-project ${QA_SERVER_PROJECT} \
+                 --git-commit ${MANIFEST_COMMIT} \
+                 --template-path configs/rpb-openembedded/lava-job-definitions \
+                 --template-names template-boot.yaml
     publishers:
         - groovy-postbuild:
             script:
