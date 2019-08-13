@@ -1,5 +1,5 @@
 - job:
-    name: android-lcr-reference-hikey960-master-car
+    name: android-lcr-reference-hikey-master-auto
     project-type: freestyle
     defaults: global
     properties:
@@ -22,10 +22,10 @@
             default: 'https://qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
-            default: 'lcr-reference-hikey960-master-car'
-    disabled: true
+            default: 'lcr-reference-hikey-master-auto'
+    disabled: false
     node: docker-xenial-aosp
-    display-name: 'AOSP master build for HiKey960-Car'
+    display-name: 'AOSP master build for HiKey Auto'
     concurrent: true
     triggers:
         - gerrit:
@@ -40,9 +40,9 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey960-master-car'
+                        pattern: 'hikey-hikey960-master-auto'
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey960-master-workarounds'
+                        pattern: 'hikey-master-workarounds'
                       - compare-type: 'PLAIN'
                         pattern: 'MASTER-RLCR-PATCHSET'
                       - compare-type: 'PLAIN'
@@ -65,8 +65,6 @@
                         branch-pattern: 'linaro-master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey960-car.xml'
-                      - compare-type: 'PLAIN'
                         pattern: 'hikey.xml'
                       - compare-type: 'PLAIN'
                         pattern: 'linaro.xml'
@@ -81,7 +79,7 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'lcr-reference-hikey960-master-car'
+                        pattern: 'lcr-reference-hikey-master-auto'
     wrappers:
         - timestamps
         - timeout:

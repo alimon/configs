@@ -1,5 +1,5 @@
 - job:
-    name: android-lcr-reference-hikey960-master-car
+    name: android-lcr-reference-hikey960-master-auto
     project-type: freestyle
     defaults: global
     properties:
@@ -23,9 +23,9 @@
         - string:
             name: QA_SERVER_PROJECT
             default: 'lcr-reference-hikey960-master-car'
-    disabled: true
+    disabled: false
     node: docker-xenial-aosp
-    display-name: 'AOSP master build for HiKey960-Car'
+    display-name: 'AOSP master build for HiKey960-Auto'
     concurrent: true
     triggers:
         - gerrit:
@@ -40,7 +40,7 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'hikey960-master-car'
+                        pattern: 'hikey-hikey960-master-auto'
                       - compare-type: 'PLAIN'
                         pattern: 'hikey960-master-workarounds'
                       - compare-type: 'PLAIN'
@@ -81,7 +81,7 @@
                         branch-pattern: 'master'
                   file-paths:
                       - compare-type: 'PLAIN'
-                        pattern: 'lcr-reference-hikey960-master-car'
+                        pattern: 'lcr-reference-hikey960-master-auto'
     wrappers:
         - timestamps
         - timeout:
