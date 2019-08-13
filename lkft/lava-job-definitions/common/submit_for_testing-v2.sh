@@ -69,7 +69,9 @@ function submit_jobs_for_config(){
 
     ## clean up the old changes for last build
     ## so that the url could be updated as expected
-    git reset --hard
+    cd  ${DIR_CONFIGS_ROOT}/ && \
+        git reset --hard && \
+        cd -
 
     for f in ${PUBLISH_FILES}; do
         # DOWNLOAD_URL is where the generated files stored
