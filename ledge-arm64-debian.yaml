@@ -31,6 +31,24 @@
         - string:
             name: PUB_DEST
             default: 'components/ledge/debian/arm64/${BUILD_NUMBER}'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'ledge'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'ledge'
+        - string:
+            name: AUTH_GROUPS
+            default: 'linaro'
+        - string:
+            name: KERNEL_ARGS
+            default: 'selinux=0'
     disabled: false
     node: docker-stretch-arm64
     display-name: 'Debian based images for Ledge'
@@ -80,7 +98,7 @@
             LIBHUGETLBFS_REVISION=
             MAKE_KERNELVERSION=
             TOOLCHAIN=
-            KERNEL_ARGS="selinux=0"
+            KERNEL_ARGS="${KERNEL_ARGS}"
             INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
             EOF
         - inject:
@@ -121,6 +139,8 @@
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
             DEVICE_TYPE=synquacer
+
+            [ -z "${MANIFEST_COMMIT}" ] && export MANIFEST_COMMIT="HEAD"
 
             python configs/openembedded-lkft/submit_for_testing.py \
                  --device-type ${DEVICE_TYPE} \
