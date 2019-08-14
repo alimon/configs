@@ -46,7 +46,7 @@
     builders:
         - shell: |
             #!/bin/bash -e
-            for image in $(docker images|grep tcwg|awk '{ print $1":"$2}'); do echo $image; docker rmi $image; done
+            for image in $(docker images|grep tcwg|grep -v none|awk '{ print $1":"$2}'); do echo $image; docker rmi $image; done
             docker system prune -f
     publishers:
         - email:
