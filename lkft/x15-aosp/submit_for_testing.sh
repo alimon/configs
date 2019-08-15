@@ -3,6 +3,7 @@
 export DEVICE_TYPE=x15
 export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
 export DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
+[ -z "${REFERENCE_BUILD_URL}" ] && export REFERENCE_BUILD_URL=${DOWNLOAD_URL}
 export KERNEL_COMMIT=${SRCREV_kernel}
 export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print$(NF-1)}')
 export CTS_VERSION=$(echo $CTS_URL | awk -F"/" '{print$(NF-1)}')
