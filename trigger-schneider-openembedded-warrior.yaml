@@ -1,0 +1,53 @@
+- job:
+    name: trigger-schneider-openembedded-warrior
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            ryan.harkin@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+            ralph.siemsen@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+            schneider-linaro-git:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: build
+    display-name: 'Trigger for Schneider Openembedded project (linaro-warrior)'
+    scm:
+        - git:
+            url: ssh://git@dev-private-git.linaro.org/schneider/DIP-Yocto-Linux-Distro.git
+            refspec: +refs/heads/linaro-warrior:refs/remotes/origin/linaro-warrior
+            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+            name: origin
+            branches:
+                - refs/heads/linaro-warrior
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: 'H 12,6 * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - trigger-builds:
+            - project: 'schneider-openembedded-warrior'
+              predefined-parameters: GIT_COMMIT=${GIT_COMMIT}
+    publishers:
+        - email:
+            recipients: 'ryan.harkin@linaro.org'
