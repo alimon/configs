@@ -38,7 +38,7 @@ for dir in ${changed_dirs}; do
         echo "skipping module dir ${dir}"
         continue
     fi
-    cd $dir
+    cd $topdir/$dir
     echo "================= $dir =========================="
     if ! compgen -G "*.tf" > /dev/null; then
         echo "no terraform files in this directory, skipping"
@@ -57,6 +57,5 @@ for dir in ${changed_dirs}; do
     terraform init > /dev/null
     terraform plan $vars -out demo.plan
     terraform 0.12checklist
-    cd $topdir
 done
 
