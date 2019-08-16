@@ -150,6 +150,13 @@
             export MACHINE="ledge-synquacer"
 
             [ -z "${MANIFEST_COMMIT}" ] && export MANIFEST_COMMIT="HEAD"
+            [ -z "${MANIFEST_BRANCH}" ] && export MANIFEST_BRANCH="master"
+            [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
+            [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="25"
+            [ -z "${SANITY_LAVA_JOB_PRIORITY}" ] && export SANITY_LAVA_JOB_PRIORITY="30"
+            [ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=rpb
+            [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
+            [ -z "${TDEFINITIONS_REVISION}" ] && export TDEFINITIONS_REVISION="kselftest-5.1"
 
             python configs/openembedded-lkft/submit_for_testing.py \
                  --device-type ${DEVICE_TYPE} \
