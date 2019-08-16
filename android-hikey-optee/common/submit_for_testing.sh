@@ -78,7 +78,7 @@ export VTS_PKG_URL=${VTS_PKG_URL}
 [ -n ${TEST_TEMPLATES} ] && unset TEST_TEMPLATES
 
 DEVICE_PLAN=${PLAN_CHANGE:-"plan_change_swg_${DEVICE_TYPE}"}
-if [ ! -n "$GERRIT_PROJECT" ]; then
+if [ -z "$GERRIT_PROJECT" ]; then
     DEVICE_PLAN=${PLAN_WEEKLY:-"plan_weekly_swg_${DEVICE_TYPE}"}
 fi
 
