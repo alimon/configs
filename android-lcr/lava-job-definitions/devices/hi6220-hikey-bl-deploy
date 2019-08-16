@@ -1,0 +1,20 @@
+- deploy:
+    timeout:
+      minutes: 10
+    to: recovery
+    namespace: recovery
+    connection: lxc
+    images:
+      script:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/70/hikey/release/hisi-idt.py
+      recovery:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/70/hikey/release/recovery.bin
+      loader:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/70/hikey/release/l-loader.bin
+      ptable:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/70/hikey/release/ptable-linux-8g.img
+      fastboot:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/70/hikey/release/fip.bin
+      nvme:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/70/hikey/release/nvme.img
+    os: debian

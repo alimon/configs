@@ -1,0 +1,56 @@
+{% extends "lcr.jinja2" %}
+
+{% block device_type %}hi6220-hikey-bl{% endblock %}
+
+{% block secrets %}
+  {{ super() }}
+  AP_SSID: "{{AP_SSID}}"
+  AP_KEY: "{{AP_KEY}}"
+{% endblock %}
+
+{% block actions %}
+- deploy:
+    namespace: tlxc
+    timeout:
+      minutes: 15
+    to: lxc
+    packages:
+    - wget
+    - zip
+    - unzip
+    os: ubuntu
+
+- boot:
+    namespace: tlxc
+    prompts:
+    - 'root@(.*):/#'
+    - 'console:/'
+    - ':/'
+    timeout:
+      minutes: 5
+    method: lxc
+
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 10
+    definitions:
+    - repository: https://git.linaro.org/qa/test-definitions.git
+      from: git
+      path: automated/linux/android-platform-tools/install.yaml
+      name: install-android-platform-tools-r2701
+      parameters:
+        LINK: 'https://dl.google.com/android/repository/platform-tools_r27.0.1-linux.zip'
+
+{% include "devices/hi6220-hikey-bl-deploy" %}
+{% include "devices/hi6220-hikey-bl-boot" %}
+
+{% include "devices/hi6220-hikey-bl-deploy-fastboot" %}
+{% include "devices/hi6220-hikey-boot" %}
+
+{% block test_target %}
+{% endblock test_target %}
+
+{% include "devices/hi6220-hikey-bl-deploy" %}
+
+{% endblock actions %}
