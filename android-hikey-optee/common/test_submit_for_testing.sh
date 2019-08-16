@@ -66,11 +66,9 @@ export DRY_RUN=true
 
 for device in $(ls ${PARENT_DIR}/../../android-lcr/lava-job-definitions/devices); do
     case "$device" in
-      *boot*)
-        ;;
-      *deploy*)
-        ;;
-      hi*)
+      hi6220-hikey)
+        ;&
+      hi6220-hikey-bl)
         export DEVICE_TYPE=$device
         echo ${DEVICE_TYPE}
         bash ${PARENT_DIR}/submit_for_testing.sh
