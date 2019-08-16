@@ -44,6 +44,10 @@ for dir in ${changed_dirs}; do
         echo "no terraform files in this directory, skipping"
         continue
     fi
+    if grep -q scaleway "*.tf"; then
+        echo "skipping scaleway validation for now"
+        continue
+    fi
     if compgen -G "*.tfvars" > /dev/null; then
         echo "adding vars files to commandline"
         vars="--var-file *.tfvars"
