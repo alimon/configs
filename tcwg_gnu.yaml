@@ -19,13 +19,13 @@
           node: tcwg-apm_32-build
           docker_arch: armhf
     type_of_test:
-      - bootstrap:
+      - check_bootstrap:
           components: gcc
       - bootstrap_ubsan:
           components: gcc
       - bootstrap_O3:
           components: gcc
-      - bootstrap_lto:
+      - check_bootstrap_lto:
           components: gcc
       - bootstrap_O1:
           components: gcc
@@ -39,8 +39,6 @@
           components: gcc
       - check_binutils:
           components: binutils
-      - check_gcc:
-          components: gcc
     jobs:
       - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
       - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
