@@ -42,6 +42,8 @@
     expression, and included in the test result.
 
 */
+import hudson.AbortException
+
 def device_type = manager.envVars["DEVICE_TYPE"]
 def qa_server_team = 'lkft'
 if (manager.envVars.containsKey('QA_SERVER_TEAM')) {
@@ -51,6 +53,7 @@ def base_url = manager.envVars['QA_SERVER']
 def auth_token = manager.envVars["QA_REPORTS_TOKEN"]
 def build_process = "fail"
 def log_error_pattern = ~'^ERROR: .*$'
+def log_fetch_failure = ~'^ERROR: .*Fetcher failure: Unable to find revision.* even from upstream'
 if (manager.build.result == hudson.model.Result.SUCCESS) {
     build_process = "pass"
 }
@@ -76,6 +79,13 @@ manager.build.logFile.eachLine { line ->
     matcher = log_error_pattern.matcher(line)
     if (matcher.matches()) {
         error_log += line+"\n"
+    }
+}
+
+manager.build.logFile.eachLine { line ->
+    matcher = log_fetch_failure.matcher(line)
+    if (matcher.matches()) {
+        throw new AbortException("Fetcher failure. Stop everything.")
     }
 }
 
