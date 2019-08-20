@@ -91,6 +91,12 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
+            curl \
+                --header "Auth-Token: $QA_REPORTS_TOKEN" \
+                --form patch_source=gerrit-ssh-mlplatform \
+                --form patch_id=${GERRIT_CHANGE_NUMBER}:${GERRIT_PATCHSET_NUMBER} \
+                https://qa-reports.linaro.org/api/createbuild/armnn/$LAVA_ID
+
             python configs/armnn-ci-build/submit_for_testing.py \
                 --device-type ${DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
