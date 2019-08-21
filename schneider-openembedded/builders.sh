@@ -239,14 +239,14 @@ case "${MACHINE}" in
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_EDGE_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*${MACHINE}*bestla*.dtb" | xargs -r basename)
-    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage*rzn1*.bin" | xargs -r basename)
+    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*rzn1*.bin" | xargs -r basename)
     ;;
   soca9)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb" | xargs -r basename)
-    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage*${MACHINE}*.bin" | xargs -r basename)
+    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*${MACHINE}*.bin" | xargs -r basename)
     ;;
   *)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
