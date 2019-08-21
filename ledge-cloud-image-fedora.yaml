@@ -1,0 +1,41 @@
+- job:
+    name: ledge-cloud-image-fedora
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: docker-stretch-arm64-leg
+    display-name: 'LEDGE Cloud image Fedora IoT'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: fedora-iot/cloud-builders.sh
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --server ${PUBLISH_SERVER} \
+              --link-latest \
+              out components/ledge/fedora-cloud/${BUILD_NUMBER}
+
+            rm -rf out
+    publishers:
+        - email:
+            recipients: 'maxim.uvarov@linaro.org ilias.apalodimas@linaro.org'
