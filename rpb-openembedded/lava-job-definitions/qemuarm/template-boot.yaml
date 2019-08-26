@@ -41,6 +41,18 @@ actions:
 - boot:
     namespace: target
     timeout:
+      minutes: 10
+    method: qemu
+    media: tmpfs
+    expect_shell: False
+    boot_finished:
+     - 'reboot: Restarting system'
+     - 'reboot: System halted'
+     - 'Requesting system halt'
+
+- boot:
+    namespace: target
+    timeout:
       minutes: 15
     method: qemu
     media: tmpfs
