@@ -1,5 +1,5 @@
 - job:
-    name: lkft-android-9.0-mainline
+    name: lkft-android-9.0-mainline-hikey960
     project-type: freestyle
     defaults: global
     properties:
@@ -20,14 +20,14 @@
             default: lkft
         - string:
             name: ANDROID_BUILD_CONFIG
-            default: 'lkft-hikey-android-9.0-mainline lkft-hikey-android-9.0-mainline-auto'
+            default: 'lkft-hikey960-android-9.0-mainline lkft-hikey960-android-9.0-mainline-auto'
         - string:
             name: KERNEL_DESCRIBE
         - string:
             name: SRCREV_kernel
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'LKFT - Android 9.0 with mainline builds for hikey'
+    display-name: 'LKFT - Android 9.0 with mainline builds for hikey960'
     wrappers:
         - timestamps
         - build-name:
@@ -67,7 +67,7 @@
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[lkft-android] lkft-android-9.0-mainline-hikey: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
+            subject: '[lkft-android] lkft-android-9.0-mainline-hikey960: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
