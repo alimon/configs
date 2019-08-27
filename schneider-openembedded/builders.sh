@@ -240,6 +240,9 @@ case "${MACHINE}" in
     ROOTFS_EDGE_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*${MACHINE}*bestla*.dtb" | xargs -r basename)
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*rzn1*.bin" | xargs -r basename)
+    KERNEL_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "fitImage*.itb" | xargs -r basename)
+    UBOOT_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ubootfitImage*.itb" | xargs -r basename)
+    OPTEE_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "optee-os*.itb" | xargs -r basename)
     ;;
   soca9)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
@@ -264,9 +267,9 @@ ROOTFS_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
 ROOTFS_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_IMG}
 ROOTFS_DESKTOP_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DESKTOP_IMG}
 SYSTEM_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
-OPTEE_ITB_URL=${BASE_URL}${PUB_DEST}/optee/optee-os.itb
-UBOOT_ITB_URL=${BASE_URL}${PUB_DEST}/ubootfitImage-2017.01-r0-rzn1d.itb
-KERNEL_FIT_URL=${BASE_URL}${PUB_DEST}/fitImage-1.0-r0-rzn1-snarc.itb
+OPTEE_ITB_URL=${BASE_URL}${PUB_DEST}/${OPTEE_FIT_IMG}
+UBOOT_ITB_URL=${BASE_URL}${PUB_DEST}/${UBOOT_FIT_IMG}
+KERNEL_FIT_URL=${BASE_URL}${PUB_DEST}/${KERNEL_FIT_IMG}
 KERNEL_ZIMAGE_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
 WIC_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_IMG}
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
