@@ -4,8 +4,8 @@ export image_name=$(mktemp -u -p'cloud-image' | sed -e 's+/+-+g')
 export mountpoint=$(mktemp -d /tmp/${image_name}.XXXXXX)
 
 sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y --no-install-recommends git cpio qemu-utils virtinst libvirt-clients iproute2
-
+sudo apt-get -q=2 install -y --no-install-recommends git cpio qemu-utils virtinst libvirt-clients iproute2 \
+             libglib2.0-bin intltool python-gi libvirt-glib-1.0-dev libgtk-3-dev python-ipaddr
 git clone https://github.com/virt-manager/virt-manager.git virt-manager.git
 cd virt-manager.git
 git checkout v2.2.1
