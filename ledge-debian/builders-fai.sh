@@ -78,13 +78,11 @@ for rootfs in ${ROOTFS}; do
     device="$LOOPDEV"'p2'
 
     sudo mount "$device" /mnt/
-    sudo tar caf out/rootfs-${image_name}.tar /mnt
+    sudo tar cJf out/rootfs-${image_name}.tar.xz /mnt
     sudo chroot /mnt dpkg -l > out/${image_name}.packages
     sudo umount -f /mnt
 
     sudo losetup -d "$LOOPDEV"
     # cp "$BUILDDIR"/work.raw out/${image_name}.sd
 
-    # Compress image(s)
-    xz out/rootfs-${image_name}.tar
 done
