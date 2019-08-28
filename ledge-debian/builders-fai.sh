@@ -86,5 +86,5 @@ for rootfs in ${ROOTFS}; do
     # cp "$BUILDDIR"/work.raw out/${image_name}.sd
 
     # Compress image(s)
-    pigz -9 out/rootfs-${image_name}.tar
+    xz out/rootfs-${image_name}.tar
 done
