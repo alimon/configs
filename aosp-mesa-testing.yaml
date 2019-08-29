@@ -1,0 +1,60 @@
+- job:
+    name: aosp-mesa-testing
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: BUILD_DIR
+            default: 'aosp-master'
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'AOSP Master mesa testing'
+    scm:
+        - git:
+            remotes:
+                - upstream-mesa:
+                    url: https://github.com/tom-gall/hikey-linaro
+                    refspec: +refs/heads/master:refs/remotes/upstream-mesa/master
+            branches:
+                - upstream-mesa/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    concurrent: true
+    triggers:
+        - pollscm: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 500
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell:
+            !include-raw:
+                - android-lcr/common/builders.sh
+                - aosp-mesa-testing/builders.sh
+    publishers:
+        - email-ext:
+            recipients: 'vishal.bhoj@linaro.org, john.stultz@linaro.org'
+            content-type: text
+            subject: 'errors for mesa master on AOSP master ${BUILD_NUMBER}'
+            body: |
+                AOSP master Build State without upstream mesa: ${AOSP_MASTER_BUILD}
+                Build Triggered by:  ${GIT_BRANCH} ${PATCH_SUBJECT}
+                Author: S{AUTHOR_EMAIL_ADDRESS}
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+            first-failure: true
+            failure: false
