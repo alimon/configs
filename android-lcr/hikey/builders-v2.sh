@@ -32,10 +32,13 @@ cp -v /home/buildslave/srv/${BUILD_DIR}/build/out/dist/fip.bin \
       /home/buildslave/srv/${BUILD_DIR}/build/device/linaro/hikey/installer/${TARGET_PRODUCT}/prm_ptable.img \
       /home/buildslave/srv/${BUILD_DIR}/build/device/linaro/hikey/installer/${TARGET_PRODUCT}/ptable-aosp-4g.img \
       /home/buildslave/srv/${BUILD_DIR}/build/device/linaro/hikey/installer/${TARGET_PRODUCT}/ptable-aosp-8g.img \
+      /home/buildslave/srv/${BUILD_DIR}/build/device/linaro/hikey/installer/${TARGET_PRODUCT}/ptable-aosp-32g.img \
+      /home/buildslave/srv/${BUILD_DIR}/build/device/linaro/hikey/installer/${TARGET_PRODUCT}/nvme.img \
+      /home/buildslave/srv/${BUILD_DIR}/build/device/linaro/hikey/installer/${TARGET_PRODUCT}/hisi-nvme.img \
       /home/buildslave/srv/${BUILD_DIR}/build/out/dist/l-loader.bin build/out/ || true
 
 cd build/out
-for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img" "fip.bin" "l-loader.bin" "prm_ptable.img" "ptable-aosp-4g.img" "ptable-aosp-8g.img" "vendor.img"; do
+for image in "boot.img" "boot_fat.uefi.img" "system.img" "userdata.img" "userdata-4gb.img" "cache.img" "fip.bin" "l-loader.bin" "prm_ptable.img" "ptable-aosp-4g.img" "ptable-aosp-8g.img" "ptable-aosp-32g.img" "nvme.img" "hisi-nvme.img" "vendor.img"; do
   ## there are the cases that fip.bin, l-loader.bin and ptables not generated
   ## so we add the check before run xz command
   if [ -f ${image} ]; then
