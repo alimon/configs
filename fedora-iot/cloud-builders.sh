@@ -3,17 +3,18 @@
 export image_name=$(mktemp -u -p'cloud-image' | sed -e 's+/+-+g')
 export mountpoint=$(mktemp -d /tmp/${image_name}.XXXXXX)
 
-sudo apt-get -q=2 update
-sudo apt-get -q=2 install -y --no-install-recommends git cpio qemu-utils virtinst libvirt-clients iproute2 \
-             libglib2.0-bin intltool python3-gi python3-libvirt libvirt-glib-1.0-dev libgtk-3-dev python-ipaddr \
-             object-introspection  python-libguestfs gir1.2-gspell-1 libgtksourceview2.0-dev libosinfo-1.0-0
+sudo apt-get update
+sudo apt-get install -y git cpio qemu-utils virtinst libvirt-clients iproute2 \
+             libglib2.0-bin intltool libvirt-glib-1.0-dev libgtk-3-dev python-ipaddr \
+             gobject-introspection  python-libguestfs gir1.2-gspell-1 libgtksourceview2.0-dev libosinfo-1.0-0
+sudo apt-get install -y python3-gi python3-libvirt python3-libxml2 python3-requests
 
 git clone https://github.com/virt-manager/virt-manager.git virt-manager.git
 cd virt-manager.git
 git checkout v2.2.1
 sudo ./setup.py install
 cd -
-virt-install --version
+sudo virt-install --version
 
 default_gw=$(ip route show default 0.0.0.0/0 | cut -d' ' -f3)
 sudo sed -i "/^uri_default/d" /etc/libvirt/libvirt.conf
