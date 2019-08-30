@@ -53,7 +53,7 @@ set +e
 git remote rm upstream
 set -e
 git remote add upstream git://anongit.freedesktop.org/mesa/mesa
-git pull upstream
+git pull upstream master
 git checkout ${GIT_COMMIT}
 AUTHOR_EMAIL_ADDRESS=$(git log --pretty=format:"%ae" HEAD -1)
 PATCH_SUBJECT=$(git log --pretty=format:"%s" HEAD -1)
