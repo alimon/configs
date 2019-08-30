@@ -6,7 +6,7 @@ set -ex
 export CPU_CORES=$(getconf _NPROCESSORS_ONLN)
 
 # get source
-rm -rf bigtop-trunk
+sudo rm -rf bigtop-trunk
 git clone --depth 1 --branch working-tar-gz-packaging https://git.linaro.org/leg/bigdata/bigtop-trunk.git
 
 # Before starting the container, give other users `w` access to `bigtop`
