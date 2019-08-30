@@ -49,6 +49,9 @@ git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/partio
 (mkdir ptool/linux && cd ptool/linux && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard820c/linux/partition.xml)
 (mkdir ptool/aosp && cd ptool/aosp && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard820c/aosp/partition.xml)
 
+# Empty/zero boot image file to clear boot partition
+dd if=/dev/zero of=boot-erase.img bs=1024 count=1024
+
 # bootloader_ufs_linux
 cp -a LICENSE \
    dragonboard820c/linux/flashall \
@@ -59,6 +62,7 @@ cp -a LICENSE \
    ptool/linux/gpt_{main,backup,both}?.bin \
    ptool/linux/zeros_*.bin \
    dragonboard820c/ufs-provision_toshiba.xml \
+   boot-erase.img \
    out/${BOOTLOADER_UFS_LINUX}
 
 # bootloader_ufs_aosp
@@ -71,6 +75,7 @@ cp -a LICENSE \
    ptool/aosp/gpt_{main,backup,both}?.bin \
    ptool/aosp/zeros_*.bin \
    dragonboard820c/ufs-provision_toshiba.xml \
+   boot-erase.img \
    out/${BOOTLOADER_UFS_AOSP}
 
 # sdcard_rescue

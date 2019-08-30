@@ -53,6 +53,9 @@ git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/partio
 (mkdir ptool/linux && cd ptool/linux && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard410c/linux/partition.xml)
 (mkdir ptool/aosp && cd ptool/aosp && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard410c/aosp/partition.xml)
 
+# Empty/zero boot image file to clear boot partition
+dd if=/dev/zero of=boot-erase.img bs=1024 count=1024
+
 # bootloader_emmc_linux
 cp -a LICENSE \
    dragonboard410c/linux/flashall \
@@ -63,6 +66,7 @@ cp -a LICENSE \
    ptool/linux/{rawprogram,patch}?.xml \
    ptool/linux/gpt_{main,backup,both}?.bin \
    ptool/linux/zeros_*.bin \
+   boot-erase.img \
    out/${BOOTLOADER_EMMC_LINUX}
 
 # bootloader_emmc_aosp
@@ -74,6 +78,7 @@ cp -a LICENSE \
    ptool/aosp/{rawprogram,patch}?.xml \
    ptool/aosp/gpt_{main,backup,both}?.bin \
    ptool/aosp/zeros_*.bin \
+   boot-erase.img \
    out/${BOOTLOADER_EMMC_AOSP}
 
 # bootloader_sd_linux

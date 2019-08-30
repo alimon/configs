@@ -85,12 +85,16 @@ python2 sectools/sectools.py secimage -v \
         -g abl -i abl.elf -o out -sa
 popd
 
+# Empty/zero boot image file to clear boot partition
+dd if=/dev/zero of=boot-erase.img bs=1024 count=1024
+
 # bootloader_ufs_linux
 cp -a LICENSE \
    dragonboard845c/linux/flashall \
    bootloaders-linux/* \
    abl/out/sdm845/abl/abl.elf \
    ptool/linux/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin,gpt_both?.bin} \
+   boot-erase.img \
    out/${BOOTLOADER_UFS_LINUX}
 
 # bootloader_ufs_aosp
@@ -99,6 +103,7 @@ cp -a LICENSE \
    bootloaders-linux/* \
    abl/out/sdm845/abl/abl.elf \
    ptool/aosp/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin,gpt_both?.bin} \
+   boot-erase.img \
    out/${BOOTLOADER_UFS_AOSP}
 
 # Final preparation of archives for publishing
