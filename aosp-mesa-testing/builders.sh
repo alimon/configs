@@ -44,12 +44,14 @@ repo sync -j$(nproc) -c -f
 rm -rf build-info
 source build/envsetup.sh
 lunch linaro_db845c-userdebug
-mma -j$(nproc)
+mma -j$(nproc) libGLES_mesa hwcomposer.drm gralloc.gbm
 
 export AOSP_MASTER_BUILD=pass
 
 pushd external/mesa3d
+set +e
 git remote rm upstream
+set -e
 git remote add upstream git://anongit.freedesktop.org/mesa/mesa
 git pull
 git checkout ${GIT_COMMIT}
