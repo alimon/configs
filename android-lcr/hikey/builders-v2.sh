@@ -87,6 +87,7 @@ EOF
 PUB_DEST=/android/${JOB_NAME}/${BUILD_NUMBER}
 # Construct post-build-lava parameters
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
+SKIP_LAVA=${SKIP_LAVA}
 DEVICE_TYPE=${LAVA_DEVICE_TYPE:-hi6220-hikey}
 TARGET_PRODUCT=${TARGET_PRODUCT}
 MAKE_TARGETS=${MAKE_TARGETS}

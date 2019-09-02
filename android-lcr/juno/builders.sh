@@ -33,6 +33,7 @@ EOF
 source build-configs/${BUILD_CONFIG_FILENAME}
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/blob_plain/HEAD:/android/lcr-member-juno-m/template.json
+SKIP_LAVA=${SKIP_LAVA}
 DEVICE_TYPE=${LAVA_DEVICE_TYPE:-${TARGET_PRODUCT}}
 TARGET_PRODUCT=${TARGET_PRODUCT}
 MAKE_TARGETS=${MAKE_TARGETS}
