@@ -70,19 +70,10 @@ for rootfs in ${ROOTFS}; do
         exit 1
     fi
 
-    # create rootfs
-    # TODO add kernel from OE builds + EFI directory structure
-    LOOPDEV=$(sudo losetup -f -P --show ${BUILDDIR}/work.raw)
-    # rootfs is on the last partition. This might need to change depending on
-    # our build procedure in the future
-    device="$LOOPDEV"'p2'
-
-    sudo mount "$device" /mnt/
-    sudo tar cJf out/rootfs-${image_name}.tar.xz /mnt
-    sudo chroot /mnt dpkg -l > out/${image_name}.packages
-    sudo umount -f /mnt
-
-    sudo losetup -d "$LOOPDEV"
-    # cp "$BUILDDIR"/work.raw out/${image_name}.sd
+    if [ -f  out/rootfs-ledge-debian.tar ];
+    then
+        mv out/rootfs-ledge-debian.tar out/rootfs-${image_name}.tar
+        pigz -9 out/rootfs-${image_name}.tar
+    fi
 
 done
