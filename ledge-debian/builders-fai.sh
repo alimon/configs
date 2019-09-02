@@ -73,7 +73,7 @@ for rootfs in ${ROOTFS}; do
     if [ -f  out/rootfs-ledge-debian.tar ];
     then
         mv out/rootfs-ledge-debian.tar out/rootfs-${image_name}.tar
-        pigz -9 out/rootfs-${image_name}.tar
+        xz -z out/rootfs-${image_name}.tar
     fi
 
 done
