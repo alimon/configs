@@ -39,9 +39,23 @@
           components: gcc
       - check_binutils:
           components: binutils
+    delete_action:
+      - build
+      - bisect
+    delete_type_of_test:
+      - check_gcc
     jobs:
       - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
       - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+      - 'tcwg_gnu-{delete_action}-{toolchain_name}-{toolchain_ver}-{target}-{delete_type_of_test}'
+
+- job-template:
+    name: tcwg_gnu-{delete_action}-{toolchain_name}-{toolchain_ver}-{target}-{delete_type_of_test}
+    project-type: freestyle
+    defaults: global
+    disabled: true
+    display-name: 'DELETE ME'
+
 - view:
     name: tcwg_gnu
     view-type: list
