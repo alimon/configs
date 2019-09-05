@@ -133,7 +133,17 @@ case "${MACHINE}" in
   rzn1d*)
     # Temporary sstate cleanup to force binaries to be re-generated each time
     set +e
-    bitbake -c cleansstate u-boot-rzn1 u-boot-rzn1-spkg linux-rzn1 optee-os optee-client optee-test mbedtls
+    clean_packages="\
+        fsbl \
+        optee-os \
+        optee-test \
+        u-boot-rzn1 \
+        u-boot-rzn1-spkg \
+        linux-rzn1 \
+        mbedtls \
+        "
+    bitbake -c cleansstate ${clean_packages}
+    bitbake ${clean_packages}
     set -e
     ;;
   soca9)
