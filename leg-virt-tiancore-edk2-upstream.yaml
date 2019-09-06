@@ -24,7 +24,7 @@
             name: LAVA_SERVER
             default: 'validation.linaro.org/RPC2/'
     disabled: false
-    node: docker-stretch-amd64
+    node: docker-buster-amd64
     display-name: 'Linaro EDK II - UEFI Continuous Integration (upstream)'
     scm:
         - git:
@@ -65,24 +65,22 @@
             export GCC49_AARCH64_PREFIX=${HOME}/srv/toolchain/arm64-tc-14.09/bin/aarch64-linux-gnu-
             export GCC49_ARM_PREFIX=${HOME}/srv/toolchain/arm-tc-14.09/bin/arm-linux-gnueabihf-
 
-            # use Stretch's default cross toolchains for GCC5 and CLANG3x (binutils)
+            # use Buster's default cross toolchains for GCC5 and CLANG3x (binutils)
             export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
             export GCC5_ARM_PREFIX=arm-linux-gnueabihf-
 
             export CLANG35_AARCH64_PREFIX=aarch64-linux-gnu-
             export CLANG35_ARM_PREFIX=arm-linux-gnueabi-
+            export CLANG35_BIN=/usr/lib/llvm-6.0/bin/
 
-            export CLANG38_BIN=/usr/lib/llvm-6.0/bin/
             export CLANG38_AARCH64_PREFIX=aarch64-linux-gnu-
             export CLANG38_ARM_PREFIX=arm-linux-gnueabi-
 
             sudo dpkg --add-architecture i386
-            echo "deb http://mirror.bytemark.co.uk/debian stretch-backports main" > stretch-backports.list
-            sudo mv stretch-backports.list /etc/apt/sources.list.d/
             sudo apt-get update
-            sudo apt-get install -y --no-install-recommends clang python-requests zip libstdc++6:i386 zlib1g:i386 \
-                            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf nasm llvm binutils-arm-linux-gnueabi
-            sudo apt-get install -t stretch-backports -y --no-install-recommends clang-6.0 llvm-6.0-dev
+            sudo apt-get install -y --no-install-recommends python-requests zip libstdc++6:i386 zlib1g:i386 \
+                            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf nasm llvm binutils-arm-linux-gnueabi \
+                            clang llvm-dev clang-6.0 llvm-6.0-dev
 
             export OUTDIR=${WORKSPACE}/out
 
