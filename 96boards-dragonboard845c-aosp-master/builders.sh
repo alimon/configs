@@ -42,15 +42,15 @@ cd -
 repo sync -j$(nproc) -c -f
 rm -rf build-info
 source build/envsetup.sh
-lunch linaro_db845c-userdebug
+lunch db845c-userdebug
 make -j$(nproc)
-repo manifest -r -o out/target/product/linaro_db845c/pinned-manifest.xml
+repo manifest -r -o out/target/product/db845c/pinned-manifest.xml
 
-wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/linaro_db845c/BUILD-INFO.txt
+wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${PWD}/out/target/product/db845c/BUILD-INFO.txt
 
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_DEST=96boards/dragonboard845c/linaro/aosp-master/${BUILD_NUMBER}
-PUB_SRC=${PWD}/out/target/product/linaro_db845c/
+PUB_SRC=${PWD}/out/target/product/db845c/
 PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo|zip)$|MLO|vmlinux|System.map
 EOF
