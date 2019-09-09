@@ -143,9 +143,6 @@ case "${MACHINE}" in
   ledge-synquacer)
     ;;
   ledge-stm32mp157c-dk2)
-    for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4; do
-      sudo mv ${rootfs} .
-    done
    ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4; do
@@ -158,11 +155,13 @@ case "${MACHINE}" in
 esac
 
 # QEMU images are 22G remove them before uploading
-rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
-      ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
+rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.wic* \
       ${DEPLOY_DIR_IMAGE}/*.iso \
       ${DEPLOY_DIR_IMAGE}/*.stimg
+if [ ${MACHINE} != "ledge-stm32mp157c-dk2" ]; then
+      rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4
+fi
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
