@@ -80,8 +80,8 @@
             description: 'Benchmark profile to use: parallel3x3 runs on 3 boards and 3 CPUs in parallel; parallel3x1 runs on 3 boards on 1 CPU in parallel; serial1 runs on a single board on 1 CPU.'
         - string:
             name: target_list
-            default: 'tx1'
-            description: 'List of targets -- tk1 tx1'
+            default: 'tx1_64'
+            description: 'List of targets -- tk1_32 tx1_32 tx1_64'
         - bool:
             name: reboot
             default: 'false'
@@ -167,7 +167,7 @@
                 - target_list
     execution-strategy:
         combination-filter: |
-            (target=="tk1" && label==~/tcwg-bmk-tk1-.*/) || (target=="tx1" && label==~/tcwg-bmk-tx1-.*/)
+            (target=="tk1_32" && label==~/tcwg-bmk-tk1-.*/) || ((target=="tx1_32" || target=="tx1_64") && label==~/tcwg-bmk-tx1-.*/)
         sequential: false
     wrappers:
         - timeout:

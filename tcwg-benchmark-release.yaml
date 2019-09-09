@@ -74,10 +74,10 @@
 
           set -ex
 
-          # Note that armv8l-linux-gnueabihf will not match "arm-"*, and will run on tx1.
           case "$target" in
-            "arm-"*) board="tk1" ;;
-            *) board="tx1" ;;
+            "arm-"*) board="tk1_32" ;;
+            "armv8l-"*) board="tx1_32" ;;
+            *) board="tx1_64" ;;
           esac
 
           cat > params <<EOF
