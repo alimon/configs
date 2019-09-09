@@ -142,6 +142,11 @@ case "${MACHINE}" in
     ;;
   ledge-synquacer)
     ;;
+  ledge-stm32mp157c-dk2)
+    for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4; do
+      sudo mv ${rootfs} .
+    done
+   ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4; do
       pigz -k ${rootfs}
