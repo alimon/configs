@@ -1,0 +1,44 @@
+device_type: ${DEVICE_TYPE}
+job_name: LEDGE RP boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 30
+  action:
+    minutes: 15
+  connection:
+    minutes: 5
+
+priority: medium
+visibility: public
+
+context:
+  extra_kernel_args: \"${KERNEL_ARGS}\"
+
+actions:
+- deploy:
+    timeout:
+      minutes: 20
+    to: flasher
+    images:
+      tarball:
+        url: ${RECOVERY_IMAGE_URL}
+      layout:
+        url: https://snapshots.linaro.org/components/ledge/oe/ledge-stm32mp157c-dk2/latest/rpb/FlashLayout_sdcard_ledge-stm32mp157c-dk2-basic.ledge-iot-ledge-stm32mp157c-dk2.tsv
+    os: oe
+
+- boot:
+    timeout:
+      minutes: 15
+    method: minimal
+    prompts:
+    - 'root@ledge-stm32mp157c-dk2'
+    - 'root@debian:~#'
+    - '/ #'
+
+metadata:
+machine: ${MACHINE}
+manifest branch: ${MANIFEST_BRANCH}
+manifest commit: ${MANIFEST_COMMIT}
+build url: ${BUILD_URL}
+build location: ${BASE_URL}${PUB_DEST}
