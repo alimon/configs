@@ -269,7 +269,7 @@
             rm -fr out/target/product/beagle_x15
             source build/envsetup.sh
             lunch beagle_x15-userdebug
-            KERNELDIR=${X15_KERNEL_DIR} make -j$(nproc)
+            USE_XML_AUDIO_POLICY_CONF=1 KERNELDIR=${X15_KERNEL_DIR} make -j$(nproc)
 
             if [ -d out/target/product/beagle_x15/system/apex/com.android.runtime ]; then
                 echo "out/target/product/beagle_x15/system/apex/com.android.runtime was created"
@@ -336,7 +336,7 @@
             source build/envsetup.sh
             lunch beagle_x15-userdebug
             # only need to re-create the boot_fit.img and vendor.img for 4.19 here
-            KERNELDIR=${X15_KERNEL_DIR}  make -j$(nproc) bootfitimage vendorimage
+            USE_XML_AUDIO_POLICY_CONF=1 KERNELDIR=${X15_KERNEL_DIR}  make -j$(nproc) bootfitimage vendorimage
 
             X15_KERNEL_FILES="
             arch/arm/boot/zImage
