@@ -66,8 +66,9 @@
 
             pushd build
             sh ../jdkX/configure --with-debug-level=fastdebug \
-                ${ccache_build_opts} \
-                 --with-jtreg=${WORKSPACE}/jtreg
+                ${ccache_build_opts}
+            # In future we could trun with jtreg tests, if they run in under 1 hour.
+            # --with-jtreg=${WORKSPACE}/jtreg
             make images |& tee ../out/build.out
             popd
 
