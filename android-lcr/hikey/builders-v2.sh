@@ -11,7 +11,7 @@ source build-configs/${BUILD_CONFIG_FILENAME}
 rm -rf build/out build/android-patchsets build/device
 # clean hikey kernel repositories
 rm -rf build/kernel/linaro
-rm -fr build/.repo/projects/prebuilts/clang/host/linux-x86.git build/prebuilts/clang/host/linux-x8
+rm -fr build/.repo/projects/prebuilts/clang/host/linux-x86.git build/prebuilts/clang/host/linux-x86
 
 # clean build-info directory which depends on systemtarball, is not suppported by aosp master
 rm -rf build/build-info
