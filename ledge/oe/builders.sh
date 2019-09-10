@@ -212,7 +212,7 @@ ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${
 HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" | xargs -r basename)
 INITRD_URL=""
 case "${MACHINE}" in
-  am57xx-evm)
+  ledge-am57xx-evm)
     # QEMU arm 32bit needs the zImage file, not the uImage file.
     # KERNEL_IMG is not used for the real hardware itself.
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*${MACHINE}-*${BUILD_NUMBER}.bin" | xargs -r basename)
