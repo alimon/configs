@@ -226,6 +226,9 @@ case "${MACHINE}" in
 	  mv ../ledge-stm32mp157c-dk2.tar.gz .
 	  cd -
 	  RIMAGE=ledge-stm32mp157c-dk2.tar.gz
+	  # Only use the iot flashlayout to deploy, since it's a superset of the
+	  # gateway image
+	  FLASH_LAYOUT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "FlashLayout_sdcard_${MACHINE}-*iot*.tsv" | xargs -r basename)
     ;;
   juno)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*-${BUILD_NUMBER}.dtb" | xargs -r basename)
@@ -265,6 +268,7 @@ SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 KERNEL_URL=${BASE_URL}/${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}/${PUB_DEST}/${DTB_IMG}
 RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/${RIMAGE}
+RECOVERY_IMAGE_LAYOUT=${BASE_URL}/${PUB_DEST}/${FLASH_LAYOUT}
 NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_TARXZ_IMG}
 EXT4_IMAGE_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_EXT4}
 HDD_URL=${BASE_URL}/${PUB_DEST}/${HDD_IMG}
