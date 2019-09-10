@@ -6,7 +6,7 @@ set -ex
 export CPU_CORES=$(getconf _NPROCESSORS_ONLN)
 
 # get source
-sudo rm -rf bigtop-trunk
+rm -rf bigtop-trunk
 git clone --depth 1 --branch working-tar-gz-packaging https://git.linaro.org/leg/bigdata/bigtop-trunk.git
 
 # Before starting the container, give other users `w` access to `bigtop`
@@ -37,7 +37,7 @@ cd bigtop-trunk
 #   - bigtop.sh sets environment variables such as: JAVA_HOME, MAVEN_HOME, ANT_HOME, GRADLE_HOME, etc.
 
 docker run -it --rm -u jenkins --workdir /ws -v ${PWD}:/ws \
-          bigtop/slaves:1.4.0-debian-9-aarch64 bash -l -c '. /etc/profile.d/bigtop.sh; ./gradlew deb repo'
+          bigtop/slaves:1.4.0-debian-9-aarch64 bash -l -c '. /etc/profile.d/bigtop.sh; ./gradlew deb repo; chmod -R a+w output build .gradle dl;'
 
 # cleanup
 #docker prune -fa
