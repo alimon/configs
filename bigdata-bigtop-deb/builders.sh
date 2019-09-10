@@ -27,7 +27,7 @@ cd bigtop-trunk
 # Artifacts will be stored under individual component folder inside output folder.
 #
 # Example command line:
-#   docker run -it --rm -u jenkins --workdir /ws -v ${PWD}:/ws \
+#   docker run --rm -u jenkins --workdir /ws -v ${PWD}:/ws \
 #          bigtop/slaves:1.4.0-debian-9-aarch64 bash -l -c '. /etc/profile.d/bigtop.sh; ./gradlew deb repo'
 #
 # Note:
@@ -36,8 +36,8 @@ cd bigtop-trunk
 #   - Image "bigtop/slaves:*-aarch64" will be retrieved from docker hub on live.
 #   - bigtop.sh sets environment variables such as: JAVA_HOME, MAVEN_HOME, ANT_HOME, GRADLE_HOME, etc.
 
-docker run -it --rm -u jenkins --workdir /ws -v ${PWD}:/ws \
-          bigtop/slaves:1.4.0-debian-9-aarch64 bash -l -c '. /etc/profile.d/bigtop.sh; ./gradlew deb repo; chmod -R a+w output build .gradle dl;'
+docker run --rm -u jenkins --workdir /ws -v ${PWD}:/ws \
+  bigtop/slaves:1.4.0-debian-9-aarch64 bash -l -c '. /etc/profile.d/bigtop.sh; ./gradlew deb repo; chmod -R a+w output build .gradle dl;'
 
 # cleanup
 #docker prune -fa
