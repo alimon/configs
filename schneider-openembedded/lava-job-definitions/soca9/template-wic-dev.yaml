@@ -1,5 +1,6 @@
 device_type: soca9
 job_name: Schneider Electric SocA9 dip-image-dev WIC Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
 timeouts:
   job:
     minutes: 100
@@ -9,6 +10,7 @@ timeouts:
     minutes: 2
 priority: medium
 visibility: public
+
 actions:
 - deploy:
     timeout:
@@ -27,8 +29,6 @@ actions:
     auto_login:
       login_prompt: 'login:'
       username: root
-      password_prompt: "Password:"
-      password: "P@ssword-1"
     prompts:
     - "root@snarc-soca9:"
     transfer_overlay:
@@ -43,12 +43,29 @@ actions:
         metadata:
           format: Lava-Test Test Definition 1.0
           name: uname-test
-          description: uname test
+          description: "uname test"
         run:
           steps:
-          - uname -a
+            - uname -a
       name: uname-test
       path: inline/uname-test.yaml
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: memstat-test
+          description: "memstat test"
+        run:
+          steps:
+            - memstat
+      name: memstat-test
+      path: inline/memstat-test.yaml
+    - path: automated/linux/meminfo/meminfo.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: meminfo
+      from: git
+      branch: master
     - path: automated/linux/badblocks/badblocks.yaml
       repository: https://git@git.linaro.org/qa/test-definitions.git
       history: false
@@ -56,7 +73,7 @@ actions:
       from: git
       branch: master
       parameters:
-        SKIP_INSTALL: true
+        SKIP_INSTALL: True
     - path: automated/linux/memtester/memtester.yaml
       repository: https://git@git.linaro.org/qa/test-definitions.git
       history: false
@@ -64,19 +81,20 @@ actions:
       from: git
       branch: master
       parameters:
-        SKIP_INSTALL: true
-metadata:
-  machine: soca9
-  manifest branch: rmh-warrior
-  manifest commit: 191
-  build url: https://ci.linaro.org/job/schneider-openembedded-sumo/DISTRO=dip,MACHINE=soca9,label=docker-stretch-amd64/191/
-  build location: https://snapshots.linaro.org/openembedded/schneider/rmh-warrior/soca9/191/dip
-notify:
-  recipients:
-  - to:
-      method: email
-      email: ryan.harkin@linaro.org
-  criteria:
-    status: complete
-  verbosity: verbose
+        SKIP_INSTALL: True
 
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose
