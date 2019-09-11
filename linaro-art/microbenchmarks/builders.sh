@@ -47,7 +47,7 @@ time python ${HOME}/bin/linaro-cp.py \
 
 # Construct post-build-lava parameters
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-DEVICE_TYPE=nexus5x
+DEVICE_TYPE=pixel3
 TARGET_PRODUCT=pixel
 MAKE_TARGETS=droidcore
 JOB_NAME=${JOB_NAME}
@@ -60,7 +60,7 @@ GERRIT_CHANGE_URL=${GERRIT_CHANGE_URL}
 GERRIT_CHANGE_ID=${GERRIT_CHANGE_ID}
 FRONTEND_JOB_NAME=${JOB_NAME}
 DOWNLOAD_URL=http://snapshots.linaro.org/android/$JOB_NAME/$BUILD_NUMBER
-CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/plain/android/nexus5x/microbenchmarks_32.yaml
+CUSTOM_JSON_URL=https://git.linaro.org/qa/test-plans.git/plain/android/pixel3/microbenchmarks_32.yaml
 SKIP_REPORT=true
 QA_REPORTS_TOKEN=${QA_REPORTS_TOKEN}
 EOF
