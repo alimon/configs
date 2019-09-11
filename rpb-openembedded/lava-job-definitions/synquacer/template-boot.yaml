@@ -26,9 +26,6 @@ actions:
     nfsrootfs:
       url: ${NFSROOTFS_URL}
       compression: xz
-    ramdisk:
-        url: ${INITRD_URL}
-        compression: gz
     os: oe
 
 - boot:
@@ -43,7 +40,6 @@ actions:
         - insmod efinet
         - net_ls_addr
         - 'linux (tftp,{SERVER_IP})/{KERNEL}  root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 ip=dhcp ${KERNEL_ARGS}'
-        - initrd (tftp,{SERVER_IP})/{RAMDISK}
         - clear
         - boot
     prompts:
