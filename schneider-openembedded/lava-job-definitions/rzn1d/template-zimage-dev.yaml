@@ -63,13 +63,31 @@ actions:
             - uname -a
       name: uname-test
       path: inline/uname-test.yaml
-    - path: automated/linux/docker-integration-test/local-daemon.yaml
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: memstat-test
+          description: "memstat test"
+        run:
+          steps:
+            - memstat
+      name: memstat-test
+      path: inline/memstat-test.yaml
+    - path: automated/linux/meminfo/meminfo.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
       history: false
-      name: docker-integration
+      name: meminfo
+      from: git
+      branch: master
+    - path: automated/linux/docker/docker.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: docker-hello-world
       from: git
       branch: master
       parameters:
+        IMAGE: "hello-world"
         SKIP_INSTALL: True
     - path: automated/linux/docker/docker.yaml
       repository: https://git.linaro.org/qa/test-definitions.git

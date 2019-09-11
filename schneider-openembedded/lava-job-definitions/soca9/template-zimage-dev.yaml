@@ -72,6 +72,23 @@ actions:
             - uname -a
       name: uname-test
       path: inline/uname-test.yaml
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: memstat-test
+          description: "memstat test"
+        run:
+          steps:
+            - memstat
+      name: memstat-test
+      path: inline/memstat-test.yaml
+    - path: automated/linux/meminfo/meminfo.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: meminfo
+      from: git
+      branch: master
     - path: automated/linux/badblocks/badblocks.yaml
       repository: https://git@git.linaro.org/qa/test-definitions.git
       history: false
