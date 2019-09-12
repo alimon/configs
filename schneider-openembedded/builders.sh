@@ -134,6 +134,7 @@ case "${MACHINE}" in
     # Temporary sstate cleanup to force binaries to be re-generated each time
     set +e
     clean_packages="\
+        base-files \
         fsbl \
         optee-os \
         optee-test \
@@ -142,15 +143,20 @@ case "${MACHINE}" in
         linux-rzn1 \
         mbedtls \
         "
-    bitbake -c cleansstate ${clean_packages}
-    bitbake ${clean_packages}
     set -e
     ;;
   soca9)
+    clean_packages="\
+        base-files \
+        "
     IMAGES="$(echo $IMAGES | sed -e 's/dip-image-edge//')"
     ;;
 esac
 
+if [ "${clean_packages}" != "" ]; then
+    bitbake -c cleansstate ${clean_packages}
+    bitbake ${clean_packages}
+fi
 time bitbake ${IMAGES}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
