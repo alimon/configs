@@ -20,9 +20,12 @@ if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; the
     cd armnn
     GERRIT_URL="http://${GERRIT_HOST}/${GERRIT_PROJECT}"
     if git pull ${GERRIT_URL} ${GERRIT_REFSPEC} | grep -q "Automatic merge failed"; then
-        git reset --hard
-        echo "Error: *** Error patch merge failed"
-        exit 1
+        echo "Retrying to apply the patch with: git fetch && git checkout."
+        if git fetch ${GERRIT_URL} ${GERRIT_REFSPEC} | git checkout FETCH_HEAD; then
+            git reset --hard
+            echo "Error: *** Error patch merge failed"
+            exit 1
+        fi
     fi
 fi
 
