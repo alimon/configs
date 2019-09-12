@@ -22,9 +22,18 @@
 
     disabled: false
     node: leg-aarch64
+    concurrent: false
     display-name: 'LDCG BigData Apache Arrow'
     wrappers:
         - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
     builders:
         - shell:
             !include-raw: ldcg-bigdata-apache-arrow/build.sh
