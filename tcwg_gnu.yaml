@@ -1,4 +1,27 @@
 - project:
+    name: tcwg_gnu_delete
+    action:
+      - build
+      - bisect
+    toolchain_ver:
+      - master
+      - release
+    target:
+      - aarch64
+      - arm
+    type_of_test:
+      - check-binutils
+    jobs:
+      - 'tcwg_gnu-{action}-gnu-{toolchain_ver}-{target}-{type_of_test}'
+
+- job-template:
+    name: tcwg_gnu-{action}-gnu-{toolchain_ver}-{target}-{type_of_test}
+    project-type: freestyle
+    defaults: global
+    disabled: true
+    display-name: 'DELETE ME'
+
+- project:
     name: tcwg_gnu
     toolchain_name:
       - gnu:
@@ -19,15 +42,9 @@
           node: tcwg-apm_32-build
           docker_arch: armhf
     type_of_test:
-      - check_bootstrap:
-          components: gcc
-      - bootstrap_ubsan:
+      - bootstrap_O1:
           components: gcc
       - bootstrap_O3:
-          components: gcc
-      - check_bootstrap_lto:
-          components: gcc
-      - bootstrap_O1:
           components: gcc
       - bootstrap_debug:
           components: gcc
@@ -37,21 +54,17 @@
           components: gcc
       - bootstrap_profiled_lto_lean:
           components: gcc
+      - bootstrap_ubsan:
+          components: gcc
       - check_binutils:
           components: binutils
-    delete_action:
-      - build
-      - bisect
+      - check_bootstrap:
+          components: gcc
+      - check_bootstrap_lto:
+          components: gcc
     jobs:
       - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
       - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
-
-- job-template:
-    name: tcwg_gnu-{delete_action}-{toolchain_name}-{toolchain_ver}-arm-bootstrap_profiled_lto
-    project-type: freestyle
-    defaults: global
-    disabled: true
-    display-name: 'TCWG {delete_action}-{toolchain_name}-{toolchain_ver}-arm-bootstrap_profiled_lto'
 
 - view:
     name: tcwg_gnu
@@ -218,6 +231,15 @@
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
             mkdir -p artifacts/jenkins
+
+            # Don't run these known-bad configurations.
+            case {target}-{type_of_test} in
+              arm-bootstrap_profiled_lto*)
+                touch artifacts/failures
+                exit 1
+                ;;
+            esac
+
             build_name="#$BUILD_NUMBER"
             branch_opt=""
             i=1
