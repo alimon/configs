@@ -22,6 +22,7 @@ git clone --depth 1 https://github.com/hrw/arrow.git
 
 cd arrow/dev/tasks/linux-packages/
 
+rake version:update
 APT_TARGETS=debian-stretch,debian-buster rake apt
 
 mkdir -p ${WORKSPACE}/out
