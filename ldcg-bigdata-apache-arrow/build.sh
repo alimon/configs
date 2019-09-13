@@ -27,5 +27,3 @@ APT_TARGETS=debian-stretch,debian-buster rake apt
 
 mkdir -p ${WORKSPACE}/out
 cp -a apt/repositories/* ${WORKSPACE}/out/
-
-sudo chown -R buildslave:buildslave ${WORKSPACE}/out
