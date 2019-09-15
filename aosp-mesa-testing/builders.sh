@@ -43,7 +43,7 @@ export AOSP_MASTER_BUILD=fail
 repo sync -j$(nproc) -c -f
 rm -rf build-info
 source build/envsetup.sh
-lunch linaro_db845c-userdebug
+lunch db845c-userdebug
 mma -j$(nproc) libGLES_mesa hwcomposer.drm gralloc.gbm
 
 export AOSP_MASTER_BUILD=pass
