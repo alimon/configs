@@ -97,6 +97,9 @@ for line in data.splitlines():
         # more.
         if operation == 'D':
             continue
+        # operation R100 is 100% rename, which means sixth element is the renamed file
+        if operation == 'R':
+            filename = elems[6]
         filelist.append(filename)
     else:
         files = findparentfiles(filename)
