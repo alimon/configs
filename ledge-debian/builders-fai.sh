@@ -72,9 +72,10 @@ for rootfs in ${ROOTFS}; do
 
     # extract content of raw image and put it on tarball
     LOOPDEV=$(sudo losetup -f -P --show ${BUILDDIR}/work.raw)
+    LOCALPATH=$(pwd)
     sudo mount $LOOPDEV /mnt/
     cd /mnt/
-    sudo tar cJf out/rootfs-${image_name}.tar.xz .
+    sudo tar cJf "$LOCALPATH"/out/rootfs-${image_name}.tar.xz .
     cd -
     sudo umount /mnt
 done
