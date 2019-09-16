@@ -31,5 +31,4 @@ APT_TARGETS=debian-stretch,debian-buster rake apt
 
 mkdir -p ${WORKSPACE}/out
 cp -a apt/repositories/* ${WORKSPACE}/out/
-
-export DEPLOY_DIR_IMAGE=${WORKSPACE}/out/
+echo "DEPLOY_DIR_IMAGE=${WORKSPACE}/out" >  ${WORKSPACE}/publish_parameters
