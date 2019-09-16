@@ -53,6 +53,39 @@ actions:
       repository:
         metadata:
           format: Lava-Test Test Definition 1.0
+          name: ps-inline-test
+          description: "ps-inline test"
+        run:
+          steps:
+            - ps aux --sort -rss
+      name: ps-inline-test
+      path: inline/ps-inline-test.yaml
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: meminfo-inline-test
+          description: "meminfo-inline test"
+        run:
+          steps:
+            - cat /proc/meminfo
+      name: meminfo-inline-test
+      path: inline/meminfo-inline-test.yaml
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: free-inline-test
+          description: "free-inline test"
+        run:
+          steps:
+            - free -h
+      name: free-inline-test
+      path: inline/free-inline-test.yaml
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
           name: ifconfig-test
           description: "ifconfig test"
         run:
