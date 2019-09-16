@@ -128,3 +128,7 @@
 
             set -ex
             ./jenkins-scripts/docker-run.sh --distro $distro -- ./jenkins-scripts/tcwg-update-tested.sh --GIT_COMMIT $GIT_COMMIT --GIT_COMMIT_1 $GIT_COMMIT_1 --GIT_COMMIT_2 $GIT_COMMIT_2 --verbose true
+    publishers:
+        - email-ext:
+            recipients: 'tcwg-validation@linaro.org'
+            aborted: true
