@@ -70,11 +70,22 @@ for rootfs in ${ROOTFS}; do
         exit 1
     fi
 
-    if [ -f  out/rootfs-ledge-debian.tar ];
-    then
-        mv out/rootfs-ledge-debian.tar out/rootfs-${image_name}.tar
-        sudo chown $USER:`id -g -n $USER`  out/rootfs-${image_name}.tar
-        xz -z out/rootfs-${image_name}.tar
-    fi
-
+    # extract content of raw image and put it on tarball
+    LOOPDEV=$(sudo losetup -f -P --show ${BUILDDIR}/work.raw)
+    sudo mount $LOOPDEV /mnt/
+    cd /mnt/
+    sudo tar cJf out/rootfs-${image_name}.tar.xz .
+    cd -
+    sudo umount /mnt
 done
+
+# specific for stm32mp157c-dk2 on arlmhf
+ARMHF_ARCHITECTURE=$(echo ${PUB_DEST} | grep armhf | wc -l)
+if [ $ARMHF_ARCHITECTURE -eq 1 ]
+then
+    # donwload flashlayout and script from github
+    mkdir -p out/script
+    wget https://raw.githubusercontent.com/Linaro/meta-ledge/thud/meta-ledge-bsp/recipes-devtools/generate-raw-image/raw-tools/create_raw_from_flashlayout.sh -O out/script/create_raw_from_flashlayout.sh
+    wget https://raw.githubusercontent.com/Linaro/meta-ledge/thud/meta-ledge-bsp/recipes-devtools/generate-raw-image/files/ledge-stm32mp157c-dk2/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld -O  out/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld
+    chmod +x out/script/create_raw_from_flashlayout.sh
+fi
