@@ -27,9 +27,15 @@ cp out/host/linux-x86/cts/android-cts.zip pub/
 
 rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
 
+# need to convert '_' to '-'
+# otherwise, aosp_arm64-userdebug will be translated to '~aosp/arm64-userdebug'
+# when upload to snapshot.linaro.org via linaro-cp.py
+# like reported here:
+# https://ci.linaro.org/job/android-cts/20/console
+lunch_target_str=$(echo ${LUNCH_TARGET}|tr '_' '-')
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/pub
-PUB_DEST=/android/${JOB_NAME}/${LUNCH_TARGET}/${BUILD_NUMBER}
+PUB_DEST=/android/${JOB_NAME}/${MANIFEST_BRANCH}/${lunch_target_str}/${BUILD_NUMBER}
 PUB_EXTRA_INC=^[^/]+zip
 EOF
