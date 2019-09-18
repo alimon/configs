@@ -36,6 +36,6 @@ lunch_target_str=$(echo ${LUNCH_TARGET}|tr '_' '-')
 # Publish parameters
 cat << EOF > ${WORKSPACE}/publish_parameters
 PUB_SRC=${PWD}/pub
-PUB_DEST=/android/${JOB_NAME}/${MANIFEST_BRANCH}/${lunch_target_str}/${BUILD_NUMBER}
+PUB_DEST=/android/${JOB_NAME}/${lunch_target_str}/${BUILD_NUMBER}/${MANIFEST_BRANCH}
 PUB_EXTRA_INC=^[^/]+zip
 EOF
