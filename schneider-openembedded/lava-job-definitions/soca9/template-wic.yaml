@@ -43,10 +43,10 @@ actions:
         metadata:
           format: Lava-Test Test Definition 1.0
           name: uname-test
-          description: uname test
+          description: "uname test"
         run:
           steps:
-          - uname -a
+            - uname -a
       name: uname-test
       path: inline/uname-test.yaml
     - from: inline
@@ -82,6 +82,18 @@ actions:
             - free -h
       name: free-inline-test
       path: inline/free-inline-test.yaml
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: ifconfig-test
+          description: "ifconfig test"
+        run:
+          steps:
+            - ifconfig -a
+      name: ifconfig-test
+      path: inline/ifconfig-test.yaml
+
 metadata:
   machine: soca9
   manifest branch: rmh-warrior

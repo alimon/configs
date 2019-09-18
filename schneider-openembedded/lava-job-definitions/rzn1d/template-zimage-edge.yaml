@@ -98,6 +98,26 @@ actions:
             - free -h
       name: free-inline-test
       path: inline/free-inline-test.yaml
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: ifconfig-test
+          description: "ifconfig test"
+        run:
+          steps:
+            - ifconfig -a
+      name: ifconfig-test
+      path: inline/ifconfig-test.yaml
+    - path: automated/linux/docker/docker.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: docker-hello-world
+      from: git
+      branch: master
+      parameters:
+        IMAGE: "hello-world"
+        SKIP_INSTALL: True
     - path: automated/linux/docker/docker.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
       history: false
