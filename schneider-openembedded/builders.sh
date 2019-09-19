@@ -175,18 +175,25 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
       ${DEPLOY_DIR_IMAGE}/*.iso \
+      ${DEPLOY_DIR_IMAGE}/*.jffs \
+      ${DEPLOY_DIR_IMAGE}/*.cpio.gz \
+      ${DEPLOY_DIR_IMAGE}/*.squashfs-lzo \
       ${DEPLOY_DIR_IMAGE}/*.stimg
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
+  rzn1d*)
+    pushd ${DEPLOY_DIR_IMAGE}
+    rm uImage*
+    popd
   soca9)
     # re-create the SoCA9 DTB with a shorter filename
     pushd ${DEPLOY_DIR_IMAGE}
     mv zImage-*snarc_${MACHINE}*_bestla_512m*.dtb zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb || true
     mv zImage-snarc-${MACHINE}.dtb zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb || true
-    rm zImage-*snarc_${MACHINE}*_bestla_[12]G*.dtb || true
-    rm zImage-*snarc_${MACHINE}*_freja_*.dtb || true
-    rm zImage-*socfpga_cyclone5_socdk-*.dtb || true
+    rm *[12]G*.dtb || true
+    rm *freja*.dtb || true
+    rm *socfpga_cyclone5_socdk*.dtb || true
     popd
     ;;
   juno|stih410-b2260|orangepi-i96)
