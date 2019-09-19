@@ -29,3 +29,4 @@ APT_TARGETS=debian-stretch,debian-buster rake apt
 mkdir -p ${WORKSPACE}/out
 cp -a apt/repositories/* ${WORKSPACE}/out/
 echo "DEPLOY_DIR_IMAGE=${WORKSPACE}/out" >  ${WORKSPACE}/publish_parameters
+echo "PUB_DEST=reference-platform/components/bigdata/apache-arrow/${BUILD_NUMBER}" >>  ${WORKSPACE}/publish_parameters
