@@ -148,6 +148,8 @@ case "${MACHINE}" in
   soca9)
     clean_packages="\
         base-files \
+        u-boot-socfpga \
+        linux-socfpga \
         "
     IMAGES="$(echo $IMAGES | sed -e 's/dip-image-edge//')"
     ;;
