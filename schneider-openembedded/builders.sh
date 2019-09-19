@@ -178,7 +178,7 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
       ${DEPLOY_DIR_IMAGE}/*.iso \
-      ${DEPLOY_DIR_IMAGE}/*.jffs \
+      ${DEPLOY_DIR_IMAGE}/*.jffs* \
       ${DEPLOY_DIR_IMAGE}/*.cpio.gz \
       ${DEPLOY_DIR_IMAGE}/*.squashfs-lzo \
       ${DEPLOY_DIR_IMAGE}/*.stimg
