@@ -15,10 +15,7 @@ chmod 0600 ${HOME}/.docker/config.json
 
 rm -rf ${WORKSPACE}/*
 
-# to change when https://github.com/apache/arrow/pull/5024 gets merged
-# git clone --depth 1 https://github.com/apache/arrow.git
-
-git clone --depth 1 https://github.com/hrw/arrow.git
+git clone --depth 1 https://github.com/apache/arrow.git
 
 cd arrow/dev/tasks/linux-packages/
 
