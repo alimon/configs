@@ -160,8 +160,11 @@ if [ "${clean_packages}" != "" ]; then
     bitbake ${clean_packages}
 fi
 time bitbake ${IMAGES}
+time bitbake dip-sdk
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
+DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
+cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
 
 ls -al ${DEPLOY_DIR_IMAGE}/*
 
