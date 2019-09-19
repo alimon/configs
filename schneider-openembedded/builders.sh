@@ -189,6 +189,7 @@ case "${MACHINE}" in
     pushd ${DEPLOY_DIR_IMAGE}
     rm uImage*
     popd
+    ;;
   soca9)
     # re-create the SoCA9 DTB with a shorter filename
     pushd ${DEPLOY_DIR_IMAGE}
