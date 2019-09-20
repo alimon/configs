@@ -15,11 +15,34 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'ledge'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'ledge'
+        - string:
+            name: AUTH_GROUPS
+            default: 'linaro'
     disabled: false
     node: docker-stretch-arm64-leg
     display-name: 'LEDGE Cloud image Fedora IoT'
     wrappers:
         - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
     builders:
         - shell:
             !include-raw: fedora-iot/cloud-builders.sh
@@ -36,6 +59,48 @@
               out components/ledge/fedora-cloud/${BUILD_NUMBER}
 
             rm -rf out
+        - shell: |
+            #!/bin/bash
+
+            if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
+                 echo "INFO: apt update error - try again in a moment"
+                 sleep 15
+                 sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
+            fi
+
+            pkg_list="chrpath cpio diffstat gawk git expect pkg-config python-pip python-requests python-crypto libpixman-1-dev python python3"
+            if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
+                 echo "INFO: apt install error - try again in a moment"
+                 sleep 15
+                 sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
+            fi
+
+            sudo locale-gen en_US.UTF-8 && sudo update-locale LANG=en_US.UTF-8
+            export LC_ALL=en_US.UTF-8
+
+            # install required python modules
+            pip install --user --force-reinstall Jinja2 ruamel.yaml
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            #export takes more priority then argument provided with --device-type
+            export DEVICE_TYPE="qemuarm64"
+            export MACHINE="ledge-qemuarm64"
+
+            [ -z "${MANIFEST_COMMIT}" ] && export MANIFEST_COMMIT="HEAD"
+            [ -z "${MANIFEST_BRANCH}" ] && export MANIFEST_BRANCH="master"
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+                 --device-type ${DEVICE_TYPE} \
+                 --build-number ${BUILD_NUMBER} \
+                 --lava-server ${LAVA_SERVER} \
+                 --qa-server ${QA_SERVER} \
+                 --qa-server-team ${QA_SERVER_TEAM} \
+                 --qa-server-project ${QA_SERVER_PROJECT} \
+                 --git-commit ${MANIFEST_COMMIT} \
+                 --template-path configs/fedora-iot/lava-job-definitions \
+                 --template-names template-boot.yaml
     publishers:
         - email:
             recipients: 'maxim.uvarov@linaro.org ilias.apalodimas@linaro.org'
