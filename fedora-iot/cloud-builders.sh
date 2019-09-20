@@ -7,7 +7,7 @@ sudo apt-get update
 sudo apt-get install -y git cpio qemu-utils virtinst libvirt-clients iproute2 \
              libglib2.0-bin intltool libvirt-glib-1.0-dev libgtk-3-dev python-ipaddr \
              gobject-introspection  python-libguestfs gir1.2-gspell-1 \
-			 qemu-efi libgtksourceview2.0-dev libosinfo-1.0-0
+			 qemu-efi libgtksourceview2.0-dev libosinfo-1.0-0 pigz
 sudo apt-get install -y python3-gi python3-libvirt python3-libxml2 python3-requests
 
 git clone https://github.com/virt-manager/virt-manager.git virt-manager.git
