@@ -1,0 +1,61 @@
+device_type: qemu
+job_name: Fedora-IoT-30 ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 45
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: 25
+visibility: public
+context:
+  arch: arm64
+  netdevice: tap
+  machine: virt
+  cpu: cortex-a57
+  guestfs_interface: virtio
+  extra_kernel_args: \"selinux=0\"
+actions:
+- deploy:
+    namespace: target
+    timeout:
+      minutes: 15
+    to: tmpfs
+    images:
+      bios:
+        image_arg: -bios {bios}
+        url: https://storage.kernelci.org/images/uefi/111bbcf87621/QEMU_EFI.fd-AARCH64-RELEASE-111bbcf87621
+      rootfs:
+        image_arg: -drive id=disk0,file={rootfs},if=none,format=qcow2 -device virtio-blk-device,drive=disk0 -m 4096 -smp 4 -nographic
+        url: ${IMAGE_URL}
+        compression: gz
+        apply-overlay: true
+        sparse: false
+    os: fedora
+- boot:
+    namespace: target
+    timeout:
+      minutes: 10
+    method: qemu
+    media: tmpfs
+    expect_shell: false
+    auto_login:
+      login_prompt: 'login:'
+      username: tester
+      password_prompt: 'Password:'
+      password: fedora
+      login_commands:
+          - sudo su
+    prompts:
+    - 'tester@(.*) ~]'
+    - 'root@(.*) ~]'
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${BASE_URL}${PUB_DEST}
+
