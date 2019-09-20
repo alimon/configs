@@ -61,10 +61,15 @@ sudo virt-install \
   --noreboot
 
 set +ex
-while [ true ]; do
+# Fedora IoT has a bug when unmounting swap during the reboot
+# rely on a timeout to break the job until this is fixes
+# while [ true ]; do
+timeout=1800
+while [ $timeout -gt 0 ]; do
   sleep 1
   vm_running=$(sudo virsh list --name --state-running | grep "^${image_name}" | wc -l)
   [ "${vm_running}" -eq "0" ] && break
+  timeout=$((timeout-1))
 done
 set -ex
 
