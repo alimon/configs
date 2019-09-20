@@ -47,7 +47,7 @@ cleanup_exit()
   sudo rm -f ${image_name}.img
 }
 
-wget -q https://git.linaro.org/people/ilias.apalodimas/fedora-ks.git/plain/f30-iot-aarch64.ks -O f30-iot.ks
+cat f30-iot-aarch64.ks >  f30-iot.ks
 
 sudo virt-install \
   --name ${image_name} \
@@ -56,7 +56,7 @@ sudo virt-install \
   --os-variant fedora22 \
   --ram 4096 --arch aarch64 \
   --location https://dl.fedoraproject.org/pub/alt/iot/30/IoT/aarch64/os/,kernel=images/pxeboot/vmlinuz,initrd=images/pxeboot/initrd.img \
-  --initrd-inject="f30-iot.ks" --extra-args "ks=https://git.linaro.org/people/ilias.apalodimas/fedora-ks.git/plain/f30-iot-aarch64.ks earlycon=pl011,0x3f201000 console=ttyAMA0" \
+  --initrd-inject="f30-iot.ks" --extra-args "ks=http://git-us.linaro.org/ci/job/configs.git/plain/fedora-iot/f30-iot.ks earlycon=pl011,0x3f201000 console=ttyAMA0" \
   --boot loader=/usr/share/AAVMF/AAVMF_CODE.fd,loader_ro=yes,loader_type=pflash,nvram_template=/usr/share/AAVMF/AAVMF_VARS.fd,loader_secure=no \
   --noreboot
 
