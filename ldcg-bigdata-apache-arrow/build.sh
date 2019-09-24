@@ -24,7 +24,7 @@ cd arrow/dev/tasks/linux-packages/
 echo "chown 11517:1001 -R /host/repositories" >> apt/build.sh
 
 rake version:update
-APT_TARGETS=debian-stretch,debian-buster rake apt
+APT_TARGETS=debian-buster rake apt
 
 mkdir -p ${WORKSPACE}/out
 cp -a apt/repositories/* ${WORKSPACE}/out/
