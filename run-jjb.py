@@ -192,3 +192,4 @@ for conf_filename in filelist:
 
 if os.path.exists('jenkins_jobs.ini'):
     os.remove('jenkins_jobs.ini')
+
