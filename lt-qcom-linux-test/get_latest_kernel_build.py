@@ -123,7 +123,8 @@ def get_ramdisk_rootfs_url(url, job_url):
 def validate_url(url):
     request = urllib2.Request(url)
     request.get_method = lambda: 'HEAD'
-    urllib2.urlopen(request)
+    # XXX Disable validation of URL for now is failing/forbbiden to access URLs in Jenkins
+    #urllib2.urlopen(request)
 
 
 def validate_if_already_built(url, artifacts_urls):
