@@ -123,6 +123,12 @@ case "${MACHINE}" in
 		# XXX: using Android userdata since we don't have Linux parttable
 		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
 		;;
+	sdm845-db845c)
+		BOOTIMG_PAGESIZE=4096
+		FIRMWARE_URL=
+
+		ROOTFS_PARTITION=/dev/sda1
+		;;
 	qcs404-evb-1000)
 		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_1000}
 
