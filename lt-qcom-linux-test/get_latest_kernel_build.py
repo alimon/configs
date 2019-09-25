@@ -155,20 +155,20 @@ def main():
     kernel_build_type = os.environ.get('KERNEL_BUILD_TYPE', 'KERNEL_CI')
 
     kernel_ci_base_url = os.environ.get('KERNEL_CI_BASE_URL',
-                                        'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
+                                        'http://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
     kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
                                            'arm64/defconfig/gcc-8/')
 
     linaro_ci_base_url = os.environ.get('LINARO_CI_BASE_URL',
-                                        'https://snapshots.linaro.org/member-builds/qcomlt/kernel/')
+                                        'http://snapshots.linaro.org/member-builds/qcomlt/kernel/')
 
     machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c').split()
     ramdisk_job_url = os.environ.get('RAMDISK_JOB_URL',
                                 'https://ci.linaro.org/job/lt-qcom-linux-testimages/')
     ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
-                                'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
+                                'http://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
     builds_url = os.environ.get('BUILDS_URL',
-                                'https://snapshots.linaro.org/member-builds/qcomlt/linux-integration/%s/')
+                                'http://snapshots.linaro.org/member-builds/qcomlt/linux-integration/%s/')
 
     machine_avail = os.environ.get('KERNEL_BUILD_MACHINE_AVAIL', False)
 
