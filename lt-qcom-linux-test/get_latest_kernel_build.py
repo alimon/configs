@@ -122,8 +122,7 @@ def get_ramdisk_rootfs_url(url, job_url):
 
 def validate_url(url):
     request = urllib2.Request(url)
-    # XXX: Do a GET method instead of HEAD for now, Using HEAD returns forbbiden on Jenkins CI server
-    #request.get_method = lambda: 'HEAD'
+    request.get_method = lambda: 'HEAD'
     urllib2.urlopen(request)
 
 
