@@ -114,7 +114,9 @@ if [ "${DEVICE_TYPE}" == "soca9" ]; then
 	  --git-commit ${MANIFEST_COMMIT} \
 	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
 	  --template-names template-wic-dev.yaml
-fiif [ "${DEVICE_TYPE}" == "soca9" ]; then
+fi
+
+if [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
 	  --build-number ${BUILD_NUMBER} \
@@ -125,7 +127,9 @@ fiif [ "${DEVICE_TYPE}" == "soca9" ]; then
 	  --git-commit ${MANIFEST_COMMIT} \
 	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
 	  --template-names template-wic-dev-ltp.yaml
-fiif [ "${DEVICE_TYPE}" == "soca9" ]; then
+fi
+
+if [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
 	  --build-number ${BUILD_NUMBER} \
