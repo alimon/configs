@@ -84,7 +84,7 @@ for ts in ${TEST_SUITES,,}; do
         none)
             break
             ;;
-        kselftests|libhugetlbfs|ltp)
+        kselftests|libhugetlbfs|ltp|perf)
             TEST_FILES="${TEST_FILES} $(basename -a ${BASE_PATH}/lava-job-definitions/testplan/${ts}*.yaml)"
             ;;
         *)
