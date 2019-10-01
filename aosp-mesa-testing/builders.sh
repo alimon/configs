@@ -33,7 +33,7 @@ curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
 chmod a+x ${HOME}/bin/*
 export PATH=${HOME}/bin:${PATH}
 
-repo init -u https://android.googlesource.com/platform/manifest 
+repo init -u https://android.googlesource.com/platform/manifest  -b master
 cd .repo
 rm -rf local_manifests
 cd -
