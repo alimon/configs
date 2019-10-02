@@ -1,5 +1,5 @@
 device_type: soca9
-job_name: Schneider Electric SocA9 dip-image-dev WIC LTP Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: Schneider Electric SocA9 dip-image-dev WIC LTP (1) Test ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -14,7 +14,7 @@ visibility: public
 actions:
 - deploy:
     timeout:
-      minutes: 10
+      minutes: 100
     to: flasher
     images:
       image:
@@ -22,7 +22,7 @@ actions:
         compression: bz2
 - boot:
     timeout:
-      minutes: 10
+      minutes: 100
     method: u-boot
     commands:
     - run linux_sd
@@ -112,6 +112,7 @@ actions:
       branch: master
     - path: automated/linux/ltp/ltp.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
       from: git
       parameters:
         SKIP_INSTALL: 'true'
@@ -124,6 +125,7 @@ actions:
         minutes: 120
     - path: automated/linux/ltp/ltp.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
       from: git
       parameters:
         SKIP_INSTALL: 'true'
@@ -136,6 +138,7 @@ actions:
         minutes: 120
     - path: automated/linux/ltp/ltp.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
       from: git
       parameters:
         SKIP_INSTALL: 'true'
@@ -148,6 +151,7 @@ actions:
         minutes: 120
     - path: automated/linux/ltp/ltp.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
       from: git
       parameters:
         SKIP_INSTALL: 'true'
@@ -160,6 +164,7 @@ actions:
         minutes: 120
     - path: automated/linux/ltp/ltp.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
       from: git
       parameters:
         SKIP_INSTALL: 'true'
@@ -172,6 +177,7 @@ actions:
         minutes: 120
     - path: automated/linux/ltp/ltp.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
       from: git
       parameters:
         SKIP_INSTALL: 'true'
@@ -184,6 +190,7 @@ actions:
         minutes: 120
     - path: automated/linux/ltp/ltp.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
       from: git
       parameters:
         SKIP_INSTALL: 'true'
@@ -196,6 +203,7 @@ actions:
         minutes: 120
     - path: automated/linux/ltp/ltp.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
       from: git
       parameters:
         SKIP_INSTALL: 'true'
@@ -204,114 +212,6 @@ actions:
         BOARD: rzn1d
         TIMEOUT_MULTIPLIER: 3
       name: ltp-hugetlb-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'io'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-io-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'nptl'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-nptl-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'pty'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-pty-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'containers'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-containers-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'fs_bind'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-fs_bind-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'filecaps'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-filecaps-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'admin_tools'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-admin_tools-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'connectors'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-connectors-tests
-      timeout:
-        minutes: 120
-    - path: automated/linux/ltp/ltp.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        TST_CMDFILES: 'mm'
-        SKIPFILE: 'skipfile-lkft.yaml'
-        BOARD: rzn1d
-        TIMEOUT_MULTIPLIER: 3
-      name: ltp-mm-tests
       timeout:
         minutes: 120
 
