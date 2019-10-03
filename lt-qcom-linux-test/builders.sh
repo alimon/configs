@@ -125,7 +125,7 @@ case "${MACHINE}" in
 		;;
 	sdm845-db845c)
 		BOOTIMG_PAGESIZE=4096
-		FIRMWARE_URL=
+		FIRMWARE_URL=${FIRMWARE_URL_sdm845_db845c}
 
 		ROOTFS_PARTITION=/dev/sda1
 		;;
