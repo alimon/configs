@@ -47,7 +47,7 @@ cleanup_exit()
   sudo rm -f ${image_name}.img
 }
 
-cat f30-iot-aarch64.ks >  f30-iot.ks
+wget -q http://git-us.linaro.org/ci/job/configs.git/plain/fedora-iot/f30-iot-aarch64.ks -O f30-iot.ks
 
 sudo virt-install \
   --name ${image_name} \
