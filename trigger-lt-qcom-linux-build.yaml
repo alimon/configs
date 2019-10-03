@@ -50,8 +50,14 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             git fetch --all
+
+            set +e
             python configs/trigger-lt-qcom-linux-build/get_branch_to_build.py \
               > branch_to_build
+            ret=$?
+            if [ $ret -ne 0 ]; then
+                echo "warning: no new kernel branch to build available"
+            fi
         - inject:
             properties-file: branch_to_build
         - shell: |
@@ -73,6 +79,10 @@
         - inject:
             properties-file: build_parameters
     publishers:
+        - logparser:
+            parse-rules: '/var/jenkins_home/userContent/android.parse'
+            unstable-on-warning: true
+            fail-on-error: false
         - groovy-postbuild:
             script:
                 !include-raw:

@@ -43,25 +43,40 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
+            set +e
             python configs/trigger-lt-qcom-linux-release/get_latest_kernel_release_build.py \
               > release_parameters
+            ret=$?
             cat release_parameters
+            if [ $ret -ne 0 ]; then
+                echo "warning: no new linaro ci build available"
+            fi
         - inject:
             properties-file: release_parameters
         - shell: |
             #!/bin/bash
 
+            set -ex
             export KERNEL_BUILD_TYPE="LINARO_CI"
             export LINARO_CI_BASE_URL="${RELEASE_URL}"
             export KERNEL_BUILD_MACHINE_AVAIL=True
 
             echo "RELEASE_NAME=${RELEASE_NAME}" > lt_qcom_parameters
+            set +e
             python configs/lt-qcom-linux-test/get_latest_kernel_build.py \
               >> lt_qcom_parameters
+            ret=$?
             cat lt_qcom_parameters
+            if [ $ret -ne 0 ]; then
+                echo "warning: linaro ci kernel already built"
+            fi
         - inject:
             properties-file: lt_qcom_parameters
     publishers:
+        - logparser:
+            parse-rules: '/var/jenkins_home/userContent/android.parse'
+            unstable-on-warning: true
+            fail-on-error: false
         - trigger-parameterized-builds:
             - project: lt-qcom-linux-release
               condition: SUCCESS
