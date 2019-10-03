@@ -105,6 +105,7 @@ RAMDISK_BASE=0x84000000
 SERIAL_CONSOLE=ttyMSM0
 KERNEL_CI_MACH=qcom
 KERNEL_DT_URL="${KERNEL_DT_URL}/qcom/${MACHINE}.dtb"
+KERNEL_CMDLINE_APPEND=
 
 # Set per MACHINE configuration
 case "${MACHINE}" in
@@ -128,6 +129,7 @@ case "${MACHINE}" in
 		FIRMWARE_URL=${FIRMWARE_URL_sdm845_db845c}
 
 		ROOTFS_PARTITION=/dev/sda1
+		KERNEL_CMDLINE_APPEND="clk_ignore_unused pd_ignore_unused"
 		;;
 	qcs404-evb-1000)
 		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_1000}
@@ -298,7 +300,7 @@ skales-mkbootimg \
 	--pagesize "${BOOTIMG_PAGESIZE}" \
 	--base "${BOOTIMG_BASE}" \
 	--ramdisk_base "${RAMDISK_BASE}" \
-	--cmdline "root=/dev/ram0 init=/sbin/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
+	--cmdline "root=/dev/ram0 init=/sbin/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8 ${KERNEL_CMDLINE_APPEND}"
 
 # Create boot image (functional), sdm845-mtp requires an initramfs to mount the rootfs and then
 # exec switch_rootfs, use the same method in other boards too
@@ -317,7 +319,7 @@ skales-mkbootimg \
 	--pagesize "${BOOTIMG_PAGESIZE}" \
 	--base "${BOOTIMG_BASE}" \
 	--ramdisk_base "${RAMDISK_BASE}" \
-	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8"
+	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8 ${KERNEL_CMDLINE_APPEND}"
 
 echo BOOT_FILE=$boot_file >> builders_out_parameters
 echo BOOT_ROOTFS_FILE=$boot_rootfs_file >> builders_out_parameters
