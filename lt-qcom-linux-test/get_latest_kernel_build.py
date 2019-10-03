@@ -120,11 +120,11 @@ def get_ramdisk_rootfs_url(url, job_url):
     return (ramdisk_url, rootfs_url)
 
 
+# XXX: When the Jenkins trigger detects a new build (URL change) dosen't mean that the kernel
+# defconfig build we are looking for is done so this check is needed to try in loop mode
+# until defconfig is available and not register the build as done.
 def validate_url(url):
-    request = urllib2.Request(url)
-    request.get_method = lambda: 'HEAD'
-    # XXX Disable validation of URL for now is failing/forbbiden to access URLs in Jenkins
-    #urllib2.urlopen(request)
+    urllib2.urlopen(url)
 
 
 def validate_if_already_built(url, artifacts_urls):
