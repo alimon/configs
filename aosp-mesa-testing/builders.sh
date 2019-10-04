@@ -33,10 +33,10 @@ curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
 chmod a+x ${HOME}/bin/*
 export PATH=${HOME}/bin:${PATH}
 
-repo init -u https://android.googlesource.com/platform/manifest  -b master
 cd .repo
 rm -rf local_manifests
 cd -
+repo init -u https://android.googlesource.com/platform/manifest  -b master
 
 export AOSP_MASTER_BUILD=fail
 repo sync -j$(nproc) -c -f
@@ -54,9 +54,16 @@ set -e
 git remote add upstream git://anongit.freedesktop.org/mesa/mesa
 git fetch upstream 
 git checkout ${GIT_COMMIT}
-AUTHOR_EMAIL_ADDRESS=$(git log --pretty=format:"%ae" HEAD -1)
-PATCH_SUBJECT=$(git log --pretty=format:"%s" HEAD -1)
+export AUTHOR_EMAIL_ADDRESS=$(git log --pretty=format:"%ae" HEAD -1)
+export PATCH_SUBJECT=$(git log --pretty=format:"%s" HEAD -1)
 popd
+
+# Publish parameters
+cat << EOF > ${WORKSPACE}/publish_parameters
+AUTHOR_EMAIL_ADDRESS=${AUTHOR_EMAIL_ADDRESS}
+PATCH_SUBJECT=${PATCH_SUBJECT}
+AOSP_MASTER_BUILD=${AOSP_MASTER_BUILD}
+EOF
 
 set -ex
 ln -sf /usr/bin/python prebuilts/build-tools/path/linux-x86/python
