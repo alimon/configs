@@ -228,7 +228,7 @@ case "${MACHINE}" in
 	  RIMAGE=ledge-stm32mp157c-dk2.tar.gz
 	  # Only use the iot flashlayout to deploy, since it's a superset of the
 	  # gateway image
-	  FLASH_LAYOUT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "FlashLayout_sdcard_${MACHINE}-*iot*.tsv" | xargs -r basename)
+	  FLASH_LAYOUT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "FlashLayout_sdcard_${MACHINE}-*iot-lava*.tsv" | xargs -r basename)
     ;;
   juno)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*-${BUILD_NUMBER}.dtb" | xargs -r basename)
