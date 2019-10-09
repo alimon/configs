@@ -1,4 +1,4 @@
-# Build Android
+# Build Android cts
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
