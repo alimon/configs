@@ -91,7 +91,9 @@
             [ -z "${MANIFEST_COMMIT}" ] && export MANIFEST_COMMIT="HEAD"
             [ -z "${MANIFEST_BRANCH}" ] && export MANIFEST_BRANCH="master"
 
-            export IMAGE_URL="http://snapshots.linaro.org/components/ledge/fedora-cloud/${BUILD_NUMBER}/fedora-iot-rp-cloud-image_aarch64.qcow2.gz"
+            export BASE_URL="http://snapshots.linaro.org"
+            export PUB_DEST="components/ledge/fedora-cloud/${BUILD_NUMBER}"
+            export IMAGE_URL="${BASE_URL}/${PUB_DEST}/fedora-iot-rp-cloud-image_aarch64.qcow2.gz"
 
             python configs/openembedded-lkft/submit_for_testing.py \
                  --device-type ${DEVICE_TYPE} \
