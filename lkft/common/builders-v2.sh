@@ -21,11 +21,12 @@ pip install --user --force-reinstall ruamel.yaml
 sudo apt-get update
 sudo apt-get install -y selinux-utils cpio
 
-if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
-  sudo mkdir -p /home/buildslave/srv/${BUILD_DIR}
-  sudo chmod 777 /home/buildslave/srv/${BUILD_DIR}
+export LKFT_WORK_DIR=/home/buildslave/srv/${BUILD_DIR}
+if [ ! -d "${LKFT_WORK_DIR}" ]; then
+  sudo mkdir -p ${LKFT_WORK_DIR}
+  sudo chmod 777 ${LKFT_WORK_DIR}
 fi
-cd /home/buildslave/srv/${BUILD_DIR}
+cd ${LKFT_WORK_DIR}
 
 # clean the workspace to avoid repo sync problem
 rm -fr kernel/ti/4.19 prebuilts/linaro-prebuilts/ kernel/common/mainline android-build-configs
