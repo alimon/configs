@@ -187,7 +187,7 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
 case "${MACHINE}" in
   rzn1d*)
     pushd ${DEPLOY_DIR_IMAGE}
-    rm uImage*
+    rm -f uImage*
     popd
     ;;
   soca9)
@@ -195,9 +195,9 @@ case "${MACHINE}" in
     pushd ${DEPLOY_DIR_IMAGE}
     mv zImage-*snarc_${MACHINE}*_bestla_512m*.dtb zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb || true
     mv zImage-snarc-${MACHINE}.dtb zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb || true
-    rm *[12]G*.dtb || true
-    rm *freja*.dtb || true
-    rm *socfpga_cyclone5_socdk*.dtb || true
+    rm -f *[12]G*.dtb || true
+    rm -f *freja*.dtb || true
+    rm -f *socfpga_cyclone5_socdk*.dtb || true
     popd
     ;;
   juno|stih410-b2260|orangepi-i96)
