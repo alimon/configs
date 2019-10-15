@@ -74,9 +74,11 @@ time ${ZEPHYR_BASE}/scripts/sanitycheck \
   --inline-logs \
   --build-only \
   --outdir ${OUTDIR} \
-  --report-dir ${OUTDIR}/${PLATFORM} \
   --enable-slow \
   -x=USE_CCACHE=${USE_CCACHE}
+
+# Put sanitycheck report where rsync below will pick it up.
+cp ${OUTDIR}/sanitycheck.csv ${OUTDIR}/${PLATFORM}/
 
 cd ${ZEPHYR_BASE}
 # OUTDIR is already per-platform, but it may get contaminated with unrelated
