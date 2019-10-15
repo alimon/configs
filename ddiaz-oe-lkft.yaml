@@ -9,6 +9,8 @@
                 - job-extended-read
                 - job-workspace
             linaro:
+                - job-read
+                - job-extended-read
                 - job-build
                 - job-cancel
             daniel.diaz@linaro.org:
@@ -23,61 +25,53 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
-            name: KERNEL_BRANCH
-            default: ''
-        - string:
-            name: KERNEL_VERSION
-            default: ''
-        - string:
-            name: KERNEL_RECIPE
-            default: 'linux-generic'
-        - string:
-            name: KERNEL_REPO
-            default: ''
-        - string:
-            name: KERNEL_DESCRIBE
-        - string:
-            name: SRCREV_kernel
-        - string:
-            name: MAKE_KERNELVERSION
-        - string:
             name: IMAGES
             default: 'rpb-console-image-lkft'
         - string:
             name: MANIFEST_URL
-            default: 'https://github.com/96boards/oe-rpb-manifest.git'
+            default: 'https://github.com/mrchapp/oe-rpb-manifest.git'
         - string:
             name: MANIFEST_BRANCH
             default: 'lkft/sumo'
         - string:
             name: PUB_DEST
-            default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/linux-stable-rc-ddiaz/${BUILD_NUMBER}'
+            default: 'openembedded/lkft/lkft/sumo/${MACHINE}/${DISTRO}/linux-stable-rc-ddiaz/${BUILD_NUMBER}/${KERNEL_BRANCH}'
         - string:
             name: LAVA_SERVER
             default: 'https://lkft.validation.linaro.org/RPC2/'
         - string:
             name: QA_SERVER
-            default: 'https://staging-qa-reports.linaro.org'
+            default: 'https://qa-reports.linaro.org'
         - string:
-            name: QA_SERVER_PROJECT
-            default: 'linux-mainline-oe'
+            name: QA_SERVER_TEAM
+            default: 'staging-lkft'
         - string:
             name: KSELFTEST_PATH
-            default: '/opt/kselftests/default-in-kernel/'
+            default: '/opt/kselftests/mainline/'
         - string:
             name: SKIP_LAVA
             default: ''
         - string:
             name: LAVA_JOB_PRIORITY
-            default: '70'
+            default: '35'
         - string:
             name: SANITY_LAVA_JOB_PRIORITY
             default: '80'
+        - string:
+            name: TEST_SUITES
+            default: 'all'
+        - string:
+            name: SSTATE_BRANCH
+            default: 'lkft/sumo'
+        - string:
+            name: DESCRIBE_SUFFIX
+            default: ''
         - matrix-combinations:
             name: MATRIX_COMBINATIONS
+            filter: '!(KERNEL_BRANCH == "linux-4.4.y" && (MACHINE == "hikey" | MACHINE == "dragonboard-410c"))'
     disabled: false
     node: master
-    display-name: 'ddiaz test LKFT - Linux Stable RC (OpenEmbedded/sumo)'
+    display-name: 'ddiaz test LKFT - Linux Stable (OpenEmbedded/sumo)'
     axes:
         - axis:
             type: user-defined
@@ -89,6 +83,18 @@
                 - 'intel-core2-32'
                 - 'intel-corei7-64'
                 - 'juno'
+        - axis:
+            type: user-defined
+            name: KERNEL_BRANCH
+            values:
+                - 'linux-4.4.y'
+                - 'linux-4.9.y'
+                - 'linux-4.14.y'
+                - 'linux-4.19.y'
+                - 'linux-5.2.y'
+                - 'linux-5.3.y'
+                - 'mainline'
+                - 'next'
         - axis:
             type: user-defined
             name: DISTRO
@@ -116,53 +122,107 @@
         - shell: |
             #!/bin/bash -x
 
+            # Mapping for KERNEL_BRANCH -> KERNEL_VERSION
+            KERNEL_RECIPE=linux-generic-stable-rc
+            case "${KERNEL_BRANCH}" in
+              linux-4.4.y)
+                KERNEL_VERSION=4.4
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                QA_SERVER_PROJECT=linux-stable-rc-4.4-oe
+                if [ "${MACHINE}" = "hikey" ]; then
+                  # Not "stable", though...
+                  KERNEL_RECIPE=linux-hikey-lts-rc
+                  KERNEL_REPO=https://git.linaro.org/lkft/arm64-stable-rc.git
+                  QA_SERVER_PROJECT=linaro-hikey-stable-rc-4.4-oe
+                fi
+                ;;
+              linux-4.9.y|linux-4.14.y|linux-4.19.y|linux-5.2.y|linux-5.3.y)
+                MAJMIN=$(echo "${KERNEL_BRANCH}" | sed -e 's:.y::' | cut -d- -f2)
+                KERNEL_VERSION="${MAJMIN}"
+                KERNEL_REPO="https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git"
+                QA_SERVER_PROJECT="linux-stable-rc-${MAJMIN}-oe"
+                ;;
+              mainline)
+                KERNEL_VERSION=git
+                KERNEL_VERSION_OVERRIDE=mainline
+                KERNEL_RECIPE=linux-generic-mainline
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+                GIT_BRANCH=master
+                QA_SERVER_PROJECT=linux-mainline-oe
+                ;;
+              next)
+                KERNEL_VERSION=git
+                KERNEL_VERSION_OVERRIDE=next
+                KERNEL_RECIPE=linux-generic-next
+                KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+                GIT_BRANCH=master
+                QA_SERVER_PROJECT=linux-next-oe
+                ;;
+            esac
+            KERNEL_VERSION_OVERRIDE=${KERNEL_VERSION_OVERRIDE:-${KERNEL_VERSION}}
+            GIT_BRANCH=${GIT_BRANCH:-${KERNEL_BRANCH}}
+
+            git clone --reference-if-able "${HOME}/srv/linux.git" -o origin "${KERNEL_REPO}" "${WORKSPACE}/linux"
+
+            cd "${WORKSPACE}/linux"
+            git remote add torvalds https://github.com/torvalds/linux.git
+            git remote add linux-stable https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+            git fetch --multiple torvalds linux-stable
+
+            git checkout "origin/${GIT_BRANCH}"
+            SRCREV_kernel="$(git rev-parse HEAD)"
+            MAKE_KERNELVERSION="$(make kernelversion)"
+            kernel_major="$(echo ${MAKE_KERNELVERSION} | cut -d\. -f1)"
+            kernel_minor="$(echo ${MAKE_KERNELVERSION} | cut -d\. -f2)"
+            if echo "${MAKE_KERNELVERSION}" | grep -q "rc"; then
+              kernel_minor=$((kernel_minor - 1))
+            fi
+            KERNEL_DESCRIBE=$(git describe --always)
+
             # Mapping for MACHINE -> DEVICE_TYPE
             case "${MACHINE}" in
               hikey)
                 DEVICE_TYPE=hi6220-hikey
-                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
               intel-core2-32)
                 DEVICE_TYPE=i386
-                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=i386_defconfig
                 ;;
               intel-corei7-64)
                 DEVICE_TYPE=x86
-                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=x86_64_defconfig
                 ;;
               juno)
                 DEVICE_TYPE=juno-r2
-                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
               am57xx-evm)
                 DEVICE_TYPE=x15
-                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=multi_v7_defconfig
                 ;;
               dragonboard-410c)
                 DEVICE_TYPE=dragonboard-410c
-                [ -z "${KERNEL_CONFIG}" ] && KERNEL_CONFIG=defconfig
                 ;;
             esac
 
-            pwd
-            cat << EOF > ${WORKSPACE}/custom-kernel-info.inc.tmp
-            KERNEL_COMMIT = "${SRCREV_kernel}"
-            KERNEL_REPO = "${KERNEL_REPO/http*:/git:}"
-            KERNEL_CONFIG_aarch64 = "${KERNEL_CONFIG}"
-            KERNEL_CONFIG_arm = "${KERNEL_CONFIG}"
-            KERNEL_CONFIG_x86-64 = "${KERNEL_CONFIG}"
-            KERNEL_CONFIG_x86 = "${KERNEL_CONFIG}"
-            EOF
-            cat ${WORKSPACE}/custom-kernel-info.inc.tmp
-
-            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
-            echo "KERNEL_CONFIG=${KERNEL_CONFIG}" >> device_type_parameters
-            echo "#${BUILD_NUMBER}-${SRCREV_kernel:0:8}" > ${WORKSPACE}/version.txt
+            # LKFT branches (lkft/sumo, lkft/rocko, lkft/thud, ...)
+            BRANCH_PREFIX="${MANIFEST_BRANCH/lkft\//}-"
+            # ddiaz' development branches (d/sumojuno, d/qemu-bis/, d/etcetera)
+            BRANCH_PREFIX="${BRANCH_PREFIX/d\//}"
+            (
+              echo "KERNEL_VERSION=${KERNEL_VERSION}"
+              echo "KERNEL_VERSION_OVERRIDE=${KERNEL_VERSION_OVERRIDE}"
+              echo "KERNEL_RECIPE=${KERNEL_RECIPE}"
+              echo "KERNEL_REPO=${KERNEL_REPO}"
+              echo "DEVICE_TYPE=${DEVICE_TYPE}"
+              echo "KERNEL_DESCRIBE=${BRANCH_PREFIX}${KERNEL_DESCRIBE}${DESCRIBE_SUFFIX}"
+              echo "SRCREV_kernel=${SRCREV_kernel}"
+              echo "MAKE_KERNELVERSION=${MAKE_KERNELVERSION}"
+              echo "QA_SERVER_PROJECT=${QA_SERVER_PROJECT}"
+              echo "QA_SERVER_TEAM=${QA_SERVER_TEAM}"
+            ) > "${WORKSPACE}/preset_parameters"
+            echo "#${BUILD_NUMBER}-${KERNEL_VERSION}-${SRCREV_kernel:0:8}" > "${WORKSPACE}/version.txt"
         - build-name-setter:
             name: 'version.txt'
             file: true
         - inject:
-            properties-file: device_type_parameters
+            properties-file: preset_parameters
         - shell:
             !include-raw: openembedded-lkft/builders.sh
         - inject:
