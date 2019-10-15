@@ -74,6 +74,7 @@ time ${ZEPHYR_BASE}/scripts/sanitycheck \
   --inline-logs \
   --build-only \
   --outdir ${OUTDIR} \
+  --report-dir ${OUTDIR}/${PLATFORM} \
   --enable-slow \
   -x=USE_CCACHE=${USE_CCACHE}
 
@@ -87,6 +88,7 @@ rsync -avm \
   --include=zephyr.bin \
   --include=zephyr.config \
   --include=zephyr.elf \
+  --include=sanitycheck.csv \
   --include='*/' \
   --exclude='*' \
   ${OUTDIR}/${PLATFORM} ${WORKSPACE}/out/
