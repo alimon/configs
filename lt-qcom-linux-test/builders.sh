@@ -10,20 +10,25 @@ wget_error() {
 	fi
 }
 
-function copy_tarball_to_rootfs() {
-	tarball_file=$1
-	target_file=$2
-	target_file_type=$3
+function copy_archive_to_rootfs() {
+	archive_file=$1
+	archive_file_type=$2
+	target_file=$3
+	target_file_type=$4
 
 	if [[ $target_file_type = *"cpio archive"* ]]; then
-		mkdir -p out/tarball
-		tar -xvf $tarball_file -C out/tarball
-		cd out/tarball
+		mkdir -p out/archive
+		if [[ $archive_file_type = *"Debian binary package"* ]]; then
+			dpkg-deb -x $archive_file out/archive
+		else
+			tar -xvf $archive_file -C out/archive
+		fi
+		cd out/archive
 		find . | cpio -oA -H newc -F ../../$target_file
 		cd ../../
-		rm -rf out/tarball
+		rm -rf out/archive
 	else
-		required_size=$(${GZ} -l $tarball_file | tail -1 | awk '{print $2}')
+		required_size=$(${GZ} -l $archive_file | tail -1 | awk '{print $2}')
 		required_size=$(( $required_size / 1024 ))
 
 		sudo e2fsck -y $target_file
@@ -36,7 +41,11 @@ function copy_tarball_to_rootfs() {
 
 		mkdir -p out/rootfs_mount
 		sudo mount -o loop $target_file out/rootfs_mount
-		sudo tar -xvf $tarball_file -C out/rootfs_mount
+		if [[ $archive_file_type = *"Debian binary package"* ]]; then
+			dpkg-deb -x $archive_file out/rootfs_mount
+		else
+			sudo tar -xvf $archive_file -C out/rootfs_mount
+		fi
 		sudo umount out/rootfs_mount
 		rm -rf out/rootfs_mount
 	fi
@@ -192,7 +201,7 @@ if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 	wget_error ${KERNEL_MODULES_URL}
 	modules_file="out/$(basename ${KERNEL_MODULES_URL})"
 
-	# XXX: Compress modules to gzip for use copy_tarball_to_rootfs
+	# XXX: Compress modules to gzip for use copy_archive_to_rootfs
 	# generic code to calculate size in ext4 filesystem
 	modules_file_type=$(file $modules_file)
 	if [[ $modules_file_type = *"XZ compressed data"* ]]; then
@@ -209,7 +218,7 @@ if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 fi
 if [[ ! -z "${FIRMWARE_URL}" ]]; then
 	wget_error ${FIRMWARE_URL}
-	firmware_file="out/$(basename ${FIRMWARE_URL} .bz2)"
+	firmware_file="out/$(basename ${FIRMWARE_URL})"
 fi
 
 rootfs_comp=''
@@ -238,13 +247,15 @@ else
 fi
 
 if [[ ! -z "$modules_file" ]]; then
-	copy_tarball_to_rootfs "$modules_file" "$ramdisk_file" "$ramdisk_file_type"
-	copy_tarball_to_rootfs "$modules_file" "$rootfs_file" "$rootfs_file_type"
+	modules_file_type=$(file $modules_file)
+	copy_archive_to_rootfs "$modules_file" "$modules_file_type" "$ramdisk_file" "$ramdisk_file_type"
+	copy_archive_to_rootfs "$modules_file" "$modules_file_type" "$rootfs_file" "$rootfs_file_type"
 fi
 
 if [[ ! -z "${firmware_file}" ]]; then
-	copy_tarball_to_rootfs "$firmware_file" "$ramdisk_file" "$ramdisk_file_type"
-	copy_tarball_to_rootfs "$firmware_file" "$rootfs_file" "$rootfs_file_type"
+	firmware_file_type=$(file $firmware_file)
+	copy_archive_to_rootfs "$firmware_file" "$firmware_file_type" "$ramdisk_file" "$ramdisk_file_type"
+	copy_archive_to_rootfs "$firmware_file" "$firmware_file_type" "$rootfs_file" "$rootfs_file_type"
 fi
 
 if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
