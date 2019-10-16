@@ -204,18 +204,18 @@ TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 
 ls -lh  ${DEPLOY_DIR_IMAGE}
-BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*${MACHINE}-*${BUILD_NUMBER}*.img" | sort | xargs -r basename)
-KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}-*.bin" | xargs -r basename)
-ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
-ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
-ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
-HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" | xargs -r basename)
+BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*${MACHINE}-*${BUILD_NUMBER}*.img" -printf "%f\n"| sort)
+KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}-*.bin" -printf "%f\n")
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.img.gz" -printf "%f\n" )
+ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.ext4.gz" -printf "%f\n")
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.tar.xz" -printf "%f\n")
+HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" -printf "%f\n")
 INITRD_URL=""
 case "${MACHINE}" in
   ledge-am57xx-evm)
     # QEMU arm 32bit needs the zImage file, not the uImage file.
     # KERNEL_IMG is not used for the real hardware itself.
-    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*${MACHINE}-*${BUILD_NUMBER}.bin" | xargs -r basename)
+    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*${MACHINE}-*${BUILD_NUMBER}.bin" -printf "%f\n")
     ;;
   ledge-synquacer)
 	  INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
@@ -228,10 +228,10 @@ case "${MACHINE}" in
 	  RIMAGE=ledge-stm32mp157c-dk2.tar.gz
 	  # Only use the iot flashlayout to deploy, since it's a superset of the
 	  # gateway image
-	  FLASH_LAYOUT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "FlashLayout_sdcard_${MACHINE}-*iot-lava*.tsv" | xargs -r basename)
+	  FLASH_LAYOUT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "FlashLayout_sdcard_${MACHINE}-*iot-lava*.tsv" -printf "%f\n")
     ;;
   juno)
-    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*-${BUILD_NUMBER}.dtb" | xargs -r basename)
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*-${BUILD_NUMBER}.dtb" -printf "%f\n")
     ;;
 esac
 
