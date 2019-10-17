@@ -37,7 +37,7 @@
     display-name: 'TCWG BBB ABE Test'
     scm:
         - git:
-            url: https://git-us.linaro.org/toolchain/abe.git
+            url: https://git.linaro.org/toolchain/abe.git
             refspec: +refs/changes/*:refs/remotes/changes/*
             branches:
                 - ${GERRIT_PATCHSET_REVISION}
@@ -103,7 +103,7 @@
             # strategy doesn't pick up the right one when manually triggered.
             git checkout -f ${GERRIT_PATCHSET_REVISION}
 
-            git clone -b $scripts_branch --depth 1 https://git-us.linaro.org/toolchain/jenkins-scripts
+            git clone -b $scripts_branch --depth 1 https://git.linaro.org/toolchain/jenkins-scripts
             . ./jenkins-scripts/jenkins-helpers.sh
 
             ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ --dryrun $dryrun > build-container.sh

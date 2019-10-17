@@ -64,8 +64,8 @@
             set -ex
 
             dir=$(mktemp -d)
-            ssh -o StrictHostKeyChecking=no git@git-us.linaro.org true || true
-            git archive --remote ssh://git@git-us.linaro.org/ci/dockerfiles.git HEAD > $dir.tar
+            ssh -o StrictHostKeyChecking=no git@git.linaro.org true || true
+            git archive --remote ssh://git@git.linaro.org/ci/dockerfiles.git HEAD > $dir.tar
             tar x --strip-components=2 -f $dir.tar -C $dir tcwg-base/home-data
 
             case "$NODE_NAME" in
