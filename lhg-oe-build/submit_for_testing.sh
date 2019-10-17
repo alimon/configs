@@ -13,13 +13,11 @@ case "${DEVICE_TYPE}" in
     PRODUCTION_LAVA_TEST_JOBS="${PRODUCTION_LAVA_TEST_JOBS} template-v4l2-compliance-test.yaml"
     if [ "${MANIFEST_BRANCH}" == "rocko" ]; then
       STAGING_LAVA_TEST_JOBS="template-igt-test.yaml"
-      export CHAMELIUM_IP="10.7.0.94"
     fi
     ;;
   am57xx-evm)
     if [ "${MANIFEST_BRANCH}" == "rocko" ]; then
       PRODUCTION_LAVA_TEST_JOBS="template-igt-test.yaml"
-      export CHAMELIUM_IP="10.7.0.93"
     fi
     ;;
 esac
