@@ -15,7 +15,7 @@ actions:
     to: flasher
     images:
       image:
-        url: https://images.validation.linaro.org/people.linaro.org/~remi.duraffort/soca9-disk.img.bz2
+        url: ${WIC_IMAGE_URL}
         compression: bz2
 
 - deploy:
@@ -23,13 +23,8 @@ actions:
       minutes: 5
     to: tftp
     kernel:
-      url: ${KERNEL_ZIMAGE_URL}
+      url: https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior/soca9/zImage--4.19.72+git0+7549a49ae5-r0-snarc-soca9-20191003145415.bin
       type: zimage
-    dtb:
-      url: ${DTB_URL}
-    nfsrootfs:
-      url: ${NFSROOTFS_DEV_URL}
-      compression: bz2 
 
 - boot:
     timeout:
@@ -128,4 +123,7 @@ actions:
       - command: setenv serverip {SERVER_IP} ; tftp 0x01000000 {KERNEL}
         name: tftp
         successes:
-        - message: "Bytes transferred ="
+        - message: "Bytes transferred = 6752784"
+      - command: crc32 0x01000000 670a10
+        successes:
+        - message: "crc32 for 01000000 ... 01670a0f ==> ca050911"
