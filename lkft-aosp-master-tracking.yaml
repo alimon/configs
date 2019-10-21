@@ -37,10 +37,8 @@
             default: 'clang-r353983c'
     disabled: false
     node: docker-xenial-aosp
-    display-name: 'LKFT AOSP Master Tracking builds'
+    display-name: 'LKFT AOSP Master HiKey builds'
     concurrent: true
-    triggers:
-        - timed : '@daily'
     wrappers:
         - timestamps
         - timeout:
@@ -138,23 +136,11 @@
             [ -n "system.img.xz" ] && SYSTEM_IMG_SHA256SUM=$(sha256sum system.img.xz | cut -d\  -f1)
             [ -n "userdata.img.xz" ] && USERDATA_IMG_SHA256SUM=$(sha256sum userdata.img.xz | cut -d\  -f1)
             cd -
-            pushd build/
-            source build/envsetup.sh
-            pushd test/suite_harness
-            git fetch http://android-review.linaro.org/platform/test/suite_harness refs/changes/23/19623/1 && git cherry-pick FETCH_HEAD
-            popd
-            lunch aosp_arm64-userdebug
-            make -j"$(nproc)" vts cts
-            cp out/host/linux-x86/vts/android-vts.zip out/
-            cp out/host/linux-x86/cts/android-cts.zip out/
-            rm -rf out/host/
-
-            popd
 
             rm -rf build/out/BUILD-INFO.txt
             wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
 
-            # Build latest boot.img with latest kernel from source for 4.4, 4.9, 4.14, 4.19 versions
+            # Build latest boot.img with latest kernel from source for 4.14, 4.19 versions
             cd build/
             export PATH=${PWD}/prebuilts/clang/host/linux-x86/${TOOLCHAIN}/bin/:${PWD}/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/:${PATH}
 
@@ -166,7 +152,7 @@
             CMDLINE="${CMDLINE} printk.devkmsg=on buildvariant=userdebug"
 
             ######################################################################
-            # common for 4.9/4.14/4.19
+            # common for 4.14/4.19
             if [ ! -d hikey-linaro ]; then
                git clone https://android.googlesource.com/kernel/hikey-linaro
             fi
@@ -218,160 +204,9 @@
             xz ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
             BOOT_4_14_IMG_SHA256SUM=$(sha256sum ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz | cut -d\  -f1)
 
-            # only 4.9 supports system-as-root kernel boot parameters
-            # set verity and system-as-root kernel boot parameters for 4.9
-            CMDLINE="${CMDLINE} overlay_mgr.overlay_dt_entry=hardware_cfg_enable_android_fstab_v2"
-            CMDLINE="${CMDLINE} rootwait ro root=/dev/dm-0"
-            CMDLINE="${CMDLINE} dm=\"system none ro,0 1 android-verity 179:9\""
-            CMDLINE="${CMDLINE} veritykeyid=id:7e4333f9bba00adfe0ede979e28ed1920492b40f"
-
-            # Build 4.9 kernel
-            git checkout android-hikey-linaro-4.9
-            git pull
-            export KERNEL_DESCRIBE_4_9=$(git rev-parse --short HEAD)
-            export KERNEL_VERSION_4_9=$(make kernelversion)
-            ARCH=arm64 scripts/kconfig/merge_config.sh arch/arm64/configs/hikey_defconfig
-            make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
-            python mkbootimg \
-               --kernel arch/arm64/boot/Image.gz-dtb \
-               --cmdline "${CMDLINE}" \
-               --os_version Q \
-               --os_patch_level 2019-01-05 \
-               --output ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img
-            cp vmlinux ../out/4.9_vmlinux
-            cp .config ../out/4.9_defconfig
-            xz ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img
-            BOOT_4_9_IMG_SHA256SUM=$(sha256sum ../out/boot-4.9-${KERNEL_DESCRIBE_4_9}.img.xz | cut -d\  -f1)
-
             rm -rf configs
             cd ../
             rm -fr hikey-linaro
-
-            # build kernel for x15
-            X15_KERNEL_DIR=${ANDROID_ROOT}/kernel/ti/x15
-            rm -fr ${X15_KERNEL_DIR} && mkdir -p ${X15_KERNEL_DIR}
-            git clone -b android-beagle-x15-4.14 https://android.googlesource.com/kernel/omap ${X15_KERNEL_DIR}
-
-            # compile x15 4.14 kernel
-            cd ${X15_KERNEL_DIR}
-            export PATH=~/srv/toolchain/gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi/bin:$PATH
-            export KERNEL_DESCRIBE_X15_4_14=$(git rev-parse --short HEAD)
-            export KERNEL_VERSION_X15_4_14=$(make kernelversion)
-
-            make ARCH=arm CROSS_COMPILE=arm-eabi- ti_sdk_am57x_android_release_defconfig
-            make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
-            cd -
-
-            # clean the output for beagle_x15
-            # and check why the system/apex/com.android.runtime was created
-            # which should not be created
-            echo "debug=TARGET_FLATTEN_APEX=${TARGET_FLATTEN_APEX}="
-            rm -fr out/target/product/beagle_x15
-            source build/envsetup.sh
-            lunch beagle_x15-userdebug
-            USE_XML_AUDIO_POLICY_CONF=1 KERNELDIR=${X15_KERNEL_DIR} make -j$(nproc)
-
-            if [ -d out/target/product/beagle_x15/system/apex/com.android.runtime ]; then
-                echo "out/target/product/beagle_x15/system/apex/com.android.runtime was created"
-            else
-                echo "out/target/product/beagle_x15/system/apex/com.android.runtime was not created"
-            fi
-            X15_KERNEL_FILES="
-            arch/arm/boot/zImage
-            arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb
-            arch/arm/boot/dts/ti/am57xx-evm-common.dtbo
-            arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo
-            vmlinux
-            System.map
-            "
-            for f in ${X15_KERNEL_FILES}; do
-                if [ -f ${X15_KERNEL_DIR}/${f} ]; then
-                    cp -vf ${X15_KERNEL_DIR}/${f} out/x15-4.14-$(basename ${f})
-                fi
-            done
-
-            X15_IMAGE_FILE="
-            MLO
-            u-boot.img
-            boot_fit.img
-            userdata.img
-            system.img
-            vendor.img
-            recovery.img
-            ramdisk.img
-            "
-            for f in ${X15_IMAGE_FILE}; do
-                if [ -f out/target/product/beagle_x15/${f} ]; then
-                    cp -vf out/target/product/beagle_x15/${f} out/x15-${f}
-                fi
-            done
-
-            mv out/x15-boot_fit.img out/x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
-            mv out/x15-vendor.img out/x15-vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
-
-            cd out/
-            [ -n "x15-system.img" ] && X15_SYSTEM_IMG_SHA256SUM=$(sha256sum x15-system.img | cut -d\  -f1)
-            [ -n "x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img" ] && X15_BOOT_FIT_4_14_IMG_SHA256SUM=$(sha256sum x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img | cut -d\  -f1)
-            [ -n "x15-userdata.img" ] && X15_USERDATA_IMG_SHA256SUM=$(sha256sum x15-userdata.img | cut -d\  -f1)
-            [ -n "x15-vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img" ] && X15_VENDOR_4_14_IMG_SHA256SUM=$(sha256sum x15-vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img | cut -d\  -f1)
-            cd -
-
-            #######################################
-            # compile x15 4.19 kernel
-            #######################################
-            cd ${X15_KERNEL_DIR}
-            git checkout android-beagle-x15-4.19 && git pull
-            make mrproper
-
-            export KERNEL_DESCRIBE_X15_4_19=$(git rev-parse --short HEAD)
-            export KERNEL_VERSION_X15_4_19=$(make kernelversion)
-
-            ## revert the change of Revert "usb: gadget: ffs: Fix BUG when userland exits with submitted AIO transfers"
-            git revert --no-edit 8b87305f816cf58b7a4c840b2bedfd37a8c06254
-
-            make ARCH=arm CROSS_COMPILE=arm-eabi- ti_sdk_am57x_android_release_defconfig
-            make ARCH=arm CROSS_COMPILE=arm-eabi- -j$(nproc) zImage dtbs modules
-            cd -
-
-            source build/envsetup.sh
-            lunch beagle_x15-userdebug
-            # only need to re-create the boot_fit.img and vendor.img for 4.19 here
-            USE_XML_AUDIO_POLICY_CONF=1 KERNELDIR=${X15_KERNEL_DIR}  make -j$(nproc) bootfitimage vendorimage
-
-            X15_KERNEL_FILES="
-            arch/arm/boot/zImage
-            arch/arm/boot/dts/ti/am57xx-beagle-x15-revc.dtb
-            arch/arm/boot/dts/ti/am57xx-evm-common.dtbo
-            arch/arm/boot/dts/ti/am57xx-evm-reva3.dtbo
-            vmlinux
-            System.map
-            "
-            for f in ${X15_KERNEL_FILES}; do
-                if [ -f ${X15_KERNEL_DIR}/${f} ]; then
-                    cp -vf ${X15_KERNEL_DIR}/${f} out/x15-4.19-$(basename ${f})
-                fi
-            done
-
-            X15_IMAGE_FILE="
-            boot_fit.img
-            vendor.img
-            "
-            for f in ${X15_IMAGE_FILE}; do
-                if [ -f out/target/product/beagle_x15/${f} ]; then
-                    cp -vf out/target/product/beagle_x15/${f} out/x15-${f}
-                fi
-            done
-            mv out/x15-boot_fit.img out/x15-boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img
-            mv out/x15-vendor.img out/x15-vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img
-
-            cd out/
-            [ -n "x15-vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img" ] && X15_VENDOR_4_19_IMG_SHA256SUM=$(sha256sum x15-vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img | cut -d\  -f1)
-            [ -n "x15-boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img" ] && X15_BOOT_FIT_4_19_IMG_SHA256SUM=$(sha256sum x15-boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img | cut -d\  -f1)
-            cd -
-
-            # Delete sources after build to save space
-            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
-            rm -fr ${X15_KERNEL_DIR}
 
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
@@ -381,29 +216,14 @@
 
             KERNEL_DESCRIBE_4_19=${KERNEL_DESCRIBE_4_19}
             KERNEL_DESCRIBE_4_14=${KERNEL_DESCRIBE_4_14}
-            KERNEL_DESCRIBE_4_9=${KERNEL_DESCRIBE_4_9}
-            KERNEL_DESCRIBE_4_4=${KERNEL_DESCRIBE_4_4}
-            KERNEL_DESCRIBE_X15_4_14=${KERNEL_DESCRIBE_X15_4_14}
-            KERNEL_DESCRIBE_X15_4_19=${KERNEL_DESCRIBE_X15_4_19}
 
             KERNEL_VERSION_4_19=${KERNEL_VERSION_4_19}
             KERNEL_VERSION_4_14=${KERNEL_VERSION_4_14}
-            KERNEL_VERSION_4_9=${KERNEL_VERSION_4_9}
-            KERNEL_VERSION_4_4=${KERNEL_VERSION_4_4}
-            KERNEL_VERSION_X15_4_14=${KERNEL_VERSION_X15_4_14}
-            KERNEL_VERSION_X15_4_19=${KERNEL_VERSION_X15_4_19}
-            BOOT_4_9_IMG_SHA256SUM=${BOOT_4_9_IMG_SHA256SUM}
             BOOT_4_19_IMG_SHA256SUM=${BOOT_4_19_IMG_SHA256SUM}
             BOOT_4_14_IMG_SHA256SUM=${BOOT_4_14_IMG_SHA256SUM}
             SYSTEM_IMG_SHA256SUM=${SYSTEM_IMG_SHA256SUM}
             USERDATA_IMG_SHA256SUM=${USERDATA_IMG_SHA256SUM}
             VENDOR_IMG_SHA256SUM=${VENDOR_IMG_SHA256SUM}
-            X15_SYSTEM_IMG_SHA256SUM=${X15_SYSTEM_IMG_SHA256SUM}
-            X15_USERDATA_IMG_SHA256SUM=${X15_USERDATA_IMG_SHA256SUM}
-            X15_VENDOR_4_14_IMG_SHA256SUM=${X15_VENDOR_4_14_IMG_SHA256SUM}
-            X15_VENDOR_4_19_IMG_SHA256SUM=${X15_VENDOR_4_19_IMG_SHA256SUM}
-            X15_BOOT_FIT_4_14_IMG_SHA256SUM=${X15_BOOT_FIT_4_14_IMG_SHA256SUM}
-            X15_BOOT_FIT_4_19_IMG_SHA256SUM=${X15_BOOT_FIT_4_19_IMG_SHA256SUM}
             EOF
         - inject:
             properties-file: publish_parameters
@@ -436,29 +256,6 @@
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            # Submit jobs for 4.9 kernel
-            cd configs
-            git reset --hard
-            cd -
-            sed -i "s|boot.img.xz|boot-4.9-${KERNEL_DESCRIBE_4_9}.img.xz|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-
-            export KERNEL_BRANCH="android-hikey-linaro-${KERNEL_VERSION_4_9}-${KERNEL_DESCRIBE_4_9}"
-            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_4_9}
-            export SRCREV_kernel=${KERNEL_DESCRIBE_4_9}
-            export BOOT_IMG_SHA256SUM=${BOOT_4_9_IMG_SHA256SUM}
-            python configs/openembedded-lkft/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team android-lkft \
-                --env-suffix "_4.9" \
-                --qa-server-project ${QA_SERVER_PROJECT} \
-                --git-commit ${QA_BUILD_VERSION} \
-                --template-path configs/lkft/lava-job-definitions \
-                --template-names template-vts-kernel.yaml \
-                --quiet
 
             # Submit jobs for 4.14 kernel
             cd configs
@@ -506,69 +303,6 @@
                 --git-commit ${QA_BUILD_VERSION} \
                 --template-path configs/lkft/lava-job-definitions \
                 --template-names template-vts-kernel.yaml \
-                --quiet
-
-            # submit jobs for X15 4.14 kernel build
-            export DEVICE_TYPE=x15
-            export TOOLCHAIN=gcc-linaro-7.2.1-2017.11-x86_64_arm-eabi
-            export KERNEL_REPO=omap
-            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_X15_4_14}
-            export SRCREV_kernel=${KERNEL_DESCRIBE_X15_4_14}
-            export KERNEL_BRANCH="android-beagle-x15-${KERNEL_VERSION_X15_4_14}-${KERNEL_DESCRIBE_X15_4_14}"
-            # submit x15 jobs to lkf.v.l.o instance
-            export LAVA_SERVER=https://lkft.validation.linaro.org/RPC2/
-
-            # reset the changes done before
-            cd configs && git reset --hard && cd -
-
-            # update templates to use the new image names
-            sed -i "s|boot_fit.img|x15-boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-            sed -i "s|vendor.img|x15-vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-            sed -i "s|system.img|x15-system.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-            sed -i "s|userdata.img|x15-userdata.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-
-            export X15_BOOT_FIT_IMG_SHA256SUM=${X15_BOOT_FIT_4_14_IMG_SHA256SUM}
-            export X15_VENDOR_IMG_SHA256SUM=${X15_VENDOR_4_14_IMG_SHA256SUM}
-            python configs/openembedded-lkft/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team android-lkft \
-                --env-suffix "_4.14" \
-                --qa-server-project ${QA_SERVER_PROJECT} \
-                --git-commit ${QA_BUILD_VERSION} \
-                --testplan-path configs/lkft/lava-job-definitions/x15 \
-                --test-plan template-vts-kernel.yaml \
-                --quiet
-
-            # submit jobs for x15 4.19 kernel build
-            # reset the changes done before
-            cd configs && git reset --hard && cd -
-
-            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_X15_4_19}
-            export SRCREV_kernel=${KERNEL_DESCRIBE_X15_4_19}
-            export KERNEL_BRANCH="android-beagle-x15-${KERNEL_VERSION_X15_4_19}-${KERNEL_DESCRIBE_X15_4_19}"
-
-            # update templates to use the new image names
-            sed -i "s|boot_fit.img|x15-boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-            sed -i "s|vendor.img|x15-vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-            sed -i "s|system.img|x15-system.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-            sed -i "s|userdata.img|x15-userdata.img|g" configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
-
-            export X15_BOOT_FIT_IMG_SHA256SUM=${X15_BOOT_FIT_4_19_IMG_SHA256SUM}
-            export X15_VENDOR_IMG_SHA256SUM=${X15_VENDOR_4_19_IMG_SHA256SUM}
-            python configs/openembedded-lkft/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --lava-server ${LAVA_SERVER} \
-                --qa-server ${QA_SERVER} \
-                --qa-server-team android-lkft \
-                --env-suffix "_4.19" \
-                --qa-server-project ${QA_SERVER_PROJECT} \
-                --git-commit ${QA_BUILD_VERSION} \
-                --testplan-path configs/lkft/lava-job-definitions/x15 \
-                --test-plan template-vts-kernel.yaml \
                 --quiet
 
     publishers:
