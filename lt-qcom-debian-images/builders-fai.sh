@@ -162,7 +162,7 @@ cd ..
 ROOTFS_PARTLABEL=$(grep --color=never -Po  "^ROOTFS_PARTLABEL=\K.*" class/${FAI_BOARD_CLASS}.var)
 
 # Create boot image
-KERNEL_CMDLINE="root=/dev/disk/by-partlabel/${ROOTFS_PARTLABEL} rw rootwait console=tty0 console=${SERIAL_CONSOLE},115200n8 ${KERNEL_CMDLINE_PLATFORM}"
+KERNEL_CMDLINE="root=PARTLABEL=${ROOTFS_PARTLABEL} console=tty0 console=${SERIAL_CONSOLE},115200n8 ${KERNEL_CMDLINE_PLATFORM}"
 cat out/vmlinuz-* out/$(basename ${DTBS}) > Image.gz+dtb
 mkbootimg \
     --kernel Image.gz+dtb \
