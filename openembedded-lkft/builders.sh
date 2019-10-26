@@ -254,7 +254,9 @@ case "${MACHINE}" in
     ;;
   intel-core2-32|intel-corei7-64)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
-      xz -T0 ${rootfs}
+      if [ -e "${rootfs}" ]; then
+        xz -T0 "${rootfs}"
+      fi
     done
     ;;
   *)
