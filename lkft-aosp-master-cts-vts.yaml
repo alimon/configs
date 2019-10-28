@@ -23,6 +23,10 @@
         - timestamps
         - timeout:
             timeout: 600
+        - credentials-binding:
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
     builders:
         - shell: |
             #!/bin/bash
@@ -94,7 +98,7 @@
                 cp -a build/out/*.xml build/out/*.json ${WORKSPACE}/ || true
 
                 [ -f build/out/host/linux-x86/vts/android-vts.zip ] && cp -fv build/out/host/linux-x86/vts/android-vts.zip build/out/
-                [ -f build/out/host/linux-x86/vts/android-cts.zip ] && cp -fv build/out/host/linux-x86/cts/android-cts.zip build/out/
+                [ -f build/out/host/linux-x86/cts/android-cts.zip ] && cp -fv build/out/host/linux-x86/cts/android-cts.zip build/out/
             done
 
             rm -rf build/out/host/
