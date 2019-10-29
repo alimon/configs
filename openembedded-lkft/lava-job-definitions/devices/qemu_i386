@@ -19,10 +19,13 @@ context:
       minutes: 15
     to: tmpfs
     images:
+      kernel:
+        image_arg: -kernel {kernel} --append "root=/dev/sda  rootwait console=ttyS0,115200"
+        url: {{KERNEL_URL}}
       rootfs:
-        image_arg: -drive format=raw,file={rootfs},if=virtio -m 4096 -smp 4 -nographic
-        url: {{HDD_URL}}
-        compression: xz
+        image_arg: -hda {rootfs} -m 4096 -smp 4 -nographic
+        url: {{EXT4_IMAGE_URL}}
+        compression: gz
     os: oe
 {% endblock deploy_target %}
 
