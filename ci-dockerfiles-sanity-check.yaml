@@ -1,5 +1,5 @@
 - job:
-    name: ci-dockerfiles-deployment
+    name: ci-dockerfiles-sanity-check
     project-type: matrix
     defaults: global
     properties:
@@ -15,7 +15,7 @@
     disabled: false
     node: master
     concurrent: false
-    display-name: 'CI Dockerfiles build/publish deployment'
+    display-name: 'CI Dockerfiles sanity check'
     scm:
         - git:
             url: https://review.linaro.org/${GERRIT_PROJECT}
@@ -31,7 +31,7 @@
         - gerrit:
             server-name: 'review.linaro.org'
             trigger-on:
-                - change-merged-event
+                - patchset-created-event
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'ci/dockerfiles'
@@ -57,10 +57,6 @@
             includes:
                 - config.json
             relative-to: 'somewhereElse'
-        - credentials-binding:
-            - text:
-                credential-id: DOCKER_AUTH
-                variable: DOCKER_AUTH
         - ssh-agent-credentials:
             # tcwg-buildslave user id to clone dev-private-git.l.o/tcwg/llvm-config repo for *-tcwg-llvmbot-* images.
             users:
@@ -75,9 +71,7 @@
         - shell:
             !include-raw: ci-dockerfiles-deployment/builders.sh
         - shell:
-            !include-raw: ci-dockerfiles-deployment/publish.sh
-        - trigger-builds:
-            - project: 'ci-dockerfiles-cleanup'
+            !include-raw: ci-dockerfiles-deployment/report.sh
     publishers:
         - email:
             recipients: linaro-infrastructure-errors@lists.linaro.org
