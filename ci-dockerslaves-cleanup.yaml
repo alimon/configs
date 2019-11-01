@@ -39,6 +39,7 @@
                 - x86_64-12
                 - x86_64-13
                 - x86_64-14
+                - x86_64-15
     execution-strategy:
         sequential: false
     wrappers:
@@ -47,6 +48,7 @@
         - shell: |
             #!/bin/bash -e
             for image in $(docker images|grep tcwg|grep -v none|awk '{ print $1":"$2}'); do echo $image; docker rmi $image; done
+            for image in $(docker images|grep linaro|awk '{ print $1":"$2}'); do docker pull $image; done
             docker system prune -f
     publishers:
         - email:
