@@ -15,7 +15,7 @@
     disabled: false
     node: master
     concurrent: false
-    display-name: 'CI docker cleanup'
+    display-name: 'CI docker cleanup and image update'
     triggers:
         - timed : '@daily'
     axes:
@@ -45,11 +45,8 @@
     wrappers:
         - timestamps
     builders:
-        - shell: |
-            #!/bin/bash -e
-            for image in $(docker images|grep tcwg|grep -v none|awk '{ print $1":"$2}'); do echo $image; docker rmi $image; done
-            for image in $(docker images|grep linaro|awk '{ print $1":"$2}'); do docker pull $image; done
-            docker system prune -f
+        - shell:
+            !include-raw: ci-dockerfiles-deployment/cleanup-update.sh
     publishers:
         - email:
             recipients: linaro-infrastructure-errors@lists.linaro.org
