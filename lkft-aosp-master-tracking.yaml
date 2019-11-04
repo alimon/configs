@@ -77,21 +77,25 @@
             chmod a+x ${HOME}/bin/*
             export PATH=${HOME}/bin:${PATH}
 
-            if [ ! -d "aosp-master" ]; then
-              sudo mkdir -p /home/buildslave/srv/aosp-master
-              sudo chmod 777 /home/buildslave/srv/aosp-master
+            DIR_SRV_AOSP_MASTER="/home/buildslave/srv/aosp-master"
+            if [ ! -d "${DIR_SRV_AOSP_MASTER}" ]; then
+              sudo mkdir -p "${DIR_SRV_AOSP_MASTER}"
+              sudo chmod 777 "${DIR_SRV_AOSP_MASTER}"
             fi
-            cd /home/buildslave/srv/aosp-master
+            cd "${DIR_SRV_AOSP_MASTER}"
 
             git config --global user.email "ci_notify@linaro.org"
             git config --global user.name "Linaro CI"
 
             # Runs as ubuntu
             set -xe
-            rm -rf .repo/manifests* .repo/local_manifests build-tools jenkins-tools build/out build/android-patchsets build-configs
+            rm -rf .repo/manifests* .repo/local_manifests build-tools jenkins-tools build-configs
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-android-build-tools.git build-tools
             git clone --depth 1 https://git.linaro.org/infrastructure/linaro-jenkins-tools.git jenkins-tools
             git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git build-configs
+
+            ANDROID_ROOT="${DIR_SRV_AOSP_MASTER}/build"
+            mkdir -p ${ANDROID_ROOT}
 
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
 
@@ -110,15 +114,15 @@
             echo config.txt
             export CONFIG=`base64 -w 0 config.txt`
 
-            mkdir -p build
-            ANDROID_ROOT=/home/buildslave/srv/aosp-master/build
-
             # Delete sources before build to save space
-            cd build/
+            cd ${ANDROID_ROOT}/
             rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ hikey-linaro/configs hikey-linaro-4.19
+            rm -rf .repo/manifests* .repo/local_manifests android-patchsets
             rm -fr optee/optee_os
             # delete this kernel repository as we have patches applied
             rm -fr hikey-linaro
+            # clean the out directory as this workspace is used accross multiple builds
+            rm -fr out
             cd -
 
             # Build Android
