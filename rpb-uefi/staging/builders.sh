@@ -97,17 +97,23 @@ export OPP_DIR=${WORKSPACE}/${BUILD_NUMBER}/OpenPlatformPkg
 export ATF_DIR=${WORKSPACE}/${BUILD_NUMBER}/arm-trusted-firmware
 export OPTEE_OS_DIR=${WORKSPACE}/${BUILD_NUMBER}/optee_os
 export UEFI_TOOLS_DIR=${WORKSPACE}/${BUILD_NUMBER}/uefi-tools
-export JENKINS_WORKSPACE=${WORKSPACE}
 
-# WORKSPACE is used by uefi-build.sh
-unset WORKSPACE
+export BUILD_PATH=${WORKSPACE}/${BUILD_NUMBER}
 
 # Build UEFI for the desired platform, with the specified build type
 cd ${EDK2_DIR}
-bash -x ${UEFI_TOOLS_DIR}/uefi-build.sh -T ${TOOLCHAIN} -b ${MX_TYPE} -a ${ATF_DIR} -s ${OPTEE_OS_DIR} ${MX_PLATFORM}
 
-unset WORKSPACE
-export WORKSPACE=${JENKINS_WORKSPACE}
+ln -sf ../OpenPlatformPkg
+
+
+export LOADER_DIR=${BUILD_PATH}/l-loader
+cd $LOADER_DIR
+
+if [ "${BUILD_TYPE}" = "debug" ]; then
+    sed -i "s/BUILD_OPTION=DEBUG/BUILD_OPTION=RELEASE/g" build_uefi.sh
+fi
+
+./build_uefi.sh  ${MX_PLATFORM}
 
 # Find out the artifacts and image dir so we can publish the correct output files
 IMAGES=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} images`
