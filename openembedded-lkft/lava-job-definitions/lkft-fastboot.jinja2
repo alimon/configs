@@ -12,7 +12,7 @@ protocols:
     name: lxc-target
     template: debian
     distribution: debian
-    release: jessie
+    release: buster
     arch: amd64
     mirror: http://deb.debian.org/debian
 {% endblock protocols %}
@@ -24,8 +24,14 @@ protocols:
       minutes: 15
     to: lxc
     packages:
-    - wget
-    - unzip
+    - cpio
+    - curl
+    - file
+    - git
+    - img2simg
+    - libguestfs-tools
+    - mkbootimg
+    - xz-utils
     os: debian
 
 - boot:
@@ -47,6 +53,50 @@ protocols:
       name: install-android-platform-tools-r2600
       parameters:
         LINK: 'https://dl.google.com/android/repository/platform-tools_r26.0.0-linux.zip'
+
+- deploy:
+    timeout:
+      minutes: 40
+    to: download
+    namespace: target
+    images:
+{%- if DEVICE_TYPE == "hi6220-hikey" %}
+      ptable:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/69/hikey/release/ptable-linux-8g.img
+{%- endif %}
+{%- if DEVICE_TYPE in ['hi6220-hikey', 'dragonboard-410c'] %}
+      boot:
+        url: {{BOOT_URL}}
+{%- endif %}
+      dtb:
+        url: {{DTB_URL}}
+      kernel:
+        url: {{KERNEL_URL}}
+      modules:
+        url: {{MODULES_URL}}
+      rootfs:
+        url: {{EXT4_IMAGE_URL}}
+        apply-overlay: true
+    os: oe
+- test:
+    namespace: tlxc
+    timeout:
+      minutes: 30
+    definitions:
+    - from: inline
+      name: resize-rootfs
+      path: inline/resize-rootfs.yaml
+      repository:
+        metadata:
+          description: resize rootfs image for test overlay
+          format: Lava-Test Test Definition 1.0
+          name: resize-rootfs
+        run:
+          steps:
+          - pwd
+          - cd /lava-lxc
+          - git clone -b 20191120 https://github.com/linaro/kir.git
+          - ./kir/lava/board_setup.sh {{DEVICE_TYPE}}
 
 {% block deploy_target %}
 {% endblock deploy_target %}
