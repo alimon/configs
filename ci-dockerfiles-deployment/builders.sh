@@ -8,7 +8,7 @@ echo "    Gerrit Environment"
 env |grep '^GERRIT'
 echo "########################################################################"
 
-rm -f ${WORKSPACE}/{log,config.json,version.txt}
+rm -f ${WORKSPACE}/log
 cd dockerfiles/
 
 git_previous_commit=$(git rev-parse HEAD~1)
