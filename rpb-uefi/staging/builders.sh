@@ -130,11 +130,11 @@ if [ "${MX_PLATFORM}" = "hikey" ]; then
       ${OPTEE_OS_DIR}/arm-plat-hikey/export-ta_arm64 ${OPTEE_OS_DIR}/arm-plat-hikey/export-ta_arm32
     wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
     dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
-    cp -a ${LOADER_DIR}/fip.bin ${LOADER_DIR}/l-loader.bin ${LOADER_DIR}/recovery.bin ${LOADER_DIR}/*ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
+    cp -L ${LOADER_DIR}/fip.bin ${LOADER_DIR}/l-loader.bin ${LOADER_DIR}/recovery.bin ${LOADER_DIR}/*ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
 fi
 
 if [ "${MX_PLATFORM}" = "hikey960" ]; then
-    cp -a ${LOADER_DIR}/fip.bin ${LOADER_DIR}/l-loader.bin ${LOADER_DIR}/recovery.bin ${LOADER_DIR}/*ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
+    cp -L ${LOADER_DIR}/fip.bin ${LOADER_DIR}/l-loader.bin ${LOADER_DIR}/recovery.bin ${LOADER_DIR}/*ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
     git clone --depth 1 https://github.com/96boards-hikey/tools-images-hikey960.git
     cd tools-images-hikey960
     cat > config << EOF
@@ -142,7 +142,7 @@ hisi-sec_usb_xloader.img 0x00020000
 hisi-sec_uce_boot.img 0x6A908000
 recovery.bin 0x1AC00000
 EOF
-    cp -a config hikey_idt hisi-sec_uce_boot.img hisi-sec_usb_xloader.img hisi-sec_xloader.img ${WORKSPACE}/out/${BUILD_TYPE}/
+    cp -L config hikey_idt hisi-sec_uce_boot.img hisi-sec_usb_xloader.img hisi-sec_xloader.img ${WORKSPACE}/out/${BUILD_TYPE}/
 fi
 
 cd ${WORKSPACE}
