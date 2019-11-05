@@ -127,7 +127,7 @@ if [ "${MX_PLATFORM}" = "hikey" ]; then
     # Ship files needed to build OP-TEE test suite
     tar -C ${OPTEE_OS_DIR}/out -acvf \
       ${WORKSPACE}/out/${BUILD_TYPE}/optee-arm-plat-hikey.tar.xz \
-      ${OPTEE_OS_DIR/out/arm-plat-hikey/export-ta_arm64 ${OPTEE_OS_DIR}/out/arm-plat-hikey/export-ta_arm32
+      arm-plat-hikey/export-ta_arm64 arm-plat-hikey/export-ta_arm32
     wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
     dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
     cp -L ${LOADER_DIR}/fip.bin ${LOADER_DIR}/l-loader.bin ${LOADER_DIR}/recovery.bin ${LOADER_DIR}/*ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
