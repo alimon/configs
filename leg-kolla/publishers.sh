@@ -5,7 +5,7 @@ set -ex
 # Publish logs
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python ${HOME}/bin/linaro-cp.py \
+time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
   ${WORKSPACE}/kolla/logs/debian-source \

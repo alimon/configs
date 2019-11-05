@@ -25,7 +25,7 @@ rm -f  ${WORKSPACE}/out-publish/tee-pageable_v2.bin
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python ${HOME}/bin/linaro-cp.py \
+time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
   ${WORKSPACE}/out-publish ${PUB_DEST}

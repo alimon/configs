@@ -20,7 +20,7 @@ find ${WORKSPACE}/build/tmp/deploy/images/qemuarm64 -type l -delete
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python ${HOME}/bin/linaro-cp.py \
+time python3 ${HOME}/bin/linaro-cp.py \
   --api_version 3 \
   --link-latest \
   ${WORKSPACE}/build/tmp/deploy/images/qemuarm64 openembedded/pre-built/luvos/${BRANCH}/${BUILD_NUMBER}

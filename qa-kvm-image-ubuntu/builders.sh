@@ -56,7 +56,7 @@ time pigz -9 out/${image_name}.img
 
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python ${HOME}/bin/linaro-cp.py \
+time python3 ${HOME}/bin/linaro-cp.py \
   --api_version 3 \
   --link-latest \
   out ubuntu/images/qa-kvm/${BUILD_NUMBER}

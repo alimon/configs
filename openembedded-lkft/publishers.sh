@@ -22,13 +22,13 @@ fi
 
 # Publish
 if [ -e "${WORKSPACE}/BUILD-INFO.txt" ]; then
-  time python ${HOME}/bin/linaro-cp.py \
+  time python3 ${HOME}/bin/linaro-cp.py \
     --server ${PUBLISH_SERVER} \
     --build-info ${WORKSPACE}/BUILD-INFO.txt \
     --link-latest \
     ${DEPLOY_DIR_IMAGE}/ ${PUB_DEST}
 else
-  time python ${HOME}/bin/linaro-cp.py \
+  time python3 ${HOME}/bin/linaro-cp.py \
     --server ${PUBLISH_SERVER} \
     --link-latest \
     ${DEPLOY_DIR_IMAGE}/ ${PUB_DEST}

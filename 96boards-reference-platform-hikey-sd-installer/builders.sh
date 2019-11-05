@@ -92,7 +92,7 @@ mv hikey-sd-install.img.gz out/hikey-sd-installer-${BUILD_NUMBER}.img.gz
 # Publish
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python ${HOME}/bin/linaro-cp.py \
+time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
   out/ 96boards/reference-platform/installer/hikey/${BUILD_NUMBER}/
