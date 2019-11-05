@@ -91,6 +91,8 @@ git clone $OPTEE_OS_GIT_URL optee_os
 cd optee_os; git checkout -b stable-baseline $OPTEE_GIT_VERSION;
 OPTEE_OS_GIT_VERSION=`git log --format="%H" -1`; cd ..
 
+git clone --depth 1 https://github.com/96boards-hikey/atf-fastboot.git
+
 # Build setup
 export EDK2_DIR=${WORKSPACE}/${BUILD_NUMBER}/edk2
 export OPP_DIR=${WORKSPACE}/${BUILD_NUMBER}/OpenPlatformPkg
@@ -105,8 +107,10 @@ cd ${EDK2_DIR}
 
 ln -sf ../OpenPlatformPkg
 
-
 export LOADER_DIR=${BUILD_PATH}/l-loader
+
+cd ${WORKSPACE}/${BUILD_NUMBER}
+git clone --depth 1 -b ${L_LOADER_GIT_BRANCH} ${L_LOADER_GIT_URL} l-loader
 cd $LOADER_DIR
 
 if [ "${BUILD_TYPE}" = "debug" ]; then
@@ -117,7 +121,6 @@ fi
 
 # Find out the artifacts and image dir so we can publish the correct output files
 IMAGES=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} images`
-IMAGE_DIR=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o UEFI_IMAGE_DIR get`
 BUILD_ATF=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o BUILD_ATF get`
 BUILD_TOS=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o BUILD_TOS get`
 
@@ -133,62 +136,6 @@ Format-Version: 0.5
 Files-Pattern: *
 License-Type: open
 EOF
-
-if [ "${MX_PLATFORM}" = "hikey" ]; then
-    # HiKey requires an ATF fork for the recovery mode
-    git clone --depth 1 https://github.com/96boards-hikey/atf-fastboot.git
-    DEBUG=0; [ "${BUILD_TYPE}" = "debug" ] && DEBUG=1
-    cd atf-fastboot; CROSS_COMPILE=aarch64-linux-gnu- make PLAT=${MX_PLATFORM} DEBUG=${DEBUG}; cd ..
-
-    # Additional components for hikey, such as fastboot and l-loader
-    cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
-    cd ${WORKSPACE}/${BUILD_NUMBER}
-    git clone --depth 1 -b ${L_LOADER_GIT_BRANCH} ${L_LOADER_GIT_URL} l-loader
-    cd l-loader
-    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/bl1.bin
-    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/bl2.bin
-    ln -s ${WORKSPACE}/atf-fastboot/build/${MX_PLATFORM}/${BUILD_TYPE}/bl1.bin fastboot.bin
-    make -f ${MX_PLATFORM}.mk recovery.bin
-    make -f ${MX_PLATFORM}.mk l-loader.bin
-    for ptable in aosp-4g aosp-8g linux-4g linux-8g; do
-        PTABLE=${ptable} SECTOR_SIZE=512 bash -x generate_ptable.sh
-        mv prm_ptable.img ptable-${ptable}.img
-    done
-    cp -a l-loader.bin recovery.bin ptable*.img ${WORKSPACE}/out/${BUILD_TYPE}
-    wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
-    # Ship nvme.img with UEFI binaries for convenience
-    dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
-
-    # Ship files needed to build OP-TEE test suite
-    tar -C ${OPTEE_OS_DIR}/out -acvf \
-      ${WORKSPACE}/out/${BUILD_TYPE}/optee-arm-plat-hikey.tar.xz \
-      arm-plat-hikey/export-ta_arm64 arm-plat-hikey/export-ta_arm32
-fi
-if [ "${MX_PLATFORM}" = "hikey960" ]; then
-    # Additional components for hikey960, such as fastboot and l-loader
-    cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/AARCH64/AndroidFastbootApp.efi out/${BUILD_TYPE}
-    cd ${WORKSPACE}/${BUILD_NUMBER}
-    git clone --depth 1 -b ${L_LOADER_GIT_BRANCH} ${L_LOADER_GIT_URL} l-loader
-    cd l-loader
-    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/bl1.bin
-    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/bl2.bin
-    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/fip.bin
-    ln -s ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/BL33_AP_UEFI.fd
-    make -f ${MX_PLATFORM}.mk recovery.bin
-    make -f ${MX_PLATFORM}.mk l-loader.bin
-    PTABLE=aosp-32g SECTOR_SIZE=4096 SGDISK=./sgdisk bash -x generate_ptable.sh
-    cp -a l-loader.bin recovery.bin prm_ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
-    cd ${WORKSPACE}/${BUILD_NUMBER}
-    git clone --depth 1 https://github.com/96boards-hikey/tools-images-hikey960.git
-    cd tools-images-hikey960
-    cat > config << EOF
-hisi-sec_usb_xloader.img 0x00020000
-hisi-sec_uce_boot.img 0x6A908000
-recovery.bin 0x1AC00000
-EOF
-    cp -a config hikey_idt hisi-sec_uce_boot.img hisi-sec_usb_xloader.img hisi-sec_xloader.img ${WORKSPACE}/out/${BUILD_TYPE}/
-fi
-cd ${WORKSPACE}
 
 # Create MD5SUMS file
 (cd out/${BUILD_TYPE} && md5sum * > MD5SUMS.txt)
