@@ -113,9 +113,9 @@ cd ${WORKSPACE}/${BUILD_NUMBER}
 git clone --depth 1 -b ${L_LOADER_GIT_BRANCH} ${L_LOADER_GIT_URL} l-loader
 cd $LOADER_DIR
 
+sed -i "s/#GENERATE_PTABLE=1/GENERATE_PTABLE=1/g" build_uefi.sh
 if [ "${BUILD_TYPE}" = "debug" ]; then
     sed -i "s/BUILD_OPTION=DEBUG/BUILD_OPTION=RELEASE/g" build_uefi.sh
-    sed -i "s/#GENERATE_PTABLE=1/GENERATE_PTABLE=1/g" build_uefi.sh
 fi
 
 ./build_uefi.sh  ${MX_PLATFORM}
