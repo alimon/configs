@@ -115,6 +115,7 @@ cd $LOADER_DIR
 
 if [ "${BUILD_TYPE}" = "debug" ]; then
     sed -i "s/BUILD_OPTION=DEBUG/BUILD_OPTION=RELEASE/g" build_uefi.sh
+    sed -i "s/#GENERATE_PTABLE=1/GENERATE_PTABLE=1/g" build_uefi.sh
 fi
 
 ./build_uefi.sh  ${MX_PLATFORM}
@@ -126,14 +127,14 @@ if [ "${MX_PLATFORM}" = "hikey" ]; then
     # Ship files needed to build OP-TEE test suite
     tar -C ${OPTEE_OS_DIR}/out -acvf \
       ${WORKSPACE}/out/${BUILD_TYPE}/optee-arm-plat-hikey.tar.xz \
-      arm-plat-hikey/export-ta_arm64 arm-plat-hikey/export-ta_arm32
+      ${OPTEE_OS_DIR}/arm-plat-hikey/export-ta_arm64 ${OPTEE_OS_DIR}/arm-plat-hikey/export-ta_arm32
     wget https://raw.githubusercontent.com/96boards/burn-boot/master/hisi-idt.py -O ${WORKSPACE}/out/${BUILD_TYPE}/hisi-idt.py
     dd if=/dev/zero of=${WORKSPACE}/out/${BUILD_TYPE}/nvme.img bs=128 count=1024
-    cp -a fip.bin l-loader.bin recovery.bin *ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
+    cp -a ${LOADER_DIR}/fip.bin ${LOADER_DIR}/l-loader.bin ${LOADER_DIR}/recovery.bin ${LOADER_DIR}/*ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
 fi
 
 if [ "${MX_PLATFORM}" = "hikey960" ]; then
-    cp -a fip.bin l-loader.bin recovery.bin *ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
+    cp -a ${LOADER_DIR}/fip.bin ${LOADER_DIR}/l-loader.bin ${LOADER_DIR}/recovery.bin ${LOADER_DIR}/*ptable.img ${WORKSPACE}/out/${BUILD_TYPE}
     git clone --depth 1 https://github.com/96boards-hikey/tools-images-hikey960.git
     cd tools-images-hikey960
     cat > config << EOF
