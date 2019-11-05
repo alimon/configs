@@ -119,16 +119,10 @@ fi
 
 ./build_uefi.sh  ${MX_PLATFORM}
 
-# Find out the artifacts and image dir so we can publish the correct output files
-IMAGES=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} images`
-BUILD_ATF=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o BUILD_ATF get`
-BUILD_TOS=`$UEFI_TOOLS_DIR/parse-platforms.py -c $UEFI_TOOLS_DIR/platforms.config -p ${MX_PLATFORM} -o BUILD_TOS get`
-
 cd ${WORKSPACE}
 mkdir -p out/${BUILD_TYPE}
-for image in ${IMAGES}; do
-    cp -a ${EDK2_DIR}/Build/${IMAGE_DIR}/${MX_TYPE}_*/FV/${image} out/${BUILD_TYPE}/
-done
+cp $(find . -iname *.bin) out/${BUILD_TYPE}/
+cp $(find . -iname *.img) out/${BUILD_TYPE}/
 
 cat > out/${BUILD_TYPE}/BUILD-INFO.txt << EOF
 Format-Version: 0.5
