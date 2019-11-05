@@ -142,6 +142,7 @@ hisi-sec_uce_boot.img 0x6A908000
 recovery.bin 0x1AC00000
 EOF
     cp -a config hikey_idt hisi-sec_uce_boot.img hisi-sec_usb_xloader.img hisi-sec_xloader.img ${WORKSPACE}/out/${BUILD_TYPE}/
+fi
 
 cd ${WORKSPACE}
 
