@@ -23,7 +23,7 @@ PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
 HOST_BIN=out/host/bin
 mkdir -p ${HOST_BIN}
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOST_BIN}/linaro-cp.py
-time python ${HOST_BIN}/linaro-cp.py \
+time python3 ${HOST_BIN}/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
   ${JOB_OUT_PUBLISH} ${PUB_DEST}
