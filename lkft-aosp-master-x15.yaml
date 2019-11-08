@@ -107,10 +107,7 @@
             export CONFIG=`base64 -w 0 config.txt`
 
             # Delete sources before build to save space
-            mv ${ANDROID_ROOT}/.repo ${DIR_SRV_AOSP_MASTER}/.repo-bak
             rm -fr ${ANDROID_ROOT} && mkdir -p ${ANDROID_ROOT}
-            mv ${DIR_SRV_AOSP_MASTER}/.repo-bak ${ANDROID_ROOT}/.repo
-            rm -fr ${ANDROID_ROOT}/.repo/manifests ${ANDROID_ROOT}/.repo/local_manifests
 
             # Build Android for X15
             build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
