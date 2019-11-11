@@ -99,19 +99,13 @@
               exit 1
             fi
 
-            cat << EOF > config.txt
-            BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
-            BUILD_CONFIG_BRANCH=master
-            EOF
-            echo config.txt
-            export CONFIG=`base64 -w 0 config.txt`
-
-            # Delete sources before build to save space
-            rm -fr ${ANDROID_ROOT} && mkdir -p ${ANDROID_ROOT}
-
             # Build Android for X15
-            build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-            cp -a /home/buildslave/srv/aosp-master/build/out/*.xml /home/buildslave/srv/aosp-master/build/out/*.json ${WORKSPACE}/ || true
+            cd ${ANDROID_ROOT}
+            rm -fr out
+            ${DIR_SRV_AOSP_MASTER}/build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME}
+            cd -
+            cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${ANDROID_ROOT}/out
+            cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${WORKSPACE}/ || true
 
             cd ${ANDROID_ROOT}/out
             [ -n "system.img" ] && X15_SYSTEM_IMG_SHA256SUM=$(sha256sum system.img | cut -d\  -f1)
