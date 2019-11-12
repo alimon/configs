@@ -18,7 +18,7 @@
     display-name: 'LKFT AOSP Master CTS/VTS builds'
     concurrent: true
     triggers:
-        - timed : '@daily'
+        - timed : 'H 0 * * *'
     wrappers:
         - timestamps
         - timeout:
@@ -66,52 +66,45 @@
             git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git build-configs
 
             ANDROID_ROOT="${DIR_SRV_AOSP_MASTER}/build"
-            mkdir -p ${ANDROID_ROOT}
+            DIR_PUB_SRC="${ANDROID_ROOT}/out"
 
-            # Delete sources before build to save space
-            cd ${ANDROID_ROOT}/
-            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ hikey-linaro/configs hikey-linaro-4.19
-            rm -rf .repo/manifests* .repo/local_manifests android-patchsets
-            rm -fr optee/optee_os
-            # delete this kernel repository as we have patches applied
-            rm -fr hikey-linaro
             # clean the out directory as this workspace is used accross multiple builds
-            rm -fr out
-            cd -
+            rm -fr ${DIR_SRV_AOSP_MASTER}/.repo-backup
+            if [ -d "${ANDROID_ROOT}/.repo" ]; then
+                mv -f ${ANDROID_ROOT}/.repo ${DIR_SRV_AOSP_MASTER}/.repo-backup
+            fi
+            rm -fr ${ANDROID_ROOT}/ && mkdir -p ${ANDROID_ROOT}
+            if [ -d "${DIR_SRV_AOSP_MASTER}/.repo-backup" ]; then
+                mv -f ${DIR_SRV_AOSP_MASTER}/.repo-backup ${ANDROID_ROOT}/.repo
+            fi
 
+            # build cts/vts under ${ANDROID_ROOT}
+            cd ${ANDROID_ROOT}
             for f_build_config in aosp-master-cts aosp-master-vts; do
                 export BUILD_CONFIG_FILENAME="${f_build_config}"
 
                 # Early test
-                if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+                if [ ! -f ${DIR_SRV_AOSP_MASTER}/build-configs/${BUILD_CONFIG_FILENAME} ]; then
                   echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
                   echo "in android-build-configs.git"
                   exit 1
                 fi
 
-                cat << __EOF__ > config.txt
-                BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
-                BUILD_CONFIG_BRANCH=master
-            __EOF__
-                echo config.txt
-                export CONFIG=`base64 -w 0 config.txt`
-
                 # Build Android CTS/VTS
-                build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-                cp -a build/out/*.xml build/out/*.json ${WORKSPACE}/ || true
+                ${DIR_SRV_AOSP_MASTER}/build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME}
 
-                [ -f build/out/host/linux-x86/vts/android-vts.zip ] && cp -fv build/out/host/linux-x86/vts/android-vts.zip build/out/
-                [ -f build/out/host/linux-x86/cts/android-cts.zip ] && cp -fv build/out/host/linux-x86/cts/android-cts.zip build/out/
+                [ -f ${DIR_PUB_SRC}/host/linux-x86/vts/android-vts.zip ] && mv -fv ${DIR_PUB_SRC}/host/linux-x86/vts/android-vts.zip ${DIR_PUB_SRC}/
+                [ -f ${DIR_PUB_SRC}/host/linux-x86/cts/android-cts.zip ] && mv -fv ${DIR_PUB_SRC}/host/linux-x86/cts/android-cts.zip ${DIR_PUB_SRC}/
             done
 
-            rm -rf build/out/host/
-            rm -rf build/out/BUILD-INFO.txt
-            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
+            rm -rf ${DIR_PUB_SRC}/host/
+            rm -rf ${DIR_PUB_SRC}/BUILD-INFO.txt
+            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${DIR_PUB_SRC}/BUILD-INFO.txt
 
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=android/lkft/lkft-aosp-master-cts-vts/${BUILD_NUMBER}
-            PUB_SRC=${ANDROID_ROOT}/out
+            PUB_SRC=${DIR_PUB_SRC}
             PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo|zip)$|MLO|vmlinux|System.map
             EOF
         - inject:

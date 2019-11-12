@@ -95,57 +95,56 @@
             git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git build-configs
 
             ANDROID_ROOT="${DIR_SRV_AOSP_MASTER}/build"
-            mkdir -p ${ANDROID_ROOT}
+            DIR_PUB_SRC="${ANDROID_ROOT}/out"
+            DIR_PUB_SRC_PRODUCT="${DIR_PUB_SRC}/target/product/hikey
+
+            # clean the out directory as this workspace is used accross multiple builds
+            rm -fr ${DIR_SRV_AOSP_MASTER}/.repo-backup
+            if [ -d "${ANDROID_ROOT}/.repo" ]; then
+                mv -f ${ANDROID_ROOT}/.repo ${DIR_SRV_AOSP_MASTER}/.repo-backup
+            fi
+            rm -fr ${ANDROID_ROOT}/ && mkdir -p ${ANDROID_ROOT}
+            if [ -d "${DIR_SRV_AOSP_MASTER}/.repo-backup" ]; then
+                mv -f ${DIR_SRV_AOSP_MASTER}/.repo-backup ${ANDROID_ROOT}/.repo
+            fi
 
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
 
             # Early test
-            if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+            if [ ! -f ${DIR_SRV_AOSP_MASTER}/build-configs/${BUILD_CONFIG_FILENAME} ]; then
               echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
               echo "in android-build-configs.git"
               exit 1
             fi
 
-            cat << EOF > config.txt
-            BUILD_CONFIG_REPO=http://android-git.linaro.org/git/android-build-configs.git
-            BUILD_CONFIG_BRANCH=master
-            TARGET_KERNEL_USE=4.19
-            EOF
-            echo config.txt
-            export CONFIG=`base64 -w 0 config.txt`
-
-            # Delete sources before build to save space
-            cd ${ANDROID_ROOT}/
-            rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* clang-src/ hikey-linaro/configs hikey-linaro-4.19
-            rm -rf .repo/manifests* .repo/local_manifests android-patchsets
-            rm -fr optee/optee_os
-            # delete this kernel repository as we have patches applied
-            rm -fr hikey-linaro
-            # clean the out directory as this workspace is used accross multiple builds
-            rm -fr out
+            # Build Android for HiKey
+            cd ${ANDROID_ROOT}
+            ${DIR_SRV_AOSP_MASTER}/build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME}
             cd -
 
-            # Build Android
-            build-tools/node/build us-east-1.ec2-git-mirror.linaro.org "${CONFIG}"
-            cp -a /home/buildslave/srv/aosp-master/build/out/*.xml /home/buildslave/srv/aosp-master/build/out/*.json ${WORKSPACE}/
+            cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${ANDROID_ROOT}/out
+            cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${WORKSPACE}/ || true
 
-            cd build/out
-            for image in "boot.img" "vendor.img" "boot_fat.uefi.img" "system.img" "userdata.img"  "cache.img"; do
-              if [ -f ${image} ]; then
-                echo "Compressing ${image}"
-                xz ${image}
-              fi
+
+            rm -rf ${DIR_PUB_SRC}/BUILD-INFO.txt
+            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${DIR_PUB_SRC}/BUILD-INFO.txt
+
+            IMAGE_FILES=""
+            IMAGE_FILES="${IMAGE_FILES} boot.img userdata.img system.img vendor.img ramdisk.img ramdisk-debug.img"
+
+            for f in ${IMAGE_FILES}; do
+                if [ -f ${DIR_PUB_SRC_PRODUCT}/${f} ]; then
+                    mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/${f}
+                    xz ${DIR_PUB_SRC}/${f}
+                fi
             done
-            [ -n "vendor.img.xz" ] && VENDOR_IMG_SHA256SUM=$(sha256sum vendor.img.xz | cut -d\  -f1)
-            [ -n "system.img.xz" ] && SYSTEM_IMG_SHA256SUM=$(sha256sum system.img.xz | cut -d\  -f1)
-            [ -n "userdata.img.xz" ] && USERDATA_IMG_SHA256SUM=$(sha256sum userdata.img.xz | cut -d\  -f1)
-            cd -
 
-            rm -rf build/out/BUILD-INFO.txt
-            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
+            [ -n "${DIR_PUB_SRC}/system.img.xz" ] && SYSTEM_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/system.img.xz | cut -d\  -f1)
+            [ -n "${DIR_PUB_SRC}/userdata.img.xz" ] && USERDATA_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/userdata.img.xz | cut -d\  -f1)
+            [ -n "${DIR_PUB_SRC}/vendor.img.xz" ] && VENDOR_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/vendor.img.xz | cut -d\  -f1)
 
             # Build latest boot.img with latest kernel from source for 4.14, 4.19 versions
-            cd build/
+            cd ${ANDROID_ROOT}
             export PATH=${PWD}/prebuilts/clang/host/linux-x86/${TOOLCHAIN}/bin/:${PWD}/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9/bin/:${PATH}
 
             export CLANG_TRIPLE=aarch64-linux-gnu-
@@ -178,15 +177,15 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
                --kernel arch/arm64/boot/Image.gz-dtb \
-               --ramdisk ../out/ramdisk.img \
+               --ramdisk ${DIR_PUB_SRC}/ramdisk.img \
                --cmdline "${CMDLINE}" \
                --os_version Q \
                --os_patch_level 2019-01-05 \
-               --output ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
-            cp vmlinux ../out/4.19_vmlinux
-            cp .config ../out/4.19_defconfig
-            xz ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
-            BOOT_4_19_IMG_SHA256SUM=$(sha256sum ../out/boot-4.19-${KERNEL_DESCRIBE_4_19}.img.xz | cut -d\  -f1)
+               --output ${DIR_PUB_SRC}/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
+            cp vmlinux ${DIR_PUB_SRC}/4.19_vmlinux
+            cp .config ${DIR_PUB_SRC}/4.19_defconfig
+            xz ${DIR_PUB_SRC}/boot-4.19-${KERNEL_DESCRIBE_4_19}.img
+            BOOT_4_19_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/boot-4.19-${KERNEL_DESCRIBE_4_19}.img.xz | cut -d\  -f1)
 
             # Build 4.14 kernel
             git checkout android-hikey-linaro-4.14
@@ -198,24 +197,23 @@
             make ARCH=arm64 CC=clang HOSTCC=clang -j$(nproc) -s Image.gz-dtb
             python mkbootimg \
               --kernel arch/arm64/boot/Image.gz-dtb \
-              --ramdisk ../out/ramdisk.img \
+              --ramdisk ${DIR_PUB_SRC}/ramdisk.img \
               --cmdline "${CMDLINE}" \
               --os_version Q \
               --os_patch_level 2019-01-05 \
-              --output ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
-            cp vmlinux ../out/4.14_vmlinux
-            cp .config ../out/4.14_defconfig
-            xz ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
-            BOOT_4_14_IMG_SHA256SUM=$(sha256sum ../out/boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz | cut -d\  -f1)
+              --output ${DIR_PUB_SRC}/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
+            cp vmlinux ${DIR_PUB_SRC}/4.14_vmlinux
+            cp .config ${DIR_PUB_SRC}/4.14_defconfig
+            xz ${DIR_PUB_SRC}/boot-4.14-${KERNEL_DESCRIBE_4_14}.img
+            BOOT_4_14_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/boot-4.14-${KERNEL_DESCRIBE_4_14}.img.xz | cut -d\  -f1)
 
-            rm -rf configs
             cd ../
             rm -fr hikey-linaro
 
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=android/lkft/lkft-aosp-master/${BUILD_NUMBER}
-            PUB_SRC=${PWD}/out
+            PUB_SRC=${DIR_PUB_SRC}
             PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo|zip)$|MLO|vmlinux|System.map
 
             KERNEL_DESCRIBE_4_19=${KERNEL_DESCRIBE_4_19}

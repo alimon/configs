@@ -42,7 +42,7 @@
     wrappers:
         - timestamps
         - timeout:
-            timeout: 1000
+            timeout: 900
         - credentials-binding:
             - text:
                 credential-id: QA_REPORTS_TOKEN
@@ -89,11 +89,23 @@
             git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git build-configs
 
             ANDROID_ROOT="${DIR_SRV_AOSP_MASTER}/build"
+            DIR_PUB_SRC="${ANDROID_ROOT}/out"
+            DIR_PUB_SRC_PRODUCT="${DIR_PUB_SRC}/target/product/beagle_x15
+
+            # clean the out directory as this workspace is used accross multiple builds
+            rm -fr ${DIR_SRV_AOSP_MASTER}/.repo-backup
+            if [ -d "${ANDROID_ROOT}/.repo" ]; then
+                mv -f ${ANDROID_ROOT}/.repo ${DIR_SRV_AOSP_MASTER}/.repo-backup
+            fi
+            rm -fr ${ANDROID_ROOT}/ && mkdir -p ${ANDROID_ROOT}
+            if [ -d "${DIR_SRV_AOSP_MASTER}/.repo-backup" ]; then
+                mv -f ${DIR_SRV_AOSP_MASTER}/.repo-backup ${ANDROID_ROOT}/.repo
+            fi
 
             export BUILD_CONFIG_FILENAME=${BUILD_CONFIG_FILENAME:-${JOB_NAME#android-*}}
 
             # Early test
-            if [ ! -f build-configs/${BUILD_CONFIG_FILENAME} ]; then
+            if [ ! -f ${DIR_SRV_AOSP_MASTER}/build-configs/${BUILD_CONFIG_FILENAME} ]; then
               echo "No config file named ${BUILD_CONFIG_FILENAME} exists"
               echo "in android-build-configs.git"
               exit 1
@@ -101,38 +113,29 @@
 
             # Build Android for X15
             cd ${ANDROID_ROOT}
-            rm -fr out
             ${DIR_SRV_AOSP_MASTER}/build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME}
             cd -
+
             cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${ANDROID_ROOT}/out
             cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${WORKSPACE}/ || true
 
-            cd ${ANDROID_ROOT}/out
-            [ -n "system.img" ] && X15_SYSTEM_IMG_SHA256SUM=$(sha256sum system.img | cut -d\  -f1)
-            [ -n "userdata.img" ] && X15_USERDATA_IMG_SHA256SUM=$(sha256sum userdata.img | cut -d\  -f1)
-            cd -
 
-            rm -rf build/out/BUILD-INFO.txt
-            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O build/out/BUILD-INFO.txt
+            rm -rf ${DIR_PUB_SRC}/BUILD-INFO.txt
+            wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${DIR_PUB_SRC}/BUILD-INFO.txt
 
-            cd ${ANDROID_ROOT}
-            X15_IMAGE_FILE="
-            MLO
-            u-boot.img
-            boot_fit.img
-            userdata.img
-            system.img
-            vendor.img
-            recovery.img
-            ramdisk.img
-            ramdisk-debug.img
-            "
-            for f in ${X15_IMAGE_FILE}; do
-                if [ -f out/target/product/beagle_x15/${f} ]; then
-                    cp -vf out/target/product/beagle_x15/${f} out/${f}
+            IMAGE_FILES=""
+            IMAGE_FILES="${IMAGE_FILES} MLO u-boot.img"
+            IMAGE_FILES="${IMAGE_FILES} boot_fit.img"
+            IMAGE_FILES="${IMAGE_FILES} boot.img userdata.img system.img vendor.img ramdisk.img ramdisk-debug.img"
+
+            for f in ${IMAGE_FILES}; do
+                if [ -f ${DIR_PUB_SRC_PRODUCT}/${f} ]; then
+                    mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/${f}
                 fi
             done
-            cd -
+
+            [ -n "${DIR_PUB_SRC}/system.img" ] && X15_SYSTEM_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/system.img | cut -d\  -f1)
+            [ -n "${DIR_PUB_SRC}/userdata.img" ] && X15_USERDATA_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/userdata.img | cut -d\  -f1)
 
             cd ${ANDROID_ROOT}
             # build kernel for x15
@@ -154,13 +157,11 @@
             lunch beagle_x15-userdebug
             KERNELDIR=${X15_KERNEL_DIR} make -j$(nproc)
 
-            mv out/boot_fit.img out/boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
-            mv out/vendor.img out/vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
+            mv ${DIR_PUB_SRC_PRODUCT}/boot_fit.img ${DIR_PUB_SRC}/boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
+            mv ${DIR_PUB_SRC_PRODUCT}/vendor.img ${DIR_PUB_SRC}/vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img
 
-            cd out/
-            [ -n "boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img" ] && X15_BOOT_FIT_4_14_IMG_SHA256SUM=$(sha256sum boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img | cut -d\  -f1)
-            [ -n "vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img" ] && X15_VENDOR_4_14_IMG_SHA256SUM=$(sha256sum vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img | cut -d\  -f1)
-            cd -
+            [ -n "${DIR_PUB_SRC}/boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img" ] && X15_BOOT_FIT_4_14_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/boot_fit-4.14-${KERNEL_DESCRIBE_X15_4_14}.img | cut -d\  -f1)
+            [ -n "${DIR_PUB_SRC}/vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img" ] && X15_VENDOR_4_14_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/vendor-4.14-${KERNEL_DESCRIBE_X15_4_14}.img | cut -d\  -f1)
 
             #######################################
             # compile x15 4.19 kernel
@@ -184,22 +185,11 @@
             # only need to re-create the boot_fit.img and vendor.img for 4.19 here
             KERNELDIR=${X15_KERNEL_DIR}  make -j$(nproc) bootfitimage vendorimage
 
-            X15_IMAGE_FILE="
-            boot_fit.img
-            vendor.img
-            "
-            for f in ${X15_IMAGE_FILE}; do
-                if [ -f out/target/product/beagle_x15/${f} ]; then
-                    cp -vf out/target/product/beagle_x15/${f} out/${f}
-                fi
-            done
-            mv out/boot_fit.img out/boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img
-            mv out/vendor.img out/vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img
+            mv ${DIR_PUB_SRC_PRODUCT}/boot_fit.img ${DIR_PUB_SRC}/boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img
+            mv ${DIR_PUB_SRC_PRODUCT}/out/vendor.img ${DIR_PUB_SRC}/vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img
 
-            cd out/
-            [ -n "vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img" ] && X15_VENDOR_4_19_IMG_SHA256SUM=$(sha256sum vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img | cut -d\  -f1)
-            [ -n "boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img" ] && X15_BOOT_FIT_4_19_IMG_SHA256SUM=$(sha256sum boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img | cut -d\  -f1)
-            cd -
+            [ -n "${DIR_PUB_SRC}/vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img" ] && X15_VENDOR_4_19_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/vendor-4.19-${KERNEL_DESCRIBE_X15_4_19}.img | cut -d\  -f1)
+            [ -n "${DIR_PUB_SRC}/boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img" ] && X15_BOOT_FIT_4_19_IMG_SHA256SUM=$(sha256sum ${DIR_PUB_SRC}/boot_fit-4.19-${KERNEL_DESCRIBE_X15_4_19}.img | cut -d\  -f1)
 
             # Delete sources after build to save space
             rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
@@ -208,7 +198,7 @@
             # Publish parameters
             cat << EOF > ${WORKSPACE}/publish_parameters
             PUB_DEST=android/lkft/lkft-aosp-master-x15/${BUILD_NUMBER}
-            PUB_SRC=${PWD}/out
+            PUB_SRC=${DIR_PUB_SRC}
             PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo|zip)$|MLO|vmlinux|System.map
 
             KERNEL_DESCRIBE_X15_4_14=${KERNEL_DESCRIBE_X15_4_14}
