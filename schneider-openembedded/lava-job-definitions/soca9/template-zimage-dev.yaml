@@ -114,6 +114,33 @@ actions:
             - ifconfig -a
       name: ifconfig-test
       path: inline/ifconfig-test.yaml
+
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: ping-github
+          description: Ping public GitHub webserver
+        run:
+          steps:
+          - ping -c 3 github.com
+      name: ping-github
+      path: inline/ping-github.yaml
+
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: resolved-test
+          description: resolved test
+        run:
+          steps:
+          - systemctl --no-pager status systemd-resolved
+          - systemctl --no-pager restart systemd-resolved
+          - systemctl --no-pager status systemd-resolved
+      name: resolved-test
+      path: inline/resolved-test.yaml
+
     - from: inline
       repository:
         metadata:
@@ -147,6 +174,60 @@ actions:
       branch: master
       parameters:
         SKIP_INSTALL: True
+
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: yepkit-test
+          description: yepkit test
+        run:
+          steps:
+          - git clone https://github.com/Yepkit/ykush
+          - cd ykush
+          - make
+          - bin/ykushcmd
+          - bin/ykushcmd -d a
+          - sleep 3
+          - bin/ykushcmd -u 1
+          - sleep 3
+          - bin/ykushcmd -u 2
+          - sleep 3
+          - bin/ykushcmd -u 3
+          - sleep 3
+          - bin/ykushcmd -d a
+          - sleep 3
+      name: yepkit-test
+      path: inline/yepkit-test.yaml
+
+    - path: automated/linux/uart-loopback/uart-loopback.yaml
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: uart-loopback
+      history: false
+      from: git
+      parameters:
+        SKIP_INSTALL: 'true'
+        UART0: /dev/ttyUSB0
+        UART1: /dev/ttyS1
+        YKUSHPORT: 1
+      name: uart-loopback-forward
+      timeout:
+        minutes: 120
+
+    - path: automated/linux/uart-loopback/uart-loopback.yaml
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: uart-loopback
+      history: false
+      from: git
+      parameters:
+        SKIP_INSTALL: 'true'
+        UART0: /dev/ttyS1
+        UART1: /dev/ttyUSB0
+        YKUSHPORT: 1
+      name: uart-loopback-reverse
+      timeout:
+        minutes: 120
+
 
 metadata:
   machine: ${MACHINE}
