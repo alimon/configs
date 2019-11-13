@@ -32,8 +32,8 @@ actions:
     prompts:
     - "root@snarc-soca9:"
     transfer_overlay:
-      download_command: udhcpc -i eth1; cd /tmp ; wget
-      unpack_command: tar -C / -xzf
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; cd /tmp ; wget
+      unpack_command: tar --touch -C / -xzf
 - test:
     timeout:
       minutes: 600
