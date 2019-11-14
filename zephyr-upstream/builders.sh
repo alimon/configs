@@ -40,14 +40,30 @@ echo "GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)" > ${WORKSPACE}/env_var_para
 
 head -5 Makefile
 
-# Toolchains are pre-installed and come from:
-# https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
+# Zephyr SDK is pre-installed and comes from:
 # https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.3/zephyr-sdk-0.10.3-setup.run
-# To install Zephyr SDK: ./zephyr-sdk-0.10.3-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.10.3"
-
-export GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-7-2018-q2-update"
-# We building with the gnuarmemb toolchain, we need ZEPHYR_SDK_INSTALL_DIR to find things like conf
+# To install: ./zephyr-sdk-0.10.3-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.10.3"
+# Note that Zephyr SDK is needed even when building with the gnuarmemb
+# toolchain, ZEPHYR_SDK_INSTALL_DIR is needed to find things like conf
 export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.10.3"
+
+# GNU ARM Embedded is downloaded once (per release) and cached in a persistent
+# docker volume under ${HOME}/srv/toolchain/.
+GNUARMEMB_TOOLCHAIN_URL="https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2"
+export GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-9-2019-q4-major"
+
+install_arm_toolchain()
+{
+    test -d ${GNUARMEMB_TOOLCHAIN_PATH} && return 0
+    wget "${GNUARMEMB_TOOLCHAIN_URL}"
+    top=$(dirname ${GNUARMEMB_TOOLCHAIN_PATH})
+    rm -rf ${top}/_tmp
+    mkdir -p ${top}/_tmp
+    tar -C ${top}/_tmp -xaf $(basename ${GNUARMEMB_TOOLCHAIN_URL})
+    mv ${top}/_tmp/$(basename ${GNUARMEMB_TOOLCHAIN_PATH}) ${top}
+}
+
+install_arm_toolchain
 
 # Set build environment variables
 export LANG=C.UTF-8
