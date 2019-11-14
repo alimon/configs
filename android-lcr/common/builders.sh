@@ -27,6 +27,13 @@ if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
 fi
 cd /home/buildslave/srv/${BUILD_DIR}
 
+# clean the out directory as this workspace is used accross multiple builds
+rm -fr .repo-backup
+[ -d "build/.repo" ] && mv -f build/.repo .repo-backup
+rm -fr build/ && mkdir -p build/
+[ -d "build/.repo-backup" ] && mv -f .repo-backup build/.repo
+[ -d "build/.repo/local_manifests" ] && rm -fr build/.repo/local_manifests
+
 # Download helper scripts (repo)
 mkdir -p ${HOME}/bin
 curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
