@@ -67,10 +67,16 @@
 
             exit_code=0
             # check for health check errors
-            if ! (grep invalid); then exit_code=1; fi
+            if (grep invalid selfcheck.log); then
+                exit_code=1
+                echo "Health checks failed"
+            fi
 
             # check for device dict errors
-            if (grep -v environment selfcheck.log | grep ERROR); then exit_code=1; fi
+            if (grep -v environment selfcheck.log | grep ERROR); then
+                exit_code=1
+                echo "Device dicts failed"
+            fi
             exit ${exit_code}
         - build-name-setter:
             name: 'version.txt'
