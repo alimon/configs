@@ -13,6 +13,17 @@
     disabled: false
     node: build
     display-name: 'LAVA lab sanity check'
+    scm:
+        - git:
+            url: https://review.linaro.org/${GERRIT_PROJECT}
+            refspec: ${GERRIT_REFSPEC}
+            branches:
+                - ${GERRIT_BRANCH}
+            skip-tag: true
+            clean:
+                before: true
+            choosing-strategy: gerrit
+            basedir: lava-lab
     triggers:
         - gerrit:
             server-name: 'review.linaro.org'
@@ -34,27 +45,33 @@
         - timestamps
     builders:
         - shell: |
+            #!/bin/bash -e
+            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
+        - shell: |
             #!/bin/bash
 
-            rm -rf ${WORKSPACE}/*
-            echo "#${BUILD_NUMBER}-${GERRIT_PATCHSET_REVISION:0:8}" > ${WORKSPACE}/version.txt
-
-            git clone -b ${GERRIT_BRANCH} --depth 3 https://git.linaro.org/${GERRIT_PROJECT}
-            cd `basename ${GERRIT_PROJECT}`
-            git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
-            git checkout -q FETCH_HEAD
-
-            # run check-devices.py
             set -e
-            git clone --depth 1 https://git.lavasoftware.org/lava/lava.git ${WORKSPACE}/lava
-            RUNS=`find . -name devices -type d | xargs dirname`
-            for RUN in ${RUNS}; do
-                # skips staging - check that manually.
-                echo "Checking ${RUN}"
-                if [ -d ${RUN}/device-types ]; then
-                    ${WORKSPACE}/lava/share/check-devices.py  --device-types ${RUN}/device-types --devices ${RUN}/devices
-                fi
-            done
+
+            rm selfcheck.log | true
+            echo ""
+            echo "########################################################################"
+            echo "    Gerrit Environment"
+            env |grep '^GERRIT'
+            echo "########################################################################"
+
+            cd lava-lab/
+            ./test-all.sh | tee selfcheck.log
+
+            exit_code=0
+            # check for health check errors
+            if ! (grep invalid); then exit_code=1; fi
+
+            # check for device dict errors
+            if (grep -v environment selfcheck.log | grep ERROR); then exit_code=1; fi
+            exit ${exit_code}
         - build-name-setter:
             name: 'version.txt'
             file: true
