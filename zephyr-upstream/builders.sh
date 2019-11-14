@@ -57,10 +57,10 @@ install_arm_toolchain()
     test -d ${GNUARMEMB_TOOLCHAIN_PATH} && return 0
     wget "${GNUARMEMB_TOOLCHAIN_URL}"
     top=$(dirname ${GNUARMEMB_TOOLCHAIN_PATH})
-    rm -rf ${top}/_tmp
-    mkdir -p ${top}/_tmp
-    tar -C ${top}/_tmp -xaf $(basename ${GNUARMEMB_TOOLCHAIN_URL})
-    mv ${top}/_tmp/$(basename ${GNUARMEMB_TOOLCHAIN_PATH}) ${top}
+    rm -rf ${top}/_tmp.$$
+    mkdir -p ${top}/_tmp.$$
+    tar -C ${top}/_tmp.$$ -xaf $(basename ${GNUARMEMB_TOOLCHAIN_URL})
+    mv ${top}/_tmp.$$/$(basename ${GNUARMEMB_TOOLCHAIN_PATH}) ${top}
 }
 
 install_arm_toolchain
