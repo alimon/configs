@@ -27,6 +27,6 @@ rake version:update
 APT_TARGETS=debian-buster rake apt:build
 
 mkdir -p ${WORKSPACE}/out
-cp -a apt/repositories/* ${WORKSPACE}/out/
+cp -a apache-arrow/apt/repositories/* ${WORKSPACE}/out/
 echo "DEPLOY_DIR_IMAGE=${WORKSPACE}/out" >  ${WORKSPACE}/publish_parameters
 echo "PUB_DEST=reference-platform/components/bigdata/apache-arrow/${BUILD_NUMBER}" >>  ${WORKSPACE}/publish_parameters
