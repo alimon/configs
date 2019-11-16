@@ -1,0 +1,48 @@
+{% extends "template-lkft.yaml" %}
+
+{% block device_type %}dragonboard-845c{% endblock %}
+
+{% block secrets %}
+  {{ super() }}
+  AP_SSID: "{{AP_SSID}}"
+  AP_KEY: "{{AP_KEY}}"
+{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    namespace: target
+    connection: lxc
+    images:
+      "partition:0":
+        url: "https://images.validation.linaro.org/snapshots.linaro.org/96boards/dragonboard845c/linaro/rescue/28/dragonboard-845c-bootloader-ufs-aosp-28/gpt_both0.bin"
+      boot:
+        url: {{DOWNLOAD_URL}}/boot.img
+      userdata:
+        url: {{REFERENCE_BUILD_URL}}/userdata.img
+      super:
+        url: {{REFERENCE_BUILD_URL}}/supera.img.xz
+        compression: xz
+    protocols:
+      lava-lxc:
+      - action: fastboot-deploy
+        request: pre-power-command
+        timeout:
+          minutes: 2
+{% endblock deploy_target %}
+
+{% block boot_target %}
+- boot:
+    namespace: target
+    prompts:
+    - 'root@(.*):/#'
+    - 'console:/'
+    timeout:
+      minutes: 15
+    method: fastboot
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}
