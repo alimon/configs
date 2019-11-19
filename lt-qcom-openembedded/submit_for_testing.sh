@@ -23,7 +23,7 @@ export LXC_BOOT_FILE=$(basename ${BOOT_URL})
 export LAVA_JOB_PRIORITY="medium"
 
 case "${MACHINE}" in
-  dragonboard-410c|dragonboard-820c)
+  dragonboard-410c|dragonboard-820c|dragonboard-845c)
     export DEVICE_TYPE="${MACHINE}"
 
     # Tests settings, thermal fails in db410c
@@ -48,6 +48,15 @@ case "${MACHINE}" in
       export PIGLIT_IGNORE_TESTS_FILE="qa/piglit/db820c.ignore"
 
       export BOOT_OS_PROMPT=\'root@dragonboard-820c:~#\'
+    elif [ ${DEVICE_TYPE} = "dragonboard-845c" ]; then
+      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
+      export WLAN_DEVICE="wlan0"
+      export WLAN_TIME_DELAY="0s"
+      export ETH_DEVICE="eth0"
+      export GST_IGNORE_TESTS_FILE="qa/gst-validate/db410c.ignore"
+      export PIGLIT_IGNORE_TESTS_FILE="qa/piglit/db410c.ignore"
+
+      export BOOT_OS_PROMPT=\'root@dragonboard-845c:~#\'
     fi
     export SMOKE_TESTS="pwd, uname -a, ip a, vmstat, lsblk"
     export PTEST_EXCLUDE="bluez5 libxml2 parted python strace"
