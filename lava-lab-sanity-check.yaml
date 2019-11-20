@@ -56,7 +56,7 @@
 
             set -e
 
-            rm selfcheck.log | true
+            rm ${WORKSPACE}/selfcheck.log | true
             echo ""
             echo "########################################################################"
             echo "    Gerrit Environment"
@@ -64,17 +64,17 @@
             echo "########################################################################"
 
             cd lava-lab/
-            ./test-all.sh | tee selfcheck.log
+            ./test-all.sh | tee ${WORKSPACE}/selfcheck.log
 
             exit_code=0
             # check for health check errors
-            if (grep invalid selfcheck.log); then
+            if (grep invalid ${WORKSPACE}/selfcheck.log); then
                 exit_code=1
                 echo "Health checks failed"
             fi
 
             # check for device dict errors
-            if (grep -v environment selfcheck.log | grep ERROR); then
+            if (grep -v environment ${WORKSPACE}/selfcheck.log | grep ERROR); then
                 exit_code=1
                 echo "Device dicts failed"
             fi
