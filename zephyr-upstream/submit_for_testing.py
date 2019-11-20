@@ -6,6 +6,7 @@ import fnmatch
 import yaml
 import shutil
 from string import Template
+import xmlrpc.client as xmlrpclib
 
 try:
     from urllib.parse import urlsplit
@@ -144,11 +145,11 @@ def main():
     parser.add_argument("--qa-server-team",
                         help="Team in QA Reports service",
                         dest="qa_server_team",
-                        required=True)
+                        default=None)
     parser.add_argument("--qa-server-project",
                         help="Project in QA Reports service",
                         dest="qa_server_project",
-                        required=True)
+                        default=None)
     parser.add_argument("--qa-server",
                         help="QA Reports server",
                         dest="qa_server",
@@ -157,6 +158,11 @@ def main():
                         help="QA Reports token",
                         dest="qa_token",
                         default=os.environ.get('QA_REPORTS_TOKEN'))
+    parser.add_argument("--direct-to-lava",
+                        action='store_true',
+                        help="submit to LAVA without using QA server",
+                        dest="direct_lava",
+                        default=False)
     parser.add_argument("--lava-server",
                         help="LAVA server URL",
                         dest="lava_server",
@@ -173,7 +179,14 @@ def main():
                         help="Jenkins build url",
                         dest="build_url",
                         required=True)
-
+    parser.add_argument("--lava-token",
+                        help="LAVA API token. Only necessary when directly using LAVA server instead of QA server",
+                        dest="lava_token",
+                        default=None)
+    parser.add_argument("--lava-user",
+                        help="LAVA user. Only necessary when directly using LAVA server instead of QA server",
+                        dest="lava_user",
+                        default=None)
     args = parser.parse_args()
 
     template_file_name = "%s/%s/template.yaml" % (template_base_path, args.device_type)
@@ -186,29 +199,43 @@ def main():
         print("{} not found!".format(template_file_name))
         sys.exit(1)
 
-    qa_server_base = args.qa_server
-    if not (qa_server_base.startswith("http://") or qa_server_base.startswith("https://")):
-        qa_server_base = "https://" + qa_server_base
-    qa_server_team = args.qa_server_team
-    qa_server_project = args.qa_server_project
-    qa_server_build = args.git_commit
-    qa_server_env = '{0}-{1}'.format(args.board_name, args.gcc_variant)
-    qa_server_api = "%s/api/submitjob/%s/%s/%s/%s" % (
-        qa_server_base,
-        qa_server_team,
-        qa_server_project,
-        qa_server_build,
-        qa_server_env)
     lava_server = args.lava_server
     if not (lava_server.startswith("http://") or lava_server.startswith("https://")):
         lava_server = "https://" + lava_server
-    lava_url_base = "%s://%s/" % (urlsplit(lava_server).scheme, urlsplit(lava_server).netloc)
+    if args.direct_lava:
+        lava_server_base = urlsplit(lava_server).netloc + urlsplit(lava_server).path
+        lava_user = args.lava_user
+        if lava_user is None:
+            print("Must provide a LAVA user when using LAVA server.")
+            sys.exit(1)
+        lava_token = args.lava_token
+        if lava_token is None:
+            print("Must provide a LAVA token when using LAVA server.")
+            sys.exit(1)
+    else:
+        qa_server_base = args.qa_server
+        if not (qa_server_base.startswith("http://") or qa_server_base.startswith("https://")):
+            qa_server_base = "https://" + qa_server_base
+        qa_server_team = args.qa_server_team
+        if qa_server_team is None:
+            print("Must provide QA server team when using a QA server.")
+            sys.exit(1)
+        qa_server_project = args.qa_server_project
+        qa_server_build = args.git_commit
+        qa_server_env = '{0}-{1}'.format(args.board_name, args.gcc_variant)
+        qa_server_api = "%s/api/submitjob/%s/%s/%s/%s" % (
+            qa_server_base,
+            qa_server_team,
+            qa_server_project,
+            qa_server_build,
+            qa_server_env)
+        lava_url_base = "%s://%s/" % (urlsplit(lava_server).scheme, urlsplit(lava_server).netloc)
+        headers = {
+            "Auth-Token": args.qa_token
+        }
+
     test_url_prefix = "%s/%s/%s/%s/%s/" % (
         snapshots_url, args.branch_name, args.gcc_variant, args.board_name, args.build_number)
-
-    headers = {
-        "Auth-Token": args.qa_token
-    }
     os.chdir(os.getenv('WORKSPACE'))
     print('CWD: {}'.format(os.getcwd()))
     print(os.listdir('.'))
@@ -227,23 +254,39 @@ def main():
         template = Template(test_template)
         lava_job = template.substitute(replace_dict)
         print(lava_job)
-        try:
-            data = {
-                "definition": lava_job,
-                "backend": urlsplit(lava_url_base).netloc  # qa-reports backends are named as lava instances
-            }
-            results = requests.post(qa_server_api, data=data, headers=headers)
-            if results.status_code < 300:
-                print("%s/testjob/%s" % (qa_server_base, results.text))
-            else:
-                print(results.status_code)
-                print(results.text)
-        except requests.exceptions.RequestException as err:  # nopep8
-            print("QA Reports submission failed")
-            print("offending job definition:")
-            print(lava_job)
-            print("Error code: %d" % err.errcode)
-            print("Error message: %s" % err.errmsg)
+        if args.direct_lava:
+            try:
+                server = xmlrpclib.ServerProxy("%s://%s:%s@%s" % (urlsplit(lava_server).scheme, lava_user, lava_token, lava_server_base))
+                job_id = server.scheduler.submit_job(lava_job)
+                print("%s/scheduler/job/%d" % (lava_server, job_id))
+            except xmlrpclib.ProtocolError as err:
+                print("A protocol error occurred")
+                print("URL: %s" % err.url)
+                print("HTTP/HTTPS headers: %s" % err.headers)
+                print("Error code: %d" % err.errcode)
+                print("Error message: %s" % err.errmsg)
+            except xmlrpclib.Fault as err:
+                print("A fault occurred")
+                print("Fault code: %d" % err.faultCode)
+                print("Fault string: %s" % err.faultString)
+        else:
+            try:
+                data = {
+                    "definition": lava_job,
+                    "backend": urlsplit(lava_url_base).netloc  # qa-reports backends are named as lava instances
+                }
+                results = requests.post(qa_server_api, data=data, headers=headers)
+                if results.status_code < 300:
+                    print("%s/testjob/%s" % (qa_server_base, results.text))
+                else:
+                    print("status code: %s" % results.status_code)
+                    print(results.text)
+            except requests.exceptions.RequestException as err:  # nopep8
+                print("QA Reports submission failed")
+                print("offending job definition:")
+                print(lava_job)
+                print("Error code: %d" % err.errcode)
+                print("Error message: %s" % err.errmsg)
 
 
 if __name__ == "__main__":
