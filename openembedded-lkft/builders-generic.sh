@@ -322,6 +322,7 @@ fi
 
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | sort | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
+MODULES_TGZ=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*modules-*-${MACHINE}-*-${BUILD_NUMBER}.tgz" | xargs -r basename)
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lkft-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
 ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lkft-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-lkft-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
@@ -368,6 +369,7 @@ BASE_URL=${BASE_URL}
 BOOT_URL=${BASE_URL}/${PUB_DEST}/${BOOT_IMG}
 SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 KERNEL_URL=${BASE_URL}/${PUB_DEST}/${KERNEL_IMG}
+MODULES_URL=${BASE_URL}/${PUB_DEST}/${MODULES_TGZ}
 DTB_URL=${BASE_URL}/${PUB_DEST}/${DTB_IMG}
 RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/juno-oe-uboot.zip
 NFSROOTFS_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_TARXZ_IMG}
