@@ -267,11 +267,18 @@ case "${MACHINE}" in
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_EDGE_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
+    WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-${MACHINE}*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-${MACHINE}*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_EDGE_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-${MACHINE}*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    UBI_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-${MACHINE}*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
+    UBI_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-${MACHINE}*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
+    UBI_EDGE_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-${MACHINE}*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*${MACHINE}*bestla*.dtb" | xargs -r basename)
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*rzn1*.bin" | xargs -r basename)
     KERNEL_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "fitImage*.itb" | xargs -r basename)
     UBOOT_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ubootfitImage*.itb" | xargs -r basename)
     OPTEE_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "optee-os*.itb" | xargs -r basename)
+    FSBL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rzn1d-snarc-fsbl-fip.spkg" | xargs -r basename)
     ;;
   soca9)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
@@ -298,11 +305,16 @@ ROOTFS_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_IMG}
 ROOTFS_DESKTOP_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DESKTOP_IMG}
 SYSTEM_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
 OPTEE_ITB_URL=${BASE_URL}${PUB_DEST}/${OPTEE_FIT_IMG}
+FSBL_URL=${BASE_URL}${PUB_DEST}/${FSBL_IMG}
 UBOOT_ITB_URL=${BASE_URL}${PUB_DEST}/${UBOOT_FIT_IMG}
 KERNEL_FIT_URL=${BASE_URL}${PUB_DEST}/${KERNEL_FIT_IMG}
 KERNEL_ZIMAGE_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
 WIC_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_IMG}
 WIC_DEV_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_DEV_IMG}
+WIC_EDGE_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_EDGE_IMG}
+UBI_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_IMG}
+UBI_DEV_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_DEV_IMG}
+UBI_EDGE_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_EDGE_IMG}
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
 NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TAR_BZ2}
 NFSROOTFS_DEV_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DEV_TAR_BZ2}
