@@ -3,28 +3,64 @@ job_name: SE ${MACHINE} TFTP FIT ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
-    minutes: 10
+    minutes: 100
   action:
-    minutes: 5
+    minutes: 70
   connection:
     minutes: 2
 priority: medium
 visibility: public
 
 actions:
+
 - deploy:
+    namespace: dfu
+    to: tmpfs
+    images:
+      sf_fsbl:
+        image_arg: --alt sf_fsbl --download {sf_fsbl}
+        url: ${FSBL_URL}
+      sf_trustedfw:
+        image_arg: --alt sf_trustedfw --download {sf_trustedfw}
+        url: ${OPTEE_ITB_URL}
+      sf_uboot0:
+        image_arg: --alt sf_uboot0 --download {sf_uboot0}
+        url: ${UBOOT_ITB_URL}
+      sf_uboot1:
+        image_arg: --alt sf_uboot1 --download {sf_uboot1}
+        url: ${UBOOT_ITB_URL}
+
+- command:
+    namespace: dfu
+    name: set_boot_to_nand
+
+- boot:
+    namespace: dfu
+    method: dfu
+    timeout:
+      minutes: 10
+
+- command:
+    namespace: test
+    name: set_boot_to_qspi
+
+- deploy:
+    namespace: test
+    to: overlay
+
+- deploy:
+    namespace: test
     timeout:
       minutes: 5
     to: tftp
     os: oe
-    optee:
-      url: ${OPTEE_ITB_URL}
-    uboot:
-      url: ${UBOOT_ITB_URL}
     kernel:
       url: ${KERNEL_FIT_URL}
       type: uimage
+
 - boot:
+    namespace: test
+    connection-namespace: dfu
     timeout:
       minutes: 10
     method: u-boot
@@ -46,6 +82,7 @@ actions:
     - "root@rzn1-snarc:"
 
 - test:
+    namespace: test
     timeout:
       minutes: 10
     interactive:

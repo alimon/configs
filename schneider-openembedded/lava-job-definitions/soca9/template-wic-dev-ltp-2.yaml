@@ -93,6 +93,33 @@ actions:
             - ifconfig -a
       name: ifconfig-test
       path: inline/ifconfig-test.yaml
+
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: ping-github
+          description: Ping public GitHub webserver
+        run:
+          steps:
+          - ping -c 3 github.com
+      name: ping-github
+      path: inline/ping-github.yaml
+
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: resolved-test
+          description: resolved test
+        run:
+          steps:
+          - systemctl --no-pager status systemd-resolved
+          - systemctl --no-pager restart systemd-resolved
+          - systemctl --no-pager status systemd-resolved
+      name: resolved-test
+      path: inline/resolved-test.yaml
+
     - from: inline
       repository:
         metadata:

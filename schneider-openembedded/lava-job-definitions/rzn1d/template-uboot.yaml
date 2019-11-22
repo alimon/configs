@@ -3,34 +3,75 @@ job_name: SE ${MACHINE} U-Boot ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
-    minutes: 10
-
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 2
 priority: medium
 visibility: public
 
 actions:
+
 - deploy:
+    namespace: dfu
+    to: tmpfs
+    images:
+      sf_fsbl:
+        image_arg: --alt sf_fsbl --download {sf_fsbl}
+        url: ${FSBL_URL}
+      sf_trustedfw:
+        image_arg: --alt sf_trustedfw --download {sf_trustedfw}
+        url: ${OPTEE_ITB_URL}
+      sf_uboot0:
+        image_arg: --alt sf_uboot0 --download {sf_uboot0}
+        url: ${UBOOT_ITB_URL}
+      sf_uboot1:
+        image_arg: --alt sf_uboot1 --download {sf_uboot1}
+        url: ${UBOOT_ITB_URL}
+
+- command:
+    namespace: dfu
+    name: set_boot_to_nand
+
+- boot:
+    namespace: dfu
+    method: dfu
+    timeout:
+      minutes: 10
+
+- command:
+    namespace: test
+    name: set_boot_to_qspi
+
+- deploy:
+    namespace: test
+    to: overlay
+
+- deploy:
+    namespace: test
     timeout:
       minutes: 5
     to: tftp
-    optee:
-      url: ${OPTEE_ITB_URL}
-    uboot:
-      url: ${UBOOT_ITB_URL}
+    os: oe
     kernel:
-      url: ${KERNEL_FIT_URL}
-      type: uimage
+      url: https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior/soca9/zImage--4.19.72+git0+7549a49ae5-r0-snarc-soca9-20191003145415.bin
+      type: zimage
+
 - boot:
+    namespace: test
+    connection-namespace: dfu
     timeout:
-      minutes: 1
+      minutes: 20
     method: bootloader
     bootloader: u-boot
     commands: []
     prompts: ['=>']
 
 - test:
+    namespace: test
     timeout:
-      minutes: 4
+      minutes: 5
     interactive:
     - name: basic-cmds
       prompts: ["=> ", "/ # "]
@@ -105,6 +146,15 @@ actions:
         name: dhcp
         successes:
         - message: "DHCP client bound to address"
+    - name: ping-cmds
+      prompts: ["=> ", "/ # "]
+      script:
+      # ping
+      - command:
+      - command: ping {SERVER_IP}
+        name: ping
+        successes:
+        - message: "is alive"
     - name: tftp-cmds
       prompts: ["=> ", "/ # "]
       script:
@@ -113,7 +163,10 @@ actions:
       - command: setenv serverip {SERVER_IP} ; tftp {KERNEL_ADDR} {KERNEL}
         name: tftp
         successes:
-        - message: "Bytes transferred ="
+        - message: "Bytes transferred = 6752784"
+      - command: crc32 0x01000000 670a10
+        successes:
+        - message: "crc32 for 01000000 ... 01670a0f ==> ca050911"
     - name: nand-commands
       prompts: ["=> ", "/ # "]
       script:

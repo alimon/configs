@@ -12,15 +12,48 @@ priority: medium
 visibility: public
 
 actions:
+
 - deploy:
+    namespace: dfu
+    to: tmpfs
+    images:
+      sf_fsbl:
+        image_arg: --alt sf_fsbl --download {sf_fsbl}
+        url: ${FSBL_URL}
+      sf_trustedfw:
+        image_arg: --alt sf_trustedfw --download {sf_trustedfw}
+        url: ${OPTEE_ITB_URL}
+      sf_uboot0:
+        image_arg: --alt sf_uboot0 --download {sf_uboot0}
+        url: ${UBOOT_ITB_URL}
+      sf_uboot1:
+        image_arg: --alt sf_uboot1 --download {sf_uboot1}
+        url: ${UBOOT_ITB_URL}
+
+- command:
+    namespace: dfu
+    name: set_boot_to_nand
+
+- boot:
+    namespace: dfu
+    method: dfu
     timeout:
-      minutes: 100
+      minutes: 10
+
+- command:
+    namespace: test
+    name: set_boot_to_qspi
+
+- deploy:
+    namespace: test
+    to: overlay
+
+- deploy:
+    namespace: test
+    timeout:
+      minutes: 5
     to: tftp
     os: oe
-    optee:
-      url: ${OPTEE_ITB_URL}
-    uboot:
-      url: ${UBOOT_ITB_URL}
     kernel:
       url: ${KERNEL_ZIMAGE_URL}
       type: zimage
@@ -29,9 +62,12 @@ actions:
     nfsrootfs:
       url: ${NFSROOTFS_DEV_URL}
       compression: bz2
+
 - boot:
+    namespace: test
+    connection-namespace: dfu
     timeout:
-      minutes: 10
+      minutes: 20
     method: u-boot
     commands:
       - setenv autoload no
@@ -48,7 +84,9 @@ actions:
       username: root
     prompts:
     - "root@rzn1-snarc:"
+
 - test:
+    namespace: test
     timeout:
       minutes: 600
     definitions:
@@ -107,6 +145,33 @@ actions:
             - ifconfig -a
       name: ifconfig-test
       path: inline/ifconfig-test.yaml
+
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: ping-github
+          description: Ping public GitHub webserver
+        run:
+          steps:
+          - ping -c 3 github.com
+      name: ping-github
+      path: inline/ping-github.yaml
+
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: resolved-test
+          description: resolved test
+        run:
+          steps:
+          - systemctl --no-pager status systemd-resolved
+          - systemctl --no-pager restart systemd-resolved
+          - systemctl --no-pager status systemd-resolved
+      name: resolved-test
+      path: inline/resolved-test.yaml
+
     - from: inline
       repository:
         metadata:

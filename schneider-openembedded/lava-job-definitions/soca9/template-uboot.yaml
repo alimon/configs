@@ -28,7 +28,7 @@ actions:
 
 - boot:
     timeout:
-      minutes: 1
+      minutes: 20
     method: bootloader
     bootloader: u-boot
     commands: []
@@ -36,7 +36,7 @@ actions:
 
 - test:
     timeout:
-      minutes: 4
+      minutes: 5
     interactive:
     - name: basic-cmds
       prompts: ["=> ", "/ # "]
@@ -115,6 +115,15 @@ actions:
         name: dhcp
         successes:
         - message: "DHCP client bound to address"
+    - name: ping-cmds
+      prompts: ["=> ", "/ # "]
+      script:
+      # ping
+      - command:
+      - command: ping {SERVER_IP}
+        name: ping
+        successes:
+        - message: "is alive"
     - name: tftp-cmds
       prompts: ["=> ", "/ # "]
       script:

@@ -1,5 +1,5 @@
 device_type: rzn1d
-job_name: SE ${MACHINE} UBI DEV ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} UBI edge ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -12,14 +12,14 @@ priority: medium
 visibility: public
 
 actions:
+
 - deploy:
-    timeout:
-      minutes: 20
+    namespace: dfu
     to: tmpfs
     images:
       sf_fsbl:
         image_arg: --alt sf_fsbl --download {sf_fsbl}
-        url: ${ TODO }
+        url: ${FSBL_URL}
       sf_trustedfw:
         image_arg: --alt sf_trustedfw --download {sf_trustedfw}
         url: ${OPTEE_ITB_URL}
@@ -31,20 +31,23 @@ actions:
         url: ${UBOOT_ITB_URL}
       n_fs1:
         image_arg: --alt n_fs1 --download {n_fs1}
-        url: ${UBI_DEV_IMAGE_URL}
+        url: ${UBI_EDGE_IMAGE_URL}
 
 - command:
     namespace: dfu
     name: set_boot_to_nand
- - boot:
+
+- boot:
     namespace: dfu
     method: dfu
     timeout:
       minutes: 10
- - command:
+
+- command:
     namespace: test
     name: set_boot_to_qspi
- - deploy:
+
+- deploy:
     namespace: test
     to: overlay
 

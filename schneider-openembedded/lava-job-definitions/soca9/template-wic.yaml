@@ -43,6 +43,21 @@ actions:
 
 - test:
     timeout:
+      minutes: 5
+    definitions:
+    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+      from: git
+      path: lava-test-shell/smoke-tests-basic.yaml
+      name: smoke-tests
+    - path: automated/linux/meminfo/meminfo.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: meminfo
+      from: git
+      branch: master
+
+- test:
+    timeout:
       minutes: 10
     interactive:
     - name: basic-cmds
@@ -50,7 +65,6 @@ actions:
       script:
       - command: uname -a
       - command: ps aux --sort -rss
-      - command: cat /proc/meminfo
       - command: free -h
       - command: ifconfig -a
       - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
