@@ -1,0 +1,125 @@
+device_type: rzn1d
+job_name: SE ${MACHINE} UBI ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+actions:
+
+- deploy:
+    namespace: dfu
+    to: tmpfs
+    images:
+      sf_fsbl:
+        image_arg: --alt sf_fsbl --download {sf_fsbl}
+        url: ${FSBL_URL}
+      sf_trustedfw:
+        image_arg: --alt sf_trustedfw --download {sf_trustedfw}
+        url: ${OPTEE_ITB_URL}
+      sf_uboot0:
+        image_arg: --alt sf_uboot0 --download {sf_uboot0}
+        url: ${UBOOT_ITB_URL}
+      sf_uboot1:
+        image_arg: --alt sf_uboot1 --download {sf_uboot1}
+        url: ${UBOOT_ITB_URL}
+      n_fs1:
+        image_arg: --alt n_fs1 --download {n_fs1}
+        url: ${UBI_IMAGE_URL}
+
+- command:
+    namespace: dfu
+    name: set_boot_to_nand
+
+- boot:
+    namespace: dfu
+    method: dfu
+    timeout:
+      minutes: 10
+
+- command:
+    namespace: test
+    name: set_boot_to_qspi
+
+- deploy:
+    namespace: test
+    to: overlay
+
+- boot:
+    namespace: test
+    connection-namespace: dfu
+    timeout:
+      minutes: 20
+    method: u-boot
+    commands:
+      - run linux_bestla
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: "Password:"
+      password: "P@ssword-1"
+      login_commands:
+      - P@ssword-1
+      - azertAZERT12345
+      - azertAZERT12345
+      - azertAZERT12345
+    prompts:
+    - "Current password: "
+    - "New password: "
+    - "Retype new password: "
+    - "root@rzn1-snarc:"
+    transfer_overlay:
+      download_command: unset http_proxy ; udhcpc -i eth1 -n || udhcpc -i eth0 -n ; cd /tmp ; wget
+      unpack_command: tar --touch -C / -xzf
+
+- test:
+    namespace: test
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+      from: git
+      path: lava-test-shell/smoke-tests-basic.yaml
+      name: smoke-tests
+    - path: automated/linux/meminfo/meminfo.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: meminfo
+      from: git
+      branch: master
+
+- test:
+    namespace: test
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: ps aux --sort -rss
+      - command: free -h
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose
