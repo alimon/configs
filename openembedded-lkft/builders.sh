@@ -350,6 +350,14 @@ case "${MACHINE}" in
     # QEMU arm 32bit needs the zImage file, not the uImage file.
     # KERNEL_IMG is not used for the real hardware itself.
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-am57xx-beagle-x15-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
+    ;;
+  dragonboard-410c)
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "Image.gz-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
+    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "Image.gz-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
+    ;;
+  hikey)
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
   juno)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-r2-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
