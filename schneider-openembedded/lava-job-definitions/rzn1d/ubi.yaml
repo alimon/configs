@@ -74,25 +74,6 @@ actions:
     - "New password: "
     - "Retype new password: "
     - "root@rzn1-snarc:"
-    transfer_overlay:
-      download_command: unset http_proxy ; udhcpc -i eth1 -n || udhcpc -i eth0 -n ; cd /tmp ; wget
-      unpack_command: tar --touch -C / -xzf
-
-- test:
-    namespace: test
-    timeout:
-      minutes: 5
-    definitions:
-    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
-      from: git
-      path: lava-test-shell/smoke-tests-basic.yaml
-      name: smoke-tests
-    - path: automated/linux/meminfo/meminfo.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: meminfo
-      from: git
-      branch: master
 
 - test:
     namespace: test
@@ -104,7 +85,10 @@ actions:
       script:
       - command: uname -a
       - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
       - command: free -h
+      - command: ifconfig -a
+      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
       - command: ping -c 3 github.com
 
