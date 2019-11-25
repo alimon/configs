@@ -86,8 +86,11 @@ if [ $ARMHF_ARCHITECTURE -eq 1 ]
 then
     # donwload flashlayout and script from github
     mkdir -p out/script
-    wget https://raw.githubusercontent.com/Linaro/meta-ledge/thud/meta-ledge-bsp/recipes-devtools/generate-raw-image/raw-tools/create_raw_from_flashlayout.sh -O out/script/create_raw_from_flashlayout.sh
-    wget https://raw.githubusercontent.com/Linaro/meta-ledge/thud/meta-ledge-bsp/recipes-devtools/generate-raw-image/files/ledge-stm32mp157c-dk2/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld -O  out/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld
-	wget https://raw.githubusercontent.com/Linaro/meta-ledge/thud/meta-ledge-bsp/recipes-devtools/generate-raw-image/files/ledge-stm32mp157c-dk2/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.tsv.template -O  out/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.tsv.template
+    wget https://raw.githubusercontent.com/Linaro/meta-ledge/zeus/meta-ledge-bsp/recipes-devtools/generate-raw-image/raw-tools/create_raw_from_flashlayout.sh -O out/script/create_raw_from_flashlayout.sh
+    wget https://raw.githubusercontent.com/Linaro/meta-ledge/zeus/meta-ledge-bsp/recipes-devtools/generate-raw-image/files/ledge-stm32mp157c-dk2/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld -O  out/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld
+    wget https://raw.githubusercontent.com/Linaro/meta-ledge/zeus/meta-ledge-bsp/recipes-devtools/generate-raw-image/files/ledge-stm32mp157c-dk2/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.tsv.template -O  out/FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.tsv.template
     chmod +x out/script/create_raw_from_flashlayout.sh
+    # generate raw image
+    cd out/
+    ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld
 fi
