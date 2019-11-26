@@ -12,6 +12,7 @@ priority: medium
 visibility: public
 
 actions:
+
 - deploy:
     timeout:
       minutes: 100
@@ -65,6 +66,22 @@ actions:
     - "New password: "
     - "Retype new password: "
     - "root@snarc-soca9:"
+
+- test:
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: free -h
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+
 - test:
     timeout:
       minutes: 5
@@ -79,19 +96,6 @@ actions:
       name: meminfo
       from: git
       branch: master
-
-- test:
-    timeout:
-      minutes: 10
-    interactive:
-    - name: basic-cmds
-      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
-      script:
-      - command: uname -a
-      - command: ps aux --sort -rss
-      - command: free -h
-      - command: ifconfig -a
-      - command: ping -c 3 github.com
 
 metadata:
   machine: ${MACHINE}
