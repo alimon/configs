@@ -55,7 +55,7 @@ actions:
     namespace: test
     connection-namespace: dfu
     timeout:
-      minutes: 10
+      minutes: 20
     method: u-boot
     commands:
       - run linux_bestla
@@ -74,43 +74,6 @@ actions:
     - "New password: "
     - "Retype new password: "
     - "root@rzn1-snarc:"
-    transfer_overlay:
-      download_command: unset http_proxy ; udhcpc -i eth1 -n || udhcpc -i eth0 -n ; cd /tmp ; wget
-      unpack_command: tar --touch -C / -xzf
-
-- test:
-    namespace: test
-    timeout:
-      minutes: 5
-    definitions:
-    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
-      from: git
-      path: lava-test-shell/smoke-tests-basic.yaml
-      name: smoke-tests
-    - path: automated/linux/meminfo/meminfo.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: meminfo
-      from: git
-      branch: master
-    - path: automated/linux/docker/docker.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: docker-hello-world
-      from: git
-      branch: master
-      parameters:
-        IMAGE: "hello-world"
-        SKIP_INSTALL: True
-    - path: automated/linux/docker/docker.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: docker
-      from: git
-      branch: master
-      parameters:
-        IMAGE: "arm32v7/ubuntu"
-        SKIP_INSTALL: True
 
 - test:
     namespace: test
@@ -122,7 +85,10 @@ actions:
       script:
       - command: uname -a
       - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
       - command: free -h
+      - command: ifconfig -a
+      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
       - command: ping -c 3 github.com
 
