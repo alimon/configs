@@ -32,7 +32,7 @@ fi
 
 cd ${WORKSPACE}/ComputeLibrary
 #need to add if loops for opencl=1 embed_kernels=1 and neon=1
-scons -u -j$(nproc) arch=arm64-v8a extra_cxx_flags="-fPIC" benchmark_tests=1 validation_tests=1
+scons -u -j$(nproc) arch=arm64-v8a extra_cxx_flags="-fPIC" benchmark_tests=1 validation_tests=1 opencl=1 embed_kernels=1
 
 #build Boost
 cd ${WORKSPACE}/boost_1_64_0
@@ -75,6 +75,9 @@ cmake .. \
   -DBUILD_TF_PARSER=1 \
   -DPROTOBUF_ROOT=${WORKSPACE}/protobuf-host \
   -DBUILD_TF_LITE_PARSER=1 \
+  -DARMCOMPUTECL=1 \
+  -DARMNNREF=1 \
+  -DBUILD_TESTS=1 -DBUILD_UNIT_TESTS=1 \
   -DTF_LITE_GENERATED_PATH=${WORKSPACE}/tensorflow/tensorflow/lite/schema \
   -DFLATBUFFERS_ROOT=${WORKSPACE}/flatbuffers \
   -DFLATBUFFERS_LIBRARY=${WORKSPACE}/flatbuffers/libflatbuffers.a
