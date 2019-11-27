@@ -84,7 +84,15 @@ actions:
       username: root
       password_prompt: "Password:"
       password: "P@ssword-1"
+      login_commands:
+      - P@ssword-1
+      - azertAZERT12345
+      - azertAZERT12345
+      - azertAZERT12345
     prompts:
+    - "Current password: "
+    - "New password: "
+    - "Retype new password: "
     - "root@rzn1-snarc:"
 
 - test:
@@ -102,40 +110,6 @@ actions:
       - command: free -h
       - command: ifconfig -a
       - command: ping -c 3 github.com
-
-- test:
-    namespace: test
-    timeout:
-      minutes: 5
-    definitions:
-    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
-      from: git
-      path: lava-test-shell/smoke-tests-basic.yaml
-      name: smoke-tests
-    - path: automated/linux/meminfo/meminfo.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: meminfo
-      from: git
-      branch: master
-    - path: automated/linux/docker/docker.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: docker-hello-world
-      from: git
-      branch: master
-      parameters:
-        IMAGE: "hello-world"
-        SKIP_INSTALL: True
-    - path: automated/linux/docker/docker.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: docker
-      from: git
-      branch: master
-      parameters:
-        IMAGE: "arm32v7/ubuntu"
-        SKIP_INSTALL: True
 
 metadata:
   machine: ${MACHINE}
