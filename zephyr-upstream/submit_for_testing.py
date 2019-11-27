@@ -5,6 +5,7 @@ import sys
 import fnmatch
 import yaml
 import shutil
+import itertools
 from string import Template
 import xmlrpc.client as xmlrpclib
 
@@ -123,6 +124,81 @@ def generate_test_list(platform, device_type):
 
     return test_list
 
+def get_yaml(zephyr_bin_path):
+    # Return contents of testcase.yaml file corresponding to the test binary.
+    # Test binary path is of form: 'tests/shell/shell/zephyr/zephyr.bin'
+    #     and testcase.yaml is located at 'tests/shell', meaning we
+    #     should discard the last 3 items.
+    path = zephyr_bin_path.split('/')
+    assert (len(path) >= 4), "Unexpected directory structure encountered."
+    path = path[0:-3]
+    path.append("testcase.yaml")
+    path.insert(0, "zephyr")
+    testcase_yaml = "/".join(path)
+    with open(testcase_yaml, encoding="utf-8") as f:
+        try:
+            data = yaml.safe_load(f)
+        except:
+            print("ERROR: unable to load %s" % f)
+            sys.exit(1)
+    
+    return data
+
+def permutations_of_regexes(regexes):
+    # Create a string with the permutations of all the regular expressions.
+    # .* is inserted between each of the expressions in a given permutation,
+    # and | is used to separate the permutations.
+    # E.g. if we have this set of regular expressions
+    #     - dog
+    #     - cat
+    #     - fish
+    # The result would be a string like this (ordering of the permutations might vary)
+    # dog.*cat.*fish|cat.*dog.*fish|dog.*fish.*cat|fish.*dog.*cat|fish.*cat.*dog|cat.*fish.*dog
+    l = list(itertools.permutations(regexes))
+    regex_list = []
+    for item in l:
+        regex_list.append(".*".join(item))
+    return "|".join(regex_list)
+
+def parse_yaml_harness_config(yaml_node):
+    # Return a string with the actual regular expression to look for in the LAVA job.
+    # We can then use LAVA's interactive test action to look for it.
+    if "harness" in yaml_node.keys() and yaml_node["harness"] == "console":
+        if yaml_node["harness_config"]["type"] == "one_line":
+            return yaml_node["harness_config"]["regex"][0]
+        elif yaml_node["harness_config"]["type"] == "multi_line":
+            if "ordered" not in yaml_node["harness_config"].keys() or yaml_node["harness_config"]["ordered"] == "true":
+                # For ordered regular expressions, we can simply join them into one,
+                # while allowing any character in between via (.*)
+                return ".*".join(yaml_node["harness_config"]["regex"])
+            else:
+                # For non-ordered case, we need to look for all permutations of
+                # the regexes, since they can occur in any order.
+                return permutations_of_regexes(yaml_node["harness_config"]["regex"])
+    else:
+        return None
+
+def get_regex(test, yaml):
+    # Parse yaml data to extract list of regular expressions to be searched,
+    # if present. Otherwise return None.
+    for key in yaml:
+        if key == "common":
+            yaml_node = yaml["common"]
+            ret = parse_yaml_harness_config(yaml_node)
+            if ret is not None:
+                return ret
+        elif key == "tests":
+            path = test.split('/')
+            if len(path) < 4:
+                print("Unexpected directory structure encountered. Aborting...")
+                sys.exit(1)
+            test_name = path[-3]
+            yaml_node = yaml["tests"][test_name]
+            ret = parse_yaml_harness_config(yaml_node)
+            if ret is not None:
+                return ret
+    
+    return None
 
 def main():
     parser = argparse.ArgumentParser()
@@ -241,15 +317,36 @@ def main():
     print(os.listdir('.'))
     test_list = generate_test_list(args.board_name, args.device_type)
     for test in test_list:
+        re = get_regex(test, get_yaml(test))
+        test_name = test.rsplit('/zephyr.bin')[0].replace('/', '-').replace('.', '-')
+        if re is None:
+            test_action = \
+                "    monitors:\n" + \
+                "    - name: " + test_name + "\n" + \
+                "      start: (tc_start\(\)|starting .*test|BOOTING ZEPHYR OS)\n" + \
+                "      end: PROJECT EXECUTION\n" + \
+                "      pattern: (?P<result>(PASS|FAIL))\s-\s(?P<test_case_id>\w+)\\r\\n\n" + \
+                "      fixupdict:\n" + \
+                "        PASS: pass\n" + \
+                "        FAIL: fail\n"
+        else:
+            test_action = \
+                "    interactive:\n" + \
+                "    - name: " + test_name + "\n" + \
+                "      prompts: [\"" + re + "\"]\n" + \
+                "      script:\n" + \
+                "      - command:\n" + \
+                "        name: " + test_name + "\n"
         replace_dict = dict(
             # Test name example: kernel-pthread-test
-            test_name=test.rsplit('/zephyr.bin')[0].replace('/', '-').replace('.', '-'),
+            test_name=test_name,
             test_url="%s%s" % (test_url_prefix, test),
             build_url=args.build_url,
             gcc_variant=args.gcc_variant,
             git_commit=args.git_commit,
             device_type=args.device_type,
-            board_name=args.board_name
+            board_name=args.board_name,
+            test_action=test_action
         )
         template = Template(test_template)
         lava_job = template.substitute(replace_dict)
