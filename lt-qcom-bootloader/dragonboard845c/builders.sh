@@ -68,6 +68,7 @@ make all \
      DISABLE_PARALLEL_DOWNLOAD_FLASH=1 \
      ABL_USE_SDLLVM=false \
      ABL_SAFESTACK=false \
+     AB_RETRYCOUNT_DISABLE=1 \
      CLANG_BIN=${WORKSPACE}/clang/clang-4691093/bin/ \
      CLANG_PREFIX="aarch64-linux-gnu-" \
      CLANG_GCC_TOOLCHAIN=$(tcbindir)/aarch64-linux-gnu-gcc \
