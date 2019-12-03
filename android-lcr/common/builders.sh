@@ -3,10 +3,6 @@
 # Install needed packages
 sudo apt-get update
 sudo apt-get install -y bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-wand rsync linaro-image-tools liblz4-tool lzop libssl-dev libdrm-intel1 python-pip python3-pip python-pyelftools python3-pyelftools python-crypto python3-crypto
-sudo python -m pip install --upgrade pip
-sudo python3 -m pip install --upgrade pip
-sudo python -m pip install --user python-pycryptodome
-sudo python3 -m pip install --user python3-pycryptodome
 
 wget -q \
   http://repo.linaro.org/ubuntu/linaro-overlay/pool/main/a/android-tools/android-tools-fsutils_4.2.2+git20130218-3ubuntu41+linaro1_amd64.deb \
@@ -17,7 +13,7 @@ sudo dpkg -i --force-all *.deb
 rm -f *.deb
 
 # Install jinja2-cli and ruamel.yaml
-pip install --user --force-reinstall jinja2-cli ruamel.yaml
+pip install --user --force-reinstall jinja2-cli ruamel.yaml pycryptodome
 
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
