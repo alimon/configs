@@ -53,7 +53,7 @@ rm -rf ${WORKSPACE}/*
 
 wget -q http://git.linaro.org/ci/job/configs.git/plain/leg-kolla/linaro.conf -O ${WORKSPACE}/linaro.conf
 
-git clone --depth 1 --branch ${kolla_branch} https://git.openstack.org/openstack/kolla
+git clone --depth 1 --branch ${kolla_branch} https://opendev.org/openstack/kolla.git
 
 if [ -n ${kolla_ldc} ]; then
     git clone --depth 1 https://git.linaro.org/leg/sdi/kolla/ldc-overlay.git Linaro-overlay
@@ -63,7 +63,7 @@ fi
 # been merged into the stable/queens branch.
 if [[ ! -z ${kolla_ldc} && ! -z ${kolla_ldc_extras} ]]; then
     echo ${kolla_ldc_extras} | sed -n 1'p' | tr ',' '\n' | while read patch; do
-        curl https://git.openstack.org/cgit/openstack/kolla/patch/?id=${patch} | git apply -v --directory=kolla/
+        curl https://opendev.org/openstack/kolla/commit/${patch} | git apply -v --directory=kolla/
     done
 fi
 
