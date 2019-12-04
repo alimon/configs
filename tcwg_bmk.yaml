@@ -520,6 +520,7 @@
           set -ex
           for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
             if [ -f $i ]; then
+              echo "ci_project=$ci_project" >> $i
               echo "ci_config=$ci_config" >> $i
               echo "binutils_url=$binutils_url" >> $i
               echo "gcc_url=$gcc_url" >> $i
@@ -550,6 +551,10 @@
             - "tcwg_bmk-bisect"
           queue-scanning: 'ALL'
     parameters:
+      - string:
+          name: ci_project
+          default: tcwg_bmk_dev
+          description: "CI project ID; used as namespace for git branches"
       - string:
           name: ci_config
           default: gnu-release-aarch64-spec2k6-O2
@@ -611,6 +616,7 @@
             --BUILD_URL "$BUILD_URL" \
             --scripts_branch "$scripts_branch" \
             --bmk_branch "$bmk_branch" \
+            ==rr[ci_project] $ci_project \
             ==rr[ci_config] $ci_config \
             ==rr[binutils_url] $binutils_url \
             ==rr[gcc_url] $gcc_url \
@@ -730,7 +736,7 @@
             -- \
             --scripts_branch "$scripts_branch" \
             --bmk_branch "$bmk_branch" \
-            ==rr[ci_project] tcwg_bmk \
+            ==rr[ci_project] $ci_project \
             ==rr[ci_config] $ci_config \
             ==rr[binutils_url] $binutils_url \
             ==rr[gcc_url] $gcc_url \
