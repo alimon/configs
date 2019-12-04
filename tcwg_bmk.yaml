@@ -293,6 +293,8 @@
       - default-properties
       - build-blocker:
           blocking-jobs:
+            - "tcwg_bmk-build"
+            - "tcwg_bmk-bisect"
             - "tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
           queue-scanning: 'ALL'
     parameters:
@@ -419,6 +421,8 @@
           # same regression tends to appear in multiple configurations,
           # run bisections for all configurations in-order.
           blocking-jobs:
+            - "tcwg_bmk-build"
+            - "tcwg_bmk-bisect"
             - "tcwg_bmk-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
@@ -491,6 +495,252 @@
             fi
         - trigger-followup-builds:
             ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+        - email-ext:
+            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
+            content-type: text
+            body: |
+              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
+            failure: true
+            success: true
+            send-to:
+              - recipients
+
+- builder:
+    name: trigger-followup-builds2
+    builders:
+      - build-name-setter:
+          name: 'artifacts/jenkins/build-name'
+          file: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
+            if [ -f $i ]; then
+              echo "ci_config=$ci_config" >> $i
+              echo "binutils_url=$binutils_url" >> $i
+              echo "gcc_url=$gcc_url" >> $i
+              echo "glibc_url=$glibc_url" >> $i
+              echo "llvm_url=$llvm_url" >> $i
+              echo "mail_recipients=$mail_recipients" >> $i
+              echo "distro=$distro" >> $i
+              echo "scripts_branch=$scripts_branch" >> $i
+              echo "bmk_branch=$bmk_branch" >> $i
+            fi
+          done
+      - trigger-builds:
+          - project: tcwg_bmk-build
+            parameter-factories:
+              - factory: filebuild
+                file-pattern: artifacts/trigger-build-*
+          - project: tcwg_bmk-bisect
+            property-file: artifacts/trigger-bisect
+
+- job:
+    name: tcwg_bmk-build
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+      - build-blocker:
+          blocking-jobs:
+            - "tcwg_bmk-bisect"
+          queue-scanning: 'ALL'
+    parameters:
+      - string:
+          name: ci_config
+          default: gnu-release-aarch64-spec2k6-O2
+          description: "CI configuration ID: {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+      - llvm-parameters:
+          binutils_url: https://sourceware.org/git/binutils-gdb.git
+          gcc_url: https://gcc.gnu.org/git/gcc.git
+          glibc_url: https://sourceware.org/git/glibc.git
+          llvm_url: https://github.com/llvm/llvm-project.git
+          default_branch: baseline
+      - choice:
+          name: update_baseline
+          choices:
+            - update
+            - reset
+            - init
+          description: "What to do with baseline in this build"
+      - default-parameters
+    disabled: false
+    node: tcwg-x86_64-1-cam
+    concurrent: false
+    display-name: 'TCWG Build tcwg_bmk'
+    workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
+    scm:
+      - jenkins-scripts
+      - bmk-scripts
+    wrappers:
+      - timeout:
+          timeout: 600
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            # Delete artifacts now to avoid re-using stale artifacts if
+            # below docker-run.sh fails to start up a container.
+            rm -rf artifacts/
+            mkdir -p artifacts/jenkins
+            build_name="#$BUILD_NUMBER"
+            branch_opt=""
+            for c in binutils gcc glibc llvm; do
+              eval "b=\$$$${{c}}_branch"
+              if [ x"$b" != x"baseline" ]; then
+                build_name="$build_name-$c"
+                branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
+              fi
+            done
+
+            ./jenkins-scripts/docker-run.sh \
+            --distro $distro \
+            --ssh_info true \
+            -- \
+            ./jenkins-scripts/tcwg_bmk-build.sh \
+            %% artifacts/jenkins/manifest.sh \
+            --BUILD_URL "$BUILD_URL" \
+            --scripts_branch "$scripts_branch" \
+            --bmk_branch "$bmk_branch" \
+            ==rr[ci_config] $ci_config \
+            ==rr[binutils_url] $binutils_url \
+            ==rr[gcc_url] $gcc_url \
+            ==rr[glibc_url] $glibc_url \
+            ==rr[llvm_url] $llvm_url \
+            $branch_opt \
+            ==rr[mode] "jenkins-full" \
+            ==rr[update_baseline] "$update_baseline" &
+            res=0 && wait $! || res=$?
+
+            if [ $res != 0 ]; then
+              touch artifacts/failures
+            fi
+
+            if [ -e artifacts/results ]; then
+              build_name="$build_name-R$(tail -n1 artifacts/results)"
+            fi
+            if [ x"$update_baseline" != x"update" ]; then
+              build_name="$build_name-$update_baseline"
+            fi
+            if [ -f artifacts/trigger-bisect ]; then
+              build_name="$build_name-bisect"
+            fi
+            echo "$build_name" > artifacts/jenkins/build-name
+        - trigger-followup-builds2
+        - shell: |
+            #!/bin/bash
+            if [ -f artifacts/failures ]; then
+              exit 1
+            fi
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+
+- job:
+    name: tcwg_bmk-bisect
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+    parameters:
+      - string:
+          name: ci_config
+          default: gnu-release-aarch64-spec2k6-O2
+          description: "CI configuration ID: {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+      - string:
+          name: binutils_url
+          default: https://sourceware.org/git/binutils-gdb.git
+          description: "binutils git URL"
+      - string:
+          name: gcc_url
+          default: https://gcc.gnu.org/git/gcc.git
+          description: "gcc git URL"
+      - string:
+          name: glibc_url
+          default: https://sourceware.org/git/glibc.git
+          description: "glibc git URL"
+      - string:
+          name: llvm_url
+          default: https://github.com/llvm/llvm-project.git
+          description: "llvm git URL"
+      - string:
+          name: current_project
+          default: ""
+          description: "Project to bisect"
+      - string:
+          name: baseline_branch
+          default: "baseline"
+          description: "Baseline branch or sha1"
+      - string:
+          name: bad_branch
+          default: ""
+          description: "Bad branch or sha1"
+      - default-parameters
+    disabled: false
+    node: tcwg-x86_64-1-cam
+    concurrent: false
+    display-name: 'TCWG Bisect tcwg_bmk'
+    workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
+    scm:
+      - jenkins-scripts
+      - bmk-scripts
+    wrappers:
+      - timeout:
+          timeout: 1440
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            # Delete artifacts now to avoid re-using stale artifacts if
+            # below docker-run.sh fails to start up a container.
+            rm -rf artifacts/
+            mkdir -p artifacts/jenkins
+            build_name="#$BUILD_NUMBER-$current_project"
+            echo "$build_name" > artifacts/jenkins/build-name
+            # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
+            echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
+            echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
+
+            ./jenkins-scripts/docker-run.sh \
+            --distro $distro \
+            --ssh_info true \
+            -- \
+            ./jenkins-scripts/round-robin-bisect.sh \
+            %% artifacts/manifests/bisect.sh \
+            --BUILD_URL "$BUILD_URL" \
+            --current_project "$current_project" \
+            --baseline_branch "$baseline_branch" \
+            --bad_branch "$bad_branch" \
+            --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
+            -- \
+            --scripts_branch "$scripts_branch" \
+            --bmk_branch "$bmk_branch" \
+            ==rr[ci_project] tcwg_bmk \
+            ==rr[ci_config] $ci_config \
+            ==rr[binutils_url] $binutils_url \
+            ==rr[gcc_url] $gcc_url \
+            ==rr[glibc_url] $glibc_url \
+            ==rr[llvm_url] $llvm_url
+
+            if [ x"$mail_recipients" != x"default" ]; then
+              echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
+            fi
+        - trigger-followup-builds2
     publishers:
         - archive:
             artifacts: 'artifacts/**'
