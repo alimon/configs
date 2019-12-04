@@ -1,7 +1,7 @@
 #!/bin/bash -xe
 
 sudo apt-get update
-sudo apt-get install -y python-requests
+sudo apt-get install -y python3-requests
 
 # Build scripts
 ANDROID_BUILD_DIR="${HOME}/srv/${JOB_NAME}/android"
