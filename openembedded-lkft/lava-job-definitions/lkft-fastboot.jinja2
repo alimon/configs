@@ -1,3 +1,7 @@
+{# Warning: This template implements persistent lxc containers, which are   #}
+{# reused based on the value of protocols.lava-lxc.name.                    #}
+{# If you change this template in a way that changes the content of the lxc #}
+{# container, be sure to update the container name too.                     #}
 {% extends "lkft.jinja2" %}
 
 {% block global_settings %}
@@ -9,12 +13,13 @@ context:
 {% block protocols %}
 protocols:
   lava-lxc:
-    name: lxc-target
+    name: lkft-lxc-2019120501 # XXX Bump this to invalidate the lxc cache
     template: debian
     distribution: debian
     release: buster
     arch: amd64
     mirror: http://deb.debian.org/debian
+    persist: true
 {% endblock protocols %}
 
 {% block actions %}
