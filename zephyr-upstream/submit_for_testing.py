@@ -72,8 +72,8 @@ def build_only():
     testcases_yaml = file_list('zephyr/tests', 'testcase.yaml')
     build_only_tests = []
     for testcase_yaml in testcases_yaml:
-        with open(testcase_yaml) as f:
-            data = yaml.load(f)
+        with open(testcase_yaml, encoding='utf-8') as f:
+            data = yaml.safe_load(f)
 
         try:
             testcase_dir = os.path.dirname(testcase_yaml)
@@ -192,7 +192,7 @@ def main():
     template_file_name = "%s/%s/template.yaml" % (template_base_path, args.device_type)
     test_template = None
     if os.path.exists(template_file_name):
-        test_template_file = open(template_file_name, "r")
+        test_template_file = open(template_file_name, encoding="utf-8")
         test_template = test_template_file.read()
         test_template_file.close()
     else:
