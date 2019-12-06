@@ -600,10 +600,10 @@
             build_name="#$BUILD_NUMBER"
             branch_opt=""
             for c in binutils gcc glibc llvm; do
-              eval "b=\$$$${{c}}_branch"
+              eval "b=${c}_branch"
               if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
-                branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
+                branch_opt="$branch_opt ==rr[${c}_branch] $b"
               fi
             done
 
