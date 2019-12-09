@@ -122,46 +122,11 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
-# FIXME: Sparse and converted images here, until it gets done by OE
-case "${MACHINE}" in
-  ledge-ti-am572x)
-    ls -l ${DEPLOY_DIR_IMAGE}
-    ls -l ${DEPLOY_DIR_IMAGE}/../
-    whoami
-    for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.ext4.gz); do
-      gunzip -f -k ${rootfs}
-      sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
-      rm -f ${rootfs%.gz}
-      pigz -9 ${rootfs%.ext4.gz}.img
-    done
-    ;;
-  intel-core2-32|intel-corei7-64)
-    for rootfs in ${DEPLOY_DIR_IMAGE}/*.hddimg; do
-      xz -T0 ${rootfs}
-    done
-    ;;
-  ledge-synquacer)
-    ;;
-  ledge-stm32mp157c-dk2)
-   ;;
-  *)
-    for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4; do
-      pigz -k ${rootfs}
-      sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
-      rm -f ${rootfs%.gz}
-      pigz -9 ${rootfs%.ext4.gz}.img
-    done
-    ;;
-esac
+for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.wic); do
+	pigz -9 ${rootfs}
+done
+pigz -9 ledge-kernel-uefi-certs.ext4
 
-# QEMU images are 22G remove them before uploading
-rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
-      ${DEPLOY_DIR_IMAGE}/*.rootfs.wic* \
-      ${DEPLOY_DIR_IMAGE}/*.iso \
-      ${DEPLOY_DIR_IMAGE}/*.stimg
-if [ ${MACHINE} != "ledge-stm32mp157c-dk2" ]; then
-      rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4
-fi
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
@@ -206,7 +171,7 @@ STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | t
 ls -lh  ${DEPLOY_DIR_IMAGE}
 BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*${MACHINE}-*${BUILD_NUMBER}*.img" -printf "%f\n"| sort)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}-*.bin" -printf "%f\n")
-ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.img.gz" -printf "%f\n" )
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.wic.gz" -printf "%f\n" )
 ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.ext4.gz" -printf "%f\n")
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.tar.xz" -printf "%f\n")
 HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" -printf "%f\n")
