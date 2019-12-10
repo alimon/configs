@@ -1,0 +1,55 @@
+- job:
+    name: trigger-linux-stable-rc
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for Linux Stable RC'
+    scm:
+        - git:
+            url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
+            branches:
+              - linux-4.4.y
+              - linux-4.9.y
+              - linux-4.14.y
+              - linux-4.19.y
+              - linux-5.3.y
+              - linux-5.4.y
+            name: linux
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+            params=$(echo $GIT_BRANCH|sed s,linux/,lkft-,).txt
+            echo KERNEL_DESCRIBE=$(git describe --always) >> $params
+            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            cat $params
+        - trigger-builds:
+            - project: lkft-hikey-4.4-rc-p
+              property-file: lkft-linux-4.4.y.txt
+            - project: lkft-hikey-4.9-rc
+              property-file: lkft-linux-4.9.y.txt
+            - project: lkft-hikey-4.14-rc
+              property-file: lkft-linux-4.14.y.txt
+            - project: lkft-hikey-4.19-rc
+              property-file: lkft-linux-4.19.y.txt
