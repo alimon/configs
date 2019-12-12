@@ -20,13 +20,7 @@
     node: master
     display-name: 'Trigger for LT Qualcomm Linux Integration build'
     triggers:
-        - pollurl:
-            cron: 'H/5 * * * *'
-            polling-node: master
-            urls:
-              - url: 'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/'
-                check-content:
-                  - simple: true
+        - timed: 'H/5 * * * *'
     wrappers:
         - timestamps
         - credentials-binding:

@@ -20,13 +20,7 @@
     node: master
     display-name: 'Trigger for LT Qualcomm Linux Mainline build'
     triggers:
-        - pollurl:
-            cron: 'H/5 * * * *'
-            polling-node: master
-            urls:
-              - url: 'https://storage.kernelci.org/mainline/master/'
-                check-content:
-                  - simple: true
+        - timed: 'H/5 * * * *'
     wrappers:
         - timestamps
         - credentials-binding:
