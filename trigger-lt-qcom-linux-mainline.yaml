@@ -16,22 +16,12 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    parameters:
-        - string:
-            name: KERNEL_CI_BASE_URL
-            default: 'https://storage.kernelci.org/mainline/master/'
-        - string:
-            name: BUILDS_URL
-            default: 'https://snapshots.linaro.org/member-builds/qcomlt/linux-mainline/%s/'
-        - string:
-            name: MACHINES
-            default: 'apq8016-sbc apq8096-db820c sdm845-db845c sdm845-mtp qcs404-evb-1000 qcs404-evb-4000'
     disabled: false
     node: master
     display-name: 'Trigger for LT Qualcomm Linux Mainline build'
     triggers:
         - pollurl:
-            cron: 'H/30 * * * *'
+            cron: 'H/5 * * * *'
             polling-node: master
             urls:
               - url: 'https://storage.kernelci.org/mainline/master/'
