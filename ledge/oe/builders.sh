@@ -127,6 +127,12 @@ for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.wic); do
 done
 pigz -9 ledge-kernel-uefi-certs.ext4
 
+# Convert bl*.bin symlinks to local files
+find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \;
+
+# Clean up not needed build artifacts
+rm -rf Image-ledge* Image*mainline* modules-*-mainline* \
+	*.env *.conf *.manifest *.json *.wks
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
