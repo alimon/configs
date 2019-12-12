@@ -54,7 +54,7 @@ function get_value_from_config_file(){
 function submit_jobs_for_config(){
     local build_config=$1 && shift
     # clean environments
-    unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
+    unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_TEAM TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     unset PUBLISH_FILES TEST_OTHER_PLANS
 
@@ -89,12 +89,15 @@ function submit_jobs_for_config(){
     if [ -n "${TEST_QA_SERVER_ENVIRONMENT}" ] && echo "X${TEST_QA_SERVER_ENVIRONMENT_ENABLED}" | grep -i "Xtrue"; then
         OPT_ENVIRONMENT="--environment ${TEST_QA_SERVER_ENVIRONMENT}"
     fi
+    if [ -z "${TEST_QA_SERVER_TEAM}" ]; then
+        TEST_QA_SERVER_TEAM="android-lkft"
+    fi
     python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
         --device-type ${TEST_DEVICE_TYPE} \
         --build-number ${BUILD_NUMBER} \
         --lava-server ${TEST_LAVA_SERVER} \
         --qa-server ${TEST_QA_SERVER} \
-        --qa-server-team android-lkft \
+        --qa-server-team ${TEST_QA_SERVER_TEAM} \
         ${OPT_ENVIRONMENT} \
         --qa-server-project ${TEST_QA_SERVER_PROJECT} \
         --git-commit ${QA_BUILD_VERSION} \
@@ -121,7 +124,7 @@ function submit_jobs_for_config(){
             fi
             qa_server_team=$(get_value_from_config_file "TEST_QA_SERVER_TEAM_${plan}" "${build_config}")
             if [ -z "${qa_server_team}" ]; then
-                qa_server_team="android-lkft"
+                qa_server_team="${TEST_QA_SERVER_TEAM}"
             fi
             qa_server_project=$(get_value_from_config_file "TEST_QA_SERVER_PROJECT_${plan}" "${build_config}")
             if [ -z "${qa_server_project}" ]; then
