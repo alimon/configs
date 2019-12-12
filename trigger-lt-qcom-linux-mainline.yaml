@@ -39,22 +39,20 @@
                   - simple: true
     wrappers:
         - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: QCOMLT_KERNELCI_TOKEN
+                variable: QCOMLT_KERNELCI_TOKEN
     builders:
         - shell: |
             #!/bin/bash
-
             set -ex
-
-            env
-
-            pip install --user python-dateutil beautifulsoup4
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            set +e
-            python configs/lt-qcom-linux-test/get_latest_kernel_build.py \
-              > lt_qcom_parameters
+            set +ex
+            ./configs/lt-qcom-linux-test/kernelci.py ${QCOMLT_KERNELCI_TOKEN} mainline arm64 defconfig lt_qcom_parameters
             ret=$?
             if [ $ret -ne 0 ]; then
                 echo "warning: no new kernel ci build available"

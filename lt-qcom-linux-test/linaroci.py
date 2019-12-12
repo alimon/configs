@@ -9,33 +9,6 @@ import dateutil.parser
 
 from bs4 import BeautifulSoup, SoupStrainer
 
-
-def get_kernel_ci_build(url, arch_config):
-    f = urllib2.urlopen(url)
-    page = f.read()
-    soup = BeautifulSoup(page, "html.parser")
-
-    last_build = -1
-    for tr in soup.select('table > tbody > tr'):
-        if 'Parent directory' in tr.text or 'last.commit' in tr.text or '-lava-bisect-' in tr.text:
-            continue
-
-        if last_build == -1:
-            last_build = tr
-        elif dateutil.parser.parse(tr.contents[2].text) > \
-                dateutil.parser.parse(last_build.contents[2].text):
-            last_build = tr
-
-    url = url + last_build.contents[0].text + arch_config
-
-    image_url = url + 'Image'
-    dt_url = url + "dtbs"
-    modules_url = url + 'modules.tar.xz'
-    version = last_build.contents[0].text[0:-1] # remove last / char
-
-    return (image_url, dt_url, modules_url, version)
-
-
 def _find_last_build_in_linaro_ci(url):
     last_build = -1
     rex = re.compile('(?P<last_build>\d+)')
@@ -122,13 +95,6 @@ def validate_if_already_built(url, artifacts_urls):
 
 
 def main():
-    kernel_build_type = os.environ.get('KERNEL_BUILD_TYPE', 'KERNEL_CI')
-
-    kernel_ci_base_url = os.environ.get('KERNEL_CI_BASE_URL',
-                                        'https://storage.kernelci.org/qcom-lt/integration-linux-qcomlt/')
-    kernel_ci_arch_config = os.environ.get('KERNEL_CI_ARCH_CONFIG',
-                                           'arm64/defconfig/gcc-8/')
-
     linaro_ci_base_url = os.environ.get('LINARO_CI_BASE_URL',
                                         'https://snapshots.linaro.org/member-builds/qcomlt/kernel/')
 
@@ -142,14 +108,7 @@ def main():
     modules_url = None
     version = None
 
-    if kernel_build_type == 'KERNEL_CI':
-        (image_url, dt_url, modules_url, version) = get_kernel_ci_build(kernel_ci_base_url,
-                                                                        kernel_ci_arch_config)
-    elif kernel_build_type == 'LINARO_CI':
-        (image_url, dt_url, modules_url, version) = get_linaro_ci_build(linaro_ci_base_url)
-    else:
-        print('ERROR: Kernel build type (%s) isn\'t supported' % kernel_build_type)
-        sys.exit(1)
+    (image_url, dt_url, modules_url, version) = get_linaro_ci_build(linaro_ci_base_url)
 
     print("KERNEL_DT_URL=%s" % dt_url)
 
