@@ -89,37 +89,6 @@ def get_linaro_ci_build(url):
     return (image_url, dt_url, modules_url, version)
 
 
-def get_ramdisk_rootfs_url(url, job_url):
-    f = urllib2.urlopen(job_url + "lastSuccessfulBuild/buildNumber")
-    last_build = int(f.read())
-
-    url = '%s/%d/' % (url, last_build)
-    f = urllib2.urlopen(url)
-    page = f.read()
-    base_url_p = urlparse.urlparse(url)
-    base_url = "%s://%s" % (base_url_p.scheme, base_url_p.netloc)
-
-    ramdisk_rex = re.compile('initramfs-test-image-.*\.rootfs\.cpio\.gz$')
-    ramdisk_url = ''
-    soup = BeautifulSoup(page, "html.parser", parse_only=SoupStrainer("a"))
-    for line in soup.find_all('a', href=True):
-        s = ramdisk_rex.search(line['href'])
-        if s:
-            ramdisk_url = base_url + line['href']
-            break
-
-    rootfs_rex = re.compile('rpb-console-image-test-.*\.rootfs\.img\.gz$')
-    rootfs_url = ''
-    soup = BeautifulSoup(page, "html.parser", parse_only=SoupStrainer("a"))
-    for line in soup.find_all('a', href=True):
-        s = rootfs_rex.search(line['href'])
-        if s:
-            rootfs_url = base_url + line['href']
-            break
-
-    return (ramdisk_url, rootfs_url)
-
-
 # XXX: When the Jenkins trigger detects a new build (URL change) dosen't mean that the kernel
 # defconfig build we are looking for is done so this check is needed to try in loop mode
 # until defconfig is available and not register the build as done.
@@ -164,10 +133,6 @@ def main():
                                         'https://snapshots.linaro.org/member-builds/qcomlt/kernel/')
 
     machines = os.environ.get('MACHINES', 'apq8016-sbc apq8096-db820c').split()
-    ramdisk_job_url = os.environ.get('RAMDISK_JOB_URL',
-                                'https://ci.linaro.org/job/lt-qcom-linux-testimages/')
-    ramdisk_base_url = os.environ.get('RAMDISK_BASE_URL',
-                                'https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64/')
     builds_url = os.environ.get('BUILDS_URL',
                                 'https://snapshots.linaro.org/member-builds/qcomlt/linux-integration/%s/')
 
@@ -176,12 +141,6 @@ def main():
     image_url = None
     modules_url = None
     version = None
-    (ramdisk_url, rootfs_url) = get_ramdisk_rootfs_url(ramdisk_base_url, ramdisk_job_url)
-
-    print('RAMDISK_URL=%s' % ramdisk_url)
-    validate_url(ramdisk_url)
-    print('ROOTFS_URL=%s' % rootfs_url)
-    validate_url(rootfs_url)
 
     if kernel_build_type == 'KERNEL_CI':
         (image_url, dt_url, modules_url, version) = get_kernel_ci_build(kernel_ci_base_url,
@@ -210,8 +169,7 @@ def main():
                 raise
 
         try:
-            validate_if_already_built((builds_url % m), (image_url, dt_file_url, modules_url,
-                                      ramdisk_url, rootfs_url))
+            validate_if_already_built((builds_url % m), (image_url, dt_file_url, modules_url))
         except urllib2.HTTPError as e:
             # 404 can happen when no previous build exists
             if e.code != 404:

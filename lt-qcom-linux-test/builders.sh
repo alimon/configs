@@ -163,14 +163,11 @@ if [ -z "${KERNEL_IMAGE_URL}" ]; then
 	echo "ERROR: KERNEL_IMAGE_URL is empty"
 	exit 1
 fi
-if [ -z "${RAMDISK_URL}" ]; then
-	echo "ERROR: RAMDISK_URL is empty"
-	exit 1
-fi
-if [ -z "${ROOTFS_URL}" ]; then
-	echo "ERROR: RAMDISK_URL is empty"
-	exit 1
-fi
+
+# find rootfs and ramdisk to use
+python configs/lt-qcom-linux-test/get_latest_testimage.py
+RAMDISK_URL=$(cat output.log  | grep RAMDISK_URL | cut -d= -f2)
+ROOTFS_URL=$(cat output.log  | grep ROOTFS_URL | cut -d= -f2)
 
 # Build information
 mkdir -p out
