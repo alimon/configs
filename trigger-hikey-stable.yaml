@@ -1,0 +1,47 @@
+- job:
+    name: trigger-hikey-stable
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for HiKey/HiKey960 Stable kernels'
+    scm:
+        - git:
+            url: https://github.com/tom-gall/hikey-linaro
+            branches:
+              - android-4.4-o-hikey
+              - android-4.9-o-hikey
+            name: linux
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H/30 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+            params=$(echo $GIT_BRANCH|sed s,linux/,lkft-,).txt
+            echo KERNEL_DESCRIBE=$(git describe --always) >> $params
+            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            cat $params
+        - trigger-builds:
+            - project: lkft-hikey-4.4-o
+              property-file: lkft-android-4.4-o-hikey.txt
+            - project: lkft-hikey-4.9-o
+              property-file: lkft-android-4.9-o-hikey.txt
