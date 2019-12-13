@@ -7,6 +7,7 @@ git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
 PRODUCTION_LAVA_TEST_JOBS="template-robotframework-tests.yaml template-wifi-tests.yaml"
 STAGING_LAVA_TEST_JOBS=""
+export CHAMELIUM_IP="\${CHAMELIUM_IP}"
 
 case "${DEVICE_TYPE}" in
   dragonboard-410c)
