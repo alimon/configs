@@ -693,6 +693,9 @@
           name: bad_branch
           default: ""
           description: "Bad branch or sha1"
+      - file:
+          name: replay_log
+          description: "Replay part of bisect using provided bisect log"
       - default-parameters
     disabled: false
     node: tcwg-x86_64-1-cam
@@ -734,6 +737,7 @@
             --current_project "$current_project" \
             --baseline_branch "$baseline_branch" \
             --bad_branch "$bad_branch" \
+            --replay_log "$(pwd)/replay_log" \
             --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
             -- \
             --scripts_branch "$scripts_branch" \
