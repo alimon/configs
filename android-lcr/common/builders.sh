@@ -13,7 +13,7 @@ sudo dpkg -i --force-all *.deb
 rm -f *.deb
 
 # Install jinja2-cli and ruamel.yaml
-pip install --user --force-reinstall jinja2-cli ruamel.yaml
+pip install --user --force-reinstall jinja2-cli ruamel.yaml pycryptodome
 pip3 install --user --force-reinstall pycryptodome
 
 # Set local configuration
