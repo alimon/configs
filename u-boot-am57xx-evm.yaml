@@ -1,0 +1,74 @@
+- job:
+    name: u-boot-am57xx-evm
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: docker-xenial-amd64
+    display-name: 'U-Boot upstream (mainline) for am57xx-evm'
+    scm:
+        - git:
+            url: git://git.denx.de/u-boot.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            env |grep GIT
+
+            set -ex
+
+            trap cleanup_exit INT TERM EXIT
+
+            cleanup_exit()
+            {
+              cd ${WORKSPACE}
+              rm -rf build out
+              git clean -fdx
+              git reset --hard
+            }
+
+            sudo apt-get update
+            sudo apt-get install -y libssl-dev python-requests rsync \
+                swig libpython-dev
+
+            export CC=arm-linux-gnueabihf-
+            make ARCH=arm CROSS_COMPILE=${CC} distclean
+            make ARCH=arm CROSS_COMPILE=${CC} am57xx_evm_defconfig
+            make ARCH=arm CROSS_COMPILE=${CC}
+
+            mkdir -p out
+            cp .config out/config
+            cp MLO u-boot.img u-boot-dtb.bin arch/arm/dts/*.dtb spl/u-boot-spl.bin spl/u-boot-spl.dtb out/
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python3 ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              out components/kernel/u-boot/${BUILD_NUMBER}
+    publishers:
+        - email:
+            recipients: 'vishal.bhoj@linaro.org'
