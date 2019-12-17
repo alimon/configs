@@ -1,9 +1,9 @@
 #!/bin/bash -ex
 
-echo "For Test purpose check 1: LKFT_BUILD_DIR=${LKFT_BUILD_DIR}"
-export LKFT_BUILD_DIR=/home/buildslave/srv/${BUILD_DIR}/workspace
-echo "For Test purpose check 2: LKFT_BUILD_DIR=${LKFT_BUILD_DIR}"
-cd ${LKFT_BUILD_DIR}
+echo "For Test purpose check 1: LKFT_WORK_DIR=${LKFT_WORK_DIR}"
+export LKFT_WORK_DIR=/home/buildslave/srv/${BUILD_DIR}/workspace
+echo "For Test purpose check 2: LKFT_WORK_DIR=${LKFT_WORK_DIR}"
+cd ${LKFT_WORK_DIR}
 
 F_ABS_PATH=$(readlink -e $0)
 OPT_DRY_RUN=""

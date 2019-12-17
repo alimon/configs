@@ -21,24 +21,27 @@ pip install --user --force-reinstall ruamel.yaml
 sudo apt-get update
 sudo apt-get install -y selinux-utils cpio
 
-export LKFT_WORK_DIR=/home/buildslave/srv/${BUILD_DIR}
-export LKFT_BUILD_DIR=/home/buildslave/srv/${BUILD_DIR}/workspace
+export LKFT_WORK_ROOT_DIR=/home/buildslave/srv/${BUILD_DIR}
+# NOTE: LKFT_WORK_DIR used by linaro-lkft.sh as well
+export LKFT_WORK_DIR=${LKFT_WORK_ROOT_DIR}/workspace
 
-# temporary workaround for changing to build under ${LKFT_BUILD_DIR}
-if [ -d "${LKFT_WORK_DIR}/.repo" ]; then
-  sudo rm -fr ${LKFT_WORK_DIR}
+# temporary workaround for changing to build under ${LKFT_WORK_DIR}
+if [ -d "${LKFT_WORK_ROOT_DIR}/.repo" ]; then
+  sudo rm -fr ${LKFT_WORK_ROOT_DIR}
 fi
-if [ ! -d "${LKFT_WORK_DIR}" ]; then
-  sudo mkdir -p ${LKFT_WORK_DIR}
-  sudo chmod 777 ${LKFT_WORK_DIR}
+if [ ! -d "${LKFT_WORK_ROOT_DIR}" ]; then
+  sudo mkdir -p ${LKFT_WORK_ROOT_DIR}
+  sudo chmod 777 ${LKFT_WORK_ROOT_DIR}
 fi
-cd ${LKFT_WORK_DIR}
+cd ${LKFT_WORK_ROOT_DIR}
 
 # clean the workspace, but keep using the old repo for repo sync speed
-LKFT_REPO_BACKUP=${LKFT_WORK_DIR_DIR}/.repo-lkft
-rm -fr ${LKFT_REPO_BACKUP} && [ -d ${LKFT_BUILD_DIR}/.repo ] && mv ${LKFT_BUILD_DIR}/.repo ${LKFT_REPO_BACKUP}
-rm -fr ${LKFT_BUILD_DIR} && mkdir -p ${LKFT_BUILD_DIR} && [ -d ${LKFT_REPO_BACKUP} ] && mv ${LKFT_REPO_BACKUP} ${LKFT_BUILD_DIR}/.repo
-cd ${LKFT_BUILD_DIR}
+LKFT_REPO_BACKUP=${LKFT_WORK_ROOT_DIR}/.repo-lkft
+LKFT_REPO_UNDER_WORK_DIR=${LKFT_WORK_DIR}/.repo
+rm -fr ${LKFT_REPO_BACKUP} && [ -d ${LKFT_REPO_UNDER_WORK_DIR} ] && mv ${LKFT_REPO_UNDER_WORK_DIR} ${LKFT_REPO_BACKUP}
+rm -fr ${LKFT_WORK_DIR} && mkdir -p ${LKFT_WORK_DIR} && [ -d ${LKFT_REPO_BACKUP} ] && mv ${LKFT_REPO_BACKUP} ${LKFT_REPO_UNDER_WORK_DIR}
+
+cd ${LKFT_WORK_DIR}
 
 wget https://android-git.linaro.org/android-build-configs.git/plain/lkft/linaro-lkft.sh?h=lkft -O linaro-lkft.sh
 chmod +x linaro-lkft.sh
