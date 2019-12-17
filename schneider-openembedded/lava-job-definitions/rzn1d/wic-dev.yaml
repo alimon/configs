@@ -1,0 +1,117 @@
+device_type: rzn1d
+job_name: SE ${MACHINE} WIC dev ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+actions:
+
+- deploy:
+    namespace: dfu
+    to: tmpfs
+    images:
+      sf_fsbl:
+        image_arg: --alt sf_fsbl --download {sf_fsbl}
+        url: ${FSBL_URL}
+      sf_trustedfw:
+        image_arg: --alt sf_trustedfw --download {sf_trustedfw}
+        url: ${OPTEE_ITB_URL}
+      sf_uboot0:
+        image_arg: --alt sf_uboot0 --download {sf_uboot0}
+        url: ${UBOOT_ITB_URL}
+      sf_uboot1:
+        image_arg: --alt sf_uboot1 --download {sf_uboot1}
+        url: ${UBOOT_ITB_URL}
+
+- command:
+    namespace: dfu
+    name: set_boot_to_nand
+
+- boot:
+    namespace: dfu
+    method: dfu
+    timeout:
+      minutes: 10
+
+- command:
+    namespace: test
+    name: set_boot_to_qspi
+
+- deploy:
+    namespace: test
+    to: overlay
+
+- deploy:
+    namespace: dfu
+    timeout:
+      minutes: 100
+    to: flasher
+    images:
+      image:
+        url: ${WIC_DEV_IMAGE_URL}
+        compression: bz2
+
+- deploy:
+    namespace: test
+    to: overlay
+
+- boot:
+    namespace: test
+    connection-namespace: dfu
+    timeout:
+      minutes: 100
+    method: u-boot
+    commands:
+    - mmc rescan
+    - fatload mmc 0:1 80008000 zimage-rzn1-snarc.bin
+    - if test -e mmc 0:1 zImage-rzn1d400-snarc-bestla.dtb; then fatload mmc 0:1 80f00000 zImage-rzn1d400-snarc-bestla.dtb; else fatload mmc 0:1 80f00000 rzn1d400-snarc-bestla.dtb; fi;
+    - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
+    - bootz 80008000 - 80f00000
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+    prompts:
+    - "root@rzn1-snarc:"
+
+- test:
+    namespace: test
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: mount
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: free -h
+      - command: ifconfig -a
+      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+      - command: docker run hello-world
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose
