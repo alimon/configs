@@ -564,6 +564,10 @@
           name: ci_config
           default: gnu-release-aarch64-spec2k6-O2
           description: "CI configuration ID: {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+      - string:
+          name: benchmarks
+          default: default
+          description: "Benchmarks to run: spec2k6, c_and_cxx, all, 400.perlbench, etc.  Extract from ci_config by default."
       - llvm-parameters:
           binutils_url: https://sourceware.org/git/binutils-gdb.git
           gcc_url: https://gcc.gnu.org/git/gcc.git
@@ -624,6 +628,7 @@
             --bmk_branch "$bmk_branch" \
             ==rr[ci_project] $ci_project \
             ==rr[ci_config] $ci_config \
+            --benchmarks "$benchmarks" \
             ==rr[binutils_url] $binutils_url \
             ==rr[gcc_url] $gcc_url \
             ==rr[glibc_url] $glibc_url \
@@ -673,6 +678,10 @@
           name: ci_config
           default: gnu-release-aarch64-spec2k6-O2
           description: "CI configuration ID: {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+      - string:
+          name: benchmarks
+          default: default
+          description: "Benchmarks to run: spec2k6, c_and_cxx, all, 400.perlbench, etc.  Extract from ci_config by default."
       - string:
           name: binutils_url
           default: https://sourceware.org/git/binutils-gdb.git
@@ -752,6 +761,7 @@
             --bmk_branch "$bmk_branch" \
             ==rr[ci_project] $ci_project \
             ==rr[ci_config] $ci_config \
+            --benchmarks "$benchmarks" \
             ==rr[binutils_url] $binutils_url \
             ==rr[gcc_url] $gcc_url \
             ==rr[glibc_url] $glibc_url \
