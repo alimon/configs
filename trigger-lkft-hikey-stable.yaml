@@ -1,5 +1,5 @@
 - job:
-    name: trigger-hikey-stable
+    name: trigger-lkft-hikey-stable
     project-type: freestyle
     defaults: global
     properties:
@@ -10,15 +10,21 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    disabled: true
+    disabled: false
     node: master
-    display-name: 'TOBEDELETED: Trigger for HiKey/HiKey960 Stable kernels'
+    display-name: 'Trigger for HiKey/HiKey960 Stable kernels'
     scm:
         - git:
             url: https://github.com/tom-gall/hikey-linaro
             branches:
               - android-4.4-o-hikey
+              - android-4.4-p-hikey
               - android-4.9-o-hikey
+              - android-4.9-p-hikey
+              - android-4.9-q-hikey
+              - android-4.14-p-hikey
+              - android-4.14-q-hikey
+              - android-4.19-q-hikey
             name: linux
             skip-tag: true
             shallow-clone: false
@@ -43,5 +49,17 @@
         - trigger-builds:
             - project: lkft-hikey-4.4-o
               property-file: lkft-android-4.4-o-hikey.txt
+            - project: lkft-hikey-4.4-p
+              property-file: lkft-android-4.4-p-hikey.txt
             - project: lkft-hikey-4.9-o
               property-file: lkft-android-4.9-o-hikey.txt
+            - project: lkft-hikey-aosp-4.9-premerge-ci
+              property-file: lkft-android-4.9-p-hikey.txt
+            - project: lkft-hikey-10.0-4.9-q
+              property-file: lkft-android-4.9-q-hikey.txt
+            - project: lkft-hikey-aosp-4.14-premerge-ci
+              property-file: lkft-android-4.14-p-hikey.txt
+            - project: lkft-hikey-10.0-4.14-q
+              property-file: lkft-android-4.14-q-hikey.txt
+            - project: lkft-hikey-android-10.0-gsi-4.19
+              property-file: lkft-android-4.19-q-hikey.txt
