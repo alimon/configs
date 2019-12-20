@@ -92,6 +92,10 @@ actions:
       - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
       - command: ping -c 3 github.com
+      - command: systemctl stop docker
+      - command: umount /tmp/sdcard
+      - command: mount -t tmpfs tmpfs /tmp/sdcard
+      - command: systemctl start docker
       - command: docker run hello-world
 
 metadata:
