@@ -18,18 +18,7 @@ if [ "${DEVICE_TYPE}" == "rzn1d" ] || [ "${DEVICE_TYPE}" == "soca9" ]; then
 	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
 	  --template-names uboot.yaml
 fi
-if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
-	python configs/openembedded-lkft/submit_for_testing.py \
-	  --device-type ${DEVICE_TYPE} \
-	  --build-number ${BUILD_NUMBER} \
-	  --lava-server ${LAVA_SERVER} \
-	  --qa-server ${QA_SERVER} \
-	  --qa-server-team ${QA_SERVER_TEAM} \
-	  --qa-server-project ${QA_SERVER_PROJECT} \
-	  --git-commit ${MANIFEST_COMMIT} \
-	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
-	  --template-names fit.yaml
-fi
+
 if [ "${DEVICE_TYPE}" == "rzn1d" ] || [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
@@ -42,6 +31,7 @@ if [ "${DEVICE_TYPE}" == "rzn1d" ] || [ "${DEVICE_TYPE}" == "soca9" ]; then
 	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
 	  --template-names tftp-nfs.yaml
 fi
+
 if [ "${DEVICE_TYPE}" == "rzn1d" ] || [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
@@ -146,6 +136,7 @@ if [ "${DEVICE_TYPE}" == "soca9" ]; then
 	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
 	  --template-names wic.yaml
 fi
+
 if [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
