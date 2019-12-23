@@ -84,6 +84,18 @@ function submit_jobs_for_config(){
         sed -i "s|{{DOWNLOAD_URL}}/${f}|{{DOWNLOAD_URL}}/${build_config}-$f|" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
     done
 
+    # special case for android 8.1 version, which does not support vendor partition yet
+    if ! echo "${PUBLISH_FILES}" | grep vendor; then
+        # only need to check for the case that when no vendor.img generated
+        # and not vendor.img with the REFERENCE_BUILD
+        if curl --output /dev/null --silent --head --fail "${REFERENCE_BUILD_URL}/vendor.img.xz"; then
+            echo "This reference build comes with a vendor partition"
+        else
+            echo "No vendor partition for the reference build, so flashing cache partition from the job instead"
+            sed -i "s|vendor.img.xz|cache.img.xz|g" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
+        fi
+    fi
+
     # set OPT_ENVIRONMENT to empty by default, to make openembedded-lkft/submit_for_testing.py
     # use the device type as the qa-report server environment
     # and use the value of TEST_QA_SERVER_ENVIRONMENT as the qa-report server environment
