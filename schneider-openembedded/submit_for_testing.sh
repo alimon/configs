@@ -111,19 +111,6 @@ if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
 	  --template-names wic-edge.yaml
 fi
 
-if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
-	python configs/openembedded-lkft/submit_for_testing.py \
-	  --device-type ${DEVICE_TYPE} \
-	  --build-number ${BUILD_NUMBER} \
-	  --lava-server ${LAVA_SERVER} \
-	  --qa-server ${QA_SERVER} \
-	  --qa-server-team ${QA_SERVER_TEAM} \
-	  --qa-server-project ${QA_SERVER_PROJECT} \
-	  --git-commit ${MANIFEST_COMMIT} \
-	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
-	  --template-names tftp-nfs-edge.yaml
-fi
-
 if [ "${DEVICE_TYPE}" == "soca9" ]; then
 	python configs/openembedded-lkft/submit_for_testing.py \
 	  --device-type ${DEVICE_TYPE} \
