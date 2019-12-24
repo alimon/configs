@@ -10,22 +10,33 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    disabled: true
+    disabled: false
     node: master
-    display-name: 'TOBEDELETED: Trigger for HiKey/HiKey960 Stable kernels'
+    display-name: 'TOBEDELETED: Trigger for HiKey/HiKey960 Stable kernels, only use for test purpose'
     scm:
         - git:
+            remotes:
+                - hikey-stable:
+                    url: https://github.com/liuyq/hikey-linaro
+                - linux-stable:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                    refspec: +refs/heads/linux-4.4.y:refs/remotes/linux-stable/linux-4.4.y +refs/heads/linux-4.9.y:refs/remotes/linux-stable/linux-4.9.y +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
             url: https://github.com/tom-gall/hikey-linaro
             branches:
-              - android-4.4-o-hikey
-              - android-4.9-o-hikey
-            name: linux
+              - remotes/hikey-stable/android-4.4-o-hikey
+              - remotes/hikey-stable/android-4.4-p-hikey
+              - remotes/hikey-stable/android-4.9-o-hikey
+              - remotes/hikey-stable/android-4.9-p-hikey
+              - remotes/hikey-stable/android-4.9-q-hikey
+              - remotes/hikey-stable/android-4.14-p-hikey
+              - remotes/hikey-stable/android-4.14-q-hikey
+              - remotes/hikey-stable/android-4.19-q-hikey
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
     triggers:
         - pollscm:
-            cron: 'H/30 * * * *'
+            cron: 'H/5 * * * *'
     wrappers:
         - timestamps
         - build-name:
@@ -35,13 +46,8 @@
             #!/bin/bash -ex
             git clean -fdx
             env
-            params=$(echo $GIT_BRANCH|sed s,linux/,lkft-,).txt
+            params=$(echo $GIT_BRANCH|sed s,hikey-stable/,lkft-,).txt
             echo KERNEL_DESCRIBE=$(git describe --always) >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
             echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
             cat $params
-        - trigger-builds:
-            - project: lkft-hikey-4.4-o
-              property-file: lkft-android-4.4-o-hikey.txt
-            - project: lkft-hikey-4.9-o
-              property-file: lkft-android-4.9-o-hikey.txt
