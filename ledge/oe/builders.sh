@@ -182,6 +182,8 @@ ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.tar.xz" -printf "%f\n")
 HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" -printf "%f\n")
 INITRD_URL=""
+OVMF=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ovmf.qcow2" -printf "%f\n")
+
 case "${MACHINE}" in
   ledge-am57xx-evm)
     # QEMU arm 32bit needs the zImage file, not the uImage file.
@@ -260,6 +262,7 @@ MAKE_KERNELVERSION=${MAKE_KERNELVERSION}
 TOOLCHAIN="${TARGET_SYS} ${GCCVERSION}"
 KERNEL_ARGS="${KERNEL_ARGS}"
 INITRD_URL="${INITRD_URL}"
+OVMF="${OVMF}"
 EOF
 
 cat ${WORKSPACE}/post_build_lava_parameters

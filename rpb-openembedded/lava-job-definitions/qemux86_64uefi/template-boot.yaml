@@ -1,0 +1,70 @@
+device_type: qemu
+job_name: LEDGE RPB OE edk2 boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 45
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+priority: 25
+visibility: public
+
+context:
+  arch: x86_64
+  netdevice: tap
+  guestfs_interface: virtio
+
+actions:
+- deploy:
+    namespace: target
+    timeout:
+      minutes: 15
+    to: tmpfs
+    images:
+      rootfs:
+        image_arg: -drive id=disk0,file={rootfs},if=none,format=raw,index=0 -device virtio-blk-pci,drive=disk0,bootindex=0
+          -m 2048 -smp 4 -serial mon:stdio -show-cursor -object rng-random,filename=/dev/urandom,id=rng0 -device virtio-rng-pci,rng=rng0
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+        sparse: false
+      bios:
+        image_arg: -drive if=pflash,format=qcow2,file={bios}
+        url: ${OVMF}
+    os: oe
+
+- boot:
+    namespace: target
+    timeout:
+      minutes: 10
+    method: qemu
+    media: tmpfs
+    expect_shell: False
+    boot_finished:
+     - 'reboot: Restarting system'
+     - 'reboot: System halted'
+     - 'Requesting system halt'
+
+- boot:
+    namespace: target
+    timeout:
+      minutes: 10
+    method: qemu
+    media: tmpfs
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      login_commands:
+        - su
+    prompts:
+    - root@(.*):~#
+    - '~ #'
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${BASE_URL}${PUB_DEST}
