@@ -127,8 +127,10 @@ for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.wic); do
 done
 pigz -9 ledge-kernel-uefi-certs.ext4
 
-# Convert bl*.bin symlinks to local files
-find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \;
+# Convert bl*.bin symlinks to local files and package them to bios-num.tar.gz
+find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \; && \
+  ( tar -czf bios-${BUILD_NUMBER}.tar.gz bl*.bin; \
+    rm -rf bl*.bin; )
 
 # Clean up not needed build artifacts
 rm -rf Image-ledge* Image*mainline* modules-*-mainline* \
