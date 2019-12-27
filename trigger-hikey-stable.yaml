@@ -40,12 +40,13 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_BRANCH}-${GIT_REVISION,length=8}'
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="git_describe.txt",property="KERNEL_DESCRIBE"}'
     builders:
         - shell: |
             #!/bin/bash -ex
             git clean -fdx
             env
+            echo KERNEL_DESCRIBE=$(git describe --always) > git_describe.txt
             params=$(echo $GIT_BRANCH|sed s,hikey-stable/,lkft-,).txt
             echo KERNEL_DESCRIBE=$(git describe --always) >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
