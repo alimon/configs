@@ -15,17 +15,14 @@ templates_common=(\
 	tftp-nfs-dev.yaml \
 	wic.yaml \
 	wic-dev.yaml \
-)
-
-templates_soca9=(\
-	wic-dev-ltp-1.yaml \
-	wic-dev-ltp-2.yaml \
+	wic-dev-ltp.yaml \
 	wic-dev-ptest.yaml \
 )
 
+templates_soca9=(\
+)
+
 templates_rzn1d=(\
-	tftp-nfs-dev-ltp.yaml \
-	tftp-nfs-dev-ptest.yaml \
 	ubi.yaml \
 	ubi-edge.yaml \
 	wic-edge.yaml \
