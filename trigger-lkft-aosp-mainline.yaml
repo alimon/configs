@@ -40,12 +40,18 @@
     builders:
         - shell: |
             #!/bin/bash -e
-            echo KERNEL_DESCRIBE=$(git describe --always) > properties.txt
-            echo KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,android-mainline/,,) >> properties.txt
-            echo KERNEL_DESCRIBE=$(git describe --always) > lkft_parameters
+            KERNEL_DESCRIBE=$(git describe --always)
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > lkft_parameters
             echo SRCREV_kernel=${GIT_COMMIT} >> lkft_parameters
             echo MAKE_KERNELVERSION=$(make kernelversion) >> lkft_parameters
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> lkft_parameters
             cat lkft_parameters
+
+            # call api of android.linaro.org for lkft report check scheduling
+            curl http://android.linaro.org:9000/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
     publishers:
         - trigger-parameterized-builds:
             - project:

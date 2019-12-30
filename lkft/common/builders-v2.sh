@@ -1,5 +1,8 @@
 #!/bin/bash -ex
 
+# call api of android.linaro.org for lkft report check scheduling
+curl http://android.linaro.org:9000/lkft/newbuild/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
+
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 
