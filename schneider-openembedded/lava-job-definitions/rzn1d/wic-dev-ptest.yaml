@@ -1,5 +1,5 @@
 device_type: rzn1d
-job_name: SE ${MACHINE} TFTP/NFS ptest ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} WIC dev ptest ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -49,41 +49,39 @@ actions:
     to: overlay
 
 - deploy:
-    namespace: test
+    namespace: dfu
     timeout:
-      minutes: 5
-    to: tftp
-    os: oe
-    kernel:
-      url: ${KERNEL_ZIMAGE_URL}
-      type: zimage
-    dtb:
-      url: ${DTB_URL}
-    nfsrootfs:
-      url: ${NFSROOTFS_DEV_URL}
-      compression: bz2
+      minutes: 100
+    to: flasher
+    images:
+      image:
+        url: ${WIC_DEV_IMAGE_URL}
+        compression: bz2
+
+- deploy:
+    namespace: test
+    to: overlay
 
 - boot:
     namespace: test
     connection-namespace: dfu
     timeout:
-      minutes: 20
+      minutes: 100
     method: u-boot
     commands:
-      - setenv autoload no
-      - dhcp
-      - dhcp
-      - env print
-      - setenv serverip {SERVER_IP}
-      - tftp {KERNEL_ADDR} {KERNEL}
-      - tftp {DTB_ADDR} {DTB}
-      - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
-      - '{BOOTX}'
+    - mmc rescan
+    - fatload mmc 0:1 80008000 zimage-rzn1-snarc.bin
+    - if test -e mmc 0:1 zImage-rzn1d400-snarc-bestla.dtb; then fatload mmc 0:1 80f00000 zImage-rzn1d400-snarc-bestla.dtb; else fatload mmc 0:1 80f00000 rzn1d400-snarc-bestla.dtb; fi;
+    - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
+    - bootz 80008000 - 80f00000
     auto_login:
       login_prompt: 'login:'
       username: root
     prompts:
     - "root@rzn1-snarc:"
+    transfer_overlay:
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; cd /tmp ; wget
+      unpack_command: tar --touch -C / -xzf
 
 - test:
     namespace: test
@@ -95,6 +93,7 @@ actions:
       script:
       - command: uname -a
       - command: cat /proc/device-tree/model ; echo ""
+      - command: mount
       - command: ps aux --sort -rss
       - command: cat /proc/meminfo
       - command: free -h
