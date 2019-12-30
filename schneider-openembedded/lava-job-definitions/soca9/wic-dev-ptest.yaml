@@ -1,5 +1,5 @@
 device_type: soca9
-job_name: SE ${MACHINE} WIC ptest ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} WIC dev ptest ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -33,7 +33,7 @@ actions:
     prompts:
     - "root@snarc-soca9:"
     transfer_overlay:
-      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; cd /tmp ; wget
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
       unpack_command: tar --touch -C / -xzf
 
 - test:

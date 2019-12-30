@@ -1,5 +1,5 @@
 device_type: rzn1d
-job_name: SE ${MACHINE} TFTP/NFS LTP ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} WIC dev LTP ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -80,7 +80,7 @@ actions:
     prompts:
     - "root@rzn1-snarc:"
     transfer_overlay:
-      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; cd /tmp ; wget
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
       unpack_command: tar --touch -C / -xzf
 
 - test:
