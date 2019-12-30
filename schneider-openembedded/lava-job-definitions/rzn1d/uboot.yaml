@@ -113,10 +113,11 @@ actions:
         - message: "Base Address: 0x80000000"
       # crc32 - checksum calculation
       - command: mw.b 00000000 aa 400
-      - command: crc 80000000 400
+      - command: crc32 -v 80000000 400 3c6f327d
+      - command: echo return code $?
         name: compute-CRC32-checksum
         successes:
-        - message: "crc32 for 80000000 ... 800003ff ==> 3c6f327d"
+        - message: return code 0
       # mw - memory write
       # md - memory display
       - command: mw 100000 aabbccdd 10
@@ -160,9 +161,10 @@ actions:
         name: tftp
         successes:
         - message: "Bytes transferred = 6752784"
-      - command: crc32 {KERNEL_ADDR} 670a10
+      - command: crc32 -v {KERNEL_ADDR} 670a10 ca050911
+      - command: echo return code $?
         successes:
-        - message: "==> ca050911"
+        - message: return code 0
     - name: nand-commands
       prompts: ["=> ", "/ # "]
       script:
