@@ -46,10 +46,18 @@
             #!/bin/bash -ex
             git clean -fdx
             env
-            echo KERNEL_DESCRIBE=$(git describe --always) > properties.txt
-            echo KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,hikey-stable/,,) >> properties.txt
+
+            KERNEL_DESCRIBE=$(git describe --always)
+            KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,hikey-stable/,,)
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
+
             params=$(echo $GIT_BRANCH|sed s,hikey-stable/,lkft-,).txt
-            echo KERNEL_DESCRIBE=$(git describe --always) >> $params
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
             echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
             cat $params
+
+            # call api of android.linaro.org for lkft report check scheduling
+            http://android.linaro.org:9000/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER}
