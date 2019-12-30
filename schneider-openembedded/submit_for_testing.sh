@@ -48,5 +48,5 @@ do
 	  --qa-server-project ${QA_SERVER_PROJECT} \
 	  --git-commit ${MANIFEST_COMMIT} \
 	  --template-path configs/schneider-openembedded/lava-job-definitions/ \
-	  --template-names uboot.yaml
+	  --template-names ${template}
 done
