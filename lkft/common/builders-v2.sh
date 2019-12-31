@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 # call api of android.linaro.org for lkft report check scheduling
-if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}"]; then
+if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
     curl http://android.linaro.org:9000/lkft/newbuild/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
 fi
 
