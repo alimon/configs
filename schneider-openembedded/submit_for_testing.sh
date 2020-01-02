@@ -15,8 +15,7 @@ templates_common=(\
 	tftp-nfs-dev.yaml \
 	wic.yaml \
 	wic-dev.yaml \
-	wic-dev-ltp.yaml \
-	wic-dev-ptest.yaml \
+	wic-dev-ltp-ptest.yaml \
 )
 
 templates_soca9=(\
