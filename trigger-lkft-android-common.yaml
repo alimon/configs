@@ -1,0 +1,60 @@
+- job:
+    name: trigger-lkft-android-common
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for changes on android common kernel'
+    scm:
+        - git:
+            remotes:
+                - android-common:
+                    url: https://android.googlesource.com/kernel/common
+                - linux-stable:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                    refspec: +refs/heads/linux-5.4.y:refs/remotes/linux-stable/linux-5.4.y
+            branches:
+              - android-common/android-5.4
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H/30 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+
+            echo KERNEL_DESCRIBE=$(git describe --always) > properties.txt
+            echo KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,android-common/,,) >> properties.txt
+
+            params=lkft-${KERNEL_BRANCH}.txt
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
+            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
+            cat $params
+
+            # call api of android.linaro.org for lkft report check scheduling
+            if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
+                curl http://android.linaro.org:9000/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
+            fi
+        - trigger-builds:
+            - project: lkft-hikey-aosp-master-5.4
+              property-file: lkft-android-5.4.txt
+            - project: lkft-hikey960-aosp-master-5.4
+              property-file: lkft-android-5.4.txt
