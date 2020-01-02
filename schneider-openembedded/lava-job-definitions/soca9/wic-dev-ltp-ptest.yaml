@@ -1,5 +1,5 @@
 device_type: soca9
-job_name: SE ${MACHINE} WIC dev LTP ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} WIC dev LTP/PTEST ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -7,7 +7,7 @@ timeouts:
   action:
     minutes: 70
   connection:
-    minutes: 2
+    minutes: 20
 priority: medium
 visibility: public
 
@@ -376,6 +376,16 @@ actions:
       name: ltp-mm-tests
       timeout:
         minutes: 120
+    - path: automated/linux/ptest/ptest.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: linux-ptest
+      from: git
+      params:
+        exclude: 'bluez5 bzip2 containerd e2fsprogs libxml2 parted python strace'
+        EXCLUDE: 'bluez5 bzip2 containerd e2fsprogs libxml2 parted python strace'
+      timeout:
+        minutes: 160
 
 metadata:
   machine: ${MACHINE}
