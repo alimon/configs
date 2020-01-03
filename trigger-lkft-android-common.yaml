@@ -39,8 +39,11 @@
             git clean -fdx
             env
 
-            echo KERNEL_DESCRIBE=$(git describe --always) > properties.txt
-            echo KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,android-common/,,) >> properties.txt
+            KERNEL_DESCRIBE=$(git describe --always)
+            KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,android-common/,,)
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
 
             params=lkft-${KERNEL_BRANCH}.txt
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
