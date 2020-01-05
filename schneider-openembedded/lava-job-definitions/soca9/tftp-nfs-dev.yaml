@@ -245,18 +245,6 @@ actions:
       timeout:
         minutes: 15
 
-    - path: automated/linux/device-read-perf/device-read-perf.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      branch: master
-      history: false
-      from: git
-      parameters:
-        SKIP_INSTALL: 'true'
-        DEVICE: "sda mmcblk0"
-      name: device-read-perf
-      timeout:
-        minutes: 15
-
     - path: automated/linux/block-device/block-device.yaml
       repository: https://github.com/omnium21/test-definitions.git
       branch: block-device
@@ -269,6 +257,18 @@ actions:
       name: block-device-sda
       timeout:
         minutes: 30
+
+    - path: automated/linux/device-read-perf/device-read-perf.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      branch: master
+      history: false
+      from: git
+      parameters:
+        SKIP_INSTALL: 'true'
+        DEVICE: "sda mmcblk0"
+      name: device-read-perf
+      timeout:
+        minutes: 15
 
 metadata:
   machine: ${MACHINE}
