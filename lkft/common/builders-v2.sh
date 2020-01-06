@@ -48,6 +48,10 @@ rm -fr ${LKFT_WORK_DIR} && mkdir -p ${LKFT_WORK_DIR} && [ -d ${LKFT_REPO_BACKUP}
 
 cd ${LKFT_WORK_DIR}
 
+# temporary workaround for clean workspace,
+# will be reverted after one build finished successfully
+rm -fr .repo
+
 wget https://android-git.linaro.org/android-build-configs.git/plain/lkft/linaro-lkft.sh?h=lkft -O linaro-lkft.sh
 chmod +x linaro-lkft.sh
 for build_config in ${ANDROID_BUILD_CONFIG}; do
