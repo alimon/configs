@@ -6,15 +6,19 @@ kolla_branch=${BRANCH}
 kolla_ldc=${DEVCLOUD}
 kolla_ldc_extras=${DEVCLOUD_EXTRA_PATCHES}
 kolla_options=
-kolla_python=/usr/bin/python2
+kolla_python=/usr/bin/python3
 
 if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
     branch="ussuri"
-    kolla_python=/usr/bin/python3
 elif [[ ${kolla_branch} = "stable"* ]]; then
     branch=$(echo ${kolla_branch} | sed -e 's+stable/++g')
+
+    if [[ ${kolla_branch} = "rocky" ]]; then
+        kolla_python=/usr/bin/python2
+    fi
 else
-    branch="queens"
+    echo "Choose something"
+    exit 1
 fi
 
 if [ ! -z "${kolla_ldc}" ]; then
