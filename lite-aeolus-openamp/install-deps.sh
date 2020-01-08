@@ -2,5 +2,5 @@
 set -ex
 
 sudo apt update
-sudo apt install jq
+sudo apt install -y jq
 pip install yq
