@@ -71,9 +71,10 @@
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
     builders:
-        - shell:
-            !include-raw:
-                - lite-aeolus-openamp/build.sh
+        - shell: |
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git job-configs
+        - shell: |
+            ./job-configs/lite-aeolus-openamp/build.sh
         - inject:
             properties-file: env_var_parameters
         - build-name-setter:
@@ -94,9 +95,8 @@
               *.qemu-sd components/kernel/aeolus-2/openamp/${BRANCH}/${PLATFORM}/${BUILD_NUMBER}
 
             rm -rf out
-        - shell:
-            !include-raw:
-                - lite-aeolus-openamp/submit-test.sh
+        - shell: |
+            ./job-configs/lite-aeolus-openamp/submit-test.sh
 
     publishers:
         - groovy-postbuild:
