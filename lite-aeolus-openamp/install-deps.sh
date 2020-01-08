@@ -2,5 +2,5 @@
 set -ex
 
 sudo apt update
-sudo apt install -y jq
-pip install yq
+sudo apt -q=2 -y install jq python3-pip
+pip3 install yq
