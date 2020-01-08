@@ -247,6 +247,34 @@ actions:
       name: yepkit-test
       path: inline/yepkit-test.yaml
 
+    - path: automated/linux/uart-loopback/uart-loopback.yaml
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: uart-loopback
+      history: false
+      from: git
+      parameters:
+        SKIP_INSTALL: 'true'
+        UART0: /dev/ttyUSB0
+        UART1: /dev/ttyS1
+        YKUSHPORT: 1
+      name: uart-loopback-forward
+      timeout:
+        minutes: 15
+
+    - path: automated/linux/uart-loopback/uart-loopback.yaml
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: uart-loopback
+      history: false
+      from: git
+      parameters:
+        SKIP_INSTALL: 'true'
+        UART0: /dev/ttyS1
+        UART1: /dev/ttyUSB0
+        YKUSHPORT: 1
+      name: uart-loopback-reverse
+      timeout:
+        minutes: 15
+
     - path: automated/linux/block-device/block-device.yaml
       repository: https://github.com/omnium21/test-definitions.git
       branch: block-device
