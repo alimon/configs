@@ -1,0 +1,106 @@
+- job:
+    name: lite-aeolus-openamp
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 30
+    parameters:
+        - string:
+            name: GIT_URL
+            default: 'https://github.com/OpenAMP/libmetal'
+        - string:
+            name: BRANCH
+            default: 'master'
+        - string:
+            name: ZEPHYR_GIT_URL
+            default: 'https://github.com/zephyrproject-rtos/zephyr'
+        - string:
+            name: ZEPHYR_BRANCH
+            default: 'master'
+        - string:
+            name: LAVA_SERVER
+            default: 'lite.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: 'LITE Aeolus - OpenAMP'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-xenial-amd64-13
+        - axis:
+            type: user-defined
+            name: ZEPHYR_GCC_VARIANT
+            values:
+                - zephyr
+        - axis:
+            type: user-defined
+            name: PLATFORM
+            values:
+                - qemu_xilinx
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_USER
+                variable: LAVA_USER
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_TOKEN_LITE
+                variable: LAVA_TOKEN
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell:
+            !include-raw:
+                - lite-aeolus-openamp/build.sh
+        - inject:
+            properties-file: env_var_parameters
+        - build-name-setter:
+            template: '#${BUILD_NUMBER}-${GIT_COMMIT}'
+            macro: true
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            echo "Publishing artifacts"
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python3 ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              *.qemu-sd components/kernel/aeolus-2/openamp/${BRANCH}/${PLATFORM}/${BUILD_NUMBER}
+
+            rm -rf out
+        - shell:
+            !include-raw:
+                - lite-aeolus-openamp/submit-test.sh
+
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw: lite-aeolus/description-lava-link.groovy
+        - email:
+            recipients: 'paul.sokolovsky@linaro.org'
