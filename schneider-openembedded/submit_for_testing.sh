@@ -28,9 +28,9 @@ templates_rzn1d=(\
 )
 
 if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
-	templates=( ${templates_common[@]} ${templates_rzn1d[@]} )
+	templates=( ${templates_rzn1d[@]} ${templates_common[@]} )
 else
-	templates=( ${templates_common[@]} ${templates_soca9[@]} )
+	templates=( ${templates_soca9[@]} ${templates_common[@]} )
 fi
 
 for template in ${templates[@]};
