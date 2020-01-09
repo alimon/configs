@@ -51,11 +51,14 @@
               rm -rf build out
               git clean -fdx
               git reset --hard
+              sudo umount bootfs || true
+              sudo kpartx -dv x15-install.img || true
             }
 
             sudo apt-get update
             sudo apt-get install -y libssl-dev python-requests rsync \
-                swig libpython-dev gcc-arm-linux-gnueabihf
+                swig libpython-dev gcc-arm-linux-gnueabihf \
+                parted kpartx pigz
 
             ls
             uname -m
@@ -65,7 +68,30 @@
             make ARCH=arm CROSS_COMPILE=${CC} am57xx_evm_defconfig
             make ARCH=arm CROSS_COMPILE=${CC}
 
-            mkdir -p out
+            mkdir -p out bootfs
+
+            # create x15 boot image
+            dd if=/dev/zero of=x15-install.img bs=48 seek=1M count=0
+            parted --script x15-install.img mklabel msdos
+            parted --script x15-install.img mkpart p fat32 0 48
+            parted --script x15-install.img set 1 boot
+            for device in $(sudo kpartx -avs x15-install.img | cut -d' ' -f3); do
+              partition=$(echo ${device} | cut -d'p' -f3)
+              case "${partition}" in
+                1)
+                  sudo mkfs.fat -F16 /dev/mapper/${device}
+                  sudo mount /dev/mapper/${device} bootfs
+                  ;;
+              esac
+            done
+            sudo cp MLO bootfs
+            sudo cp u-boot.img bootfs
+
+            sudo umount bootfs
+            sudo kpartx -dv x15-install.img
+            time pigz -9 x15-install.img
+            mv x15-install.img.gz out/x15-u-boot-sd-${BUILD_NUMBER}.img.gz
+
             cp .config out/config
             cp MLO u-boot.img u-boot-dtb.bin arch/arm/dts/*.dtb spl/u-boot-spl.bin spl/u-boot-spl.dtb out/
             test -d ${HOME}/bin || mkdir ${HOME}/bin
