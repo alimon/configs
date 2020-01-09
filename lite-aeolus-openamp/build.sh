@@ -8,4 +8,4 @@ wget -q https://people.linaro.org/~ed.mooring/Images/openamp-image-minimal-zcu10
 echo "GIT_COMMIT=mock" > env_var_parameters
 
 # See if we can run docker.
-docker run hello-world
+#docker run hello-world
