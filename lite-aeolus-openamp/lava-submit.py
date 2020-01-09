@@ -18,7 +18,6 @@ if SUBMIT:
     if not uri.endswith("/"):
         uri += "/"
 
-    print("https://%s:%s@%s" % (username, token, uri))
     server = xmlrpc.client.ServerProxy("https://%s:%s@%s" % (username, token, uri))
 
     job_id = server.scheduler.submit_job(jobdef)
