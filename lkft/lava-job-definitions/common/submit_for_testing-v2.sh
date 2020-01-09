@@ -191,7 +191,9 @@ function submit_jobs(){
 
     # environments set by the upstream trigger job
     KERNEL_COMMIT=${SRCREV_kernel}
-    if [ ! -z "${KERNEL_DESCRIBE}" ]; then
+    if [ -n "${MAKE_KERNELVERSION}" ] && echo "X${USE_KERNELVERSION_FOR_QA_BUILD_VERSION}" | grep -i "Xtrue"; then
+        QA_BUILD_VERSION=${MAKE_KERNELVERSION}-${KERNEL_COMMIT:0:12}
+    elif [ ! -z "${KERNEL_DESCRIBE}" ]; then
         QA_BUILD_VERSION=${KERNEL_DESCRIBE}
     else
         QA_BUILD_VERSION=${KERNEL_COMMIT:0:12}
