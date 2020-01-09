@@ -1,6 +1,7 @@
 #!/bin/sh
 set -ex
 
+export PATH=$HOME/.local/bin:$PATH
 dir=$(dirname $0)
 
 if [ ! -d lite-lava-docker-compose ]; then
