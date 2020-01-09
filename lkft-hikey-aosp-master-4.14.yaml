@@ -1,5 +1,5 @@
 - job:
-    name: lkft-hikey-aosp-master-4.19
+    name: lkft-hikey-aosp-master-4.14
     project-type: freestyle
     defaults: global
     properties:
@@ -20,7 +20,7 @@
             default: lkft
         - string:
             name: ANDROID_BUILD_CONFIG
-            default: 'lkft-hikey-aosp-master-4.19 lkft-hikey960-aosp-master-4.19'
+            default: 'lkft-hikey-aosp-master-4.14 lkft-hikey960-aosp-master-4.14'
         - string:
             name: KERNEL_DESCRIBE
         - string:
@@ -29,7 +29,7 @@
             name: SRCREV_kernel
     disabled: false
     node: docker-xenial-android-lkft
-    display-name: 'LKFT - AOSP Master + 4.19 kernel for hikey/hikey960'
+    display-name: 'LKFT - AOSP Master + 4.14 kernel for hikey/hikey960'
     wrappers:
         - timestamps
         - build-name:
@@ -69,7 +69,7 @@
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[CI] HiKey/HiKey960 4.19 + aosp master: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
+            subject: '[CI] HiKey/HiKey960 4.14 + aosp master: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText

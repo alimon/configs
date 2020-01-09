@@ -1,0 +1,64 @@
+- job:
+    name: trigger-lkft-aosp-hikey
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for changes on aosp hikey kernel'
+    scm:
+        - git:
+            remotes:
+                - aosp-hikey:
+                    url: https://android.googlesource.com/kernel/hikey-linaro
+                - linux-stable:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                    refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
+            branches:
+              - aosp-hikey/android-hikey-linaro-4.14
+              - aosp-hikey/android-hikey-linaro-4.19
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H/30 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+
+            KERNEL_DESCRIBE=$(git describe --always)
+            KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,aosp-hikey/,,)
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
+
+            params=lkft-${KERNEL_BRANCH}.txt
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
+            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
+            cat $params
+
+            # call api of android.linaro.org for lkft report check scheduling
+            if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
+                curl http://android.linaro.org:9000/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
+            fi
+        - trigger-builds:
+            - project: lkft-hikey-aosp-master-4.14
+              property-file: lkft-android-hikey-linaro-4.14.txt
+            - project: lkft-hikey-aosp-master-4.19
+              property-file: lkft-android-hikey-linaro-4.19.txt
