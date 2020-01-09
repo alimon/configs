@@ -15,14 +15,18 @@
     display-name: 'Trigger for Linux Stable RC'
     scm:
         - git:
-            url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
+            remotes:
+              - linux-stable-rc:
+                  url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
+              - linux-stable:
+                  url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
             branches:
-              - linux-4.4.y
-              - linux-4.9.y
-              - linux-4.14.y
-              - linux-4.19.y
-              - linux-5.4.y
-              - linux-5.5.y
+              - linux-stable-rc/linux-4.4.y
+              - linux-stable-rc/linux-4.9.y
+              - linux-stable-rc/linux-4.14.y
+              - linux-stable-rc/linux-4.19.y
+              - linux-stable-rc/linux-5.4.y
+              - linux-stable-rc/linux-5.5.y
             name: linux
             skip-tag: true
             shallow-clone: false
@@ -33,14 +37,14 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_BRANCH#origin/}-${GIT_REVISION,length=8}'
+            name: '#${BUILD_NUMBER}-${GIT_BRANCH#linux-stable-rc/}-${GIT_REVISION,length=8}'
 
     builders:
         - shell: |
             #!/bin/bash -ex
             git clean -fdx
             env
-            params=$(echo $GIT_BRANCH|sed s,linux/,lkft-,).txt
+            params=$(echo $GIT_BRANCH|sed s,linux-stable-rc/,lkft-,).txt
             echo KERNEL_DESCRIBE=$(git describe --always) >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
             echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
