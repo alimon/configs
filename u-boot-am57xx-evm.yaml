@@ -72,9 +72,9 @@
 
             # create x15 boot image
             dd if=/dev/zero of=x15-install.img bs=48 seek=1M count=0
-            parted --script x15-install.img mklabel msdos
-            parted --script x15-install.img mkpart p fat32 0 48
-            parted --script x15-install.img set 1 boot
+            /sbin/parted --script x15-install.img mklabel msdos
+            /sbin/parted --script x15-install.img mkpart p fat32 0 48
+            /sbin/parted --script x15-install.img set 1 boot
             for device in $(sudo kpartx -avs x15-install.img | cut -d' ' -f3); do
               partition=$(echo ${device} | cut -d'p' -f3)
               case "${partition}" in
