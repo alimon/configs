@@ -25,7 +25,7 @@
             name: origin
             branches:
                 - refs/heads/master
-            skip-tag: true 
+            skip-tag: true
             shallow-clone: false
             wipe-workspace: false
     triggers:
@@ -34,6 +34,10 @@
         - timestamps
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
     builders:
         - linaro-publish-token
         - shell: |
@@ -92,6 +96,21 @@
             time pigz -9 x15-install.img
             mv x15-install.img.gz out/x15-u-boot-sd-${BUILD_NUMBER}.img.gz
 
+            GIT_DESCRIBE=$(git describe)
+            GIT_TAG=$(echo "$atag" | awk -F- '{print substr($1,2)}')
+            LOCALVERSION=$(cat .scmversion)
+            # remove leading 'v' as it doesn't show up in u-boot version string
+
+            cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
+            BUILD_NUMBER=${BUILD_NUMBER}
+            UBOOT_VERSION_STRING="${GIT_TAG}${LOCALVERSION}"
+            LAVA_JOB_PRIORITY=50
+            IMAGE_URL="http://snapshots.linaro.org/components/kernel/u-boot/${BUILD_NUMBER}/x15-u-boot-sd-${BUILD_NUMBER}.img.gz"
+            IMAGE_COMP=gz
+            PROJECT_NAME=ti-uboot
+            PROJECT="${PROJECT_NAME}"-
+            EOF
+
             cp .config out/config
             cp MLO u-boot.img u-boot-dtb.bin arch/arm/dts/*.dtb spl/u-boot-spl.bin spl/u-boot-spl.dtb out/
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -100,6 +119,23 @@
               --api_version 3 \
               --link-latest \
               out components/kernel/u-boot/${BUILD_NUMBER}
+
+            # submit tests to LAVA
+            rm -rf venv | true
+            virtualenv -p python3 venv
+            source ./venv/bin/activate
+
+            git clone https://github.com/Linaro/lava-test-plans.git
+            cd lava-test-plans
+            pip install -r requirements.txt
+            ./submit_for_testing.py --variables submit_for_testing_parameters \
+              --device-type x15-bl \
+              --test-plan ti-uboot \
+              --qa-server-team ti \
+              --qa-server-project u-boot \
+              --lava-server https://validation.linaro.org \
+              --build-id ${BUILD_NUMBER}-${GIT_REVISION,length=8}
+
     publishers:
         - email:
             recipients: 'vishal.bhoj@linaro.org'
