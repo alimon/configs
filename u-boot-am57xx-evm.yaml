@@ -96,6 +96,7 @@
             time pigz -9 x15-install.img
             mv x15-install.img.gz out/x15-u-boot-sd-${BUILD_NUMBER}.img.gz
 
+            ./scripts/setlocalversion --save-scmversion
             GIT_DESCRIBE=$(git describe)
             GIT_TAG=$(echo "$atag" | awk -F- '{print substr($1,2)}')
             LOCALVERSION=$(cat .scmversion)
