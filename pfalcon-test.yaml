@@ -51,7 +51,7 @@
             type: slave
             name: label
             values:
-                - docker-xenial-amd64-13
+                - x86_64-13
         - axis:
             type: user-defined
             name: ZEPHYR_GCC_VARIANT
@@ -77,6 +77,8 @@
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
     builders:
+        - shell: |
+            docker run hello-world
         - shell: |
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git job-configs
         - shell: |
