@@ -93,7 +93,17 @@
         - shell: |
             #!/bin/bash
             set -ex
-            ./check-one-slave.sh {slave_name}
+            # Add .tcwglab suffix when needed, to use the right
+            # .ssh/config settings (mainly the connexion port)
+            case {slave_name} in
+                # Use port 22
+                apm-*|dev-*|tcwg-d05-01|tcwg-amp-*|tcwg-m1-*) ;;
+                # Use port 2222
+                *)
+                    slave_name={slave_name).tcwglab
+                    ;;
+            esac
+            ./check-one-slave.sh $slave_name
     publishers:
         - email-ext:
             recipients: 'christophe.lyon@linaro.org'
