@@ -41,8 +41,29 @@ actions:
         - 'linux (tftp,{SERVER_IP})/{KERNEL}  root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 ip=dhcp'
         - clear
         - boot
+    expect_shell: false
+    boot_finished:
+     - 'reboot: Restarting system'
+     - 'reboot: System halted'
+     - Requesting system halt
+- boot:
+    role:
+    - developerbox
+    timeout:
+      minutes: 90
+    method: grub
+    parameters:
+      shutdown-message: 'reboot: Restarting system'
+    commands:
+    - insmod efinet
+    - net_ls_addr
+    - linux (tftp,{SERVER_IP})/{KERNEL}  root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3
+      ip=dhcp
+    - clear
+    - boot
     prompts:
-        - 'root@(.*)'
+    - root@(.*)
+    - '~ #'
 
 metadata:
   machine: ${MACHINE}
