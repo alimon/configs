@@ -39,6 +39,7 @@
                 credential-id: QA_REPORTS_TOKEN
                 variable: QA_REPORTS_TOKEN
     builders:
+        - linaro-publish-token
         - shell: |
             #!/bin/bash
 
@@ -115,9 +116,7 @@
             cp MLO u-boot.img u-boot-dtb.bin arch/arm/dts/*.dtb spl/u-boot-spl.bin spl/u-boot-spl.dtb out/
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-        - linaro-publish-token
-        - shell: |
-            #!/bin/bash
+
             time python3 ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
