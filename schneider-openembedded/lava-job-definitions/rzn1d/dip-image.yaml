@@ -1,0 +1,414 @@
+device_type: rzn1d
+job_name: SE ${MACHINE} dip-image u-boot,nfs,wic,ubi ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 2
+priority: medium
+visibility: public
+
+actions:
+
+####################
+# Deploy QSPI images
+####################
+- deploy:
+    namespace: dfu-firmware
+    to: tmpfs
+    images:
+      sf_fsbl:
+        image_arg: --alt sf_fsbl --download {sf_fsbl}
+        url: ${FSBL_URL}
+      sf_trustedfw:
+        image_arg: --alt sf_trustedfw --download {sf_trustedfw}
+        url: ${OPTEE_ITB_URL}
+      sf_uboot0:
+        image_arg: --alt sf_uboot0 --download {sf_uboot0}
+        url: ${UBOOT_ITB_URL}
+      sf_uboot1:
+        image_arg: --alt sf_uboot1 --download {sf_uboot1}
+        url: ${UBOOT_ITB_URL}
+
+- command:
+    namespace: dfu-firmware
+    name: set_boot_to_nand
+
+- boot:
+    namespace: dfu-firmware
+    method: dfu
+    timeout:
+      minutes: 10
+
+- command:
+    namespace: test
+    name: set_boot_to_qspi
+
+
+###############
+# u-boot
+###############
+- deploy:
+    namespace: test-uboot
+    to: overlay
+
+- deploy:
+    namespace: test-uboot
+    timeout:
+      minutes: 5
+    to: tftp
+    os: oe
+    kernel:
+      url: https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior/soca9/zImage--4.19.72+git0+7549a49ae5-r0-snarc-soca9-20191003145415.bin
+      type: zimage
+- boot:
+    namespace: test-uboot
+    connection-namespace: dfu-firmware
+    timeout:
+      minutes: 20
+    method: bootloader
+    bootloader: u-boot
+    commands: []
+    prompts: [=>]
+- test:
+    namespace: test-uboot
+    timeout:
+      minutes: 5
+    interactive:
+    - name: basic-cmds
+      prompts: ['=> ', '/ # ']
+      script:
+      - command: echo "u-boot echo test"
+        name: echo
+        successes:
+        - message: u-boot echo test
+      - command: version
+        name: version
+        successes:
+        - message: U-Boot
+      - command: help test
+        name: help
+        successes:
+        - message: test - minimal test like /bin/sh
+      # saveenv and printenv
+      - command: setenv test_var test123
+      - command: printenv
+        name: setenv-and-printenv
+        successes:
+        - message: test_var=test123
+    - name: memory-test
+      prompts: ['=> ', '/ # ']
+      script:
+      # memory test
+      # base - print or set address offset
+      - command: base
+        name: print-default-base-address-offset
+        successes:
+        - message: 'Base Address: 0x'
+      - command: base 80000000
+        name: set-address-offset-0x80000000
+        successes:
+        - message: 'Base Address: 0x80000000'
+      - command: base
+        name: check-address-offset-0x80000000
+        successes:
+        - message: 'Base Address: 0x80000000'
+      # crc32 - checksum calculation
+      - command: mw.b 00000000 aa 400
+      - command: crc32 80000000 400
+        name: compute-CRC32-checksum
+        successes:
+        - message: crc32 for 80000000 ... 800003ff ==> 3c6f327d
+      # mw - memory write
+      # md - memory display
+      - command: mw 100000 aabbccdd 10
+      - command: md 100000 10
+        name: mw-md-100000
+        successes:
+        - message: aabbccdd
+      # md - memory display
+      # cp - memory copy
+      - command: cp 100000 200000 10
+      - command: md 200000 10
+        name: cp-md-200000
+        successes:
+        - message: aabbccdd
+      # cmp - memory compare
+      - command: cmp 100000 200000 10
+        name: cmp-100000-200000-10
+        successes:
+        - message: Total of 16 word\(s\) were the same
+    - name: dhcp-cmds
+      prompts: ['=> ', '/ # ']
+      script:
+      # dhcp
+      - command: setenv autoload no ; dhcp ; dhcp
+        name: dhcp
+        successes:
+        - message: DHCP client bound to address
+    - name: ping-cmds
+      prompts: ['=> ', '/ # ']
+      script:
+      # ping
+      - command: ping {SERVER_IP}
+        name: ping
+        successes:
+        - message: is alive
+    - name: tftp-cmds
+      prompts: ['=> ', '/ # ']
+      script:
+      # TFTP
+      - command: setenv serverip {SERVER_IP} ; tftp {KERNEL_ADDR} {KERNEL}
+        name: tftp
+        successes:
+        - message: Bytes transferred = 6752784
+      - command: crc32 {KERNEL_ADDR} 670a10
+        successes:
+        - message: ==> ca050911
+    - name: nand-commands
+      prompts: ['=> ', '/ # ']
+      script:
+      # nand
+      - command: nand info
+        name: nand-info
+        successes:
+        - message: nand0, sector size 128 KiB
+
+
+
+
+
+
+###############
+# TFTP/NFS
+###############
+- deploy:
+    namespace: test-nfs
+    timeout:
+      minutes: 5
+    to: tftp
+    os: oe
+    kernel:
+      url: ${KERNEL_ZIMAGE_URL}
+      type: zimage
+    dtb:
+      url: ${DTB_URL}
+    nfsrootfs:
+      url: ${NFSROOTFS_URL}
+      compression: bz2
+
+- boot:
+    namespace: test-nfs
+    connection-namespace: dfu-firmware
+    timeout:
+      minutes: 20
+    method: u-boot
+    commands:
+      - setenv autoload no
+      - dhcp
+      - dhcp
+      - env print
+      - setenv serverip {SERVER_IP}
+      - tftp {KERNEL_ADDR} {KERNEL}
+      - tftp {DTB_ADDR} {DTB}
+      - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
+      - '{BOOTX}'
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: "Password:"
+      password: "P@ssword-1"
+    prompts:
+    - "root@rzn1-snarc:"
+
+- test:
+    namespace: test-nfs
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+      - command: which docker
+
+- test:
+    namespace: test-nfs
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+      from: git
+      path: lava-test-shell/smoke-tests-basic.yaml
+      name: smoke-tests
+    - path: automated/linux/meminfo/meminfo.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: meminfo
+      from: git
+      branch: master
+
+
+
+
+
+
+
+
+
+###############
+# dip-image.wic
+###############
+- deploy:
+    namespace: flasher-wic
+    timeout:
+      minutes: 100
+    to: flasher
+    images:
+      image:
+        url: ${WIC_IMAGE_URL}
+        compression: bz2
+
+- deploy:
+    namespace: test-wic
+    to: overlay
+
+- boot:
+    namespace: test-wic
+    connection-namespace: dfu-firmware
+    timeout:
+      minutes: 100
+    method: u-boot
+    commands:
+    - mmc rescan
+    - fatload mmc 0:1 80008000 zimage-rzn1-snarc.bin
+    - if test -e mmc 0:1 zImage-rzn1d400-snarc-bestla.dtb; then fatload mmc 0:1 80f00000 zImage-rzn1d400-snarc-bestla.dtb; else fatload mmc 0:1 80f00000 rzn1d400-snarc-bestla.dtb; fi;
+    - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
+    - bootz 80008000 - 80f00000
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: "Password:"
+      password: "P@ssword-1"
+    prompts:
+    - "root@rzn1-snarc:"
+
+- test:
+    namespace: test-wic
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: mount
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: ifconfig -a
+      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+      - command: which docker
+
+
+
+
+
+###############
+# dip-image.ubi
+###############
+- deploy:
+    namespace: dfu-ubi
+    to: tmpfs
+    images:
+      n_fs1:
+        image_arg: --alt n_fs1 --download {n_fs1}
+        url: ${UBI_IMAGE_URL}
+
+- command:
+    namespace: dfu-ubi
+    name: set_boot_to_nand
+- boot:
+    namespace: dfu-ubi
+    method: dfu
+    timeout:
+      minutes: 10
+- command:
+    namespace: test-ubi
+    name: set_boot_to_qspi
+
+- boot:
+    namespace: test-ubi
+    connection-namespace: dfu-ubi
+    timeout:
+      minutes: 20
+    method: u-boot
+    commands:
+      - run linux_bestla
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: "Password:"
+      password: "P@ssword-1"
+      login_commands:
+      - P@ssword-1
+      - azertAZERT12345
+      - azertAZERT12345
+      - azertAZERT12345
+    prompts:
+    - "Current password: "
+    - "New password: "
+    - "Retype new password: "
+    - "root@rzn1-snarc:"
+
+- test:
+    namespace: test-ubi
+    connection-namespace: dfu-ubi
+    timeout:
+      minutes: 60
+    interactive:
+    - name: basic-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: ifconfig -a
+      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+      - command: which docker
+
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: complete
+    verbosity: verbose

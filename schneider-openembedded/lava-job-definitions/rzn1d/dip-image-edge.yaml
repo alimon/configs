@@ -1,5 +1,5 @@
 device_type: rzn1d
-job_name: SE ${MACHINE} WIC edge ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} dip-image-edge wic,ubi ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -13,8 +13,11 @@ visibility: public
 
 actions:
 
+####################
+# Deploy QSPI images
+####################
 - deploy:
-    namespace: dfu
+    namespace: dfu-firmware
     to: tmpfs
     images:
       sf_fsbl:
@@ -31,11 +34,11 @@ actions:
         url: ${UBOOT_ITB_URL}
 
 - command:
-    namespace: dfu
+    namespace: dfu-firmware
     name: set_boot_to_nand
 
 - boot:
-    namespace: dfu
+    namespace: dfu-firmware
     method: dfu
     timeout:
       minutes: 10
@@ -44,27 +47,27 @@ actions:
     namespace: test
     name: set_boot_to_qspi
 
-- deploy:
-    namespace: test
-    to: overlay
 
+###############
+# dip-image.wic
+###############
 - deploy:
-    namespace: dfu
+    namespace: flasher-wic
     timeout:
       minutes: 100
     to: flasher
     images:
       image:
-        url: ${WIC_EDGE_IMAGE_URL}
+        url: ${WIC_EDGE_IMG_URL}
         compression: bz2
 
 - deploy:
-    namespace: test
+    namespace: test-wic
     to: overlay
 
 - boot:
-    namespace: test
-    connection-namespace: dfu
+    namespace: test-wic
+    connection-namespace: dfu-firmware
     timeout:
       minutes: 100
     method: u-boot
@@ -83,7 +86,7 @@ actions:
     - "root@rzn1-snarc:"
 
 - test:
-    namespace: test
+    namespace: test-wic
     timeout:
       minutes: 10
     interactive:
@@ -95,11 +98,89 @@ actions:
       - command: mount
       - command: ps aux --sort -rss
       - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
       - command: free -h
       - command: ifconfig -a
       - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
       - command: ping -c 3 github.com
+      - command: which docker
+      - command: umount /tmp/sdcard
+      - command: mount -t tmpfs tmpfs /tmp/sdcard
+      - command: systemctl start docker
+      - command: docker run hello-world
+
+####################
+# dip-image-edge.ubi
+####################
+- deploy:
+    namespace: dfu-ubi
+    to: tmpfs
+    images:
+      n_fs1:
+        image_arg: --alt n_fs1 --download {n_fs1}
+        url: ${UBI_EDGE_IMAGE_URL}
+
+- command:
+    namespace: dfu-ubi
+    name: set_boot_to_nand
+- boot:
+    namespace: dfu-ubi
+    method: dfu
+    timeout:
+      minutes: 10
+- command:
+    namespace: test-ubi
+    name: set_boot_to_qspi
+
+- boot:
+    namespace: test-ubi
+    connection-namespace: dfu-ubi
+    timeout:
+      minutes: 20
+    method: u-boot
+    commands:
+      - run linux_bestla
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: "Password:"
+      password: "P@ssword-1"
+      login_commands:
+      - P@ssword-1
+      - azertAZERT12345
+      - azertAZERT12345
+      - azertAZERT12345
+    prompts:
+    - "Current password: "
+    - "New password: "
+    - "Retype new password: "
+    - "root@rzn1-snarc:"
+
+- test:
+    namespace: test-ubi
+    connection-namespace: dfu-ubi
+    timeout:
+      minutes: 60
+    interactive:
+    - name: basic-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: ifconfig -a
+      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+      - command: which docker
+      - command: systemctl stop docker
+      - command: umount /tmp/sdcard
+      - command: mount -t tmpfs tmpfs /tmp/sdcard
+      - command: systemctl start docker
       - command: docker run hello-world
 
 metadata:

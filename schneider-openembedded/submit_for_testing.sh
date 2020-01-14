@@ -10,21 +10,16 @@ popd
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 
 templates_common=(\
-	uboot.yaml \
-	tftp-nfs.yaml \
-	tftp-nfs-dev.yaml \
-	wic.yaml \
-	wic-dev.yaml \
-	wic-dev-ltp-ptest.yaml \
+	dip-image.yaml \
+	dip-image-dev.yaml \
+	ltp-ptest.yaml \
 )
 
 templates_soca9=(\
 )
 
 templates_rzn1d=(\
-	ubi.yaml \
-	ubi-edge.yaml \
-	wic-edge.yaml \
+	dip-image-edge.yaml \
 )
 
 if [ "${DEVICE_TYPE}" == "rzn1d" ]; then

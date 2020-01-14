@@ -1,10 +1,14 @@
+# All tests using dip-image.wic.bz2 are included here
 device_type: soca9
-job_name: SE ${MACHINE} U-Boot ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} dip-image-wic ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
-    minutes: 10
-
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 2
 priority: medium
 visibility: public
 
@@ -12,21 +16,25 @@ actions:
 
 - deploy:
     timeout:
-      minutes: 10
+      minutes: 20
     to: flasher
     images:
       image:
         url: ${WIC_IMAGE_URL}
         compression: bz2
 
+# Deploy the dip-image WIC SDcard image
+# This is common to all the test deployments in this YAML
 - deploy:
     timeout:
       minutes: 5
     to: tftp
     kernel:
+      # This is a known kernel image used for CRC checks only
       url: https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior/soca9/zImage--4.19.72+git0+7549a49ae5-r0-snarc-soca9-20191003145415.bin
       type: zimage
 
+# Boot into U-Boot
 - boot:
     timeout:
       minutes: 20
@@ -35,6 +43,7 @@ actions:
     commands: []
     prompts: ['=>']
 
+# Run some U-Boot tests
 - test:
     timeout:
       minutes: 5
@@ -135,6 +144,132 @@ actions:
       - command: echo return code $$?
         successes:
         - message: "return code 0"
+
+# TFTP/NFS
+# Deploy the kernel/dtb/rootfs used for TFTP/NFS boot
+- deploy:
+    timeout:
+      minutes: 5
+    to: tftp
+    os: oe
+    kernel:
+      url: ${KERNEL_ZIMAGE_URL}
+      type: zimage
+    dtb:
+      url: ${DTB_URL}
+    nfsrootfs:
+      url: ${NFSROOTFS_DEV_URL}
+      compression: bz2
+
+# Boot via TFTP/NFS
+- boot:
+    timeout:
+      minutes: 20
+    method: u-boot
+    commands:
+    - run FPGA_INIT
+    - setenv autoload no
+    - dhcp
+    - dhcp
+    - env print
+    - setenv serverip {SERVER_IP}
+    - tftp {KERNEL_ADDR} {KERNEL}
+    - tftp {DTB_ADDR} {DTB}
+    - setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3
+      rootwait coherent_pool=2M ip=dhcp'
+    - '{BOOTX}'
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: 'Password:'
+      password: P@ssword-1
+      login_commands:
+      - P@ssword-1
+      - azertAZERT12345
+      - azertAZERT12345
+      - azertAZERT12345
+    prompts:
+    - 'Current password: '
+    - 'New password: '
+    - 'Retype new password: '
+    - 'root@snarc-soca9:'
+
+# Run some tests in the Linux kernel when booted with TFTP/NFS
+- test:
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds
+      prompts: [root@snarc-soca9, root@rzn1-snarc]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+
+- test:
+    timeout:
+      minutes: 5
+    definitions:
+    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+      from: git
+      path: lava-test-shell/smoke-tests-basic.yaml
+      name: smoke-tests
+    - path: automated/linux/meminfo/meminfo.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: meminfo
+      from: git
+      branch: master
+
+# SDcard boot
+# We already flashed the SDcard WIC image in the deploy step at the begging of this test run
+- boot:
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - run linux_sd
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: 'Password:'
+      password: P@ssword-1
+      login_commands:
+      - P@ssword-1
+      - azertAZERT12345
+      - azertAZERT12345
+      - azertAZERT12345
+    prompts:
+    - 'Current password: '
+    - 'New password: '
+    - 'Retype new password: '
+    - 'root@snarc-soca9:'
+
+# Run tests on SDcard boot
+- test:
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds
+      prompts: [root@snarc-soca9, root@rzn1-snarc]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: mount
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: ifconfig -a
+      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+
 
 metadata:
   machine: ${MACHINE}
