@@ -97,9 +97,11 @@
             # .ssh/config settings (mainly the connexion port)
             case {slave_name} in
                 # Use port 22
-                apm-*|dev-*|tcwg-d05-01|tcwg-amp-*|tcwg-m1-*) ;;
-                # Use port 2222
+                apm-*|dev-*|tcwg-d05-01|tcwg-amp-*|tcwg-m1-*)
+                    slave_name={slave_name}
+                    ;;
                 *)
+                    # Use port 2222
                     slave_name={slave_name}.tcwglab
                     ;;
             esac
