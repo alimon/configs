@@ -96,7 +96,7 @@
 
             ./scripts/setlocalversion --save-scmversion
             GIT_DESCRIBE=$(git describe)
-            GIT_TAG=$(echo "$atag" | awk -F- '{print substr($1,2)}')
+            GIT_TAG=$(echo "$GIT_DESCRIBE" | awk -F- '{print substr($1,2)}')
             LOCALVERSION=$(cat .scmversion)
             # remove leading 'v' as it doesn't show up in u-boot version string
 
@@ -128,7 +128,7 @@
             git clone https://github.com/Linaro/lava-test-plans.git
             cd lava-test-plans
             pip install -r requirements.txt
-            ./submit_for_testing.py --variables submit_for_testing_parameters \
+            ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
               --device-type x15-bl \
               --test-plan ti-uboot \
               --qa-server-team ti \
