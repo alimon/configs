@@ -133,13 +133,18 @@ for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.wic); do
 		;;
 	esac
 done
-pigz -9 ledge-kernel-uefi-certs.ext4
+
+for cert in $(find ${DEPLOY_DIR_IMAGE} -type f -name ledge-kernel-uefi-certs*.wic); do
+	pigz -9 ${cert}
+done
 
 # Convert bl*.bin symlinks to local files and package them to bios-num.tar.gz
 set +e
+cd ${DEPLOY_DIR_IMAGE}
 find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \; 
 tar -czf bios-${BUILD_NUMBER}.tar.gz bl*.bin
 rm -rf bl*.bin
+cd -
 set -e
 
 # Clean up not needed build artifacts
@@ -195,6 +200,8 @@ ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${
 HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" -printf "%f\n")
 INITRD_URL=""
 OVMF=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ovmf.qcow2" -printf "%f\n")
+CERTS=$(find ${DEPLOY_DIR_IMAGE} -type f -name ledge-kernel-uefi-certs*.wic.gz -printf "%f\n");
+FIRMWARE=$(find ${DEPLOY_DIR_IMAGE} -type f -name bios-${BUILD_NUMBER}.tar.gz -printf "%f\n");
 
 case "${MACHINE}" in
   ledge-am57xx-evm)
@@ -275,6 +282,8 @@ TOOLCHAIN="${TARGET_SYS} ${GCCVERSION}"
 KERNEL_ARGS="${KERNEL_ARGS}"
 INITRD_URL="${INITRD_URL}"
 OVMF="${BASE_URL}/${PUB_DEST}/${OVMF}"
+CERTS="${BASE_URL}/${PUB_DEST}/${CERTS}"
+FIRMWARE="${BASE_URL}/${PUB_DEST}/${FIRMWARE}"
 EOF
 
 cat ${WORKSPACE}/post_build_lava_parameters
