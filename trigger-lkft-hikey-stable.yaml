@@ -21,7 +21,6 @@
                 - linux-stable:
                     url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
                     refspec: +refs/heads/linux-4.4.y:refs/remotes/linux-stable/linux-4.4.y +refs/heads/linux-4.9.y:refs/remotes/linux-stable/linux-4.9.y +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
-            url: https://github.com/tom-gall/hikey-linaro
             branches:
               - hikey-stable/android-4.4-o-hikey
               - hikey-stable/android-4.4-p-hikey
@@ -40,7 +39,7 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_BRANCH"}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}'
+            name: '#${BUILD_NUMBER}-${GIT_BRANCH#hikey-stable/}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}'
     builders:
         - shell: |
             #!/bin/bash -ex
