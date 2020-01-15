@@ -521,6 +521,15 @@
             send-to:
               - recipients
 
+- project:
+    name: tcwg_bmk-dev
+    hw:
+      - tk1
+      - tx1
+    jobs:
+      - 'tcwg_bmk_{hw}-build'
+      - 'tcwg_bmk_{hw}-bisect'
+
 - view:
     name: tcwg_bmk-dev
     view-type: list
@@ -576,7 +585,7 @@
       - string:
           name: ci_config
           default: gnu-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+          description: "CI configuration ID: {{toolchain_name}}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
       - llvm-parameters:
           binutils_url: https://sourceware.org/git/binutils-gdb.git
           gcc_url: https://github.com/gcc-mirror/gcc.git
@@ -687,7 +696,7 @@
       - string:
           name: ci_config
           default: gnu-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+          description: "CI configuration ID: {{toolchain_name}}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
       - string:
           name: binutils_url
           default: https://sourceware.org/git/binutils-gdb.git
