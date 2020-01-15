@@ -3,6 +3,11 @@
     binutils_url: https://sourceware.org/git/binutils-gdb.git
     gcc_url: https://github.com/gcc-mirror/gcc.git
     glibc_url: https://sourceware.org/git/glibc.git
+    hw:
+      - tk1:
+          target: arm
+      - tx1:
+          target: aarch64
     toolchain_name:
       - llvm:
           components: binutils gcc glibc llvm
@@ -23,9 +28,6 @@
           glibc_branch: release/2.30/master
           llvm_branch: release/9.x
           disabled: false
-    target:
-      - aarch64
-      - arm
     bmk:
       - spec2k6
     cflags:
@@ -52,8 +54,8 @@
       - O3-vs-O3_LTO:
           cron_schedule: H H H/3 * *
     jobs:
-      - 'tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-      - 'tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk_{hw}-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     exclude:
       - toolchain_name: gnu
         cflags: Oz
@@ -69,7 +71,7 @@
 - view:
     name: tcwg_bmk
     view-type: list
-    regex: 'tcwg_bmk-.*'
+    regex: 'tcwg_bmk_.*'
 
 - scm:
     name: binutils-scm
@@ -282,24 +284,24 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_bmk-build-{ci_config}
+          - project: tcwg_bmk_{hw}-build-{ci_config}
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_bmk-bisect-{ci_config}
+          - project: tcwg_bmk_{hw}-bisect-{ci_config}
             property-file: artifacts/trigger-bisect
 
 - job-template:
-    name: tcwg_bmk-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_bmk_{hw}-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
     project-type: freestyle
     defaults: global
     properties:
       - default-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_bmk-build"
-            - "tcwg_bmk-bisect"
-            - "tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+            - "tcwg_bmk_{hw}-build"
+            - "tcwg_bmk_{hw}-bisect"
+            - "tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
           queue-scanning: 'ALL'
     parameters:
       - '{toolchain_name}-parameters':
@@ -320,7 +322,7 @@
     disabled: '{disabled}'
     node: tcwg-x86_64-1-cam
     concurrent: false
-    display-name: 'TCWG Build tcwg_bmk/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    display-name: 'TCWG Build tcwg_bmk_{hw}/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -377,6 +379,7 @@
             --BUILD_URL "$BUILD_URL" \
             --scripts_branch "$scripts_branch" \
             --bmk_branch "$bmk_branch" \
+            ==rr[ci_project] tcwg_bmk_{hw} \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
             ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url} \
@@ -403,6 +406,7 @@
             fi
             echo "$build_name" > artifacts/jenkins/build-name
         - trigger-followup-builds:
+            hw: '{hw}'
             ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
         - shell: |
             #!/bin/bash
@@ -415,7 +419,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_bmk-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
     project-type: freestyle
     defaults: global
     properties:
@@ -427,9 +431,9 @@
           # same regression tends to appear in multiple configurations,
           # run bisections for all configurations in-order.
           blocking-jobs:
-            - "tcwg_bmk-build"
-            - "tcwg_bmk-bisect"
-            - "tcwg_bmk-bisect-.*"
+            - "tcwg_bmk_{hw}-build"
+            - "tcwg_bmk_{hw}-bisect"
+            - "tcwg_bmk_{hw}-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
       - string:
@@ -448,7 +452,7 @@
     disabled: '{disabled}'
     node: tcwg-x86_64-1-cam
     concurrent: false
-    display-name: 'TCWG Bisect tcwg_bmk/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    display-name: 'TCWG Bisect tcwg_bmk_{hw}/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -489,7 +493,7 @@
             -- \
             --scripts_branch "$scripts_branch" \
             --bmk_branch "$bmk_branch" \
-            ==rr[ci_project] tcwg_bmk \
+            ==rr[ci_project] tcwg_bmk_{hw} \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
             ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url} \
@@ -501,6 +505,7 @@
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
         - trigger-followup-builds:
+            hw: '{hw}'
             ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - archive:
@@ -520,8 +525,10 @@
     name: tcwg_bmk-dev
     view-type: list
     job-name:
-      - tcwg_bmk-build
-      - tcwg_bmk-bisect
+      - tcwg_bmk_tk1-build
+      - tcwg_bmk_tk1-bisect
+      - tcwg_bmk_tx1-build
+      - tcwg_bmk_tx1-bisect
       - tcwg-benchmark
 
 - builder:
@@ -548,15 +555,15 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_bmk-build
+          - project: tcwg_bmk_{hw}-build
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_bmk-bisect
+          - project: tcwg_bmk_{hw}-bisect
             property-file: artifacts/trigger-bisect
 
-- job:
-    name: tcwg_bmk-build
+- job-template:
+    name: tcwg_bmk_{hw}-build
     project-type: freestyle
     defaults: global
     properties:
@@ -564,7 +571,7 @@
     parameters:
       - string:
           name: ci_project
-          default: tcwg_bmk_dev
+          default: 'tcwg_bmk_{hw}_dev'
           description: "CI project ID; used as namespace for git branches"
       - string:
           name: ci_config
@@ -588,7 +595,7 @@
     disabled: false
     node: tcwg-x86_64-1-cam
     concurrent: false
-    display-name: 'TCWG Build tcwg_bmk'
+    display-name: 'TCWG Build tcwg_bmk_{hw}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -612,10 +619,10 @@
             build_name="#$BUILD_NUMBER-$ci_project/$ci_config"
             branch_opt=""
             for c in binutils gcc glibc llvm; do
-              eval "b=\$$$${c}_branch"
+              eval "b=\$$$${{c}}_branch"
               if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
-                branch_opt="$branch_opt ==rr[${c}_branch] $b"
+                branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
               fi
             done
 
@@ -654,7 +661,8 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-        - trigger-followup-builds2
+        - trigger-followup-builds2:
+            hw: '{hw}'
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -665,8 +673,8 @@
             artifacts: 'artifacts/**'
             latest-only: false
 
-- job:
-    name: tcwg_bmk-bisect
+- job-template:
+    name: tcwg_bmk_{hw}-bisect
     project-type: freestyle
     defaults: global
     properties:
@@ -674,7 +682,7 @@
     parameters:
       - string:
           name: ci_project
-          default: tcwg_bmk_dev
+          default: 'tcwg_bmk_{hw}_dev'
           description: "CI project ID; used as namespace for git branches"
       - string:
           name: ci_config
@@ -715,7 +723,7 @@
     disabled: false
     node: tcwg-x86_64-1-cam
     concurrent: false
-    display-name: 'TCWG Bisect tcwg_bmk'
+    display-name: 'TCWG Bisect tcwg_bmk_{hw}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -768,16 +776,17 @@
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
-        - trigger-followup-builds2
+        - trigger-followup-builds2:
+            hw: '{hw}'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
             latest-only: false
         - email-ext:
-            recipients: ${FILE,path="artifacts/jenkins/mail-recipients.txt"}
+            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
             content-type: text
             body: |
-              ${FILE,path="artifacts/jenkins/mail-body.txt"}
+              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
             failure: true
             success: true
             send-to:
