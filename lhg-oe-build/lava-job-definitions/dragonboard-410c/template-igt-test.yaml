@@ -1,7 +1,7 @@
 device_type: dragonboard-410c
 tags:
   - chamelium
-job_name: lhg-oe-igt-test-${MANIFEST_BRANCH}-${BUILD_NUMBER}
+job_name: lhg-oe-igt-Chamelium-test-${MANIFEST_BRANCH}-${BUILD_NUMBER}
 timeouts:
   job:
     minutes: 120
@@ -68,9 +68,10 @@ actions:
     definitions:
     - repository: https://github.com/Linaro/test-definitions.git
       from: git
-      path: automated/linux/igt/igt-chamelium-test.yaml
+      path: automated/linux/igt/igt-test.yaml
       name: igt-chamelium-test
       params:
         IGT_DIR: "/usr/share/igt-gpu-tools"
+        TEST_LIST: "CHAMELIUM"
         ARTIFACTORIAL_URL: "https://archive.validation.linaro.org/artifacts/team/multimedia/"
         ARTIFACTORIAL_TOKEN: "e8d5f76f05d70bba65e7c7739be9e814"
