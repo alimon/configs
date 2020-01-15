@@ -25,7 +25,7 @@ for imagename in ${update_images}; do
       docker_tag=${new_tag}
     fi
     docker push ${docker_tag}
-  )||echo $image push failed >> ${WORKSPACE}/log
+  )||echo $imagename push failed >> ${WORKSPACE}/log
 done
 
 if [ -e ${WORKSPACE}/log ]
