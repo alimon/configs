@@ -123,7 +123,15 @@ mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.wic); do
-	pigz -9 ${rootfs}
+	case "${MACHINE}" in
+	ledge-stm32mp157c-dk2)
+		mv ${rootfs} ${rootfs}.bin
+		pigz -9 ${rootfs}.bin
+		;;
+	*)
+		pigz -9 ${rootfs}
+		;;
+	esac
 done
 pigz -9 ledge-kernel-uefi-certs.ext4
 
