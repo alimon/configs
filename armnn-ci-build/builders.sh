@@ -4,7 +4,7 @@ set -ex
 
 sudo apt -q=2 update
 sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git autoconf curl libtool libpthread-stubs0-dev
-
+sudo apt -q=2 install -y --no-install-recommends vim-common
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
