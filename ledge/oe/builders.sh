@@ -112,7 +112,20 @@ fi
 # add useful debug info
 cat conf/{site,auto}.conf
 
-time bitbake ${IMAGES}
+BIMAGES=""
+case "${MACHINE}" in
+	ledge-multi-armv7)
+		for i in ${IMAGES}; do BIMAGES+="mc:qemuarm:$i "; done
+		;;
+	ledge-multi-armv8)
+		for i in ${IMAGES}; do BIMAGES+="mc:qemuarm64:$i "; done
+		;;
+	*)
+		BIMAGES=${IMAGES}
+		;;
+esac
+
+time bitbake ${BIMAGES} ${FIRMWARE}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
