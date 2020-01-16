@@ -1,5 +1,5 @@
 device_type: rzn1d
-job_name: SE ${MACHINE} dip-image u-boot,nfs,wic,ubi ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} dip-image (u-boot,nfs,wic,ubi) ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -7,7 +7,7 @@ timeouts:
   action:
     minutes: 70
   connection:
-    minutes: 2
+    minutes: 20
 priority: medium
 visibility: public
 
@@ -53,17 +53,14 @@ actions:
 ###############
 - deploy:
     namespace: test-uboot
-    to: overlay
-
-- deploy:
-    namespace: test-uboot
     timeout:
       minutes: 5
     to: tftp
-    os: oe
     kernel:
+      # This is a known kernel image used for CRC checks only
       url: https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior/soca9/zImage--4.19.72+git0+7549a49ae5-r0-snarc-soca9-20191003145415.bin
       type: zimage
+
 - boot:
     namespace: test-uboot
     connection-namespace: dfu-firmware
@@ -72,50 +69,52 @@ actions:
     method: bootloader
     bootloader: u-boot
     commands: []
-    prompts: [=>]
+    prompts: ["=>"]
+
+# Run some U-Boot tests
 - test:
     namespace: test-uboot
     timeout:
       minutes: 5
     interactive:
-    - name: basic-cmds
-      prompts: ['=> ', '/ # ']
+    - name: uboot-tests
+      prompts: ["=> ", "/ # "]
       script:
       - command: echo "u-boot echo test"
         name: echo
         successes:
-        - message: u-boot echo test
+        - message: "u-boot echo test"
       - command: version
         name: version
         successes:
-        - message: U-Boot
+        - message: "U-Boot"
       - command: help test
         name: help
         successes:
-        - message: test - minimal test like /bin/sh
+        - message: "test - minimal test like /bin/sh"
       # saveenv and printenv
       - command: setenv test_var test123
       - command: printenv
         name: setenv-and-printenv
         successes:
-        - message: test_var=test123
+        - message: "test_var=test123"
     - name: memory-test
-      prompts: ['=> ', '/ # ']
+      prompts: ["=> ", "/ # "]
       script:
       # memory test
       # base - print or set address offset
       - command: base
         name: print-default-base-address-offset
         successes:
-        - message: 'Base Address: 0x'
+        - message: "Base Address: 0x"
       - command: base 80000000
         name: set-address-offset-0x80000000
         successes:
-        - message: 'Base Address: 0x80000000'
+        - message: "Base Address: 0x80000000"
       - command: base
         name: check-address-offset-0x80000000
         successes:
-        - message: 'Base Address: 0x80000000'
+        - message: "Base Address: 0x80000000"
       # crc32 - checksum calculation
       - command: mw.b 00000000 aa 400
       - command: crc32 80000000 400
@@ -128,58 +127,54 @@ actions:
       - command: md 100000 10
         name: mw-md-100000
         successes:
-        - message: aabbccdd
+        - message: "aabbccdd"
       # md - memory display
       # cp - memory copy
       - command: cp 100000 200000 10
       - command: md 200000 10
         name: cp-md-200000
         successes:
-        - message: aabbccdd
+        - message: "aabbccdd"
       # cmp - memory compare
       - command: cmp 100000 200000 10
         name: cmp-100000-200000-10
         successes:
-        - message: Total of 16 word\(s\) were the same
+        - message: "Total of 16 word\\(s\\) were the same"
     - name: dhcp-cmds
-      prompts: ['=> ', '/ # ']
+      prompts: ["=> ", "/ # "]
       script:
       # dhcp
       - command: setenv autoload no ; dhcp ; dhcp
         name: dhcp
         successes:
-        - message: DHCP client bound to address
+        - message: "DHCP client bound to address"
     - name: ping-cmds
-      prompts: ['=> ', '/ # ']
+      prompts: ["=> ", "/ # "]
       script:
       # ping
       - command: ping {SERVER_IP}
         name: ping
         successes:
-        - message: is alive
+        - message: "is alive"
     - name: tftp-cmds
-      prompts: ['=> ', '/ # ']
+      prompts: ["=> ", "/ # "]
       script:
       # TFTP
       - command: setenv serverip {SERVER_IP} ; tftp {KERNEL_ADDR} {KERNEL}
         name: tftp
         successes:
-        - message: Bytes transferred = 6752784
+        - message: "Bytes transferred = 6752784"
       - command: crc32 {KERNEL_ADDR} 670a10
         successes:
         - message: ==> ca050911
     - name: nand-commands
-      prompts: ['=> ', '/ # ']
+      prompts: ["=> ", "/ # "]
       script:
       # nand
       - command: nand info
         name: nand-info
         successes:
         - message: nand0, sector size 128 KiB
-
-
-
-
 
 
 ###############
@@ -217,11 +212,12 @@ actions:
       - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
       - '{BOOTX}'
     auto_login:
-      login_prompt: 'login:'
+      login_prompt: "login:"
       username: root
       password_prompt: "Password:"
       password: "P@ssword-1"
     prompts:
+    - "root@snarc-soca9:"
     - "root@rzn1-snarc:"
 
 - test:
@@ -229,7 +225,7 @@ actions:
     timeout:
       minutes: 10
     interactive:
-    - name: basic-cmds
+    - name: basic-cmds-tftp
       prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
       script:
       - command: uname -a
@@ -238,6 +234,10 @@ actions:
       - command: cat /proc/meminfo
       - command: cat /proc/cpuinfo
       - command: free -h
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
       - command: ping -c 3 github.com
       - command: which docker
@@ -245,32 +245,26 @@ actions:
 - test:
     namespace: test-nfs
     timeout:
-      minutes: 5
+      minutes: 10
     definitions:
     - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
       from: git
       path: lava-test-shell/smoke-tests-basic.yaml
-      name: smoke-tests
+      name: smoke-tests-tftp
+
     - path: automated/linux/meminfo/meminfo.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
       history: false
-      name: meminfo
+      name: meminfo-tftp
       from: git
       branch: master
-
-
-
-
-
-
-
 
 
 ###############
 # dip-image.wic
 ###############
 - deploy:
-    namespace: flasher-wic
+    namespace: test-wic
     timeout:
       minutes: 100
     to: flasher
@@ -279,15 +273,12 @@ actions:
         url: ${WIC_IMAGE_URL}
         compression: bz2
 
-- deploy:
-    namespace: test-wic
-    to: overlay
 
 - boot:
     namespace: test-wic
     connection-namespace: dfu-firmware
     timeout:
-      minutes: 100
+      minutes: 10
     method: u-boot
     commands:
     - mmc rescan
@@ -296,11 +287,12 @@ actions:
     - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
     - bootz 80008000 - 80f00000
     auto_login:
-      login_prompt: 'login:'
+      login_prompt: "login:"
       username: root
       password_prompt: "Password:"
       password: "P@ssword-1"
     prompts:
+    - "root@snarc-soca9:"
     - "root@rzn1-snarc:"
 
 - test:
@@ -308,7 +300,7 @@ actions:
     timeout:
       minutes: 10
     interactive:
-    - name: basic-cmds
+    - name: basic-cmds-wic
       prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
       script:
       - command: uname -a
@@ -318,6 +310,10 @@ actions:
       - command: cat /proc/meminfo
       - command: cat /proc/cpuinfo
       - command: free -h
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
       - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
@@ -325,14 +321,11 @@ actions:
       - command: which docker
 
 
-
-
-
 ###############
 # dip-image.ubi
 ###############
 - deploy:
-    namespace: dfu-ubi
+    namespace: test-ubi
     to: tmpfs
     images:
       n_fs1:
@@ -340,10 +333,10 @@ actions:
         url: ${UBI_IMAGE_URL}
 
 - command:
-    namespace: dfu-ubi
+    namespace: test-ubi
     name: set_boot_to_nand
 - boot:
-    namespace: dfu-ubi
+    namespace: test-ubi
     method: dfu
     timeout:
       minutes: 10
@@ -353,22 +346,22 @@ actions:
 
 - boot:
     namespace: test-ubi
-    connection-namespace: dfu-ubi
+    connection-namespace: test-ubi
     timeout:
       minutes: 20
     method: u-boot
     commands:
       - run linux_bestla
     auto_login:
-      login_prompt: 'login:'
+      login_prompt: "login:"
       username: root
       password_prompt: "Password:"
       password: "P@ssword-1"
       login_commands:
-      - P@ssword-1
-      - azertAZERT12345
-      - azertAZERT12345
-      - azertAZERT12345
+      - "P@ssword-1"
+      - "azertAZERT12345"
+      - "azertAZERT12345"
+      - "azertAZERT12345"
     prompts:
     - "Current password: "
     - "New password: "
@@ -377,11 +370,11 @@ actions:
 
 - test:
     namespace: test-ubi
-    connection-namespace: dfu-ubi
+    connection-namespace: test-ubi
     timeout:
       minutes: 60
     interactive:
-    - name: basic-cmds
+    - name: basic-cmds-ubi
       prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
       script:
       - command: uname -a
@@ -390,12 +383,127 @@ actions:
       - command: cat /proc/meminfo
       - command: cat /proc/cpuinfo
       - command: free -h
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
       - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
       - command: ping -c 3 github.com
       - command: which docker
 
+
+##################
+# Reboot/Poweroff Tests
+##################
+- test:
+    namespace: test-reboot
+    connection-namespace: test-ubi
+    timeout:
+      minutes: 5
+    interactive:
+    - name: reboot-cmds-1
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc", "=> "]
+      script:
+      - command: reboot ; sleep 10
+
+# Trigger 2nd boot
+- boot:
+    namespace: test-reboot
+    connection-namespace: test-ubi
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - run linux_bestla
+    auto_login:
+      login_prompt: "login:"
+      username: root
+      password_prompt: "Password:"
+      password: azertAZERT12345
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+
+- test:
+    namespace: test-reboot
+    connection-namespace: test-ubi
+    timeout:
+      minutes: 5
+    interactive:
+    - name: check-1st-reboot
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: echo "We came back from a reboot"
+
+
+# Reboot the board a 2nd time
+- test:
+    namespace: test-reboot-2
+    connection-namespace: test-ubi
+    timeout:
+      minutes: 5
+    interactive:
+    - name: reboot-cmds-2
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc", "=> "]
+      script:
+      - command: reboot ; sleep 10
+
+# Trigger a new boot
+- boot:
+    namespace: test-reboot-2
+    connection-namespace: test-ubi
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - run linux_bestla
+    auto_login:
+      login_prompt: "login:"
+      username: root
+      password_prompt: "Password:"
+      password: "azertAZERT12345"
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+
+- test:
+    namespace: test-reboot-2
+    connection-namespace: test-ubi
+    timeout:
+      minutes: 5
+    interactive:
+    - name: check-2nd-reboot
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc", "=> "]
+      script:
+      - command: echo "We came back from the 2nd reboot"
+
+# Test poweroff
+- test:
+    namespace: test-poweroff
+    connection-namespace: test-ubi
+    timeout:
+      minutes: 5
+    interactive:
+    - name: poweroff-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc", "=> "]
+      script:
+      - command: poweroff ; sleep 10
+
+# Check we are in u-boot after poweroff
+- test:
+    namespace: test-poweroff
+    connection-namespace: test-ubi
+    timeout:
+      minutes: 5
+    interactive:
+    - name: check-poweroff
+      prompts: ["=> "]
+      script:
+      - command: version
+        successes:
+        - message: "U-Boot"
 
 metadata:
   machine: ${MACHINE}

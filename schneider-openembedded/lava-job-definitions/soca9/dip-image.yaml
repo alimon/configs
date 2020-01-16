@@ -1,6 +1,5 @@
-# All tests using dip-image.wic.bz2 are included here
 device_type: soca9
-job_name: SE ${MACHINE} dip-image-wic ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} dip-image (u-boot,nfs,wic,ubi) ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -8,12 +7,15 @@ timeouts:
   action:
     minutes: 70
   connection:
-    minutes: 2
+    minutes: 20
 priority: medium
 visibility: public
 
 actions:
 
+##################
+# Deploy WIC image
+##################
 - deploy:
     timeout:
       minutes: 20
@@ -23,8 +25,10 @@ actions:
         url: ${WIC_IMAGE_URL}
         compression: bz2
 
-# Deploy the dip-image WIC SDcard image
-# This is common to all the test deployments in this YAML
+
+###############
+# u-boot
+###############
 - deploy:
     timeout:
       minutes: 5
@@ -34,21 +38,20 @@ actions:
       url: https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior/soca9/zImage--4.19.72+git0+7549a49ae5-r0-snarc-soca9-20191003145415.bin
       type: zimage
 
-# Boot into U-Boot
 - boot:
     timeout:
       minutes: 20
     method: bootloader
     bootloader: u-boot
     commands: []
-    prompts: ['=>']
+    prompts: ["=>"]
 
 # Run some U-Boot tests
 - test:
     timeout:
       minutes: 5
     interactive:
-    - name: basic-cmds
+    - name: uboot-tests
       prompts: ["=> ", "/ # "]
       script:
       - command: echo "u-boot echo test"
@@ -145,8 +148,10 @@ actions:
         successes:
         - message: "return code 0"
 
+
+###############
 # TFTP/NFS
-# Deploy the kernel/dtb/rootfs used for TFTP/NFS boot
+###############
 - deploy:
     timeout:
       minutes: 5
@@ -158,49 +163,47 @@ actions:
     dtb:
       url: ${DTB_URL}
     nfsrootfs:
-      url: ${NFSROOTFS_DEV_URL}
+      url: ${NFSROOTFS_URL}
       compression: bz2
 
-# Boot via TFTP/NFS
 - boot:
     timeout:
       minutes: 20
     method: u-boot
     commands:
-    - run FPGA_INIT
-    - setenv autoload no
-    - dhcp
-    - dhcp
-    - env print
-    - setenv serverip {SERVER_IP}
-    - tftp {KERNEL_ADDR} {KERNEL}
-    - tftp {DTB_ADDR} {DTB}
-    - setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3
-      rootwait coherent_pool=2M ip=dhcp'
-    - '{BOOTX}'
+      - run FPGA_INIT
+      - setenv autoload no
+      - dhcp
+      - dhcp
+      - env print
+      - setenv serverip {SERVER_IP}
+      - tftp {KERNEL_ADDR} {KERNEL}
+      - tftp {DTB_ADDR} {DTB}
+      - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
+      - '{BOOTX}'
     auto_login:
-      login_prompt: 'login:'
+      login_prompt: "login:"
       username: root
-      password_prompt: 'Password:'
-      password: P@ssword-1
+      password_prompt: "Password:"
+      password: "P@ssword-1"
       login_commands:
-      - P@ssword-1
-      - azertAZERT12345
-      - azertAZERT12345
-      - azertAZERT12345
+      - "P@ssword-1"
+      - "azertAZERT12345"
+      - "azertAZERT12345"
+      - "azertAZERT12345"
     prompts:
-    - 'Current password: '
-    - 'New password: '
-    - 'Retype new password: '
-    - 'root@snarc-soca9:'
+    - "Current password: "
+    - "New password: "
+    - "Retype new password: "
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
 
-# Run some tests in the Linux kernel when booted with TFTP/NFS
 - test:
     timeout:
       minutes: 10
     interactive:
-    - name: basic-cmds
-      prompts: [root@snarc-soca9, root@rzn1-snarc]
+    - name: basic-cmds-tftp
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
       script:
       - command: uname -a
       - command: cat /proc/device-tree/model ; echo ""
@@ -208,25 +211,34 @@ actions:
       - command: cat /proc/meminfo
       - command: cat /proc/cpuinfo
       - command: free -h
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
       - command: ping -c 3 github.com
+      - command: which docker
 
 - test:
     timeout:
-      minutes: 5
+      minutes: 10
     definitions:
     - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
       from: git
       path: lava-test-shell/smoke-tests-basic.yaml
-      name: smoke-tests
+      name: smoke-tests-tftp
+
     - path: automated/linux/meminfo/meminfo.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
       history: false
-      name: meminfo
+      name: meminfo-tftp
       from: git
       branch: master
 
-# SDcard boot
+
+###############
+# dip-image.wic
+###############
 # We already flashed the SDcard WIC image in the deploy step at the begging of this test run
 - boot:
     timeout:
@@ -235,28 +247,28 @@ actions:
     commands:
     - run linux_sd
     auto_login:
-      login_prompt: 'login:'
+      login_prompt: "login:"
       username: root
-      password_prompt: 'Password:'
-      password: P@ssword-1
+      password_prompt: "Password:"
+      password: "P@ssword-1"
       login_commands:
-      - P@ssword-1
-      - azertAZERT12345
-      - azertAZERT12345
-      - azertAZERT12345
+      - "P@ssword-1"
+      - "azertAZERT12345"
+      - "azertAZERT12345"
+      - "azertAZERT12345"
     prompts:
-    - 'Current password: '
-    - 'New password: '
-    - 'Retype new password: '
-    - 'root@snarc-soca9:'
+    - "Current password: "
+    - "New password: "
+    - "Retype new password: "
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
 
-# Run tests on SDcard boot
 - test:
     timeout:
       minutes: 10
     interactive:
-    - name: basic-cmds
-      prompts: [root@snarc-soca9, root@rzn1-snarc]
+    - name: basic-cmds-wic
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
       script:
       - command: uname -a
       - command: cat /proc/device-tree/model ; echo ""
@@ -265,11 +277,111 @@ actions:
       - command: cat /proc/meminfo
       - command: cat /proc/cpuinfo
       - command: free -h
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
       - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
       - command: ping -c 3 github.com
+      - command: which docker
 
+
+##################
+# Reboot/Poweroff Tests
+##################
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: reboot-cmds-1
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc", "=> "]
+      script:
+      - command: reboot ; sleep 10
+
+# Trigger 2nd boot
+- boot:
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - run linux_sd
+    auto_login:
+      login_prompt: "login:"
+      username: root
+      password_prompt: "Password:"
+      password: azertAZERT12345
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: check-1st-reboot
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: echo "We came back from a reboot"
+
+
+# Reboot the board a 2nd time
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: reboot-cmds-2
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc", "=> "]
+      script:
+      - command: reboot ; sleep 10
+
+# Trigger a new boot
+- boot:
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - run linux_sd
+    auto_login:
+      login_prompt: "login:"
+      username: root
+      password_prompt: "Password:"
+      password: "azertAZERT12345"
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: check-2nd-reboot
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc", "=> "]
+      script:
+      - command: echo "We came back from the 2nd reboot"
+
+# Test poweroff
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: poweroff-cmds
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc", "=> "]
+      script:
+      - command: poweroff ; sleep 10
+
+# Check we are in u-boot after poweroff
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: check-poweroff
+      prompts: ["=> "]
+      script:
+      - command: version
+        successes:
+        - message: "U-Boot"
 
 metadata:
   machine: ${MACHINE}

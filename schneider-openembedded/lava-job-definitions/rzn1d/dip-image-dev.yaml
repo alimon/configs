@@ -1,5 +1,5 @@
 device_type: rzn1d
-job_name: SE ${MACHINE} dip-image-dev nfs,wic ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} dip-image-dev (nfs,wic) ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -7,7 +7,7 @@ timeouts:
   action:
     minutes: 70
   connection:
-    minutes: 2
+    minutes: 20
 priority: medium
 visibility: public
 
@@ -48,69 +48,9 @@ actions:
     name: set_boot_to_qspi
 
 
-###################
-# dip-image-dev.wic
-###################
-- deploy:
-    namespace: flasher-wic
-    timeout:
-      minutes: 100
-    to: flasher
-    images:
-      image:
-        url: ${WIC_DEV_IMAGE_URL}
-        compression: bz2
-
-- deploy:
-    namespace: test-wic
-    to: overlay
-
-- boot:
-    namespace: test-wic
-    connection-namespace: dfu-firmware
-    timeout:
-      minutes: 100
-    method: u-boot
-    commands:
-    - mmc rescan
-    - fatload mmc 0:1 80008000 zimage-rzn1-snarc.bin
-    - if test -e mmc 0:1 zImage-rzn1d400-snarc-bestla.dtb; then fatload mmc 0:1 80f00000 zImage-rzn1d400-snarc-bestla.dtb; else fatload mmc 0:1 80f00000 rzn1d400-snarc-bestla.dtb; fi;
-    - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
-    - bootz 80008000 - 80f00000
-    auto_login:
-      login_prompt: 'login:'
-      username: root
-    prompts:
-    - "root@rzn1-snarc:"
-
-- test:
-    namespace: test-wic
-    timeout:
-      minutes: 10
-    interactive:
-    - name: basic-cmds
-      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
-      script:
-      - command: uname -a
-      - command: cat /proc/device-tree/model ; echo ""
-      - command: mount
-      - command: ps aux --sort -rss
-      - command: cat /proc/meminfo
-      - command: free -h
-      - command: ifconfig -a
-      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
-      - command: ifconfig -a
-      - command: ping -c 3 github.com
-      - command: docker run hello-world
-
-
-########################
-# dip-image-dev TFTP/NFS
-########################
-- deploy:
-    namespace: test-nfs
-    to: overlay
-
+###############
+# TFTP/NFS
+###############
 - deploy:
     namespace: test-nfs
     timeout:
@@ -143,9 +83,10 @@ actions:
       - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
       - '{BOOTX}'
     auto_login:
-      login_prompt: 'login:'
+      login_prompt: "login:"
       username: root
     prompts:
+    - "root@snarc-soca9:"
     - "root@rzn1-snarc:"
 
 - test:
@@ -153,125 +94,137 @@ actions:
     timeout:
       minutes: 10
     interactive:
-    - name: basic-cmds
+    - name: basic-cmds-tftp
       prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
       script:
       - command: uname -a
       - command: cat /proc/device-tree/model ; echo ""
       - command: ps aux --sort -rss
       - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
       - command: free -h
+      - command: memstat
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
       - command: ping -c 3 github.com
+      - command: which docker
 
 - test:
     namespace: test-nfs
     timeout:
-      minutes: 60
+      minutes: 10
     definitions:
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: uname-test
-          description: "uname test"
-        run:
-          steps:
-            - uname -a
-      name: uname-test
-      path: inline/uname-test.yaml
+    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+      from: git
+      path: lava-test-shell/smoke-tests-basic.yaml
+      name: smoke-tests-tftp
 
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: ps-inline-test
-          description: "ps-inline test"
-        run:
-          steps:
-            - ps aux --sort -rss
-      name: ps-inline-test
-      path: inline/ps-inline-test.yaml
+    - path: automated/linux/meminfo/meminfo.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: meminfo-tftp
+      from: git
+      branch: master
 
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: meminfo-inline-test
-          description: "meminfo-inline test"
-        run:
-          steps:
-            - cat /proc/meminfo
-      name: meminfo-inline-test
-      path: inline/meminfo-inline-test.yaml
+    - path: automated/linux/badblocks/badblocks.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: badblocks-tftp
+      from: git
+      branch: master
+      parameters:
+        SKIP_INSTALL: True
+    - path: automated/linux/memtester/memtester.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: memtester-tftp
+      from: git
+      branch: master
+      parameters:
+        SKIP_INSTALL: True
 
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: free-inline-test
-          description: "free-inline test"
-        run:
-          steps:
-            - free -h
-      name: free-inline-test
-      path: inline/free-inline-test.yaml
 
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: ifconfig-test
-          description: "ifconfig test"
-        run:
-          steps:
-            - ifconfig -a
-      name: ifconfig-test
-      path: inline/ifconfig-test.yaml
 
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: ping-github
-          description: Ping public GitHub webserver
-        run:
-          steps:
-          - ping -c 3 github.com
-      name: ping-github
-      path: inline/ping-github.yaml
+###################
+# dip-image-dev.wic
+###################
+- deploy:
+    namespace: test-wic
+    timeout:
+      minutes: 100
+    to: flasher
+    images:
+      image:
+        url: ${WIC_DEV_IMAGE_URL}
+        compression: bz2
 
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: resolved-test
-          description: resolved test
-        run:
-          steps:
-          - systemctl --no-pager status systemd-resolved
-          - systemctl --no-pager restart systemd-resolved
-          - systemctl --no-pager status systemd-resolved
-      name: resolved-test
-      path: inline/resolved-test.yaml
 
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: memstat-test
-          description: "memstat test"
-        run:
-          steps:
-            - memstat
-      name: memstat-test
-      path: inline/memstat-test.yaml
+- boot:
+    namespace: test-wic
+    connection-namespace: dfu-firmware
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - mmc rescan
+    - fatload mmc 0:1 80008000 zimage-rzn1-snarc.bin
+    - if test -e mmc 0:1 zImage-rzn1d400-snarc-bestla.dtb; then fatload mmc 0:1 80f00000 zImage-rzn1d400-snarc-bestla.dtb; else fatload mmc 0:1 80f00000 rzn1d400-snarc-bestla.dtb; fi;
+    - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
+    - bootz 80008000 - 80f00000
+    auto_login:
+      login_prompt: "login:"
+      username: root
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+    transfer_overlay:
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
+      unpack_command: tar --touch -C / -xzf
+
+- test:
+    namespace: test-wic
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds-wic
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: mount
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: memstat
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+      - command: which docker
+
+
+##################
+# Functional Tests
+##################
+- test:
+    namespace: test-wic
+    timeout:
+      minutes: 100
+    definitions:
+
     - path: automated/linux/meminfo/meminfo.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
       history: false
       name: meminfo
       from: git
       branch: master
+
     - path: automated/linux/badblocks/badblocks.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
       history: false
@@ -280,6 +233,7 @@ actions:
       branch: master
       parameters:
         SKIP_INSTALL: True
+
     - path: automated/linux/memtester/memtester.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
       history: false

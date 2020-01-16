@@ -1,5 +1,5 @@
 device_type: rzn1d
-job_name: SE ${MACHINE} dip-image-edge wic,ubi ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+job_name: SE ${MACHINE} dip-image-edge (wic,ubi) ${MANIFEST_BRANCH} ${BUILD_NUMBER}
 
 timeouts:
   job:
@@ -48,28 +48,25 @@ actions:
     name: set_boot_to_qspi
 
 
-###############
-# dip-image.wic
-###############
+####################
+# dip-image-edge.wic
+####################
 - deploy:
-    namespace: flasher-wic
+    namespace: test-wic
     timeout:
       minutes: 100
     to: flasher
     images:
       image:
-        url: ${WIC_EDGE_IMG_URL}
+        url: ${WIC_EDGE_IMAGE_URL}
         compression: bz2
 
-- deploy:
-    namespace: test-wic
-    to: overlay
 
 - boot:
     namespace: test-wic
     connection-namespace: dfu-firmware
     timeout:
-      minutes: 100
+      minutes: 10
     method: u-boot
     commands:
     - mmc rescan
@@ -78,19 +75,20 @@ actions:
     - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
     - bootz 80008000 - 80f00000
     auto_login:
-      login_prompt: 'login:'
+      login_prompt: "login:"
       username: root
       password_prompt: "Password:"
       password: "P@ssword-1"
     prompts:
+    - "root@snarc-soca9:"
     - "root@rzn1-snarc:"
 
 - test:
     namespace: test-wic
     timeout:
-      minutes: 10
+      minutes: 30
     interactive:
-    - name: basic-cmds
+    - name: basic-cmds-wic
       prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
       script:
       - command: uname -a
@@ -100,21 +98,21 @@ actions:
       - command: cat /proc/meminfo
       - command: cat /proc/cpuinfo
       - command: free -h
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
       - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
       - command: ping -c 3 github.com
       - command: which docker
-      - command: umount /tmp/sdcard
-      - command: mount -t tmpfs tmpfs /tmp/sdcard
-      - command: systemctl start docker
-      - command: docker run hello-world
 
 ####################
 # dip-image-edge.ubi
 ####################
 - deploy:
-    namespace: dfu-ubi
+    namespace: test-ubi
     to: tmpfs
     images:
       n_fs1:
@@ -122,10 +120,10 @@ actions:
         url: ${UBI_EDGE_IMAGE_URL}
 
 - command:
-    namespace: dfu-ubi
+    namespace: test-ubi
     name: set_boot_to_nand
 - boot:
-    namespace: dfu-ubi
+    namespace: test-ubi
     method: dfu
     timeout:
       minutes: 10
@@ -135,22 +133,22 @@ actions:
 
 - boot:
     namespace: test-ubi
-    connection-namespace: dfu-ubi
+    connection-namespace: test-ubi
     timeout:
       minutes: 20
     method: u-boot
     commands:
       - run linux_bestla
     auto_login:
-      login_prompt: 'login:'
+      login_prompt: "login:"
       username: root
       password_prompt: "Password:"
       password: "P@ssword-1"
       login_commands:
-      - P@ssword-1
-      - azertAZERT12345
-      - azertAZERT12345
-      - azertAZERT12345
+      - "P@ssword-1"
+      - "azertAZERT12345"
+      - "azertAZERT12345"
+      - "azertAZERT12345"
     prompts:
     - "Current password: "
     - "New password: "
@@ -159,11 +157,11 @@ actions:
 
 - test:
     namespace: test-ubi
-    connection-namespace: dfu-ubi
+    connection-namespace: test-ubi
     timeout:
       minutes: 60
     interactive:
-    - name: basic-cmds
+    - name: basic-cmds-ubi
       prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
       script:
       - command: uname -a
@@ -172,6 +170,10 @@ actions:
       - command: cat /proc/meminfo
       - command: cat /proc/cpuinfo
       - command: free -h
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
       - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
       - command: ifconfig -a
