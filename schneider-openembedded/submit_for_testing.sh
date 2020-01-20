@@ -9,24 +9,39 @@ popd
 # Used by DB410C's template:
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 
-templates_common=(\
-	dip-image.yaml \
-	dip-image-dev.yaml \
-	ltp-ptest.yaml \
-)
+templates_common_minimal=( dip-image.yaml     )
+templates_common_normal=(  ${templates_common_minimal[@]} dip-image-dev.yaml )
+templates_common_full=(    ${templates_common_normal[@]}  ltp-ptest.yaml     )
 
-templates_soca9=(\
-)
+templates_soca9_minimal=
+templates_soca9_normal=( ${templates_soca9_minimal[@]})
+templates_soca9_full=(   ${templates_soca9_normal[@]} )
 
-templates_rzn1d=(\
-	dip-image-edge.yaml \
-)
+templates_rzn1d_minimal=
+templates_rzn1d_normal=( ${templates_rzn1d_minimal[@]} dip-image-edge.yaml )
+templates_rzn1d_full=(   ${templates_rzn1d_normal[@]} )
 
 if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
-	templates=( ${templates_rzn1d[@]} ${templates_common[@]} )
+	templates_minimal=( ${templates_common_minimal[@]} ${templates_rzn1d_minimal[@]} )
+	templates_normal=(  ${templates_common_normal[@]}  ${templates_rzn1d_normal[@]} )
+	templates_full=(    ${templates_common_full[@]}    ${templates_rzn1d_full[@]} )
 else
-	templates=( ${templates_soca9[@]} ${templates_common[@]} )
+	templates_minimal=( ${templates_common_minimal[@]} ${templates_soca9_minimal[@]} )
+	templates_normal=(  ${templates_common_normal[@]}  ${templates_soca9_normal[@]} )
+	templates_full=(    ${templates_common_full[@]}    ${templates_soca9_full[@]} )
 fi
+
+case $TEST_LEVEL in
+	"minimal" | "minimum" | "min" | "3")
+		templates=( ${templates_minimal[@]} )
+		;;
+	"normal" | "2")
+		templates=( ${templates_normal[@]} )
+		;;
+	*)
+		templates=( ${templates_full[@]} )
+		;;
+esac
 
 for template in ${templates[@]};
 do
