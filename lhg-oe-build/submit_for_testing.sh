@@ -17,9 +17,7 @@ case "${DEVICE_TYPE}" in
     fi
     ;;
   am57xx-evm)
-    if [ "${MANIFEST_BRANCH}" == "rocko" ]; then
-      PRODUCTION_LAVA_TEST_JOBS="template-igt-test.yaml"
-    fi
+    PRODUCTION_LAVA_TEST_JOBS="template-igt-test.yaml"
     ;;
 esac
 
