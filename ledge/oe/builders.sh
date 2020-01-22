@@ -127,7 +127,22 @@ esac
 
 time bitbake ${BIMAGES} ${FIRMWARE}
 
+
+TOPDIR=$(bitbake -e | grep "^TOPDIR="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
+
+
+case "${MACHINE}" in
+	ledge-multi-armv7)
+		UPLOAD_DIR="${TOPDIR}/armhf-glibc/deploy/images"
+		;;
+	ledge-multi-armv8)
+		UPLOAD_DIR="${TOPDIR}/arm64-glibc/deploy/images"
+		;;
+	*)
+		UPLOAD_DIR="${DEPLOY_DIR_IMAGE}"
+		;;
+esac
 
 # Prepare files to publish
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
@@ -160,9 +175,12 @@ rm -rf bl*.bin
 cd -
 set -e
 
+
+cd ${DEPLOY_DIR_IMAGE}
 # Clean up not needed build artifacts
 rm -rf Image-ledge* Image*mainline* modules-*-mainline* \
 	*.env *.conf *.manifest *.json *.wks
+cd -
 
 # Create MD5SUMS file
 find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
@@ -172,11 +190,11 @@ mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
-DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
+DEPLOY_DIR_IMAGE=${UPLOAD_DIR}
 EOF
 
 # Build information
-cat > ${DEPLOY_DIR_IMAGE}/HEADER.textile << EOF
+cat > ${UPLOAD_DIR}/HEADER.textile << EOF
 
 h4. LEDGE - OpenEmbedded
 
