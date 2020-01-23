@@ -82,8 +82,10 @@ fi
 
 git clone ${DISTRO_URL_BASE}/${DISTRO_DIR} -b ${MANIFEST_BRANCH}
 cd ${DISTRO_DIR}
+git log -1
 git submodule init
 git submodule update
+git submodule update --remote sources/meta-backports  sources/meta-dip-base  sources/meta-dip-extra
 
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
