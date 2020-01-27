@@ -24,7 +24,12 @@ for imagename in ${update_images}; do
       docker tag ${docker_tag} ${new_tag}
       docker_tag=${new_tag}
     fi
-    docker push ${docker_tag}
+    for i in 1 2 3;
+    do
+        docker push ${docker_tag} && exit 0 || true
+        sleep 30
+    done
+    exit 1
   )||echo $imagename push failed >> ${WORKSPACE}/log
 done
 
