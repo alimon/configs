@@ -62,7 +62,22 @@ if [ ! -e ".repo/manifest.xml" ]; then
    ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
 fi
 
+if [ "${ghprbGhRepository}" == "Linaro/ledge-oe-manifest" ]; then
+    cd .repo/manifests
+    git fetch origin pull/${ghprbPullId}/head:prbranch
+    git checkout prbranch
+    cd -
+fi
+
 repo sync
+
+if [ "${ghprbGhRepository}" == "Linaro/meta-ledge" ]; then
+    cd ./layers/meta-ledge
+    git fetch origin pull/${ghprbPullId}/head:prbranch
+    git checkout prbranch
+    cd -
+fi
+
 cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
