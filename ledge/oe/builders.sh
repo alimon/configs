@@ -75,7 +75,7 @@ repo sync
 
 if [ "${ghprbGhRepository}" == "Linaro/meta-ledge" ]; then
     cd ./layers/meta-ledge
-    git fetch origin pull/${ghprbPullId}/head:prbranch
+    git fetch github pull/${ghprbPullId}/head:prbranch
     git checkout prbranch
     cd -
 fi
