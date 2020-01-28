@@ -163,12 +163,10 @@ case "${MACHINE}" in
 esac
 
 # Prepare files to publish
-rm -f ${DEPLOY_DIR_IMAGE}/*.txt
-find ${DEPLOY_DIR_IMAGE} -type l -delete
-mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
+mv /srv/oe/{source,pinned}-manifest.xml ${UPLOAD_DIR}
 cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
-for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.wic); do
+for rootfs in $(find ${UPLOAD_DIR} -type f -name *.rootfs.wic); do
 	case "${MACHINE}" in
 	ledge-stm32mp157c-dk2)
 		mv ${rootfs} ${rootfs}.bin
@@ -185,25 +183,31 @@ for cert in $(find ${DEPLOY_DIR_IMAGE} -type f -name ledge-kernel-uefi-certs*.wi
 done
 
 # Convert bl*.bin symlinks to local files and package them to bios-num.tar.gz
-set +e
-cd ${DEPLOY_DIR_IMAGE}
-find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \; 
-tar -czf bios-${BUILD_NUMBER}.tar.gz bl*.bin
-rm -rf bl*.bin
-cd -
-set -e
+ATF=`find . -name bl1.bin -type l | xargs dirname`
+for d in ${ATF} ; do
+	cd $d
+	find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \;
+	tar -czf bios-${BUILD_NUMBER}.tar.gz bl*.bin
+	rm -rf bl*.bin
+	cd -
+done
 
-
-cd ${DEPLOY_DIR_IMAGE}
 # Clean up not needed build artifacts
-rm -rf Image-ledge* Image*mainline* modules-*-mainline* \
-	*.env *.conf *.manifest *.json *.wks
-cd -
+CLEAN="Image-ledge* Image*mainline* modules-*-mainline* \
+	*.env *.conf *.manifest *.json *.wks \
+	arm-trusted-firmware \
+        optee \
+	dtb \
+	*.txt "
+for c in ${CLEAN}; do
+	find ${UPLOAD_DIR} -name $c -exec rm -rf '{}' '+'
+done
+find ${UPLOAD_DIR} -type l -delete
 
 # Create MD5SUMS file
-find ${DEPLOY_DIR_IMAGE} -type f | xargs md5sum > MD5SUMS.txt
-sed -i "s|${DEPLOY_DIR_IMAGE}/||" MD5SUMS.txt
-mv MD5SUMS.txt ${DEPLOY_DIR_IMAGE}
+find ${UPLOAD_DIR} -type f | xargs md5sum > MD5SUMS.txt
+sed -i "s|${UPLOAD_DIR}/||" MD5SUMS.txt
+mv MD5SUMS.txt ${UPLOAD_DIR}
 
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
@@ -225,14 +229,14 @@ EOF
 
 if [ -e "/srv/oe/manifest-changes.txt" ]; then
   # the space after pre.. tag is on purpose
-  cat > ${DEPLOY_DIR_IMAGE}/README.textile << EOF
+  cat > ${UPLOAD_DIR}/README.textile << EOF
 
 h4. Manifest changes
 
 pre.. 
 EOF
-  cat /srv/oe/manifest-changes.txt >> ${DEPLOY_DIR_IMAGE}/README.textile
-  mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE}
+  cat /srv/oe/manifest-changes.txt >> ${UPLOAD_DIR}/README.textile
+  mv /srv/oe/manifest-changes.txt ${UPLOAD_DIR}
 fi
 
 GCCVERSION=$(bitbake -e | grep "^GCCVERSION="| cut -d'=' -f2 | tr -d '"')
