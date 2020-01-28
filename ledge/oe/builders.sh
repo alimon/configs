@@ -1,5 +1,7 @@
 #!/bin/bash
 
+echo "LEDGE build for machine ${MACHINE} distro ${DISTRO}"
+
 set -e
 
 # workaround EDK2 is confused by the long path used during the build
@@ -96,6 +98,7 @@ fi
 # let's remove the previous TMPDIR as well.
 # we want to preserve build/buildhistory though.
 rm -rf conf build/conf build/tmp-*glibc/
+rm -rf build-${DISTRO}
 
 source setup-environment
 
