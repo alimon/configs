@@ -261,10 +261,12 @@ case "${MACHINE}" in
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
-      pigz -d -k ${rootfs}
-      sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
-      rm -f ${rootfs%.gz}
-      pigz -9 ${rootfs%.ext4.gz}.img
+      if [ -f "${rootfs}" ]; then
+        pigz -d -k "${rootfs}"
+        sudo ext2simg -v "${rootfs%.gz}" "${rootfs%.ext4.gz}.img"
+        rm -f "${rootfs%.gz}"
+        pigz -9 "${rootfs%.ext4.gz}.img"
+      fi
     done
     ;;
 esac
