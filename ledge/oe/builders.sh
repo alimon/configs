@@ -183,8 +183,9 @@ for cert in $(find ${DEPLOY_DIR_IMAGE} -type f -name ledge-kernel-uefi-certs*.wi
 done
 
 # Convert bl*.bin symlinks to local files and package them to bios-num.tar.gz
-ATF=`find . -name bl1.bin -type l | xargs dirname`
-for d in ${ATF} ; do
+ATF=`find . -name bl1.bin -type l`
+for a in ${ATF} ; do
+	d="dirname $a"
 	cd $d
 	find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \;
 	tar -czf bios-${BUILD_NUMBER}.tar.gz bl*.bin
