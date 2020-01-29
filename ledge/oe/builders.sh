@@ -108,15 +108,6 @@ OSF_LMP_GIT_URL = "github.com"
 OSF_LMP_GIT_NAMESPACE = "opensourcefoundries/"
 EOF
 
-# Add job BUILD_NUMBER to output files names
-cat << EOF >> conf/auto.conf
-IMAGE_NAME_append = "-${BUILD_NUMBER}"
-KERNEL_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
-MODULE_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
-DT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
-BOOT_IMAGE_BASE_NAME_append = "-${BUILD_NUMBER}"
-EOF
-
 # get build stats to make sure that we use sstate properly
 cat << EOF >> conf/auto.conf
 INHERIT += "buildstats buildstats-summary"
@@ -182,13 +173,13 @@ for cert in $(find ${DEPLOY_DIR_IMAGE} -type f -name ledge-kernel-uefi-certs*.wi
 	pigz -9 ${cert}
 done
 
-# Convert bl*.bin symlinks to local files and package them to bios-num.tar.gz
+# Convert bl*.bin symlinks to local files and package them to bios.tar.gz
 ATF=`find . -name bl1.bin -type l`
 for a in ${ATF} ; do
 	d="dirname $a"
 	cd $d
 	find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \;
-	tar -czf bios-${BUILD_NUMBER}.tar.gz bl*.bin
+	tar -czf bios.tar.gz bl*.bin
 	rm -rf bl*.bin
 	cd -
 done
@@ -246,22 +237,22 @@ TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 
 ls -lh  ${DEPLOY_DIR_IMAGE}
-BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*${MACHINE}-*${BUILD_NUMBER}*.img" -printf "%f\n"| sort)
-KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}-*.bin" -printf "%f\n")
-ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.wic.gz" -printf "%f\n" )
-ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.ext4.gz" -printf "%f\n")
-ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.rootfs.tar.xz" -printf "%f\n")
-HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}-*${BUILD_NUMBER}.hddimg.xz" -printf "%f\n")
+BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot*${MACHINE}.img" -printf "%f\n"| sort)
+KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*.bin" -printf "%f\n")
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}*.rootfs.wic.gz" -printf "%f\n" )
+ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}*.rootfs.ext4.gz" -printf "%f\n")
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}*.rootfs.tar.xz" -printf "%f\n")
+HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}*.hddimg.xz" -printf "%f\n")
 INITRD_URL=""
 OVMF=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ovmf.qcow2" -printf "%f\n")
 CERTS=$(find ${DEPLOY_DIR_IMAGE} -type f -name ledge-kernel-uefi-certs*.wic.gz -printf "%f\n");
-FIRMWARE=$(find ${DEPLOY_DIR_IMAGE} -type f -name bios-${BUILD_NUMBER}.tar.gz -printf "%f\n");
+FIRMWARE=$(find ${DEPLOY_DIR_IMAGE} -type f -name bios*.tar.gz -printf "%f\n");
 
 case "${MACHINE}" in
   ledge-am57xx-evm)
     # QEMU arm 32bit needs the zImage file, not the uImage file.
     # KERNEL_IMG is not used for the real hardware itself.
-    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*${MACHINE}-*${BUILD_NUMBER}.bin" -printf "%f\n")
+    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*${MACHINE}*.bin" -printf "%f\n")
     ;;
   ledge-synquacer)
 	  INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
@@ -277,7 +268,7 @@ case "${MACHINE}" in
 	  FLASH_LAYOUT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "FlashLayout_sdcard_${MACHINE}-*iot-lava*.tsv" -printf "%f\n")
     ;;
   juno)
-    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*-${BUILD_NUMBER}.dtb" -printf "%f\n")
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*.dtb" -printf "%f\n")
     ;;
 esac
 
