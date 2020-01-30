@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-for image in $(docker images|grep tcwg|grep -v none|awk '{ print $1":"$2}');
+for image in $(docker images|grep tcwg|grep -v none|grep -v hours|awk '{ print $1":"$2}');
 do
     echo delete: $image;
     docker rmi $image;
