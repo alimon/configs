@@ -1,6 +1,7 @@
 #!/bin/bash
 
 echo "LEDGE build for machine ${MACHINE} distro ${DISTRO}"
+ORIG_MACHINE="${MACHINE}"
 
 set -e
 
@@ -122,7 +123,7 @@ fi
 cat conf/{site,auto}.conf
 
 BIMAGES=""
-case "${MACHINE}" in
+case "${ORIG_MACHINE}" in
 	ledge-multi-armv7)
 		for i in ${IMAGES}; do BIMAGES+="mc:qemuarm:$i "; done
 		;;
@@ -141,7 +142,7 @@ TOPDIR=$(bitbake -e | grep "^TOPDIR="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
 
-case "${MACHINE}" in
+case "${ORIG_MACHINE}" in
 	ledge-multi-armv7)
 		UPLOAD_DIR="${TOPDIR}/armhf-glibc/deploy/images"
 		;;
@@ -169,7 +170,7 @@ for rootfs in $(find ${UPLOAD_DIR} -type f -name *.rootfs.wic); do
 	esac
 done
 
-for cert in $(find ${DEPLOY_DIR_IMAGE} -type f -name ledge-kernel-uefi-certs*.wic); do
+for cert in $(find ${UPLOAD_DIR} -type f -name ledge-kernel-uefi-certs*.wic); do
 	pigz -9 ${cert}
 done
 
