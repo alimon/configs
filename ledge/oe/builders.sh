@@ -176,7 +176,7 @@ done
 # Convert bl*.bin symlinks to local files and package them to bios.tar.gz
 ATF=`find . -name bl1.bin -type l`
 for a in ${ATF} ; do
-	d="dirname $a"
+	d=`dirname $a`
 	cd $d
 	find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \;
 	tar -czf bios.tar.gz bl*.bin
