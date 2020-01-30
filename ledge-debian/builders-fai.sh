@@ -102,6 +102,7 @@ then
     ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld
 
     ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_armhf_without_boot_firmware.fld
+    pigz -9 FlashLayout_sdcard_armhf_without_boot_firmware.raw
 else
     # get bootfs + rootfs flashlayout
     wget https://raw.githubusercontent.com/Linaro/meta-ledge/zeus/meta-ledge-bsp/recipes-devtools/generate-raw-image/files/aarch64/FlashLayout_sdcard_arm64_without_boot_firmware.fld -O  out/FlashLayout_sdcard_arm64_without_boot_firmware.fld
@@ -109,4 +110,5 @@ else
     # generate raw image
     cd out/
     ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_arm64_without_boot_firmware.fld
+    pigz -9 FlashLayout_sdcard_arm64_without_boot_firmware.raw
 fi
