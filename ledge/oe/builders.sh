@@ -141,7 +141,6 @@ time bitbake ${BIMAGES} ${FIRMWARE}
 TOPDIR=$(bitbake -e | grep "^TOPDIR="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
-
 case "${ORIG_MACHINE}" in
 	ledge-multi-armv7)
 		UPLOAD_DIR="${TOPDIR}/armhf-glibc/deploy/images"
@@ -237,23 +236,24 @@ TARGET_SYS=$(bitbake -e | grep "^TARGET_SYS="| cut -d'=' -f2 | tr -d '"')
 TUNE_FEATURES=$(bitbake -e | grep "^TUNE_FEATURES="| cut -d'=' -f2 | tr -d '"')
 STAGING_KERNEL_DIR=$(bitbake -e | grep "^STAGING_KERNEL_DIR="| cut -d'=' -f2 | tr -d '"')
 
-ls -lh  ${DEPLOY_DIR_IMAGE}
-BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot*${MACHINE}.img" -printf "%f\n"| sort)
-KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*.bin" -printf "%f\n")
-ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}*.rootfs.wic.gz" -printf "%f\n" )
-ROOTFS_EXT4=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}*.rootfs.ext4.gz" -printf "%f\n")
-ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}*.rootfs.tar.xz" -printf "%f\n")
-HDD_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ledge-*${MACHINE}*.hddimg.xz" -printf "%f\n")
+find ${UPLOAD_DIR}
+
+BOOT_IMG=$(find ${UPLOAD_DIR} -type f -name "boot*${MACHINE}.img" -printf "%f\n"| sort)
+KERNEL_IMG=$(find ${UPLOAD_DIR} -type f -name "*Image-*${MACHINE}*.bin" -printf "%f\n")
+ROOTFS_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.rootfs.wic.gz" -printf "%f\n" )
+ROOTFS_EXT4=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.rootfs.ext4.gz" -printf "%f\n")
+ROOTFS_TARXZ_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.rootfs.tar.xz" -printf "%f\n")
+HDD_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.hddimg.xz" -printf "%f\n")
 INITRD_URL=""
-OVMF=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ovmf.qcow2" -printf "%f\n")
-CERTS=$(find ${DEPLOY_DIR_IMAGE} -type f -name ledge-kernel-uefi-certs*.wic.gz -printf "%f\n");
-FIRMWARE=$(find ${DEPLOY_DIR_IMAGE} -type f -name bios*.tar.gz -printf "%f\n");
+OVMF=$(find ${UPLOAD_DIR} -type f -name "ovmf.qcow2" -printf "%f\n")
+CERTS=$(find ${UPLOAD_DIR} -type f -name ledge-kernel-uefi-certs*.wic.gz -printf "%f\n");
+FIRMWARE=$(find ${UPLOAD_DIR} -type f -name bios*.tar.gz -printf "%f\n");
 
 case "${MACHINE}" in
   ledge-am57xx-evm)
     # QEMU arm 32bit needs the zImage file, not the uImage file.
     # KERNEL_IMG is not used for the real hardware itself.
-    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*${MACHINE}*.bin" -printf "%f\n")
+    KERNEL_IMG=$(find ${UPLOAD_DIR} -type f -name "zImage-*${MACHINE}*.bin" -printf "%f\n")
     ;;
   ledge-synquacer)
 	  INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
@@ -266,14 +266,14 @@ case "${MACHINE}" in
 	  RIMAGE=ledge-stm32mp157c-dk2.tar.gz
 	  # Only use the iot flashlayout to deploy, since it's a superset of the
 	  # gateway image
-	  FLASH_LAYOUT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "FlashLayout_sdcard_${MACHINE}-*iot-lava*.tsv" -printf "%f\n")
+	  FLASH_LAYOUT=$(find ${UPLOAD_DIR} -type f -name "FlashLayout_sdcard_${MACHINE}-*iot-lava*.tsv" -printf "%f\n")
     ;;
   juno)
-    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*${MACHINE}*.dtb" -printf "%f\n")
+    DTB_IMG=$(find ${UPLOAD_DIR} -type f -name "*Image-*${MACHINE}*.dtb" -printf "%f\n")
     ;;
 esac
 
-cat > ${DEPLOY_DIR_IMAGE}/build_config.json <<EOF
+cat > ${UPLOAD_DIR}/build_config.json <<EOF
 {
   "kernel_repo" : "${KERNEL_REPO}",
   "kernel_commit_id" : "${SRCREV_kernel}",
