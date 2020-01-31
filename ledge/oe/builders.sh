@@ -156,7 +156,7 @@ esac
 
 # Prepare files to publish
 mv /srv/oe/{source,pinned}-manifest.xml ${UPLOAD_DIR}
-cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
+cat ${UPLOAD_DIR}/pinned-manifest.xml
 
 for rootfs in $(find ${UPLOAD_DIR} -type f -name *.rootfs.wic); do
 	case "${MACHINE}" in
