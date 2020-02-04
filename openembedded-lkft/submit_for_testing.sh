@@ -142,6 +142,46 @@ for test in ${TEST_FILES}; do
     fi
 done
 
+# MIGRATION TO LKFT 2.0
+#
+# The following tests are already part of the lkft-full
+# test plan from lava-test-plans:
+# * kvm-unit-tests
+# * libhugetlbfs
+# * LTP
+# * spectre-meltdown-checker
+# * v4l2-compliance
+# so we need to remove them from here for the combinations
+# that have been migrated to LKFT 2.0.
+
+# The list of migrated combinations is here, in the form of
+#   QA_PROJECT::LAVA_DEVICE
+# one per line, in the following array:
+MIGRATED=(
+)
+
+this_combo="${QA_SERVER_PROJECT}::${DEVICE_TYPE}"
+if [[ " ${MIGRATED[*]} " =~ ${this_combo} ]]; then
+    echo "This combination (${DEVICE_TYPE} in ${QA_SERVER_PROJECT}) has been"
+    echo "migrated to LKFT 2.0. Tests running there will be filtered out here."
+
+    NEW_FULL_TEST_TEMPLATES=""
+    for t in ${FULL_TEST_TEMPLATES}; do
+        test="${t#testplan/*}"
+        test="${test%%.yaml}"
+        case ${test} in
+            ltp*)            test=""   ;;
+            libhugetlbfs)    test=""   ;;
+            kvm-unit-tests)  test=""   ;;
+            v4l2-compliance) test=""   ;;
+            *)               test="$t" ;;
+        esac
+        [ -z "${test}" ] && echo "LKFT2.0 filtering: $t"
+        NEW_FULL_TEST_TEMPLATES="${NEW_FULL_TEST_TEMPLATES} ${test}"
+    done
+    FULL_TEST_TEMPLATES="${NEW_FULL_TEST_TEMPLATES}"
+fi
+
 # Submit sanity jobs
 if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "i386" ]];then
     # Save original priority
