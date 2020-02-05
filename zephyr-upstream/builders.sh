@@ -63,7 +63,7 @@ export GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-8-2019-
 install_zephyr_sdk()
 {
     test -d ${ZEPHYR_SDK_INSTALL_DIR} && return 0
-    wget "${ZEPHYR_SDK_URL}"
+    wget -q "${ZEPHYR_SDK_URL}"
     top=$(dirname ${ZEPHYR_SDK_INSTALL_DIR})
     rm -rf ${top}/_tmp.$$
     mkdir -p ${top}/_tmp.$$
@@ -76,7 +76,7 @@ install_zephyr_sdk()
 install_arm_toolchain()
 {
     test -d ${GNUARMEMB_TOOLCHAIN_PATH} && return 0
-    wget "${GNUARMEMB_TOOLCHAIN_URL}"
+    wget -q "${GNUARMEMB_TOOLCHAIN_URL}"
     top=$(dirname ${GNUARMEMB_TOOLCHAIN_PATH})
     rm -rf ${top}/_tmp.$$
     mkdir -p ${top}/_tmp.$$
