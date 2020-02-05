@@ -10,7 +10,7 @@ sudo ln -sf python3.6 /usr/bin/python3
 sudo apt-get -q=2 -y install git ninja-build g++ g++-multilib gperf python3-ply \
     python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler \
     python3-pip python3-serial python3-setuptools python3-wheel \
-    python3-requests
+    python3-requests util-linux
 
 set -ex
 
@@ -80,7 +80,6 @@ install_arm_toolchain()
 }
 
 ls -l ${HOME}/srv/toolchain/
-rm -rf ${ZEPHYR_SDK_INSTALL_DIR}
 install_zephyr_sdk
 install_arm_toolchain
 #find ${ZEPHYR_SDK_INSTALL_DIR}
