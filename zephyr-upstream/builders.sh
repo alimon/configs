@@ -47,9 +47,6 @@ echo "GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)" > ${WORKSPACE}/env_var_para
 
 head -5 Makefile
 
-# Zephyr SDK is pre-installed and comes from:
-# https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.10.3/zephyr-sdk-0.10.3-setup.run
-# To install: ./zephyr-sdk-0.10.3-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.10.3"
 # Note that Zephyr SDK is needed even when building with the gnuarmemb
 # toolchain, ZEPHYR_SDK_INSTALL_DIR is needed to find things like conf
 ZEPHYR_SDK_URL="https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.11.1/zephyr-sdk-0.11.1-setup.run"
@@ -63,14 +60,12 @@ export GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-8-2019-
 install_zephyr_sdk()
 {
     test -d ${ZEPHYR_SDK_INSTALL_DIR} && return 0
-    wget -q "${ZEPHYR_SDK_URL}"
-    top=$(dirname ${ZEPHYR_SDK_INSTALL_DIR})
-    rm -rf ${top}/_tmp.$$
-    mkdir -p ${top}/_tmp.$$
-
-    chmod +x $(basename ${ZEPHYR_SDK_URL})
-    ./$(basename ${ZEPHYR_SDK_URL}) --quiet --nox11 -- <<< ${top}/_tmp.$$
-    mv ${top}/_tmp.$$ ${ZEPHYR_SDK_INSTALL_DIR}
+    (
+        flock -n 9 || echo "Toolchain upgrade in progress - transient failure"; exit 1
+        wget -q "${ZEPHYR_SDK_URL}"
+        chmod +x $(basename ${ZEPHYR_SDK_URL})
+        ./$(basename ${ZEPHYR_SDK_URL}) --quiet --nox11 -- <<< ${ZEPHYR_SDK_INSTALL_DIR}
+    ) 9>/var/lock/zsdk.lock
 }
 
 install_arm_toolchain()
