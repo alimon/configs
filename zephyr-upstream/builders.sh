@@ -87,6 +87,7 @@ install_arm_toolchain()
 ls -l ${HOME}/srv/toolchain/
 install_zephyr_sdk
 install_arm_toolchain
+${ZEPHYR_SDK_INSTALL_DIR}/sysroots/x86_64-pokysdk-linux/usr/bin/dtc --version
 
 # Set build environment variables
 export LANG=C.UTF-8
