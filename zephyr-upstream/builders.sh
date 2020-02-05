@@ -52,12 +52,26 @@ head -5 Makefile
 # To install: ./zephyr-sdk-0.10.3-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.10.3"
 # Note that Zephyr SDK is needed even when building with the gnuarmemb
 # toolchain, ZEPHYR_SDK_INSTALL_DIR is needed to find things like conf
-export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.10.3"
+ZEPHYR_SDK_URL="https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.11.1/zephyr-sdk-0.11.1-setup.run"
+export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.11.1"
 
 # GNU ARM Embedded is downloaded once (per release) and cached in a persistent
 # docker volume under ${HOME}/srv/toolchain/.
 GNUARMEMB_TOOLCHAIN_URL="https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/8-2019q3/RC1.1/gcc-arm-none-eabi-8-2019-q3-update-linux.tar.bz2"
 export GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-8-2019-q3-update"
+
+install_zephyr_sdk()
+{
+    test -d ${ZEPHYR_SDK_INSTALL_DIR} && return 0
+    wget "${ZEPHYR_SDK_URL}"
+    top=$(dirname ${ZEPHYR_SDK_INSTALL_DIR})
+    rm -rf ${top}/_tmp.$$
+    mkdir -p ${top}/_tmp.$$
+
+    chmod +x $(basename ${ZEPHYR_SDK_URL})
+    ./$(basename ${ZEPHYR_SDK_URL}) --quiet --nox11 -- <<< ${top}/_tmp.$$
+    mv ${top}/_tmp.$$ ${ZEPHYR_SDK_INSTALL_DIR}
+}
 
 install_arm_toolchain()
 {
@@ -70,6 +84,7 @@ install_arm_toolchain()
     mv ${top}/_tmp.$$/$(basename ${GNUARMEMB_TOOLCHAIN_PATH}) ${top}
 }
 
+install_zephyr_sdk
 install_arm_toolchain
 
 # Set build environment variables
