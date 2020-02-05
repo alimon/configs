@@ -60,12 +60,12 @@ export GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-8-2019-
 install_zephyr_sdk()
 {
     test -d ${ZEPHYR_SDK_INSTALL_DIR} && return 0
-    (
-        flock -n 9 || echo "Toolchain upgrade in progress - transient failure"; exit 1
-        wget -q "${ZEPHYR_SDK_URL}"
-        chmod +x $(basename ${ZEPHYR_SDK_URL})
-        ./$(basename ${ZEPHYR_SDK_URL}) --quiet --nox11 -- <<< ${ZEPHYR_SDK_INSTALL_DIR}
-    ) 9>/var/lock/zsdk.lock
+    test -f ${ZEPHYR_SDK_INSTALL_DIR}.lck && exit 1
+    touch ${ZEPHYR_SDK_INSTALL_DIR}.lck
+    wget -q "${ZEPHYR_SDK_URL}"
+    chmod +x $(basename ${ZEPHYR_SDK_URL})
+    ./$(basename ${ZEPHYR_SDK_URL}) --quiet --nox11 -- <<< ${ZEPHYR_SDK_INSTALL_DIR}
+    rm -f ${ZEPHYR_SDK_INSTALL_DIR}.lck
 }
 
 install_arm_toolchain()
