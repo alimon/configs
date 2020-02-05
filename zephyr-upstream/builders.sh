@@ -80,9 +80,10 @@ install_arm_toolchain()
 }
 
 ls -l ${HOME}/srv/toolchain/
+rm -rf ${ZEPHYR_SDK_INSTALL_DIR}
 install_zephyr_sdk
 install_arm_toolchain
-find ${ZEPHYR_SDK_INSTALL_DIR}
+#find ${ZEPHYR_SDK_INSTALL_DIR}
 ${ZEPHYR_SDK_INSTALL_DIR}/sysroots/x86_64-pokysdk-linux/usr/bin/dtc --version
 
 # Set build environment variables
