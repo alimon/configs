@@ -84,6 +84,7 @@ install_arm_toolchain()
     mv ${top}/_tmp.$$/$(basename ${GNUARMEMB_TOOLCHAIN_PATH}) ${top}
 }
 
+ls -l ${HOME}/srv/toolchain/
 install_zephyr_sdk
 install_arm_toolchain
 
