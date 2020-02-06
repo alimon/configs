@@ -28,7 +28,11 @@ function copy_archive_to_rootfs() {
 		cd ../../
 		rm -rf out/archive
 	else
-		required_size=$(${GZ} -l $archive_file | tail -1 | awk '{print $2}')
+		if [[ $archive_file_type = *"Debian binary package"* ]]; then
+			required_size=$(dpkg -f $archive_file Installed-Size)
+		else
+			required_size=$(${GZ} -l $archive_file | tail -1 | awk '{print $2}')
+		fi
 		required_size=$(( $required_size / 1024 ))
 
 		sudo e2fsck -y $target_file
