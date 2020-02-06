@@ -2,6 +2,25 @@
     name: tcwg-benchmark
     project-type: matrix
     defaults: global
+    disabled: true
+    display-name: 'DELETE ME'
+
+- project:
+    name: tcwg-benchmark
+    hw:
+      - tk1:
+          results_top: tk1_32
+          image_arch: armhf
+      - tx1:
+          results_top: tx1_64
+          image_arch: arm64
+    jobs:
+      - 'tcwg-benchmark-{hw}'
+
+- job-template:
+    name: tcwg-benchmark-{hw}
+    project-type: matrix
+    defaults: global
     properties:
         - authorization:
             tcwg-benchmark:
@@ -63,8 +82,8 @@
             description: 'Number of benchmark iterations'
         - string:
             name: results_id
-            default: <hw_type>/tcwg-benchmark-<build_num>
-            description: 'ID for benchmarking results; results will appear in dev-01.tcwglab:/home/tcwg-benchmark/results-$results_id/'
+            default: '{results_top}/tcwg-benchmark/@build_num@'
+            description: 'ID for benchmarking results; results will appear in bkp-01.tcwglab:/home/tcwg-benchmark/results-$results_id/'
         - bool:
             name: forceinstall
             default: 'false'
@@ -79,9 +98,9 @@
               - serial1
             description: 'Benchmark profile to use: parallel3x3 runs on 3 boards and 3 CPUs in parallel; parallel3x1 runs on 3 boards on 1 CPU in parallel; serial1 runs on a single board on 1 CPU.'
         - string:
-            name: target_list
-            default: 'tx1_64'
-            description: 'List of targets -- tk1_32 tx1_32 tx1_64'
+            name: image_arch
+            default: '{image_arch}'
+            description: 'Docker image architecture -- arm64 or armhf'
         - bool:
             name: reboot
             default: 'false'
@@ -114,13 +133,13 @@
     node: tcwg-bmk-coordinator
     child-workspace: $label
     concurrent: true
-    display-name: 'TCWG BBB Benchmark'
+    display-name: 'TCWG BBB Benchmark {hw}'
     scm:
         - git:
             url: https://git.linaro.org/toolchain/jenkins-scripts.git
             refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             branches:
-                - ${scripts_branch}
+                - $scripts_branch
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -130,7 +149,7 @@
             url: https://git.linaro.org/toolchain/bmk-scripts.git
             refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
             branches:
-                - ${bmk_branch}
+                - $bmk_branch
             basedir: bmk-scripts
             skip-tag: true
             shallow-clone: true
@@ -142,32 +161,16 @@
             type: slave
             name: label
             values:
-                - tcwg-bmk-tk1-01
-                - tcwg-bmk-tk1-02
-                - tcwg-bmk-tk1-03
-                - tcwg-bmk-tk1-04
-                - tcwg-bmk-tk1-05
-                - tcwg-bmk-tk1-06
-                - tcwg-bmk-tk1-07
-                - tcwg-bmk-tk1-08
-                - tcwg-bmk-tk1-09
-                - tcwg-bmk-tx1-01
-                - tcwg-bmk-tx1-02
-                - tcwg-bmk-tx1-03
-                - tcwg-bmk-tx1-04
-                - tcwg-bmk-tx1-05
-                - tcwg-bmk-tx1-06
-                - tcwg-bmk-tx1-07
-                - tcwg-bmk-tx1-08
-                - tcwg-bmk-tx1-09
-        - axis:
-            type: dynamic
-            name: target
-            values:
-                - target_list
+                - tcwg-bmk-{hw}-01
+                - tcwg-bmk-{hw}-02
+                - tcwg-bmk-{hw}-03
+                - tcwg-bmk-{hw}-04
+                - tcwg-bmk-{hw}-05
+                - tcwg-bmk-{hw}-06
+                - tcwg-bmk-{hw}-07
+                - tcwg-bmk-{hw}-08
+                - tcwg-bmk-{hw}-09
     execution-strategy:
-        combination-filter: |
-            (target=="tk1_32" && label==~/tcwg-bmk-tk1-.*/) || ((target=="tx1_32" || target=="tx1_64") && label==~/tcwg-bmk-tx1-.*/)
         sequential: false
     wrappers:
         - timeout:
@@ -177,7 +180,7 @@
             users:
                 - 'tcwg-benchmark'
         - build-name:
-            name: '#${BUILD_NUMBER}-${displaytag}'
+            name: '#$BUILD_NUMBER-$displaytag'
     builders:
         - shell: |
             #!/bin/bash
