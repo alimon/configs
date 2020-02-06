@@ -158,10 +158,11 @@ done
 #   QA_PROJECT::LAVA_DEVICE
 # one per line, in the following array:
 MIGRATED=(
+  linux-mainline-oe::juno-r2
 )
 
 this_combo="${QA_SERVER_PROJECT}::${DEVICE_TYPE}"
-if [[ " ${MIGRATED[*]} " =~ ${this_combo} ]]; then
+if [[ ${MIGRATED[*]} =~ ${this_combo} ]]; then
     echo "This combination (${DEVICE_TYPE} in ${QA_SERVER_PROJECT}) has been"
     echo "migrated to LKFT 2.0. Tests running there will be filtered out here."
 
