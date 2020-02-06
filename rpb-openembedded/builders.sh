@@ -147,7 +147,7 @@ case "${MACHINE}" in
   *)
     for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.ext4.gz); do
       pigz -d -k ${rootfs}
-      sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
+      sudo img2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
       rm -f ${rootfs%.gz}
       pigz -9 ${rootfs%.ext4.gz}.img
     done
