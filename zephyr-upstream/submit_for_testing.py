@@ -163,18 +163,19 @@ def permutations_of_regexes(regexes):
 def parse_yaml_harness_config(yaml_node):
     # Return a string with the actual regular expression to look for in the LAVA job.
     # We can then use LAVA's interactive test action to look for it.
-    if "harness" in yaml_node.keys() and yaml_node["harness"] == "console":
-        if yaml_node["harness_config"]["type"] == "one_line":
-            return yaml_node["harness_config"]["regex"][0]
-        elif yaml_node["harness_config"]["type"] == "multi_line":
-            if "ordered" not in yaml_node["harness_config"].keys() or yaml_node["harness_config"]["ordered"] == "true":
+    if yaml_node.get("harness") == "console":
+        config = yaml_node.get("harness_config", {})
+        if config.get("type") == "one_line":
+            return config["regex"][0]
+        elif config.get("type") == "multi_line":
+            if "ordered" not in config or config["ordered"] == "true":
                 # For ordered regular expressions, we can simply join them into one,
                 # while allowing any character in between via (.*)
-                return ".*".join(yaml_node["harness_config"]["regex"])
+                return ".*".join(config["regex"])
             else:
                 # For non-ordered case, we need to look for all permutations of
                 # the regexes, since they can occur in any order.
-                return permutations_of_regexes(yaml_node["harness_config"]["regex"])
+                return permutations_of_regexes(config["regex"])
     else:
         return None
 
