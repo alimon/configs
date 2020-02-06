@@ -35,7 +35,7 @@ function copy_archive_to_rootfs() {
 		fi
 		required_size=$(( $required_size / 1024 ))
 
-		sudo e2fsck -y $target_file
+		sudo e2fsck -y -f $target_file
 		block_count=$(sudo dumpe2fs -h $target_file | grep "Block count" | awk '{print $3}')
 		block_size=$(sudo dumpe2fs -h $target_file | grep "Block size" | awk '{print $3}')
 		current_size=$(( $block_size * $block_count / 1024 ))
@@ -46,7 +46,7 @@ function copy_archive_to_rootfs() {
 		mkdir -p out/rootfs_mount
 		sudo mount -o loop $target_file out/rootfs_mount
 		if [[ $archive_file_type = *"Debian binary package"* ]]; then
-			dpkg-deb -x $archive_file out/rootfs_mount
+			sudo dpkg-deb -x $archive_file out/rootfs_mount
 		else
 			sudo tar -xvf $archive_file -C out/rootfs_mount
 		fi
