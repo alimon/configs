@@ -22,7 +22,7 @@ sudo pip3 install west
 west --version
 
 # Distro package is too old for Zephyr
-#sudo pip3 install pyelftools pykwalify
+sudo pip3 install pyelftools
 
 # Pre-installed CMake is too old for the latest Zephyr
 # Recent recommendation to users is to install it via PyPI, let'd do the same
