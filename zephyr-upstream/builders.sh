@@ -8,7 +8,7 @@ sudo apt-get install -y python3.6
 sudo ln -sf python3.6 /usr/bin/python3
 
 sudo apt-get -q=2 -y install git ninja-build g++ g++-multilib gperf python3-ply \
-    python3-yaml gcc-arm-none-eabi python-requests rsync device-tree-compiler \
+    gcc-arm-none-eabi python-requests rsync device-tree-compiler \
     python3-pip python3-serial python3-setuptools python3-wheel \
     python3-requests util-linux
 
@@ -18,8 +18,12 @@ set -ex
 # quirky PyPI packages, specifically cmake was caught like that.
 sudo pip3 install --upgrade pip
 
+sudo pip3 install west
+west --version
+
 # Distro package is too old for Zephyr
-sudo pip3 install pyelftools pykwalify
+#sudo pip3 install pyelftools pykwalify
+
 # Pre-installed CMake is too old for the latest Zephyr
 # Recent recommendation to users is to install it via PyPI, let'd do the same
 sudo pip3 install cmake
@@ -31,8 +35,6 @@ sudo pip3 install cmake
 #rm -rf cmake-${cmake_version}-Linux-x86_64
 #cmake -version
 
-sudo pip3 install west
-west --version
 
 git clone -b ${BRANCH} https://github.com/zephyrproject-rtos/zephyr.git
 west init -l zephyr/
