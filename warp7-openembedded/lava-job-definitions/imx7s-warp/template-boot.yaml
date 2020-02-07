@@ -32,33 +32,121 @@ actions:
       - 'root@imx7s-warp:~#'
     timeout:
       minutes: 50
+
+- test:
+    timeout:
+      minutes: 10
+    interactive:
+    - name: basic-cmds-tftp
+      prompts: ["root@imx7s-warp"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+      - command: which docker
+      - command: df -h
+
 - test:
     timeout:
       minutes: 50
     definitions:
-    - from: inline
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: uname-test
-          description: "uname test"
-        run:
-          steps:
-            - uname -a
-      name: uname-test
-      path: inline/uname-test.yaml
+
+    - path: automated/linux/meminfo/meminfo.yaml
+      repository: https://git.linaro.org/qa/test-definitions.git
+      history: false
+      name: meminfo
+      from: git
+      branch: master
+
     - path: automated/linux/badblocks/badblocks.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
       history: false
       name: badblocks
       from: git
       branch: master
-    - path: automated/linux/memtester/memtester.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: memtester
-      from: git
-      branch: master
+
+##################
+# Reboot/Poweroff Tests
+##################
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: reboot-cmds-1
+      prompts: ["Hit any key to stop autoboot"]
+      script:
+      - command: reboot ; sleep 10
+
+# Trigger 2nd boot
+- boot:
+    method: minimal
+    auto_login:
+      login_prompt: 'imx7s-warp login:'
+      username: 'root'
+    prompts:
+      - 'root@imx7s-warp:~#'
+    timeout:
+      minutes: 50
+
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: check-1st-reboot
+      prompts: ["root@imx7s-warp"]
+      script:
+      - command: echo "We came back from a reboot"
+
+
+# Reboot the board a 2nd time
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: reboot-cmds-2
+      prompts: ["Hit any key to stop autoboot"]
+      script:
+      - command: reboot ; sleep 10
+
+# Trigger a new boot
+- boot:
+    method: minimal
+    auto_login:
+    auto_login:
+      login_prompt: 'imx7s-warp login:'
+      username: 'root'
+    prompts:
+      - 'root@imx7s-warp:~#'
+    timeout:
+      minutes: 50
+
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: check-2nd-reboot
+      prompts: ["root@imx7s-warp"]
+      script:
+      - command: echo "We came back from the 2nd reboot"
+
+# Test poweroff
+- test:
+    timeout:
+      minutes: 5
+    interactive:
+    - name: poweroff-cmds
+      prompts: ["reboot: System halted"]
+      script:
+      - command: poweroff ; sleep 10
 
 metadata:
   machine: ${MACHINE}
