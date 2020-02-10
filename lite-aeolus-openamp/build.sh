@@ -11,6 +11,7 @@ echo "GIT_COMMIT=mock" > env_var_parameters
 
 mkdir -p /home/buildslave/srv/lite-aeolus-openamp/downloads
 
+rm -f xilinx-openamp-build.cid
 docker run --cidfile xilinx-openamp-build.cid \
     -v /home/buildslave/srv/lite-aeolus-openamp/downloads:/home/build/prj/build/downloads \
     pfalcon/xilinx-openamp-build:v2 \
