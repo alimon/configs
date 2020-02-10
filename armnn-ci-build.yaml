@@ -82,7 +82,7 @@
             #!/bin/bash -ex
 
             export DEVICE_TYPE=hi960-hikey
-            
+
             if [ -z "$GIT_COM_ID" ]
             then
                 LAVA_ID=${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}
@@ -90,8 +90,22 @@
                 LAVA_ID=$GIT_COM_ID
             fi
 
-            rm -rf configs
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
+            LAVA_JOB_PRIORITY=50
+            PROJECT_NAME=armnn
+            PROJECT=projects/armnn/
+            ARMNN_TARBALL_URL=https://snapshots.linaro.org/components/armnn/${BUILD_NUMBER}/armnn.tar.xz
+            BOOT_URL=http://snapshots.linaro.org/96boards/hikey/linaro/debian/30/boot-linaro-stretch-developer-hikey-20190420-30.img.gz
+            BOOT_URL_COMP=gz
+            ROOTFS_URL=http://snapshots.linaro.org/96boards/hikey/linaro/debian/30/rootfs-linaro-stretch-developer-hikey-20190420-30.img.gz
+            ROOTFS_URL_COMP=gz
+            DEPLOY_OS=debian
+            OS_INFO=debian
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            EOF
+
+            git clone --depth 1 https://github.com/Linaro/lava-test-plans.git
 
             curl \
                 --header "Auth-Token: $QA_REPORTS_TOKEN" \
@@ -99,31 +113,69 @@
                 --form patch_id=${GERRIT_CHANGE_NUMBER}:${GERRIT_PATCHSET_NUMBER} \
                 https://qa-reports.linaro.org/api/createbuild/armnn/armnn/$LAVA_ID
 
-            python configs/armnn-ci-build/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --qa-server-team armnn \
-                --qa-server-project armnn \
-                --lava-server ${LAVA_SERVER} \
-                --git-commit ${LAVA_ID}
+            # submit tests to LAVA
+            rm -rf venv | true
+            virtualenv -p python3 venv
+            source ./venv/bin/activate
+
+            git clone https://github.com/Linaro/lava-test-plans.git
+            cd lava-test-plans
+            pip install -r requirements.txt
+            ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
+              --device-type ${DEVICE_TYPE} \
+              --test-plan armnn \
+              --qa-server-team armnn \
+              --qa-server-project armnn \
+              --lava-server ${LAVA_SERVER} \
+              --build-id ${LAVA_ID}
 
             export DEVICE_TYPE=synquacer
+            cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
+            LAVA_JOB_PRIORITY=50
+            PROJECT_NAME=armnn
+            PROJECT=projects/armnn/
+            ARMNN_TARBALL_URL=https://snapshots.linaro.org/components/armnn/${BUILD_NUMBER}/armnn.tar.xz
+            KERNEL_URL=http://images.validation.linaro.org/synquacer/hc/vmlinuz
+            RAMDISK_URL=http://images.validation.linaro.org/synquacer/hc/initrd.img
+            RAMDISK_URL_COMP=gz
+            ROOTFS_URL=http://images.validation.linaro.org/synquacer/hc/rootfs.tar.xz
+            ROOTFS_URL_COMP=xz
+            DEPLOY_OS=debian
+            OS_INFO=debian
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            EOF
 
-            python configs/armnn-ci-build/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --qa-server-team armnn \
-                --qa-server-project armnn \
-                --lava-server ${LAVA_SERVER} \
-                --git-commit ${LAVA_ID}
+            ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
+              --device-type ${DEVICE_TYPE} \
+              --test-plan armnn \
+              --qa-server-team armnn \
+              --qa-server-project armnn \
+              --lava-server ${LAVA_SERVER} \
+              --build-id ${LAVA_ID}
 
             export DEVICE_TYPE=dragonboard-845c
 
-            python configs/armnn-ci-build/submit_for_testing.py \
-                --device-type ${DEVICE_TYPE} \
-                --build-number ${BUILD_NUMBER} \
-                --qa-server-team armnn \
-                --qa-server-project armnn \
-                --lava-server ${LAVA_SERVER} \
-                --git-commit ${LAVA_ID}
+            cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
+            LAVA_JOB_PRIORITY=50
+            PROJECT_NAME=armnn
+            PROJECT=projects/armnn/
+            ARMNN_TARBALL_URL=https://snapshots.linaro.org/components/armnn/${BUILD_NUMBER}/armnn.tar.xz
+            PTABLE_URL=https://images.validation.linaro.org/snapshots.linaro.org/96boards/dragonboard845c/linaro/rescue/28/dragonboard-845c-bootloader-ufs-linux-28/gpt_both0.bin
+            BOOT_URL=http://images.validation.linaro.org/releases.linaro.org/96boards/dragonboard845c/linaro/debian/19.09/boot-linaro-buster-dragonboard-845c-58.img.gz
+            BOOT_URL_COMP=gz
+            ROOTFS_URL=http://images.validation.linaro.org/releases.linaro.org/96boards/dragonboard845c/linaro/debian/19.09/linaro-buster-alip-dragonboard-845c-58.img.gz
+            ROOTFS_URL_COMP=gz
+            DEPLOY_OS=debian
+            OS_INFO=debian
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            EOF
 
+            ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
+              --device-type ${DEVICE_TYPE} \
+              --test-plan armnn \
+              --qa-server-team armnn \
+              --qa-server-project armnn \
+              --lava-server ${LAVA_SERVER} \
+              --build-id ${LAVA_ID}
