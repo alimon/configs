@@ -19,14 +19,14 @@
     parameters:
         - label:
             name: nodes
-            default: tcwg-apm_64-build || tcwg-d05_64-build || tcwg-llvmbot || tcwg-m1 || tcwg-sq_64-build || tcwg-tk1_32-build || tcwg-x86_64-cam || tcwg-coordinator
+            default: tcwg && !tcwg-bmk
             all-nodes: true
             matching-label: 'allCases'
             node-eligibility: 'ignore-offline'
             description: 'Machines to run on'
         - string:
             name: distro
-            default: 'xenial'
+            default: 'xenial-tcwg-tested'
             description: 'Distro version to use.'
         - bool:
             name: verbose
@@ -49,6 +49,20 @@
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - change-merged-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'ci/dockerfiles'
+                  branches:
+                    - branch-pattern: 'tcwg-tested'
+                  file-paths:
+                    - compare-type: ANT
+                      pattern: tcwg-base/home-data/**
+            silent-start: true
     wrappers:
         - timeout:
             timeout: 600
