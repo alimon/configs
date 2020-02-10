@@ -13,7 +13,7 @@ mkdir -p /home/buildslave/srv/lite-aeolus-openamp/downloads
 
 docker run --cidfile xilinx-openamp-build.cid \
     -v /home/buildslave/srv/lite-aeolus-openamp/downloads:/home/build/prj/build/downloads \
-    pfalcon/xilinx-openamp-build:v1 \
+    pfalcon/xilinx-openamp-build:v2 \
     /bin/bash -c "cd ~/prj; source setupsdk; MACHINE=zcu102-zynqmp bitbake openamp-image-minimal"
 
 cid=$(cat xilinx-openamp-build.cid)
