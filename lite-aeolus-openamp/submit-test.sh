@@ -4,6 +4,8 @@ set -ex
 export PATH=$HOME/.local/bin:$PATH
 dir=$(dirname $0)
 
+# For now, always check out latest version
+rm -rf lite-lava-docker-compose
 if [ ! -d lite-lava-docker-compose ]; then
     git clone https://github.com/Linaro/lite-lava-docker-compose
 fi
