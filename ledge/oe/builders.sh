@@ -48,7 +48,7 @@ fi
 # initialize repo if not done already
 export MANIFEST_URL=${MANIFEST_URL:-https://github.com/Linaro/ledge-oe-manifest.git}
 if [ ! -e ".repo/manifest.xml" ]; then
-   repo init -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH}
+   repo init --no-clone-bundle --depth=1 --no-tags -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH}
 
    # link to shared downloads on persistent disk
    # our builds config is expecting downloads and sstate-cache, here.
