@@ -159,6 +159,7 @@ done
 # one per line, in the following array:
 MIGRATED=(
   linux-mainline-oe::juno-r2
+  linux-next-oe::juno-r2
 )
 
 this_combo="${QA_SERVER_PROJECT}::${DEVICE_TYPE}"
