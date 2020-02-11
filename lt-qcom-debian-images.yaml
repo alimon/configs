@@ -106,6 +106,8 @@
         - shell: |
             #!/bin/bash
 
+            set -ex
+
             case "${PLATFORM_NAME}" in
               dragonboard-410c)
                 PUB_MACHINE="dragonboard410c"
@@ -132,8 +134,7 @@
                 ;;
             esac
 
-            echo "96BOARDS_MACHINE=${96BOARDS_MACHINE}" > parameters
-            echo "DEVICE_TYPE=${DEVICE_TYPE}" >> parameters
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > parameters
             echo "FAI_BOARD_CLASS=${FAI_BOARD_CLASS}" >> parameters
             echo "DTBS=${DTBS}" >> parameters
             echo "ROOTFS=${ROOTFS}" >> parameters
