@@ -95,8 +95,7 @@
             mv x15-install.img.gz out/x15-u-boot-sd-${BUILD_NUMBER}.img.gz
 
             ./scripts/setlocalversion --save-scmversion
-            GIT_DESCRIBE=$(git describe)
-            GIT_TAG=$(echo "$GIT_DESCRIBE" | awk -F- '{print substr($1,2)}')
+            GIT_TAG=$(git describe --abbrev=0)
             LOCALVERSION=$(cat .scmversion)
             # remove leading 'v' as it doesn't show up in u-boot version string
 
