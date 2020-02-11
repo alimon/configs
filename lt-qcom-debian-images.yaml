@@ -108,7 +108,7 @@
 
             case "${PLATFORM_NAME}" in
               dragonboard-410c)
-                96BOARDS_MACHINE="dragonboard410c"
+                PUB_MACHINE="dragonboard410c"
                 DEVICE_TYPE="${PLATFORM_NAME}"
                 FAI_BOARD_CLASS="DB410C"
                 DTBS="qcom/apq8016-sbc.dtb"
@@ -116,14 +116,14 @@
                 SDCARD="developer,4G"
                 ;;
               dragonboard-820c)
-                96BOARDS_MACHINE="dragonboard820c"
+                PUB_MACHINE="dragonboard820c"
                 DEVICE_TYPE="${PLATFORM_NAME}"
                 FAI_BOARD_CLASS="DB820C"
                 DTBS="qcom/apq8096-db820c.dtb"
                 BOOTIMG_PAGESIZE="4096"
                 ;;
               dragonboard-845c)
-                96BOARDS_MACHINE="dragonboard845c"
+                PUB_MACHINE="dragonboard845c"
                 DEVICE_TYPE="${PLATFORM_NAME}"
                 FAI_BOARD_CLASS="DB845C"
                 DTBS="qcom/sdm845-db845c.dtb"
@@ -140,7 +140,7 @@
             echo "SDCARD=${SDCARD}" >> parameters
             echo "BOOTIMG_PAGESIZE=${BOOTIMG_PAGESIZE}" >> parameters
             echo "KERNEL_CMDLINE_PLATFORM=${KERNEL_CMDLINE_PLATFORM}" >> parameters
-            echo "PUB_DEST=96boards/${96BOARDS_MACHINE}/${VENDOR}/debian/${OS_FLAVOUR}/${BUILD_NUMBER}" >> parameters
+            echo "PUB_DEST=96boards/${PUB_MACHINE}/${VENDOR}/debian/${OS_FLAVOUR}/${BUILD_NUMBER}" >> parameters
         - inject:
             properties-file: parameters
         - linaro-publish-token
