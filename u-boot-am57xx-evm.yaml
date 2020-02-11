@@ -62,7 +62,7 @@
             sudo apt-get update
             sudo apt-get install -y libssl-dev python-requests rsync \
                 swig libpython-dev gcc-arm-linux-gnueabihf \
-                parted libguestfs-tools pigz python-pip virtualenv
+                parted kpartx pigz python-pip virtualenv
 
             cat Makefile
             export CC=arm-linux-gnueabihf-
@@ -77,10 +77,20 @@
             /sbin/parted --script x15-install.img mklabel msdos
             /sbin/parted --script x15-install.img mkpart p fat32 0 48
             /sbin/parted --script x15-install.img set 1 boot
-            sudo mkfs.fat -F16 x15-install.img
-            virt-copy-in x15-install.img MLO /
-            virt-copy-in x15-install.img u-boot.img /
+            for device in $(sudo kpartx -avs x15-install.img | cut -d' ' -f3); do
+              partition=$(echo ${device} | cut -d'p' -f3)
+              case "${partition}" in
+                1)
+                  sudo mkfs.fat -F16 /dev/mapper/${device}
+                  sudo mount /dev/mapper/${device} bootfs
+                  ;;
+              esac
+            done
+            sudo cp MLO bootfs
+            sudo cp u-boot.img bootfs
 
+            sudo umount bootfs
+            sudo kpartx -dv x15-install.img
             time pigz -9 x15-install.img
             mv x15-install.img.gz out/x15-u-boot-sd-${BUILD_NUMBER}.img.gz
 
