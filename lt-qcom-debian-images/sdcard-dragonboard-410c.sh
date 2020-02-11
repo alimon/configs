@@ -13,6 +13,11 @@ cleanup_exit()
     sudo git clean -fdxq
 }
 
+# SDCard installer is only supported in dragonboard-410c
+if [ -z "$SDCARD" ]; then
+    exit 0
+fi
+
 # Create boot image for SD boot
 mkbootimg \
     --kernel Image.gz+dtb \

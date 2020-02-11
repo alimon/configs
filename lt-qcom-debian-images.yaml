@@ -1,0 +1,167 @@
+- job:
+    name: lt-qcom-debian-images
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+        - string:
+            name: PMWG_LAVA_SERVER
+            default: 'https://pmwg.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: VENDOR
+            default: 'linaro'
+        - string:
+            name: OS_FLAVOUR
+            default: 'buster'
+        - string:
+            name: ROOTFS
+            default: 'developer,1800M alip,3G'
+        - string:
+            name: SDCARD
+            default: ''
+        - string:
+            name: SERIAL_CONSOLE
+            default: 'ttyMSM0'
+        - string:
+            name: BOOTIMG_PAGESIZE
+            default: '2048'
+        - string:
+            name: BOOTIMG_BASE
+            default: '0x80000000'
+        - string:
+            name: BOOTIMG_KERNEL_OFFSET
+            default: '0x8000'
+        - string:
+            name: BOOTIMG_RAMDISK_OFFSET
+            default: '0x1000000'
+        - string:
+            name: BOOTIMG_TAGS_OFFSET
+            default: '0x100'
+        - string:
+            name: KERNEL_CMDLINE_PLATFORM
+            default: ''
+        - string:
+            name: REPO_URL
+            default: 'https://git.linaro.org/ci/fai.git'
+    disabled: false
+    node: master
+    display-name: 'Qualcomm Debian based images'
+    axes:
+        - axis:
+            type: user-defined
+            name: PLATFORM_NAME
+            values:
+                - 'dragonboard-410c'
+                - 'dragonboard-820c'
+                - 'dragonboard-845c'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-stretch-arm64
+    scm:
+        - git:
+            url: ${REPO_URL}
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+            - text:
+                credential-id: ARTIFACTORIAL_TOKEN
+                variable: ARTIFACTORIAL_TOKEN
+        - ssh-agent-credentials:
+            users:
+                - 'LT_QUALCOMM_PRIVATE_KEY_SSH'
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            case "${PLATFORM_NAME}" in
+              dragonboard-410c)
+                96BOARDS_MACHINE="dragonboard410c"
+                DEVICE_TYPE="${PLATFORM_NAME}"
+                FAI_BOARD_CLASS="DB410C"
+                DTBS="qcom/apq8016-sbc.dtb"
+                ROOTFS="developer,1800M alip,3G installer,1500M"
+                SDCARD="developer,4G"
+                ;;
+              dragonboard-820c)
+                96BOARDS_MACHINE="dragonboard820c"
+                DEVICE_TYPE="${PLATFORM_NAME}"
+                FAI_BOARD_CLASS="DB820C"
+                DTBS="qcom/apq8096-db820c.dtb"
+                BOOTIMG_PAGESIZE="4096"
+                ;;
+              dragonboard-845c)
+                96BOARDS_MACHINE="dragonboard845c"
+                DEVICE_TYPE="${PLATFORM_NAME}"
+                FAI_BOARD_CLASS="DB845C"
+                DTBS="qcom/sdm845-db845c.dtb"
+                BOOTIMG_PAGESIZE="4096"
+                KERNEL_CMDLINE_PLATFORM="clk_ignore_unused pd_ignore_unused"
+                ;;
+            esac
+
+            echo "96BOARDS_MACHINE=${96BOARDS_MACHINE}" > parameters
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" >> parameters
+            echo "FAI_BOARD_CLASS=${FAI_BOARD_CLASS}" >> parameters
+            echo "DTBS=${DTBS}" >> parameters
+            echo "ROOTFS=${ROOTFS}" >> parameters
+            echo "SDCARD=${SDCARD}" >> parameters
+            echo "BOOTIMG_PAGESIZE=${BOOTIMG_PAGESIZE}" >> parameters
+            echo "KERNEL_CMDLINE_PLATFORM=${KERNEL_CMDLINE_PLATFORM}" >> parameters
+            echo "PUB_DEST=96boards/${96BOARDS_MACHINE}/${VENDOR}/debian/${OS_FLAVOUR}/${BUILD_NUMBER}" >> parameters
+        - inject:
+            properties-file: parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-debian-images/builders-fai.sh
+        - shell:
+            !include-raw: lt-qcom-debian-images/installer-dragonboard-410c.sh
+        - shell:
+            !include-raw: lt-qcom-debian-images/sdcard-dragonboard-410c.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: lt-qcom-debian-images/publishers.sh
+        - shell:
+            !include-raw: lt-qcom-debian-images/submit_for_testing.sh
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+                  - openembedded-lkft/postbuild.groovy
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org anibal.limon@linaro.org'
+            failure: true
+            still-failing: true

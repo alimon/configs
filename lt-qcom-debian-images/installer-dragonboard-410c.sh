@@ -13,6 +13,11 @@ cleanup_exit()
     sudo git clean -fdxq
 }
 
+# Installer is only supported in dragonboard-410c
+if ! echo "$ROOTFS" | grep "installer"; then
+    exit 0
+fi
+
 # Create boot image for SD installer
 mkbootimg \
     --kernel Image.gz+dtb \
