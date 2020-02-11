@@ -31,14 +31,11 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
-            name: TDEFINITIONS_REVISION
-            default: 'master'
-        - string:
             name: KERNEL_BRANCH
-            default: 'linux-5.3.y'
+            default: 'linux-5.5.y'
         - string:
             name: KERNEL_VERSION
-            default: '5.3'
+            default: '5.5'
         - string:
             name: KERNEL_VERSION_OVERRIDE
             default: '${KERNEL_VERSION}'
@@ -74,7 +71,7 @@
             default: 'https://staging-qa-reports.linaro.org'
         - string:
             name: QA_SERVER_PROJECT
-            default: 'linux-stable-rc-5.3-oe'
+            default: 'linux-stable-rc-5.5-oe'
         - string:
             name: KSELFTEST_PATH
             default: '/opt/kselftests/mainline/'
@@ -90,11 +87,20 @@
         - string:
             name: TEST_SUITES
             default: 'all'
+        - string:
+            name: TDEFINITIONS_REVISION
+            default: 'master'
+        - string:
+            name: SSTATE_BRANCH
+            default: 'lkft/sumo'
+        - string:
+            name: DESCRIBE_SUFFIX
+            default: ''
         - matrix-combinations:
             name: MATRIX_COMBINATIONS
     disabled: false
     node: master
-    display-name: 'LKFT - Linux Stable RC 5.3.y (OpenEmbedded/sumo)'
+    display-name: 'LKFT - Linux Stable RC 5.5.y (OpenEmbedded/sumo)'
     axes:
         - axis:
             type: user-defined
@@ -106,6 +112,7 @@
                 - 'intel-core2-32'
                 - 'intel-corei7-64'
                 - 'juno'
+                - 'ls2088ardb'
         - axis:
             type: user-defined
             name: DISTRO
@@ -179,10 +186,10 @@
                   - openembedded-lkft/postbuild.groovy
                   - openembedded-lkft/submit_build_result.groovy
         - email-ext:
-            recipients: 'daniel.diaz@linaro.org, anders.roxell@linaro.org'
+            recipients: 'daniel.diaz@linaro.org'
             matrix-trigger: only-configurations
             aborted: true
-            subject: '[CI] ${MACHINE}: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
+            subject: '[DD] ${MACHINE}: ${KERNEL_BRANCH} {{SRCREV_kernel}} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
