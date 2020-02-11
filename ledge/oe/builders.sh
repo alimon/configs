@@ -98,7 +98,7 @@ fi
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
 # we want to preserve build/buildhistory though.
-rm -rf conf build/conf build/tmp-*glibc/
+rm -rf build/conf build/tmp-*glibc/
 rm -rf build-${DISTRO}
 
 source setup-environment
