@@ -76,17 +76,7 @@ rm -rf conf build/conf build/tmp-*glibc/
 export EULA_dragonboard410c=1
 
 [ -v KERNEL_SRCREV ] && export SRCREV_kernel="${KERNEL_SRCREV}"
-setup_env=""
-if [ -f setup-environment ]; then
-  setup_env="setup-environment"
-elif [ -f conf/setup-environment-internal ]; then
-  setup_env="conf/setup-environment-internal"
-else
-  echo "Can't find setup-environment* script. Exiting."
-  exit 1
-fi
-
-source ${setup_env} build
+source setup-environment build
 
 ########## vvv DISTRO DEPENDANT vvv ##########
 if [ "${DISTRO}" = "rpb" ]; then
