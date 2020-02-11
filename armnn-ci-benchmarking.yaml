@@ -1,0 +1,76 @@
+- job:
+    name: armnn-ci-benchmarking
+    project-type: freestyle
+    defaults: global
+    description: |
+        Updates source and builds ArmNN frequently to ensure builds are successful.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+        - github:
+            url: https://git.mlplatform.org/ml/armnn.git
+
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+    disabled: false
+    node: docker-stretch-arm64
+    display-name: 'Arm NN - CI Build: MLPerf Benchmark'
+
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell:
+            !include-raw: armnn-ci-build/builders.sh
+        - shell: |
+            #!/bin/bash -e
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
+        - linaro-publish-token
+
+        - shell: |
+            #!/bin/bash -ex
+
+            git clone https://github.com/Linaro/lava-test-plans.git
+            cd ./lava-test-plans
+
+            export DEVICE_TYPE=synquacer
+
+            cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
+            LAVA_JOB_PRIORITY=50
+            PROJECT_NAME=armnn-benchmarking
+            PROJECT=projects/armnn/
+            ARMNN_TARBALL_URL=https://snapshots.linaro.org/components/armnn-master/latest/armnn.tar.xz
+            KERNEL_URL=http://images.validation.linaro.org/synquacer/hc/vmlinuz
+            RAMDISK_URL=http://images.validation.linaro.org/synquacer/hc/initrd.img
+            RAMDISK_URL_COMP=gz
+            ROOTFS_URL=http://images.validation.linaro.org/synquacer/hc/rootfs.tar.xz
+            ROOTFS_URL_COMP=xz
+            DEPLOY_OS=debian
+            OS_INFO=debian
+            DEVICE_TYPE=${DEVICE_TYPE}
+            EOF
+
+            ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
+              --device-type ${DEVICE_TYPE} \
+              --test-plan armnn-benchmarking \
+              --qa-server-team armnn \
+              --qa-server-project armnn \
+              --lava-server ${LAVA_SERVER} \
+              --build-id ${LAVA_ID}

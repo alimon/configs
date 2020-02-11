@@ -74,10 +74,20 @@
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
-            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-            time python3 ${HOME}/bin/linaro-cp.py \
-              --link-latest \
-              out/ components/armnn/${BUILD_NUMBER}
+
+            if [ -z "$GIT_COM_ID" ]
+            then
+                wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+                time python3 ${HOME}/bin/linaro-cp.py \
+                --link-latest \
+                out/ components/armnn/${BUILD_NUMBER}
+            else
+                wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+                time python3 ${HOME}/bin/linaro-cp.py \
+                --link-latest \
+                out/ components/armnn-master/${BUILD_NUMBER}
+            fi
+
         - shell: |
             #!/bin/bash -ex
 
@@ -86,15 +96,17 @@
             if [ -z "$GIT_COM_ID" ]
             then
                 LAVA_ID=${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}
+                ARMNN_TAR_LOCATION=https://snapshots.linaro.org/components/armnn/${BUILD_NUMBER}/armnn.tar.xz
             else
                 LAVA_ID=$GIT_COM_ID
+                ARMNN_TAR_LOCATION=https://snapshots.linaro.org/components/armnn-master/${BUILD_NUMBER}/armnn.tar.xz
             fi
 
             cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
             LAVA_JOB_PRIORITY=50
             PROJECT_NAME=armnn
             PROJECT=projects/armnn/
-            ARMNN_TARBALL_URL=https://snapshots.linaro.org/components/armnn/${BUILD_NUMBER}/armnn.tar.xz
+            ARMNN_TARBALL_URL=${ARMNN_TAR_LOCATION}
             BOOT_URL=http://snapshots.linaro.org/96boards/hikey/linaro/debian/30/boot-linaro-stretch-developer-hikey-20190420-30.img.gz
             BOOT_URL_COMP=gz
             ROOTFS_URL=http://snapshots.linaro.org/96boards/hikey/linaro/debian/30/rootfs-linaro-stretch-developer-hikey-20190420-30.img.gz
@@ -136,7 +148,7 @@
             PROJECT=projects/armnn/
             AUTO_LOGIN_PASSWORD_PROMPT='Password:'
             AUTO_LOGIN_PASSWORD='Linaro123'
-            ARMNN_TARBALL_URL=https://snapshots.linaro.org/components/armnn/${BUILD_NUMBER}/armnn.tar.xz
+            ARMNN_TARBALL_URL=${ARMNN_TAR_LOCATION}
             KERNEL_URL=http://images.validation.linaro.org/synquacer/hc/vmlinuz
             RAMDISK_URL=http://images.validation.linaro.org/synquacer/hc/initrd.img
             RAMDISK_URL_COMP=gz
@@ -162,7 +174,7 @@
             LAVA_JOB_PRIORITY=50
             PROJECT_NAME=armnn
             PROJECT=projects/armnn/
-            ARMNN_TARBALL_URL=https://snapshots.linaro.org/components/armnn/${BUILD_NUMBER}/armnn.tar.xz
+            ARMNN_TARBALL_URL=${ARMNN_TAR_LOCATION}
             PTABLE_URL=https://images.validation.linaro.org/snapshots.linaro.org/96boards/dragonboard845c/linaro/rescue/28/dragonboard-845c-bootloader-ufs-linux-28/gpt_both0.bin
             BOOT_URL=http://images.validation.linaro.org/releases.linaro.org/96boards/dragonboard845c/linaro/debian/19.09/boot-linaro-buster-dragonboard-845c-58.img.gz
             BOOT_URL_COMP=gz
