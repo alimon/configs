@@ -5,7 +5,7 @@ set -ex
 sudo apt -q=2 update
 sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git autoconf curl libtool libpthread-stubs0-dev
 sudo apt -q=2 install -y --no-install-recommends vim-common
-sudo apt -q=2 install -y --no-install-recommends python-pip virtualenv
+sudo apt -q=2 install -y --no-install-recommends python-pip virtualenv python-dev python3-dev
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
