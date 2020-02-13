@@ -85,7 +85,11 @@ cd ${DISTRO_DIR}
 git log -1
 git submodule init
 git submodule update
-git submodule update --remote sources/meta-backports  sources/meta-dip-base  sources/meta-dip-extra
+
+if [[ ${MANIFEST_BRANCH} == linaro-* ]];
+then
+	git submodule update --remote sources/meta-backports  sources/meta-dip-base  sources/meta-dip-extra
+fi
 
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
