@@ -88,7 +88,7 @@ git submodule update
 
 if [[ ${MANIFEST_BRANCH} == linaro-* ]];
 then
-	git submodule update --remote sources/meta-backports  sources/meta-dip-base  sources/meta-dip-extra
+	git submodule update --remote sources/meta-backports  sources/meta-dip-base
 fi
 
 # the setup-environment will create auto.conf and site.conf
