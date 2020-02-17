@@ -187,8 +187,6 @@ done
 # Clean up not needed build artifacts
 CLEAN="Image-ledge* Image*mainline* modules-*-mainline* \
 	*.env *.conf *.manifest *.json *.wks \
-	arm-trusted-firmware \
-        optee \
 	dtb \
 	*.txt "
 for c in ${CLEAN}; do
