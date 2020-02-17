@@ -161,12 +161,15 @@ case "${MACHINE}" in
     ;;
 esac
 
+echo 'PREFERRED_VERSION_linux-rzn1 = "${KERNEL_VERSION}.%" > postfile.conf
+bbopt="-R postfile.conf"
+
 if [ "${clean_packages}" != "" ]; then
-    bitbake -c cleansstate ${clean_packages}
-    bitbake ${clean_packages}
+    bitbake ${bbopt} -c cleansstate ${clean_packages}
+    bitbake ${bbopt} ${clean_packages}
 fi
-time bitbake ${IMAGES}
-time bitbake dip-sdk
+time bitbake ${bbopt} ${IMAGES}
+time bitbake ${bbopt} dip-sdk
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
