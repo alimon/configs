@@ -6,15 +6,36 @@ id
 ## We don't build anything so far, just downloading pre-built.
 #wget -q https://people.linaro.org/~ed.mooring/Images/openamp-image-minimal-zcu102-zynqmp.wic.qemu-sd
 
-#echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
-echo "GIT_COMMIT=mock" > env_var_parameters
+mkdir -p openamp
+cd openamp
+
+if [ ! -d open-amp ]; then
+    git clone https://github.com/OpenAMP/open-amp
+else
+    (cd open-amp; git pull --rebase)
+fi
+if [ ! -d libmetal ]; then
+    git clone https://github.com/OpenAMP/libmetal
+else
+    (cd libmetal; git pull --rebase)
+fi
+if [ ! -d embeddedsw ]; then
+    git clone https://github.com/Xilinx/embeddedsw
+else
+    (cd embeddedsw; git pull --rebase)
+fi
+
+(cd open-amp; echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > ../../env_var_parameters)
+
+cd ..
 
 mkdir -p /home/buildslave/srv/lite-aeolus-openamp/downloads
 
 rm -f xilinx-openamp-build.cid
 docker run --cidfile xilinx-openamp-build.cid \
     -v /home/buildslave/srv/lite-aeolus-openamp/downloads:/home/build/prj/build/downloads \
-    pfalcon/xilinx-openamp-build:v2 \
+    -v $PWD/openamp:/home/build/prj/openamp \
+    pfalcon/xilinx-openamp-build:v3 \
     /bin/bash -c "cd ~/prj; source setupsdk; MACHINE=zcu102-zynqmp bitbake openamp-image-minimal"
 
 cid=$(cat xilinx-openamp-build.cid)
