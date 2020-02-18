@@ -161,8 +161,10 @@ case "${MACHINE}" in
     ;;
 esac
 
-echo PREFERRED_VERSION_linux-rzn1 = \"${KERNEL_VERSION}.%\" > postfile.conf
-bbopt="-R postfile.conf"
+postfile=$(mktemp /tmp/postfile.XXXXX.conf)
+echo PREFERRED_VERSION_linux-rzn1 = \"${KERNEL_VERSION}.%\" > ${postfile}
+cat ${postfile}
+bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
     bitbake ${bbopt} -c cleansstate ${clean_packages}
