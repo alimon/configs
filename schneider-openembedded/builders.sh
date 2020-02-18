@@ -161,7 +161,7 @@ case "${MACHINE}" in
     ;;
 esac
 
-echo 'PREFERRED_VERSION_linux-rzn1 = "${KERNEL_VERSION}.%"' > postfile.conf
+echo PREFERRED_VERSION_linux-rzn1 = \"${KERNEL_VERSION}.%\" > postfile.conf
 bbopt="-R postfile.conf"
 
 if [ "${clean_packages}" != "" ]; then
