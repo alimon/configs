@@ -117,10 +117,15 @@ actions:
     timeout:
       minutes: 10
     definitions:
-    - repository: http://git.linaro.org/lava-team/lava-functional-tests.git
+
+    - path: automated/linux/smoke/smoke.yaml
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
       from: git
-      path: lava-test-shell/smoke-tests-basic.yaml
       name: smoke-tests-tftp
+      parameters:
+        SKIP_INSTALL: True
+        TESTS: "pwd, uname -a, cat /etc/os-release, ip a, lscpu, vmstat, lsblk, ps aux --sort -rss, free -h, mount"
 
     - path: automated/linux/meminfo/meminfo.yaml
       repository: https://git.linaro.org/qa/test-definitions.git
