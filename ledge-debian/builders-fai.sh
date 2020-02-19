@@ -85,7 +85,8 @@ ARMHF_ARCHITECTURE=$(echo ${PUB_DEST} | grep armhf | wc -l)
 
 # download flashlayout and script from github
 mkdir -p out/script
-wget https://raw.githubusercontent.com/Linaro/meta-ledge/zeus/meta-ledge-bsp/recipes-devtools/generate-raw-image/raw-tools/create_raw_from_flashlayout.sh -O out/script/create_raw_from_flashlayout.sh
+wget https://raw.githubusercontent.com/Linaro/meta-ledge/zeus/meta-ledge-bsp/recipes-devtools/generate-raw-image/raw-tools/create_raw_from_flashlayout.sh \ 
+     -O out/script/create_raw_from_flashlayout.sh
 chmod +x out/script/create_raw_from_flashlayout.sh
 
 if [ $ARMHF_ARCHITECTURE -eq 1 ]
@@ -98,17 +99,17 @@ then
     wget https://raw.githubusercontent.com/Linaro/meta-ledge/zeus/meta-ledge-bsp/recipes-devtools/generate-raw-image/files/armv7a/FlashLayout_sdcard_armhf_without_boot_firmware.fld -O  out/FlashLayout_sdcard_armhf_without_boot_firmware.fld
 
     # generate raw image
-    cd out/
-    ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld
-
-    ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_armhf_without_boot_firmware.fld
-    pigz -9 FlashLayout_sdcard_armhf_without_boot_firmware.raw
+    (cd out/ && ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_ledge-stm32mp157c-dk2-debian.fld &&
+    		./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_armhf_without_boot_firmware.fld  &&
+    		pigz -9 FlashLayout_sdcard_armhf_without_boot_firmware.raw )
 else
     # get bootfs + rootfs flashlayout
     wget https://raw.githubusercontent.com/Linaro/meta-ledge/zeus/meta-ledge-bsp/recipes-devtools/generate-raw-image/files/aarch64/FlashLayout_sdcard_arm64_without_boot_firmware.fld -O  out/FlashLayout_sdcard_arm64_without_boot_firmware.fld
 
     # generate raw image
-    cd out/
-    ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_arm64_without_boot_firmware.fld
-    pigz -9 FlashLayout_sdcard_arm64_without_boot_firmware.raw
+    (cd out/ && ./script/create_raw_from_flashlayout.sh FlashLayout_sdcard_arm64_without_boot_firmware.fld &&
+    		pigz -9 FlashLayout_sdcard_arm64_without_boot_firmware.raw )
+
 fi
+
+sudo rm -rf out/temp_rootfs
