@@ -113,7 +113,7 @@ case "${MACHINE}" in
     MACHINE=snarc-soca9
     ;;
 esac
-source ./setup-environment build-${MACHINE}/
+source ./setup-environment build-${machine_orig}/
 
 ln -s ${HOME}/srv/oe/downloads
 ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
