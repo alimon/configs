@@ -64,7 +64,12 @@ echo "MANIFEST_COMMIT=${MANIFEST_COMMIT}" > ${WORKSPACE}/submit_for_testing_para
 
 # record changes since last build, if available
 if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
-    repo diffmanifests ${PWD}/pinned-manifest-latest.xml ${PWD}/pinned-manifest.xml > manifest-changes.txt
+    # https://github.com/96boards/oe-rpb-manifest/commit/0be354483a124903982103dc937f9e5c1a094a3a
+    if grep -q ".*linkfile.*\.\./\.\./\.repo/manifests/setup-environment" pinned-manifest-latest.xml ; then
+	echo "detected old style symlink with relative path, skipping diff report"
+    else
+	repo diffmanifests ${PWD}/pinned-manifest-latest.xml ${PWD}/pinned-manifest.xml > manifest-changes.txt
+    fi
 else
     echo "latest build published does not have pinned-manifest.xml, skipping diff report"
 fi
