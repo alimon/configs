@@ -47,7 +47,7 @@
             default: 'https://github.com/96boards/oe-rpb-manifest.git'
         - string:
             name: MANIFEST_BRANCH
-            default: 'lkft/rocko'
+            default: 'lkft/sumo'
         - string:
             name: PUB_DEST
             default: 'openembedded/lkft/${MANIFEST_BRANCH}/${MACHINE}/${DISTRO}/linux-stable-rt-${KERNEL_VERSION}/${BUILD_NUMBER}'
@@ -115,6 +115,9 @@
 
             # Mapping for MACHINE -> DEVICE_TYPE
             case "${MACHINE}" in
+              hikey)
+                DEVICE_TYPE=hi6220-hikey
+                ;;
               intel-core2-32)
                 DEVICE_TYPE=i386
                 ;;
@@ -126,6 +129,9 @@
                 ;;
               am57xx-evm)
                 DEVICE_TYPE=x15
+                ;;
+              dragonboard-410c)
+                DEVICE_TYPE=dragonboard-410c
                 ;;
             esac
 
