@@ -160,6 +160,11 @@ done
 MIGRATED=(
   linux-mainline-oe::juno-r2
   linux-next-oe::juno-r2
+  linux-stable-rc-4.9-oe::juno-r2
+  linux-stable-rc-4.14-oe::juno-r2
+  linux-stable-rc-4.19-oe::juno-r2
+  linux-stable-rc-5.4-oe::juno-r2
+  linux-stable-rc-5.5-oe::juno-r2
 )
 
 this_combo="${QA_SERVER_PROJECT}::${DEVICE_TYPE}"
