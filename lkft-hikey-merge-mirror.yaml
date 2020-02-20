@@ -31,7 +31,7 @@
             remotes:
                 - linaro:
                     url: ssh://git@android-git.linaro.org/git/kernel/hikey-linaro.git
-                    credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
+                    credentials-id: 'CI_BOT_SSH_KEY'
                 - aosp:
                     url: https://android.googlesource.com/kernel/hikey-linaro
             branches:
@@ -52,12 +52,14 @@
             timeout: 500
         - ssh-agent-credentials:
             users:
-                - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+                - 'CI_BOT_SSH_KEY'
     builders:
         - shell: |
             #!/bin/bash -ex
             git clean -fdx
             env
+
+            ssh-keyscan -p 29418 android-review.linaro.org >> ~/.ssh/known_hosts
 
             git config --global user.name "Linaro CI"
             git config --global user.email "ci_notify@linaro.org"
