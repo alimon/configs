@@ -109,7 +109,7 @@ case "${MACHINE}" in
     env_machine=snarc-soca9
     ;;
 esac
-MACHINE=${env_machine} DISTRO=${DISTRO} source ./set-environment build-${MACHINE}/
+MACHINE=${env_machine} DISTRO=${DISTRO} source ./setup-environment build-${MACHINE}/
 
 ln -s ${HOME}/srv/oe/downloads
 ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
