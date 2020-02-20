@@ -101,15 +101,19 @@ fi
 #DEL export EULA_dragonboard410c=1
 #DEL export EULA_stih410b2260=1
 #DEL source setup-environment build
+
+# Set the machine to the value expected by the Yocto environment
+# We set it back again later
+machine_orig=${MACHINE}
 case "${MACHINE}" in
-  rzn1*)
-    env_machine=rzn1-snarc
+  *rzn1*)
+    MACHINE=rzn1-snarc
     ;;
-  soca9)
-    env_machine=snarc-soca9
+  *soca9*)
+    MACHINE=snarc-soca9
     ;;
 esac
-MACHINE=${env_machine} DISTRO=${DISTRO} source ./setup-environment build-${MACHINE}/
+source ./setup-environment build-${MACHINE}/
 
 ln -s ${HOME}/srv/oe/downloads
 ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
@@ -144,7 +148,7 @@ case "${MACHINE}" in
   am57xx-evm|intel-core2-32|intel-corei7-64)
      IMAGES="rpb-console-image"
      ;;
-  rzn1*)
+  *rzn1*)
     # Temporary sstate cleanup to force binaries to be re-generated each time
     set +e
     clean_packages="\
@@ -159,7 +163,7 @@ case "${MACHINE}" in
         "
     set -e
     ;;
-  soca9)
+  *soca9*)
     clean_packages="\
         base-files \
         u-boot-socfpga \
@@ -181,6 +185,9 @@ if [ "${clean_packages}" != "" ]; then
 fi
 time bitbake ${bbopt} ${IMAGES}
 time bitbake ${bbopt} dip-sdk
+
+# Set MACHINE back to the origin value
+MACHINE=${machine_orig}
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
@@ -205,12 +212,12 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  rzn1*)
+  *rzn1*)
     pushd ${DEPLOY_DIR_IMAGE}
     rm -f uImage*
     popd
     ;;
-  soca9)
+  *soca9*)
     # re-create the SoCA9 DTB with a shorter filename
     pushd ${DEPLOY_DIR_IMAGE}
     mv zImage-*snarc_${MACHINE}*_bestla_512m*.dtb zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb || true
@@ -283,7 +290,7 @@ case "${MACHINE}" in
   juno)
     # FIXME: several dtb files case
     ;;
-  rzn1*)
+  *rzn1*)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_EDGE_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
@@ -300,7 +307,7 @@ case "${MACHINE}" in
     OPTEE_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "optee-os*.itb" | xargs -r basename)
     FSBL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rzn1d-snarc-fsbl-fip*.spkg" | xargs -r basename)
     ;;
-  soca9)
+  *soca9*)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
