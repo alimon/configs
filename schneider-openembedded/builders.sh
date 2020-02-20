@@ -101,7 +101,15 @@ fi
 #DEL export EULA_dragonboard410c=1
 #DEL export EULA_stih410b2260=1
 #DEL source setup-environment build
-source sources/poky/oe-init-build-env  build-${MACHINE}/
+case "${MACHINE}" in
+  rzn1*)
+    env_machine=rzn1-snarc
+    ;;
+  soca9)
+    env_machine=snarc-soca9
+    ;;
+esac
+MACHINE=${env_machine} DISTRO=${DISTRO} source ./set-environment build-${MACHINE}/
 
 ln -s ${HOME}/srv/oe/downloads
 ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
@@ -136,7 +144,7 @@ case "${MACHINE}" in
   am57xx-evm|intel-core2-32|intel-corei7-64)
      IMAGES="rpb-console-image"
      ;;
-  rzn1d*)
+  rzn1*)
     # Temporary sstate cleanup to force binaries to be re-generated each time
     set +e
     clean_packages="\
@@ -197,7 +205,7 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  rzn1d*)
+  rzn1*)
     pushd ${DEPLOY_DIR_IMAGE}
     rm -f uImage*
     popd
@@ -275,7 +283,7 @@ case "${MACHINE}" in
   juno)
     # FIXME: several dtb files case
     ;;
-  rzn1|rzn1d)
+  rzn1*)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_EDGE_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
