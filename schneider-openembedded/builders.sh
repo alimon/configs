@@ -186,9 +186,6 @@ fi
 time bitbake ${bbopt} ${IMAGES}
 time bitbake ${bbopt} dip-sdk
 
-# Set MACHINE back to the origin value
-MACHINE=${machine_orig}
-
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
 cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
@@ -220,8 +217,8 @@ case "${MACHINE}" in
   *soca9*)
     # re-create the SoCA9 DTB with a shorter filename
     pushd ${DEPLOY_DIR_IMAGE}
-    mv zImage-*snarc_${MACHINE}*_bestla_512m*.dtb zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb || true
-    mv zImage-snarc-${MACHINE}.dtb zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb || true
+    mv zImage-*soca9*_bestla_512m*.dtb zImage-*_qspi_micronN25Q_bestla_512m.dtb || true
+    mv zImage-*soca9*.dtb zImage-*_qspi_micronN25Q_bestla_512m.dtb || true
     rm -f *[12]G*.dtb || true
     rm -f *freja*.dtb || true
     rm -f *socfpga_cyclone5_socdk*.dtb || true
@@ -271,12 +268,11 @@ EOF
 fi
 
 # Need different files for each machine
-BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | sort | xargs -r basename)
-ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
-ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
-ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
-ROOTFS_DESKTOP_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-desktop-image-test-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
-KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
+ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-*rzn1*-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-*rzn1*-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-*rzn1*-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
+ROOTFS_DESKTOP_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-desktop-image-test-*rzn1*-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
+KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-*rzn1*-*-${BUILD_NUMBER}.bin" | xargs -r basename)
 case "${MACHINE}" in
   am57xx-evm)
     # LAVA image is too big for am57xx-evm
@@ -300,7 +296,7 @@ case "${MACHINE}" in
     UBI_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
     UBI_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
     UBI_EDGE_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
-    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*${MACHINE}*bestla*.dtb" | xargs -r basename)
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*rzn1*bestla*.dtb" | xargs -r basename)
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*rzn1*.bin" | xargs -r basename)
     KERNEL_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "fitImage*.itb" | xargs -r basename)
     UBOOT_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ubootfitImage*.itb" | xargs -r basename)
@@ -308,25 +304,26 @@ case "${MACHINE}" in
     FSBL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rzn1d-snarc-fsbl-fip*.spkg" | xargs -r basename)
     ;;
   *soca9*)
-    ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
-    ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
-    WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
-    WIC_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-${MACHINE}-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
-    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-snarc_${MACHINE}_qspi_micronN25Q_bestla_512m.dtb" | xargs -r basename)
-    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*${MACHINE}*.bin" | xargs -r basename)
+    ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
+    ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
+    WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*soca9*_qspi_micronN25Q_bestla_512m.dtb" | xargs -r basename)
+    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*soca9*.bin" | xargs -r basename)
     ;;
   *)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
 esac
 
+# Set MACHINE back to the origin value
+MACHINE=${machine_orig}
 
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
 cat << EOF > ${WORKSPACE}/post_build_lava_parameters
 DEPLOY_DIR_IMAGE=${DEPLOY_DIR_IMAGE}
 MANIFEST_COMMIT=${BUILD_NUMBER}
-BOOT_URL=${BASE_URL}${PUB_DEST}/${BOOT_IMG}
 ROOTFS_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EXT4_IMG}
 ROOTFS_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_IMG}
 ROOTFS_DESKTOP_SPARSE_BUILD_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DESKTOP_IMG}
@@ -347,7 +344,6 @@ NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TAR_BZ2}
 NFSROOTFS_DEV_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_DEV_TAR_BZ2}
 NFSROOTFS_EDGE_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_EDGE_TAR_BZ2}
 RECOVERY_IMAGE_URL=${BASE_URL}${PUB_DEST}/juno-oe-uboot.zip
-LXC_BOOT_IMG=${BOOT_IMG}
 LXC_ROOTFS_IMG=$(basename ${ROOTFS_IMG} .gz)
 DEVICE_TYPE=${MACHINE}
 EOF
