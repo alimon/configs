@@ -217,8 +217,8 @@ case "${MACHINE}" in
   *soca9*)
     # re-create the SoCA9 DTB with a shorter filename
     pushd ${DEPLOY_DIR_IMAGE}
-    mv zImage-*soca9*_bestla_512m*.dtb zImage-*_qspi_micronN25Q_bestla_512m.dtb || true
-    mv zImage-*soca9*.dtb zImage-*_qspi_micronN25Q_bestla_512m.dtb || true
+    mv zImage-*soca9*_bestla_512m*.dtb zImage-soca9_qspi_micronN25Q_bestla_512m.dtb || true
+    mv zImage-*soca9*.dtb zImage-soca9_qspi_micronN25Q_bestla_512m.dtb || true
     rm -f *[12]G*.dtb || true
     rm -f *freja*.dtb || true
     rm -f *socfpga_cyclone5_socdk*.dtb || true
