@@ -61,6 +61,27 @@ git clone --depth 1 --branch ${kolla_branch} https://opendev.org/openstack/kolla
 
 if [ -n ${kolla_ldc} ]; then
     git clone --depth 1 https://git.linaro.org/leg/sdi/kolla/ldc-overlay.git Linaro-overlay
+
+    if [ 'train' = '${branch}' ]; then
+
+        # We want to use Ceph nautilus from backports
+        # It is not mergeable upstream
+        echo 'deb http://deb.debian.org/debian buster-backports main' >> kolla/docker/base/sources.list.debian
+
+        cat <<EOF >> kolla/docker/base/apt_preferences.debian
+
+# We want Ceph/nautilus
+Package: ceph* libceph* librados* librbd* librgw* python3-ceph* python3-rados python3-rbd python3-rgw radosgw
+Pin: version 14.*
+Pin-Priority: 1000
+
+# ceph-osd requires smartmontools from backports
+Package: smartmontools
+Pin: version 7.*
+Pin-Priority: 1000
+EOF
+
+    fi
 fi
 
 # Apply extra patches to the kolla source code that haven't
