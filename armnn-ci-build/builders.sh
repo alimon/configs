@@ -84,7 +84,9 @@ cmake .. \
 make -j$(nproc)
 
 cd ${WORKSPACE}
-rm -rf boost_*.tar.bz2 boost_* protobuf tensorflow
+mv armnn/build .
+mv protobuf-host/lib/libprotobuf.so.15.0.0 build
+rm -rf boost_*.tar.bz2 boost_* protobuf tensorflow boost armnn ComputeLibrary flatbuffers protobuf-host tensorflow-protobuf builders.sh
 find ${WORKSPACE} -type f -name *.o -delete
 
 tar -cJf /tmp/armnn.tar.xz ${WORKSPACE}
