@@ -1,5 +1,5 @@
 - job:
-    name: lkft-hikey-merge-mirror
+    name: lkft-hikey-merge-mirror-4.19
     project-type: freestyle
     defaults: global
     properties:
@@ -23,19 +23,19 @@
             name: SRCREV_kernel
         - string:
             name: MAKE_KERNELVERSION
-    disabled: true
+    disabled: false
     node: docker-xenial-android-lkft
-    display-name: 'TOBEDELETED: LKFT - merge changes from mirror-android-4.14/4.19 to android-hikey-linaro-4.14/4.19'
+    display-name: 'LKFT - merge changes from mirror-android-4.19 to android-hikey-linaro-4.19-lkft'
     scm:
         - git:
             remotes:
                 - linaro:
                     url: ssh://ci-bot@android-review.linaro.org:29418/kernel/hikey-linaro.git
-                    refspec: +refs/heads/android-hikey-linaro-4.14-lkft:refs/remotes/linaro/android-hikey-linaro-4.14-lkft +refs/heads/android-hikey-linaro-4.19-lkft:refs/remotes/linaro/android-hikey-linaro-4.19-lkft
+                    refspec: +refs/heads/android-hikey-linaro-4.19-lkft:refs/remotes/linaro/android-hikey-linaro-4.19-lkft
                     credentials-id: 'CI_BOT_SSH_KEY'
                 - aosp:
                     url: https://android.googlesource.com/kernel/hikey-linaro
-                    refspec: +refs/heads/mirror-android-4.14:refs/remotes/aosp/mirror-android-4.14 +refs/heads/mirror-android-4.19:refs/remotes/aosp/mirror-android-4.19
+                    refspec: +refs/heads/mirror-android-4.19:refs/remotes/aosp/mirror-android-4.19
             git-config-name: 'Linaro CI'
             git-config-email: 'ci_notify@linaro.org'
             skip-tag: true
@@ -61,17 +61,9 @@
             git config --global user.name "Linaro CI"
             git config --global user.email "ci_notify@linaro.org"
 
-            if [ "X${KERNEL_BRANCH}" == "Xmirror-android-4.14" ]; then
-                target_branch=android-hikey-linaro-4.14-lkft
-            elif [ "X${KERNEL_BRANCH}" == "Xmirror-android-4.19" ]; then
-                target_branch=android-hikey-linaro-4.19-lkft
-            else
-                echo "Not supported branch: ${KERNEL_BRANCH}"
-                exit 1
-            fi
-
+            target_branch=android-hikey-linaro-4.19-lkft
             git checkout -B ${target_branch} linaro/${target_branch}
-            git merge --no-edit aosp/${KERNEL_BRANCH}
+            git merge --no-edit aosp/mirror-android-4.19
             # push to the remote branch
             git push linaro HEAD:${target_branch}
 
@@ -93,7 +85,7 @@
             script:
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
-            recipients: 'yongqin.liu@lists.linaro.org'
+            recipients: 'yongqin.liu@linaro.org'
             subject: '[CI] HiKey/HiKey960 merge chagnes from mirror builds: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
