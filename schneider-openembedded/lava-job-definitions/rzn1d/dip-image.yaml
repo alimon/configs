@@ -117,10 +117,11 @@ actions:
         - message: "Base Address: 0x80000000"
       # crc32 - checksum calculation
       - command: mw.b 00000000 aa 400
-      - command: crc32 80000000 400
+      - command: crc32 -v 80000000 400 3c6f327d
+      - command: echo return code $$?
         name: compute-CRC32-checksum
         successes:
-        - message: crc32 for 80000000 ... 800003ff ==> 3c6f327d
+        - message: "return code 0"
       # mw - memory write
       # md - memory display
       - command: mw 100000 aabbccdd 10
@@ -164,9 +165,10 @@ actions:
         name: tftp
         successes:
         - message: "Bytes transferred = 6752784"
-      - command: crc32 {KERNEL_ADDR} 670a10
+      - command: crc32 -v {KERNEL_ADDR} 670a10 ca050911
+      - command: echo return code $$?
         successes:
-        - message: ==> ca050911
+        - message: "return code 0"
     - name: nand-commands
       prompts: ["=> ", "/ # "]
       script:
@@ -242,28 +244,6 @@ actions:
       - command: ping -c 3 github.com
       - command: which docker
 
-- test:
-    namespace: test-nfs
-    timeout:
-      minutes: 10
-    definitions:
-
-    - path: automated/linux/smoke/smoke.yaml
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: se
-      from: git
-      name: smoke-tests-tftp
-      parameters:
-        SKIP_INSTALL: True
-        TESTS: "pwd, uname -a, cat /etc/os-release, ip a, lscpu, vmstat, lsblk, ps aux --sort -rss, free -h, mount"
-
-    - path: automated/linux/meminfo/meminfo.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: meminfo-tftp
-      from: git
-      branch: master
-
 
 ###############
 # dip-image.wic
@@ -277,6 +257,8 @@ actions:
       image:
         url: ${WIC_IMAGE_URL}
         compression: bz2
+      layout:
+        url: ${WIC_BMAP_URL}
 
 
 - boot:

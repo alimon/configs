@@ -24,6 +24,8 @@ actions:
       image:
         url: ${WIC_DEV_IMAGE_URL}
         compression: bz2
+      layout:
+        url: ${WIC_DEV_BMAP_URL}
 
 
 - boot:
@@ -73,30 +75,31 @@ actions:
       minutes: 600
     definitions:
 
-    - path: automated/linux/meminfo/meminfo.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: meminfo
+    - name: meminfo
       from: git
-      branch: master
-
-    - path: automated/linux/ltp/ltp.yaml
+      history: false
       repository: https://github.com/omnium21/test-definitions.git
-      branch: ltp-20200120
-      history: false
+      branch: se
+      path: automated/linux/meminfo/meminfo.yaml
+
+    - name: ltp-default-tests
       from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/ltp/ltp.yaml
       parameters:
         SKIP_INSTALL: 'true'
         SKIPFILE: 'skipfile-lkft.yaml'
         BOARD: ${MACHINE}
         TIMEOUT_MULTIPLIER: 3
-      name: ltp-default-tests
 
-    - path: automated/linux/ptest/ptest.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: linux-ptest
+    - name: linux-ptest
       from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/ptest/ptest.yaml
       params:
         exclude: 'bluez5 bzip2 containerd e2fsprogs libxml2 parted python strace'
         EXCLUDE: 'bluez5 bzip2 containerd e2fsprogs libxml2 parted python strace'

@@ -118,36 +118,45 @@ actions:
       minutes: 10
     definitions:
 
-    - path: automated/linux/smoke/smoke.yaml
+    - name: smoke-tests-tftp
+      from: git
+      history: false
       repository: https://github.com/omnium21/test-definitions.git
       branch: se
-      from: git
-      name: smoke-tests-tftp
+      path: automated/linux/smoke/smoke.yaml
       parameters:
         SKIP_INSTALL: True
         TESTS: "pwd, uname -a, cat /etc/os-release, ip a, lscpu, vmstat, lsblk, ps aux --sort -rss, free -h, mount"
 
-    - path: automated/linux/meminfo/meminfo.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: meminfo-tftp
+    - name: ethernet-tftp
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/ethernet/ethernet.yaml
 
-    - path: automated/linux/badblocks/badblocks.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: badblocks-tftp
+    - name: meminfo-tftp
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/meminfo/meminfo.yaml
+
+    - name: badblocks-tftp
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/badblocks/badblocks.yaml
       parameters:
         SKIP_INSTALL: True
-    - path: automated/linux/memtester/memtester.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: memtester-tftp
+
+    - name: memtester-tftp
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/memtester/memtester.yaml
       parameters:
         SKIP_INSTALL: True
 
@@ -165,6 +174,8 @@ actions:
       image:
         url: ${WIC_DEV_IMAGE_URL}
         compression: bz2
+      layout:
+        url: ${WIC_DEV_BMAP_URL}
 
 
 - boot:
@@ -223,32 +234,41 @@ actions:
       minutes: 100
     definitions:
 
-    - path: automated/linux/meminfo/meminfo.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: meminfo
+    - name: ethernet
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/ethernet/ethernet.yaml
 
-    - path: automated/linux/badblocks/badblocks.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: badblocks
+    - name: meminfo
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/meminfo/meminfo.yaml
+
+    - name: badblocks
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/badblocks/badblocks.yaml
       parameters:
         SKIP_INSTALL: True
 
-    - path: automated/linux/memtester/memtester.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: memtester
+    - name: memtester
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/memtester/memtester.yaml
       parameters:
         SKIP_INSTALL: True
 
-    - from: inline
+    - name: yepkit-test
+      from: inline
+      path: inline/yepkit-test.yaml
       repository:
         metadata:
           format: Lava-Test Test Definition 1.0
@@ -270,80 +290,78 @@ actions:
           - sleep 3
           - bin/ykushcmd -d a
           - sleep 3
-      name: yepkit-test
-      path: inline/yepkit-test.yaml
 
-    - path: automated/linux/uart-loopback/uart-loopback.yaml
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: uart-loopback
-      history: false
+    - name: uart-loopback-forward
       from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/uart-loopback/uart-loopback.yaml
       parameters:
         SKIP_INSTALL: 'true'
         UART0: /dev/ttyUSB0
         UART1: /dev/ttyS1
         YKUSHPORT: 1
-      name: uart-loopback-forward
 
-    - path: automated/linux/uart-loopback/uart-loopback.yaml
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: uart-loopback
-      history: false
+    - name: uart-loopback-reverse
       from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/uart-loopback/uart-loopback.yaml
       parameters:
         SKIP_INSTALL: 'true'
         UART0: /dev/ttyS1
         UART1: /dev/ttyUSB0
         YKUSHPORT: 1
-      name: uart-loopback-reverse
 
-    - path: automated/linux/block-device/block-device.yaml
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: block-device
-      history: false
+    - name: block-device-sda
       from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/block-device/block-device.yaml
       parameters:
         SKIP_INSTALL: 'true'
         DEVICE: /dev/sda
         YKUSHPORT: 2
-      name: block-device-sda
 
-    - path: automated/linux/device-read-perf/device-read-perf.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      branch: master
-      history: false
+    - name: device-read-perf
       from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/device-read-perf/device-read-perf.yaml
       parameters:
         SKIP_INSTALL: 'true'
         DEVICE: "sda mmcblk0"
-      name: device-read-perf
 
-    - path: automated/linux/docker/docker.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: docker-hello-world
+    - name: docker-hello-world
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/docker/docker.yaml
       parameters:
         IMAGE: "hello-world"
         SKIP_INSTALL: True
 
-    - path: automated/linux/docker/docker.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: docker
+    - name: docker
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/docker/docker.yaml
       parameters:
         IMAGE: "arm32v7/ubuntu"
         SKIP_INSTALL: True
 
-    - path: automated/linux/optee/optee-xtest.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: optee-xtest
+    - name: optee-xtest
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/optee/optee-xtest.yaml
 
 metadata:
   machine: ${MACHINE}

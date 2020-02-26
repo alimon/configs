@@ -24,6 +24,8 @@ actions:
       image:
         url: ${WIC_IMAGE_URL}
         compression: bz2
+      layout:
+        url: ${WIC_BMAP_URL}
 
 
 ###############
@@ -224,21 +226,29 @@ actions:
       minutes: 10
     definitions:
 
-    - path: automated/linux/smoke/smoke.yaml
+    - name: smoke-tests-tftp
+      from: git
+      history: false
       repository: https://github.com/omnium21/test-definitions.git
       branch: se
-      from: git
-      name: smoke-tests-tftp
+      path: automated/linux/smoke/smoke.yaml
       parameters:
         SKIP_INSTALL: True
         TESTS: "pwd, uname -a, cat /etc/os-release, ip a, lscpu, vmstat, lsblk, ps aux --sort -rss, free -h, mount"
 
-    - path: automated/linux/meminfo/meminfo.yaml
-      repository: https://git.linaro.org/qa/test-definitions.git
-      history: false
-      name: meminfo-tftp
+    - name: ethernet-tftp
       from: git
-      branch: master
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/ethernet/ethernet.yaml
+
+    - name: meminfo-tftp
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: se
+      path: automated/linux/meminfo/meminfo.yaml
 
 
 ###############

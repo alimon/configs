@@ -291,8 +291,11 @@ case "${MACHINE}" in
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_EDGE_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     WIC_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_DEV_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     WIC_EDGE_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_EDGE_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     UBI_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
     UBI_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
     UBI_EDGE_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
@@ -307,7 +310,9 @@ case "${MACHINE}" in
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     WIC_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_DEV_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*soca9*_qspi_micronN25Q_bestla_512m.dtb" | xargs -r basename)
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*soca9*.bin" | xargs -r basename)
     ;;
@@ -334,8 +339,11 @@ UBOOT_ITB_URL=${BASE_URL}${PUB_DEST}/${UBOOT_FIT_IMG}
 KERNEL_FIT_URL=${BASE_URL}${PUB_DEST}/${KERNEL_FIT_IMG}
 KERNEL_ZIMAGE_URL=${BASE_URL}${PUB_DEST}/${KERNEL_IMG}
 WIC_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_IMG}
+WIC_BMAP_URL=${BASE_URL}${PUB_DEST}/${WIC_BMAP}
 WIC_DEV_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_DEV_IMG}
+WIC_DEV_BMAP_URL=${BASE_URL}${PUB_DEST}/${WIC_DEV_BMAP}
 WIC_EDGE_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_EDGE_IMG}
+WIC_EDGE_BMAP_URL=${BASE_URL}${PUB_DEST}/${WIC_EDGE_BMAP}
 UBI_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_IMG}
 UBI_DEV_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_DEV_IMG}
 UBI_EDGE_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_EDGE_IMG}
