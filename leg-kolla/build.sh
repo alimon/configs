@@ -62,14 +62,32 @@ git clone --depth 1 --branch ${kolla_branch} https://opendev.org/openstack/kolla
 if [ -n ${kolla_ldc} ]; then
     git clone --depth 1 https://git.linaro.org/leg/sdi/kolla/ldc-overlay.git Linaro-overlay
 
-    if [ 'train' = '${branch}' ]; then
+    if [ 'rocky' != '${branch}' ]; then
 
-        # We want to use Ceph nautilus from backports
+        # We may want to use Ceph nautilus from backports
         # It is not mergeable upstream
-        echo 'deb http://deb.debian.org/debian buster-backports main' >> kolla/docker/base/sources.list.debian
+        # We also want kibana and libvirt with ThunderX fixes
+        cat <<EOF >> kolla/docker/base/sources.list.debian
+
+# Enable backports
+deb http://deb.debian.org/debian buster-backports main
+
+# Linaro - fixed libvirt and kibana
+deb http://obs.linaro.org/home:/marcin.juszkiewicz/debian-buster ./
+EOF
 
         cat <<EOF >> kolla/docker/base/apt_preferences.debian
 
+# We do not want packages from this repo
+Package: *
+Pin: release o=obs://private/home:marcin.juszkiewicz/debian-buster
+Pin-Priority: 100
+
+# Unless it is libvirt or kibana
+Package: *libvirt* kibana
+Pin: release o=obs://private/home:marcin.juszkiewicz/debian-buster
+Pin-Priority: 600
+EOF
 # We want Ceph/nautilus
 Package: ceph* libceph* librados* librbd* librgw* python3-ceph* python3-rados python3-rbd python3-rgw radosgw
 Pin: version 14.*
@@ -81,6 +99,9 @@ Pin: version 7.*
 Pin-Priority: 1000
 EOF
 
+
+	# we want to build Kibana images
+	sed -i -e /"kibana"/d kolla/kolla/image/build.py
     fi
 fi
 
