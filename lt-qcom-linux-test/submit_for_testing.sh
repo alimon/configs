@@ -16,7 +16,7 @@ fi
 SEND_TESTJOB=false
 
 case "${MACHINE}" in
-  apq8016-sbc|apq8096-db820c|sdm845-mtp|sdm845-db845c|qcs404-evb-1000|qcs404-evb-4000)
+  apq8016-sbc|apq8096-db820c|sdm845-mtp|sdm845-db845c|qcs404-evb-4000)
     SEND_TESTJOB=true
 
     if [ ${MACHINE} = "apq8016-sbc" ]; then
