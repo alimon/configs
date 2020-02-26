@@ -7,6 +7,7 @@ kolla_ldc=${DEVCLOUD}
 kolla_ldc_extras=${DEVCLOUD_EXTRA_PATCHES}
 kolla_options=
 kolla_python=/usr/bin/python3
+ceph_version=${CEPH_VERSION}
 
 if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
     branch="ussuri"
@@ -88,6 +89,11 @@ Package: *libvirt* kibana
 Pin: release o=obs://private/home:marcin.juszkiewicz/debian-buster
 Pin-Priority: 600
 EOF
+
+	if [ 'nautilus' = $ceph_version ]; then
+		kolla_tag="${kolla_tag}-nautilus"
+		cat <<EOF >> kolla/docker/base/apt_preferences.debian
+
 # We want Ceph/nautilus
 Package: ceph* libceph* librados* librbd* librgw* python3-ceph* python3-rados python3-rbd python3-rgw radosgw
 Pin: version 14.*
@@ -99,6 +105,7 @@ Pin: version 7.*
 Pin-Priority: 1000
 EOF
 
+	fi
 
 	# we want to build Kibana images
 	sed -i -e /"kibana"/d kolla/kolla/image/build.py
