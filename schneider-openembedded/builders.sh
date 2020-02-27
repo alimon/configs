@@ -45,7 +45,7 @@ if [ ! -e ".repo/manifest.xml" ]; then
    # our builds config is expecting downloads and sstate-cache, here.
    # DL_DIR = "${OEROOT}/sources/downloads"
    # SSTATE_DIR = "${OEROOT}/build/sstate-cache"
-   sstatecache=sstate-cache-${DISTRO}-${MACHINE}-${MANIFEST_BRANCH}-${KERNEL_VERSION}
+   sstatecache=${HOME}/srv/oe/sstate-cache-${DISTRO}-${MACHINE}-${MANIFEST_BRANCH}-${KERNEL_VERSION}
    mkdir -p ${HOME}/srv/oe/downloads ${sstatecache}
    #DEL mkdir -p build
    #DEL ln -s ${HOME}/srv/oe/downloads
