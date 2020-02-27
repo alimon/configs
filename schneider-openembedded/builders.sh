@@ -45,7 +45,8 @@ if [ ! -e ".repo/manifest.xml" ]; then
    # our builds config is expecting downloads and sstate-cache, here.
    # DL_DIR = "${OEROOT}/sources/downloads"
    # SSTATE_DIR = "${OEROOT}/build/sstate-cache"
-   mkdir -p ${HOME}/srv/oe/downloads ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH}
+   sstatecache=sstate-cache-${DISTRO}-${MACHINE}-${MANIFEST_BRANCH}-${KERNEL_VERSION}
+   mkdir -p ${HOME}/srv/oe/downloads ${sstatecache}
    #DEL mkdir -p build
    #DEL ln -s ${HOME}/srv/oe/downloads
    #DEL ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
@@ -116,7 +117,7 @@ esac
 source ./setup-environment build-${machine_orig}/
 
 ln -s ${HOME}/srv/oe/downloads
-ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
+ln -s ${sstatecache} sstate-cache
 
 # Add job BUILD_NUMBER to output files names
 cat << EOF >> conf/auto.conf
