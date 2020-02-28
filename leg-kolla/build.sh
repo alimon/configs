@@ -96,12 +96,20 @@ EOF
 		kolla_tag="${kolla_tag}-lumerp"
 		cat <<EOF >> kolla/docker/base/apt_preferences.debian
 
-# We want Ceph/nautilus
+# We want Ceph/luminous 12.2.4 like in ERP 18.06
 Package: ceph* libceph* librados* librbd* librgw* python*-ceph* python*-rados python*-rbd python*-rgw radosgw
 Pin: version 12.2.4*
 Pin-Priority: 1000
 EOF
 	fi
+
+	# for nova-libvirt we use 12.2.11 as this is client not server
+	# this way we do not need to rebuild qemu
+	sed -e "s+ceph-common+ceph-common/buster', 'libcephfs2/buster', 'librbd1/buster', 'libradosstriper1/buster+g" \
+	    -e "s+python3-cephfs+python3-cephfs/buster', 'python-cephfs/buster+g"  \
+	    -e "s+python3-rados+python3-rados/buster', 'python-rados/buster+g"  \
+	    -e "s+python3-rbd+python3-rbd/buster', 'python-rbd/buster+g"  \
+	    -i kolla/nova/nova-libvirt/Dockerfile.j2
 
 	if [ 'nautilus' = $ceph_version ]; then
 		kolla_tag="${kolla_tag}-nautilus"
