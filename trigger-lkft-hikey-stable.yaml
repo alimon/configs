@@ -61,7 +61,8 @@
 
             # call api of android.linaro.org for lkft report check scheduling
             if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
-                curl http://android.linaro.org:9000/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER}|| true
+                curl http://android.linaro.org/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER}|| true
+                curl http://213.146.155.43/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER}|| true
             fi
         - trigger-builds:
             - project: lkft-hikey-4.4-o

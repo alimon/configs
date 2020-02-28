@@ -2,7 +2,8 @@
 
 # call api of android.linaro.org for lkft report check scheduling
 if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
-    curl http://android.linaro.org:9000/lkft/newbuild/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
+    curl http://android.linaro.org/lkft/newbuild/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
+    curl http://213.146.155.43/lkft/newbuild/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
 fi
 
 git config --global user.email "ci_notify@linaro.org"
