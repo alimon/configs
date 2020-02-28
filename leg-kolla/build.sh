@@ -109,7 +109,7 @@ EOF
 	    -e "s+python3-cephfs+python3-cephfs/buster', 'python-cephfs/buster+g"  \
 	    -e "s+python3-rados+python3-rados/buster', 'python-rados/buster+g"  \
 	    -e "s+python3-rbd+python3-rbd/buster', 'python-rbd/buster+g"  \
-	    -i kolla/nova/nova-libvirt/Dockerfile.j2
+	    -i kolla/docker/nova/nova-libvirt/Dockerfile.j2
 
 	if [ 'nautilus' = $ceph_version ]; then
 		kolla_tag="${kolla_tag}-nautilus"
