@@ -92,6 +92,17 @@ EOF
 
 	sed -i -e s+"'http://buster-train.debian.net/debian/dists/pubkey.gpg',"+"'http://buster-train.debian.net/debian/dists/pubkey.gpg','http://obs.linaro.org/home:/marcin.juszkiewicz/debian-buster/Release.key',"+g kolla/docker/base/Dockerfile.j2
 
+	if [ 'luminous_erp' = $ceph_version ]; then
+		kolla_tag="${kolla_tag}-lumerp"
+		cat <<EOF >> kolla/docker/base/apt_preferences.debian
+
+# We want Ceph/nautilus
+Package: ceph* libceph* librados* librbd* librgw* python*-ceph* python*-rados python*-rbd python*-rgw radosgw
+Pin: version 12.2.4*
+Pin-Priority: 1000
+EOF
+	fi
+
 	if [ 'nautilus' = $ceph_version ]; then
 		kolla_tag="${kolla_tag}-nautilus"
 		cat <<EOF >> kolla/docker/base/apt_preferences.debian
