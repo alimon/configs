@@ -214,7 +214,7 @@ if [[ ${MIGRATED[*]} =~ ${this_combo} ]]; then
 fi
 
 # Submit sanity jobs
-if [[ ${DEVICE_TYPE} = "juno-r2" || ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "i386" ]];then
+if [[ ${DEVICE_TYPE} = "x15" || ${DEVICE_TYPE} = "x86" || ${DEVICE_TYPE} = "i386" ]]; then
     # Save original priority
     export FULL_LAVA_JOB_PRIORITY=${LAVA_JOB_PRIORITY}
 
