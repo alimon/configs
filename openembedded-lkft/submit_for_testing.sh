@@ -158,6 +158,13 @@ done
 #   QA_PROJECT::LAVA_DEVICE
 # one per line, in the following array:
 MIGRATED=(
+  linux-mainline-oe::dragonboard-410c
+  linux-next-oe::dragonboard-410c
+  linux-stable-rc-4.9-oe::dragonboard-410c
+  linux-stable-rc-4.14-oe::dragonboard-410c
+  linux-stable-rc-4.19-oe::dragonboard-410c
+  linux-stable-rc-5.4-oe::dragonboard-410c
+  linux-stable-rc-5.5-oe::dragonboard-410c
   linux-mainline-oe::juno-r2
   linux-next-oe::juno-r2
   linux-stable-rc-4.4-oe::juno-r2
