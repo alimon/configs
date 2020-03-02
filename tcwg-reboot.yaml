@@ -59,16 +59,7 @@
                 DRYRUN=
             fi
 
-            if [ -f "/.dockerenv" ]; then
-              # We need to access the real machine, not the Jenkins container
-              case "$NODE_NAME" in
-                tcwg-tk1-*|tcwg-sq-*) user=$USER ;;
-                *) user=root ;;
-              esac
-            else
-              user=$USER
-            fi
-            $DRYRUN ssh -p22 -o StrictHostKeyChecking=no $user@localhost "sudo reboot && sleep 5" || true
+            $DRYRUN ssh -p22 -o StrictHostKeyChecking=no localhost "sudo reboot && sleep 5" || true
             # We expect non-zero exit when node is rebooted.  If we get here
             # that means we have a failure (unless $dry_run, of course).
             if $dry_run; then
