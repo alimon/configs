@@ -127,9 +127,9 @@ Pin-Priority: 1000
 EOF
                 # 'ceph-common' from Nautilus depends on Py3 packages while for Stein we want Py2
                 sed -e "s+ceph-common+ceph-common', 'python-cephfs', 'python-rbd', 'python-rados+g" \
-                    -i  docker/nova/nova-compute/Dockerfile.j2 \
-                        docker/nova/nova-libvirt/Dockerfile.j2 \
-                        docker/cinder/cinder-base/Dockerfile.j2
+                    -i  kolla/docker/nova/nova-compute/Dockerfile.j2 \
+                        kolla/docker/nova/nova-libvirt/Dockerfile.j2 \
+                        kolla/docker/cinder/cinder-base/Dockerfile.j2
 	fi
 
 	# we want to build Kibana images
