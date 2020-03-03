@@ -173,6 +173,22 @@ MIGRATED=(
   linux-stable-rc-4.19-oe::juno-r2
   linux-stable-rc-5.4-oe::juno-r2
   linux-stable-rc-5.5-oe::juno-r2
+  linux-mainline-oe::i386
+  linux-next-oe::i386
+  linux-stable-rc-4.4-oe::i386
+  linux-stable-rc-4.9-oe::i386
+  linux-stable-rc-4.14-oe::i386
+  linux-stable-rc-4.19-oe::i386
+  linux-stable-rc-5.4-oe::i386
+  linux-stable-rc-5.5-oe::i386
+  linux-mainline-oe::x86
+  linux-next-oe::x86
+  linux-stable-rc-4.4-oe::x86
+  linux-stable-rc-4.9-oe::x86
+  linux-stable-rc-4.14-oe::x86
+  linux-stable-rc-4.19-oe::x86
+  linux-stable-rc-5.4-oe::x86
+  linux-stable-rc-5.5-oe::x86
 )
 
 this_combo="${QA_SERVER_PROJECT}::${DEVICE_TYPE}"
