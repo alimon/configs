@@ -191,6 +191,16 @@ actions:
       minutes: 100
     definitions:
 
+    - name: files-exist
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: files-exist
+      path: automated/linux/files-exist/files-exist.yaml
+      parameters:
+        SKIP_INSTALL: true
+        EXTRA_FILES: '/etc/os-release'
+
     - name: ethernet
       from: git
       history: false
@@ -294,25 +304,6 @@ actions:
       parameters:
         SKIP_INSTALL: 'true'
         DEVICE: "sda mmcblk0"
-
-    - name: cryptotest
-      from: git
-      history: false
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: linaro
-      path: automated/linux/cryptotest/cryptotest.yaml
-      parameters:
-        SKIP_INSTALL: true
-
-    - name: files-exist
-      from: git
-      history: false
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: files-exist
-      path: automated/linux/files-exist/files-exist.yaml
-      parameters:
-        SKIP_INSTALL: true
-        EXTRA_FILES: '/etc/os-release'
 
 
 metadata:
