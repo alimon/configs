@@ -7,7 +7,7 @@ source .venv/bin/activate
 pip install Jinja2 requests urllib3 ruamel.yaml
 
 export BUILD_NUMBER=530
-export OS_FLAVOUR=buster
+export OS_FLAVOUR=sid
 export VENDOR=linaro
 export PLATFORM_NAME=dragonboard-410c
 export QA_SERVER="http://localhost:8000"
