@@ -1,5 +1,5 @@
 - job:
-    name: trigger-lkft-aosp-hikey
+    name: trigger-lkft-linaro-hikey
     project-type: freestyle
     defaults: global
     properties:
@@ -16,14 +16,14 @@
     scm:
         - git:
             remotes:
-                - aosp-hikey:
-                    url: https://android.googlesource.com/kernel/hikey-linaro
+                - linaro-hikey:
+                    url: https://android-git.linaro.org/git/kernel/hikey-linaro.git
                 - linux-stable:
                     url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
                     refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
             branches:
-              - aosp-hikey/mirror-android-4.14
-              - aosp-hikey/mirror-android-4.19
+              - linaro-hikey/android-hikey-linaro-4.14-lkft
+              - linaro-hikey/android-hikey-linaro-4.19-lkft
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -41,7 +41,7 @@
             env
 
             KERNEL_DESCRIBE=$(git describe --always)
-            KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,aosp-hikey/,,)
+            KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,linaro-hikey/,,)
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
@@ -53,8 +53,13 @@
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
             cat $params
 
+            # call api of android.linaro.org for lkft report check scheduling
+            if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
+                curl -L https://android.linaro.org/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
+                curl -L http://213.146.155.43/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
+            fi
         - trigger-builds:
-            - project: lkft-hikey-merge-mirror-4.14
-              property-file: lkft-mirror-android-4.14.txt
-            - project: lkft-hikey-merge-mirror-4.19
-              property-file: lkft-mirror-android-4.19.txt
+            - project: lkft-hikey-aosp-master-4.14-lkft
+              property-file: lkft-android-hikey-linaro-4.14-lkft.txt
+            - project: lkft-hikey-aosp-master-4.19-lkft
+              property-file: lkft-android-hikey-linaro-4.19-lkft.txt
