@@ -295,6 +295,18 @@ actions:
         DEVICE: /dev/sda
         YKUSHPORT: 2
 
+    - name: zero-sda
+      from: inline
+      path: inline/zero-sda.yaml
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: zero-sda
+          description: write zeros to device sda
+        run:
+          steps:
+          - dd if=/dev/zero of=/dev/sda bs=1M count=1024
+
     - name: device-read-perf
       from: git
       history: false
