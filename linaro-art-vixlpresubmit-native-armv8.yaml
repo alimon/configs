@@ -36,7 +36,7 @@
     parameters:
       - string:
           name: GERRIT_REFSPEC
-          default: refs/heads/master
+          default: ""
       - string:
           name: VIXL_TEST_ARGS
           default: "--fail-early --compiler=g++"
@@ -76,9 +76,14 @@
               https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py \
               && chmod a+x "/usr/local/bin/cpplint.py"
 
+            git config --global user.name "vixl-build-bot"
+            git config --global user.email "vixl-build-bot@fake-email.invalid"
+
             git clone "${vixl_repo}" vixl
             cd vixl
-            git fetch "${vixl_repo}" "${GERRIT_REFSPEC}" && git cherry-pick FETCH_HEAD
+            if [[ ! -z "${GERRIT_REFSPEC}" ]]; then
+              git fetch "${vixl_repo}" "${GERRIT_REFSPEC}" && git cherry-pick FETCH_HEAD
+            fi
             ./test/test.py ${VIXL_TEST_ARGS}
 
 
