@@ -40,11 +40,6 @@
       - string:
           name: VIXL_TEST_ARGS
           default: "--fail-early --compiler=g++"
-    scm:
-      - git:
-          url: 'https://git.linaro.org/arm/vixl.git'
-          choosing-strategy: gerrit
-          refspec: $GERRIT_REFSPEC
     triggers:
         - gerrit:
             server-name: review.linaro.org
@@ -71,6 +66,8 @@
         - shell: |
             #!/bin/bash -xe
 
+            vixl_repo="https://git.linaro.org/arm/vixl.git"
+
             export PATH="${HOME}/bin:${PATH}"
 
             sudo apt-get update && sudo apt-get install -y scons
@@ -79,6 +76,9 @@
               https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py \
               && chmod a+x "/usr/local/bin/cpplint.py"
 
+            git clone "${vixl_repo}" vixl
+            cd vixl
+            git fetch "${vixl_repo}" "${GERRIT_REFSPEC}" && git cherry-pick FETCH_HEAD
             ./test/test.py ${VIXL_TEST_ARGS}
 
 
