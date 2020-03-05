@@ -68,13 +68,14 @@
 
             vixl_repo="https://git.linaro.org/arm/vixl.git"
 
+            mkdir -p "${HOME}/bin"
             export PATH="${HOME}/bin:${PATH}"
 
             sudo apt-get update && sudo apt-get install -y scons
 
-            wget --no-verbose --output-document "/usr/local/bin/cpplint.py" \
+            wget --no-verbose --output-document "${HOME}/bin/cpplint.py" \
               https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py \
-              && chmod a+x "/usr/local/bin/cpplint.py"
+              && chmod +x "${HOME}/bin/cpplint.py"
 
             git config --global user.name "vixl-build-bot"
             git config --global user.email "vixl-build-bot@fake-email.invalid"
