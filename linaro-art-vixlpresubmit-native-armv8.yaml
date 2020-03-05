@@ -33,6 +33,18 @@
     node: docker-xenial-arm64
     display-name: 'VIXL: Presubmit Test on ARMv8 hardware'
     concurrent: true
+    parameters:
+      - string:
+          name: GERRIT_REFSPEC
+          default: refs/heads/master
+      - string:
+          name: VIXL_TEST_ARGS
+          default: "--fail-early --compiler=g++"
+    scm:
+      - git:
+          url: 'https://git.linaro.org/arm/vixl.git'
+          choosing-strategy: gerrit
+          refspec: $GERRIT_REFSPEC
     triggers:
         - gerrit:
             server-name: review.linaro.org
@@ -61,12 +73,15 @@
 
             export PATH="${HOME}/bin:${PATH}"
 
-            ART_BUILD_SCRIPTS_DIR="${WORKSPACE}/art-build-scripts"
-            git clone https://android-git.linaro.org/git/linaro-art/art-build-scripts.git ${ART_BUILD_SCRIPTS_DIR}
+            sudo apt-get update && sudo apt-get install -y scons
 
-            cd ${ART_BUILD_SCRIPTS_DIR}/
-            ./jenkins/setup_host.sh
-            ./jenkins/presubmit_vixl_test.sh
+            wget --no-verbose --output-document "/usr/local/bin/cpplint.py" \
+              https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py \
+              && chmod a+x "/usr/local/bin/cpplint.py"
+
+            ./test/test.py ${VIXL_TEST_ARGS}
+
+
     publishers:
         - email:
             recipients: 'vishal.bhoj@linaro.org daniel.diaz@linaro.org julien.duraj@linaro.org'
