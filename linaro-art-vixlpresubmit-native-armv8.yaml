@@ -36,7 +36,7 @@
     parameters:
       - string:
           name: GERRIT_REFSPEC
-          default: ""
+          default: "refs/heads/master"
       - string:
           name: VIXL_TEST_ARGS
           default: "--fail-early --compiler=g++"
@@ -71,7 +71,7 @@
             mkdir -p "${HOME}/bin"
             export PATH="${HOME}/bin:${PATH}"
 
-            sudo apt-get update && sudo apt-get install -y scons
+            sudo apt-get update && sudo apt-get install -y clang scons
 
             wget --no-verbose --output-document "${HOME}/bin/cpplint.py" \
               https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py \
@@ -82,9 +82,7 @@
 
             git clone "${vixl_repo}" vixl
             cd vixl
-            if [[ ! -z "${GERRIT_REFSPEC}" ]]; then
-              git fetch "${vixl_repo}" "${GERRIT_REFSPEC}" && git cherry-pick FETCH_HEAD
-            fi
+            git pull "${vixl_repo}" "${GERRIT_REFSPEC}"
             ./tools/test.py ${VIXL_TEST_ARGS}
 
 
