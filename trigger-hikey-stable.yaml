@@ -21,6 +21,7 @@
               - linux-stable:
                   url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
             branches:
+              - linux-stable-rc/linux-4.19.y
               - linux-stable-rc/linux-5.4.y
             name: linux
             skip-tag: true
@@ -53,7 +54,7 @@
 
             # call api of android.linaro.org for lkft report check scheduling
             if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
-                QA_BUILD_VERSION=${MAKE_KERNELVERSION}-${KERNEL_COMMIT:0:12}
+                QA_BUILD_VERSION=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}
                 curl -L https://android.linaro.org/lkft/newchanges/${KERNEL_BRANCH}-test/${QA_BUILD_VERSION}/${JOB_NAME}/${BUILD_NUMBER} || true
                 curl -L http://213.146.155.43/lkft/newchanges/${KERNEL_BRANCH}-test/${QA_BUILD_VERSION}/${JOB_NAME}/${BUILD_NUMBER} || true
             fi
