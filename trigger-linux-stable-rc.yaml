@@ -44,12 +44,29 @@
             #!/bin/bash -ex
             git clean -fdx
             env
-            params=$(echo $GIT_BRANCH|sed s,linux-stable-rc/,lkft-,).txt
-            echo KERNEL_DESCRIBE=$(git describe --always) >> $params
+
+            MAKE_KERNELVERSION=$(make kernelversion)
+            KERNEL_BRANCH=${GIT_BRANCH#linux-stable-rc/}
+            KERNEL_DESCRIBE=$(git describe --always)
+
+            params=lkft-${KERNEL_BRANCH}.txt
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
-            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
             cat $params
+
+            # generate files for the api callback build
+            f_api_callbacks="all-kernels.txt"
+            cp -fv  $params ${f_api_callbacks}
+            QA_BUILD_VERSION=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}
+            echo "QA_BUILD_VERSION=${QA_BUILD_VERSION}" >> ${f_api_callbacks}
+            echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
+            echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
+
         - trigger-builds:
+            - project: lkft-api-callbacks
+              property-file: all-kernels.txt
             - project: lkft-hikey-4.4-rc-p
               property-file: lkft-linux-4.4.y.txt
             - project: lkft-hikey-4.9-rc
