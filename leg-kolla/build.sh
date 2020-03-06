@@ -125,11 +125,13 @@ Package: smartmontools
 Pin: version 7.*
 Pin-Priority: 1000
 EOF
-                # 'ceph-common' from Nautilus depends on Py3 packages while for Stein we want Py2
+		# 'ceph-common' from Nautilus depends on Py3 packages while for Stein we want Py2
+		if [ 'stein' = '${branch}' ]; then
                 sed -e "s+ceph-common+ceph-common', 'python-cephfs', 'python-rbd', 'python-rados+g" \
                     -i  kolla/docker/nova/nova-compute/Dockerfile.j2 \
                         kolla/docker/nova/nova-libvirt/Dockerfile.j2 \
                         kolla/docker/cinder/cinder-base/Dockerfile.j2
+		fi
 	fi
 
 	# we want to build Kibana images
