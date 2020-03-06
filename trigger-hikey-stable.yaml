@@ -12,25 +12,17 @@
             num-to-keep: 30
     disabled: false
     node: master
-    display-name: 'TOBEDELETED: Trigger for HiKey/HiKey960 Stable kernels, only use for test purpose'
+    display-name: 'TOBEDELETED: only used for test purpose'
     scm:
         - git:
             remotes:
-                - hikey-stable:
-                    url: https://github.com/liuyq/hikey-linaro
-                - linux-stable:
-                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-                    refspec: +refs/heads/linux-4.4.y:refs/remotes/linux-stable/linux-4.4.y +refs/heads/linux-4.9.y:refs/remotes/linux-stable/linux-4.9.y +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
-            url: https://github.com/tom-gall/hikey-linaro
+              - linux-stable-rc:
+                  url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
+              - linux-stable:
+                  url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
             branches:
-              - hikey-stable/android-4.4-o-hikey
-              - hikey-stable/android-4.4-p-hikey
-              - hikey-stable/android-4.9-o-hikey
-              - hikey-stable/android-4.9-p-hikey
-              - hikey-stable/android-4.9-q-hikey
-              - hikey-stable/android-4.14-p-hikey
-              - hikey-stable/android-4.14-q-hikey
-              - hikey-stable/android-4.19-q-hikey
+              - linux-stable-rc/linux-5.4.y
+            name: linux
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -40,24 +32,28 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_BRANCH"}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}'
+            name: '#${BUILD_NUMBER}-${GIT_BRANCH#linux-stable-rc/}-${GIT_REVISION,length=8}'
+
     builders:
         - shell: |
             #!/bin/bash -ex
             git clean -fdx
             env
 
+            MAKE_KERNELVERSION=$(make kernelversion)
+            KERNEL_BRANCH=${GIT_BRANCH#linux-stable-rc/}
             KERNEL_DESCRIBE=$(git describe --always)
-            KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,hikey-stable/,,)
 
-            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
-            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
-
-            params=$(echo $GIT_BRANCH|sed s,hikey-stable/,lkft-,).txt
+            params=lkft-${KERNEL_BRANCH}.txt
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
-            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
             cat $params
 
             # call api of android.linaro.org for lkft report check scheduling
-            curl http://android.linaro.org:9000/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER} || true
+            if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
+                QA_BUILD_VERSION=${MAKE_KERNELVERSION}-${KERNEL_COMMIT:0:12}
+                curl -L https://android.linaro.org/lkft/newchanges/${KERNEL_BRANCH}-test/${QA_BUILD_VERSION}/${JOB_NAME}/${BUILD_NUMBER} || true
+                curl -L http://213.146.155.43/lkft/newchanges/${KERNEL_BRANCH}-test/${QA_BUILD_VERSION}/${JOB_NAME}/${BUILD_NUMBER} || true
+            fi
