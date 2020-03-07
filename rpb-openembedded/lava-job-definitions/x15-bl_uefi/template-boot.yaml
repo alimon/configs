@@ -1,0 +1,54 @@
+device_type: x15-bl
+job_name: RPB OE boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 161
+  action:
+    minutes: 10
+  connection:
+    minutes: 2
+context:
+  test_character_delay: 10
+priority: 25
+visibility: public
+
+actions:
+- deploy:
+    namespace: target
+    timeout:
+      minutes: 10
+    to: flasher
+    images:
+      image:
+        url: ${SYSTEM_URL}
+        compression: gz
+- boot:
+    timeout:
+      minutes: 20
+    namespace: target
+    method: minimal
+    expect_shell: False
+    boot_finished:
+     - 'reboot: Restarting system'
+     - 'reboot: System halted'
+     - 'Requesting system halt'
+
+- boot:
+    timeout:
+      minutes: 20
+    namespace: target
+    method: minimal
+    prompts:
+    - 'root@debian:~#'
+    - '/ #'
+    - 'root@ledge-ti-am572x:~#'
+    - root@(.*):~#
+    - '~ #'
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${BASE_URL}${PUB_DEST}
