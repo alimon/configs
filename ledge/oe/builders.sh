@@ -255,6 +255,9 @@ case "${MACHINE}" in
     ;;
   ledge-synquacer)
 	  INITRD_URL="http://images.validation.linaro.org/synquacer/hc/initrd.img"
+	  # We don't upload kernel images anymore, override this for synquacer since
+	  # we can't install and boot the whole image.
+	  KERNEL_IMG='Image-for-debian'
     ;;
   ledge-stm32mp157c-dk2)
 	  cd ${DEPLOY_DIR_IMAGE}
