@@ -1,6 +1,8 @@
 # Build Android cts
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
+# change to the build directory to repo sync and build
+cd build
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
 repo sync -j"$(nproc)" -c
 rm -rf out/
@@ -16,7 +18,6 @@ if [ -n "$PATCHSETS" ]; then
     done
 fi
 
-
 source build/envsetup.sh
 lunch ${LUNCH_TARGET}
 make -j"$(nproc)" cts
@@ -25,7 +26,8 @@ wget -q https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/g
 
 cp out/host/linux-x86/cts/android-cts.zip pub/
 
-rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro*
+# Delete sources after build to save space
+rm -rf art/ dalvik/ kernel/ bionic/ developers/ libcore/ sdk/ bootable/ development/ libnativehelper/ system/ build/ device/ test/ build-info/ docs/ packages/ toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/ platform_testing/ vendor/ cts/ hardware/ prebuilts/ linaro* out/
 
 # need to convert '_' to '-'
 # otherwise, aosp_arm64-userdebug will be translated to '~aosp/arm64-userdebug'

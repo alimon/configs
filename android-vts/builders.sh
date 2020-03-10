@@ -1,6 +1,8 @@
 # Build Android vts
 export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
+# change to the build directory to repo sync and build
+cd build
 repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
 repo sync -j"$(nproc)" -c
 rm -rf out/
@@ -15,7 +17,6 @@ if [ -n "$PATCHSETS" ]; then
         sh ./android-patchsets/$i
     done
 fi
-
 
 source build/envsetup.sh
 lunch ${LUNCH_TARGET}

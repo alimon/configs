@@ -28,6 +28,10 @@ if [ ! -d "/home/buildslave/srv/${BUILD_DIR}" ]; then
 fi
 cd /home/buildslave/srv/${BUILD_DIR}
 
+# temporary workaround to clean the workspace for android-cts and android-vts builds
+if [ "X${BUILD_DIR}" == "Xandroid-cts" ] || [ "X${BUILD_DIR}" == "Xandroid-vts" ]; then
+    rm -fr /home/buildslave/srv/${BUILD_DIR}/*
+fi
 # clean the out directory as this workspace is used accross multiple builds
 rm -fr .repo-backup
 [ -d "build/.repo" ] && mv -f build/.repo .repo-backup
@@ -59,3 +63,5 @@ EOF
 echo config.txt
 export CONFIG=`base64 -w 0 config.txt`
 export SKIP_LICENSE_CHECK=1
+
+# still not in the build directory
