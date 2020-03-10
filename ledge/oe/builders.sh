@@ -282,9 +282,9 @@ case "${ORIG_MACHINE}" in
 	for i in ${IMAGES}; do
 		mkdir -p ${UPLOAD_DIR}/lava-images/${i}/
 
-		cp ${UPLOAD_DIR}/ledge-qemuarm/${i}*qemuarm-*.rootfs.ext4 ${UPLOAD_DIR}/lava-images/${i}/
-		cp ${UPLOAD_DIR}/ledge-qemuarm/${i}*qemuarm-*.bootfs.vfat ${UPLOAD_DIR}/lava-images/${i}/
-		cp ${UPLOAD_DIR}/ledge-qemuarm/FlashLayout_sdcard_*${i}*.tsv ${UPLOAD_DIR}/lava-images/${i}/
+		cp ${UPLOAD_DIR}/ledge-qemuarm/${i}-ledge-qemuarm-*.rootfs.ext4 ${UPLOAD_DIR}/lava-images/${i}/
+		cp ${UPLOAD_DIR}/ledge-qemuarm/${i}-ledge-qemuarm-*.bootfs.vfat ${UPLOAD_DIR}/lava-images/${i}/
+		cp ${UPLOAD_DIR}/ledge-qemuarm/FlashLayout_sdcard_*${i}-ledge-qemuarm.tsv ${UPLOAD_DIR}/lava-images/${i}/
 
 		cp ${UPLOAD_DIR}/ledge-qemuarm/*.stm32 ${UPLOAD_DIR}/lava-images/${i}/
 		cp -r ${UPLOAD_DIR}/ledge-stm32mp157c-dk2/* ${UPLOAD_DIR}/lava-images/${i}/
@@ -292,6 +292,8 @@ case "${ORIG_MACHINE}" in
 		cd ${UPLOAD_DIR}/lava-images/${i}
 
 		sed -i 's/rootfs.wic.bin/rootfs.ext4/' FlashLayout_sdcard_*${i}*.tsv
+		cp FlashLayout_sdcard_*${i}*.tsv ${UPLOAD_DIR}/lava-images/ledge-stm32mp157c-dk2-$i.tsv
+
 		#Create final tar
 		tar -czvf ${UPLOAD_DIR}/lava-images/ledge-stm32mp157c-dk2-$i.tar.gz .
 		#Cleanup
