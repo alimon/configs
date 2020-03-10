@@ -31,6 +31,7 @@ cd /home/buildslave/srv/${BUILD_DIR}
 # temporary workaround to clean the workspace for android-cts and android-vts builds
 if [ "X${BUILD_DIR}" == "Xandroid-cts" ] || [ "X${BUILD_DIR}" == "Xandroid-vts" ]; then
     rm -fr /home/buildslave/srv/${BUILD_DIR}/*
+    rm -fr /home/buildslave/srv/${BUILD_DIR}/.repo
 fi
 # clean the out directory as this workspace is used accross multiple builds
 rm -fr .repo-backup
