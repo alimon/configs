@@ -92,24 +92,16 @@ EOF
 
 	sed -i -e s+"'http://buster-train.debian.net/debian/dists/pubkey.gpg',"+"'http://buster-train.debian.net/debian/dists/pubkey.gpg','http://obs.linaro.org/home:/marcin.juszkiewicz/debian-buster/Release.key',"+g kolla/docker/base/Dockerfile.j2
 
-	if [ 'luminous_erp' = $ceph_version ]; then
-		kolla_tag="${kolla_tag}-lumerp"
+	if [ 'luminous_buster_crc' = $ceph_version ]; then
+		kolla_tag="${kolla_tag}-lumcrc"
 		cat <<EOF >> kolla/docker/base/apt_preferences.debian
 
-# We want Ceph/luminous 12.2.4 like in ERP 18.06
+# We want Ceph/luminous 12.2.11 with CRC fix
 Package: ceph* libceph* librados* librbd* librgw* python*-ceph* python*-rados python*-rbd python*-rgw radosgw
-Pin: version 12.2.4*
+Pin: release o=obs://private/home:marcin.juszkiewicz/debian-buster
 Pin-Priority: 1000
 EOF
 	fi
-
-	# for nova-libvirt we use 12.2.11 as this is client not server
-	# this way we do not need to rebuild qemu
-	sed -e "s+ceph-common+ceph-common/buster', 'libcephfs2/buster', 'librbd1/buster', 'libradosstriper1/buster+g" \
-	    -e "s+python3-cephfs+python3-cephfs/buster', 'python-cephfs/buster+g"  \
-	    -e "s+python3-rados+python3-rados/buster', 'python-rados/buster+g"  \
-	    -e "s+python3-rbd+python3-rbd/buster', 'python-rbd/buster+g"  \
-	    -i kolla/docker/nova/nova-libvirt/Dockerfile.j2
 
 	if [ 'nautilus' = $ceph_version ]; then
 		kolla_tag="${kolla_tag}-nautilus"
