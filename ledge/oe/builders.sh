@@ -184,16 +184,6 @@ for a in ${ATF} ; do
 	cd -
 done
 
-# Clean up not needed build artifacts
-CLEAN="Image-ledge* Image*mainline* modules-*-mainline* \
-	*.env *.conf *.manifest *.json *.wks \
-	dtb \
-	*.txt "
-for c in ${CLEAN}; do
-	find ${UPLOAD_DIR} -name $c -exec rm -rf '{}' '+'
-done
-find ${UPLOAD_DIR} -type l -delete
-
 # Create MD5SUMS file
 find ${UPLOAD_DIR} -type f | xargs md5sum > MD5SUMS.txt
 sed -i "s|${UPLOAD_DIR}/||" MD5SUMS.txt
@@ -299,10 +289,31 @@ case "${ORIG_MACHINE}" in
 		#Cleanup
 		rm -rf ${UPLOAD_DIR}/lava-images/${i}
 	done
+
+	mkdir -p ${UPLOAD_DIR}/lava-images/debian
+	cd ${UPLOAD_DIR}/lava-images/debian
+	cp ${UPLOAD_DIR}/ledge-qemuarm/*-ledge-qemuarm-*.bootfs.vfat.gz ${UPLOAD_DIR}/lava-images/debian/
+	cp ${UPLOAD_DIR}/ledge-qemuarm/zImage-for-debian ${UPLOAD_DIR}/lava-images/debian/
+
+	rm -rf ${UPLOAD_DIR}/ledge-qemuarm/*.stm32
+	rm -rf ${UPLOAD_DIR}/ledge-qemuarm/*.tsv
 		;;
 	*)
 		;;
 esac
+
+# Clean up not needed build artifacts
+CLEAN="Image-ledge* Image*mainline* modules-*-mainline* \
+	*.env *.conf *.manifest *.json *.wks \
+	dtb \
+	*.txt \
+        *.vfat *.vfat.gz *.ext4 \
+	"
+for c in ${CLEAN}; do
+	find ${UPLOAD_DIR} -name $c -exec rm -rf '{}' '+'
+done
+find ${UPLOAD_DIR} -type l -delete
+
 
 cat > ${UPLOAD_DIR}/build_config.json <<EOF
 {
