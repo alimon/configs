@@ -45,8 +45,30 @@
         - shell: |
             #!/bin/bash -ex
 
+
+
+            apt-get install -y jq
+
+            wget https://snapshots.linaro.org/components/armnn-master/latest/buildInfo.json
+
+            LAVA_ID=( $(jq '.LAVA_ID' out/buildInfo.json))
+            BUILD_NUM_ORIGIN=( $(jq '.BUILD_NUMBER' out/buildInfo.json))
+
+
             git clone https://github.com/Linaro/lava-test-plans.git
+
+
+            curl \
+                --header "Auth-Token: $QA_REPORTS_TOKEN" \
+                https://qa-reports.linaro.org/api/createbuild/armnn/armnn-benchmarking/$LAVA_ID
+
+            # submit tests to LAVA
+            rm -rf venv | true
+            virtualenv -p python3 venv
+            source ./venv/bin/activate
+            
             cd ./lava-test-plans
+            pip install -r requirements.txt
 
             export DEVICE_TYPE=synquacer
 
@@ -63,6 +85,7 @@
             DEPLOY_OS=debian
             OS_INFO=debian
             DEVICE_TYPE=${DEVICE_TYPE}
+            BUILD_NUMBER=${BUILD_NUM_ORIGIN}
             EOF
 
             ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \

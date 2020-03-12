@@ -71,9 +71,18 @@
             #!/bin/bash
 
             set -ex
+            
+            apt-get install -y jq
 
+            jq -n --arg LAVA_ID $LAVA_ID \
+            --arg ARMNN_TAR_LOCATION $ARMNN_TAR_LOCATION \
+            --arg BUILD_NUMBER $BUILD_NUMBER \
+            '{LAVA_ID:$LAVA_ID, ARMNN_TAR_LOCATION:$ARMNN_TAR_LOCATION, BUILD_NUMBER:$BUILD_NUMBER}' > out/buildInfo.json
+
+           
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
+
 
             if [ -z "$GIT_COM_ID" ]
             then
