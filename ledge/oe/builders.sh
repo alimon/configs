@@ -307,7 +307,7 @@ CLEAN="Image-ledge* Image*mainline* modules-*-mainline* \
 	*.env *.conf *.manifest *.json *.wks \
 	dtb \
 	*.txt \
-        *.vfat *.vfat.gz *.ext4 \
+        *.vfat *.ext4 \
 	"
 for c in ${CLEAN}; do
 	find ${UPLOAD_DIR} -name $c -exec rm -rf '{}' '+'
