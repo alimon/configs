@@ -110,23 +110,23 @@ if [ $SEND_TESTJOB = true ]; then
       ${DRY_RUN} \
       --test-plan testplan/kernel-bootrr.yaml
 
-  export LAVA_JOB_PRIORITY="medium"
-  export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_ROOTFS_FILE}
-  export BOOT_URL_COMP=
-  export LXC_BOOT_FILE=$(basename ${BOOT_URL})
-  export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
-  export ROOTFS_URL_COMP="gz"
-  export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
-  python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
-      --device-type ${LAVA_DEVICE_TYPE} \
-      --build-number ${BUILD_NUMBER} \
-      --lava-server ${LAVA_SERVER} \
-      --qa-server ${QA_SERVER} \
-      --qa-server-team qcomlt \
-      --qa-server-project ${QA_SERVER_PROJECT} \
-      --git-commit ${BUILD_NUMBER} \
-      --template-path "${LAVA_TEMPLATE_PATH}" \
-      --testplan-path "${LAVA_TEMPLATE_PATH}" \
-      ${DRY_RUN} \
-      --test-plan testplan/kernel-functional.yaml
+#  export LAVA_JOB_PRIORITY="medium"
+#  export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_ROOTFS_FILE}
+#  export BOOT_URL_COMP=
+#  export LXC_BOOT_FILE=$(basename ${BOOT_URL})
+#  export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
+#  export ROOTFS_URL_COMP="gz"
+#  export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
+#  python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
+#      --device-type ${LAVA_DEVICE_TYPE} \
+#      --build-number ${BUILD_NUMBER} \
+#      --lava-server ${LAVA_SERVER} \
+#      --qa-server ${QA_SERVER} \
+#      --qa-server-team qcomlt \
+#      --qa-server-project ${QA_SERVER_PROJECT} \
+#      --git-commit ${BUILD_NUMBER} \
+#      --template-path "${LAVA_TEMPLATE_PATH}" \
+#      --testplan-path "${LAVA_TEMPLATE_PATH}" \
+#      ${DRY_RUN} \
+#      --test-plan testplan/kernel-functional.yaml
 fi
