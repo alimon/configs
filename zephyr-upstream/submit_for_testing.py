@@ -324,7 +324,7 @@ def main():
             test_action = \
                 "    monitors:\n" + \
                 "    - name: " + test_name + "\n" + \
-                "      start: (tc_start\(\)|starting .*test|BOOTING ZEPHYR OS)\n" + \
+                "      start: (tc_start\(\)|starting .*test|Booting Zephyr OS)\n" + \
                 "      end: PROJECT EXECUTION\n" + \
                 "      pattern: (?P<result>(PASS|FAIL))\s-\s(?P<test_case_id>\w+)\\r\\n\n" + \
                 "      fixupdict:\n" + \
