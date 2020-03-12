@@ -46,8 +46,9 @@
             git clean -fdx
             env
 
+            MAKE_KERNELVERSION=$(make kernelversion)
+            KERNEL_BRANCH=${GIT_BRANCH#hikey-stable/}
             KERNEL_DESCRIBE=$(git describe --always)
-            KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,hikey-stable/,,)
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
@@ -55,16 +56,21 @@
             params=lkft-${KERNEL_BRANCH}.txt
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
-            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
             cat $params
 
-            # call api of android.linaro.org for lkft report check scheduling
-            if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}" ] && [ -n "${BUILD_NUMBER}" ]; then
-                curl -L https://android.linaro.org/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER}|| true
-                curl -L http://213.146.155.43/lkft/newchanges/${KERNEL_BRANCH}/${KERNEL_DESCRIBE}/${JOB_NAME}/${BUILD_NUMBER}|| true
-            fi
+            # generate files for the api callback build
+            f_api_callbacks="all-kernels.txt"
+            cp -fv  $params ${f_api_callbacks}
+            QA_BUILD_VERSION=${KERNEL_DESCRIBE}
+            echo "QA_BUILD_VERSION=${QA_BUILD_VERSION}" >> ${f_api_callbacks}
+            echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
+            echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
+
         - trigger-builds:
+            - project: lkft-api-callbacks
+              property-file: all-kernels.txt
             - project: lkft-hikey-4.4-o
               property-file: lkft-android-4.4-o-hikey.txt
             - project: lkft-hikey-4.4-p
