@@ -165,6 +165,13 @@ MIGRATED=(
   linux-stable-rc-4.19-oe::dragonboard-410c
   linux-stable-rc-5.4-oe::dragonboard-410c
   linux-stable-rc-5.5-oe::dragonboard-410c
+  linux-mainline-oe::hi6220-hikey
+  linux-next-oe::hi6220-hikey
+  linux-stable-rc-4.9-oe::hi6220-hikey
+  linux-stable-rc-4.14-oe::hi6220-hikey
+  linux-stable-rc-4.19-oe::hi6220-hikey
+  linux-stable-rc-5.4-oe::hi6220-hikey
+  linux-stable-rc-5.5-oe::hi6220-hikey
   linux-mainline-oe::juno-r2
   linux-next-oe::juno-r2
   linux-stable-rc-4.4-oe::juno-r2
