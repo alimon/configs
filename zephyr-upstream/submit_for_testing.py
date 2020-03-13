@@ -264,6 +264,10 @@ def main():
                         help="LAVA user. Only necessary when directly using LAVA server instead of QA server",
                         dest="lava_user",
                         default=None)
+    parser.add_argument("--bin-suffix",
+                        help="Suffix of test binaries",
+                        dest="bin_suffix",
+                        default="bin")
     args = parser.parse_args()
 
     template_file_name = "%s/%s/template.yaml" % (template_base_path, args.device_type)
@@ -338,6 +342,8 @@ def main():
                 "      script:\n" + \
                 "      - command:\n" + \
                 "        name: " + test_name + "\n"
+        if args.bin_suffix != "bin":
+            test = test.rsplit('.', 1)[0] + '.' + args.bin_suffix
         replace_dict = dict(
             # Test name example: kernel-pthread-test
             test_name=test_name,
