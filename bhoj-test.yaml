@@ -54,16 +54,14 @@
     builders:
         - shell: |
             #!/bin/bash -e
-            rm -rf configs
-            git clone https://git.linaro.org/people/vishal.bhoj/configs.git
-            cat configs/kernel-testing-configs/test-params/test-kernel-ci-project
-        - inject:
-            properties-file: configs/kernel-testing-configs/test-params/test-kernel-ci-project
-        - shell: |
-            #!/bin/bash -e
-            cd configs/kernel-testing-configs
-            ./generate-jjb-config.sh
-            export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
-            export GIT_COMMIT=$(git rev-parse HEAD)
-            cd ../
-            python run-jjb.py
+            exit 1
+    publishers:
+       - postbuildscript:
+          builders:
+            - role: SLAVE
+              build-on:
+                - FAILURE 
+              build-steps:
+                - shell: |
+                   #!/bin/bash -e
+                   curl --header "Auth-Token: ${QA_REPORTS_TOKEN}" --form tests='{"build_process/build": "pass"}'  ${qa_server}/api/submit/${qa_server_team}/${qa_server_project}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}
