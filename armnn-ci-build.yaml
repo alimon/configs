@@ -74,9 +74,19 @@
             
             sudo apt-get install -y jq
 
-            jq -n --arg LAVA_ID $LAVA_ID \
-            --arg ARMNN_TAR_LOCATION $ARMNN_TAR_LOCATION \
-            --arg BUILD_NUMBER $BUILD_NUMBER \
+            if [ -z "$GIT_COM_ID" ]
+            then
+                LAVA_ID=${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}
+                ARMNN_TAR_LOCATION=https://snapshots.linaro.org/components/armnn/${BUILD_NUMBER}/armnn.tar.xz
+            else
+                LAVA_ID=$GIT_COM_ID
+                ARMNN_TAR_LOCATION=https://snapshots.linaro.org/components/armnn-master/${BUILD_NUMBER}/armnn.tar.xz
+            fi
+
+
+            jq -n --arg 'LAVA_ID' $LAVA_ID \
+            --arg 'ARMNN_TAR_LOCATION' $ARMNN_TAR_LOCATION \
+            --arg 'BUILD_NUMBER' $BUILD_NUMBER \
             '{LAVA_ID:$LAVA_ID, ARMNN_TAR_LOCATION:$ARMNN_TAR_LOCATION, BUILD_NUMBER:$BUILD_NUMBER}' > out/buildInfo.json
 
            
