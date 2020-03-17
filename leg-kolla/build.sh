@@ -92,7 +92,7 @@ EOF
 
 	sed -i -e s+"'http://buster-train.debian.net/debian/dists/pubkey.gpg',"+"'http://buster-train.debian.net/debian/dists/pubkey.gpg','http://obs.linaro.org/home:/marcin.juszkiewicz/debian-buster/Release.key',"+g kolla/docker/base/Dockerfile.j2
 
-	if [ 'stein' = '${branch}' ]; then
+	if [ 'stein' = $branch ]; then
 		# Add mariadb-backup into mariadb image
 		sed -i -e s+"'mariadb-server'$"+"'mariadb-server', 'mariadb-backup'"+g kolla/docker/mariadb/Dockerfile.j2
 	fi
@@ -123,7 +123,7 @@ Pin: version 7.*
 Pin-Priority: 1000
 EOF
 		# 'ceph-common' from Nautilus depends on Py3 packages while for Stein we want Py2
-		if [ 'stein' = '${branch}' ]; then
+		if [ 'stein' = $branch ]; then
                 sed -e "s+ceph-common+ceph-common', 'python-cephfs', 'python-rbd', 'python-rados+g" \
                     -i  kolla/docker/nova/nova-compute/Dockerfile.j2 \
                         kolla/docker/nova/nova-libvirt/Dockerfile.j2 \
