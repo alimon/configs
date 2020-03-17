@@ -92,6 +92,11 @@ EOF
 
 	sed -i -e s+"'http://buster-train.debian.net/debian/dists/pubkey.gpg',"+"'http://buster-train.debian.net/debian/dists/pubkey.gpg','http://obs.linaro.org/home:/marcin.juszkiewicz/debian-buster/Release.key',"+g kolla/docker/base/Dockerfile.j2
 
+	if [ 'stein' = '${branch}' ]; then
+		# Add mariadb-backup into mariadb image
+		sed -i -e s+"'mariadb-server'$"+"'mariadb-server', 'mariadb-backup'"+g kolla/docker/mariadb/Dockerfile.j2
+	fi
+
 	if [ 'luminous_buster_crc' = $ceph_version ]; then
 		kolla_tag="${kolla_tag}-lumcrc"
 		cat <<EOF >> kolla/docker/base/apt_preferences.debian
