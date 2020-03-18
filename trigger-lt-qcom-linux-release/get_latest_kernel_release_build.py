@@ -33,7 +33,11 @@ for release_name in release_names:
         if err.errno != errno.ENOENT:
             raise
 
-    f = urllib2.urlopen(release_url)
+    try:
+        f = urllib2.urlopen(release_url)
+    except urllib2.HTTPError, e:
+        if e.code == 404:
+            continue
     page = f.read()
 
     cksum = md5.new(page).hexdigest()
