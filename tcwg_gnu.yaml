@@ -259,7 +259,7 @@
             fi
 
             if [ -e artifacts/results ]; then
-              build_name="$build_name-R$(tail -n1 artifacts/results)"
+              build_name="$build_name-R$(grep -v "^#" artifacts/results | tail -n1)"
             fi
             if [ x"$update_baseline" != x"update" ]; then
               build_name="$build_name-$update_baseline"
