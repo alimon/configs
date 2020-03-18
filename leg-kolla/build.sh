@@ -65,38 +65,6 @@ if [ -n ${kolla_ldc} ]; then
 
     if [ 'rocky' != '${branch}' ]; then
 
-        # We may want to use Ceph nautilus from backports
-        # It is not mergeable upstream
-        # We also want kibana and libvirt with ThunderX fixes
-        cat <<EOF >> kolla/docker/base/sources.list.debian
-
-# Enable backports
-deb http://deb.debian.org/debian buster-backports main
-
-# Linaro - fixed libvirt and kibana
-deb http://obs.linaro.org/home:/marcin.juszkiewicz/debian-buster ./
-EOF
-
-        cat <<EOF >> kolla/docker/base/apt_preferences.debian
-
-# We do not want packages from this repo
-Package: *
-Pin: release o=obs://private/home:marcin.juszkiewicz/debian-buster
-Pin-Priority: 100
-
-# Unless it is libvirt or kibana
-Package: *libvirt* kibana
-Pin: release o=obs://private/home:marcin.juszkiewicz/debian-buster
-Pin-Priority: 600
-EOF
-
-	sed -i -e s+"'http://buster-train.debian.net/debian/dists/pubkey.gpg',"+"'http://buster-train.debian.net/debian/dists/pubkey.gpg','http://obs.linaro.org/home:/marcin.juszkiewicz/debian-buster/Release.key',"+g kolla/docker/base/Dockerfile.j2
-
-	if [ 'stein' = $branch ]; then
-		# Add mariadb-backup into mariadb image
-		sed -i -e s+"'mariadb-server'$"+"'mariadb-server', 'mariadb-backup'"+g kolla/docker/mariadb/Dockerfile.j2
-	fi
-
 	if [ 'luminous_buster_crc' = $ceph_version ]; then
 		kolla_tag="${kolla_tag}-lumcrc"
 		cat <<EOF >> kolla/docker/base/apt_preferences.debian
@@ -110,6 +78,11 @@ EOF
 
 	if [ 'nautilus' = $ceph_version ]; then
 		kolla_tag="${kolla_tag}-nautilus"
+		cat <<EOF >> kolla/docker/base/sources.list.debian
+
+# Enable backports
+deb http://deb.debian.org/debian buster-backports main
+EOF
 		cat <<EOF >> kolla/docker/base/apt_preferences.debian
 
 # We want Ceph/nautilus
@@ -130,9 +103,6 @@ EOF
                         kolla/docker/cinder/cinder-base/Dockerfile.j2
 		fi
 	fi
-
-	# we want to build Kibana images
-	sed -i -e /"kibana"/d kolla/kolla/image/build.py
     fi
 fi
 
