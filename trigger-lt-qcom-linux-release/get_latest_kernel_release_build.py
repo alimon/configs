@@ -38,6 +38,8 @@ for release_name in release_names:
     except urllib2.HTTPError, e:
         if e.code == 404:
             continue
+        else:
+            raise
     page = f.read()
 
     cksum = md5.new(page).hexdigest()
