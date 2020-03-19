@@ -113,7 +113,8 @@ time ${ZEPHYR_BASE}/scripts/sanitycheck \
   --build-only \
   --outdir ${OUTDIR} \
   --enable-slow \
-  -x=USE_CCACHE=${USE_CCACHE}
+  -x=USE_CCACHE=${USE_CCACHE} \
+  ${SANITYCHECK_EXTRA}
 
 # Put sanitycheck report where rsync below will pick it up.
 cp ${OUTDIR}/sanitycheck.csv ${OUTDIR}/${PLATFORM}/
