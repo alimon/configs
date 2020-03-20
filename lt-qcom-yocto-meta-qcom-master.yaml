@@ -1,0 +1,68 @@
+- job:
+    name: lt-qcom-yocto-meta-qcom-master
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'core-image-base core-image-weston core-image-x11'
+        - string:
+            name: POKY_URL
+            default: 'http://git.yoctoproject.org/git/poky'
+        - string:
+            name: BRANCH
+            default: 'master'
+        - string:
+            name: DISTRO
+            default: 'poky'
+    disabled: false
+    node: master
+    display-name: 'Yocto Projet meta-qcom CI'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'dragonboard-410c'
+                - 'dragonboard-820c'
+                - 'dragonboard-845c'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-buster-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell:
+            !include-raw: lt-qcom/meta-qcom.sh
+    publishers:
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org'
+            failure: true
+            still-failing: true
+            matrix-trigger: only-parent

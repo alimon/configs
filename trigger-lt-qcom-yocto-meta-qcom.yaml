@@ -1,0 +1,34 @@
+- job:
+    name: trigger-lt-qcom-yocto-meta-qcom-master
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 1
+            num-to-keep: 30
+            artifact-num-to-keep: 30
+    disabled: false
+    node: master
+    display-name: 'Trigger for YP meta-qcom (master)'
+    triggers:
+        - timed: '@daily'
+    wrappers:
+        - timestamps
+    builders:
+        - trigger-builds:
+            - project: 'lt-qcom-yocto-meta-qcom'
+    publishers:
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org'
+            failure: true
+            still-failing: true
