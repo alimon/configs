@@ -51,8 +51,8 @@
             sudo apt-get install -y --no-install-recommends python-pip virtualenv python-dev python3-dev
             wget https://snapshots.linaro.org/components/armnn-master/latest/buildInfo.json
 
-            LAVA_ID=( $(jq '.LAVA_ID' buildInfo.json))
-            BUILD_NUM_ORIGIN=( $(jq '.BUILD_NUMBER' buildInfo.json))
+            LAVA_ID=( $(jq -r '.LAVA_ID' buildInfo.json))
+            BUILD_NUM_ORIGIN=( $(jq -r '.BUILD_NUMBER' buildInfo.json))
 
 
             git clone https://github.com/Linaro/lava-test-plans.git
