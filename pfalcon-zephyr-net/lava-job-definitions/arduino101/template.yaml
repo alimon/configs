@@ -1,0 +1,50 @@
+# Zephyr JOB definition for Arduino101
+device_type: '$device_type'
+job_name: 'zephyr-upstream $test_name'
+
+timeouts:
+  job:
+    minutes: 30
+  action:
+    minutes: 5
+  actions:
+    lava-test-monitor:
+      seconds: 300
+    wait-usb-device:
+      seconds: 20
+    flash-dfu:
+      seconds: 60
+  connections:
+    lava-test-monitor:
+      seconds: 300
+
+priority: medium
+visibility: public
+
+actions:
+- deploy:
+    timeout:
+      minutes: 3
+    to: tmpfs
+    images:
+        app:
+          image_arg: --alt x86_app --download {app}
+          url: '$test_url'
+
+- boot:
+    method: dfu
+    timeout:
+      minutes: 10
+
+- test:
+    timeout:
+      minutes: 10
+$test_action
+
+metadata:
+  build-url: $build_url
+  build-log: $build_url/consoleText
+  zephyr-gcc-variant: $gcc_variant
+  platform: $board_name
+  git-url: https://git.linaro.org/zephyrproject-org/zephyr.git
+  git-commit: $git_commit
