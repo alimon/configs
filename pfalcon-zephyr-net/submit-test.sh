@@ -13,7 +13,7 @@ if [ ! -d lite-lava-docker-compose ]; then
     git clone --depth 1 https://github.com/Linaro/lite-lava-docker-compose
 fi
 
-IMAGE_URL="http://snapshots.linaro.org/components/kernel/pfalcon-zephyr-net/${BRANCH}/${PLATFORM}/${BUILD_NUMBER}/samples/net/sockets/dumb_http_server/sample.net.sockets.dumb_http_server/zephyr/zephyr.bin"
+IMAGE_URL="http://snapshots.linaro.org/components/kernel/pfalcon-zephyr-net/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}/samples/net/sockets/dumb_http_server/sample.net.sockets.dumb_http_server/zephyr/zephyr.bin"
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-ping-frdm_k64f.job"
 
 # Replace image url (passed as docker image command-line arg) in the job
