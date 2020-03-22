@@ -121,6 +121,7 @@ function submit_jobs_for_config(){
         ${OPT_DRY_RUN} \
         --quiet
 
+    curl --header "Auth-Token: ${QA_REPORTS_TOKEN}" --form tests='{"build_process/build": "pass"}'  ${qa_server}/api/submit/${qa_server_team}/${qa_server_project}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}
     if [ -n "${TEST_OTHER_PLANS}" ]; then
         for plan in ${TEST_OTHER_PLANS}; do
             templates=$(get_value_from_config_file "TEST_TEMPLATES_${plan}" "${build_config}")
@@ -159,7 +160,6 @@ function submit_jobs_for_config(){
                 --test-plan ${templates} \
                 ${OPT_DRY_RUN} \
                 --quiet
-            curl --header "Auth-Token: ${QA_REPORTS_TOKEN}" --form tests='{"build_process/build": "pass"}'  ${qa_server}/api/submit/${qa_server_team}/${qa_server_project}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}
         done
     fi
 }
