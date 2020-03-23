@@ -23,4 +23,4 @@ wget -q https://github.com/mikefarah/yq/releases/download/3.1.0/yq_linux_amd64
 chmod +x yq_linux_amd64
 ./yq_linux_amd64 w lite-lava-docker-compose/example/docker-xilinx-qemu-openamp-echo_test.job actions[1].boot.command $IMAGE_URL > lava.job
 
-python3 $dir/lava-submit.py lava.job
+python3 $dir/../lite-common/lava-submit.py lava.job
