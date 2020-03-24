@@ -10,20 +10,20 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    disabled: true
+    disabled: false
     node: master
     display-name: 'TOBEDELETED: only used for test purpose'
     scm:
         - git:
             remotes:
-              - linux-stable-rc:
-                  url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
-              - linux-stable:
-                  url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                - android-common:
+                    url: https://android.googlesource.com/kernel/common
+                - linux-stable:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                    refspec: +refs/heads/linux-5.4.y:refs/remotes/linux-stable/linux-5.4.y +refs/heads/master:refs/remotes/master/master
             branches:
-              - linux-stable-rc/linux-4.19.y
-              - linux-stable-rc/linux-5.4.y
-            name: linux
+              - android-common/android-mainline
+              - android-common/android-5.4
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -42,8 +42,11 @@
             env
 
             MAKE_KERNELVERSION=$(make kernelversion)
-            KERNEL_BRANCH=${GIT_BRANCH#linux-stable-rc/}
+            KERNEL_BRANCH=${GIT_BRANCH#android-common/}
             KERNEL_DESCRIBE=$(git describe --always)
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
 
             params=lkft-${KERNEL_BRANCH}.txt
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
@@ -55,11 +58,12 @@
             # generate files for the api callback build
             f_api_callbacks="all-kernels.txt"
             cp -fv  $params ${f_api_callbacks}
-            QA_BUILD_VERSION=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}
+            QA_BUILD_VERSION=${KERNEL_DESCRIBE}
             echo "QA_BUILD_VERSION=${QA_BUILD_VERSION}" >> ${f_api_callbacks}
             echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
             echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
+            echo "ANDROID_BUILD_CONFIG=lkft-gki-${KERNEL_BRANCH}" >>${f_api_callbacks}
 
         - trigger-builds:
-            - project: lkft-api-callbacks
+            - project: lkft-gki-android-mainline
               property-file: all-kernels.txt
