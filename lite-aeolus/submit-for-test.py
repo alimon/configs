@@ -1,7 +1,8 @@
 import os
 import sys
 from string import Template
-import xmlrpclib
+import xmlrpc.client
+
 
 # Actually submit job to LAVA
 SUBMIT = 1
@@ -36,7 +37,7 @@ if SUBMIT:
     username = os.getenv("LAVA_USER")
     token = os.getenv("LAVA_TOKEN")
     uri = os.getenv("LAVA_SERVER")
-    server = xmlrpclib.ServerProxy("https://%s:%s@%s" % (username, token, uri))
+    server = xmlrpc.client.ServerProxy("https://%s:%s@%s" % (username, token, uri))
 
     job_id = server.scheduler.submit_job(jobdef)
     print("LAVA: https://%s../scheduler/job/%s" % (uri, job_id))
