@@ -28,7 +28,6 @@ for imagename in ${update_images}; do
     do
         docker push ${docker_tag} && exit 0 || true
         sleep $i
-        docker login
     done
     exit 1
   )||echo $imagename push failed >> ${WORKSPACE}/log
