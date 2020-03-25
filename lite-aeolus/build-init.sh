@@ -30,8 +30,13 @@ python3 --version
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
 git clone --depth 1 ${GIT_URL} -b ${BRANCH} ${WORKSPACE}
-git-retry submodule sync --recursive
-git-retry submodule update --init --recursive --checkout
+
+# We used to call git-retry shell wrapper, until it started to choose
+# a wrong Python interpreter. "_" below is a param ignored when executing
+# git_retry.py directly.
+python ${HOME}/depot_tools/git_retry.py _ submodule sync --recursive
+python ${HOME}/depot_tools/git_retry.py _ submodule update --init --recursive --checkout
+
 git clean -fdx
 echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
