@@ -10,7 +10,7 @@ rm -fr ${JOB_OUT_PUBLISH} && mkdir -p ${JOB_OUT_PUBLISH}
 url_build_info="https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt"
 wget ${url_build_info} -O ${JOB_OUT_PUBLISH}/BUILD-INFO.txt
 
-PUBLISH_COMMON_FILES="pinned-manifest.xml defconfig SHA256SUMS.txt"
+PUBLISH_COMMON_FILES="pinned-manifest.xml defconfig gki_defconfig upstream_gki_defconfig SHA256SUMS.txt"
 for build_config in ${ANDROID_BUILD_CONFIG}; do
     config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${build_config}?h=lkft"
     wget ${config_url} -O ${build_config}
