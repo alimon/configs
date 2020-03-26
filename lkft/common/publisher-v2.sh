@@ -1,8 +1,8 @@
 #!/bin/bash -ex
 
-echo "For Test purpose check 1: LKFT_WORK_DIR=${LKFT_WORK_DIR}"
+# LKFT_WORK_DIR set in lkft/common/builders-v2.sh does not work here
+# the value is empty, so needs to set it again
 export LKFT_WORK_DIR=/home/buildslave/srv/${BUILD_DIR}/workspace
-echo "For Test purpose check 2: LKFT_WORK_DIR=${LKFT_WORK_DIR}"
 cd ${LKFT_WORK_DIR}
 
 JOB_OUT_PUBLISH=out/publish
@@ -17,7 +17,9 @@ for build_config in ${ANDROID_BUILD_CONFIG}; do
     source ${build_config}
 
     for f in ${PUBLISH_COMMON_FILES} ${PUBLISH_FILES}; do
-        mv -v out/${build_config}/${f} ${JOB_OUT_PUBLISH}/${build_config}-${f}
+        if [ -f out/${build_config}/${f} ]; then
+            mv -v out/${build_config}/${f} ${JOB_OUT_PUBLISH}/${build_config}-${f}
+        fi
     done
 done
 
