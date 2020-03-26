@@ -70,5 +70,11 @@ for build_config in ${ANDROID_BUILD_CONFIG}; do
     rm -fr out/${build_config}
     ./linaro-lkft.sh -c "${build_config}"
     mv out/${build_config}/pinned-manifest/*-pinned.xml out/${build_config}/pinned-manifest.xml
-    mv out/${build_config}/kernel/.config out/${build_config}/defconfig
+    [ -f out/${build_config}/kernel/.config ] && mv out/${build_config}/kernel/.config out/${build_config}/defconfig
+    [ -f out/${build_config}/gki-kernel/.config ] &&  mv out/${build_config}/gki-kernel/.config out/${build_config}/gki_defconfig
+
+    # should be only one .config after the above steps
+    # which is the case of using build/build.sh
+    f_config=`find out/${build_config}/ -name .config`
+    [ -f "${f_config}" ] && mv "${f_config}" out/${build_config}/${build_config}_/gki_defconfig
 done
