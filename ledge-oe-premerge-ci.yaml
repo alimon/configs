@@ -154,9 +154,16 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
-            [ -z "${DEVICE_TYPE}" ] || \
+            if [ -z "${DEVICE_TYPE}" ]; then
+                if [ "${MACHINE} = "ledge-multi-armv7" ]; then
+                    DEVICE_TYPE="ledge-ti-am572x ledge-stm32mp157c-dk2 ledge-qemuarm ledge-qemuarm64"
+                elif [ "${MACHINE} = "ledge-multi-armv8" ]; then
+                    DEVICE_TYPE="ledge-qemuarm64 ledge-synquacer"
+            fi
+
+            for DT in ${DEVICE_TYPE}; do
                   python configs/openembedded-lkft/submit_for_testing.py \
-                     --device-type ${DEVICE_TYPE} \
+                     --device-type ${DT} \
                      --build-number ${BUILD_NUMBER} \
                      --lava-server ${LAVA_SERVER} \
                      --qa-server ${QA_SERVER} \
@@ -165,6 +172,7 @@
                      --git-commit ${MANIFEST_COMMIT} \
                      --template-path configs/rpb-openembedded/lava-job-definitions \
                      --template-names template-boot.yaml
+            done
     publishers:
         - groovy-postbuild:
             script:
