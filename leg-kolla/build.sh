@@ -48,7 +48,7 @@ trap cleanup_exit INT TERM EXIT
 cleanup_exit()
 {
     # we failed - remove images
-    docker images --filter reference="*/debian*:${kolla_tag}" --quiet|xargs docker image rm
+    docker images --filter reference="linaro/debian-source*:${kolla_tag}" --quiet|xargs docker image rm
 }
 
 rm -rf ${WORKSPACE}/*
