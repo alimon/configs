@@ -162,9 +162,12 @@
                 fi
             fi
 
-            for DT in ${DEVICE_TYPE}; do
+            DTYPES="${DEVICE_TYPE}"
+
+            for DEVICE_TYPE in ${DTYPES}; do
+                  export DEVICE_TYPE
                   python configs/openembedded-lkft/submit_for_testing.py \
-                     --device-type ${DT} \
+                     --device-type ${DEVICE_TYPE} \
                      --build-number ${BUILD_NUMBER} \
                      --lava-server ${LAVA_SERVER} \
                      --qa-server ${QA_SERVER} \
