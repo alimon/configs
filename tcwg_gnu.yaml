@@ -210,6 +210,7 @@
                 rm -rf artifacts/
                 mkdir -p artifacts/jenkins
 
+                dryruncmd=""
                 # Don't run these known-bad configurations.
                 case {target}-{type_of_test} in
                   aarch64-bootstrap_profiled|\
@@ -220,9 +221,10 @@
                   arm-bootstrap_profiled_lto*|\
                   arm-check_bootstrap_lto)
                     echo "Known bad configuration, not running."
+                    echo "Would have run:"
+                    # So we know it wasn't an infrastructure failure
                     touch artifacts/failures
-                    # To mark build unstable
-                    exit 100
+                    dryruncmd="echo"
                     ;;
                 esac
 
@@ -242,6 +244,7 @@
                   i=$(($i+1))
                 done
 
+                $dryruncmd \
                 ./jenkins-scripts/docker-run.sh \
                 --distro $distro \
                 --arch {docker_arch} \
@@ -257,6 +260,12 @@
                 ==rr[mode] "jenkins-full" \
                 ==rr[update_baseline] "$update_baseline" &
                 res=0 && wait $! || res=$?
+
+                # If we didn't run the docker command
+                if [ -n "$dryruncmd" ]; then
+                    #Mark build unstable aka a skipped config
+                    exit 100
+                fi
 
                 if [ $res != 0 ]; then
                   touch artifacts/failures
