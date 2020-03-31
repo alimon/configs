@@ -192,6 +192,15 @@ MIGRATED=(
   linux-stable-rc-5.4-oe::i386
   linux-stable-rc-5.5-oe::i386
   linux-stable-rc-5.6-oe::i386
+  linux-mainline-oe::x15
+  linux-next-oe::x15
+  linux-stable-rc-4.4-oe::x15
+  linux-stable-rc-4.9-oe::x15
+  linux-stable-rc-4.14-oe::x15
+  linux-stable-rc-4.19-oe::x15
+  linux-stable-rc-5.4-oe::x15
+  linux-stable-rc-5.5-oe::x15
+  linux-stable-rc-5.6-oe::x15
   linux-mainline-oe::x86
   linux-next-oe::x86
   linux-stable-rc-4.4-oe::x86
