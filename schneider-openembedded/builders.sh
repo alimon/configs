@@ -87,11 +87,6 @@ git log -1
 git submodule init
 git submodule update
 
-if [[ ${MANIFEST_BRANCH} == linaro-* ]];
-then
-	git submodule update --remote sources/meta-backports  sources/meta-dip-base
-fi
-
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
@@ -114,6 +109,19 @@ case "${MACHINE}" in
     MACHINE=snarc-soca9
     ;;
 esac
+
+# SUBMODULES is set to:
+#	none		no update
+#	''		update default set in setup-env...
+#	all		tell setup-env... to update all submodules
+#	'<something>'	pass the variable to submodule update
+if [[ ${MANIFEST_BRANCH} == linaro-* ]];
+then
+	if [[ "${SUBMODULES}" != "none" ]]; then
+	  ./setup-environment -s build-${machine_orig}/
+	fi
+fi
+
 source ./setup-environment build-${machine_orig}/
 
 ln -s ${HOME}/srv/oe/downloads
