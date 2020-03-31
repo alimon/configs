@@ -31,11 +31,11 @@
             description: 'Machines to run on'
         - string:
             name: distro
-            default: 'default'
+            default: 'xenial'
             description: 'Distro version to use'
         - string:
             name: master
-            default: 'default'
+            default: 'normal'
             description: 'LLVM buildmaster to use: silent or normal'
         - bool:
             name: verbose
@@ -67,10 +67,10 @@
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'ci/dockerfiles'
                   branches:
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: 'master'
-                    - branch-compare-type: 'PLAIN'
-                      branch-pattern: 'tcwg-tested'
+                    - branch-pattern: 'master'
+                  file-paths:
+                    - compare-type: ANT
+                      pattern: tcwg-base/tcwg-llvmbot/**
             silent-start: true
     wrappers:
         - timeout:
@@ -86,15 +86,6 @@
         - shell: |
             #!/bin/bash
             set -ex
-
-            case "$master:$GERRIT_BRANCH" in
-              default:tcwg-tested) master=normal ;;
-              default:*) master=silent ;;
-            esac
-            case "$distro:$GERRIT_BRANCH" in
-              default:tcwg-tested) distro=xenial ;;
-              default:*) distro=xenial ;;
-            esac
 
             ./tcwg-update-llvmbot-containers.sh \
             --NODE_NAME "$NODE_NAME" \
