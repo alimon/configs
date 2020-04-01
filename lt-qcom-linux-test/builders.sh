@@ -221,7 +221,7 @@ if [[ ! -z "${FIRMWARE_URL}" ]]; then
 	firmware_file=""
 	for f in ${FIRMWARE_URL}; do
 		wget_error $f
-	        firmware_file="out/$(basename $f) "
+	        firmware_file="$firmware_file out/$(basename $f)"
 	done
 fi
 
