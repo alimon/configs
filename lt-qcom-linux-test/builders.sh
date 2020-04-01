@@ -123,35 +123,35 @@ KERNEL_CMDLINE_APPEND=
 # Set per MACHINE configuration
 case "${MACHINE}" in
 	apq8016-sbc)
-		FIRMWARE_URL=${FIRMWARE_URL_apq8016_sbc}
+		FIRMWARE_URL="${FIRMWARE_URL_apq8016_sbc}"
 		ROOTFS_PARTITION=/dev/mmcblk0p14
 		;;
 	apq8096-db820c)
-		FIRMWARE_URL=${FIRMWARE_URL_apq8096_db820c}
+		FIRMWARE_URL="${FIRMWARE_URL_apq8096_db820c}"
 		BOOTIMG_PAGESIZE=4096
 		ROOTFS_PARTITION=/dev/sda1
 		;;
 	sdm845-mtp)
-		FIRMWARE_URL=${FIRMWARE_URL_sdm845_mtp}
+		FIRMWARE_URL="${FIRMWARE_URL_sdm845_mtp}"
 
 		# XXX: using Android userdata since we don't have Linux parttable
 		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
 		;;
 	sdm845-db845c)
 		BOOTIMG_PAGESIZE=4096
-		FIRMWARE_URL=${FIRMWARE_URL_sdm845_db845c}
+		FIRMWARE_URL="${FIRMWARE_URL_sdm845_db845c}"
 
 		ROOTFS_PARTITION=/dev/sda1
 		KERNEL_CMDLINE_APPEND="clk_ignore_unused pd_ignore_unused"
 		;;
 	qcs404-evb-1000)
-		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_1000}
+		FIRMWARE_URL="${FIRMWARE_URL_qcs404_evb_1000}"
 
 		# Use userdata for now.
 		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
 		;;
 	qcs404-evb-4000)
-		FIRMWARE_URL=${FIRMWARE_URL_qcs404_evb_4000}
+		FIRMWARE_URL="${FIRMWARE_URL_qcs404_evb_4000}"
 
 		# Use userdata for now.
 		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
@@ -218,8 +218,11 @@ if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 	fi
 fi
 if [[ ! -z "${FIRMWARE_URL}" ]]; then
-	wget_error ${FIRMWARE_URL}
-	firmware_file="out/$(basename ${FIRMWARE_URL})"
+	firmware_file=""
+	for f in ${FIRMWARE_URL}; do
+		wget_error $f
+	        firmware_file="out/$(basename $f) "
+	done
 fi
 
 rootfs_comp=''
@@ -254,9 +257,11 @@ if [[ ! -z "$modules_file" ]]; then
 fi
 
 if [[ ! -z "${firmware_file}" ]]; then
-	firmware_file_type=$(file $firmware_file)
-	copy_archive_to_rootfs "$firmware_file" "$firmware_file_type" "$ramdisk_file" "$ramdisk_file_type"
-	copy_archive_to_rootfs "$firmware_file" "$firmware_file_type" "$rootfs_file" "$rootfs_file_type"
+	for f in ${firmware_file}; do
+		ffile_type=$(file $f)
+		copy_archive_to_rootfs "$f" "$ffile_type" "$ramdisk_file" "$ramdisk_file_type"
+		copy_archive_to_rootfs "$f" "$ffile_type" "$rootfs_file" "$rootfs_file_type"
+	done
 fi
 
 if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
