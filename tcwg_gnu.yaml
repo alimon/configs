@@ -273,13 +273,19 @@
                 fi
                 echo "$build_name" > artifacts/jenkins/build-name
             unstable-return: 100
-        - trigger-followup-builds:
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
-        - shell: |
-            #!/bin/bash
-            if [ -f artifacts/failures ]; then
-              exit 1
-            fi
+        - conditional-step:
+            # Only run if above succeeded
+            # Meaning we did not skip a bad config
+            # (a failed build is indicated by artifacts/failures)
+            condition-kind: current-status
+            steps:
+              - trigger-followup-builds:
+                  ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+              - shell: |
+                  #!/bin/bash
+                  if [ -f artifacts/failures ]; then
+                    exit 1
+                  fi
     publishers:
         - archive:
             artifacts: 'artifacts/**'
