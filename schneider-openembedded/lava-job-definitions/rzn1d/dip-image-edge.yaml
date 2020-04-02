@@ -111,6 +111,23 @@ actions:
       - command: which docker
 
 ####################
+# empty-image.wic
+# Deploy an empty filesystem with a single ext4 partition to the SDcard
+# This is used for docker data in dip-image-edge
+####################
+- deploy:
+    namespace: test-wic
+    timeout:
+      minutes: 100
+    to: flasher
+    images:
+      image:
+        url: https://snapshots.linaro.org/openembedded/warp7/zeus/imx7s-warp/latest/rpb/empty-image.rootfs.wic.bz2
+        compression: bz2
+      layout:
+        url: https://snapshots.linaro.org/openembedded/warp7/zeus/imx7s-warp/latest/rpb/empty-image.rootfs.wic.bmap
+
+####################
 # dip-image-edge.ubi
 ####################
 - deploy:
@@ -177,14 +194,11 @@ actions:
       - command: systemctl --no-pager restart systemd-resolved
       - command: systemctl --no-pager status systemd-resolved
       - command: ifconfig -a
-      - command: udhcpc -i eth1 -n || udhcpc -i eth0 -n
-      - command: ifconfig -a
       - command: ping -c 3 github.com
+      - command: ls /tmp/sdcard
+      - command: df -h
       - command: which docker
-      - command: systemctl stop docker
-      - command: umount /tmp/sdcard
-      - command: mount -t tmpfs tmpfs /tmp/sdcard
-      - command: systemctl start docker
+      - command: systemctl --no-pager status docker
       - command: docker run hello-world
 
 metadata:
