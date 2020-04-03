@@ -26,6 +26,8 @@
             name: KERNEL_BRANCH
         - string:
             name: SRCREV_kernel
+        - string:
+            name: MAKE_KERNELVERSION
     disabled: false
     node: docker-xenial-android-lkft
     display-name: 'LKFT - build android gki kernels'
@@ -48,6 +50,47 @@
         - shell: |
             #!/bin/bash -ex
             env
+
+            # https://snapshots.linaro.org/android/lkft/lkft-gki-android-mainline/67/lkft-gki-android-5.4-Image.gz
+            f_gki_image_gz_url=android/lkft/${JOB_NAME}/${BUILD_NUMBER}/${ANDROID_BUILD_CONFIG}-Image.gz
+
+            build_configs_mainline="lkft-db845c-aosp-master-mainline-gki lkft-hikey960-aosp-master-mainline-gki"
+            build_configs_54="lkft-db845c-aosp-master-5.4-gki lkft-hikey960-aosp-master-5.4-gki"
+            build_configs=""
+            case "X${KERNEL_DESCRIBE}" in
+                "Xandroid-5.4")
+                    build_configs="${build_configs_54}"
+                    ;;
+                "Xandroid-mainline")
+                    build_configs="${build_configs_mainline}"
+                    ;;
+                "X*")
+                    build_configs=""
+                    ;;
+            esac
+
+            rm -fr parameter_*.txt test_*.txt
+            for build_config in ${build_configs}; do
+                #f_params="parameter_${KERNEL_BRANCH}-${build_config}.txt"
+                f_params="test_${KERNEL_BRANCH}-${build_config}.txt"
+
+                cat << __EOF__ > ${f_params}
+            ANDROID_BUILD_CONFIG=${build_config}
+            KERNEL_DESCRIBE=${KERNEL_DESCRIBE}
+            KERNEL_BRANCH=${KERNEL_BRANCH}
+            SRCREV_kernel=${GIT_COMMIT}
+            BUILD_REFERENCE_IMAGE_GZ_URL=${f_gki_image_gz_url}
+            MAKE_KERNELVERSION=${MAKE_KERNELVERSION}
+            __EOF__
+
+                cat $params
+            done
+
+        - trigger-builds:
+            - project: trigger-hikey-stable
+              property-file: test_android-5.4-trigger-hikey-stable.txt
+            - project: trigger-hikey-stable
+              property-file: test_android-mainline-trigger-hikey-stable.txt
 
     publishers:
         - logparser:

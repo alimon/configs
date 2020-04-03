@@ -11,59 +11,33 @@
             days-to-keep: 30
             num-to-keep: 30
     disabled: false
-    node: master
+    node: docker-xenial-android-lkft
     display-name: 'TOBEDELETED: only used for test purpose'
-    scm:
-        - git:
-            remotes:
-                - android-common:
-                    url: https://android.googlesource.com/kernel/common
-                - linux-stable:
-                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
-                    refspec: +refs/heads/linux-5.4.y:refs/remotes/linux-stable/linux-5.4.y +refs/heads/master:refs/remotes/master/master
-            branches:
-              - android-common/android-mainline
-              - android-common/android-5.4
-            skip-tag: true
-            shallow-clone: false
-            wipe-workspace: false
-    triggers:
-        - pollscm:
-            cron: 'H/5 * * * *'
+    parameters:
+        - string:
+            name: BUILD_DIR
+            default: lkft
+        - string:
+            name: ANDROID_BUILD_CONFIG
+            default: ''
+        - string:
+            name: KERNEL_DESCRIBE
+        - string:
+            name: KERNEL_BRANCH
+        - string:
+            name: SRCREV_kernel
+        - string:
+            name: BUILD_REFERENCE_IMAGE_GZ_URL
+        - string:
+            name: MAKE_KERNELVERSION
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_BRANCH#linux-stable-rc/}-${GIT_REVISION,length=8}'
+            name: '#${BUILD_NUMBER}-${KERNEL_DESCRIBE}-${ANDROID_BUILD_CONFIG}'
 
     builders:
-        - shell: |
-            #!/bin/bash -ex
-            git clean -fdx
-            env
-
-            MAKE_KERNELVERSION=$(make kernelversion)
-            KERNEL_BRANCH=${GIT_BRANCH#android-common/}
-            KERNEL_DESCRIBE=$(git describe --always)
-
-            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
-            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
-
-            params=lkft-${KERNEL_BRANCH}.txt
-            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
-            echo SRCREV_kernel=${GIT_COMMIT} >> $params
-            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
-            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
-            cat $params
-
-            # generate files for the api callback build
-            f_api_callbacks="all-kernels.txt"
-            cp -fv  $params ${f_api_callbacks}
-            QA_BUILD_VERSION=${KERNEL_DESCRIBE}
-            echo "QA_BUILD_VERSION=${QA_BUILD_VERSION}" >> ${f_api_callbacks}
-            echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
-            echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
-            echo "ANDROID_BUILD_CONFIG=lkft-gki-${KERNEL_BRANCH}" >>${f_api_callbacks}
-
-        - trigger-builds:
-            - project: lkft-gki-android-mainline
-              property-file: all-kernels.txt
+        - shell:
+            !include-raw: lkft/common/builders-v2.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: lkft/common/publisher-v2.sh
