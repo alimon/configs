@@ -57,9 +57,6 @@
             build_configs_mainline="lkft-db845c-aosp-master-mainline-gki lkft-hikey960-aosp-master-mainline-gki"
             build_configs_54="lkft-db845c-aosp-master-5.4-gki lkft-hikey960-aosp-master-5.4-gki"
 
-            build_configs_mainline="trigger-hikey-stable"
-            build_configs_54="trigger-hikey-stable"
-
             build_configs=""
             case "X${KERNEL_BRANCH}" in
                 "Xandroid-5.4")
@@ -75,8 +72,7 @@
 
             rm -fr parameter_*.txt test_*.txt
             for build_config in ${build_configs}; do
-                #f_params="parameter_${KERNEL_BRANCH}-${build_config}.txt"
-                f_params="test_${KERNEL_BRANCH}-${build_config}.txt"
+                f_params="params_${KERNEL_BRANCH}-${build_config}.txt"
 
                 cat << __EOF__ > ${f_params}
             ANDROID_BUILD_CONFIG=${build_config}
@@ -92,9 +88,13 @@
 
         - trigger-builds:
             - project: trigger-hikey-stable
-              property-file: test_android-5.4-trigger-hikey-stable.txt
+              property-file: params_android-5.4-lkft-db845c-aosp-master-5.4-gki.txt
             - project: trigger-hikey-stable
-              property-file: test_android-mainline-trigger-hikey-stable.txt
+              property-file: params_android-5.4-lkft-hikey960-aosp-master-5.4-gki.txt
+            - project: trigger-hikey-stable
+              property-file: params_android-mainline-lkft-db845c-aosp-master-mainline-gki.txt
+            - project: trigger-hikey-stable
+              property-file: params_android-mainline-lkft-hikey960-aosp-master-mainline-gki.txt
 
     publishers:
         - logparser:
