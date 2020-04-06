@@ -199,6 +199,10 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 #DEL mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 #DEL cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
+# Generate CVE listing with a fixed filename, so it can be retrieved
+# from snapshots.linaro.org by subsequent builds using a known URL.
+cp ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}-*.rootfs.cve ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}.rootfs.cve
+
 # FIXME: IMAGE_FSTYPES_remove doesn't work
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
