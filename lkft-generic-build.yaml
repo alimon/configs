@@ -1,5 +1,5 @@
 - job:
-    name: lkft-db845c-aosp-master-5.4
+    name: lkft-generic-build
     project-type: freestyle
     defaults: global
     properties:
@@ -20,7 +20,7 @@
             default: lkft
         - string:
             name: ANDROID_BUILD_CONFIG
-            default: 'lkft-db845c-aosp-master-5.4-gki'
+            default: ''
         - string:
             name: KERNEL_DESCRIBE
         - string:
@@ -29,13 +29,15 @@
             name: SRCREV_kernel
         - string:
             name: BUILD_REFERENCE_IMAGE_GZ_URL
-    disabled: true
+        - string:
+            name: MAKE_KERNELVERSION
+    disabled: false
     node: docker-xenial-android-lkft
-    display-name: 'TOBEDELETED: LKFT - AOSP Master + android-5.4 gki for Dragonboard845c'
+    display-name: 'Generic CI Job for lkft builds'
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${ENV,var="KERNEL_DESCRIBE"}'
+            name: '#${BUILD_NUMBER}-${KERNEL_DESCRIBE}-${ANDROID_BUILD_CONFIG}'
         - timeout:
             timeout: 500
         - credentials-binding:
@@ -45,6 +47,12 @@
             - text:
                 credential-id: ARTIFACTORIAL_TOKEN
                 variable: ARTIFACTORIAL_TOKEN
+            - text:
+                credential-id: AP_SSID_OEM
+                variable: AP_SSID
+            - text:
+                credential-id: AP_KEY
+                variable: AP_KEY
     builders:
         - shell:
             !include-raw: lkft/common/builders-v2.sh
@@ -54,6 +62,14 @@
         - shell:
             !include-raw: lkft/lava-job-definitions/common/submit_for_testing-v2.sh
     publishers:
+        - postbuildscript:
+           builders:
+             - role: SLAVE
+               build-on:
+                 - FAILURE
+               build-steps:
+                 - shell:
+                     !include-raw: lkft/common/postbuildscript-v2.sh
         - postbuildscript:
            builders:
              - role: SLAVE
@@ -73,7 +89,7 @@
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[CI] Dragonboard845c 5.4 gki + aosp master : ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
+            subject: '[CI] HiKey960 mainline gki + aosp master + QGSI: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText

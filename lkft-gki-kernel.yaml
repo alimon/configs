@@ -28,7 +28,7 @@
             name: SRCREV_kernel
         - string:
             name: MAKE_KERNELVERSION
-    disabled: true
+    disabled: false
     node: docker-xenial-android-lkft
     display-name: 'LKFT - build android gki kernels'
     wrappers:
@@ -87,13 +87,13 @@
             done
 
         - trigger-builds:
-            - project: trigger-hikey-stable
+            - project: lkft-generic-build
               property-file: params_android-5.4-lkft-db845c-aosp-master-5.4-gki.txt
-            - project: trigger-hikey-stable
+            - project: lkft-generic-build
               property-file: params_android-5.4-lkft-hikey960-aosp-master-5.4-gki.txt
-            - project: trigger-hikey-stable
+            - project: lkft-generic-build
               property-file: params_android-mainline-lkft-db845c-aosp-master-mainline-gki.txt
-            - project: trigger-hikey-stable
+            - project: lkft-generic-build
               property-file: params_android-mainline-lkft-hikey960-aosp-master-mainline-gki.txt
 
     publishers:
@@ -107,7 +107,7 @@
             script:
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
-            recipients: 'yongqin.liu@linaro.org'
+            recipients: 'lkft-maintainers@lists.linaro.org'
             subject: '[CI]  android gki + aosp master ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
