@@ -132,5 +132,9 @@
             recipients: 'ralph.siemsen@linaro.org'
             always: true
             matrix-trigger: only-parent
-            body: "$DEFAULT_CONTENT rfs test"
-            #body: "$DEFAULT_CONTENT ${FILE,path=\"build-rzn1/cves.txt\"}"
+            body: |
+                $DEFAULT_CONTENT
+                rfs test ${MACHINE} machine
+                #${FILE,path="/srv/oe/DIP-Yocto-Linux-Distro/build-rzn1/cves.txt"}
+            attachments:
+                "/srv/oe/DIP-Yocto-Linux-Distro/build-*/cves.txt"

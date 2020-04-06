@@ -200,6 +200,9 @@ find -name cve.log | sort | xargs cat > cves.txt
 pwd
 ls -l
 
+# See if we can fetch from snapshots
+wget http://snapshots.linaro.org/openembedded/schneider/linaro-warrior-4.19/rzn1d/latest/dip/dip-image-rzn1-snarc-linaro-rel-2019.09-warrior.2-internal-78.rootfs.cve
+
 exit 0
 
 ##################
