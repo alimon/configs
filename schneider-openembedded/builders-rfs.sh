@@ -194,14 +194,20 @@ time bitbake ${bbopt} -g dip-image
 time bitbake ${bbopt}  -c cve_check `cat pn-buildlist`
 
 # combine all the cve.log into one single file... sorted alphabetically by package
-find -name cve.log | sort | xargs cat > cves.txt
+find -name cve.log | sort | xargs cat > cve-${MACHINE}.new
+
+# Fetch previous CVE report
+#wget http://snapshots.linaro.org/openembedded/schneider/linaro-warrior-4.19/rzn1d/latest/dip/dip-image-rzn1-snarc.rootfs.cve
+LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
+wget -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve
+
+# Do diffs between old and current CVE report.
+diff -u cve-${MACHINE}.old cve-${MACHINE}.new cve-${MACHINE}.txt > cve-diff-${MACHINE}.txt
 
 # Debug
 pwd
 ls -l
-
-# See if we can fetch from snapshots
-wget http://snapshots.linaro.org/openembedded/schneider/linaro-warrior-4.19/rzn1d/latest/dip/dip-image-rzn1-snarc-linaro-rel-2019.09-warrior.2-internal-78.rootfs.cve
+ls -l /srv/oe
 
 exit 0
 
