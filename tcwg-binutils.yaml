@@ -42,6 +42,10 @@
             name: log_server
             default: dev-01.tcwglab:/home/tcwg-buildslave/logs
             description: 'Log_Server'
+        - string:
+            name: build_container_distro
+            default: 'xenial'
+            description: 'Distro to use on the builder with non-default container type: trusty, xenial...'
     disabled: false
     node: tcwg-x86_64-dev-02
     retry-count: 3
@@ -101,7 +105,7 @@
             rm -rf jenkins-scripts
             git clone -b $scripts_branch --depth 1 https://git.linaro.org/toolchain/jenkins-scripts
 
-            bash -x ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ > build-container.sh
+            bash -x ./jenkins-scripts/start-container-docker.sh --label $label --node $NODE_NAME --task build --prefix build_ --distro $build_container_distro > build-container.sh
             . ./build-container.sh
             BUILD_SHELL="build_container_exec bash"
             $BUILD_SHELL -c "echo \"Build session is up; ulimit config:\"; ulimit -a"
