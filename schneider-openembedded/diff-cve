@@ -1,0 +1,55 @@
+#!/usr/bin/gawk -f
+#
+# Summarize differences between two CVE reports.
+
+# Collect header line
+/CVE database update/ {
+	DB_DATE = gensub(/.*: /, "", 1, $0)
+	next
+}
+
+# Multiline input, separated by blank lines
+BEGIN { RS="" ; FS="\n"; OFS="\t" }
+
+{
+	for (i = 1; i <= NF; i++) {
+		$i = gensub(/.*: /, "", 1, $i);
+	}
+	KEY = $1 "\t" $2 "\t" $3
+	if (ARGIND == 1)
+		OLD[KEY] = $0;
+	else
+		NEW[KEY] = $0;
+}
+
+END	{
+	PROCINFO["sorted_in"] = "@ind_str_asc"
+
+	# Compare entries of OLD and NEW
+	for (f in NEW) {
+		if (f in OLD) {
+			if (NEW[f] != OLD[f]) {
+				# TODO: itemize changes
+				CVE_CHANGED[f] = NEW[f]
+			}
+			delete OLD[f]
+		} else {
+			CVE_NEW[f] = NEW[f]
+		}
+	}
+	for (f in OLD) {
+		CVE_OLD[f] = OLD[f]
+	}
+
+	# Report changes
+	print "CVE_DATABASE:", DB_DATE
+	for (f in CVE_NEW) {
+		print "CVE_NEW:", f
+	}
+	for (f in CVE_CHANGED) {
+		print "CVE_CHANGED:", f
+	}
+	for (f in CVE_OLD) {
+		print "CVE_FIXED:", f
+	}
+}
