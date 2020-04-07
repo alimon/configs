@@ -2,6 +2,8 @@
 
 set -e
 
+pwd
+
 # workaround EDK2 is confused by the long path used during the build
 # and truncate files name expected by VfrCompile
 sudo mkdir -p /srv/oe
@@ -202,7 +204,9 @@ LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
 wget -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve
 
 # Do diffs between old and current CVE report.
-gawk -f schneider-openembedded/diff-cve cve-${MACHINE}.old cve-${MACHINE}.new
+#gawk -f schneider-openembedded/diff-cve cve-${MACHINE}.old cve-${MACHINE}.new
+echo dirname is $(dirname $0)
+ls -l $(dirname $0) || true
 
 # Debug
 pwd
