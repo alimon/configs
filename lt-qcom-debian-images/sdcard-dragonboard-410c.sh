@@ -18,14 +18,18 @@ if [ -z "$SDCARD" ]; then
     exit 0
 fi
 
+# get ROOTFS from FAI config
+ROOTFS_PARTLABEL=$(grep --color=never -Po  "^ROOTFS_PARTLABEL=\K.*" class/${FAI_BOARD_CLASS}.var)
+
 # Create boot image for SD boot
+KERNEL_CMDLINE="root=PARTLABEL=${ROOTFS_PARTLABEL} console=tty0 console=${SERIAL_CONSOLE},115200n8 ${KERNEL_CMDLINE_PLATFORM}"
 mkbootimg \
     --kernel Image.gz+dtb \
     --ramdisk out/initrd.img-* \
     --output out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img \
     --pagesize "${BOOTIMG_PAGESIZE}" \
     --base "0x80000000" \
-    --cmdline "root=/dev/mmcblk1p9 rw rootwait console=${SERIAL_CONSOLE},115200n8"
+    --cmdline "${KERNEL_CMDLINE}"
 gzip -9 out/boot-sdcard-${VENDOR}-${OS_FLAVOUR}-${PLATFORM_NAME}-${BUILD_NUMBER}.img
 
 rm -rf db-boot-tools
