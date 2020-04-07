@@ -202,7 +202,7 @@ LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
 wget -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve
 
 # Do diffs between old and current CVE report.
-diff -u cve-${MACHINE}.old cve-${MACHINE}.new cve-${MACHINE}.txt > cve-diff-${MACHINE}.txt
+diff -u cve-${MACHINE}.old cve-${MACHINE}.new > cve-diff-${MACHINE}.txt
 
 # Debug
 pwd
