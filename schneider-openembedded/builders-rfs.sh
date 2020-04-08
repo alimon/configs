@@ -2,7 +2,8 @@
 
 set -e
 
-pwd
+echo "RFS pwd is " $(pwd)
+# /home/buildslave/workspace/schneider-openembedded-warrior-4.19-rfs/DISTRO/dip/MACHINE/soca9/label/docker-stretch-amd64 --> ${WORKSPACE}
 
 # workaround EDK2 is confused by the long path used during the build
 # and truncate files name expected by VfrCompile
@@ -205,7 +206,7 @@ wget -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootf
 
 # Do diffs between old and current CVE report.
 wget -O diff-cve https://git.linaro.org/ci/job/configs.git/plain/schneider-openembedded/diff-cve
-gawk -f diff-cve cve-${MACHINE}.old cve-${MACHINE}.new
+gawk -f diff-cve cve-${MACHINE}.old cve-${MACHINE}.new | tee ${WORKSPACE}/cve-${MACHINE}.txt
 echo dirname is $(dirname $0)
 ls -l $(dirname $0) || true
 
