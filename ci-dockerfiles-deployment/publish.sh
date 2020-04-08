@@ -10,12 +10,15 @@ cleanup_exit()
     rm -f ${WORKSPACE}/{log,config.json,version.txt}
 }
 
-mkdir -p ${HOME}/.docker
-sed -e "s|\${DOCKER_AUTH}|${DOCKER_AUTH}|" < ${WORKSPACE}/config.json > ${HOME}/.docker/config.json
-chmod 0600 ${HOME}/.docker/config.json
+docker_log_in()
+{
+    mkdir -p ${HOME}/.docker
+    sed -e "s|\${DOCKER_AUTH}|${DOCKER_AUTH}|" < ${WORKSPACE}/config.json > ${HOME}/.docker/config.json
+    chmod 0600 ${HOME}/.docker/config.json
+}
 
 update_images=$(find -type f -name .docker-tag)
-
+docker_log_in
 for imagename in ${update_images}; do
   (
     docker_tag=$(cat $imagename)
@@ -28,6 +31,7 @@ for imagename in ${update_images}; do
     do
         docker push ${docker_tag} && exit 0 || true
         sleep $i
+        docker_log_in
     done
     exit 1
   )||echo $imagename push failed >> ${WORKSPACE}/log
