@@ -188,7 +188,7 @@ bbopt="-R ${postfile}"
 #time bitbake ${bbopt} dip-sdk
 
 # Generate "pn-buildlist" which names all targets
-time bitbake ${bbopt} -g dip-image-dev
+time bitbake ${bbopt} -g ${IMAGES}
 
 # Update NVD data for each of those targets
 time bitbake ${bbopt}  -c cve_check `cat pn-buildlist`
@@ -203,13 +203,12 @@ wget -nv -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.r
 # Do diffs between old and current CVE report.
 wget -nv -O diff-cve https://git.linaro.org/ci/job/configs.git/plain/schneider-openembedded/diff-cve
 gawk -f diff-cve cve-${MACHINE}.old cve-${MACHINE}.new | tee ${WORKSPACE}/cve-${MACHINE}.txt
-echo dirname is $(dirname $0)
-ls -l $(dirname $0) || true
 
 # Debug
 pwd
 ls -l
 ls -l /srv/oe
+ls -l ${WORKSPACE}
 
 exit 0
 
