@@ -4,8 +4,8 @@ if (manager.build.result == hudson.model.Result.SUCCESS) {
   manager.build.logFile.eachLine { line ->
       matcher = pattern.matcher(line)
       if(matcher.matches()) {
-          pkg = matcher.group(1)
-          cve = matcher.group(2);
+          def pkg = matcher.group(1)
+          def cve = matcher.group(2);
           map[pkg] = cve;
       }
   }
