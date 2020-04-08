@@ -2,9 +2,6 @@
 
 set -e
 
-echo "RFS pwd is " $(pwd)
-# /home/buildslave/workspace/schneider-openembedded-warrior-4.19-rfs/DISTRO/dip/MACHINE/soca9/label/docker-stretch-amd64 --> ${WORKSPACE}
-
 # workaround EDK2 is confused by the long path used during the build
 # and truncate files name expected by VfrCompile
 sudo mkdir -p /srv/oe
@@ -191,7 +188,7 @@ bbopt="-R ${postfile}"
 #time bitbake ${bbopt} dip-sdk
 
 # Generate "pn-buildlist" which names all targets
-time bitbake ${bbopt} -g dip-image
+time bitbake ${bbopt} -g dip-image-dev
 
 # Update NVD data for each of those targets
 time bitbake ${bbopt}  -c cve_check `cat pn-buildlist`
@@ -200,12 +197,11 @@ time bitbake ${bbopt}  -c cve_check `cat pn-buildlist`
 find -name cve.log | sort | xargs cat > cve-${MACHINE}.new
 
 # Fetch previous CVE report
-#wget http://snapshots.linaro.org/openembedded/schneider/linaro-warrior-4.19/rzn1d/latest/dip/dip-image-rzn1-snarc.rootfs.cve
 LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
-wget -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve
+wget -nv -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve
 
 # Do diffs between old and current CVE report.
-wget -O diff-cve https://git.linaro.org/ci/job/configs.git/plain/schneider-openembedded/diff-cve
+wget -nv -O diff-cve https://git.linaro.org/ci/job/configs.git/plain/schneider-openembedded/diff-cve
 gawk -f diff-cve cve-${MACHINE}.old cve-${MACHINE}.new | tee ${WORKSPACE}/cve-${MACHINE}.txt
 echo dirname is $(dirname $0)
 ls -l $(dirname $0) || true
