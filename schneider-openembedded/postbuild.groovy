@@ -5,8 +5,8 @@ if (manager.build.result == hudson.model.Result.SUCCESS) {
       matcher = pattern.matcher(line)
       if(matcher.matches()) {
           def pkg = matcher.group(1)
-          def cve = matcher.group(2);
-          map[pkg] = cve;
+          def cve = matcher.group(2)
+          map[pkg] = cve
       }
   }
   if(map.size() > 0) {
