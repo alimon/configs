@@ -28,8 +28,20 @@
             node-eligibility: 'all'
             description: 'Machines to run on'
     disabled: false
-    concurrent: false
+    concurrent: true
     display-name: 'TCWG CCC Update TCWG Infra /home files'
+    workspace: workspace/tcwg-infra-update-home_$EXECUTOR_NUMBER/$NODE_NAME
+    scm:
+        - git:
+            url: https://review.linaro.org/${GERRIT_PROJECT}
+            refspec: ${GERRIT_REFSPEC}
+            branches:
+                - ${GERRIT_BRANCH}
+            skip-tag: true
+            clean:
+                before: true
+            choosing-strategy: gerrit
+            basedir: dockerfiles
     triggers:
         - gerrit:
             server-name: 'review.linaro.org'
@@ -60,14 +72,8 @@
             #!/bin/bash
 
             set -ex
-
-            dir=$(mktemp -d)
-            ssh -o StrictHostKeyChecking=no git@git.linaro.org true || true
-            git archive --remote ssh://git@git.linaro.org/ci/dockerfiles.git HEAD > $dir.tar
-            tar x --strip-components=2 -f $dir.tar -C $dir tcwg-base/home-data
-            rsync_dest="tcwg-${NODE_NAME##tcwg-bmk-}.tcwglab:"
-            rsync -aL $dir/$USER/ $rsync_dest/home/$USER/
-            rm -rf $dir/ $dir.tar
+            rsync -aL dockerfiles/tcwg-base/home-data/$USER/ \
+              tcwg-${NODE_NAME##tcwg-bmk-}.tcwglab:/home/$USER/
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
