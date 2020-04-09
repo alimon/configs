@@ -1,5 +1,5 @@
 if (manager.build.result == hudson.model.Result.SUCCESS) {
-  pattern = ~"CVE_NEW:\t([^\t]+\t[^\t]+)\t([^t]+)"
+  pattern = ~/CVE_NEW:\t([^\t]+\t[^\t]+)\t([^t]+)/
   def map = [:]
   manager.build.logFile.eachLine { line ->
       matcher = pattern.matcher(line)
