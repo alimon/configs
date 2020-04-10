@@ -19,7 +19,7 @@
     parameters:
         - label:
             name: slave_list
-            default: tcwg-build || tcwg-apm_64-build || tcwg-apm_64-test || tcwg-bmk-coordinator || tcwg-coordinator || tcwg-d05-01 || tcwg-sq_64-build || tcwg-tk1_32-build || tcwg-x86_64-build || tcwg-x86_64-cam
+            default: tcwg
             all-nodes: true
             matching-label: 'allCases'
             node-eligibility: 'ignore-offline'
@@ -36,12 +36,9 @@
             name: cleanup_ssh_agent_hours
             default: '48'
             description: 'Kill ssh-agent processes that are more then "hours" old.  Use "0" to disable time check.'
-        - choice:
+        - bool:
             name: cleanup_volumes
-            choices:
-              - 'node_default'
-              - 'false'
-              - 'true'
+            default: 'true'
             description: 'Whether to cleanup dangling volumes'
         - bool:
             name: cleanup_images
@@ -56,7 +53,7 @@
             default: refs/heads/master
             description: 'Scripts revision to use'
     disabled: false
-    concurrent: false
+    concurrent: true
     display-name: 'TCWG CCC Cleanup stale containers'
     triggers:
         - timed: '@daily'
@@ -80,29 +77,16 @@
             #!/bin/bash
 
             set -ex
+            ignore_result=false
             case "$NODE_NAME" in
-              tcwg-bmk-dev-*)
-                # tcwg-bmk-dev-* nodes are hosted on dev-* machines, aka
-                # tcwg-x86_64-dev-* nodes.  We only need to cleanup ssh-agent
-                # processes for tcwg-benchmark user, so disable all other
-                # cleanups.
+              tcwg-bmk-tk1-*|tcwg-bmk-tx1-*|tcwg-x86_64-dev-*-short)
+                # Only cleanup ssh-agent processes for secondary nodes
+                # hosted on tcwg-bmk-bkp-01 and tcwg-x86_64-dev-* machines.
                 cleanup_running_hours=0
                 cleanup_stopped_hours=0
                 cleanup_volumes=false
                 cleanup_images=false
                 ignore_result=true
-                ;;
-              *)
-                ignore_result=false
-                ;;
-            esac
-
-            case "$cleanup_volumes:$NODE_NAME" in
-              node_default:tcwg-d05-*|node_default:tcwg-dev-*|node_default:tcwg-thx1-*)
-                cleanup_volumes=false
-                ;;
-              *)
-                cleanup_volumes=true
                 ;;
             esac
 
