@@ -19,7 +19,7 @@ if (manager.build.result == hudson.model.Result.SUCCESS) {
       def summary = manager.createSummary("warning.gif")
       summary.appendText("New CVEs:<ul>", false)
       map.each {
-          summary.appendText("<li><b>$it.pkg</b> - <a href=\"https://nvd.nist.gov/vuln/detail/$it.value\">$it.value</a></li>", false)
+          summary.appendText("<li><a href=\"https://nvd.nist.gov/vuln/detail/$it.value\">$it.value</a> in $it.pkg</li>", false)
       }
       summary.appendText("</ul>", false)
   }
