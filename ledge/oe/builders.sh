@@ -314,6 +314,16 @@ for c in ${CLEAN}; do
 done
 find ${UPLOAD_DIR} -type l -delete
 
+case "${ORIG_MACHINE}" in
+	ledge-multi-armv7)
+		PUB_DEST="${PUB_DEST}/ledge-qemuarm"
+		;;
+	ledge-multi-armv8)
+		PUB_DEST="${PUB_DEST}/ledge-qemuarm64"
+		;;
+	*)
+		;;
+esac
 
 cat > ${UPLOAD_DIR}/build_config.json <<EOF
 {
