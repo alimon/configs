@@ -97,7 +97,11 @@
             # Use tarball name to decide if we use an i386 container or an amd64 one
             tarball_file=$(basename ${tarball_url})
             case ${tarball_file} in
-                *-i686*) builder_arch=i386 ;;
+                *-i686*)
+                    builder_arch=i386
+                    echo "ERROR: i386 containers no longer supported for tarball ${tarball_file}"
+                    exit 1
+                    ;;
                 *-x86_64*) builder_arch=amd64 ;;
                 *)
                     echo "ERROR: could not determine container type from tarball ${tarball_file}"

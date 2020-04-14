@@ -41,8 +41,8 @@
             description: 'List of targets to use'
         - string:
             name: builder_arch_list
-            default: 'i386 amd64'
-            description: 'List of builder architectures to use (i386,amd64)'
+            default: 'amd64'
+            description: 'List of builder architectures to use (amd64)'
         - string:
             name: abe_branch
             default: tested
@@ -214,7 +214,10 @@
                 canadian=--canadian ;;
               i386)
                 host=i686
-                canadian= ;;
+                canadian=
+                echo "ERROR: i386 hosts no longer unsupported"
+                exit 1
+                ;;
              *)
                 echo "ERROR: unsupported label: ${label}"
                 exit 1
