@@ -27,17 +27,24 @@
 
             set -ex
             echo "This is a test" > email.body
+            echo 'echo "More test" >> email.body' > testscript
+            chmod +x testscript
             ls -l
     publishers:
+        - postbuildscript:
+            generic-script:
+                - file-path: 'testscript'
+                - role: MASTER
+                - build-on: SUCCESS
         - email-ext:
             # Send custom email generated in jenkins job
             recipients: 'ralph.siemsen@linaro.org'
             subject: 'Schneider OpenEmbedded Test Notify'
             content-type: text
             body: |
-                Some text
+                Before text
                 ${FILE,path="email.body"}
-                More test
+                After text
             success: true
             failure: false
         - email:
