@@ -1,0 +1,44 @@
+- job:
+    name: schneider-openembedded-test-notify
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+    disabled: false
+    node: master
+    concurrent: false
+    display-name: 'Schneider OpenEmbedded Test Notify'
+    wrappers:
+        - timeout:
+            timeout: 60
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+            echo "This is a test" > email.body
+            ls -l
+    publishers:
+        - email-ext:
+            # Send custom email generated in jenkins job
+            recipients: 'ralph.siemsen@linaro.org'
+            subject: 'Schneider OpenEmbedded Test Notify'
+            content-type: text
+            body: |
+                Some text
+                ${FILE,path="email.body"}
+                More test
+            success: true
+            failure: false
+        - email:
+             recipients: 'ralph.siemsen@linaro.org'
