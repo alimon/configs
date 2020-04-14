@@ -109,6 +109,7 @@
             #!/bin/bash
 
             echo "PUB_DEST=openembedded/schneider/${MANIFEST_BRANCH}-${KERNEL_VERSION}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}" > pub_dest_parameters
+            echo "Ralph was here" > rfs-test
         - inject:
             properties-file: pub_dest_parameters
         - shell:
@@ -138,10 +139,13 @@
             body: |
                 $DEFAULT_CONTENT
                 
+                RFS test
+                ${FILE,path="rfs-test"}
+                
                 CVE changes for rzn1
-                ${FILE,path="artifacts/jenkinks/cve-rzn1-snarc.txt"}
+                ${FILE,path="cve-rzn1-snarc.txt"}
                 
                 CVE changes for soca9
-                ${FILE,path="artifact/cve-snarc-soca9.txt"}
+                ${FILE,path="cve-snarc-soca9.txt"}
             attachments:
                 "cve-*.txt"
