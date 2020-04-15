@@ -128,13 +128,14 @@
             artifacts: 'cve-*.txt'
         - postbuildscript:
             builders:
-                - role: MASTER
+                - role: SLAVE
                   build-on:
                       - SUCCESS
                   build-steps:
                       - shell: 'echo "Hello world"'
                       - shell: 'echo JENKINS_HOME $JENKINS_HOME'
-                      - shell: 'find /var/jenkins_home -name cve-rzn1-snarc.txt'
+                      - shell: 'ls -l /var/jenkins_home || true'
+                      - shell: 'find /var/jenkins_home -name cve-rzn1-snarc.txt || true'
                       - shell: 'echo "Goodbye world"'
         - groovy-postbuild:
             script:
