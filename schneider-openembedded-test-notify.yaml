@@ -43,8 +43,13 @@
                       - shell: 'echo "Hello world"'
                       - shell: './testscript'
                       - shell: 'echo JENKINS_HOME $JENKINS_HOME'
-                      - shell: 'ls -l /var/jenkins_home || true'
-                      - shell: 'find /var/jenkins_home -name cve-rzn1-snarc.txt || true'
+                      - shell: 'echo MACHINE $MACHINE'
+                      - shell: 'echo BUILD_NUMBER $BUILD_NUMBER'
+                      - shell: 'echo DISTRO $DISTRO'
+                      - shell: 'echo label $label'
+                      - shell:  'ls -l /var/jenkins_home/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/rzn1d/axis-label/docker-stretch-amd64/builds/18/archive/ || true'
+                      - shell: 'tree /var/jenkins_home/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/rzn1d/axis-label/docker-stretch-amd64/ || true'
+                      - shell: '### find /var/jenkins_home -name cve-rzn1-snarc.txt || true'
                       - shell: 'echo "Goodbye world"'
         - email-ext:
             # Send custom email generated in jenkins job
