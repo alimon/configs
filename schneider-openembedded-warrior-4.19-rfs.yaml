@@ -126,6 +126,16 @@
     publishers:
         - archive:
             artifacts: 'cve-*.txt'
+        - postbuildscript:
+            builders:
+                - role: MASTER
+                  build-on:
+                      - SUCCESS
+                  build-steps:
+                      - shell: 'echo "Hello world"'
+                      - shell: 'echo JENKINS_HOME $JENKINS_HOME'
+                      - shell: 'find /var/jenkins_home -name cve-rzn1-snarc.txt'
+                      - shell: 'echo "Goodbye world"'
         - groovy-postbuild:
             script:
                 !include-raw:
