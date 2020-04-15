@@ -42,6 +42,9 @@
                   build-steps:
                       - shell: 'echo "Hello world"'
                       - shell: './testscript'
+                      - shell: 'echo JENKINS_HOME $JENKINS_HOME'
+                      - shell: 'ls -l /var/jenkins_home || true'
+                      - shell: 'find /var/jenkins_home -name cve-rzn1-snarc.txt || true'
                       - shell: 'echo "Goodbye world"'
         - email-ext:
             # Send custom email generated in jenkins job
