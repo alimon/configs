@@ -35,11 +35,14 @@
             pwd
     publishers:
         - postbuildscript:
-            generic-script:
-                - file-path: './testscript'
-                  role: MASTER
+            builders:
+                - role: MASTER
                   build-on:
                       - SUCCESS
+                  build-steps:
+                      - shell: 'echo "Hello world"'
+                      - shell: './testscript'
+                      - shell: 'echo "Goodbye world"'
         - email-ext:
             # Send custom email generated in jenkins job
             recipients: 'ralph.siemsen@linaro.org'
