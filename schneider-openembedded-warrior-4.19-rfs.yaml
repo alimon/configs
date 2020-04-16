@@ -126,17 +126,6 @@
     publishers:
         - archive:
             artifacts: 'cve-*.txt'
-        - postbuildscript:
-            builders:
-                - role: SLAVE
-                  build-on:
-                      - SUCCESS
-                  build-steps:
-                      - shell: 'echo "Hello world"'
-                      - shell: 'echo JENKINS_HOME $JENKINS_HOME'
-                      - shell: 'ls -l /var/jenkins_home || true'
-                      - shell: 'find /var/jenkins_home -name cve-rzn1-snarc.txt || true'
-                      - shell: 'echo "Goodbye world"'
         - groovy-postbuild:
             script:
                 !include-raw:
@@ -150,13 +139,10 @@
             body: |
                 $DEFAULT_CONTENT
                 
-                RFS test
-                ${FILE,path="rfs-test"}
-                
                 CVE changes for rzn1
-                ${FILE,path="cve-rzn1-snarc.txt"}
+                ${FILE,path="/var/jenkins_home/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/rzn1d/axis-label/docker-stretch-amd64/builds/$BUILD_NUMBER/archive/cve-rzn1-snarc.txt"}
                 
                 CVE changes for soca9
-                ${FILE,path="cve-snarc-soca9.txt"}
+                ${FILE,path="/var/jenkins_home/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/soca9/axis-label/docker-stretch-amd64/builds/$BUILD_NUMBER/archive/cve-snarc-soca9.txt"}
             attachments:
                 "cve-*.txt"
