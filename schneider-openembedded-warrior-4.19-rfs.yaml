@@ -128,8 +128,9 @@
             artifacts: 'cve-*.txt'
         - postbuildscript:
             builders:
-                - role: SLAVE
-                  build-on: SUCCESS
+                - role: MASTER
+                  build-on:
+                    - SUCCESS
                   build-steps:
                     - shell: |
                         echo "Hello World"
