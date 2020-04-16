@@ -11,44 +11,84 @@
 # Multiline input, separated by blank lines
 BEGIN { RS="" ; FS="\n"; OFS="\t" }
 
+# For every line, from each input file
 {
+	# Remove the prefix from each line
+	# Also collect prefix names for later
 	for (i = 1; i <= NF; i++) {
-		$i = gensub(/.*: /, "", 1, $i);
+		PFX[i] = gensub(/:.*/, "", 1, $i)
+		$i = gensub(/.*: /, "", 1, $i)
 	}
+
+	# Hack: exclude specific packages:
+	# bzip2-native and file-native are ASSUME_PROVIDED by Yocto.
+	# linux-* because NVD doesn't track LTS branches sensibly.
+	if ($1 == "bzip2-native") next;
+	if ($1 == "file-native") next;
+	if ($1 ~ /^linux-/) next;
+
+	# Indexing is done using PKGNAME-VERSION-CVENUM.
+	# Must use all three components to ensure uniqueness.
+	# Tab as separator since dashes occur in components.
 	KEY = $1 "\t" $2 "\t" $3
+
+	# Store data from 1st filename into OLD, and 2nd file into NEW
 	if (ARGIND == 1)
 		OLD[KEY] = $0;
 	else
 		NEW[KEY] = $0;
 }
 
+# Upon completion of reading input
 END	{
+	# Traverse arrays in predictable order
 	PROCINFO["sorted_in"] = "@ind_str_asc"
 
 	# Compare entries of OLD and NEW
 	for (f in NEW) {
 		if (f in OLD) {
 			if (NEW[f] != OLD[f]) {
-				# TODO: itemize changes
-				CVE_CHANGED[f] = NEW[f]
+				CVE_CHANGED[f] = fmt_chg("CHG", OLD[f], NEW[f])
 			}
 			delete OLD[f]
 		} else {
-			CVE_NEW[f] = NEW[f]
+			CVE_NEW[f] = fmt_cve("NEW", NEW[f])
 		}
 	}
 	for (f in OLD) {
-		CVE_OLD[f] = OLD[f]
+		CVE_OLD[f] = fmt_cve("FIX", OLD[f])
 	}
 
 	# Report changes
 	for (f in CVE_NEW) {
-		print "CVE_NEW:", f
+		print CVE_NEW[f]
 	}
 	for (f in CVE_CHANGED) {
-		print "CVE_CHANGED:", f
+		print CVE_CHANGED[f]
 	}
 	for (f in CVE_OLD) {
-		print "CVE_FIXED:", f
+		print CVE_OLD[f]
 	}
+}
+
+# Format new/fixed CVEs
+function fmt_cve(prefix, f,           a) {
+	split(f, a, "\t")
+	return sprintf("%-s %-32s %4s %4s %s", prefix, a[1] "-" a[2], a[6], a[7], a[9])
+}
+
+# Format changed CVEs
+function fmt_chg(prefix, old, new,	x, a, b, o, n, i) {
+	x = fmt_cve(prefix, new)
+	a = split(old, o, "\t")
+	b = split(new, n, "\t")
+	if (a != b) {
+		return x "\n\t field count mismatch! "  a " !=" b
+	}
+	# Compare fields and report ones that differ
+	for (i in o) {
+		if (o[i] == n[i]) continue;
+		x = x sprintf("\t%s: %s -> %s", PFX[i], o[i], n[i])
+	}
+	return x
 }

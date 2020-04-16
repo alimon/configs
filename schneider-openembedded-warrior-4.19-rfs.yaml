@@ -126,6 +126,15 @@
     publishers:
         - archive:
             artifacts: 'cve-*.txt'
+        - postbuildscript:
+            builders:
+                - role: SLAVE
+                  build-on: SUCCESS
+                  build-steps:
+                    - shell: |
+                        echo "Hello World"
+                        ls -l ${JENKINS_HOME}/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt
+                        sort -u -r ${JENKINS_HOME}/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt | sed -e "s/\t/\n\t/g" > cve.txt
         - groovy-postbuild:
             script:
                 !include-raw:
@@ -139,10 +148,7 @@
             body: |
                 $DEFAULT_CONTENT
                 
-                CVE changes for rzn1
-                ${FILE,path="/var/jenkins_home/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/rzn1d/axis-label/docker-stretch-amd64/builds/$BUILD_NUMBER/archive/cve-rzn1-snarc.txt"}
-                
-                CVE changes for soca9
-                ${FILE,path="/var/jenkins_home/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/soca9/axis-label/docker-stretch-amd64/builds/$BUILD_NUMBER/archive/cve-snarc-soca9.txt"}
-            attachments:
-                "cve-*.txt"
+                CVE changes since last build
+                ----------------------------
+
+                ${FILE,path="cve.txt"}
