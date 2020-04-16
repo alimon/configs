@@ -63,29 +63,7 @@
         - timeout:
             timeout: 180
     builders:
-        - shell: |
-            #!/bin/bash -xe
-
-            vixl_repo="https://git.linaro.org/arm/vixl.git"
-
-            mkdir -p "${HOME}/bin"
-            export PATH="${HOME}/bin:${PATH}"
-
-            sudo apt-get update && sudo apt-get install -y clang scons
-
-            wget --no-verbose --output-document "${HOME}/bin/cpplint.py" \
-              https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py \
-              && chmod +x "${HOME}/bin/cpplint.py"
-
-            git config --global user.name "vixl-build-bot"
-            git config --global user.email "vixl-build-bot@fake-email.invalid"
-
-            git clone "${vixl_repo}" vixl
-            cd vixl
-            git pull "${vixl_repo}" "${GERRIT_REFSPEC}"
-            ./tools/test.py ${VIXL_TEST_ARGS}
-
-
+        - shell: !include-raw: linaro-art/vixl/presubmit.sh
     publishers:
         - email:
             recipients: 'vishal.bhoj@linaro.org daniel.diaz@linaro.org julien.duraj@linaro.org'
