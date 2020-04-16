@@ -89,15 +89,14 @@
 
                 NUM_THREADS=$((`getconf _NPROCESSORS_ONLN` + 1))
 
-                # Initialise the build environment
                 cd edk2
+                git submodule update --init
+
+                # Initialise the build environment
                 git clean -dxf BaseTools/
                 make -C BaseTools -j $NUM_THREADS
 
                 source edksetup.sh --reconfig
-
-                # pull the OpenSSL sources
-                git submodule update --init --recursive
 
                 cd ${WORKSPACE}
 
@@ -193,4 +192,4 @@
 #              block: true
     publishers:
         - email:
-            recipients: 'ard.biesheuvel@linaro.org leif.lindholm@linaro.org eugene@hp.com'
+            recipients: 'ardb@kernel.org leif@nuviainc.com eugene@nuviainc.com'
