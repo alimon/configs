@@ -11,7 +11,7 @@ export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 
 templates_common_minimal=( dip-image.yaml     )
 templates_common_normal=(  ${templates_common_minimal[@]} dip-image-dev.yaml )
-templates_common_full=(    ${templates_common_normal[@]}  ltp-ptest.yaml     )
+templates_common_full=(    ${templates_common_normal[@]}  ltp-ptest.yaml iperf.yaml )
 
 templates_soca9_minimal=
 templates_soca9_normal=( ${templates_soca9_minimal[@]})

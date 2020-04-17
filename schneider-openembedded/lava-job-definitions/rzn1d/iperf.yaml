@@ -1,0 +1,173 @@
+job_name: SE ${MACHINE} dip-image-dev iperf (wic) ${MANIFEST_BRANCH}-${KERNEL_VERSION} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 100
+  action:
+    minutes: 70
+  connection:
+    minutes: 20
+priority: medium
+visibility: public
+
+metadata:
+  iperf-version: v3
+
+protocols:
+  lava-multinode:
+    roles:
+      server:
+        device_type: rzn1d
+        count: 1
+        timeout:
+          minutes: 30
+      client:
+        device_type: rzn1d
+        count: 1
+        timeout:
+          minutes: 30
+
+actions:
+
+####################
+# Deploy QSPI images
+####################
+- deploy:
+    namespace: dfu-firmware
+    role:
+    - server
+    - client
+    to: tmpfs
+    images:
+      sf_fsbl:
+        image_arg: --alt sf_fsbl --download {sf_fsbl}
+        url: ${FSBL_URL}
+      sf_trustedfw:
+        image_arg: --alt sf_trustedfw --download {sf_trustedfw}
+        url: ${OPTEE_ITB_URL}
+      sf_uboot0:
+        image_arg: --alt sf_uboot0 --download {sf_uboot0}
+        url: ${UBOOT_ITB_URL}
+      sf_uboot1:
+        image_arg: --alt sf_uboot1 --download {sf_uboot1}
+        url: ${UBOOT_ITB_URL}
+
+- command:
+    namespace: dfu-firmware
+    role:
+    - server
+    - client
+    name: set_boot_to_nand
+
+- boot:
+    namespace: dfu-firmware
+    role:
+    - server
+    - client
+    method: dfu
+    timeout:
+      minutes: 10
+
+- command:
+    namespace: test
+    role:
+    - server
+    - client
+    name: set_boot_to_qspi
+
+
+###################
+# dip-image-dev.wic
+###################
+- deploy:
+    namespace: test-wic
+    role:
+    - server
+    - client
+    timeout:
+      minutes: 100
+    to: flasher
+    images:
+      image:
+        url: ${WIC_DEV_IMAGE_URL}
+        compression: bz2
+      layout:
+        url: ${WIC_DEV_BMAP_URL}
+
+
+- boot:
+    namespace: test-wic
+    role:
+    - server
+    - client
+    connection-namespace: dfu-firmware
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - mmc rescan
+    - fatload mmc 0:1 80008000 zimage-rzn1-snarc.bin
+    - if test -e mmc 0:1 zImage-rzn1d400-snarc-bestla.dtb; then fatload mmc 0:1 80f00000 zImage-rzn1d400-snarc-bestla.dtb; else fatload mmc 0:1 80f00000 rzn1d400-snarc-bestla.dtb; fi;
+    - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
+    - bootz 80008000 - 80f00000
+    auto_login:
+      login_prompt: "login:"
+      username: root
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+    transfer_overlay:
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
+      unpack_command: tar --touch -C / -xzf
+
+- test:
+    namespace: test-wic
+    role:
+    - server
+    timeout:
+      minutes: 30
+    definitions:
+    - repository: https://github.com/Linaro/test-definitions.git
+      branch: master
+      from: git
+      path: automated/linux/iperf/iperf-server.yaml
+      name: iperf3-test
+      parameters:
+        SERVER_ETHERNET_DEVICE: eth1
+
+- test:
+    namespace: test-wic
+    role:
+    - client
+    timeout:
+      minutes: 30
+    definitions:
+    - repository: https://github.com/Linaro/test-definitions.git
+      branch: master
+      from: git
+      path: automated/linux/iperf/iperf-client.yaml
+      name: iperf3-test
+      parameters:
+        AFFINITY: "-A 0"
+        REVERSE: "-R"
+        SERVER: lava-client-role
+        # The MSG ID and KEY should be the same as the ones sent by lava-send above
+        MSG_ID: server-ready
+        MSG_KEY: ipaddr
+
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}-${KERNEL_VERSION}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
+
+notify:
+    recipients:
+    - to:
+        method: email
+        email: ryan.harkin@linaro.org
+    criteria:
+        status: incomplete
+    verbosity: verbose
