@@ -133,9 +133,7 @@
                     - SUCCESS
                   build-steps:
                     - shell: |
-                        echo "Hello World"
-                        find ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/ -name cve-rzn1-snarc.txt || true
-                        ls -l ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt || true
+                        echo "Combining CVE listings"
                         sort -u -r ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt | sed -e "s/\t/\n\t/g" > cve.txt
         - groovy-postbuild:
             script:
