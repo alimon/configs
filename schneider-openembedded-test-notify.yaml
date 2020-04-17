@@ -42,24 +42,23 @@
                   build-steps:
                       - shell: 'echo "Hello world"'
                       - shell: './testscript'
-                      - shell: 'echo JENKINS_HOME $JENKINS_HOME'
-                      - shell: 'echo MACHINE $MACHINE'
-                      - shell: 'echo BUILD_NUMBER $BUILD_NUMBER'
-                      - shell: 'echo DISTRO $DISTRO'
-                      - shell: 'echo label $label'
-                      - shell:  'ls -l /var/jenkins_home/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/rzn1d/axis-label/docker-stretch-amd64/builds/18/archive/ || true'
-                      - shell: 'ls -l /var/jenkins_home/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/*/archive/cve*.txt'
-                      - shell: '### find /var/jenkins_home -name cve-rzn1-snarc.txt || true'
+                      - shell: 'set'
                       - shell: 'echo "Goodbye world"'
         - email-ext:
             # Send custom email generated in jenkins job
             recipients: 'ralph.siemsen@linaro.org'
             subject: 'Schneider OpenEmbedded Test Notify'
-            content-type: text
+            content-type: both-html-text
             body: |
+                <pre>
                 Before text
                 ${FILE,path="email.body"}
                 After text
+                </pre>
+                <ul>
+                <li style="background-color: "green">test PASS</li>
+                <li style="background-color: "red">test FAIL</li>
+                </ul>
             success: true
             failure: false
         - email:
