@@ -134,7 +134,7 @@
                   build-steps:
                     - shell: |
                         echo "Combining CVE listings"
-                        sort -u -r ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt | sed -e "s/\t/\n\t/g" > cve.txt
+                        sort -u -r ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt | sed -e 's/^CVE_//' -e "s/\t/\n\t/g" > cve.txt
         - groovy-postbuild:
             script:
                 !include-raw:

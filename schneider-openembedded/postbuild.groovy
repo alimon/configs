@@ -12,14 +12,14 @@ if (manager.build.result == hudson.model.Result.SUCCESS) {
       def cssv2 = matcher.group(2)
       def cssv3 = matcher.group(3)
       def cve = matcher.group(4)
-      map[$pkgver] = "<a href='https://nvd.nist.gov/vuln/detail/${cve}'>${cve}</a> score ${cssv3} in ${pkgver}"
+      map[pkgver] = "<a href='https://nvd.nist.gov/vuln/detail/${cve}'>${cve}</a> score ${cssv3}"
     }
   }
   if(map.size() > 0) {
       def summary = manager.createSummary("warning.gif")
       summary.appendText("New CVEs:<ul>", false)
       map.each {
-          summary.appendText("<li>$it.value</li>", false)
+          summary.appendText("<li>$it.value in $it.key</li>", false)
       }
       summary.appendText("</ul>", false)
   }
