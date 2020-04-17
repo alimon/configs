@@ -40,10 +40,11 @@
                   build-on:
                       - SUCCESS
                   build-steps:
-                      - shell: 'echo "Hello world"'
-                      - shell: './testscript'
-                      - shell: 'set'
-                      - shell: 'echo "Goodbye world"'
+                      - shell: |
+                          echo "Hello world"
+                          ./testscript
+                          set
+                          echo "Goodbye world"
         - email-ext:
             # Send custom email generated in jenkins job
             recipients: 'ralph.siemsen@linaro.org'
@@ -56,8 +57,8 @@
                 After text
                 </pre>
                 <ul>
-                <li style="background-color: "green">test PASS</li>
-                <li style="background-color: "red">test FAIL</li>
+                <li style="background-color: green">test PASS</li>
+                <li style="background-color: red">test FAIL</li>
                 </ul>
             success: true
             failure: false
