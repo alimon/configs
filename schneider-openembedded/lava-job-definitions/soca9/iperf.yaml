@@ -11,6 +11,11 @@ visibility: public
 
 metadata:
   iperf-version: v3
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}-${KERNEL_VERSION}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${PUBLISH_SERVER}${PUB_DEST}
 
 protocols:
   lava-multinode:
@@ -97,14 +102,6 @@ actions:
         # The MSG ID and KEY should be the same as the ones sent by lava-send above
         MSG_ID: server-ready
         MSG_KEY: ipaddr
-
-
-metadata:
-  machine: ${MACHINE}
-  manifest branch: ${MANIFEST_BRANCH}-${KERNEL_VERSION}
-  manifest commit: ${MANIFEST_COMMIT}
-  build url: ${BUILD_URL}
-  build location: ${PUBLISH_SERVER}${PUB_DEST}
 
 notify:
     recipients:
