@@ -27,6 +27,9 @@ BEGIN { RS="" ; FS="\n"; OFS="\t" }
 	if ($1 == "file-native") next;
 	if ($1 ~ /^linux-/) next;
 
+	# Ignore CVEs that are marked as "Patched"
+	if ($4 == "Patched") next;
+
 	# Indexing is done using PKGNAME-VERSION-CVENUM.
 	# Must use all three components to ensure uniqueness.
 	# Tab as separator since dashes occur in components.

@@ -9,10 +9,10 @@ if (manager.build.result == hudson.model.Result.SUCCESS) {
     matcher = pattern.matcher(line)
     if(matcher.matches()) {
       def type = matcher.group(1)
-      def cve = matcher.group(2)
+      def num = matcher.group(2)
       def pkg = matcher.group(3)
       def url = matcher.group(4)
-      cve[type].add("<a href=\"${url}\">${cve}</a> ${pkg}")
+      cve[type].add("<a href=\"${url}\">${num}</a> ${pkg}")
     }
   }
   def summary = manager.createSummary("warning.gif")
