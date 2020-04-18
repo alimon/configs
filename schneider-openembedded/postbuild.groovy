@@ -19,7 +19,7 @@ if (manager.build.result == hudson.model.Result.SUCCESS) {
   cve.each {
     if(it.value.size() > 0) {
       summary.appendText("$it.key CVEs:<ul>", false)
-      it.value..each {
+      it.value.each {
           summary.appendText("<li>$it</li>", false)
       }
       summary.appendText("</ul>", false)
