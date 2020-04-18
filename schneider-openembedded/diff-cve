@@ -48,7 +48,7 @@ END	{
 	for (f in NEW) {
 		if (f in OLD) {
 			if (NEW[f] != OLD[f]) {
-				CVE_CHANGED[f] = fmt_chg("CHG", OLD[f], NEW[f])
+				CVE_CHANGED[f] = fmt_chg("CHANGED", OLD[f], NEW[f])
 			}
 			delete OLD[f]
 		} else {
@@ -56,7 +56,7 @@ END	{
 		}
 	}
 	for (f in OLD) {
-		CVE_OLD[f] = fmt_cve("FIX", OLD[f])
+		CVE_OLD[f] = fmt_cve("FIXED", OLD[f])
 	}
 
 	# Report changes
@@ -74,7 +74,7 @@ END	{
 # Format new/fixed CVEs
 function fmt_cve(prefix, f,           a) {
 	split(f, a, "\t")
-	return sprintf("CVE_%-s %-32s %4s %4s %s", prefix, a[1] "-" a[2], a[6], a[7], a[3])
+	return sprintf("%s\t%s\tscore %s in %s-%s\t%s", prefix, a[3], a[7], a[1], a[2], a[9])
 }
 
 # Format changed CVEs

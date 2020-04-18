@@ -133,8 +133,10 @@
                     - SUCCESS
                   build-steps:
                     - shell: |
-                        echo "Combining CVE listings"
-                        sort -u -r ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt | sed -e 's/^CVE_//' -e "s/\t/\n\t/g" > cve.txt
+                        echo "Combining CVEs"
+                        cat ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt | tr NA AN | sort -u | tr AN NA > cve.txt
+                        echo "HTMLify CVEs"
+                        perl -F'\t' -lane '($type, $cve, $pkg, $url, @rest) = @F; push @{$foo{$type}}, ("<a href=\"$url\">$cve</a> $pkg" . list(@rest)); sub list { return @_ ? join("", "<ul>\n", map("<li>$_</li>\n", @_), "</ul>") : ""} ; END { foreach (reverse sort keys %foo) { print "<b>$_ CVEs</b>", list(@{$foo{$_}}) if @{$foo{$_}} }}' cve.txt > cve.html
         - groovy-postbuild:
             script:
                 !include-raw:
@@ -145,10 +147,7 @@
             recipients: 'ralph.siemsen@linaro.org'
             always: true
             matrix-trigger: only-parent
+            content-type: both-html-text
             body: |
-                $DEFAULT_CONTENT
-                
-                CVE changes since last build
-                ----------------------------
-
-                ${FILE,path="cve.txt"}
+                <pre>$DEFAULT_CONTENT</pre>
+                ${FILE,path="cve.html"}
