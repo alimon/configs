@@ -8,7 +8,7 @@ export PATH="${HOME}/bin:${PATH}"
 echo 'deb http://ports.ubuntu.com/ubuntu-ports xenial main universe' \
   | sudo tee /etc/apt/sources.list
 sudo apt-get update
-sudo apt-get install -y clang scons clang-format-4.0 clang-tidy-4.0
+sudo apt-get install -y clang-4.0 scons clang-format-4.0 clang-tidy-4.0
 
 wget --no-verbose --output-document "${HOME}/bin/cpplint.py" \
   https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
