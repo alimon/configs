@@ -27,44 +27,30 @@
             #!/bin/bash
 
             set -ex
-            echo "This is a test" > email.body
-            echo 'echo "More test" >> email.body' > testscript
-            chmod +x testscript
-            ls -l
-            cat testscript
             pwd
     publishers:
         - postbuildscript:
             builders:
                 - role: MASTER
                   build-on:
-                      - SUCCESS
+                    - SUCCESS
                   build-steps:
-                      - shell: |
-                          echo "Hello world"
-                          ./testscript
-                          set
-                          echo "Goodbye world"
+                    - shell: |
+                        echo "Combining CVEs"
+                        #sort -u ${JENKINS_HOME}/jobs/${JOB_NAME}/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt > cve.txt
+                        sort -u ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/31/archive/cve-*.txt > cve.txt
+                        echo "HTMLify CVEs"
+                        perl -F'\t' -lane '($type, $cve, $pkg, $url, @rest) = @F; push @{$foo{$type}}, ("<a href=\"$url\">$cve</a> $pkg" . list(@rest)); sub list { return @_ ? join("", "<ul>\n", map("<li>$_</li>\n", @_), "</ul>") : ""} ; END { foreach (reverse sort keys %foo) { print "<b>$_ CVEs</b>", list(@{$foo{$_}}) if @{$foo{$_}} }}' cve.txt > cve.html
+                        echo "Summarize CVEs"
+                        printf "NEW=%d CHANGED=%d FIXED=%d\n" `grep NEW cve.txt|wc -l` >cve.sum
         - email-ext:
             # Send custom email generated in jenkins job
             recipients: 'ralph.siemsen@linaro.org'
             subject: 'Schneider OpenEmbedded Test Notify'
-            content-type: both-html-text
             body: |
-                <pre>
-                Before text
-                ${FILE,path="email.body"}
-                After text
-                </pre>
-                <style>
-                .CVE_NEW { background-color: #F88; }
-                .CVE_FIX { background-color: #8F8; }
-                </style>
-                <ul>
-                <li class="CVE_FIX">test PASS</li>
-                <li class="CVE_NEW"">test FAIL</li>
-                </ul>
-            success: true
-            failure: false
+                $DEFAULT_CONTENT
+
+                CVE summary: ${FILE,path="cve.sum"}
+            attachments: "cve.html"
         - email:
              recipients: 'ralph.siemsen@linaro.org'
