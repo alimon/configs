@@ -39,10 +39,15 @@
                         echo "Combining CVEs"
                         #sort -u ${JENKINS_HOME}/jobs/${JOB_NAME}/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt > cve.txt
                         sort -u ${JENKINS_HOME}/jobs/schneider-openembedded-warrior-4.19-rfs/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/31/archive/cve-*.txt > cve.txt
+                        cat cve.txt
                         echo "HTMLify CVEs"
                         perl -F'\t' -lane '($type, $cve, $pkg, $url, @rest) = @F; push @{$foo{$type}}, ("<a href=\"$url\">$cve</a> $pkg" . list(@rest)); sub list { return @_ ? join("", "<ul>\n", map("<li>$_</li>\n", @_), "</ul>") : ""} ; END { foreach (reverse sort keys %foo) { print "<b>$_ CVEs</b>", list(@{$foo{$_}}) if @{$foo{$_}} }}' cve.txt > cve.html
                         echo "Summarize CVEs"
                         printf "NEW=%d CHANGED=%d FIXED=%d\n" `grep NEW cve.txt|wc -l` >cve.sum
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - schneider-openembedded/postbuild.groovy
         - email-ext:
             # Send custom email generated in jenkins job
             recipients: 'ralph.siemsen@linaro.org'
@@ -52,5 +57,6 @@
 
                 CVE summary: ${FILE,path="cve.sum"}
             attachments: "cve.html"
+            success: true
         - email:
              recipients: 'ralph.siemsen@linaro.org'
