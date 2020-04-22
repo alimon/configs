@@ -124,7 +124,7 @@
         #    !include-raw: schneider-openembedded/submit_for_testing.sh
     publishers:
         - archive:
-            artifacts: 'cve-*.txt'
+            artifacts: 'cve-*.txt, base-cve-*.txt'
         - postbuildscript:
             builders:
                 - role: MASTER
@@ -132,10 +132,14 @@
                     - SUCCESS
                   build-steps:
                     - shell: |
-                        echo "Combining CVEs"
+                        echo "<h3>CVE changes since last build</h3>" >cve.html
                         sort -u ${JENKINS_HOME}/jobs/${JOB_NAME}/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt > cve.txt
-                        echo "HTMLify CVEs"
-                        perl -F'\t' -lane '($type, $cve, $pkg, $url, @rest) = @F; push @{$foo{$type}}, ("<a href=\"$url\">$cve</a> $pkg" . list(@rest)); sub list { return @_ ? join("", "<ul>\n", map("<li>$_</li>\n", @_), "</ul>") : ""} ; END { foreach (reverse sort keys %foo) { print "<b>$_ CVEs</b>", list(@{$foo{$_}}) if @{$foo{$_}} }}' cve.txt > cve.html
+                        perl -F'\t' -lane '($type, $cve, $pkg, $url, @rest) = @F; push @{$foo{$type}}, ("<a href=\"$url\">$cve</a> $pkg" . list(@rest)); sub list { return @_ ? join("", "<ul>\n", map("<li>$_</li>\n", @_), "</ul>") : ""} ; END { foreach (reverse sort keys %foo) { print "<b>$_ CVEs</b>", list(@{$foo{$_}}) if @{$foo{$_}} }}' cve.txt >> cve.html
+                        printf "  Since last build: %2d NEW, %2d CHANGED, %2d FIXED\n" `grep -c ^NEW cve.txt` `grep -c ^CHANGED cve.txt` `grep -c ^FIXED cve.txt` > cve.sum
+                        echo "<h3>CVE changes since baseline</h3>" >> cve.html
+                        sort -u ${JENKINS_HOME}/jobs/${JOB_NAME}/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/base-cve-*.txt > cve.txt
+                        perl -F'\t' -lane '($type, $cve, $pkg, $url, @rest) = @F; push @{$foo{$type}}, ("<a href=\"$url\">$cve</a> $pkg" . list(@rest)); sub list { return @_ ? join("", "<ul>\n", map("<li>$_</li>\n", @_), "</ul>") : ""} ; END { foreach (reverse sort keys %foo) { print "<b>$_ CVEs</b>", list(@{$foo{$_}}) if @{$foo{$_}} }}' cve.txt >> cve.html
+                        printf "  Since baseline:   %2d NEW, %2d CHANGED, %2d FIXED\n" `grep -c ^NEW cve.txt` `grep -c ^CHANGED cve.txt` `grep -c ^FIXED cve.txt` >> cve.sum
         - groovy-postbuild:
             script:
                 !include-raw:
@@ -146,7 +150,9 @@
             recipients: 'ralph.siemsen@linaro.org'
             always: true
             matrix-trigger: only-parent
-            content-type: html
             body: |
-                <pre>$DEFAULT_CONTENT</pre>
-                ${FILE,path="cve.html"}
+                $DEFAULT_CONTENT
+
+                CVE summary:
+                ${FILE,path="cve.sum"}
+            attachments: "cve.html"
