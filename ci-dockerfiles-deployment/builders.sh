@@ -15,7 +15,7 @@ git_previous_commit=$(git rev-parse HEAD~1)
 git_commit=$(git rev-parse HEAD)
 files=$(git diff --name-only ${git_previous_commit} ${git_commit})
 echo Changes in: ${files}
-changed_dirs=$(dirname ${files})
+changed_dirs=$(dirname ${files}|sort -u)
 
 update_images=""
 for dir in ${changed_dirs}; do
@@ -31,6 +31,9 @@ for dir in ${changed_dirs}; do
       # ${dir} is one of generic tcwg-base/* directories.  Add dependent
       # images to the list.
       update_images="${update_images} $(dirname $(find . -path "*-${dir_basename}*/build.sh" | sed -e "s#^\./##g"))"
+      ;;
+  ".")
+      continue
       ;;
     *)
       update_images="${update_images} $(dirname $(find ${dir} -name build.sh))"
