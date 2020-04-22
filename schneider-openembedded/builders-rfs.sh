@@ -205,7 +205,14 @@ wget -nv -O diff-cve https://git.linaro.org/ci/job/configs.git/plain/schneider-o
 gawk -f diff-cve cve-${MACHINE}.old cve-${MACHINE}.new | tee ${WORKSPACE}/cve-${MACHINE}.txt
 
 # Same thing, but against arbitrary (but fixed) baseline
-wget -nv -O cve.base https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.2/rzn1d-4.19/dip-image-rzn1-snarc-linaro-rel-2019.09-warrior.2-internal-70.rootfs.cve
+case "${MACHINE}" in
+    *rzn1*)
+	wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.2/rzn1d-4.19/dip-image-rzn1-snarc-linaro-rel-2019.09-warrior.2-internal-70.rootfs.cve
+	;;
+    *soca9*)
+	wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.2/soca9-4.19/dip-image-snarc-soca9-linaro-rel-2019.09-warrior.2-internal-70.rootfs.cve
+	;;
+esac
 gawk -f diff-cve cve-${MACHINE}.base cve-${MACHINE}.new > tee ${WORKSPACE}/base-cve-${MACHINE}.txt
 
 # Debug
