@@ -35,6 +35,10 @@
 
             set -ex
             pwd
+            echo "Get previous"
+            wget -nv -O last.cve https://snapshots.linaro.org//openembedded/schneider/linaro-warrior-4.19/rzn1d/latest/dip/dip-image-rzn1-snarc.rootfs.cve
+            echo "Get baseline"
+            wget -nv -O base.cve https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.2/rzn1d-4.19/dip-image-rzn1-snarc-linaro-rel-2019.09-warrior.2-internal-70.rootfs.cve
     publishers:
         - postbuildscript:
             builders:
@@ -52,10 +56,6 @@
                         echo "Summarize CVEs"
                         printf "NEW=%d CHANGED=%d FIXED=%d\n" `grep NEW cve.txt|wc -l` >cve.sum
 
-                        echo "Get previous"
-                        wget -nv -O last.cve https://snapshots.linaro.org//openembedded/schneider/linaro-warrior-4.19/rzn1d/latest/dip/dip-image-rzn1-snarc.rootfs.cve
-                        echo "Get baseline"
-                        wget -nv -O base.cve https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.2/rzn1d-4.19/dip-image-rzn1-snarc-linaro-rel-2019.09-warrior.2-internal-70.rootfs.cve
         - groovy-postbuild:
             script:
                 !include-raw:
