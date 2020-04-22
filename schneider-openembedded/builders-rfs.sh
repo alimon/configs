@@ -213,7 +213,7 @@ case "${MACHINE}" in
 	wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.2/soca9-4.19/dip-image-snarc-soca9-linaro-rel-2019.09-warrior.2-internal-70.rootfs.cve
 	;;
 esac
-gawk -f diff-cve cve-${MACHINE}.base cve-${MACHINE}.new > tee ${WORKSPACE}/base-cve-${MACHINE}.txt
+gawk -f diff-cve cve-${MACHINE}.base cve-${MACHINE}.new > ${WORKSPACE}/base-cve-${MACHINE}.txt
 
 # Debug
 pwd
