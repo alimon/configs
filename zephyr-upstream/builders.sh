@@ -114,6 +114,7 @@ time ${ZEPHYR_BASE}/scripts/sanitycheck \
   --outdir ${OUTDIR} \
   --enable-slow \
   -x=USE_CCACHE=${USE_CCACHE} \
+  --jobs 2 \
   ${SANITYCHECK_EXTRA}
 
 # Put sanitycheck report where rsync below will pick it up.
