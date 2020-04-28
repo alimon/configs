@@ -187,6 +187,12 @@ protocols:
     timeout:
       minutes: 15
     method: fastboot
+{% if fastboot_commands is not undefined %}
+    commands:
+{% for fcmd in fastboot_commands %}
+      - {{ fcmd }}
+{% endfor %}
+{% endif %}
 {% if pre_os_command == true %}
     protocols:
       lava-lxc:
