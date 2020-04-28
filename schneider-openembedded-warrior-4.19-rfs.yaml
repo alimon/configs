@@ -144,19 +144,14 @@
                   - schneider-openembedded/postbuild.groovy
         - email-ext:
             recipients: 'ralph.siemsen@linaro.org'
-            success: false
-            failure: true
+            always: true
             matrix-trigger: only-parent
-            body: |
-                $DEFAULT_CONTENT
         - email-ext:
             recipients: 'ralph.siemsen@linaro.org'
             success: true
             failure: false
             matrix-trigger: only-parent
             body: |
-                $DEFAULT_CONTENT
-
                 CVE summary:
                 ${FILE,path="cve.sum"}
             attachments: "cve.html"
