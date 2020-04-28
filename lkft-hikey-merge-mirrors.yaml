@@ -1,5 +1,5 @@
 - job:
-    name: lkft-hikey-merge-mirror-4.14
+    name: lkft-hikey-merge-mirrors
     project-type: freestyle
     defaults: global
     properties:
@@ -23,21 +23,23 @@
             name: SRCREV_kernel
         - string:
             name: MAKE_KERNELVERSION
-    disabled: true
+    disabled: false
     node: docker-xenial-android-lkft
-    display-name: 'LKFT - merge changes from mirror-android-4.14 to android-hikey-linaro-4.14-lkft'
+    display-name: 'LKFT - merge changes from mirror branches for hikey-linaro kernels'
     scm:
         - git:
             remotes:
                 - linaro:
                     url: ssh://ci-bot@android-review.linaro.org:29418/kernel/hikey-linaro.git
-                    refspec: +refs/heads/android-hikey-linaro-4.14-lkft:refs/remotes/linaro/android-hikey-linaro-4.14-lkft
+                    refspec: +refs/heads/android-hikey-linaro-4.14-stable-lkft:refs/remotes/linaro/android-hikey-linaro-4.14-stable-lkft +refs/heads/android-hikey-linaro-4.19lkft:refs/remotes/linaro/android-hikey-linaro-4.19-lkft +refs/heads/android-hikey-linaro-4.19-stable-lkft:refs/remotes/linaro/android-hikey-linaro-4.19-stable-lkft
                     credentials-id: 'CI_BOT_SSH_KEY'
                 - aosp:
                     url: https://android.googlesource.com/kernel/hikey-linaro
-                    refspec: +refs/heads/mirror-android-4.14:refs/remotes/aosp/mirror-android-4.14
+                    refspec: +refs/heads/mirror-android-4.14-stable:refs/remotes/aosp/mirror-android-4.14-stable +refs/heads/mirror-android-4.19:refs/remotes/aosp/mirror-android-4.19 +refs/heads/mirror-android-4.19-stable:refs/remotes/aosp/mirror-android-4.19-stable
             branches:
-                - aosp/mirror-android-4.14
+                - aosp/mirror-android-4.14-stable
+                - aosp/mirror-android-4.19
+                - aosp/mirror-android-4.19-stable
             git-config-name: 'Linaro CI'
             git-config-email: 'ci-bot@linaro.org'
             skip-tag: true
@@ -63,9 +65,23 @@
             git config --global user.name "Linaro CI"
             git config --global user.email "ci-bot@linaro.org"
 
-            target_branch=android-hikey-linaro-4.14-lkft
+            case "X${KERNEL_BRANCH}" in
+                "Xmirror-android-4.14-stable")
+                    target_branch="android-hikey-linaro-4.14-stable-lkft"
+                    ;;
+                "Xmirror-android-4.19")
+                    target_branch="android-hikey-linaro-4.19-lkft"
+                    ;;
+                "Xmirror-android-4.19-stable")
+                    target_branch="android-hikey-linaro-4.19-stable-lkft"
+                    ;;
+                "X*")
+                    target_branch=""
+                    ;;
+            esac
+
             git checkout -B ${target_branch} linaro/${target_branch}
-            git merge --no-edit aosp/mirror-android-4.14
+            git merge --no-edit aosp/${KERNEL_BRANCH}
             # push to the remote branch
             git push linaro HEAD:${target_branch}
 

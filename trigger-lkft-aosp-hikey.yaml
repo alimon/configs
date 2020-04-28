@@ -22,8 +22,9 @@
                     url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
                     refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
             branches:
-              - aosp-hikey/mirror-android-4.14
+              - aosp-hikey/mirror-android-4.14-stable
               - aosp-hikey/mirror-android-4.19
+              - aosp-hikey/mirror-android-4.19-stable
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -33,7 +34,7 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}'
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}-${GIT_BRANCH#aosp-hikey/}'
     builders:
         - shell: |
             #!/bin/bash -ex
@@ -46,7 +47,7 @@
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
 
-            params=lkft-${KERNEL_BRANCH}.txt
+            params=lkft-parameters.txt
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
             echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
@@ -54,7 +55,5 @@
             cat $params
 
         - trigger-builds:
-            - project: lkft-hikey-merge-mirror-4.14
-              property-file: lkft-mirror-android-4.14.txt
-            - project: lkft-hikey-merge-mirror-4.19
-              property-file: lkft-mirror-android-4.19.txt
+            - project: lkft-hikey-merge-mirrors
+              property-file: lkft-parameters.txt
