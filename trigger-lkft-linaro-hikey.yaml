@@ -22,8 +22,9 @@
                     url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
                     refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
             branches:
-              - linaro-hikey/android-hikey-linaro-4.14-lkft
+              - linaro-hikey/android-hikey-linaro-4.14-stable-lkft
               - linaro-hikey/android-hikey-linaro-4.19-lkft
+              - linaro-hikey/android-hikey-linaro-4.19-stable-lkft
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -33,7 +34,7 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}'
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}-${GIT_BRANCH#linaro-hikey/}'
     builders:
         - shell: |
             #!/bin/bash -ex
@@ -62,10 +63,53 @@
             echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
             echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
 
+            build_configs_4_14_stable="lkft-hikey-aosp-master-4.14-stable-lkft lkft-hikey960-aosp-master-4.14-stable-lkft"
+            build_configs_4_19="lkft-hikey-aosp-master-4.19-lkft lkft-hikey960-aosp-master-4.19-lkft"
+            build_configs_4_19_stable="lkft-hikey-aosp-master-4.19-stable-lkft lkft-hikey960-aosp-master-4.19-stable-lkft"
+
+            build_configs=""
+            case "X${KERNEL_BRANCH}" in
+                "Xandroid-hikey-linaro-4.14-stable-lkft")
+                    build_configs="${build_configs_4_14_stable}"
+                    ;;
+                "Xandroid-hikey-linaro-4.19-lkft")
+                    build_configs="${build_configs_4_19}"
+                    ;;
+                "Xandroid-hikey-linaro-4.19-stable-lkft")
+                    build_configs="${build_configs_4_19_stable}"
+                    ;;
+                "X*")
+                    build_configs=""
+                    ;;
+            esac
+
+            rm -fr params_*.txt
+            for build_config in ${build_configs}; do
+                f_params="params_${KERNEL_BRANCH}-${build_config}.txt"
+
+                cat << __EOF__ > ${f_params}
+            ANDROID_BUILD_CONFIG=${build_config}
+            KERNEL_DESCRIBE=${KERNEL_DESCRIBE}
+            KERNEL_BRANCH=${KERNEL_BRANCH}
+            SRCREV_kernel=${SRCREV_kernel}
+            MAKE_KERNELVERSION=${MAKE_KERNELVERSION}
+            __EOF__
+
+                cat ${f_params}
+            done
+
         - trigger-builds:
             - project: lkft-api-callbacks
               property-file: all-kernels.txt
-            - project: lkft-hikey-aosp-master-4.14-lkft
-              property-file: lkft-android-hikey-linaro-4.14-lkft.txt
-            - project: lkft-hikey-aosp-master-4.19-lkft
-              property-file: lkft-android-hikey-linaro-4.19-lkft.txt
+            - project: lkft-generic-mirror-build
+              property-file: params_android-hikey-linaro-4.14-stable-lkft_lkft-hikey-aosp-master-4.14-stable-lkft.txt
+            - project: lkft-generic-mirror-build
+              property-file: params_android-hikey-linaro-4.14-stable-lkft_lkft-hikey960-aosp-master-4.14-stable-lkft.txt
+            - project: lkft-generic-mirror-build
+              property-file: params_android-hikey-linaro-4.19-lkft_lkft-hikey-aosp-master-4.19-lkft.txt
+            - project: lkft-generic-mirror-build
+              property-file: params_android-hikey-linaro-4.19-lkft_lkft-hikey960-aosp-master-4.19-lkft.txt
+            - project: lkft-generic-mirror-build
+              property-file: params_android-hikey-linaro-4.19-stable-lkft_lkft-hikey-aosp-master-4.19-stable-lkft.txt
+            - project: lkft-generic-mirror-build
+              property-file: params_android-hikey-linaro-4.19-stable-lkft_lkft-hikey960-aosp-master-4.19-stable-lkft.txt

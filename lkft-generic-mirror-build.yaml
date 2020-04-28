@@ -1,5 +1,5 @@
 - job:
-    name: lkft-hikey-aosp-master-4.19-lkft
+    name: lkft-generic-mirror-build
     project-type: freestyle
     defaults: global
     properties:
@@ -20,27 +20,24 @@
             default: lkft
         - string:
             name: ANDROID_BUILD_CONFIG
-            default: 'lkft-hikey-aosp-master-4.19-lkft lkft-hikey960-aosp-master-4.19-lkft'
+            default: ''
         - string:
             name: KERNEL_DESCRIBE
+        - string:
+            name: KERNEL_BRANCH
         - string:
             name: SRCREV_kernel
         - string:
             name: MAKE_KERNELVERSION
-        - string:
-            name: KERNEL_BRANCH
-    disabled: true
+    disabled: false
     node: docker-xenial-android-lkft
-    display-name: 'LKFT - HiKey/HiKey960 aosp master builds with kernel android-hikey-linaro-4.19-lkft'
+    display-name: 'Generic CI Job for lkft builds'
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${ENV,var="KERNEL_DESCRIBE"}-${ENV,var="MAKE_KERNELVERSION"}'
+            name: '#${BUILD_NUMBER}-${KERNEL_DESCRIBE}-${KERNEL_BRANCH}-${ANDROID_BUILD_CONFIG}'
         - timeout:
             timeout: 500
-        - ssh-agent-credentials:
-            users:
-                - 'AOSP_COMMIT_BOT_KEY'
         - credentials-binding:
             - text:
                 credential-id: QA_REPORTS_TOKEN
@@ -71,6 +68,14 @@
                build-steps:
                  - shell:
                      !include-raw: lkft/common/postbuildscript-v2.sh
+        - postbuildscript:
+           builders:
+             - role: SLAVE
+               build-on:
+                 - FAILURE
+               build-steps:
+                 - shell:
+                     !include-raw: lkft/common/postbuildscript-v2.sh
         - logparser:
             parse-rules: '/var/jenkins_home/userContent/android.parse'
             unstable-on-warning: false
@@ -82,7 +87,7 @@
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[CI] HiKey/HiKey960 android-hikey-linaro-4.19-lkft builds: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
+            subject: '[CI] LKFT generic build for mirror kernels: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
