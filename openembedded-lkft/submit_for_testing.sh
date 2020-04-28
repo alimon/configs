@@ -210,38 +210,6 @@ MIGRATED=(
   linux-stable-rc-5.4-oe::x86
   linux-stable-rc-5.5-oe::x86
   linux-stable-rc-5.6-oe::x86
-  linux-mainline-oe::qemu_arm
-  linux-next-oe::qemu_arm
-  linux-stable-rc-4.9-oe::qemu_arm
-  linux-stable-rc-4.14-oe::qemu_arm
-  linux-stable-rc-4.19-oe::qemu_arm
-  linux-stable-rc-5.4-oe::qemu_arm
-  linux-stable-rc-5.5-oe::qemu_arm
-  linux-stable-rc-5.6-oe::qemu_arm
-  linux-mainline-oe::qemu_arm64
-  linux-next-oe::qemu_arm64
-  linux-stable-rc-4.9-oe::qemu_arm64
-  linux-stable-rc-4.14-oe::qemu_arm64
-  linux-stable-rc-4.19-oe::qemu_arm64
-  linux-stable-rc-5.4-oe::qemu_arm64
-  linux-stable-rc-5.5-oe::qemu_arm64
-  linux-stable-rc-5.6-oe::qemu_arm64
-  linux-mainline-oe::qemu_i386
-  linux-next-oe::qemu_i386
-  linux-stable-rc-4.9-oe::qemu_i386
-  linux-stable-rc-4.14-oe::qemu_i386
-  linux-stable-rc-4.19-oe::qemu_i386
-  linux-stable-rc-5.4-oe::qemu_i386
-  linux-stable-rc-5.5-oe::qemu_i386
-  linux-stable-rc-5.6-oe::qemu_i386
-  linux-mainline-oe::qemu_x86_64
-  linux-next-oe::qemu_x86_64
-  linux-stable-rc-4.9-oe::qemu_x86_64
-  linux-stable-rc-4.14-oe::qemu_x86_64
-  linux-stable-rc-4.19-oe::qemu_x86_64
-  linux-stable-rc-5.4-oe::qemu_x86_64
-  linux-stable-rc-5.5-oe::qemu_x86_64
-  linux-stable-rc-5.6-oe::qemu_x86_64
 )
 
 this_combo="${QA_SERVER_PROJECT}::${DEVICE_TYPE}"
