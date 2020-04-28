@@ -54,7 +54,12 @@
                 #!/bin/bash
                 set -ex
 
-                ./jenkins-scripts/docker-run.sh -- ./jenkins-scripts/sanity-check.sh
+                shellcheck --version
+
+                # Shellcheck source= directives are relative to
+                # the CWD, so run from inside the folder.
+                cd jenkins-scripts
+                ./docker-run.sh -- ./sanity-check.sh
             # Aka some files had issues
             # Any other non-zero means we called shellcheck incorrectly
             unstable-return: 1
