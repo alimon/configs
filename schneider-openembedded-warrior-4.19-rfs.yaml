@@ -134,19 +134,8 @@
                   build-on:
                     - SUCCESS
                   build-steps:
-                    - shell: |
-                        echo "<h1>CVE changes</h1>" >cve.html
-                        echo "<p>Submodule update strategy: <pre>${SUBMODULES}</pre>.</p>" >> cve.html
-                        echo "<h2>Since last build</h2>" >>cve.html
-                        sort -u ${JENKINS_HOME}/jobs/${JOB_NAME}/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/cve-*.txt > cve.txt
-                        perl -F'\t' -lane '($type, $cve, $pkg, $url, @rest) = @F; push @{$foo{$type}}, ("<a href=\"$url\">$cve</a> $pkg" . list(@rest)); sub list { return @_ ? join("", "<ul>\n", map("<li>$_</li>\n", @_), "</ul>") : ""} ; END { foreach (reverse sort keys %foo) { print "<b>$_ CVEs</b>", list(@{$foo{$_}}) if @{$foo{$_}} }}' cve.txt >> cve.html
-                        printf "  - since last build: %2d NEW, %2d CHANGED, %2d FIXED\n" `grep -c ^NEW cve.txt` `grep -c ^CHANGED cve.txt` `grep -c ^FIXED cve.txt` > cve.sum
-                        echo "<h2>Since baseline</h2>" >> cve.html
-                        sort -u ${JENKINS_HOME}/jobs/${JOB_NAME}/configurations/axis-DISTRO/dip/axis-MACHINE/*/axis-label/docker-stretch-amd64/builds/${BUILD_NUMBER}/archive/base-cve-*.txt > cve.txt
-                        perl -F'\t' -lane '($type, $cve, $pkg, $url, @rest) = @F; push @{$foo{$type}}, ("<a href=\"$url\">$cve</a> $pkg" . list(@rest)); sub list { return @_ ? join("", "<ul>\n", map("<li>$_</li>\n", @_), "</ul>") : ""} ; END { foreach (reverse sort keys %foo) { print "<b>$_ CVEs</b>", list(@{$foo{$_}}) if @{$foo{$_}} }}' cve.txt >> cve.html
-                        printf "  - since baseline:   %2d NEW, %2d CHANGED, %2d FIXED\n" `grep -c ^NEW cve.txt` `grep -c ^CHANGED cve.txt` `grep -c ^FIXED cve.txt` >> cve.sum
-                        printf "  - submodule update strategy was ${SUBMODULES}\n" >> cve.sum
-                        printf "  - see attached report for details\n" >> cve.sum
+                    - shell:
+                        !include-raw: schneider-openembedded/cve-summary.sh
         - groovy-postbuild:
             script:
                 !include-raw:
@@ -155,7 +144,15 @@
                   - schneider-openembedded/postbuild.groovy
         - email-ext:
             recipients: 'ralph.siemsen@linaro.org'
-            always: true
+            success: false
+            failure: true
+            matrix-trigger: only-parent
+            body: |
+                $DEFAULT_CONTENT
+        - email-ext:
+            recipients: 'ralph.siemsen@linaro.org'
+            success: true
+            failure: false
             matrix-trigger: only-parent
             body: |
                 $DEFAULT_CONTENT
