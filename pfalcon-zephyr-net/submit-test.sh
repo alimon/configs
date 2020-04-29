@@ -27,12 +27,12 @@ BASE="${ARTIFACT_URL}/samples/net/sockets"
 IMAGE_URL="${BASE}/dumb_http_server/sample.net.sockets.dumb_http_server/zephyr/zephyr.bin"
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-ping-frdm_k64f.job"
 yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
-python3 $dir/../lite-common/lava-submit.py lava.job
+python3 $dir/../../lite-build-tools/lava_submit.py lava.job
 
 IMAGE_URL="${BASE}/dumb_http_server/sample.net.sockets.dumb_http_server/zephyr/zephyr.bin"
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-http-ab-frdm_k64f.job"
 yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
-python3 $dir/../lite-common/lava-submit.py lava.job
+python3 $dir/../../lite-build-tools/lava_submit.py lava.job
 
 IMAGE_URL="${BASE}/dumb_http_server_mt/sample.net.sockets.dumb_http_server_mt/zephyr/zephyr.bin"
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-http-ab-frdm_k64f.job"
