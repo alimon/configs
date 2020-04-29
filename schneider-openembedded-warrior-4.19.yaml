@@ -126,12 +126,34 @@
         - shell:
             !include-raw: schneider-openembedded/submit_for_testing.sh
     publishers:
+        - archive:
+            artifacts: 'cve-*.txt, base-cve-*.txt'
+        - postbuildscript:
+            builders:
+                - role: MASTER
+                  build-on:
+                    - SUCCESS
+                  build-steps:
+                    - shell:
+                        !include-raw: schneider-openembedded/cve-summary.sh
         - groovy-postbuild:
             script:
                 !include-raw:
                   - rpb-openembedded/postbuild.groovy
                   - openembedded-lkft/postbuild.groovy
+                  - schneider-openembedded/postbuild.groovy
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, ralph.siemsen@linaro.org, ryan.harkin@linaro.org'
             always: true
             matrix-trigger: only-parent
+        - email-ext:
+            recipients: 'ralph.siemsen@linaro.org, ryan.harkin@linaro.org'
+            success: true
+            failure: false
+            matrix-trigger: only-parent
+            body: |
+                $DEFAULT_CONTENT
+
+                CVE summary:
+                ${FILE,path="cve.sum"}
+            attachments: "cve.html"

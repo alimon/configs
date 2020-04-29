@@ -211,6 +211,31 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 # from snapshots.linaro.org by subsequent builds using a known URL.
 cp ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}-*.rootfs.cve ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}.rootfs.cve
 
+### Begin CVE check
+
+cp ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}-*.rootfs.cve cve-${MACHINE}.new
+
+# Fetch previous CVE report
+LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
+wget -nv -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve
+
+# Do diffs between old and current CVE report.
+wget -nv -O diff-cve https://git.linaro.org/ci/job/configs.git/plain/schneider-openembedded/diff-cve
+gawk -f diff-cve cve-${MACHINE}.old cve-${MACHINE}.new | tee ${WORKSPACE}/cve-${MACHINE}.txt
+
+# Same thing, but against arbitrary (but fixed) baseline
+case "${MACHINE}" in
+    *rzn1*)
+	wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.2/rzn1d-4.19/dip-image-rzn1-snarc-linaro-rel-2019.09-warrior.2-internal-70.rootfs.cve
+	;;
+    *soca9*)
+	wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.2/soca9-4.19/dip-image-snarc-soca9-linaro-rel-2019.09-warrior.2-internal-70.rootfs.cve
+	;;
+esac
+gawk -f diff-cve cve-${MACHINE}.base cve-${MACHINE}.new > ${WORKSPACE}/base-cve-${MACHINE}.txt
+
+### End CVE check
+
 # FIXME: IMAGE_FSTYPES_remove doesn't work
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.rootfs.iso \
