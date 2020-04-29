@@ -87,11 +87,6 @@ git log -1
 git submodule init
 git submodule update
 
-if [[ ${MANIFEST_BRANCH} == linaro-* ]];
-then
-	git submodule update --remote sources/meta-backports  sources/meta-dip-base
-fi
-
 # the setup-environment will create auto.conf and site.conf
 # make sure we get rid of old config.
 # let's remove the previous TMPDIR as well.
@@ -114,6 +109,19 @@ case "${MACHINE}" in
     MACHINE=snarc-soca9
     ;;
 esac
+
+# SUBMODULES is set to:
+#	none		no update
+#	''		update default set in setup-env...
+#	all		tell setup-env... to update all submodules
+#	'<something>'	pass the variable to submodule update
+if [[ ${MANIFEST_BRANCH} == linaro-* ]];
+then
+	if [[ "${SUBMODULES}" != "none" ]]; then
+	  ./setup-environment -s build-${machine_orig}/
+	fi
+fi
+
 source ./setup-environment build-${machine_orig}/
 
 ln -s ${HOME}/srv/oe/downloads
@@ -215,12 +223,6 @@ case "${MACHINE}" in
 esac
 gawk -f diff-cve cve-${MACHINE}.base cve-${MACHINE}.new > ${WORKSPACE}/base-cve-${MACHINE}.txt
 
-# Debug
-pwd
-ls -l
-ls -l /srv/oe
-ls -l ${WORKSPACE}
-
 exit 0
 
 ##################
@@ -238,6 +240,10 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.txt
 find ${DEPLOY_DIR_IMAGE} -type l -delete
 #DEL mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 #DEL cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
+
+# Generate CVE listing with a fixed filename, so it can be retrieved
+# from snapshots.linaro.org by subsequent builds using a known URL.
+cp ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}-*.rootfs.cve ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}.rootfs.cve
 
 # FIXME: IMAGE_FSTYPES_remove doesn't work
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
