@@ -51,7 +51,7 @@
             OLD_PERSIST=$PERSIST-old
 
             # Creating all maintains idempotency.
-            mkdir -p $NEW_PERSIST $OLD_PERSIST $PERSIST
+            mkdir -v -p $NEW_PERSIST $OLD_PERSIST $PERSIST
 
             JDK8u=jdk8u-server-release-1804
             JDK10=jdk10-server-release-1804
@@ -60,7 +60,7 @@
             JDK13=OpenJDK13U-jdk_aarch64_linux_hotspot_13_33.tar.gz
             JDK14=jdk14.tar.gz
 
-            rm -rf jdk*
+            rm -vrf jdk*
             wget -N \
                  http://openjdk.linaro.org/releases/${JDK8u}.tar.xz \
                  http://openjdk.linaro.org/releases/${JDK10}.tar.xz \
@@ -69,19 +69,19 @@
                  http://openjdk.linaro.org/releases/${JDK13} \
                  http://openjdk.linaro.org/releases/${JDK14}
 
-            tar Jxf ${JDK8u}.tar.xz
-            tar Jxf ${JDK10}.tar.xz
-            tar Jxf ${JDK11}.tar.xz
-            tar Jxf ${JDK12}.tar.xz
-            tar xzf ${JDK13}
-            tar xzf ${JDK14}
+            tar -vJxf ${JDK8u}.tar.xz
+            tar -vJxf ${JDK10}.tar.xz
+            tar -vJxf ${JDK11}.tar.xz
+            tar -vJxf ${JDK12}.tar.xz
+            tar -vxzf ${JDK13}
+            tar -vxzf ${JDK14}
 
-            mv ${JDK8u} $NEW_PERSIST/jdk8u
-            mv ${JDK10} $NEW_PERSIST/jdk10
-            mv ${JDK11} $NEW_PERSIST/jdk11
-            mv ${JDK12} $NEW_PERSIST/jdk12
-            mv jdk-13+33 $NEW_PERSIST/jdk13
-            mv jdk14 $NEW_PERSIST/jdk14
+            mv -v ${JDK8u} $NEW_PERSIST/jdk8u
+            mv -v ${JDK10} $NEW_PERSIST/jdk10
+            mv -v ${JDK11} $NEW_PERSIST/jdk11
+            mv -v ${JDK12} $NEW_PERSIST/jdk12
+            mv -v jdk-13+33 $NEW_PERSIST/jdk13
+            mv -v jdk14 $NEW_PERSIST/jdk14
 
             mv openjdk8-hadoop-LCA14.tar.gz $NEW_PERSIST
             mv SPECjbb2015.tgz $NEW_PERSIST
@@ -89,9 +89,9 @@
 
             # Remove the old persist, make the current one the old, and the
             # new one the current one.
-            rm -rf $OLD_PERSIST
-            mv $PERSIST $OLD_PERSIST
-            mv $NEW_PERSIST $PERSIST
+            rm -vrf $OLD_PERSIST
+            mv -v $PERSIST $OLD_PERSIST
+            mv -v $NEW_PERSIST $PERSIST
     publishers:
         - email:
             recipients: 'stuart.monteith@linaro.org'
