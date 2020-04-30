@@ -77,16 +77,16 @@ def build_only():
             data = yaml.safe_load(f)
 
         try:
-            testcase_dir = os.path.dirname(testcase_yaml)
+            testcase_dir = os.path.dirname(testcase_yaml).split("/", 1)[-1]
             # Example: tests/bluetooth/init/testcase.yaml
             if 'common' in data.keys() and data['common'].get('build_only'):
                 for test in data['tests'].keys():
-                    build_only_tests.append(os.path.join(testcase_dir, test, 'zephyr.bin'))
+                    build_only_tests.append(os.path.join(testcase_dir, test, 'zephyr/zephyr.bin'))
             else:
                 # Eaxmple: tests/drivers/build_all/testcase.yaml
                 for test, properties in data['tests'].items():
                     if properties.get('build_only'):
-                        build_only_tests.append(os.path.join(testcase_dir, test, 'zephyr.bin'))
+                        build_only_tests.append(os.path.join(testcase_dir, test, 'zephyr/zephyr.bin'))
         except KeyError as e:
             print('ERROR: {} is missing in {}'.format(str(e), testcase_yaml))
 
