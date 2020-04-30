@@ -27,15 +27,9 @@
     triggers:
         - gerrit:
             server-name: 'review.linaro.org'
-            silent: true
-            # Initially this will be very noisy, don't vote at all
-            skip-vote:
-                successful: true
-                failed: true
-                unstable: true
-                notbuilt: true
             trigger-on:
-                - patchset-created-event
+                - patchset-created-event:
+                    exclude-drafts: true
             projects:
                 - project-compare-type: 'PLAIN'
                   project-pattern: 'toolchain/jenkins-scripts'
