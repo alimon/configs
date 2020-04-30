@@ -43,6 +43,7 @@ case "${MACHINE}" in
       export WLAN_TIME_DELAY="0s"
       export ETH_DEVICE="eth0"
     elif [ ${MACHINE} = "sdm845-db845c" ]; then
+      export LAVA_SERVER="${STAGING_LAVA_SERVER}"
       export LAVA_DEVICE_TYPE="dragonboard-845c"
 
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
