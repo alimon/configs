@@ -44,8 +44,6 @@ elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
     export WLAN_TIME_DELAY="15s"
     export ETH_DEVICE="enP2p1s0"
 elif [ "${DEVICE_TYPE}" = "dragonboard-845c" ]; then
-    export LAVA_SERVER="${STAGING_LAVA_SERVER}"
-
     export WLAN_DEVICE="wlan0"
     export WLAN_TIME_DELAY="0s"
     export ETH_DEVICE="eth0"
