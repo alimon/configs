@@ -79,6 +79,10 @@ protocols:
         apply-overlay: true
 {% endif %}
 {% if rootfs == true %}
+{% if partition == true %}
+      "{{ partition_label }}":
+        url: {{ PARTITION_URL }}
+{% endif %}
       {{ rootfs_label }}:
         url: {{ROOTFS_URL}}
         compression: {{ROOTFS_URL_COMP}}
@@ -162,7 +166,7 @@ protocols:
 {% if rootfs == true %}
 {% if partition == true %}
       "{{ partition_label }}":
-        url: {{ PARTITION_URL }}
+        url: lxc:///{{ LXC_PARTITION_FILE }}
 {% endif %}
       {{ rootfs_label }}:
         url: lxc:///{{LXC_ROOTFS_FILE}}
