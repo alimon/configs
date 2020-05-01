@@ -4,6 +4,8 @@
 {% if install_fastboot is undefined %}{% set install_fastboot = true %}{% endif %}
 {% if rootfs is undefined %}{% set rootfs = true %}{% endif %}
 {% if rootfs_label is undefined %}{% set rootfs_label = 'rootfs' %}{% endif %}
+{% if partition is undefined %}{% set partition = false %}{% endif %}
+{% if partition_label is undefined %}{% set partition_label = 'partition:0' %}{% endif %}
 {% if pre_power_command is undefined %}{% set pre_power_command = true %}{% endif %}
 {% if pre_os_command is undefined %}{% set pre_os_command = true %}{% endif %}
 {% if auto_login is undefined %}{% set auto_login = true %}{% endif %}
@@ -158,6 +160,10 @@ protocols:
       boot:
         url: lxc:///{{LXC_BOOT_FILE}}
 {% if rootfs == true %}
+{% if partition == true %}
+      "{{ partition_label }}":
+        url: {{ PARTITION_URL }}
+{% endif %}
       {{ rootfs_label }}:
         url: lxc:///{{LXC_ROOTFS_FILE}}
         apply-overlay: true
