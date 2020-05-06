@@ -4,9 +4,28 @@
       - tk1:
           results_top: tk1_32
           image_arch: armhf
+          boards:
+            - tcwg-bmk-tk1-01
+            - tcwg-bmk-tk1-02
+            - tcwg-bmk-tk1-03
+            - tcwg-bmk-tk1-04
+            - tcwg-bmk-tk1-05
+            - tcwg-bmk-tk1-06
+            - tcwg-bmk-tk1-07
+            - tcwg-bmk-tk1-08
+            - tcwg-bmk-tk1-09
       - tx1:
           results_top: tx1_64
           image_arch: arm64
+          boards:
+            - tcwg-bmk-tx1-01
+            - tcwg-bmk-tx1-02
+            - tcwg-bmk-tx1-04
+            - tcwg-bmk-tx1-05
+            - tcwg-bmk-tx1-06
+            - tcwg-bmk-tx1-07
+            - tcwg-bmk-tx1-08
+            - tcwg-bmk-tx1-09
     jobs:
       - 'tcwg-benchmark-{hw}'
 
@@ -86,6 +105,8 @@
             choices:
               - parallel9x1
               - parallel9x4
+              - parallel8x1
+              - parallel8x4
               - parallel3x3
               - parallel3x1
               - serial1
@@ -154,15 +175,7 @@
             type: slave
             name: label
             values:
-                - tcwg-bmk-{hw}-01
-                - tcwg-bmk-{hw}-02
-                - tcwg-bmk-{hw}-03
-                - tcwg-bmk-{hw}-04
-                - tcwg-bmk-{hw}-05
-                - tcwg-bmk-{hw}-06
-                - tcwg-bmk-{hw}-07
-                - tcwg-bmk-{hw}-08
-                - tcwg-bmk-{hw}-09
+              {boards}
     execution-strategy:
         sequential: false
     wrappers:
