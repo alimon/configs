@@ -133,6 +133,10 @@
                 - role: MASTER
                   build-on:
                     - SUCCESS
+                    - UNSTABLE
+                    - FAILURE
+                    - NOT_BUILT
+                    - ABORTED
                   build-steps:
                     - shell:
                         !include-raw: schneider-openembedded/cve-summary.sh
@@ -146,12 +150,9 @@
             recipients: 'ralph.siemsen@linaro.org'
             always: true
             matrix-trigger: only-parent
-        - email-ext:
-            recipients: 'ralph.siemsen@linaro.org'
-            success: true
-            failure: false
-            matrix-trigger: only-parent
             body: |
+                $DEFAULT_CONTENT
+
                 CVE summary:
                 ${FILE,path="cve.sum"}
             attachments: "cve.html"
