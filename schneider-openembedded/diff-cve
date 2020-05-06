@@ -22,13 +22,18 @@ BEGIN { RS="" ; FS="\n"; OFS="\t" }
 
 	# Hack: exclude specific packages:
 	# bzip2-native and file-native are ASSUME_PROVIDED by Yocto.
+	# u-boot-rzn1-* are duplicates of u-boot-rzn1.
 	# linux-* because NVD doesn't track LTS branches sensibly.
 	if ($1 == "bzip2-native") next;
 	if ($1 == "file-native") next;
+	if ($1 ~ /^u-boot-rzn1-/) next;
 	if ($1 ~ /^linux-/) next;
 
 	# Ignore CVEs that are marked as "Patched"
 	if ($4 == "Patched") next;
+
+	# Remove git hash from package version, if present
+	gsub(/\+gitAUTOINC.*$/, "", $2);
 
 	# Indexing is done using PKGNAME-VERSION-CVENUM.
 	# Must use all three components to ensure uniqueness.
