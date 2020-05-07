@@ -141,6 +141,9 @@ case "${MACHINE}" in
   am57xx-evm|intel-core2-32|intel-corei7-64)
      IMAGES="rpb-console-image"
      ;;
+  imx8mqevk)
+     [ "${DISTRO}" = "rpb" ] && IMAGES="rpb-console-image"
+     ;;
 esac
 
 time bitbake ${IMAGES}
