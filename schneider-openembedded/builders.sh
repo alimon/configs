@@ -162,6 +162,7 @@ case "${MACHINE}" in
     set +e
     clean_packages="\
         base-files \
+        openssl \
         fsbl \
         optee-os \
         optee-test \
@@ -190,6 +191,7 @@ bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
     bitbake ${bbopt} -c cleansstate ${clean_packages}
+    bitbake ${bbopt} openssl
     bitbake ${bbopt} ${clean_packages}
 fi
 time bitbake ${bbopt} ${IMAGES}
