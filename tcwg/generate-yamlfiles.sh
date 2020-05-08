@@ -10,14 +10,17 @@ generate_yamlfiles ()
     local yaml_in="$1"
 
     local dir="${yaml_in%%.yaml.in}"
+    local yaml_file
 
     if [ ! -d "$dir" ]; then
-	echo "WARNING: definition directory $dir does not exist" >&2
-	echo "WARNING: not generating anything from $yaml_in" >&2
+	yaml_file="$dir.yaml"
+        echo "# Auto generated from ${yaml_in#$top/}. Do not edit." > "$yaml_file"
+	$top/tcwg/cpp-script.sh -i "$yaml_in" >> "$yaml_file"
+        $top/tcwg/validate-checksum.sh --generate true "$yaml_file"
 	return
     fi
 
-    local def_file yaml_file
+    local def_file
 
     while IFS= read -r -d '' def_file; do
 	yaml_file="$dir-$(basename "$def_file" .def).yaml"
