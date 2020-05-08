@@ -79,6 +79,21 @@
     view-type: list
     regex: 'tcwg_bmk_.*-.*-.*'
 
+#BEGIN: tcwg/round-robin.yaml.inc
+- scm:
+    name: clang-scm
+    scm:
+        - git:
+            url: '{llvm_url}'
+            branches:
+              - 'refs/heads/{llvm_branch}'
+            basedir: llvm
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
 - scm:
     name: binutils-scm
     scm:
@@ -122,19 +137,35 @@
               before: true
             prune: true
 - scm:
-    name: clang-scm
+    name: linux-scm
     scm:
         - git:
-            url: '{llvm_url}'
+            url: '{linux_url}'
             branches:
-              - 'refs/heads/{llvm_branch}'
-            basedir: llvm
+              - 'refs/heads/{linux_branch}'
+            basedir: linux
             skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project.git
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/linux.git
             wipe-workspace: false
             clean:
               before: true
             prune: true
+- scm:
+    name: jenkins-scripts
+    scm:
+      - git:
+          url: https://git.linaro.org/toolchain/jenkins-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $scripts_branch
+          basedir: jenkins-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
+#END:   tcwg/round-robin.yaml.inc
 - scm:
     name: gnu-scm
     scm:
@@ -177,7 +208,7 @@
           prune: true
 
 - property:
-    name: default-properties
+    name: bmk-properties
     properties:
       - authorization:
           tcwg-benchmark:
@@ -256,22 +287,6 @@
           default: master
           description: 'Benchmark scripts revision to use'
 
-- scm:
-    name: jenkins-scripts
-    scm:
-      - git:
-          url: https://git.linaro.org/toolchain/jenkins-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $scripts_branch
-          basedir: jenkins-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
-
 - builder:
     name: trigger-followup-builds
     builders:
@@ -302,7 +317,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default-properties
+      - bmk-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_bmk_{hw}-build"
@@ -431,7 +446,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default-properties
+      - bmk-properties
       - build-blocker:
           # Run at most 1 bisect job for all configurations.
           # Bisect jobs can easily run for 5+ hours, and a few of them
@@ -592,7 +607,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default-properties
+      - bmk-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_bmk_{hw}-bisect"
@@ -707,7 +722,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default-properties
+      - bmk-properties
     parameters:
       - string:
           name: ci_project
@@ -820,4 +835,4 @@
             success: true
             send-to:
               - recipients
-# checksum: aa7bf0fe7604f7f4a0751a2b423064c7
+# checksum: 6db3ba21260ca664aec3cfd20b862dbe

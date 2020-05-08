@@ -78,62 +78,7 @@
     view-type: list
     regex: 'tcwg_bmk_.*-.*-.*'
 
-- scm:
-    name: binutils-scm
-    scm:
-        - git:
-            url: '{binutils_url}'
-            branches:
-              - 'refs/heads/{binutils_branch}'
-            basedir: binutils
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- scm:
-    name: gcc-scm
-    scm:
-        - git:
-            url: '{gcc_url}'
-            branches:
-              - 'refs/heads/{gcc_branch}'
-            basedir: gcc
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- scm:
-    name: glibc-scm
-    scm:
-        - git:
-            url: '{glibc_url}'
-            branches:
-              - 'refs/heads/{glibc_branch}'
-            basedir: glibc
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/glibc.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- scm:
-    name: clang-scm
-    scm:
-        - git:
-            url: '{llvm_url}'
-            branches:
-              - 'refs/heads/{llvm_branch}'
-            basedir: llvm
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
+#include tcwg/round-robin.yaml.inc
 - scm:
     name: gnu-scm
     scm:
@@ -176,7 +121,7 @@
           prune: true
 
 - property:
-    name: default-properties
+    name: bmk-properties
     properties:
       - authorization:
           tcwg-benchmark:
@@ -255,22 +200,6 @@
           default: master
           description: 'Benchmark scripts revision to use'
 
-- scm:
-    name: jenkins-scripts
-    scm:
-      - git:
-          url: https://git.linaro.org/toolchain/jenkins-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $scripts_branch
-          basedir: jenkins-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
-
 - builder:
     name: trigger-followup-builds
     builders:
@@ -301,7 +230,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default-properties
+      - bmk-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_bmk_{hw}-build"
@@ -430,7 +359,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default-properties
+      - bmk-properties
       - build-blocker:
           # Run at most 1 bisect job for all configurations.
           # Bisect jobs can easily run for 5+ hours, and a few of them
@@ -591,7 +520,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default-properties
+      - bmk-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_bmk_{hw}-bisect"
@@ -706,7 +635,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - default-properties
+      - bmk-properties
     parameters:
       - string:
           name: ci_project

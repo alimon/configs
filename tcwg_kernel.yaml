@@ -57,6 +57,7 @@
     view-type: list
     regex: 'tcwg_kernel-.*-gnu.*'
 
+#BEGIN: tcwg/default.yaml.inc
 - property:
     name: default-properties
     properties:
@@ -70,6 +71,7 @@
       - build-discarder:
           days-to-keep: 30
           num-to-keep: 30
+#END:   tcwg/default.yaml.inc
 
 - parameter:
     name: llvm-parameters
@@ -105,8 +107,9 @@
           default: master
           description: 'Scripts revision to use'
 
+#BEGIN: tcwg/round-robin.yaml.inc
 - scm:
-    name: llvm-scm
+    name: clang-scm
     scm:
         - git:
             url: '{llvm_url}'
@@ -148,14 +151,19 @@
               before: true
             prune: true
 - scm:
-    name: gnu-scm
+    name: glibc-scm
     scm:
-      - binutils-scm:
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-      - gcc-scm:
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
+        - git:
+            url: '{glibc_url}'
+            branches:
+              - 'refs/heads/{glibc_branch}'
+            basedir: glibc
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/glibc.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
 - scm:
     name: linux-scm
     scm:
@@ -185,6 +193,22 @@
           clean:
             before: true
           prune: true
+#END:   tcwg/round-robin.yaml.inc
+- scm:
+    name: llvm-scm
+    scm:
+      - clang-scm:
+          llvm_url: '{llvm_url}'
+          llvm_branch: '{llvm_branch}'
+- scm:
+    name: gnu-scm
+    scm:
+      - binutils-scm:
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+      - gcc-scm:
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
 
 - builder:
     name: trigger-followup-builds
@@ -428,4 +452,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 0de7c64ffeaf94fccbdea00226dbe3e9
+# checksum: 5f9cb75bede00e3bb9aad69d17469c34

@@ -48,47 +48,9 @@
     view-type: list
     regex: 'tcwg_gnu-.*'
 
-- scm:
-    name: binutils-scm
-    scm:
-        - git:
-            url: '{binutils_url}'
-            branches:
-              - 'refs/heads/{binutils_branch}'
-            basedir: binutils
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- scm:
-    name: gcc-scm
-    scm:
-        - git:
-            url: '{gcc_url}'
-            branches:
-              - 'refs/heads/{gcc_branch}'
-            basedir: gcc
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- property:
-    name: default-properties
-    properties:
-      - authorization:
-          anonymous:
-            - job-read
-            - job-extended-read
-          linaro:
-            - job-build
-            - job-cancel
-      - build-discarder:
-          days-to-keep: 30
-          num-to-keep: 30
+#include tcwg/round-robin.yaml.inc
+
+#include tcwg/default.yaml.inc
 
 - parameter:
     name: gnu-parameters
@@ -116,22 +78,6 @@
           name: scripts_branch
           default: master
           description: 'Scripts revision to use'
-
-- scm:
-    name: jenkins-scripts
-    scm:
-      - git:
-          url: https://git.linaro.org/toolchain/jenkins-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $scripts_branch
-          basedir: jenkins-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
 
 - builder:
     name: trigger-followup-builds
