@@ -1,18 +1,6 @@
 # Auto generated from tcwg-benchmark.yaml.in and tcwg-benchmark/tx1.def. Do not edit.
-- project:
-    name: tcwg-benchmark
-    hw:
-      - tk1:
-          results_top: tk1_32
-          image_arch: armhf
-      - tx1:
-          results_top: tx1_64
-          image_arch: arm64
-    jobs:
-      - 'tcwg-benchmark-{hw}'
-
-- job-template:
-    name: tcwg-benchmark-{hw}
+- job:
+    name: tcwg-benchmark-tx1
     project-type: matrix
     defaults: global
     properties:
@@ -76,7 +64,7 @@
             description: 'Number of benchmark iterations'
         - string:
             name: results_id
-            default: '{results_top}/tcwg-benchmark/@build_num@'
+            default: 'tx1_64/tcwg-benchmark/@build_num@'
             description: 'ID for benchmarking results; results will appear in bkp-01.tcwglab:/home/tcwg-benchmark/results-$results_id/'
         - bool:
             name: forceinstall
@@ -93,7 +81,7 @@
             description: 'Benchmark profile to use: parallel3x3 runs on 3 boards and 3 CPUs in parallel; parallel3x1 runs on 3 boards on 1 CPU in parallel; serial1 runs on a single board on 1 CPU.'
         - string:
             name: image_arch
-            default: '{image_arch}'
+            default: 'arm64'
             description: 'Docker image architecture -- arm64 or armhf'
         - bool:
             name: reboot
@@ -127,7 +115,7 @@
     node: tcwg-bmk-coordinator
     child-workspace: $label
     concurrent: true
-    display-name: 'TCWG BBB Benchmark {hw}'
+    display-name: 'TCWG BBB Benchmark tx1'
     scm:
         - git:
             url: https://git.linaro.org/toolchain/jenkins-scripts.git
@@ -155,15 +143,15 @@
             type: slave
             name: label
             values:
-                - tcwg-bmk-{hw}-01
-                - tcwg-bmk-{hw}-02
-                - tcwg-bmk-{hw}-03
-                - tcwg-bmk-{hw}-04
-                - tcwg-bmk-{hw}-05
-                - tcwg-bmk-{hw}-06
-                - tcwg-bmk-{hw}-07
-                - tcwg-bmk-{hw}-08
-                - tcwg-bmk-{hw}-09
+                - tcwg-bmk-tx1-01
+                - tcwg-bmk-tx1-02
+                - tcwg-bmk-tx1-03
+                - tcwg-bmk-tx1-04
+                - tcwg-bmk-tx1-05
+                - tcwg-bmk-tx1-06
+                - tcwg-bmk-tx1-07
+                - tcwg-bmk-tx1-08
+                - tcwg-bmk-tx1-09
     execution-strategy:
         sequential: false
     wrappers:
@@ -182,4 +170,4 @@
             set -ex
             ssh-add -l
             exec ./tcwg-benchmark.sh
-# checksum: b5bfce2d9b69099430b7a247147a20ab
+# checksum: 5633f4a54a4ac130cf4a5f2dab2ea5fd

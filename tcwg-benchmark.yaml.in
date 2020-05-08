@@ -1,17 +1,5 @@
-- project:
-    name: tcwg-benchmark
-    hw:
-      - tk1:
-          results_top: tk1_32
-          image_arch: armhf
-      - tx1:
-          results_top: tx1_64
-          image_arch: arm64
-    jobs:
-      - 'tcwg-benchmark-{hw}'
-
-- job-template:
-    name: tcwg-benchmark-{hw}
+- job:
+    name: tcwg-benchmark-#{HW}
     project-type: matrix
     defaults: global
     properties:
@@ -75,7 +63,11 @@
             description: 'Number of benchmark iterations'
         - string:
             name: results_id
-            default: '{results_top}/tcwg-benchmark/@build_num@'
+#if HW_tk1
+            default: 'tk1_32/tcwg-benchmark/@build_num@'
+#elif HW_tx1
+            default: 'tx1_64/tcwg-benchmark/@build_num@'
+#endif
             description: 'ID for benchmarking results; results will appear in bkp-01.tcwglab:/home/tcwg-benchmark/results-$results_id/'
         - bool:
             name: forceinstall
@@ -92,7 +84,11 @@
             description: 'Benchmark profile to use: parallel3x3 runs on 3 boards and 3 CPUs in parallel; parallel3x1 runs on 3 boards on 1 CPU in parallel; serial1 runs on a single board on 1 CPU.'
         - string:
             name: image_arch
-            default: '{image_arch}'
+#if HW_tk1
+            default: 'armhf'
+#elif HW_tx1
+            default: 'arm64'
+#endif
             description: 'Docker image architecture -- arm64 or armhf'
         - bool:
             name: reboot
@@ -126,7 +122,7 @@
     node: tcwg-bmk-coordinator
     child-workspace: $label
     concurrent: true
-    display-name: 'TCWG BBB Benchmark {hw}'
+    display-name: 'TCWG BBB Benchmark #{HW}'
     scm:
         - git:
             url: https://git.linaro.org/toolchain/jenkins-scripts.git
@@ -154,15 +150,15 @@
             type: slave
             name: label
             values:
-                - tcwg-bmk-{hw}-01
-                - tcwg-bmk-{hw}-02
-                - tcwg-bmk-{hw}-03
-                - tcwg-bmk-{hw}-04
-                - tcwg-bmk-{hw}-05
-                - tcwg-bmk-{hw}-06
-                - tcwg-bmk-{hw}-07
-                - tcwg-bmk-{hw}-08
-                - tcwg-bmk-{hw}-09
+                - tcwg-bmk-#{HW}-01
+                - tcwg-bmk-#{HW}-02
+                - tcwg-bmk-#{HW}-03
+                - tcwg-bmk-#{HW}-04
+                - tcwg-bmk-#{HW}-05
+                - tcwg-bmk-#{HW}-06
+                - tcwg-bmk-#{HW}-07
+                - tcwg-bmk-#{HW}-08
+                - tcwg-bmk-#{HW}-09
     execution-strategy:
         sequential: false
     wrappers:
