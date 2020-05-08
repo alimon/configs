@@ -26,9 +26,33 @@ if [ x"$input" = x"" ]; then
     exit 1
 fi
 
+tmp_in=$(mktemp)
+tmp_out=$(mktemp)
+cp "$input" "$tmp_in"
+
+# Iteratively include files until there are no more #include directives.
+while grep -q "^#include .*\$" "$tmp_in"; do
+    include=$(grep "^#include .*\$" "$tmp_in" | head -n1)
+    inc_file=$(echo "$include" | sed -e "s/^#include \+//")
+    if [ ! -f "$inc_file" ]; then
+	echo "ERROR: #include file $inc_file does not exist" >&2
+	exit 1
+    fi
+    # Escape '/' in the path name
+    include=$(echo "$include" | sed -e "s#/#\\\\/#g")
+    # Instruct sed to read in the include and add extra '#' to #include line.
+    cat "$tmp_in" | sed -e "/^$include\$/ {
+i #BEGIN: $inc_file
+r $inc_file
+a #END:   $inc_file
+d
+}" > "$tmp_out"
+    cp "$tmp_out" "$tmp_in"
+done
+
 cpp_opts=()
 # Undef all macros.  Next loop will define the appropriate ones to "1".
-for macro in $(unifdef -s -k -t "$input"); do
+for macro in $(unifdef -s -k -t "$tmp_in"); do
     cpp_opts+=("-U${macro}")
 done
 
@@ -39,8 +63,8 @@ for var in ${vars[@]+"${vars[@]}"}; do
     # Define requested macros to "1".
     cpp_opts+=("-D${name}_${value}=1")
     # Substitute #{NAME} with VALUE.
-    sed_opts+=("-e s/#{${name}}/$value/g")
+    sed_opts+=("-e" "s/#{${name}}/$value/g")
 done
 
-unifdef -k -t -x2 "${cpp_opts[@]}" "$input" \
+unifdef -k -t -x2 "${cpp_opts[@]}" "$tmp_in" \
     | sed -e "s/^//" "${sed_opts[@]+"${sed_opts[@]}"}"
