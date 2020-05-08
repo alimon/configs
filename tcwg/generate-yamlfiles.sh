@@ -34,4 +34,4 @@ generate_yamlfiles ()
 
 while IFS= read -r -d '' i; do
     generate_yamlfiles "$i"
-done < <(find "$top" -name "*.yaml.in" -print0)
+done < <(find "$top" -name "*.yaml.in" -a ! -name ".*" -print0)
