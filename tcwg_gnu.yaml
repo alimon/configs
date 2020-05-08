@@ -1,0 +1,404 @@
+# Auto generated from tcwg_gnu.yaml.in. Do not edit.
+- project:
+    name: tcwg_gnu
+    toolchain_name:
+      - gnu:
+          binutils_url: git://sourceware.org/git/binutils-gdb.git
+          gcc_url: https://github.com/gcc-mirror/gcc.git
+    toolchain_ver:
+      - master:
+          binutils_branch: master
+          gcc_branch: master
+      - release:
+          binutils_branch: binutils-2_33-branch
+          gcc_branch: releases/gcc-9
+    target:
+      - aarch64:
+          node: tcwg-build && tcwg-armv8_64 && tcwg-amp
+          docker_arch: arm64
+      - arm:
+          node: tcwg-build && tcwg-armv8_32 && tcwg-amp
+          docker_arch: armhf
+    type_of_test:
+      - bootstrap_O1:
+          components: gcc
+      - bootstrap_O3:
+          components: gcc
+      - bootstrap_debug:
+          components: gcc
+      - bootstrap_profiled:
+          components: gcc
+      - bootstrap_profiled_lto:
+          components: gcc
+      - bootstrap_profiled_lto_lean:
+          components: gcc
+      - bootstrap_ubsan:
+          components: gcc
+      - check_binutils:
+          components: binutils
+      - check_bootstrap:
+          components: gcc
+      - check_bootstrap_lto:
+          components: gcc
+    jobs:
+      - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+      - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+
+- view:
+    name: tcwg_gnu
+    view-type: list
+    regex: 'tcwg_gnu-.*'
+
+- scm:
+    name: binutils-scm
+    scm:
+        - git:
+            url: '{binutils_url}'
+            branches:
+              - 'refs/heads/{binutils_branch}'
+            basedir: binutils
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: gcc-scm
+    scm:
+        - git:
+            url: '{gcc_url}'
+            branches:
+              - 'refs/heads/{gcc_branch}'
+            basedir: gcc
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- property:
+    name: default-properties
+    properties:
+      - authorization:
+          anonymous:
+            - job-read
+            - job-extended-read
+          linaro:
+            - job-build
+            - job-cancel
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 30
+
+- parameter:
+    name: gnu-parameters
+    parameters:
+      - string:
+          name: binutils_branch
+          default: default
+          description: "binutils branch or sha1 to build"
+      - string:
+          name: gcc_branch
+          default: default
+          description: "gcc branch or sha1 to build"
+- parameter:
+    name: default-parameters
+    parameters:
+      - string:
+          name: mail_recipients
+          default: default
+          description: "Comma-separated list of email recipients; use 'default' unless testing"
+      - string:
+          name: distro
+          default: bionic
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: master
+          description: 'Scripts revision to use'
+
+- scm:
+    name: jenkins-scripts
+    scm:
+      - git:
+          url: https://git.linaro.org/toolchain/jenkins-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $scripts_branch
+          basedir: jenkins-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
+
+- builder:
+    name: trigger-followup-builds
+    builders:
+      - build-name-setter:
+          name: 'artifacts/jenkins/build-name'
+          file: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
+            if [ -f $i ]; then
+              echo "mail_recipients=$mail_recipients" >> $i
+              echo "distro=$distro" >> $i
+              echo "scripts_branch=$scripts_branch" >> $i
+            fi
+          done
+      - trigger-builds:
+          - project: tcwg_gnu-build-{ci_config}
+            parameter-factories:
+              - factory: filebuild
+                file-pattern: artifacts/trigger-build-*
+          - project: tcwg_gnu-bisect-{ci_config}
+            property-file: artifacts/trigger-bisect
+
+- job-template:
+    name: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+      - build-blocker:
+          blocking-jobs:
+            - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}"
+          queue-scanning: 'ALL'
+    parameters:
+      - '{toolchain_name}-parameters'
+      - choice:
+          name: update_baseline
+          choices:
+            - update
+            - reset
+            - init
+          description: "What to do with baseline in this build"
+      - default-parameters
+    disabled: false
+    node: '{node}'
+    concurrent: false
+    display-name: 'TCWG Build tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
+    scm:
+      - jenkins-scripts
+      - '{components}-scm':
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
+    triggers:
+      - pollscm:
+          cron: 'H H H/2 * *'
+    wrappers:
+      - timeout:
+          timeout: 1000
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell:
+            command: |
+                #!/bin/bash
+                set -ex
+                # Delete artifacts now to avoid re-using stale artifacts if
+                # below docker-run.sh fails to start up a container.
+                rm -rf artifacts/
+                mkdir -p artifacts/jenkins
+
+                dryruncmd=""
+                # Don't run these known-bad configurations.
+                case {target}-{type_of_test} in
+                  aarch64-bootstrap_profiled|\
+                  aarch64-bootstrap_profiled_lto|\
+                  aarch64-bootstrap_profiled_lto_lean|\
+                  aarch64-check_bootstrap_lto|\
+                  arm-bootstrap_profiled|\
+                  arm-bootstrap_profiled_lto*|\
+                  arm-check_bootstrap_lto)
+                    echo "Known bad configuration, not running."
+                    echo "Would have run:"
+                    # So we know it wasn't an infrastructure failure
+                    touch artifacts/failures
+                    dryruncmd="echo"
+                    ;;
+                esac
+
+                build_name="#$BUILD_NUMBER"
+                branch_opt=""
+                # 1 to skip jenkins-scripts
+                i=1
+                for c in {components}; do
+                  eval "b=\$$$${{c}}_branch"
+                  if [ x"$b" = x"default" ]; then
+                    eval "b=\$GIT_COMMIT_$i"
+                  fi
+                  if [ x"$b" != x"baseline" ]; then
+                    build_name="$build_name-$c"
+                    branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
+                  fi
+                  i=$(($i+1))
+                done
+
+                $dryruncmd \
+                ./jenkins-scripts/docker-run.sh \
+                --distro $distro \
+                --arch {docker_arch} \
+                --node $NODE_NAME \
+                -- \
+                ./jenkins-scripts/tcwg_gnu-build.sh \
+                %% artifacts/jenkins/manifest.sh \
+                --BUILD_URL "$BUILD_URL" \
+                ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{type_of_test} \
+                ==rr[binutils_url] {binutils_url} \
+                ==rr[gcc_url] {gcc_url} \
+                $branch_opt \
+                ==rr[mode] "jenkins-full" \
+                ==rr[update_baseline] "$update_baseline" &
+                res=0 && wait $! || res=$?
+
+                # If we didn't run the docker command
+                if [ -n "$dryruncmd" ]; then
+                    #Mark build unstable aka a skipped config
+                    exit 100
+                fi
+
+                if [ $res != 0 ]; then
+                  touch artifacts/failures
+                fi
+
+                if [ -e artifacts/results ]; then
+                  build_name="$build_name-R$(tail -n1 artifacts/results)"
+                fi
+                if [ x"$update_baseline" != x"update" ]; then
+                  build_name="$build_name-$update_baseline"
+                fi
+                if [ -f artifacts/trigger-bisect ]; then
+                  build_name="$build_name-bisect"
+                fi
+                echo "$build_name" > artifacts/jenkins/build-name
+            unstable-return: 100
+        - conditional-step:
+            # Only run if above succeeded
+            # Meaning we did not skip a bad config
+            # (a failed build is indicated by artifacts/failures)
+            condition-kind: current-status
+            steps:
+              - trigger-followup-builds:
+                  ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+              - shell: |
+                  #!/bin/bash
+                  if [ -f artifacts/failures ]; then
+                    exit 1
+                  fi
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+        - email-ext:
+            recipients: 'tcwg-gcc@linaro.org'
+            aborted: true
+            failure: false
+            success: false
+
+- job-template:
+    name: tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+      - build-blocker:
+          # Run at most 1 bisect job for all configurations.
+          # Bisect jobs can easily run for 5+ hours, and a few of them
+          # can hog the entire TCWG build farm for a long time.  Since
+          # same regression tends to appear in multiple configurations,
+          # run bisections for all configurations in-order.
+          blocking-jobs:
+            - "tcwg_gnu-bisect-.*"
+          queue-scanning: 'BUILDABLE'
+    parameters:
+      - string:
+          name: current_project
+          default: ""
+          description: "Project to bisect"
+      - string:
+          name: baseline_branch
+          default: "baseline"
+          description: "Baseline branch or sha1"
+      - string:
+          name: bad_branch
+          default: ""
+          description: "Bad branch or sha1"
+      - default-parameters
+    disabled: false
+    node: '{node}'
+    concurrent: false
+    display-name: 'TCWG Bisect tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
+    scm:
+      - jenkins-scripts
+    wrappers:
+      - timeout:
+          timeout: 6000
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            # Delete artifacts now to avoid re-using stale artifacts if
+            # below docker-run.sh fails to start up a container.
+            rm -rf artifacts/
+            mkdir -p artifacts/jenkins
+            build_name="#$BUILD_NUMBER-$current_project"
+            echo "$build_name" > artifacts/jenkins/build-name
+            # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
+            echo "prathamesh.kulkarni@linaro.org,tcwg-gcc@linaro.org" > artifacts/jenkins/mail-recipients.txt
+            echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
+
+            ./jenkins-scripts/docker-run.sh \
+            --distro $distro \
+            --arch {docker_arch} \
+            --node $NODE_NAME \
+            -- \
+            ./jenkins-scripts/round-robin-bisect.sh \
+            %% artifacts/manifests/bisect.sh \
+            --BUILD_URL "$BUILD_URL" \
+            --current_project "$current_project" \
+            --baseline_branch "$baseline_branch" \
+            --bad_branch "$bad_branch" \
+            --build_script "./jenkins-scripts/tcwg_gnu-build.sh" \
+            -- \
+            ==rr[ci_project] tcwg_gnu \
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{type_of_test} \
+            ==rr[binutils_url] {binutils_url} \
+            ==rr[gcc_url] {gcc_url}
+
+            if [ x"$mail_recipients" != x"default" ]; then
+              echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
+            fi
+        - trigger-followup-builds:
+            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+        - email-ext:
+            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
+            content-type: text
+            body: |
+              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
+            failure: true
+            success: true
+            aborted: true
+            send-to:
+              - recipients
+# checksum: fb434be46aa2488cf244cfaf40a4c6a3
