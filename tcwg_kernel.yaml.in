@@ -45,8 +45,6 @@
     jobs:
       - 'tcwg_kernel-#{TOOLCHAIN}-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - 'tcwg_kernel-#{TOOLCHAIN}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-      - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-      - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
 
 - view:
     name: tcwg_kernel-#{TOOLCHAIN}
@@ -114,13 +112,6 @@
                 file-pattern: artifacts/trigger-build-*
           - project: tcwg_kernel-#{TOOLCHAIN}-bisect-{ci_config}
             property-file: artifacts/trigger-bisect
-
-- job-template:
-    name: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-    project-type: freestyle
-    defaults: global
-    disabled: true
-    display-name: 'DELETE ME'
 
 - job-template:
     name: tcwg_kernel-#{TOOLCHAIN}-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
@@ -249,13 +240,6 @@
         - archive:
             artifacts: 'artifacts/**'
             latest-only: false
-
-- job-template:
-    name: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-    project-type: freestyle
-    defaults: global
-    disabled: true
-    display-name: 'DELETE ME'
 
 - job-template:
     name: tcwg_kernel-#{TOOLCHAIN}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
