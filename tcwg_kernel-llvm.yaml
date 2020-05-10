@@ -55,22 +55,6 @@
           num-to-keep: 30
 #END:   tcwg/default.yaml.inc
 
-- parameter:
-    name: default-parameters
-    parameters:
-      - string:
-          name: mail_recipients
-          default: default
-          description: "Comma-separated list of email recipients; use 'default' unless testing"
-      - string:
-          name: distro
-          default: bionic
-          description: 'Distro image to use'
-      - string:
-          name: scripts_branch
-          default: master
-          description: 'Scripts revision to use'
-
 #BEGIN: tcwg/round-robin.yaml.inc
 - scm:
     name: clang-scm
@@ -157,6 +141,22 @@
           clean:
             before: true
           prune: true
+
+- parameter:
+    name: default-parameters
+    parameters:
+      - string:
+          name: mail_recipients
+          default: default
+          description: "Comma-separated list of email recipients; use 'default' unless testing"
+      - string:
+          name: distro
+          default: bionic
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: master
+          description: 'Scripts revision to use'
 #END:   tcwg/round-robin.yaml.inc
 
 - builder:
@@ -396,4 +396,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 864144b04248a01a6292ed12be43e8b6
+# checksum: b9603ec1492d5e71f597e31eb87243c6

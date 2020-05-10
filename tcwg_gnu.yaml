@@ -135,6 +135,22 @@
           clean:
             before: true
           prune: true
+
+- parameter:
+    name: default-parameters
+    parameters:
+      - string:
+          name: mail_recipients
+          default: default
+          description: "Comma-separated list of email recipients; use 'default' unless testing"
+      - string:
+          name: distro
+          default: bionic
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: master
+          description: 'Scripts revision to use'
 #END:   tcwg/round-robin.yaml.inc
 
 #BEGIN: tcwg/default.yaml.inc
@@ -164,21 +180,6 @@
           name: gcc_branch
           default: default
           description: "gcc branch or sha1 to build"
-- parameter:
-    name: default-parameters
-    parameters:
-      - string:
-          name: mail_recipients
-          default: default
-          description: "Comma-separated list of email recipients; use 'default' unless testing"
-      - string:
-          name: distro
-          default: bionic
-          description: 'Distro image to use'
-      - string:
-          name: scripts_branch
-          default: master
-          description: 'Scripts revision to use'
 
 - builder:
     name: trigger-followup-builds
@@ -447,4 +448,4 @@
             aborted: true
             send-to:
               - recipients
-# checksum: be8b3f6b19c3c1aa661a90c40741cbf4
+# checksum: bc727cfa22089fd2f518685fbd732e9f

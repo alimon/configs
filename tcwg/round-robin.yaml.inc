@@ -83,3 +83,19 @@
           clean:
             before: true
           prune: true
+
+- parameter:
+    name: default-parameters
+    parameters:
+      - string:
+          name: mail_recipients
+          default: default
+          description: "Comma-separated list of email recipients; use 'default' unless testing"
+      - string:
+          name: distro
+          default: bionic
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: master
+          description: 'Scripts revision to use'

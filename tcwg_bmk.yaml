@@ -165,6 +165,22 @@
           clean:
             before: true
           prune: true
+
+- parameter:
+    name: default-parameters
+    parameters:
+      - string:
+          name: mail_recipients
+          default: default
+          description: "Comma-separated list of email recipients; use 'default' unless testing"
+      - string:
+          name: distro
+          default: bionic
+          description: 'Distro image to use'
+      - string:
+          name: scripts_branch
+          default: master
+          description: 'Scripts revision to use'
 #END:   tcwg/round-robin.yaml.inc
 - scm:
     name: gnu-scm
@@ -264,24 +280,13 @@
           default: '{default_branch}'
           description: "llvm branch or sha1 to build, or 'baseline'"
 - parameter:
-    name: default-parameters
+    name: bmk-parameters
     parameters:
       - string:
           name: extra_build_params
           default: ""
           description: "Extra parameters to pass to the build script"
-      - string:
-          name: mail_recipients
-          default: default
-          description: "Comma-separated list of email recipients; use 'default' unless testing"
-      - string:
-          name: distro
-          default: bionic
-          description: 'Distro image to use'
-      - string:
-          name: scripts_branch
-          default: master
-          description: 'Scripts revision to use'
+      - default-parameters
       - string:
           name: bmk_branch
           default: master
@@ -339,7 +344,7 @@
             - init
             - push
           description: "What to do with baseline in this build"
-      - default-parameters
+      - bmk-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -471,7 +476,7 @@
           name: bad_branch
           default: ""
           description: "Bad branch or sha1"
-      - default-parameters
+      - bmk-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -635,7 +640,7 @@
             - init
             - push
           description: "What to do with baseline in this build"
-      - default-parameters
+      - bmk-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -763,7 +768,7 @@
       - file:
           name: jenkins-scripts/replay_log
           description: "Replay part of bisect using provided bisect log"
-      - default-parameters
+      - bmk-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -835,4 +840,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 6db3ba21260ca664aec3cfd20b862dbe
+# checksum: 505cdfd99e93c58cd405b657558b2533
