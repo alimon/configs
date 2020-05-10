@@ -59,24 +59,6 @@
 #END:   tcwg/default.yaml.inc
 
 - parameter:
-    name: llvm-parameters
-    parameters:
-      - string:
-          name: llvm_branch
-          default: default
-          description: "llvm branch or sha1 to build"
-- parameter:
-    name: gnu-parameters
-    parameters:
-      - string:
-          name: binutils_branch
-          default: default
-          description: "binutils branch or sha1 to build"
-      - string:
-          name: gcc_branch
-          default: default
-          description: "gcc branch or sha1 to build"
-- parameter:
     name: default-parameters
     parameters:
       - string:
@@ -215,7 +197,14 @@
             - "tcwg_kernel-gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
           queue-scanning: 'ALL'
     parameters:
-      - '{toolchain_name}-parameters'
+      - string:
+          name: binutils_branch
+          default: default
+          description: "binutils branch or sha1 to build"
+      - string:
+          name: gcc_branch
+          default: default
+          description: "gcc branch or sha1 to build"
       - string:
           name: linux_branch
           default: default
@@ -419,4 +408,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 639620272ca94493723c50e21f77f4b8
+# checksum: fa521677782315348139d6f355d3d065
