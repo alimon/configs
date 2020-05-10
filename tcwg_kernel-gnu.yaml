@@ -1,7 +1,7 @@
+# Auto generated from tcwg_kernel.yaml.in and tcwg_kernel/gnu.def. Do not edit.
 - project:
-    name: tcwg_kernel-#{TOOLCHAIN}
-    toolchain_name: #{TOOLCHAIN}
-#if TOOLCHAIN_gnu
+    name: tcwg_kernel-gnu
+    toolchain_name: gnu
     components: binutils gcc linux
     binutils_url: git://sourceware.org/git/binutils-gdb.git
     gcc_url: https://github.com/gcc-mirror/gcc.git
@@ -12,15 +12,6 @@
       - release:
           binutils_branch: binutils-2_33-branch
           gcc_branch: releases/gcc-9
-#elif TOOLCHAIN_llvm
-    components: llvm linux
-    llvm_url: https://github.com/llvm/llvm-project.git
-    toolchain_ver:
-      - master:
-          llvm_branch: master
-      - release:
-          llvm_branch: release/10.x
-#endif
     target:
       - aarch64
       - arm
@@ -43,17 +34,31 @@
       - allyesconfig
       - allnoconfig
     jobs:
-      - 'tcwg_kernel-#{TOOLCHAIN}-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-      - 'tcwg_kernel-#{TOOLCHAIN}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
 
 - view:
-    name: tcwg_kernel-#{TOOLCHAIN}
+    name: tcwg_kernel-gnu
     view-type: list
-    regex: 'tcwg_kernel-#{TOOLCHAIN}.*'
+    regex: 'tcwg_kernel-gnu.*'
 
-#include tcwg/default.yaml.inc
+#BEGIN: tcwg/default.yaml.inc
+- property:
+    name: default-properties
+    properties:
+      - authorization:
+          anonymous:
+            - job-read
+            - job-extended-read
+          linaro:
+            - job-build
+            - job-cancel
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 30
+#END:   tcwg/default.yaml.inc
 
 - parameter:
     name: llvm-parameters
@@ -89,7 +94,93 @@
           default: master
           description: 'Scripts revision to use'
 
-#include tcwg/round-robin.yaml.inc
+#BEGIN: tcwg/round-robin.yaml.inc
+- scm:
+    name: clang-scm
+    scm:
+        - git:
+            url: '{llvm_url}'
+            branches:
+              - 'refs/heads/{llvm_branch}'
+            basedir: llvm
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/llvm-project.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: binutils-scm
+    scm:
+        - git:
+            url: '{binutils_url}'
+            branches:
+              - 'refs/heads/{binutils_branch}'
+            basedir: binutils
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: gcc-scm
+    scm:
+        - git:
+            url: '{gcc_url}'
+            branches:
+              - 'refs/heads/{gcc_branch}'
+            basedir: gcc
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: glibc-scm
+    scm:
+        - git:
+            url: '{glibc_url}'
+            branches:
+              - 'refs/heads/{glibc_branch}'
+            basedir: glibc
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/glibc.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: linux-scm
+    scm:
+        - git:
+            url: '{linux_url}'
+            branches:
+              - 'refs/heads/{linux_branch}'
+            basedir: linux
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/linux.git
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+- scm:
+    name: jenkins-scripts
+    scm:
+      - git:
+          url: https://git.linaro.org/toolchain/jenkins-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $scripts_branch
+          basedir: jenkins-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
+#END:   tcwg/round-robin.yaml.inc
 
 - builder:
     name: trigger-followup-builds
@@ -108,11 +199,11 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_kernel-#{TOOLCHAIN}-build-{ci_config}
+          - project: tcwg_kernel-gnu-build-{ci_config}
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_kernel-#{TOOLCHAIN}-bisect-{ci_config}
+          - project: tcwg_kernel-gnu-bisect-{ci_config}
             property-file: artifacts/trigger-bisect
 
 - job-template:
@@ -123,14 +214,14 @@
     display-name: 'DELETE ME'
 
 - job-template:
-    name: tcwg_kernel-#{TOOLCHAIN}-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    name: tcwg_kernel-gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
       - default-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_kernel-#{TOOLCHAIN}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
+            - "tcwg_kernel-gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
           queue-scanning: 'ALL'
     parameters:
       - '{toolchain_name}-parameters'
@@ -153,18 +244,12 @@
     workspace: workspace/tcwg_kernel_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
-#if TOOLCHAIN_llvm
-      - clang-scm:
-          llvm_url: '{llvm_url}'
-          llvm_branch: '{llvm_branch}'
-#elif TOOLCHAIN_gnu
       - binutils-scm:
           binutils_url: '{binutils_url}'
           binutils_branch: '{binutils_branch}'
       - gcc-scm:
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
-#endif
       - linux-scm:
           linux_url: '{linux_url}'
           linux_branch: '{linux_branch}'
@@ -211,13 +296,8 @@
                 %% artifacts/jenkins/manifest.sh \
                 --BUILD_URL "$BUILD_URL" \
                 ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
-#if TOOLCHAIN_gnu
                 ==rr[binutils_url] {binutils_url} \
                 ==rr[gcc_url] {gcc_url} \
-#endif
-#if TOOLCHAIN_llvm
-                ==rr[llvm_url] {llvm_url} \
-#endif
                 ==rr[linux_url] {linux_url} \
                 $branch_opt \
                 ==rr[mode] "jenkins-full" \
@@ -258,7 +338,7 @@
     display-name: 'DELETE ME'
 
 - job-template:
-    name: tcwg_kernel-#{TOOLCHAIN}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    name: tcwg_kernel-gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
     properties:
@@ -270,7 +350,7 @@
           # same regression tends to appear in multiple configurations,
           # run bisections for all configurations in-order.
           blocking-jobs:
-            - "tcwg_kernel-#{TOOLCHAIN}-bisect-.*"
+            - "tcwg_kernel-gnu-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
       - string:
@@ -333,13 +413,8 @@
             -- \
             ==rr[ci_project] tcwg_kernel \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
-#if TOOLCHAIN_gnu
             ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url} \
-#endif
-#if TOOLCHAIN_llvm
-            ==rr[llvm_url] {llvm_url} \
-#endif
             ==rr[linux_url] {linux_url}
 
             if [ x"$mail_recipients" != x"default" ]; then
@@ -360,3 +435,4 @@
             success: true
             send-to:
               - recipients
+# checksum: 54e5aae9505adbcc8f506338d777f071

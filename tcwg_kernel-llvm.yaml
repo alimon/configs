@@ -1,27 +1,13 @@
-# Auto generated from tcwg_kernel.yaml.in. Do not edit.
+# Auto generated from tcwg_kernel.yaml.in and tcwg_kernel/llvm.def. Do not edit.
 - project:
-    name: tcwg_kernel
-    toolchain_name:
-      - llvm:
-          components: llvm linux
-          binutils_url: no_binutils_url
-          gcc_url: no_gcc_url
-          llvm_url: https://github.com/llvm/llvm-project.git
-          node: tcwg-x86_64-build
-      - gnu:
-          components: binutils gcc linux
-          binutils_url: git://sourceware.org/git/binutils-gdb.git
-          gcc_url: https://github.com/gcc-mirror/gcc.git
-          llvm_url: no_llvm_url
-          node: tcwg-x86_64-build
+    name: tcwg_kernel-llvm
+    toolchain_name: llvm
+    components: llvm linux
+    llvm_url: https://github.com/llvm/llvm-project.git
     toolchain_ver:
       - master:
-          binutils_branch: master
-          gcc_branch: master
           llvm_branch: master
       - release:
-          binutils_branch: binutils-2_33-branch
-          gcc_branch: releases/gcc-9
           llvm_branch: release/10.x
     target:
       - aarch64
@@ -45,17 +31,15 @@
       - allyesconfig
       - allnoconfig
     jobs:
+      - 'tcwg_kernel-llvm-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-llvm-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
 
 - view:
     name: tcwg_kernel-llvm
     view-type: list
-    regex: 'tcwg_kernel-.*-llvm.*'
-- view:
-    name: tcwg_kernel-gnu
-    view-type: list
-    regex: 'tcwg_kernel-.*-gnu.*'
+    regex: 'tcwg_kernel-llvm.*'
 
 #BEGIN: tcwg/default.yaml.inc
 - property:
@@ -194,21 +178,6 @@
             before: true
           prune: true
 #END:   tcwg/round-robin.yaml.inc
-- scm:
-    name: llvm-scm
-    scm:
-      - clang-scm:
-          llvm_url: '{llvm_url}'
-          llvm_branch: '{llvm_branch}'
-- scm:
-    name: gnu-scm
-    scm:
-      - binutils-scm:
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-      - gcc-scm:
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
 
 - builder:
     name: trigger-followup-builds
@@ -227,22 +196,29 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_kernel-build-{ci_config}
+          - project: tcwg_kernel-llvm-build-{ci_config}
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_kernel-bisect-{ci_config}
+          - project: tcwg_kernel-llvm-bisect-{ci_config}
             property-file: artifacts/trigger-bisect
 
 - job-template:
     name: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
+    disabled: true
+    display-name: 'DELETE ME'
+
+- job-template:
+    name: tcwg_kernel-llvm-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    project-type: freestyle
+    defaults: global
     properties:
       - default-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
+            - "tcwg_kernel-llvm-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
           queue-scanning: 'ALL'
     parameters:
       - '{toolchain_name}-parameters'
@@ -259,19 +235,15 @@
           description: "What to do with baseline in this build"
       - default-parameters
     disabled: false
-    node: '{node}'
+    node: tcwg-x86_64-build
     concurrent: false
     display-name: 'TCWG Build tcwg_kernel/{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     workspace: workspace/tcwg_kernel_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
-      - '{toolchain_name}-scm':
+      - clang-scm:
           llvm_url: '{llvm_url}'
           llvm_branch: '{llvm_branch}'
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
       - linux-scm:
           linux_url: '{linux_url}'
           linux_branch: '{linux_branch}'
@@ -319,8 +291,6 @@
                 --BUILD_URL "$BUILD_URL" \
                 ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
                 ==rr[llvm_url] {llvm_url} \
-                ==rr[binutils_url] {binutils_url} \
-                ==rr[gcc_url] {gcc_url} \
                 ==rr[linux_url] {linux_url} \
                 $branch_opt \
                 ==rr[mode] "jenkins-full" \
@@ -357,6 +327,13 @@
     name: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
     project-type: freestyle
     defaults: global
+    disabled: true
+    display-name: 'DELETE ME'
+
+- job-template:
+    name: tcwg_kernel-llvm-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    project-type: freestyle
+    defaults: global
     properties:
       - default-properties
       - build-blocker:
@@ -366,7 +343,7 @@
           # same regression tends to appear in multiple configurations,
           # run bisections for all configurations in-order.
           blocking-jobs:
-            - "tcwg_kernel-bisect-.*"
+            - "tcwg_kernel-llvm-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
       - string:
@@ -430,8 +407,6 @@
             ==rr[ci_project] tcwg_kernel \
             ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
             ==rr[llvm_url] {llvm_url} \
-            ==rr[binutils_url] {binutils_url} \
-            ==rr[gcc_url] {gcc_url} \
             ==rr[linux_url] {linux_url}
 
             if [ x"$mail_recipients" != x"default" ]; then
@@ -452,4 +427,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 5f9cb75bede00e3bb9aad69d17469c34
+# checksum: d7c9bbb25b80cc3ab43ddf744d87b8df
