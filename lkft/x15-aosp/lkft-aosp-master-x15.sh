@@ -147,7 +147,7 @@ function build_uboot(){
     cd ${ANDROID_ROOT}
     #$ make ARCH=arm CROSS_COMPILE=<tc_path>/bin/arm-none-linux-gnueabihf- am57xx_evm_defconfig
     #$ make ARCH=arm CROSS_COMPILE=<tc_path>/bin/arm-none-linux-gnueabihf-
-    make -j$(nproc) \
+    make -j1 \
         -C ${UBOOT_DIR} \
         O=${UBOOT_OUT_DIR} \
         ARCH=arm \
