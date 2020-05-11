@@ -190,7 +190,9 @@ bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
     bitbake ${bbopt} -c cleansstate ${clean_packages}
-    bitbake ${bbopt} ${clean_packages}
+
+    # Force serial build
+    BB_NUMBER_THREADS="1" PARALLEL_MAKE="-j 1" bitbake ${bbopt} ${clean_packages}
 fi
 time bitbake ${bbopt} ${IMAGES}
 time bitbake ${bbopt} dip-sdk
