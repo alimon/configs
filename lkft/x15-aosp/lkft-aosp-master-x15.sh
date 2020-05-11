@@ -61,7 +61,7 @@ function build_android(){
 
     rm -fr android-build-configs
     git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git android-build-configs
-    ./android-build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME} ${OPT_MIRROR}
+    ./android-build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME} ${OPT_MIRROR} -nb
 
     cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${DIR_PUB_SRC}
     wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${DIR_PUB_SRC}/BUILD-INFO.txt
@@ -78,6 +78,8 @@ function build_android(){
 ###### compile x15 4.19 kernel
 #######################################
 function build_kernel(){
+    cd ${ANDROID_ROOT}
+
     local kernel_ver="${1}"
     if [ -z "${kernel_ver}" ]; then
         return
@@ -142,6 +144,9 @@ function build_uboot(){
         rm -fr ${UBOOT_OUT_DIR} && mkdir -p ${UBOOT_OUT_DIR}
     fi
 
+    cd ${ANDROID_ROOT}
+    #$ make ARCH=arm CROSS_COMPILE=<tc_path>/bin/arm-none-linux-gnueabihf- am57xx_evm_defconfig
+    #$ make ARCH=arm CROSS_COMPILE=<tc_path>/bin/arm-none-linux-gnueabihf-
     make -j$(nproc) \
         -C ${UBOOT_DIR} \
         O=${UBOOT_OUT_DIR} \
@@ -191,8 +196,8 @@ function main(){
     wget -c ${TOOLCHAIN_URL} -O ${TOOLCHAIN_NAME}.tar.xz
     tar -xvf ${TOOLCHAIN_NAME}.tar.xz
 
-    build_kernel 4.14
-    build_kernel 4.19
+    #build_kernel 4.14
+    #build_kernel 4.19
     build_uboot
 
     if ${IN_JENKINS} && [ -n "${WORKSPACE}" ]; then
