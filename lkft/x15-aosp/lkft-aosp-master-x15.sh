@@ -145,22 +145,26 @@ function build_uboot(){
     fi
 
     cd ${ANDROID_ROOT}
-    #$ make ARCH=arm CROSS_COMPILE=<tc_path>/bin/arm-none-linux-gnueabihf- am57xx_evm_defconfig
-    #$ make ARCH=arm CROSS_COMPILE=<tc_path>/bin/arm-none-linux-gnueabihf-
-    make -j1 \
-        -C ${UBOOT_DIR} \
-        O=${UBOOT_OUT_DIR} \
-        ARCH=arm \
-        CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE} \
-        am57xx_evm_defconfig
-    make -j$(nproc) \
-        -C ${UBOOT_DIR} \
-        O=${UBOOT_OUT_DIR} \
-        ARCH=arm \
-        CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE}
+    cd ${UBOOT_DIR}
+    git log --one-line -n10
+    cat Makefile
+    make ARCH=arm CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE} am57xx_evm_defconfig
+    make ARCH=arm CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE}
+    cp u-boot.img MLO ${DIR_PUB_SRC}/
+    #make -j1 \
+    #    -C ${UBOOT_DIR} \
+    #    O=${UBOOT_OUT_DIR} \
+    #    ARCH=arm \
+    #    CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE} \
+    #    am57xx_evm_defconfig
+    #make -j$(nproc) \
+    #    -C ${UBOOT_DIR} \
+    #    O=${UBOOT_OUT_DIR} \
+    #    ARCH=arm \
+    #    CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE}
 
-    cp -vf ${UBOOT_OUT_DIR}/u-boot.img ${DIR_PUB_SRC}/u-boot.img
-    cp -vf ${UBOOT_OUT_DIR}/MLO ${DIR_PUB_SRC}/MLO
+    #cp -vf ${UBOOT_OUT_DIR}/u-boot.img ${DIR_PUB_SRC}/u-boot.img
+    #cp -vf ${UBOOT_OUT_DIR}/MLO ${DIR_PUB_SRC}/MLO
 }
 
 # clean workspace to save space
