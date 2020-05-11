@@ -146,7 +146,7 @@ function build_uboot(){
 
     cd ${ANDROID_ROOT}
     cd ${UBOOT_DIR}
-    git log --one-line -n10
+    git log --oneline -n10
     cat Makefile
     make ARCH=arm CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE} am57xx_evm_defconfig
     make ARCH=arm CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE}
