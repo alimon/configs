@@ -190,8 +190,10 @@ cat ${postfile}
 bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
+    rm -rf tmp
     bitbake ${bbopt} -c cleansstate ${clean_packages}
     bitbake ${bbopt} openssl
+    bitbake ${bbopt} u-boot-rzn1
     bitbake ${bbopt} ${clean_packages}
 fi
 time bitbake ${bbopt} ${IMAGES}
