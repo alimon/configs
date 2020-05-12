@@ -61,8 +61,9 @@ function build_android(){
 
     rm -fr android-build-configs
     git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git android-build-configs
-    ./android-build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME} ${OPT_MIRROR}
+    ./android-build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME} ${OPT_MIRROR} -nb
 
+    mkdir -p ${DIR_PUB_SRC}
     cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${DIR_PUB_SRC}
     wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${DIR_PUB_SRC}/BUILD-INFO.txt
 
@@ -139,59 +140,28 @@ function build_kernel(){
 function build_uboot(){
     cd ${ANDROID_ROOT}
 
-    TOOLCHAIN_NAME="${TOOLCHAIN_NAME:-gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf}"
-    TOOLCHAIN_URL="${TOOLCHAIN_URL:-https://developer.arm.com/-/media/Files/downloads/gnu-a/8.3-2019.03/binrel/${TOOLCHAIN_NAME}.tar.xz}"
-    CROSS_COMPILE=${CROSS_COMPILE:-${TOOLCHAIN_NAME}/bin/arm-linux-gnueabihf-}
-    wget -c ${TOOLCHAIN_URL} -O ${TOOLCHAIN_NAME}.tar.xz
-    tar -xvf ${TOOLCHAIN_NAME}.tar.xz
+    local UBOOT_DIR=${ANDROID_ROOT}/external/u-boot
+    local UBOOT_OUT_DIR=${DIR_PUB_SRC_PRODUCT}/obj/u-boot
 
-    git clone https://android.googlesource.com/platform/external/u-boot u-boot
-    pwd
-    ls -l ./
-    ls -l ./u-boot
+    if ${CLEAN_UP}; then
+        rm -fr ${UBOOT_OUT_DIR} && mkdir -p ${UBOOT_OUT_DIR}
+    fi
 
-    make -v
-    which make
-    ls -l $(which make)
-    sudo dpkg -S $(which make)
+    cd ${UBOOT_DIR}
+    make -j1 \
+        -C ${UBOOT_DIR} \
+        O=${UBOOT_OUT_DIR} \
+        ARCH=arm \
+        CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE} \
+        am57xx_evm_defconfig
+    make -j$(nproc) \
+        -C ${UBOOT_DIR} \
+        O=${UBOOT_OUT_DIR} \
+        ARCH=arm \
+        CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE}
 
-    cd u-boot
-    git log --oneline -n10
-    cat Makefile
-
-    make ARCH=arm CROSS_COMPILE=${PWD}/../${CROSS_COMPILE} am57xx_evm_defconfig
-    make ARCH=arm CROSS_COMPILE=${PWD}/../${CROSS_COMPILE}
-
-    cp u-boot.img MLO ${DIR_PUB_SRC}/
-
-
-#    local UBOOT_DIR=${ANDROID_ROOT}/external/u-boot
-#    local UBOOT_OUT_DIR=${DIR_PUB_SRC_PRODUCT}/obj/u-boot
-
-#    if ${CLEAN_UP}; then
-#        rm -fr ${UBOOT_OUT_DIR} && mkdir -p ${UBOOT_OUT_DIR}
-#    fi
-
-#    cd ${UBOOT_DIR}
-#    git log --oneline -n10
-#    cat Makefile
-#    make ARCH=arm CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE} am57xx_evm_defconfig
-#    make ARCH=arm CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE}
-#    cp u-boot.img MLO ${DIR_PUB_SRC}/
-    #make -j1 \
-    #    -C ${UBOOT_DIR} \
-    #    O=${UBOOT_OUT_DIR} \
-    #    ARCH=arm \
-    #    CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE} \
-    #    am57xx_evm_defconfig
-    #make -j$(nproc) \
-    #    -C ${UBOOT_DIR} \
-    #    O=${UBOOT_OUT_DIR} \
-    #    ARCH=arm \
-    #    CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE}
-
-    #cp -vf ${UBOOT_OUT_DIR}/u-boot.img ${DIR_PUB_SRC}/u-boot.img
-    #cp -vf ${UBOOT_OUT_DIR}/MLO ${DIR_PUB_SRC}/MLO
+    cp -vf ${UBOOT_OUT_DIR}/u-boot.img ${DIR_PUB_SRC}/u-boot.img
+    cp -vf ${UBOOT_OUT_DIR}/MLO ${DIR_PUB_SRC}/MLO
 }
 
 # clean workspace to save space
@@ -221,7 +191,7 @@ function export_parameters(){
 
 function main(){
     prepare_environment
-    # build_android
+    build_android
 
     # download and decompress toolchain files
     wget -c ${TOOLCHAIN_URL} -O ${TOOLCHAIN_NAME}.tar.xz
