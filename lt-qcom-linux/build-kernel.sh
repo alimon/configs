@@ -71,7 +71,7 @@ cp build/{System.map,vmlinux} ${WORKSPACE}/out/
 cp build/arch/$ARCH/boot/Image* ${WORKSPACE}/out
 (cd build/arch/$ARCH/boot/dts && cp -a --parents $(find . -name *.dtb) ${WORKSPACE}/out/dtbs)
 
-if [ -d "${WORKSPACE}/linux"]; then
+if [ -d "${WORKSPACE}/linux" ]; then
     popd
 fi
 
