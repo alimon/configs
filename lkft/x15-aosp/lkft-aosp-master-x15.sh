@@ -61,7 +61,7 @@ function build_android(){
 
     rm -fr android-build-configs
     git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git android-build-configs
-    ./android-build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME} ${OPT_MIRROR} -nb
+    ./android-build-configs/linaro-build.sh -c ${BUILD_CONFIG_FILENAME} ${OPT_MIRROR}
 
     mkdir -p ${DIR_PUB_SRC}
     cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${DIR_PUB_SRC}
@@ -197,8 +197,8 @@ function main(){
     wget -c ${TOOLCHAIN_URL} -O ${TOOLCHAIN_NAME}.tar.xz
     tar -xvf ${TOOLCHAIN_NAME}.tar.xz
 
-    #build_kernel 4.14
-    #build_kernel 4.19
+    build_kernel 4.14
+    build_kernel 4.19
     build_uboot
 
     if ${IN_JENKINS} && [ -n "${WORKSPACE}" ]; then
