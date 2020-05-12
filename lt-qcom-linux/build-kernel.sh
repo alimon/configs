@@ -2,6 +2,18 @@
 
 set -ex
 
+if [ -z "${ARCH}" ]; then
+    export ARCH="arm64"
+fi
+
+if [ -z "${WORKSPACE}" ]; then
+    export WORKSPACE="$(pwd)"
+fi
+
+if [ -z "${KERNEL_CONFIGS}" ]; then
+    export KERNEL_CONFIGS="defconfig"
+fi
+
 toolchain_url_arm=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/arm-linux-gnueabihf/gcc-linaro-6.3.1-2017.02-x86_64_arm-linux-gnueabihf.tar.xz
 toolchain_url_arm64=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
 toolchain_url=toolchain_url_$ARCH
@@ -13,7 +25,9 @@ tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
 export CROSS_COMPILE="ccache $(basename $(ls -1 ${tcbindir}/*-gcc) gcc)"
 export PATH=${tcbindir}:$PATH
 
-pushd ${WORKSPACE}/linux
+if [ -d "${WORKSPACE}/linux"]; then
+    pushd ${WORKSPACE}/linux
+fi
 
 # bring in stable and mainline tags
 #git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
