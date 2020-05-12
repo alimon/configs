@@ -31,7 +31,7 @@ echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 # https://github.com/zephyrproject-rtos/meta-zephyr-sdk/releases/download/0.9.2/zephyr-sdk-0.9.2-setup.run
 # To install Zephyr SDK: ./zephyr-sdk-0.9.2-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.9.2"
 
-case "${ZEPHYR_GCC_VARIANT}" in
+case "${ZEPHYR_TOOLCHAIN_VARIANT}" in
   gccarmemb)
     export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-7-2018-q2-update"
   ;;

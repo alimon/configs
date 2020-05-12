@@ -42,7 +42,7 @@
                 - docker-xenial-amd64-13
         - axis:
             type: user-defined
-            name: ZEPHYR_GCC_VARIANT
+            name: ZEPHYR_TOOLCHAIN_VARIANT
             values:
                 - zephyr
         - axis:
@@ -90,7 +90,7 @@
             time python3 ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
-              out/${PLATFORM} components/kernel/aeolus-2/zephyr.js/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
+              out/${PLATFORM} components/kernel/aeolus-2/zephyr.js/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
 
             rm -rf out
         - shell: |
@@ -125,7 +125,7 @@
 
             cd configs/lite-aeolus
 
-            export IMAGE_URL="http://snapshots.linaro.org/components/kernel/aeolus-2/zephyr.js/${BRANCH}/${ZEPHYR_GCC_VARIANT}/${PLATFORM}/${BUILD_NUMBER}/zephyr.${BIN_EXT}"
+            export IMAGE_URL="http://snapshots.linaro.org/components/kernel/aeolus-2/zephyr.js/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}/zephyr.${BIN_EXT}"
 
             [ -z "${DEVICE_TYPE}" ] || \
             python3 submit-for-test.py "Hello, ZJS world!"

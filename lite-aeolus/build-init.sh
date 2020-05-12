@@ -45,7 +45,7 @@ echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 # https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.11.2/zephyr-sdk-0.11.2-setup.run
 # To install Zephyr SDK: ./zephyr-sdk-0.11.2-setup.run --quiet --nox11 -- <<< "${HOME}/srv/toolchain/zephyr-sdk-0.11.2"
 
-case "${ZEPHYR_GCC_VARIANT}" in
+case "${ZEPHYR_TOOLCHAIN_VARIANT}" in
   gccarmemb)
     export GCCARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-7-2018-q2-update"
   ;;
@@ -58,7 +58,7 @@ esac
 LANG=C
 ZEPHYR_BASE=${WORKSPACE}
 PATH=${ZEPHYR_BASE}/scripts:${PATH}
-OUTDIR=${HOME}/srv/zephyr/${ZEPHYR_GCC_VARIANT}/${PLATFORM}
+OUTDIR=${HOME}/srv/zephyr/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}
 export LANG ZEPHYR_BASE PATH
 CCACHE_DIR="${HOME}/srv/ccache"
 CCACHE_UNIFY=1
