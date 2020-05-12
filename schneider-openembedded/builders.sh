@@ -194,8 +194,19 @@ if [ "${clean_packages}" != "" ]; then
     # Force serial build
     BB_NUMBER_THREADS="1" PARALLEL_MAKE="-j 1" bitbake ${bbopt} ${clean_packages}
 fi
-time bitbake ${bbopt} ${IMAGES}
+
+# Build all ${IMAGES} apart from dip-image-dev
+devimg="dip-image-dev"
+images=$(echo $IMAGES | sed -e 's/'${devimg}'//g')
+time bitbake ${bbopt} ${images}
 time bitbake ${bbopt} dip-sdk
+
+# now build dip-image-dev if it was in $IMAGES
+if [[ "${IMAGES}" == *"${devimg}"* ]]; then
+	sed -i conf/bblayers.conf -e 's#meta-edge#meta-dip-dev#'
+	time bitbake ${bbopt} ${devimg}
+fi
+
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
