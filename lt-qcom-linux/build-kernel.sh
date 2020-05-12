@@ -71,7 +71,9 @@ cp build/{System.map,vmlinux} ${WORKSPACE}/out/
 cp build/arch/$ARCH/boot/Image* ${WORKSPACE}/out
 (cd build/arch/$ARCH/boot/dts && cp -a --parents $(find . -name *.dtb) ${WORKSPACE}/out/dtbs)
 
-popd
+if [ -d "${WORKSPACE}/linux"]; then
+    popd
+fi
 
 # publish builds by branch
 BRANCH_NAME_URL=$(echo ${KERNEL_BRANCH} | sed -e 's/[^A-Za-z0-9._-]/_/g')
