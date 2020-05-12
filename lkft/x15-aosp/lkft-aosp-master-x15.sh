@@ -100,8 +100,9 @@ function build_kernel(){
     local kernel_makeversion=$(make kernelversion)
     export KERNEL_DESCRIBE_X15_${ver_name}=${kernel_describe}
     export KERNEL_VERSION_X15_${ver_name}=${kernel_makeversion}
-    cd - # back to ${ANDROID_ROOT}
 
+    # change to ${ANDROID_ROOT} to make sure in the right directory
+    cd ${ANDROID_ROOT}
     KERNEL_BUILD_OUT=${DIR_PUB_SRC_PRODUCT}/obj/kernel-${kernel_ver}
 
     if ${CLEAN_UP}; then
@@ -147,7 +148,6 @@ function build_uboot(){
         rm -fr ${UBOOT_OUT_DIR} && mkdir -p ${UBOOT_OUT_DIR}
     fi
 
-    cd ${UBOOT_DIR}
     make -j1 \
         -C ${UBOOT_DIR} \
         O=${UBOOT_OUT_DIR} \
@@ -173,20 +173,19 @@ function clean_workspace(){
     rm -fr toolchain/ .ccache/ external/ pdk/ tools/ compatibility/ frameworks/
     rm -fr platform_testing/ vendor/ cts/ hardware/ prebuilts/
     rm -fr ${X15_KERNEL_DIR}
-    cd -
 }
 
 # export parameters for publish/job submission steps
 function export_parameters(){
-        # Publish parameters
-        echo "PUB_DEST=android/lkft/lkft-aosp-master-x15/${BUILD_NUMBER}" > ${WORKSPACE}/publish_parameters
-        echo "PUB_SRC=${DIR_PUB_SRC}" >> ${WORKSPACE}/publish_parameters
-        echo "PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
+    # Publish parameters
+    echo "PUB_DEST=android/lkft/lkft-aosp-master-x15/${BUILD_NUMBER}" > ${WORKSPACE}/publish_parameters
+    echo "PUB_SRC=${DIR_PUB_SRC}" >> ${WORKSPACE}/publish_parameters
+    echo "PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
 
-        echo "KERNEL_DESCRIBE_X15_4_14=${KERNEL_DESCRIBE_X15_4_14}" >> ${WORKSPACE}/publish_parameters
-        echo "KERNEL_DESCRIBE_X15_4_19=${KERNEL_DESCRIBE_X15_4_19}" >> ${WORKSPACE}/publish_parameters
-        echo "KERNEL_VERSION_X15_4_14=${KERNEL_VERSION_X15_4_14}" >> ${WORKSPACE}/publish_parameters
-        echo "KERNEL_VERSION_X15_4_19=${KERNEL_VERSION_X15_4_19}" >> ${WORKSPACE}/publish_parameters
+    echo "KERNEL_DESCRIBE_X15_4_14=${KERNEL_DESCRIBE_X15_4_14}" >> ${WORKSPACE}/publish_parameters
+    echo "KERNEL_DESCRIBE_X15_4_19=${KERNEL_DESCRIBE_X15_4_19}" >> ${WORKSPACE}/publish_parameters
+    echo "KERNEL_VERSION_X15_4_14=${KERNEL_VERSION_X15_4_14}" >> ${WORKSPACE}/publish_parameters
+    echo "KERNEL_VERSION_X15_4_19=${KERNEL_VERSION_X15_4_19}" >> ${WORKSPACE}/publish_parameters
 }
 
 function main(){
