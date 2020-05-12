@@ -67,10 +67,9 @@ function build_android(){
     cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${DIR_PUB_SRC}
     wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${DIR_PUB_SRC}/BUILD-INFO.txt
 
-    mkdir -p ${DIR_PUB_SRC}/aosp
     for f in ${ANDROID_IMAGE_FILES}; do
         if [ -f ${DIR_PUB_SRC_PRODUCT}/${f} ]; then
-            mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/aosp/${f}
+            mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/aosp-${f}
         fi
     done
 }
@@ -127,10 +126,9 @@ function build_kernel(){
     # regenerate the android images files
     KERNELDIR=${KERNEL_BUILD_OUT} ./android-build-configs/linaro-build.sh -tp beagle_x15 -ss
 
-    mkdir -p ${DIR_PUB_SRC}/${kernel_ver}-${kernel_describe}
     for f in ${ANDROID_IMAGE_FILES}; do
         if [ -f ${DIR_PUB_SRC_PRODUCT}/${f} ]; then
-            mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/${kernel_ver}-${kernel_describe}/${f}
+            mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/${kernel_ver}-${f}
         fi
     done
 }
