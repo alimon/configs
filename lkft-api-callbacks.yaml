@@ -23,13 +23,19 @@
             name: KERNEL_BRANCH
         - string:
             name: QA_BUILD_VERSION
+        - string:
+            name: MAKE_KERNELVERSION
+        - string:
+            name: KERNEL_DESCRIBE
+        - string:
+            name: SRCREV_kernel
     disabled: false
     node: docker-xenial-android-lkft
     display-name: 'LKFT - callbacks for lkft builds'
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${KERNEL_BRANCH}-${QA_BUILD_VERSION}'
+            name: '#${BUILD_NUMBER}-${KERNEL_BRANCH}-${QA_BUILD_VERSION}-${MAKE_KERNELVERSION}'
         - timeout:
             timeout: 10
     builders:
