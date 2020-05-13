@@ -14,15 +14,6 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 100
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-              - "tcwg.*"
-            block-level: 'NODE'
-            queue-scanning: 'BUILDABLE'
-        - heavy-job:
-            # This is the maximum number of executors that tcwg-* nodes have.
-            weight: 4
         - throttle:
             max-per-node: 1
             option: project
@@ -30,8 +21,10 @@
         - label:
             name: nodes
             # We can't restart coordinator nodes because we can't block-out
-            # matrix master jobs with heavy-job plug-in above.
-            default: tcwg && !tcwg-coordinator && !tcwg-bmk-coordinator
+            # matrix master jobs.  Similarly, we can't restart nodes with
+            # multiple executors because we risk killing builds on other
+            # executors.
+            default: tcwg && !tcwg-coordinator && !tcwg-bmk-coordinator && !tcwg-x86_64-build
             all-nodes: true
             matching-label: 'allCases'
             node-eligibility: 'ignore-offline'
@@ -83,4 +76,4 @@
             --node "$NODE_NAME" \
             --force "$force" \
             --verbose "$verbose"
-# checksum: 00d22a8ada5ca4de3448c6e4ef1b9581
+# checksum: e2905c4845eee8cecc012c6d2f61bf31
