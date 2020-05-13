@@ -23,7 +23,7 @@ CLEAN_UP=${CLEAN_UP:-true}
 ANDROID_ROOT="${DIR_SRV_AOSP_MASTER}/build"
 DIR_PUB_SRC="${ANDROID_ROOT}/out/dist"
 DIR_PUB_SRC_PRODUCT="${ANDROID_ROOT}/out/target/product/beagle_x15"
-ANDROID_IMAGE_FILES="boot.img dtb.img dtbo.img super.img vbmeta.img userdata.img ramdisk.img ramdisk-debug.img"
+ANDROID_IMAGE_FILES="boot.img dtb.img dtbo.img super.img vbmeta.img userdata.img ramdisk.img ramdisk-debug.img recovery.img"
 
 # functions for clean the environemnt before repo sync and build
 function prepare_environment(){
@@ -68,9 +68,8 @@ function build_android(){
     wget https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt -O ${DIR_PUB_SRC}/BUILD-INFO.txt
 
     for f in ${ANDROID_IMAGE_FILES}; do
-        if [ -f ${DIR_PUB_SRC_PRODUCT}/${f} ]; then
-            mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/aosp-${f}
-        fi
+        mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/aosp-${f}
+        xz -T 0 ${DIR_PUB_SRC}/aosp-${f}
     done
 }
 
@@ -106,6 +105,7 @@ function build_kernel(){
 
     if ${CLEAN_UP}; then
         make \
+            CROSS_COMPILE=${ANDROID_ROOT}/${CROSS_COMPILE} \
             -C ${X15_KERNEL_DIR} \
             O=${KERNEL_BUILD_OUT} \
             mrproper
@@ -127,9 +127,8 @@ function build_kernel(){
     KERNELDIR=${KERNEL_BUILD_OUT} ./android-build-configs/linaro-build.sh -tp beagle_x15 -ss
 
     for f in ${ANDROID_IMAGE_FILES}; do
-        if [ -f ${DIR_PUB_SRC_PRODUCT}/${f} ]; then
-            mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/${kernel_ver}-${f}
-        fi
+        mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/${kernel_ver}-${f}
+        xz -T 0 ${DIR_PUB_SRC}/${kernel_ver}-${f}
     done
 }
 
@@ -179,7 +178,7 @@ function export_parameters(){
     cp -a ${DIR_PUB_SRC}/*-pinned-manifest.xml ${WORKSPACE}/ || true
     echo "PUB_DEST=android/lkft/lkft-aosp-master-x15/${BUILD_NUMBER}" > ${WORKSPACE}/publish_parameters
     echo "PUB_SRC=${DIR_PUB_SRC}" >> ${WORKSPACE}/publish_parameters
-    echo "PUB_EXTRA_INC=^[^/]+\.(dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
+    echo "PUB_EXTRA_INC=^[^/]+\.(xz|dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
 
     echo "KERNEL_DESCRIBE_X15_4_14=${KERNEL_DESCRIBE_X15_4_14}" >> ${WORKSPACE}/publish_parameters
     echo "KERNEL_DESCRIBE_X15_4_19=${KERNEL_DESCRIBE_X15_4_19}" >> ${WORKSPACE}/publish_parameters
