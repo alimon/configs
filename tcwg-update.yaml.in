@@ -84,7 +84,8 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${NODE_NAME}'
     builders:
-        - shell: |
+      - shell:
+          command: |
             #!/bin/bash
             set -ex
 
@@ -103,7 +104,8 @@
             --distro "$distro" \
             --node "$NODE_NAME" \
             --force "$force" \
-            --verbose "$verbose"
+            --verbose "$verbose" || exit 100
+          unstable-return: 100
 #elif CONTAINER_llvmbot
             ./tcwg-update-llvmbot-containers.sh \
             --NODE_NAME "$NODE_NAME" \

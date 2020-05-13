@@ -67,7 +67,8 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${NODE_NAME}'
     builders:
-        - shell: |
+      - shell:
+          command: |
             #!/bin/bash
             set -ex
 
@@ -75,5 +76,6 @@
             --distro "$distro" \
             --node "$NODE_NAME" \
             --force "$force" \
-            --verbose "$verbose"
-# checksum: e2905c4845eee8cecc012c6d2f61bf31
+            --verbose "$verbose" || exit 100
+          unstable-return: 100
+# checksum: 53cef3ce98f96c2903a9421f613f06d5
