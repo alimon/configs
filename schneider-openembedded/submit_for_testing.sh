@@ -18,7 +18,7 @@ templates_soca9_normal=( ${templates_soca9_minimal[@]})
 templates_soca9_full=(   ${templates_soca9_normal[@]} )
 
 templates_rzn1d_minimal=
-templates_rzn1d_normal=( ${templates_rzn1d_minimal[@]} dip-image-edge.yaml )
+templates_rzn1d_normal=( ${templates_rzn1d_minimal[@]} )
 templates_rzn1d_full=(   ${templates_rzn1d_normal[@]} )
 
 if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
