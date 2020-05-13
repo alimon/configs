@@ -1,6 +1,5 @@
-# Auto generated from tcwg-update.yaml.in and tcwg-update/host-containers.def. Do not edit.
 - job:
-    name: tcwg-update-host-containers
+    name: tcwg-update-#{CONTAINER}-containers
     project-type: freestyle
     defaults: global
     properties:
@@ -20,7 +19,11 @@
     parameters:
         - label:
             name: nodes
+#if CONTAINER_host
             default: tcwg && !tcwg-bmk && !tcwg-short
+#elif CONTAINER_llvmbot
+            default: tcwg-llvmbot
+#endif
             all-nodes: true
             matching-label: 'allCases'
             node-eligibility: 'ignore-offline'
@@ -29,6 +32,12 @@
             name: distro
             default: 'xenial'
             description: 'Distro version to use.'
+#if CONTAINER_llvmbot
+        - string:
+            name: master
+            default: 'normal'
+            description: 'LLVM buildmaster to use: silent or normal'
+#endif
         - bool:
             name: force
             default: 'false'
@@ -44,7 +53,7 @@
     disabled: false
     node: tcwg-coordinator
     concurrent: true
-    display-name: 'TCWG CCC Update host containers'
+    display-name: 'TCWG CCC Update #{CONTAINER} containers'
     scm:
         - git:
             url: https://git.linaro.org/toolchain/jenkins-scripts.git
@@ -60,6 +69,12 @@
         - timeout:
             timeout: 600
         - timestamps
+#if CONTAINER_llvmbot
+        - credentials-binding:
+            - text:
+                credential-id: TCWG_LLVMBOT_PASSWORD
+                variable: TCWG_LLVMBOT_PASSWORD
+#endif
         - build-name:
             name: '#${BUILD_NUMBER}-${NODE_NAME}'
     builders:
@@ -67,6 +82,7 @@
             #!/bin/bash
             set -ex
 
+#if CONTAINER_host
             case "$NODE_NAME" in
               tcwg-llvmbot_*) group=tcwg-llvm ;;
               *) group=all ;;
@@ -76,4 +92,12 @@
             --group "$group" \
             --force "$force" \
             --verbose "$verbose"
-# checksum: 51f7281544628700dcdf54f77c631021
+#elif CONTAINER_llvmbot
+            ./tcwg-update-llvmbot-containers.sh \
+            --NODE_NAME "$NODE_NAME" \
+            --distro "$distro" \
+            --master "$master" \
+            --password "$TCWG_LLVMBOT_PASSWORD" \
+            --force "$force" \
+            --verbose "$verbose"
+#endif
