@@ -89,6 +89,11 @@ export EULA_dragonboard410c=1
 export EULA_stih410b2260=1
 source setup-environment build
 
+# Accept freescale EULA
+cat << EOF >> conf/local.conf
+ACCEPT_FSL_EULA = "1"
+EOF
+
 # Add job BUILD_NUMBER to output files names
 cat << EOF >> conf/auto.conf
 IMAGE_NAME_append = "-${BUILD_NUMBER}"
