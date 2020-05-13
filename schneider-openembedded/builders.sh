@@ -201,18 +201,22 @@ images=$(echo $IMAGES | sed -e 's/'${edgeimg}'//g')
 time bitbake ${bbopt} ${images}
 time bitbake ${bbopt} dip-sdk
 
-# now build dip-image-edge if it was in ${IMAGES}
-if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
-	sed -i conf/bblayers.conf -e 's#meta-dip-dev#meta-edge#'
-	time bitbake ${bbopt} ${edgeimg}
-fi
-
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
 cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
 
 ls -al ${DEPLOY_DIR_IMAGE}/*
+
+# now build dip-image-edge if it was in ${IMAGES}
+if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
+	rm -rf ${DEPLOY_DIR_IMAGE}-pre
+	mv ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}-pre
+	mkdir -p ${DEPLOY_DIR_IMAGE}
+	sed -i conf/bblayers.conf -e 's#meta-dip-dev#meta-edge#'
+	time bitbake ${bbopt} ${edgeimg}
+	mv ${DEPLOY_DIR_IMAGE}-pre/* ${DEPLOY_DIR_IMAGE}
+fi
 
 # Prepare files to publish
 rm -f ${DEPLOY_DIR_IMAGE}/*.txt
