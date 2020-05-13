@@ -48,9 +48,13 @@ if [ ! -e ".repo/manifest.xml" ]; then
    ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
 fi
 
-# Some proprietary code is on lhg-review.org server
+# Some proprietary code is on lhg-review.org server and dev-private-review server
 cat << EOF > ${HOME}/lhg-review.sshconfig
 Host lhg-review.linaro.org
+    User lhg-gerrit-bot
+    UserKnownHostsFile /dev/null
+    StrictHostKeyChecking no
+Host dev-private-review.linaro.org
     User lhg-gerrit-bot
     UserKnownHostsFile /dev/null
     StrictHostKeyChecking no
