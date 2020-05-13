@@ -49,6 +49,9 @@
     node: tcwg-coordinator
     concurrent: true
     display-name: 'TCWG CCC Update llvmbot containers'
+    # We need to unshare workspace with $NODE_NAME in the path to
+    # correctly run on tcwg-bmk-* nodes.
+    workspace: workspace/tcwg-update-llvmbot-containers_$EXECUTOR_NUMBER/$NODE_NAME
     scm:
         - git:
             url: https://git.linaro.org/toolchain/jenkins-scripts.git
@@ -83,4 +86,4 @@
             --password "$TCWG_LLVMBOT_PASSWORD" \
             --force "$force" \
             --verbose "$verbose"
-# checksum: e5f2c8a5041ddbe82397ceb0695b9ba6
+# checksum: 7a7a61b3f3c07f021500ac27d3fc161f

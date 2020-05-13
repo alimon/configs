@@ -45,6 +45,9 @@
     node: tcwg-coordinator
     concurrent: true
     display-name: 'TCWG CCC Update host containers'
+    # We need to unshare workspace with $NODE_NAME in the path to
+    # correctly run on tcwg-bmk-* nodes.
+    workspace: workspace/tcwg-update-host-containers_$EXECUTOR_NUMBER/$NODE_NAME
     scm:
         - git:
             url: https://git.linaro.org/toolchain/jenkins-scripts.git
@@ -77,4 +80,4 @@
             --group "$group" \
             --force "$force" \
             --verbose "$verbose"
-# checksum: f7308f776c498af466c6e1bfb8a466e3
+# checksum: 3fbc0f4597f7f12480c340a1cfa11137

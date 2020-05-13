@@ -24,7 +24,7 @@
             # matrix master jobs.  Similarly, we can't restart nodes with
             # multiple executors because we risk killing builds on other
             # executors.
-            default: tcwg && !tcwg-coordinator && !tcwg-bmk-coordinator && !tcwg-x86_64-build
+            default: tcwg && !tcwg-coordinator && !tcwg-bmk-coordinator && !tcwg-x86_64-build && !tcwg-short
             all-nodes: true
             matching-label: 'allCases'
             node-eligibility: 'ignore-offline'
@@ -49,6 +49,9 @@
     node: tcwg-coordinator
     concurrent: true
     display-name: 'TCWG CCC Update jenkins containers'
+    # We need to unshare workspace with $NODE_NAME in the path to
+    # correctly run on tcwg-bmk-* nodes.
+    workspace: workspace/tcwg-update-jenkins-containers_$EXECUTOR_NUMBER/$NODE_NAME
     scm:
         - git:
             url: https://git.linaro.org/toolchain/jenkins-scripts.git
@@ -78,4 +81,4 @@
             --force "$force" \
             --verbose "$verbose" || exit 100
           unstable-return: 100
-# checksum: 53cef3ce98f96c2903a9421f613f06d5
+# checksum: 7088f1116918cf345d21426ed8fa550b
