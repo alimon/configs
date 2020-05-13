@@ -73,6 +73,8 @@
             echo "SERIAL_CONSOLES = \"115200;ttyMSM0\"" >> auto.conf
             # add machine dependent qcom services to rpb-console-image-test
             echo "CORE_IMAGE_EXTRA_INSTALL += \"${QCOM_USERSPACE_TOOLS}\"" >> auto.conf
+            # add ext4 block size to 4096, boards with UFS storage needs it
+            echo "EXTRA_IMAGECMD_ext4 += \" -b 4096 \"" >> auto.conf
         - inject:
             properties-file: pub_dest_parameters
         - shell:
