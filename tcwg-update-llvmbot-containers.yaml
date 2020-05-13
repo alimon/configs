@@ -13,11 +13,6 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 100
-        - build-blocker:
-            use-build-blocker: true
-            blocking-jobs:
-              - "ci-dockerfiles-deployment"
-            queue-scanning: 'ALL'
         - throttle:
             max-per-node: 1
             option: project
@@ -38,6 +33,10 @@
             default: 'normal'
             description: 'LLVM buildmaster to use: silent or normal'
         - bool:
+            name: force
+            default: 'false'
+            description: 'Whether to force update even with no changes in image'
+        - bool:
             name: verbose
             default: 'true'
             description: 'Whether to be verbose'
@@ -47,7 +46,7 @@
             description: 'Scripts revision to use'
     disabled: false
     node: tcwg-coordinator
-    concurrent: false
+    concurrent: true
     display-name: 'TCWG CCC Update llvmbot containers'
     scm:
         - git:
@@ -59,19 +58,7 @@
             shallow-clone: true
             wipe-workspace: true
     triggers:
-        - gerrit:
-            server-name: 'review.linaro.org'
-            trigger-on:
-                - change-merged-event
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'ci/dockerfiles'
-                  branches:
-                    - branch-pattern: 'master'
-                  file-paths:
-                    - compare-type: ANT
-                      pattern: tcwg-base/tcwg-llvmbot/**
-            silent-start: true
+        - timed: '@daily'
     wrappers:
         - timeout:
             timeout: 600
@@ -92,4 +79,5 @@
             --distro "$distro" \
             --master "$master" \
             --password "$TCWG_LLVMBOT_PASSWORD" \
+            --force "$force" \
             --verbose "$verbose"
