@@ -27,6 +27,12 @@ excluded_tests = [
     'tests/kernel/test_build/test_debug/zephyr/zephyr.bin',
     'tests/kernel/test_build/test_runtime_nmi/zephyr/zephyr.bin',
     'tests/kernel/test_build/test_newlib/zephyr/zephyr.bin',
+    # Requires keyboard harness
+    'tests/drivers/uart/uart_basic_api/drivers.uart/zephyr/zephyr.bin',
+    'tests/drivers/uart/uart_basic_api/drivers.uart.poll/zephyr/zephyr.bin',
+    # Requires net harness
+    'tests/net/lib/mqtt_publisher/net.mqtt/zephyr/zephyr.bin',
+    'tests/net/lib/mqtt_subscriber/net.mqtt.subscriber/zephyr/zephyr.bin',
     # Exclude adc_simple as the test is specific to Arduino 101 board.
     'tests/drivers/adc/adc_simple/test/zephyr.bin',
     'tests/drivers/spi_test/test/zephyr.bin',
