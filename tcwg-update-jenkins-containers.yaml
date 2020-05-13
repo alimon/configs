@@ -1,5 +1,6 @@
+# Auto generated from tcwg-update.yaml.in and tcwg-update/jenkins-containers.def. Do not edit.
 - job:
-    name: tcwg-update-#{CONTAINER}-containers
+    name: tcwg-update-jenkins-containers
     project-type: freestyle
     defaults: global
     properties:
@@ -13,7 +14,6 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 100
-#if CONTAINER_jenkins
         - build-blocker:
             use-build-blocker: true
             blocking-jobs:
@@ -23,22 +23,15 @@
         - heavy-job:
             # This is the maximum number of executors that tcwg-* nodes have.
             weight: 4
-#endif
         - throttle:
             max-per-node: 1
             option: project
     parameters:
         - label:
             name: nodes
-#if CONTAINER_host
-            default: tcwg && !tcwg-bmk && !tcwg-short
-#elif CONTAINER_jenkins
             # We can't restart coordinator nodes because we can't block-out
             # matrix master jobs with heavy-job plug-in above.
             default: tcwg && !tcwg-coordinator && !tcwg-bmk-coordinator
-#elif CONTAINER_llvmbot
-            default: tcwg-llvmbot
-#endif
             all-nodes: true
             matching-label: 'allCases'
             node-eligibility: 'ignore-offline'
@@ -47,12 +40,6 @@
             name: distro
             default: 'xenial'
             description: 'Distro version to use.'
-#if CONTAINER_llvmbot
-        - string:
-            name: master
-            default: 'normal'
-            description: 'LLVM buildmaster to use: silent or normal'
-#endif
         - bool:
             name: force
             default: 'false'
@@ -68,7 +55,7 @@
     disabled: false
     node: tcwg-coordinator
     concurrent: true
-    display-name: 'TCWG CCC Update #{CONTAINER} containers'
+    display-name: 'TCWG CCC Update jenkins containers'
     scm:
         - git:
             url: https://git.linaro.org/toolchain/jenkins-scripts.git
@@ -84,12 +71,6 @@
         - timeout:
             timeout: 600
         - timestamps
-#if CONTAINER_llvmbot
-        - credentials-binding:
-            - text:
-                credential-id: TCWG_LLVMBOT_PASSWORD
-                variable: TCWG_LLVMBOT_PASSWORD
-#endif
         - build-name:
             name: '#${BUILD_NUMBER}-${NODE_NAME}'
     builders:
@@ -97,28 +78,9 @@
             #!/bin/bash
             set -ex
 
-#if CONTAINER_host
-            case "$NODE_NAME" in
-              tcwg-llvmbot_*) group=tcwg-llvm ;;
-              *) group=all ;;
-            esac
-            ./tcwg-update-host-containers.sh \
-            --distro "$distro" \
-            --group "$group" \
-            --force "$force" \
-            --verbose "$verbose"
-#elif CONTAINER_jenkins
             ./tcwg-update-host-containers.sh \
             --distro "$distro" \
             --node "$NODE_NAME" \
             --force "$force" \
             --verbose "$verbose"
-#elif CONTAINER_llvmbot
-            ./tcwg-update-llvmbot-containers.sh \
-            --NODE_NAME "$NODE_NAME" \
-            --distro "$distro" \
-            --master "$master" \
-            --password "$TCWG_LLVMBOT_PASSWORD" \
-            --force "$force" \
-            --verbose "$verbose"
-#endif
+# checksum: 00d22a8ada5ca4de3448c6e4ef1b9581
