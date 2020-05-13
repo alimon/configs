@@ -25,7 +25,7 @@ tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
 export CROSS_COMPILE="ccache $(basename $(ls -1 ${tcbindir}/*-gcc) gcc)"
 export PATH=${tcbindir}:$PATH
 
-if [ -d "${WORKSPACE}/linux"]; then
+if [ -d "${WORKSPACE}/linux" ]; then
     pushd ${WORKSPACE}/linux
 fi
 
