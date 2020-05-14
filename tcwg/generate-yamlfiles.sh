@@ -12,18 +12,10 @@ generate_yamlfiles ()
     local dir="${yaml_in%%.yaml.in}"
     local yaml_file
 
-    if [ ! -d "$dir" ]; then
-	yaml_file="$dir.yaml"
-        echo "# Auto generated from ${yaml_in#$top/}. Do not edit." > "$yaml_file"
-	$top/tcwg/cpp-script.sh -i "$yaml_in" >> "$yaml_file"
-        $top/tcwg/validate-checksum.sh --generate true "$yaml_file"
-	return
-    fi
-
     local def_file
 
     while IFS= read -r -d '' def_file; do
-	yaml_file="$dir-$(basename "$def_file" .def).yaml"
+	yaml_file="$(dirname "$dir")/$(basename "$def_file" .def).yaml"
         echo "# Auto generated from ${yaml_in#$top/} and ${def_file#$top/}. Do not edit." > "$yaml_file"
 	$top/tcwg/cpp-script.sh $(cat "$def_file") -i "$yaml_in" \
 				     >> "$yaml_file"
