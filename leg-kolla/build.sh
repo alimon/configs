@@ -43,12 +43,19 @@ fi
 
 set -ex
 
-trap cleanup_exit INT TERM EXIT
+trap failure_exit INT TERM ERR
+trap cleanup_exit EXIT
 
 cleanup_exit()
 {
+    rm -rf ${HOME}/.docker
+}
+
+failure_exit()
+{
     # we failed - remove images
     docker images --filter reference="linaro/debian-source*:${kolla_tag}" --quiet|xargs docker image rm
+    cleanup_exit
 }
 
 rm -rf ${WORKSPACE}/*
