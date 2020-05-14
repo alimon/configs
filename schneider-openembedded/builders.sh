@@ -216,6 +216,7 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	sed -i conf/bblayers.conf -e 's#meta-dip-dev#meta-edge#'
 	time bitbake ${bbopt} ${edgeimg}
 	mv ${DEPLOY_DIR_IMAGE}-pre/* ${DEPLOY_DIR_IMAGE}
+	ls -al ${DEPLOY_DIR_IMAGE}/*
 fi
 
 # Prepare files to publish

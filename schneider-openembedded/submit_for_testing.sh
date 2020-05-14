@@ -10,7 +10,10 @@ popd
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 
 templates_common_minimal=( dip-image.yaml     )
-templates_common_normal=(  ${templates_common_minimal[@]} dip-image-dev.yaml )
+templates_common_normal=(  ${templates_common_minimal[@]} )
+if [[ "${IMAGES}" == *dip-image-edge* ]]; then
+templates_common_normal=(  ${templates_common_normal[@]} dip-image-dev.yaml )
+fi
 templates_common_full=(    ${templates_common_normal[@]}  ltp-ptest.yaml iperf.yaml )
 
 templates_soca9_minimal=
@@ -18,7 +21,10 @@ templates_soca9_normal=( ${templates_soca9_minimal[@]})
 templates_soca9_full=(   ${templates_soca9_normal[@]} )
 
 templates_rzn1d_minimal=
-templates_rzn1d_normal=( ${templates_rzn1d_minimal[@]} dip-image-edge.yaml )
+templates_rzn1d_normal=( ${templates_rzn1d_minimal[@]} )
+if [[ "${IMAGES}" == *dip-image-edge* ]]; then
+	templates_rzn1d_normal=( ${templates_rzn1d_normal[@]} dip-image-edge.yaml )
+fi
 templates_rzn1d_full=(   ${templates_rzn1d_normal[@]} )
 
 if [ "${DEVICE_TYPE}" == "rzn1d" ]; then
