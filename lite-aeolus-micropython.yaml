@@ -36,6 +36,15 @@
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_GROUP
+            default: 'pfalcon'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'zephyr-micropython'
+        - string:
+            name: USE_QA_SERVER
+            default: '0'
     disabled: false
     node: master
     child-workspace: .
@@ -127,13 +136,14 @@
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+            git clone --depth 1 https://github.com/pfalcon/lite-build-tools
 
             cd configs/lite-aeolus
 
             export IMAGE_URL="http://snapshots.linaro.org/components/kernel/aeolus-2/micropython/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}/zephyr.bin"
 
             [ -z "${DEVICE_TYPE}" ] || \
-            python3 submit-for-test.py "for more information"
+            ./submit-test.sh "for more information"
 
     publishers:
         - groovy-postbuild:
