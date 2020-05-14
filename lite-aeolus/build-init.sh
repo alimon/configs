@@ -38,7 +38,7 @@ python ${HOME}/depot_tools/git_retry.py _ submodule sync --recursive
 python ${HOME}/depot_tools/git_retry.py _ submodule update --init --recursive --checkout
 
 git clean -fdx
-echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > env_var_parameters
+echo "GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)" > env_var_parameters
 
 # Toolchains are pre-installed and come from:
 # https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
