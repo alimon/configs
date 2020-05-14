@@ -1,12 +1,9 @@
 - string:
-    name: IMAGES
-    default: 'rpb-console-image rpb-console-image-test'
-- string:
     name: IMAGES_RPB
-    default: 'rpb-desktop-image rpb-desktop-image-test'
+    default: 'rpb-console-image rpb-console-image-test rpb-desktop-image rpb-desktop-image-test'
 - string:
     name: IMAGES_RPB_WAYLAND
-    default: 'rpb-weston-image rpb-weston-image-test'
+    default: 'rpb-console-image rpb-console-image-test rpb-weston-image rpb-weston-image-test'
 - string:
     name: MANIFEST_URL
     default: 'https://github.com/96boards/oe-rpb-manifest.git'
