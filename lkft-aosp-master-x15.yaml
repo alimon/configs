@@ -21,9 +21,6 @@
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
         - string:
-            name: QA_SERVER_PROJECT
-            default: 'aosp-master-tracking-x15'
-        - string:
             name: ANDROID_VERSION
             default: 'AOSP MASTER'
         - string:
@@ -37,10 +34,10 @@
             default: 'gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin/arm-linux-gnueabihf-'
         - string:
             name: CTS_URL
-            default: 'dummy'
+            default: 'http://testdata.linaro.org/lkft/aosp-stable/android/android-cts/aosp-arm64-userdebug/32/master'
         - string:
             name: VTS_URL
-            default: 'dummy'
+            default: 'http://testdata.linaro.org/lkft/aosp-stable/aosp-master-throttled/6349140/test_suites_arm64'
     disabled: false
     node: docker-xenial-aosp
     display-name: 'LKFT AOSP Master X15 builds'
@@ -87,6 +84,82 @@
         - shell:
             !include-raw:
                 - android/linaro-publisher.sh
+        - inject:
+            properties-file: publish_parameters
+        - shell: |
+            # Install ruamel.yaml
+            pip install --user --force-reinstall ruamel.yaml
+            pip install --user --force-reinstall Jinja2
+            export PUB_DEST=android/lkft/lkft-aosp-master-x15/${BUILD_NUMBER}
+            export DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
+            export REFERENCE_BUILD_URL=http://snapshots.linaro.org/${PUB_DEST}
+            export TOOLCHAIN=${TOOLCHAIN_NAME}
+            export KERNEL_REPO=https://android.googlesource.com/kernel/omap
+            export ANDROID_VERSION=aosp-master-$(date --iso-8601)
+            export VTS_VERSION=$(echo $VTS_URL | awk -F"/" '{print $(NF-2) "#" $(NF-1)}')
+            export CTS_VERSION=$(echo $CTS_URL | awk -F"/" '{print $(NF-1) "#" $(NF-2)}')
+
+
+            TEST_DEVICE_TYPE=x15
+            LAVA_SERVER=https://lkft-staging.validation.linaro.org/RPC2/
+            QA_SERVER_TEAM="android-lkft"
+
+            rm -rf configs
+            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
+
+            # submit jobs for X15 4.14 kernel build
+            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_X15_4_14}
+            export KERNEL_COMMIT=${KERNEL_DESCRIBE_X15_4_14}
+            export KERNEL_BRANCH="android-beagle-x15-4.14"
+            QA_BUILD_VERSION=${KERNEL_VERSION_X15_4_14}-${KERNEL_DESCRIBE_X15_4_14}
+            QA_SERVER_PROJECT="4.14-master-x15"
+
+            # reset the changes done before
+            cd configs && git reset --hard && cd -
+
+            # update templates to use the new image names
+            ANDROID_IMAGES="boot.img.xz vbmeta.img.xz super.img.xz userdata.img.xz recovery.img.xz"
+            for f in ${ANDROID_IMAGES}; do
+                sed -i "s|${f}|4.14-${f}|" lkft/lava-job-definitions/common/devices/x15
+            done
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${TEST_DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team ${QA_SERVER_TEAM} \
+                --qa-server-project ${QA_SERVER_PROJECT} \
+                --git-commit ${QA_BUILD_VERSION} \
+                --testplan-path configs/lkft/lava-job-definitions/common \
+                --test-plan template-boot.yaml template-vts-kernel.yaml template-cts.yaml \
+                --quiet
+
+            # submit jobs for x15 4.19 kernel build
+            # reset the changes done before
+            cd configs && git reset --hard && cd -
+            export KERNEL_DESCRIBE=${KERNEL_DESCRIBE_X15_4_19}
+            export KERNEL_COMMIT=${KERNEL_DESCRIBE_X15_4_19}
+            export KERNEL_BRANCH="android-beagle-x15-4.19"
+            QA_BUILD_VERSION=${KERNEL_VERSION_X15_4_19}-${KERNEL_DESCRIBE_X15_4_19}
+            QA_SERVER_PROJECT="4.19-master-x15"
+
+            # update templates to use the new image names
+            for f in ${ANDROID_IMAGES}; do
+                sed -i "s|${f}|4.19-${f}|" lkft/lava-job-definitions/common/devices/x15
+            done
+
+            python configs/openembedded-lkft/submit_for_testing.py \
+                --device-type ${TEST_DEVICE_TYPE} \
+                --build-number ${BUILD_NUMBER} \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server ${QA_SERVER} \
+                --qa-server-team ${QA_SERVER_TEAM} \
+                --qa-server-project ${QA_SERVER_PROJECT} \
+                --git-commit ${QA_BUILD_VERSION} \
+                --testplan-path configs/lkft/lava-job-definitions/common \
+                --test-plan template-boot.yaml template-vts-kernel.yaml template-cts.yaml \
+                --quiet
 
     publishers:
         - archive:
