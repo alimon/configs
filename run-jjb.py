@@ -159,6 +159,7 @@ for conf_filename in filelist:
 
             for filename in data.splitlines():
                 conf_name=os.path.splitext(conf_filename)[0]
+                conf_name=conf_name[:len(filename)]
                 if not filename.startswith(conf_name):
                     raise ValueError("Job name %s does not match the file it is in: %s" % (filename, conf_name))
                 try:
