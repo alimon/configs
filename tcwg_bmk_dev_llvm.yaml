@@ -1,82 +1,4 @@
-- project:
-    name: tcwg_bmk
-    binutils_url: git://sourceware.org/git/binutils-gdb.git
-    gcc_url: https://github.com/gcc-mirror/gcc.git
-    glibc_url: git://sourceware.org/git/glibc.git
-    hw:
-      - tk1:
-          target: arm
-          node: tcwg-x86_64-build_bmk_tk1
-      - tx1:
-          target: aarch64
-          node: tcwg-x86_64-build_bmk_tx1
-    toolchain_name:
-      - llvm:
-          components: binutils gcc glibc llvm
-          llvm_url: https://github.com/llvm/llvm-project.git
-      - gnu:
-          components: binutils gcc glibc
-          llvm_url: no_llvm_url
-    toolchain_ver:
-      - master:
-          binutils_branch: master
-          gcc_branch: master
-          glibc_branch: master
-          llvm_branch: master
-      - release:
-          binutils_branch: binutils-2_33-branch
-          gcc_branch: releases/gcc-9
-          glibc_branch: release/2.30/master
-          llvm_branch: release/10.x
-    bmk:
-      - spec2k6
-    cflags:
-      - Os:
-          cron_schedule: H H H/3 * *
-      - Os_LTO:
-          cron_schedule: H H H/3 * *
-      - Oz:
-          cron_schedule: H H H/3 * *
-      - Oz_LTO:
-          cron_schedule: H H H/3 * *
-      - O2:
-          cron_schedule: H H H/5 * *
-      - O2_LTO:
-          cron_schedule: H H H/5 * *
-      - O3:
-          cron_schedule: H H H/5 * *
-      - O3_LTO:
-          cron_schedule: H H H/5 * *
-      - Os-vs-Os_LTO:
-          cron_schedule: H H H/7 * *
-      - O2-vs-O2_LTO:
-          cron_schedule: H H H/7 * *
-      - O3-vs-O3_LTO:
-          cron_schedule: H H H/7 * *
-    jobs:
-      - 'tcwg_bmk_{hw}-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-      - 'tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-    exclude:
-      - toolchain_name: gnu
-        cflags: Oz
-      - toolchain_name: gnu
-        cflags: Oz_LTO
-      - toolchain_name: llvm
-        cflags: Os-vs-Os_LTO
-      - toolchain_name: llvm
-        cflags: O2-vs-O2_LTO
-      - toolchain_name: llvm
-        cflags: O3-vs-O3_LTO
-
-- view:
-    name: tcwg_bmk
-    view-type: list
-    regex: 'delete-this-view'
-
-- view:
-    name: tcwg_bmk-ci
-    view-type: list
-    regex: 'tcwg_bmk_.*-.*-.*'
+# Auto generated from tcwg_bmk.yaml.in and tcwg_bmk/tcwg_bmk_dev_llvm.def. Do not edit.
 
 #BEGIN: tcwg/round-robin.yaml.inc
 - scm:
@@ -182,31 +104,6 @@
           description: 'Scripts revision to use'
 #END:   tcwg/round-robin.yaml.inc
 - scm:
-    name: gnu-scm
-    scm:
-      - binutils-scm:
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-      - gcc-scm:
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
-      - glibc-scm:
-          glibc_url: '{glibc_url}'
-          glibc_branch: '{glibc_branch}'
-- scm:
-    name: llvm-scm
-    scm:
-      - gnu-scm:
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
-          glibc_url: '{glibc_url}'
-          glibc_branch: '{glibc_branch}'
-      - clang-scm:
-          llvm_url: '{llvm_url}'
-          llvm_branch: '{llvm_branch}'
-- scm:
     name: bmk-scripts
     scm:
       - git:
@@ -236,7 +133,7 @@
           num-to-keep: 30
 
 - parameter:
-    name: gnu-parameters
+    name: build-parameters
     parameters:
       - string:
           name: binutils_url
@@ -262,14 +159,6 @@
           name: glibc_branch
           default: '{default_branch}'
           description: "glibc branch or sha1 to build, or 'baseline'"
-- parameter:
-    name: llvm-parameters
-    parameters:
-      - gnu-parameters:
-          binutils_url: '{binutils_url}'
-          gcc_url: '{gcc_url}'
-          glibc_url: '{glibc_url}'
-          default_branch: '{default_branch}'
       - string:
           name: llvm_url
           default: '{llvm_url}'
@@ -291,287 +180,26 @@
           default: master
           description: 'Benchmark scripts revision to use'
 
-- builder:
-    name: trigger-followup-builds
-    builders:
-      - build-name-setter:
-          name: 'artifacts/jenkins/build-name'
-          file: true
-      - shell: |
-          #!/bin/bash
-          set -ex
-          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
-            if [ -f $i ]; then
-              echo "mail_recipients=$mail_recipients" >> $i
-              echo "distro=$distro" >> $i
-              echo "scripts_branch=$scripts_branch" >> $i
-              echo "bmk_branch=$bmk_branch" >> $i
-            fi
-          done
-      - trigger-builds:
-          - project: tcwg_bmk_{hw}-build-{ci_config}
-            parameter-factories:
-              - factory: filebuild
-                file-pattern: artifacts/trigger-build-*
-          - project: tcwg_bmk_{hw}-bisect-{ci_config}
-            property-file: artifacts/trigger-bisect
-
-- job-template:
-    name: tcwg_bmk_{hw}-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
-    project-type: freestyle
-    defaults: global
-    properties:
-      - bmk-properties
-      - build-blocker:
-          blocking-jobs:
-            - "tcwg_bmk_{hw}-build"
-            - "tcwg_bmk_{hw}-bisect"
-            - "tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
-          queue-scanning: 'ALL'
-    parameters:
-      - '{toolchain_name}-parameters':
-          binutils_url: '{binutils_url}'
-          gcc_url: '{gcc_url}'
-          glibc_url: '{glibc_url}'
-          llvm_url: '{llvm_url}'
-          default_branch: default
-      - choice:
-          name: update_baseline
-          choices:
-            - update
-            - reset
-            - init
-            - push
-          description: "What to do with baseline in this build"
-      - bmk-parameters
-    disabled: true
-    node: '{node}'
-    concurrent: false
-    display-name: 'DELETE ME'
-    workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
-    scm:
-      - jenkins-scripts
-      - bmk-scripts
-      - '{toolchain_name}-scm':
-          llvm_url: '{llvm_url}'
-          llvm_branch: '{llvm_branch}'
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
-          glibc_url: '{glibc_url}'
-          glibc_branch: '{glibc_branch}'
-    triggers:
-      - pollscm:
-          cron: '{cron_schedule}'
-    wrappers:
-      - timeout:
-          timeout: 600
-      - timestamps
-      - ssh-agent-credentials:
-          # tcwg-buildslave user id
-          users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
-    builders:
-        - shell:
-            command: |
-                #!/bin/bash
-                set -ex
-                # Delete artifacts now to avoid re-using stale artifacts if
-                # below docker-run.sh fails to start up a container.
-                rm -rf artifacts/
-                mkdir -p artifacts/jenkins
-                build_name="#$BUILD_NUMBER"
-                branch_opt=""
-                # 2 to skip jenkins-scripts and bmk-scripts
-                i=2
-                for c in {components}; do
-                  eval "b=\$$$${{c}}_branch"
-                  if [ x"$b" = x"default" ]; then
-                    eval "b=\$GIT_COMMIT_$i"
-                  fi
-                  if [ x"$b" != x"baseline" ]; then
-                    build_name="$build_name-$c"
-                    branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
-                  fi
-                  i=$(($i+1))
-                done
-
-                ./jenkins-scripts/docker-run.sh \
-                --distro $distro \
-                --ssh_info true \
-                -- \
-                ./jenkins-scripts/tcwg_bmk-build.sh \
-                %% artifacts/jenkins/manifest.sh \
-                --BUILD_URL "$BUILD_URL" \
-                --scripts_branch "$scripts_branch" \
-                --bmk_branch "$bmk_branch" \
-                ==rr[ci_project] tcwg_bmk_{hw} \
-                ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
-                ==rr[binutils_url] {binutils_url} \
-                ==rr[gcc_url] {gcc_url} \
-                ==rr[glibc_url] {glibc_url} \
-                ==rr[llvm_url] {llvm_url} \
-                $branch_opt \
-                ==rr[mode] "jenkins-full" \
-                ==rr[update_baseline] "$update_baseline" \
-                $extra_build_params &
-                res=0 && wait $! || res=$?
-
-                if [ $res != 0 ]; then
-                  touch artifacts/failures
-                fi
-
-                if [ -e artifacts/results ]; then
-                  build_name="$build_name-R$(tail -n1 artifacts/results)"
-                fi
-                if [ x"$update_baseline" != x"update" ]; then
-                  build_name="$build_name-$update_baseline"
-                fi
-                if [ -f artifacts/trigger-bisect ]; then
-                  build_name="$build_name-bisect"
-                fi
-                echo "$build_name" > artifacts/jenkins/build-name
-        - trigger-followup-builds:
-            hw: '{hw}'
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-        - shell: |
-            #!/bin/bash
-            if [ -f artifacts/failures ]; then
-              exit 1
-            fi
-    publishers:
-        - archive:
-            artifacts: 'artifacts/**'
-            latest-only: false
-
-- job-template:
-    name: tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
-    project-type: freestyle
-    defaults: global
-    properties:
-      - bmk-properties
-      - build-blocker:
-          # Run at most 1 bisect job for all configurations.
-          # Bisect jobs can easily run for 5+ hours, and a few of them
-          # can hog the entire TCWG build farm for a long time.  Since
-          # same regression tends to appear in multiple configurations,
-          # run bisections for all configurations in-order.
-          blocking-jobs:
-            - "tcwg_bmk_{hw}-build"
-            - "tcwg_bmk_{hw}-bisect"
-            - "tcwg_bmk_{hw}-bisect-.*"
-          queue-scanning: 'BUILDABLE'
-    parameters:
-      - string:
-          name: current_project
-          default: ""
-          description: "Project to bisect"
-      - string:
-          name: baseline_branch
-          default: "baseline"
-          description: "Baseline branch or sha1"
-      - string:
-          name: bad_branch
-          default: ""
-          description: "Bad branch or sha1"
-      - bmk-parameters
-    disabled: true
-    node: '{node}'
-    concurrent: false
-    display-name: 'DELETE ME'
-    workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
-    scm:
-      - jenkins-scripts
-      - bmk-scripts
-    wrappers:
-      - timeout:
-          timeout: 2880
-      - timestamps
-      - ssh-agent-credentials:
-          # tcwg-buildslave user id
-          users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
-      - credentials-binding:
-          - text:
-              credential-id: TCWG_JIRA_PASSWORD
-              variable: TCWG_JIRA_PASSWORD
-    builders:
-        - shell: |
-            #!/bin/bash
-            set -ex
-            # Delete artifacts now to avoid re-using stale artifacts if
-            # below docker-run.sh fails to start up a container.
-            rm -rf artifacts/
-            mkdir -p artifacts/jenkins
-            build_name="#$BUILD_NUMBER-$current_project"
-            echo "$build_name" > artifacts/jenkins/build-name
-            # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
-            echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
-            echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
-
-            ./jenkins-scripts/docker-run.sh \
-            --distro $distro \
-            --ssh_info true \
-            -- \
-            ./jenkins-scripts/round-robin-bisect.sh \
-            %% artifacts/manifests/bisect.sh \
-            --BUILD_URL "$BUILD_URL" \
-            --current_project "$current_project" \
-            --baseline_branch "$baseline_branch" \
-            --bad_branch "$bad_branch" \
-            --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
-            --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
-            -- \
-            --scripts_branch "$scripts_branch" \
-            --bmk_branch "$bmk_branch" \
-            ==rr[ci_project] tcwg_bmk_{hw} \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
-            ==rr[binutils_url] {binutils_url} \
-            ==rr[gcc_url] {gcc_url} \
-            ==rr[glibc_url] {glibc_url} \
-            ==rr[llvm_url] {llvm_url} \
-            $extra_build_params
-
-            if [ x"$mail_recipients" != x"default" ]; then
-              echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
-            fi
-        - trigger-followup-builds:
-            hw: '{hw}'
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-    publishers:
-        - archive:
-            artifacts: 'artifacts/**'
-            latest-only: false
-        - email-ext:
-            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
-            content-type: text
-            body: |
-              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
-            failure: true
-            success: true
-            send-to:
-              - recipients
 
 - project:
-    name: tcwg_bmk-dev
+    name: tcwg_bmk_dev_llvm
     hw:
       - tk1:
           node: tcwg-x86_64-build_bmk_tk1
       - tx1:
           node: tcwg-x86_64-build_bmk_tx1
     jobs:
-      - 'tcwg_bmk_{hw}-build'
-      - 'tcwg_bmk_{hw}-bisect'
+      - 'tcwg_bmk_dev/build-tcwg_bmk_{hw}/llvm'
+      - 'tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/llvm'
 
 - view:
-    name: tcwg_bmk-dev
+    name: tcwg_bmk_dev_llvm
     view-type: list
     job-name:
-      - tcwg_bmk_tk1-build
-      - tcwg_bmk_tk1-bisect
-      - tcwg_bmk_tx1-build
-      - tcwg_bmk_tx1-bisect
+      - tcwg_bmk_dev/build-tcwg_bmk_tk1/llvm
+      - tcwg_bmk_dev/bisect-tcwg_bmk_tk1/llvm
+      - tcwg_bmk_dev/build-tcwg_bmk_tx1/llvm
+      - tcwg_bmk_dev/bisect-tcwg_bmk_tx1/llvm
       - tcwg-benchmark-tk1
       - tcwg-benchmark-tx1
 
@@ -599,33 +227,33 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_bmk_{hw}-build
+          - project: tcwg_bmk_dev/build-tcwg_bmk_{hw}/llvm
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_bmk_{hw}-bisect
+          - project: tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/llvm
             property-file: artifacts/trigger-bisect
 
 - job-template:
-    name: tcwg_bmk_{hw}-build
+    name: tcwg_bmk_dev/build-tcwg_bmk_{hw}/llvm
     project-type: freestyle
     defaults: global
     properties:
       - bmk-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_bmk_{hw}-bisect"
+            - "tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/llvm"
           queue-scanning: 'ALL'
     parameters:
       - string:
           name: ci_project
-          default: 'tcwg_bmk_{hw}_dev'
+          default: 'tcwg_bmk-YOUR_ID'
           description: "CI project ID; used as namespace for git branches"
       - string:
           name: ci_config
-          default: gnu-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: {{toolchain_name}}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
-      - llvm-parameters:
+          default: llvm-release-aarch64-spec2k6-O2
+          description: "CI configuration ID: llvm-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+      - build-parameters:
           binutils_url: https://git.linaro.org/toolchain/ci/binutils-gdb.git
           gcc_url: https://git.linaro.org/toolchain/ci/gcc.git
           glibc_url: https://git.linaro.org/toolchain/ci/glibc.git
@@ -640,10 +268,10 @@
             - push
           description: "What to do with baseline in this build"
       - bmk-parameters
-    disabled: true
+    disabled: false
     node: '{node}'
-    concurrent: false
-    display-name: 'DELETE ME'
+    concurrent: true
+    display-name: 'TCWG Build tcwg_bmk_{hw}/llvm'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -722,7 +350,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_bmk_{hw}-bisect
+    name: tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/llvm
     project-type: freestyle
     defaults: global
     properties:
@@ -730,12 +358,12 @@
     parameters:
       - string:
           name: ci_project
-          default: 'tcwg_bmk_{hw}_dev'
+          default: 'tcwg_bmk-YOUR_ID'
           description: "CI project ID; used as namespace for git branches"
       - string:
           name: ci_config
-          default: gnu-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: {{toolchain_name}}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+          default: llvm-release-aarch64-spec2k6-O2
+          description: "CI configuration ID: llvm-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
       - string:
           name: binutils_url
           default: https://git.linaro.org/toolchain/ci/binutils-gdb.git
@@ -768,10 +396,10 @@
           name: jenkins-scripts/replay_log
           description: "Replay part of bisect using provided bisect log"
       - bmk-parameters
-    disabled: true
+    disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'DELETE ME'
+    display-name: 'TCWG Bisect tcwg_bmk_{hw}/llvm'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -839,3 +467,4 @@
             success: true
             send-to:
               - recipients
+# checksum: d1b2a5571aa6fca0a0d6fd8308dcfc99

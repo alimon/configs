@@ -1,5 +1,6 @@
+#if PURPOSE_ci
 - project:
-    name: tcwg_bmk
+    name: tcwg_bmk_ci_#{TOOLCHAIN}
     binutils_url: git://sourceware.org/git/binutils-gdb.git
     gcc_url: https://github.com/gcc-mirror/gcc.git
     glibc_url: git://sourceware.org/git/glibc.git
@@ -10,24 +11,28 @@
       - tx1:
           target: aarch64
           node: tcwg-x86_64-build_bmk_tx1
-    toolchain_name:
-      - llvm:
-          components: binutils gcc glibc llvm
-          llvm_url: https://github.com/llvm/llvm-project.git
-      - gnu:
-          components: binutils gcc glibc
-          llvm_url: no_llvm_url
+    toolchain_name: #{TOOLCHAIN}
+#if TOOLCHAIN_gnu
+    components: binutils gcc glibc
+#elif TOOLCHAIN_llvm
+    components: binutils gcc glibc llvm
+    llvm_url: https://github.com/llvm/llvm-project.git
+#endif
     toolchain_ver:
       - master:
           binutils_branch: master
           gcc_branch: master
           glibc_branch: master
+#if TOOLCHAIN_llvm
           llvm_branch: master
+#endif
       - release:
           binutils_branch: binutils-2_33-branch
           gcc_branch: releases/gcc-9
           glibc_branch: release/2.30/master
+#if TOOLCHAIN_llvm
           llvm_branch: release/10.x
+#endif
     bmk:
       - spec2k6
     cflags:
@@ -54,8 +59,8 @@
       - O3-vs-O3_LTO:
           cron_schedule: H H H/7 * *
     jobs:
-      - 'tcwg_bmk_{hw}-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-      - 'tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk_ci/build-tcwg_bmk_{hw}/#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     exclude:
       - toolchain_name: gnu
         cflags: Oz
@@ -69,41 +74,12 @@
         cflags: O3-vs-O3_LTO
 
 - view:
-    name: tcwg_bmk
+    name: tcwg_bmk_ci_#{TOOLCHAIN}
     view-type: list
-    regex: 'delete-this-view'
-
-- view:
-    name: tcwg_bmk-ci
-    view-type: list
-    regex: 'tcwg_bmk_.*-.*-.*'
+    regex: 'tcwg_bmk_ci/.*/#{TOOLCHAIN}-.*'
+#endif /* PURPOSE_ci */
 
 #include tcwg/round-robin.yaml.inc
-- scm:
-    name: gnu-scm
-    scm:
-      - binutils-scm:
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-      - gcc-scm:
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
-      - glibc-scm:
-          glibc_url: '{glibc_url}'
-          glibc_branch: '{glibc_branch}'
-- scm:
-    name: llvm-scm
-    scm:
-      - gnu-scm:
-          binutils_url: '{binutils_url}'
-          binutils_branch: '{binutils_branch}'
-          gcc_url: '{gcc_url}'
-          gcc_branch: '{gcc_branch}'
-          glibc_url: '{glibc_url}'
-          glibc_branch: '{glibc_branch}'
-      - clang-scm:
-          llvm_url: '{llvm_url}'
-          llvm_branch: '{llvm_branch}'
 - scm:
     name: bmk-scripts
     scm:
@@ -134,7 +110,7 @@
           num-to-keep: 30
 
 - parameter:
-    name: gnu-parameters
+    name: build-parameters
     parameters:
       - string:
           name: binutils_url
@@ -160,14 +136,7 @@
           name: glibc_branch
           default: '{default_branch}'
           description: "glibc branch or sha1 to build, or 'baseline'"
-- parameter:
-    name: llvm-parameters
-    parameters:
-      - gnu-parameters:
-          binutils_url: '{binutils_url}'
-          gcc_url: '{gcc_url}'
-          glibc_url: '{glibc_url}'
-          default_branch: '{default_branch}'
+#if TOOLCHAIN_llvm
       - string:
           name: llvm_url
           default: '{llvm_url}'
@@ -176,6 +145,7 @@
           name: llvm_branch
           default: '{default_branch}'
           description: "llvm branch or sha1 to build, or 'baseline'"
+#endif
 - parameter:
     name: bmk-parameters
     parameters:
@@ -189,6 +159,7 @@
           default: master
           description: 'Benchmark scripts revision to use'
 
+#if PURPOSE_ci
 - builder:
     name: trigger-followup-builds
     builders:
@@ -207,31 +178,32 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_bmk_{hw}-build-{ci_config}
+          - project: tcwg_bmk_ci/build-tcwg_bmk_{hw}/{ci_config}
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_bmk_{hw}-bisect-{ci_config}
+          - project: tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/{ci_config}
             property-file: artifacts/trigger-bisect
 
 - job-template:
-    name: tcwg_bmk_{hw}-build-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_bmk_ci/build-tcwg_bmk_{hw}/#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}
     project-type: freestyle
     defaults: global
     properties:
       - bmk-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_bmk_{hw}-build"
-            - "tcwg_bmk_{hw}-bisect"
-            - "tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}"
+            - "tcwg_bmk_dev/.*"
+            - "tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}"
           queue-scanning: 'ALL'
     parameters:
-      - '{toolchain_name}-parameters':
+      - build-parameters:
           binutils_url: '{binutils_url}'
           gcc_url: '{gcc_url}'
           glibc_url: '{glibc_url}'
+#if TOOLCHAIN_llvm
           llvm_url: '{llvm_url}'
+#endif
           default_branch: default
       - choice:
           name: update_baseline
@@ -245,20 +217,25 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG Build tcwg_bmk_{hw}/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    display-name: 'TCWG Build tcwg_bmk_{hw}/#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
-      - bmk-scripts
-      - '{toolchain_name}-scm':
-          llvm_url: '{llvm_url}'
-          llvm_branch: '{llvm_branch}'
+      - binutils-scm:
           binutils_url: '{binutils_url}'
           binutils_branch: '{binutils_branch}'
+      - gcc-scm:
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
+      - glibc-scm:
           glibc_url: '{glibc_url}'
           glibc_branch: '{glibc_branch}'
+#if TOOLCHAIN_llvm
+      - clang-scm:
+          llvm_url: '{llvm_url}'
+          llvm_branch: '{llvm_branch}'
+#endif
+      - bmk-scripts
     triggers:
       - pollscm:
           cron: '{cron_schedule}'
@@ -281,8 +258,8 @@
                 mkdir -p artifacts/jenkins
                 build_name="#$BUILD_NUMBER"
                 branch_opt=""
-                # 2 to skip jenkins-scripts and bmk-scripts
-                i=2
+                # 1 to skip jenkins-scripts
+                i=1
                 for c in {components}; do
                   eval "b=\$$$${{c}}_branch"
                   if [ x"$b" = x"default" ]; then
@@ -309,7 +286,9 @@
                 ==rr[binutils_url] {binutils_url} \
                 ==rr[gcc_url] {gcc_url} \
                 ==rr[glibc_url] {glibc_url} \
+#if TOOLCHAIN_llvm
                 ==rr[llvm_url] {llvm_url} \
+#endif
                 $branch_opt \
                 ==rr[mode] "jenkins-full" \
                 ==rr[update_baseline] "$update_baseline" \
@@ -344,7 +323,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_bmk_{hw}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}
     project-type: freestyle
     defaults: global
     properties:
@@ -356,9 +335,8 @@
           # same regression tends to appear in multiple configurations,
           # run bisections for all configurations in-order.
           blocking-jobs:
-            - "tcwg_bmk_{hw}-build"
-            - "tcwg_bmk_{hw}-bisect"
-            - "tcwg_bmk_{hw}-bisect-.*"
+            - "tcwg_bmk_dev/.*-tcwg_bmk_{hw}"
+            - "tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/.*"
           queue-scanning: 'BUILDABLE'
     parameters:
       - string:
@@ -377,7 +355,7 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG Bisect tcwg_bmk_{hw}/{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+    display-name: 'TCWG Bisect tcwg_bmk_{hw}/#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -428,7 +406,9 @@
             ==rr[binutils_url] {binutils_url} \
             ==rr[gcc_url] {gcc_url} \
             ==rr[glibc_url] {glibc_url} \
+#if TOOLCHAIN_llvm
             ==rr[llvm_url] {llvm_url} \
+#endif
             $extra_build_params
 
             if [ x"$mail_recipients" != x"default" ]; then
@@ -450,26 +430,28 @@
             success: true
             send-to:
               - recipients
+#endif /* PURPOSE_ci */
 
+#if PURPOSE_dev
 - project:
-    name: tcwg_bmk-dev
+    name: tcwg_bmk_dev_#{TOOLCHAIN}
     hw:
       - tk1:
           node: tcwg-x86_64-build_bmk_tk1
       - tx1:
           node: tcwg-x86_64-build_bmk_tx1
     jobs:
-      - 'tcwg_bmk_{hw}-build'
-      - 'tcwg_bmk_{hw}-bisect'
+      - 'tcwg_bmk_dev/build-tcwg_bmk_{hw}/#{TOOLCHAIN}'
+      - 'tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/#{TOOLCHAIN}'
 
 - view:
-    name: tcwg_bmk-dev
+    name: tcwg_bmk_dev_#{TOOLCHAIN}
     view-type: list
     job-name:
-      - tcwg_bmk_tk1-build
-      - tcwg_bmk_tk1-bisect
-      - tcwg_bmk_tx1-build
-      - tcwg_bmk_tx1-bisect
+      - tcwg_bmk_dev/build-tcwg_bmk_tk1/#{TOOLCHAIN}
+      - tcwg_bmk_dev/bisect-tcwg_bmk_tk1/#{TOOLCHAIN}
+      - tcwg_bmk_dev/build-tcwg_bmk_tx1/#{TOOLCHAIN}
+      - tcwg_bmk_dev/bisect-tcwg_bmk_tx1/#{TOOLCHAIN}
       - tcwg-benchmark-tk1
       - tcwg-benchmark-tx1
 
@@ -489,7 +471,9 @@
               echo "binutils_url=$binutils_url" >> $i
               echo "gcc_url=$gcc_url" >> $i
               echo "glibc_url=$glibc_url" >> $i
+#if TOOLCHAIN_llvm
               echo "llvm_url=$llvm_url" >> $i
+#endif
               echo "mail_recipients=$mail_recipients" >> $i
               echo "distro=$distro" >> $i
               echo "scripts_branch=$scripts_branch" >> $i
@@ -497,37 +481,39 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_bmk_{hw}-build
+          - project: tcwg_bmk_dev/build-tcwg_bmk_{hw}/#{TOOLCHAIN}
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_bmk_{hw}-bisect
+          - project: tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/#{TOOLCHAIN}
             property-file: artifacts/trigger-bisect
 
 - job-template:
-    name: tcwg_bmk_{hw}-build
+    name: tcwg_bmk_dev/build-tcwg_bmk_{hw}/#{TOOLCHAIN}
     project-type: freestyle
     defaults: global
     properties:
       - bmk-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_bmk_{hw}-bisect"
+            - "tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/#{TOOLCHAIN}"
           queue-scanning: 'ALL'
     parameters:
       - string:
           name: ci_project
-          default: 'tcwg_bmk_{hw}_dev'
+          default: 'tcwg_bmk-YOUR_ID'
           description: "CI project ID; used as namespace for git branches"
       - string:
           name: ci_config
-          default: gnu-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: {{toolchain_name}}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
-      - llvm-parameters:
+          default: #{TOOLCHAIN}-release-aarch64-spec2k6-O2
+          description: "CI configuration ID: #{TOOLCHAIN}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+      - build-parameters:
           binutils_url: https://git.linaro.org/toolchain/ci/binutils-gdb.git
           gcc_url: https://git.linaro.org/toolchain/ci/gcc.git
           glibc_url: https://git.linaro.org/toolchain/ci/glibc.git
+#if TOOLCHAIN_llvm
           llvm_url: https://git.linaro.org/toolchain/ci/llvm-project.git
+#endif
           default_branch: baseline
       - choice:
           name: update_baseline
@@ -540,8 +526,8 @@
       - bmk-parameters
     disabled: false
     node: '{node}'
-    concurrent: false
-    display-name: 'TCWG Build tcwg_bmk_{hw}'
+    concurrent: true
+    display-name: 'TCWG Build tcwg_bmk_{hw}/#{TOOLCHAIN}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -586,7 +572,9 @@
             ==rr[binutils_url] $binutils_url \
             ==rr[gcc_url] $gcc_url \
             ==rr[glibc_url] $glibc_url \
+#if TOOLCHAIN_llvm
             ==rr[llvm_url] $llvm_url \
+#endif
             $branch_opt \
             ==rr[mode] "jenkins-full" \
             ==rr[update_baseline] "$update_baseline" \
@@ -620,7 +608,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_bmk_{hw}-bisect
+    name: tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/#{TOOLCHAIN}
     project-type: freestyle
     defaults: global
     properties:
@@ -628,12 +616,12 @@
     parameters:
       - string:
           name: ci_project
-          default: 'tcwg_bmk_{hw}_dev'
+          default: 'tcwg_bmk-YOUR_ID'
           description: "CI project ID; used as namespace for git branches"
       - string:
           name: ci_config
-          default: gnu-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: {{toolchain_name}}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+          default: #{TOOLCHAIN}-release-aarch64-spec2k6-O2
+          description: "CI configuration ID: #{TOOLCHAIN}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
       - string:
           name: binutils_url
           default: https://git.linaro.org/toolchain/ci/binutils-gdb.git
@@ -646,10 +634,12 @@
           name: glibc_url
           default: https://git.linaro.org/toolchain/ci/glibc.git
           description: "glibc git URL"
+#if TOOLCHAIN_llvm
       - string:
           name: llvm_url
           default: https://git.linaro.org/toolchain/ci/llvm-project.git
           description: "llvm git URL"
+#endif
       - string:
           name: current_project
           default: ""
@@ -669,7 +659,7 @@
     disabled: false
     node: '{node}'
     concurrent: false
-    display-name: 'TCWG Bisect tcwg_bmk_{hw}'
+    display-name: 'TCWG Bisect tcwg_bmk_{hw}/#{TOOLCHAIN}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
@@ -716,7 +706,9 @@
             ==rr[binutils_url] $binutils_url \
             ==rr[gcc_url] $gcc_url \
             ==rr[glibc_url] $glibc_url \
+#if TOOLCHAIN_llvm
             ==rr[llvm_url] $llvm_url \
+#endif
             $extra_build_params
 
             if [ x"$mail_recipients" != x"default" ]; then
@@ -737,3 +729,4 @@
             success: true
             send-to:
               - recipients
+#endif /* PURPOSE_dev */
