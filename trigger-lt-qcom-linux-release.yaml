@@ -60,12 +60,16 @@
             export LINARO_CI_BASE_URL="${RELEASE_URL}"
             export KERNEL_BUILD_MACHINE_AVAIL=True
 
-            echo "RELEASE_NAME=${RELEASE_NAME}" > lt_qcom_parameters
-            set +e
-            python configs/lt-qcom-linux-test/linaroci.py \
-              >> lt_qcom_parameters
-            ret=$?
-            cat lt_qcom_parameters
+            if [ -z "${RELEASE_NAME}" ]; then
+                ret=1
+            else
+                echo "RELEASE_NAME=${RELEASE_NAME}" > lt_qcom_parameters
+                set +e
+                python configs/lt-qcom-linux-test/linaroci.py \
+                  >> lt_qcom_parameters
+                ret=$?
+                cat lt_qcom_parameters
+            fi
             if [ $ret -ne 0 ]; then
                 echo "warning: linaro ci kernel already built"
             fi
