@@ -122,12 +122,6 @@
         - linaro-publish-token
         - shell:
             !include-raw: rpb-openembedded/buildinfo-protected.sh
-        - shell: |
-            if [[ ${MACHINE} = "ledge-qemux86-64" || ${MACHINE} = "ledge-qemuarm64" || ${MACHINE} = "ledge-qemuarm"  ]]; then
-                   # qemu builds have to be public
-                   rm ${WORKSPACE}/BUILD-INFO.txt
-            fi
-
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
         - shell: |
