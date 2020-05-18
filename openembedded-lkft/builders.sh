@@ -354,7 +354,7 @@ case "${MACHINE}" in
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage-*-am57xx-beagle-x15-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     ;;
-  dragonboard-410c)
+  dragonboard-410c | dragonboard-845c)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "Image.gz-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
     KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "Image.gz-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
     ;;
