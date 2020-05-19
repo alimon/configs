@@ -66,8 +66,10 @@
             set -ex
 
             KERNEL_CONFIGS=defconfig
-            if echo "${KERNEL_BRANCH}" | grep -q "release/chromiumos-4.14-r.*"; then
-                KERNEL_CONFIGS=chromiumos-qualcomm
+            if echo "${KERNEL_BRANCH}" | grep -q "release/.*"; then
+                KERNEL_CONFIGS="${KERNEL_CONFIGS} distro.config"
+            elif echo "${KERNEL_BRANCH}" | grep -q "alimon/tracking"; then
+                KERNEL_CONFIGS="${KERNEL_CONFIGS} distro.config"
             fi
 
             echo "KERNEL_REPO_URL=${KERNEL_REPO_URL}" > build_parameters
