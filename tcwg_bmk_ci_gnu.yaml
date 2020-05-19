@@ -204,6 +204,14 @@
     name: build-parameters
     parameters:
       - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID: gnu-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+      - string:
           name: binutils_url
           default: '{binutils_url}'
           description: "binutils git URL"
@@ -239,7 +247,6 @@
           name: bmk_branch
           default: master
           description: 'Benchmark scripts revision to use'
-#END:   tcwg_bmk/tcwg_bmk.yaml.inc
 
 - builder:
     name: trigger-followup-builds
@@ -252,6 +259,11 @@
           set -ex
           for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
             if [ -f $i ]; then
+              echo "ci_project=$ci_project" >> $i
+              echo "ci_config=$ci_config" >> $i
+              echo "binutils_url=$binutils_url" >> $i
+              echo "gcc_url=$gcc_url" >> $i
+              echo "glibc_url=$glibc_url" >> $i
               echo "mail_recipients=$mail_recipients" >> $i
               echo "distro=$distro" >> $i
               echo "scripts_branch=$scripts_branch" >> $i
@@ -259,12 +271,13 @@
             fi
           done
       - trigger-builds:
-          - project: tcwg_bmk_ci/build-tcwg_bmk_{hw}/{ci_config}
+          - project: '{rr_project}/build-{ci_project}/{ci_config}'
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/{ci_config}
+          - project: '{rr_project}/bisect-{ci_project}/{ci_config}'
             property-file: artifacts/trigger-bisect
+#END:   tcwg_bmk/tcwg_bmk.yaml.inc
 
 - job-template:
     name: tcwg_bmk_ci/build-tcwg_bmk_{hw}/gnu-{toolchain_ver}-{target}-{bmk}-{cflags}
@@ -279,6 +292,8 @@
           queue-scanning: 'ALL'
     parameters:
       - build-parameters:
+          ci_project: 'tcwg_bmk_{hw}'
+          ci_config: 'gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
           binutils_url: '{binutils_url}'
           gcc_url: '{gcc_url}'
           glibc_url: '{glibc_url}'
@@ -354,11 +369,11 @@
                 --BUILD_URL "$BUILD_URL" \
                 --scripts_branch "$scripts_branch" \
                 --bmk_branch "$bmk_branch" \
-                ==rr[ci_project] tcwg_bmk_{hw} \
-                ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
-                ==rr[binutils_url] {binutils_url} \
-                ==rr[gcc_url] {gcc_url} \
-                ==rr[glibc_url] {glibc_url} \
+                ==rr[ci_project] $ci_project \
+                ==rr[ci_config] $ci_config \
+                ==rr[binutils_url] $binutils_url \
+                ==rr[gcc_url] $gcc_url \
+                ==rr[glibc_url] $glibc_url \
                 $branch_opt \
                 ==rr[mode] "jenkins-full" \
                 ==rr[update_baseline] "$update_baseline" \
@@ -380,8 +395,9 @@
                 fi
                 echo "$build_name" > artifacts/jenkins/build-name
         - trigger-followup-builds:
-            hw: '{hw}'
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+            rr_project: 'tcwg_bmk_ci'
+            ci_project: 'tcwg_bmk_{hw}'
+            ci_config: 'gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -410,6 +426,26 @@
           queue-scanning: 'BUILDABLE'
     parameters:
       - string:
+          name: ci_project
+          default: 'tcwg_bmk_{hw}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: 'gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
+          description: "CI configuration ID: gnu-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+      - string:
+          name: binutils_url
+          default: '{binutils_url}'
+          description: "binutils git URL"
+      - string:
+          name: gcc_url
+          default: '{gcc_url}'
+          description: "gcc git URL"
+      - string:
+          name: glibc_url
+          default: '{glibc_url}'
+          description: "glibc git URL"
+      - string:
           name: current_project
           default: ""
           description: "Project to bisect"
@@ -421,6 +457,9 @@
           name: bad_branch
           default: ""
           description: "Bad branch or sha1"
+      - file:
+          name: jenkins-scripts/replay_log
+          description: "Replay part of bisect using provided bisect log"
       - bmk-parameters
     disabled: false
     node: '{node}'
@@ -466,24 +505,26 @@
             --current_project "$current_project" \
             --baseline_branch "$baseline_branch" \
             --bad_branch "$bad_branch" \
+            --replay_log "$(pwd)/jenkins-scripts/replay_log" \
             --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
             --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
             -- \
             --scripts_branch "$scripts_branch" \
             --bmk_branch "$bmk_branch" \
-            ==rr[ci_project] tcwg_bmk_{hw} \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags} \
-            ==rr[binutils_url] {binutils_url} \
-            ==rr[gcc_url] {gcc_url} \
-            ==rr[glibc_url] {glibc_url} \
+            ==rr[ci_project] $ci_project \
+            ==rr[ci_config] $ci_config \
+            ==rr[binutils_url] $binutils_url \
+            ==rr[gcc_url] $gcc_url \
+            ==rr[glibc_url] $glibc_url \
             $extra_build_params
 
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
         - trigger-followup-builds:
-            hw: '{hw}'
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+            rr_project: 'tcwg_bmk_ci'
+            ci_project: 'tcwg_bmk_{hw}'
+            ci_config: 'gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
@@ -497,4 +538,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 0f7795aeb3f8c99e21d9d29d91367270
+# checksum: c8a70dc90f3838386b1b59cd4aa5337b

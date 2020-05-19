@@ -136,6 +136,14 @@
     name: build-parameters
     parameters:
       - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID: gnu-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+      - string:
           name: binutils_url
           default: '{binutils_url}'
           description: "binutils git URL"
@@ -171,6 +179,36 @@
           name: bmk_branch
           default: master
           description: 'Benchmark scripts revision to use'
+
+- builder:
+    name: trigger-followup-builds
+    builders:
+      - build-name-setter:
+          name: 'artifacts/jenkins/build-name'
+          file: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
+            if [ -f $i ]; then
+              echo "ci_project=$ci_project" >> $i
+              echo "ci_config=$ci_config" >> $i
+              echo "binutils_url=$binutils_url" >> $i
+              echo "gcc_url=$gcc_url" >> $i
+              echo "glibc_url=$glibc_url" >> $i
+              echo "mail_recipients=$mail_recipients" >> $i
+              echo "distro=$distro" >> $i
+              echo "scripts_branch=$scripts_branch" >> $i
+              echo "bmk_branch=$bmk_branch" >> $i
+            fi
+          done
+      - trigger-builds:
+          - project: '{rr_project}/build-{ci_project}/{ci_config}'
+            parameter-factories:
+              - factory: filebuild
+                file-pattern: artifacts/trigger-build-*
+          - project: '{rr_project}/bisect-{ci_project}/{ci_config}'
+            property-file: artifacts/trigger-bisect
 #END:   tcwg_bmk/tcwg_bmk.yaml.inc
 
 - project:
@@ -195,36 +233,6 @@
       - tcwg-benchmark-tk1
       - tcwg-benchmark-tx1
 
-- builder:
-    name: trigger-followup-builds2
-    builders:
-      - build-name-setter:
-          name: 'artifacts/jenkins/build-name'
-          file: true
-      - shell: |
-          #!/bin/bash
-          set -ex
-          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
-            if [ -f $i ]; then
-              echo "ci_project=$ci_project" >> $i
-              echo "ci_config=$ci_config" >> $i
-              echo "binutils_url=$binutils_url" >> $i
-              echo "gcc_url=$gcc_url" >> $i
-              echo "glibc_url=$glibc_url" >> $i
-              echo "mail_recipients=$mail_recipients" >> $i
-              echo "distro=$distro" >> $i
-              echo "scripts_branch=$scripts_branch" >> $i
-              echo "bmk_branch=$bmk_branch" >> $i
-            fi
-          done
-      - trigger-builds:
-          - project: tcwg_bmk_dev/build-tcwg_bmk_{hw}/gnu
-            parameter-factories:
-              - factory: filebuild
-                file-pattern: artifacts/trigger-build-*
-          - project: tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/gnu
-            property-file: artifacts/trigger-bisect
-
 - job-template:
     name: tcwg_bmk_dev/build-tcwg_bmk_{hw}/gnu
     project-type: freestyle
@@ -236,15 +244,9 @@
             - "tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/gnu"
           queue-scanning: 'ALL'
     parameters:
-      - string:
-          name: ci_project
-          default: 'tcwg_bmk-YOUR_ID'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: gnu-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: gnu-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
       - build-parameters:
+          ci_project: tcwg_bmk-YOUR_ID
+          ci_config: gnu-release-aarch64-spec2k6-O2
           binutils_url: https://git.linaro.org/toolchain/ci/binutils-gdb.git
           gcc_url: https://git.linaro.org/toolchain/ci/gcc.git
           glibc_url: https://git.linaro.org/toolchain/ci/glibc.git
@@ -326,8 +328,10 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-        - trigger-followup-builds2:
-            hw: '{hw}'
+        - trigger-followup-builds:
+            rr_project: 'tcwg_bmk_dev'
+            ci_project: 'tcwg_bmk_{hw}'
+            ci_config: 'gnu'
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -436,8 +440,10 @@
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
-        - trigger-followup-builds2:
-            hw: '{hw}'
+        - trigger-followup-builds:
+            rr_project: 'tcwg_bmk_dev'
+            ci_project: 'tcwg_bmk_{hw}'
+            ci_config: 'gnu'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
@@ -451,4 +457,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 2151071e2500f0247fd64cb52c945344
+# checksum: 277d67094dcc442b8139b7bc1d16bcc4
