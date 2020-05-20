@@ -17,7 +17,7 @@ mkdir -p ramdisk
 tar -xvzf $overlay_file -C ramdisk
 cd ramdisk
 overlay_file=$(basename $2 .tar.gz).cpio
-find . | cpio -ov -H newc > ../$overlay_file
+find . | cpio -R +0:+0 -ov -H newc > ../$overlay_file
 cd ../
 gzip $overlay_file
 overlay_file=$overlay_file.gz
