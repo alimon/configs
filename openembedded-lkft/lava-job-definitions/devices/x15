@@ -12,7 +12,7 @@
     namespace: target
     connection: lxc
     images:
-      userdata:
+      super:
         url: lxc:///rpb-console-image-lkft.rootfs.img
         apply-overlay: true
     os: oe
@@ -30,7 +30,8 @@
     - setenv fdtfile am57xx-beagle-x15.dtb
     - setenv console ttyS2,115200n8
     - setenv mmcdev 1
-    - "setenv bootpart 1:9"
+    - part number mmc 1 super part_num
+    - "setenv bootpart 1:${part_num}"
     - run mmcboot
     timeout:
       minutes: 15
