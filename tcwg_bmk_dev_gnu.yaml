@@ -218,6 +218,7 @@
           node: tcwg-x86_64-build_bmk_tk1
       - tx1:
           node: tcwg-x86_64-build_bmk_tx1
+    components: binutils gcc glibc
     jobs:
       - 'tcwg_bmk_dev_gnu-build-tcwg_bmk_{hw}'
       - 'tcwg_bmk_dev_gnu-bisect-tcwg_bmk_{hw}'
@@ -286,7 +287,7 @@
             mkdir -p artifacts/jenkins
             build_name="#$BUILD_NUMBER-$ci_project/$ci_config"
             branch_opt=""
-            for c in binutils gcc glibc llvm; do
+            for c in {components}; do
               eval "b=\$$$${{c}}_branch"
               if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
@@ -455,4 +456,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 8318320bd6d961bdb553f4e75720a7ee
+# checksum: bd1e628566767617c35f9cd8b86eca34
