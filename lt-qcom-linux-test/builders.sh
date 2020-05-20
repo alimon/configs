@@ -24,7 +24,7 @@ function copy_archive_to_rootfs() {
 			tar -xvf $archive_file -C out/archive
 		fi
 		cd out/archive
-		find . | cpio -R +0:+0 -oA -H newc -F ../../$target_file
+		find . | cpio -R 0:0 -oA -H newc -F ../../$target_file
 		cd ../../
 		rm -rf out/archive
 	else
@@ -61,7 +61,7 @@ function create_ramdisk_from_folder() {
 	ramdisk="$ramdisk_name.cpio"
 
 	cd $ramdisk_folder
-	find . | cpio -R +0:+0 -ov -H newc > "../../out/$ramdisk"
+	find . | cpio -R 0:0 -ov -H newc > "../../out/$ramdisk"
 	${GZ} "../../out/$ramdisk"
 	ramdisk=$ramdisk.gz
 	echo "$ramdisk"
@@ -96,7 +96,7 @@ function overlay_ramdisk_from_file() {
 	file_name=$1
 	file_cpio="out/$2.cpio"
 
-	echo $file_name | cpio -R +0:+0 -ov -H newc > $file_cpio
+	echo $file_name | cpio -R 0:0 -ov -H newc > $file_cpio
 	${GZ} $file_cpio
 	file_cpio=$file_cpio.gz
 
