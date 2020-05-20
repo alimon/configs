@@ -170,12 +170,8 @@ fi
 
 # find rootfs and ramdisk to use
 python configs/lt-qcom-linux-test/get_latest_testimage.py
-if [ -z "${RAMDISK_URL}" ]; then
-	RAMDISK_URL=$(cat output.log  | grep RAMDISK_URL | cut -d= -f2)
-fi
-if [ -z "${ROOTFS_URL}" ]; then
-	ROOTFS_URL=$(cat output.log  | grep ROOTFS_URL | cut -d= -f2)
-fi
+RAMDISK_URL=$(cat output.log  | grep RAMDISK_URL | cut -d= -f2)
+ROOTFS_URL=$(cat output.log  | grep ROOTFS_URL | cut -d= -f2)
 
 # Build information
 mkdir -p out
