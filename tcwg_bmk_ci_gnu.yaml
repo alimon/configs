@@ -48,8 +48,8 @@
       - O3-vs-O3_LTO:
           cron_schedule: H H H/7 * *
     jobs:
-      - 'tcwg_bmk_ci/build-tcwg_bmk_{hw}/gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
-      - 'tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk_ci_gnu-build-tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - 'tcwg_bmk_ci_gnu-bisect-tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
     exclude:
       - toolchain_name: gnu
         cflags: Oz
@@ -65,7 +65,7 @@
 - view:
     name: tcwg_bmk_ci_gnu
     view-type: list
-    regex: 'tcwg_bmk_ci/.*/gnu-.*'
+    regex: 'tcwg_bmk_ci_gnu-.*'
 
 #BEGIN: tcwg_bmk/tcwg_bmk.yaml.inc
 #BEGIN: tcwg/round-robin.yaml.inc
@@ -271,24 +271,24 @@
             fi
           done
       - trigger-builds:
-          - project: '{rr_project}/build-{ci_project}/{ci_config}'
+          - project: '{rr_project}-build-{ci_project_config}'
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: '{rr_project}/bisect-{ci_project}/{ci_config}'
+          - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
 #END:   tcwg_bmk/tcwg_bmk.yaml.inc
 
 - job-template:
-    name: tcwg_bmk_ci/build-tcwg_bmk_{hw}/gnu-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_bmk_ci_gnu-build-tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}
     project-type: freestyle
     defaults: global
     properties:
       - bmk-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_bmk_dev/.*"
-            - "tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/gnu-{toolchain_ver}-{target}-{bmk}-{cflags}"
+            - "tcwg_bmk_dev_.*-tcwg_bmk_{hw}"
+            - "tcwg_bmk_ci_gnu-bisect-tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}"
           queue-scanning: 'ALL'
     parameters:
       - build-parameters:
@@ -395,9 +395,8 @@
                 fi
                 echo "$build_name" > artifacts/jenkins/build-name
         - trigger-followup-builds:
-            rr_project: 'tcwg_bmk_ci'
-            ci_project: 'tcwg_bmk_{hw}'
-            ci_config: 'gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
+            rr_project: 'tcwg_bmk_ci_gnu'
+            ci_project_config: 'tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -409,7 +408,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/gnu-{toolchain_ver}-{target}-{bmk}-{cflags}
+    name: tcwg_bmk_ci_gnu-bisect-tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}
     project-type: freestyle
     defaults: global
     properties:
@@ -421,8 +420,8 @@
           # same regression tends to appear in multiple configurations,
           # run bisections for all configurations in-order.
           blocking-jobs:
-            - "tcwg_bmk_dev/.*-tcwg_bmk_{hw}"
-            - "tcwg_bmk_ci/bisect-tcwg_bmk_{hw}/.*"
+            - "tcwg_bmk_dev_.*-tcwg_bmk_{hw}"
+            - "tcwg_bmk_ci_.*-bisect-tcwg_bmk_{hw}-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
       - string:
@@ -522,9 +521,8 @@
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
         - trigger-followup-builds:
-            rr_project: 'tcwg_bmk_ci'
-            ci_project: 'tcwg_bmk_{hw}'
-            ci_config: 'gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
+            rr_project: 'tcwg_bmk_ci_gnu'
+            ci_project_config: 'tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
@@ -538,4 +536,4 @@
             success: true
             send-to:
               - recipients
-# checksum: c8a70dc90f3838386b1b59cd4aa5337b
+# checksum: 434515a0ee0f60380b1446399f0bffa9

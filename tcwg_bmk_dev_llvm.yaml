@@ -212,11 +212,11 @@
             fi
           done
       - trigger-builds:
-          - project: '{rr_project}/build-{ci_project}/{ci_config}'
+          - project: '{rr_project}-build-{ci_project_config}'
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: '{rr_project}/bisect-{ci_project}/{ci_config}'
+          - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
 #END:   tcwg_bmk/tcwg_bmk.yaml.inc
 
@@ -228,29 +228,29 @@
       - tx1:
           node: tcwg-x86_64-build_bmk_tx1
     jobs:
-      - 'tcwg_bmk_dev/build-tcwg_bmk_{hw}/llvm'
-      - 'tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/llvm'
+      - 'tcwg_bmk_dev_llvm-build-tcwg_bmk_{hw}'
+      - 'tcwg_bmk_dev_llvm-bisect-tcwg_bmk_{hw}'
 
 - view:
     name: tcwg_bmk_dev_llvm
     view-type: list
     job-name:
-      - tcwg_bmk_dev/build-tcwg_bmk_tk1/llvm
-      - tcwg_bmk_dev/bisect-tcwg_bmk_tk1/llvm
-      - tcwg_bmk_dev/build-tcwg_bmk_tx1/llvm
-      - tcwg_bmk_dev/bisect-tcwg_bmk_tx1/llvm
+      - tcwg_bmk_dev_llvm-build-tcwg_bmk_tk1
+      - tcwg_bmk_dev_llvm-bisect-tcwg_bmk_tk1
+      - tcwg_bmk_dev_llvm-build-tcwg_bmk_tx1
+      - tcwg_bmk_dev_llvm-bisect-tcwg_bmk_tx1
       - tcwg-benchmark-tk1
       - tcwg-benchmark-tx1
 
 - job-template:
-    name: tcwg_bmk_dev/build-tcwg_bmk_{hw}/llvm
+    name: tcwg_bmk_dev_llvm-build-tcwg_bmk_{hw}
     project-type: freestyle
     defaults: global
     properties:
       - bmk-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/llvm"
+            - "tcwg_bmk_dev_.*-bisect-tcwg_bmk_{hw}"
           queue-scanning: 'ALL'
     parameters:
       - build-parameters:
@@ -340,9 +340,8 @@
             fi
             echo "$build_name" > artifacts/jenkins/build-name
         - trigger-followup-builds:
-            rr_project: 'tcwg_bmk_dev'
-            ci_project: 'tcwg_bmk_{hw}'
-            ci_config: 'llvm'
+            rr_project: 'tcwg_bmk_dev_llvm'
+            ci_project_config: 'tcwg_bmk_{hw}'
         - shell: |
             #!/bin/bash
             if [ -f artifacts/failures ]; then
@@ -354,7 +353,7 @@
             latest-only: false
 
 - job-template:
-    name: tcwg_bmk_dev/bisect-tcwg_bmk_{hw}/llvm
+    name: tcwg_bmk_dev_llvm-bisect-tcwg_bmk_{hw}
     project-type: freestyle
     defaults: global
     properties:
@@ -457,9 +456,8 @@
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
         - trigger-followup-builds:
-            rr_project: 'tcwg_bmk_dev'
-            ci_project: 'tcwg_bmk_{hw}'
-            ci_config: 'llvm'
+            rr_project: 'tcwg_bmk_dev_llvm'
+            ci_project_config: 'tcwg_bmk_{hw}'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
@@ -473,4 +471,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 086817e8dd65e8a88e294e9346173dd8
+# checksum: b65ed6a9ac4a3507de8fee6fd0ee3162

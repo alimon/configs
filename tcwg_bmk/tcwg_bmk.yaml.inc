@@ -112,9 +112,9 @@
             fi
           done
       - trigger-builds:
-          - project: '{rr_project}/build-{ci_project}/{ci_config}'
+          - project: '{rr_project}-build-{ci_project_config}'
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: '{rr_project}/bisect-{ci_project}/{ci_config}'
+          - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
