@@ -144,75 +144,16 @@
           users:
             - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
     builders:
-        - shell:
-            command: |
-                #!/bin/bash
-                set -ex
-                # Delete artifacts now to avoid re-using stale artifacts if
-                # below docker-run.sh fails to start up a container.
-                rm -rf artifacts/
-                mkdir -p artifacts/jenkins
-                build_name="#$BUILD_NUMBER"
-                branch_opt=""
-                # 1 to skip jenkins-scripts
-                i=1
-                for c in {components}; do
-                  eval "b=\$$$${{c}}_branch"
-                  if [ x"$b" = x"default" ]; then
-                    eval "b=\$GIT_COMMIT_$i"
-                  fi
-                  if [ x"$b" != x"baseline" ]; then
-                    build_name="$build_name-$c"
-                    branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
-                  fi
-                  i=$(($i+1))
-                done
-
-                ./jenkins-scripts/docker-run.sh \
-                --distro $distro \
-                --ssh_info true \
-                -- \
-                ./jenkins-scripts/tcwg_bmk-build.sh \
-                %% artifacts/jenkins/manifest.sh \
-                --BUILD_URL "$BUILD_URL" \
-                --scripts_branch "$scripts_branch" \
-                --bmk_branch "$bmk_branch" \
-                ==rr[ci_project] $ci_project \
-                ==rr[ci_config] $ci_config \
-                ==rr[binutils_url] $binutils_url \
-                ==rr[gcc_url] $gcc_url \
-                ==rr[glibc_url] $glibc_url \
-#if TOOLCHAIN_llvm
-                ==rr[llvm_url] $llvm_url \
-#endif
-                $branch_opt \
-                ==rr[mode] "jenkins-full" \
-                ==rr[update_baseline] "$update_baseline" \
-                $extra_build_params &
-                res=0 && wait $! || res=$?
-
-                if [ $res != 0 ]; then
-                  touch artifacts/failures
-                fi
-
-                if [ -e artifacts/results ]; then
-                  build_name="$build_name-R$(tail -n1 artifacts/results)"
-                fi
-                if [ x"$update_baseline" != x"update" ]; then
-                  build_name="$build_name-$update_baseline"
-                fi
-                if [ -f artifacts/trigger-bisect ]; then
-                  build_name="$build_name-bisect"
-                fi
-                echo "$build_name" > artifacts/jenkins/build-name
-        - trigger-followup-builds:
-            rr_project: 'tcwg_bmk_ci_#{TOOLCHAIN}'
-            ci_project_config: 'tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-        - shell: |
-            #!/bin/bash
-            if [ -f artifacts/failures ]; then
-              exit 1
-            fi
+      - run-build-script:
+          components: '{components}'
+      - trigger-followup-builds:
+          rr_project: 'tcwg_bmk_ci_#{TOOLCHAIN}'
+          ci_project_config: 'tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - shell: |
+          #!/bin/bash
+          if [ -f artifacts/failures ]; then
+            exit 1
+          fi
     publishers:
         - archive:
             artifacts: 'artifacts/**'
@@ -298,48 +239,7 @@
               credential-id: TCWG_JIRA_PASSWORD
               variable: TCWG_JIRA_PASSWORD
     builders:
-        - shell: |
-            #!/bin/bash
-            set -ex
-            # Delete artifacts now to avoid re-using stale artifacts if
-            # below docker-run.sh fails to start up a container.
-            rm -rf artifacts/
-            mkdir -p artifacts/jenkins
-            build_name="#$BUILD_NUMBER-$current_project"
-            echo "$build_name" > artifacts/jenkins/build-name
-            # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
-            echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
-            echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
-
-            ./jenkins-scripts/docker-run.sh \
-            --distro $distro \
-            --ssh_info true \
-            -- \
-            ./jenkins-scripts/round-robin-bisect.sh \
-            %% artifacts/manifests/bisect.sh \
-            --BUILD_URL "$BUILD_URL" \
-            --current_project "$current_project" \
-            --baseline_branch "$baseline_branch" \
-            --bad_branch "$bad_branch" \
-            --replay_log "$(pwd)/jenkins-scripts/replay_log" \
-            --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
-            --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
-            -- \
-            --scripts_branch "$scripts_branch" \
-            --bmk_branch "$bmk_branch" \
-            ==rr[ci_project] $ci_project \
-            ==rr[ci_config] $ci_config \
-            ==rr[binutils_url] $binutils_url \
-            ==rr[gcc_url] $gcc_url \
-            ==rr[glibc_url] $glibc_url \
-#if TOOLCHAIN_llvm
-            ==rr[llvm_url] $llvm_url \
-#endif
-            $extra_build_params
-
-            if [ x"$mail_recipients" != x"default" ]; then
-              echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
-            fi
+        - run-bisect-script
         - trigger-followup-builds:
             rr_project: 'tcwg_bmk_ci_#{TOOLCHAIN}'
             ci_project_config: 'tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
