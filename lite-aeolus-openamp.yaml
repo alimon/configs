@@ -36,6 +36,15 @@
         - string:
             name: QA_SERVER
             default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_GROUP
+            default: 'lite'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'openamp'
+        - string:
+            name: USE_QA_SERVER
+            default: '0'
     disabled: false
     node: master
     child-workspace: .
@@ -99,6 +108,7 @@
 
             rm -rf out
         - shell: |
+            git clone --depth 1 https://github.com/pfalcon/lite-build-tools
             ./job-configs/lite-aeolus-openamp/submit-test.sh
 
     publishers:
