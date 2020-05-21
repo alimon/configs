@@ -106,17 +106,18 @@
             # 1 to skip jenkins-scripts
             i=1
             for c in {components}; do
+              eval "u=\$$$${{c}}_url"
               eval "b=\$$$${{c}}_branch"
 #if PURPOSE_ci
               if [ x"$b" = x"default" ]; then
                 eval "b=\$GIT_COMMIT_$i"
               fi
+              i=$(($i+1))
 #endif
               if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
-                branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
+                branch_opt="$branch_opt ==rr[${{c}}_url] $u ==rr[${{c}}_branch] $b"
               fi
-              i=$(($i+1))
             done
 
             ./jenkins-scripts/docker-run.sh \
@@ -130,12 +131,6 @@
               --bmk_branch "$bmk_branch" \
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
-              ==rr[binutils_url] $binutils_url \
-              ==rr[gcc_url] $gcc_url \
-              ==rr[glibc_url] $glibc_url \
-#if TOOLCHAIN_llvm
-              ==rr[llvm_url] $llvm_url \
-#endif
               $branch_opt \
               ==rr[mode] "jenkins-full" \
               ==rr[update_baseline] "$update_baseline" \
@@ -178,6 +173,14 @@
             echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
 
+            branch_opt=""
+            for c in {components}; do
+              eval "u=\$$$${{c}}_url"
+              if [ x"$c" = x"$current_project" ]; then
+                branch_opt="$branch_opt ==rr[${{c}}_url] $u"
+              fi
+            done
+
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
               --ssh_info true \
@@ -198,12 +201,7 @@
               --bmk_branch "$bmk_branch" \
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
-              ==rr[binutils_url] $binutils_url \
-              ==rr[gcc_url] $gcc_url \
-              ==rr[glibc_url] $glibc_url \
-#if TOOLCHAIN_llvm
-              ==rr[llvm_url] $llvm_url \
-#endif
+              $branch_opt \
               $extra_build_params
 
             if [ x"$mail_recipients" != x"default" ]; then
