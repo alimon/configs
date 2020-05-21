@@ -1,0 +1,37 @@
+- project:
+    name: tcwg_kernel
+    toolchain_name:
+      - gnu
+      - llvm
+    toolchain_ver:
+      - master
+      - release
+    target:
+      - aarch64
+      - arm
+    linux:
+      - next
+      - mainline
+      - stable
+      - lts
+    linux_config:
+      - defconfig
+      - allmodconfig
+      - allyesconfig
+      - allnoconfig
+    jobs:
+      - 'tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - 'tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+
+- job-template:
+    name: tcwg_kernel-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    project-type: freestyle
+    defaults: global
+    disabled: true
+    display-name: 'DELETE ME'
+- job-template:
+    name: tcwg_kernel-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    project-type: freestyle
+    defaults: global
+    disabled: true
+    display-name: 'DELETE ME'
