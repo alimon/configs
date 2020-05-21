@@ -136,28 +136,15 @@
       - pollscm:
           cron: '{cron_schedule}'
     wrappers:
-      - timeout:
+      - default-wrappers:
           timeout: 600
-      - timestamps
-      - ssh-agent-credentials:
-          # tcwg-buildslave user id
-          users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
     builders:
-      - run-build-script:
+      - run-build:
           components: '{components}'
-      - trigger-followup-builds:
           rr_project: 'tcwg_bmk_ci_#{TOOLCHAIN}'
           ci_project_config: 'tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-      - shell: |
-          #!/bin/bash
-          if [ -f artifacts/failures ]; then
-            exit 1
-          fi
     publishers:
-        - archive:
-            artifacts: 'artifacts/**'
-            latest-only: false
+        - build-publishers
 
 - job-template:
     name: tcwg_bmk_ci_#{TOOLCHAIN}-bisect-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}
@@ -227,32 +214,16 @@
       - jenkins-scripts
       - bmk-scripts
     wrappers:
-      - timeout:
+      - default-wrappers:
           timeout: 2880
-      - timestamps
-      - ssh-agent-credentials:
-          # tcwg-buildslave user id
-          users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
       - credentials-binding:
           - text:
               credential-id: TCWG_JIRA_PASSWORD
               variable: TCWG_JIRA_PASSWORD
     builders:
-        - run-bisect-script
-        - trigger-followup-builds:
-            rr_project: 'tcwg_bmk_ci_#{TOOLCHAIN}'
-            ci_project_config: 'tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+      - run-bisect:
+          components: '{components}'
+          rr_project: 'tcwg_bmk_ci_#{TOOLCHAIN}'
+          ci_project_config: 'tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
-        - archive:
-            artifacts: 'artifacts/**'
-            latest-only: false
-        - email-ext:
-            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
-            content-type: text
-            body: |
-              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
-            failure: true
-            success: true
-            send-to:
-              - recipients
+        - bisect-publishers

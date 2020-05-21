@@ -86,8 +86,19 @@
           default: master
           description: 'Benchmark scripts revision to use'
 
+- wrapper:
+    name: default-wrappers
+    wrappers:
+      - timeout:
+          timeout: '{timeout}'
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+
 - builder:
-    name: run-build-script
+    name: run-build
     builders:
       - shell:
           command: |
@@ -151,9 +162,17 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
+      - trigger-followup-builds:
+          rr_project: '{rr_project}'
+          ci_project_config: '{ci_project_config}'
+      - shell: |
+          #!/bin/bash
+          if [ -f artifacts/failures ]; then
+            exit 1
+          fi
 
 - builder:
-    name: run-bisect-script
+    name: run-bisect
     builders:
       - shell:
           command: |
@@ -207,6 +226,9 @@
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
+      - trigger-followup-builds:
+          rr_project: '{rr_project}'
+          ci_project_config: '{ci_project_config}'
 
 - builder:
     name: trigger-followup-builds
@@ -240,3 +262,24 @@
                 file-pattern: artifacts/trigger-build-*
           - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
+
+- publisher:
+    name: build-publishers
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+
+- publisher:
+    name: bisect-publishers
+    publishers:
+        - build-publishers
+        - email-ext:
+            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
+            content-type: text
+            body: |
+              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
+            failure: true
+            success: true
+            send-to:
+              - recipients
