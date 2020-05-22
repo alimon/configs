@@ -1,5 +1,6 @@
 # -*- mode: Yaml -*-
 
+#if COMPONENTS_llvm
 - scm:
     name: clang-scm
     scm:
@@ -14,6 +15,8 @@
             clean:
               before: true
             prune: true
+#endif
+#if COMPONENTS_binutils
 - scm:
     name: binutils-scm
     scm:
@@ -28,6 +31,8 @@
             clean:
               before: true
             prune: true
+#endif
+#if COMPONENTS_gcc
 - scm:
     name: gcc-scm
     scm:
@@ -42,6 +47,8 @@
             clean:
               before: true
             prune: true
+#endif
+#if COMPONENTS_glibc
 - scm:
     name: glibc-scm
     scm:
@@ -56,6 +63,8 @@
             clean:
               before: true
             prune: true
+#endif
+#if COMPONENTS_linux
 - scm:
     name: linux-scm
     scm:
@@ -70,6 +79,7 @@
             clean:
               before: true
             prune: true
+#endif
 - scm:
     name: jenkins-scripts
     scm:
