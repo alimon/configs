@@ -208,13 +208,13 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-        - trigger-followup-builds:
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-        - shell: |
-            #!/bin/bash
-            if [ -f artifacts/failures ]; then
-              exit 1
-            fi
+      - trigger-followup-builds:
+          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - shell: |
+          #!/bin/bash
+          if [ -f artifacts/failures ]; then
+            exit 1
+          fi
     publishers:
         - archive:
             artifacts: 'artifacts/**'

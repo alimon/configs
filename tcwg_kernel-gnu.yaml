@@ -272,13 +272,13 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-        - trigger-followup-builds:
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-        - shell: |
-            #!/bin/bash
-            if [ -f artifacts/failures ]; then
-              exit 1
-            fi
+      - trigger-followup-builds:
+          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - shell: |
+          #!/bin/bash
+          if [ -f artifacts/failures ]; then
+            exit 1
+          fi
     publishers:
         - archive:
             artifacts: 'artifacts/**'
@@ -382,4 +382,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 76fc1bb9db610e01416ffa69b141afed
+# checksum: 7ef7f004cae48d9a3b94f5c1d16b56f7
