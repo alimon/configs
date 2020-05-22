@@ -1,3 +1,5 @@
+# -*- mode: Yaml -*-
+
 #include tcwg/round-robin.yaml.inc
 - scm:
     name: bmk-scripts
@@ -133,9 +135,11 @@
 
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
+#if RR_tcwg_bmk
               --ssh_info true \
+#endif
               -- \
-              ./jenkins-scripts/tcwg_bmk-build.sh \
+              ./jenkins-scripts/#{RR}-build.sh \
               %% artifacts/jenkins/manifest.sh \
               --BUILD_URL "$BUILD_URL" \
               --scripts_branch "$scripts_branch" \

@@ -1,3 +1,5 @@
+# -*- mode: Yaml -*-
+
 - scm:
     name: clang-scm
     scm:
