@@ -31,6 +31,7 @@
             clean:
                 before: true
             choosing-strategy: gerrit
+            basedir: ${GERRIT_PROJECT}
     triggers:
         - gerrit:
             server-name: 'review.linaro.org'
@@ -60,8 +61,8 @@
                 # Shellcheck source= directives are relative to
                 # the CWD, so run from inside the folder.
                 # GERRIT_PROJECT is for example toolchain/jenkins-scripts
-                cd `basename ${GERRIT_PROJECT}`
-                ./docker-run.sh --distro focal -- ../jenkins-scripts-master/sanity-check.sh
+                cd ${GERRIT_PROJECT}
+                ./docker-run.sh --distro focal -- ../../jenkins-scripts-master/sanity-check.sh
             # Aka some files had issues
             # Any other non-zero means we called shellcheck incorrectly
             unstable-return: 1
