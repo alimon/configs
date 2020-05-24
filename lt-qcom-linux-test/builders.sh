@@ -55,6 +55,25 @@ function copy_archive_to_rootfs() {
 	fi
 }
 
+function remove_unused_firmware() {
+	if [ "${MACHINE}" = "sdm845-db845c" ]; then
+		mkdir -p out/archive
+
+		cd out/archive
+		cpio -idv -H newc < $target_file
+
+		# XXX: Remove all not needed because the DB845c ran out of memory space.
+		rm -rf lib/firmware/ar* lib/firmware/htc* lib/firmware/wil*
+		rm -rf lib/firmware/ath3* lib/firmware/ath6* lib/firmware/ath9* lib/firmware/ath10k/QCA*
+		rm -rf lib/firmware/qcom/a300* lib/firmware/qcom/a530*
+		rm -rf lib/firmware/qcom/venus-1.8 lib/firmware/qcom/venus-4.2
+
+		find . | cpio -R 0:0 -ov -H newc > ../../$target_file
+		cd ../../
+		rm -rf out/archive
+	fi
+}
+
 function create_ramdisk_from_folder() {
 	ramdisk_name=$1
 	ramdisk_folder=$2
@@ -260,6 +279,7 @@ if [[ ! -z "${firmware_file}" ]]; then
 	for f in ${firmware_file}; do
 		ffile_type=$(file $f)
 		copy_archive_to_rootfs "$f" "$ffile_type" "$ramdisk_file" "$ramdisk_file_type"
+		remove_unused_firmware "$ramdisk_file" "$ramdisk_file_type"
 		copy_archive_to_rootfs "$f" "$ffile_type" "$rootfs_file" "$rootfs_file_type"
 	done
 fi
