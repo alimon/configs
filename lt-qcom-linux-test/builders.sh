@@ -56,11 +56,14 @@ function copy_archive_to_rootfs() {
 }
 
 function remove_unused_firmware() {
+	target_file=$1
+	target_file_type=$2
+
 	if [ "${MACHINE}" = "sdm845-db845c" ]; then
 		mkdir -p out/archive
 
 		cd out/archive
-		cpio -idv -H newc < $target_file
+		cpio -idv -H newc < ../../$target_file
 
 		# XXX: Remove all not needed because the DB845c ran out of memory space.
 		rm -rf lib/firmware/ar* lib/firmware/htc* lib/firmware/wil*
