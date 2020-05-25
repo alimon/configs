@@ -303,7 +303,7 @@ case "${ORIG_MACHINE}" in
 esac
 
 # Clean up not needed build artifacts
-CLEAN="Image-ledge* Image*mainline* modules-*-mainline* \
+CLEAN="Image-ledge* modules-*-mainline* \
 	*.env *.conf *.manifest *.json *.wks \
 	dtb \
 	*.txt \
