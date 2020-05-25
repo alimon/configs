@@ -16,6 +16,9 @@
                 - job-cancel
     parameters:
         - string:
+            name: ARCH
+            default: 'arm64'
+        - string:
             name: BRANCH
             default: 'master'
         - string:
@@ -71,6 +74,10 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
+        - shell:
+            !include-raw: lt-qcom/install-gcc-toolchain.sh
+        - inject:
+            properties-file: gcc_toolchain_env
         - linaro-publish-token
         - shell:
             !include-raw: lt-qcom-bootloader/dragonboard845c/builders.sh
