@@ -5,8 +5,20 @@ sudo apt-get install -y zip gdisk
 
 set -ex
 
+if [ -z "${WORKSPACE}" ]; then
+	WORKSPACE="$(pwd)"
+	DB_BOOT_TOOLS_DIR="db-boot-tools"
+
+	if [ ! -d "${WORKSPACE}/${DB_BOOT_TOOLS_DIR}" ]; then
+		git clone "${DB_BOOT_TOOLS_GIT}" "${WORKSPACE}/${DB_BOOT_TOOLS_DIR}"
+	fi
+else
+	DB_BOOT_TOOLS_DIR="."
+	LINARO_PUBLISH="True"
+fi
+
 # download the firmware packages
-wget -q ${QCOM_LINUX_FIRMWARE}
+wget -c -q ${QCOM_LINUX_FIRMWARE}
 echo "${QCOM_LINUX_FIRMWARE_MD5}  $(basename ${QCOM_LINUX_FIRMWARE})" > MD5
 md5sum -c MD5
 
@@ -39,16 +51,25 @@ echo "${QCOM_LINUX_FIRMWARE_LICENSE_MD5}  LICENSE" > MD5
 md5sum -c MD5
 
 # Create ptable and rawprogram/patch command files
-git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/partioning_tool.git ptool
+if [ ! -d "ptool" ]; then
+	git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/partioning_tool.git ptool
+fi
 (cd ptool && git log -1)
-(mkdir ptool/linux && cd ptool/linux && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard845c/linux/partition.xml)
-(mkdir ptool/aosp && cd ptool/aosp && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard845c/aosp/partition.xml)
+(mkdir -p ptool/linux && cd ptool/linux && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/${DB_BOOT_TOOLS_DIR}/dragonboard845c/linux/partition.xml)
+(mkdir -p ptool/aosp && cd ptool/aosp && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/${DB_BOOT_TOOLS_DIR}/dragonboard845c/aosp/partition.xml)
+
+# tcbindir from install-gcc-toolchain.sh
+export PATH=${tcbindir}:$PATH
 
 # Clang
-git clone ${ABL_CLANG_GIT} --depth 1 -b ${ABL_CLANG_REL} ${WORKSPACE}/clang
+if [ ! -d "${WORKSPACE}/clang" ]; then
+	git clone ${ABL_CLANG_GIT} --depth 1 -b ${ABL_CLANG_REL} ${WORKSPACE}/clang
+fi
 
 # get and build abl
-git clone --depth 1 ${ABL_GIT_LINARO} -b ${ABL_GIT_REL} abl
+if [ ! -d "abl" ]; then
+	git clone --depth 1 ${ABL_GIT_LINARO} -b ${ABL_GIT_REL} abl
+fi
 pushd abl
 ABL_GIT_COMMIT=$(git rev-parse HEAD)
 mkdir -p out/edk2
@@ -73,7 +94,9 @@ make all \
 # add SSH server signatures to known_hosts list.
 bash -c "ssh-keyscan dev-private-git.linaro.org >  ${HOME}/.ssh/known_hosts"
 bash -c "ssh-keyscan dev-private-review.linaro.org >>  ${HOME}/.ssh/known_hosts"
-git clone --depth 1 ssh://git@dev-private-git.linaro.org/landing-teams/working/qualcomm/sectools.git
+if [ ! -d "sectools" ]; then
+	git clone --depth 1 ssh://git@dev-private-git.linaro.org/landing-teams/working/qualcomm/sectools.git
+fi
 
 python2 sectools/sectools.py secimage -v \
         -c sectools/config/sdm845/sdm845_secimage.xml \
@@ -85,7 +108,7 @@ dd if=/dev/zero of=boot-erase.img bs=1024 count=1024
 
 # bootloader_ufs_linux
 cp -a LICENSE \
-   dragonboard845c/linux/flashall \
+   ${DB_BOOT_TOOLS_DIR}/dragonboard845c/linux/flashall \
    bootloaders-linux/* \
    abl/out/sdm845/abl/abl.elf \
    ptool/linux/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin,gpt_both?.bin} \
@@ -94,7 +117,7 @@ cp -a LICENSE \
 
 # bootloader_ufs_aosp
 cp -a LICENSE \
-   dragonboard845c/aosp/flashall \
+   ${DB_BOOT_TOOLS_DIR}/dragonboard845c/aosp/flashall \
    bootloaders-linux/* \
    abl/out/sdm845/abl/abl.elf \
    ptool/aosp/{rawprogram?.xml,patch?.xml,gpt_main?.bin,gpt_backup?.bin,gpt_both?.bin} \
@@ -102,7 +125,7 @@ cp -a LICENSE \
    out/${BOOTLOADER_UFS_AOSP}
 
 # Final preparation of archives for publishing
-mkdir ${WORKSPACE}/out2
+mkdir -p ${WORKSPACE}/out2
 for i in ${BOOTLOADER_UFS_LINUX} \
          ${BOOTLOADER_UFS_AOSP} ; do
     (cd out/$i && md5sum * > MD5SUMS.txt)
@@ -131,9 +154,11 @@ Build description:
 EOF
 
 # Publish
-test -d ${HOME}/bin || mkdir ${HOME}/bin
-wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
-time python3 ${HOME}/bin/linaro-cp.py \
-     --server ${PUBLISH_SERVER} \
-     --link-latest \
-     ${WORKSPACE}/out2 ${PUB_DEST}
+if [ "${LINARO_PUBLISH}" ]; then
+	test -d ${HOME}/bin || mkdir ${HOME}/bin
+	wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+	time python3 ${HOME}/bin/linaro-cp.py \
+	     --server ${PUBLISH_SERVER} \
+	     --link-latest \
+	     ${WORKSPACE}/out2 ${PUB_DEST}
+fi
