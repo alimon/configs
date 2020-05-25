@@ -58,6 +58,10 @@
             sudo apt-get update
             sudo apt-get install -y ccache bc kmod cpio libssl-dev
         - shell:
+            !include-raw: lt-qcom/install-gcc-toolchain.sh
+        - inject:
+            properties-file: gcc_toolchain_env
+        - shell:
             !include-raw: lt-qcom-linux/build-kernel.sh
         - inject:
             properties-file: pub_dest_parameters
