@@ -44,6 +44,9 @@ git clone --depth 1 https://git.linaro.org/landing-teams/working/qualcomm/partio
 (mkdir ptool/linux && cd ptool/linux && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard845c/linux/partition.xml)
 (mkdir ptool/aosp && cd ptool/aosp && python2 ${WORKSPACE}/ptool/ptool.py -x ${WORKSPACE}/dragonboard845c/aosp/partition.xml)
 
+# tcbindir from install-gcc-toolchain.sh
+export PATH=${tcbindir}:$PATH
+
 # Clang
 git clone ${ABL_CLANG_GIT} --depth 1 -b ${ABL_CLANG_REL} ${WORKSPACE}/clang
 

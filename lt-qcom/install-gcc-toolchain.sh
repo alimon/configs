@@ -12,9 +12,7 @@ if [ ! -d "${tcbindir}" ]; then
 	mkdir -p "${tcdir}"
 	tar -xf "$(basename ${toolchain_url})" -C "${tcdir}"
 fi
+CROSS_COMPILE="ccache $(basename $(ls -1 ${tcbindir}/*-gcc) gcc)"
 
-export PATH=${tcbindir}:$PATH
-export CROSS_COMPILE="ccache $(basename $(ls -1 ${tcbindir}/*-gcc) gcc)"
-
-echo PATH="${PATH}" > gcc_toolchain_env
+echo tcbindir="${tcbindir}" > gcc_toolchain_env
 echo CROSS_COMPILE="${CROSS_COMPILE}" >> gcc_toolchain_env
