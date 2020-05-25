@@ -68,7 +68,7 @@ make all \
      AB_RETRYCOUNT_DISABLE=1 \
      CLANG_BIN=${WORKSPACE}/clang/clang-4691093/bin/ \
      CLANG_PREFIX="aarch64-linux-gnu-" \
-     CLANG_GCC_TOOLCHAIN=$(tcbindir)/aarch64-linux-gnu-gcc \
+     CLANG_GCC_TOOLCHAIN="aarch64-linux-gnu-gcc" \
      TARGET_ARCHITECTURE=AARCH64 \
      BOARD_BOOTLOADER_PRODUCT_NAME="SuperEDK2k"
 
