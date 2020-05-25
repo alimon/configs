@@ -201,12 +201,12 @@ images=$(echo $IMAGES | sed -e 's/'${edgeimg}'//g')
 time bitbake ${bbopt} ${images}
 time bitbake ${bbopt} dip-sdk
 
-# Copy license and manifest information into the deploy dir
-cp -aR ./deploy/licenses/dip-image-dev-*/*.manifest ${DEPLOY_DIR_IMAGE}
-
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
 cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
+
+# Copy license and manifest information into the deploy dir
+cp -aR ./deploy/licenses/dip-image-dev-*/*.manifest ${DEPLOY_DIR_IMAGE}
 
 ls -al ${DEPLOY_DIR_IMAGE}/*
 
