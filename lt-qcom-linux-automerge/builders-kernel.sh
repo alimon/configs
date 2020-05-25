@@ -14,6 +14,11 @@ function build_integration_kernel()
 
 	tcdir=${HOME}/srv/toolchain
 	tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
+	if [ ! -d "${tcbindir}" ]; then
+		wget -q "${toolchain_url}"
+		mkdir -p "${tcdir}"
+		tar -xf "$(basename ${toolchain_url})" -C "${tcdir}"
+	fi
 
 	export CROSS_COMPILE="ccache $(basename $(ls -1 ${tcbindir}/*-gcc) gcc)"
 	export PATH=${tcbindir}:$PATH
