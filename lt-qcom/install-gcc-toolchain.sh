@@ -2,6 +2,9 @@
 
 toolchain_url_arm=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/arm-linux-gnueabihf/gcc-linaro-6.3.1-2017.02-x86_64_arm-linux-gnueabihf.tar.xz
 toolchain_url_arm64=http://releases.linaro.org/components/toolchain/binaries/6.3-2017.02/aarch64-linux-gnu/gcc-linaro-6.3.1-2017.02-x86_64_aarch64-linux-gnu.tar.xz
+if [ "${TOOLCHAIN_ARCH}" ]; then
+	ARCH="${TOOLCHAIN_ARCH}"
+fi
 toolchain_url=toolchain_url_$ARCH
 toolchain_url=${!toolchain_url}
 
