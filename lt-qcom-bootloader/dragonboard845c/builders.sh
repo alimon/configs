@@ -92,7 +92,7 @@ make all \
 
 # get the signing tools, and sign
 # add SSH server signatures to known_hosts list.
-bash -c "ssh-keyscan dev-private-git.linaro.org >  ${HOME}/.ssh/known_hosts"
+bash -c "ssh-keyscan dev-private-git.linaro.org >>  ${HOME}/.ssh/known_hosts"
 bash -c "ssh-keyscan dev-private-review.linaro.org >>  ${HOME}/.ssh/known_hosts"
 if [ ! -d "sectools" ]; then
 	git clone --depth 1 ssh://git@dev-private-git.linaro.org/landing-teams/working/qualcomm/sectools.git
