@@ -33,6 +33,11 @@ if [ -d "${KERNEL_REPO_BARE_PATH}" ]; then
 	echo "Updating kernel bare repo ..."
 	pushd $(pwd)
 	cd ${KERNEL_REPO_BARE_PATH}
+	if [ -f "gc.log" ]; then
+		cat gc.log
+		git gc
+		git prune
+	fi
 	git fetch --all -v
 	git update-server-info
 	popd
