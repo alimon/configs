@@ -26,7 +26,7 @@ for sb in search_branches:
     if (build):
         break
 
-    rex = re.compile("%s/(?P<branch_name>%s)" % (remote_name, sb))
+    rex = re.compile("%s/(?P<branch_name>%s)$" % (remote_name, sb))
     for rb in remote_branches:
         s = rex.search(rb)
         if s:
