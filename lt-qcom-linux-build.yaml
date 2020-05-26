@@ -20,12 +20,29 @@
             name: KERNEL_REPO_URL
             default: 'https://git.linaro.org/landing-teams/working/qualcomm/kernel.git'
         - string:
+            name: KERNEL_CONFIGS_arm64
+            default: 'defconfig distro.config'
+        - string:
+            name: KERNEL_BUILD_TARGET
+            default: 'all'
+        - string:
+            name: KERNEL_VERSION
+        - string:
+            name: KERNEL_DESCRIBE
+        - string:
             name: KERNEL_BRANCH
         - string:
-            name: KERNEL_CONFIGS
+            name: KDEB_CHANGELOG_DIST
+            default: 'sid'
         - string:
-            name: ARCH
+            name: INSTALL_MOD
+            default: 'True'
     axes:
+        - axis:
+            type: user-defined
+            name: ARCH
+            values:
+                - arm64
         - axis:
             type: slave
             name: label
@@ -62,7 +79,9 @@
         - inject:
             properties-file: gcc_toolchain_env
         - shell:
-            !include-raw: lt-qcom-linux/build-kernel.sh
+            !include-raw: lt-qcom-linux/builders.sh
+        - shell:
+            !include-raw: lt-qcom-linux/builders_linaro_ci.sh
         - inject:
             properties-file: pub_dest_parameters
         - linaro-publish-token

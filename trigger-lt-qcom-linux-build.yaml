@@ -67,20 +67,23 @@
 
             KERNEL_CONFIGS=defconfig
             if echo "${KERNEL_BRANCH}" | grep -q "release/.*"; then
-                KERNEL_CONFIGS="${KERNEL_CONFIGS} distro.config"
+                KERNEL_CONFIGS_arm64="${KERNEL_CONFIGS} distro.config"
             elif echo "${KERNEL_BRANCH}" | grep -q "alimon/tracking"; then
-                KERNEL_CONFIGS="${KERNEL_CONFIGS} distro.config"
+                KERNEL_CONFIGS_arm64="${KERNEL_CONFIGS} distro.config"
             fi
 
-            echo "KERNEL_REPO_URL=${KERNEL_REPO_URL}" > build_parameters
-            echo "KERNEL_BRANCH=${KERNEL_BRANCH}" >> build_parameters
-            echo "KERNEL_REVISION=${KERNEL_REVISION}" >> build_parameters
-            echo "KERNEL_CONFIGS=${KERNEL_CONFIGS}" >> build_parameters
-            echo "ARCH=arm64" >> build_parameters
+            # bring in stable and mainline tags
+            git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
+            git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable.git
+
+            echo KERNEL_VERSION=$(make kernelversion) > build_parameters
+            echo KERNEL_DESCRIBE=$(git describe --always) >> build_parameters
+            echo KERNEL_REPO_URL=${KERNEL_REPO_URL} >> build_parameters
+            echo KERNEL_BRANCH=$(echo ${GIT_BRANCH} | sed  's|origin/||') >> build_parameters
+            echo KERNEL_CONFIGS_arm64=${KERNEL_CONFIGS} >> build_parameters
+            echo KDEB_CHANGELOG_DIST=unstable >> build_parameters
 
             cat build_parameters
-        - inject:
-            properties-file: build_parameters
     publishers:
         - logparser:
             parse-rules: '/var/jenkins_home/userContent/android.parse'
