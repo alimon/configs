@@ -60,7 +60,7 @@ make KERNELRELEASE=${SRCVERSION}-qcomlt-${ARCH} \
      DEBFULLNAME="Linaro Qualcomm Landing Team" \
      -j$(nproc) ${KERNEL_BUILD_TARGET}
 if [ "${INSTALL_MOD}" ]; then
-     make -j$(nproc) INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=./INSTALL_MOD_PATH modules_install
+     make KERNELRELEASE=${SRCVERSION}-qcomlt-${ARCH} -j$(nproc) INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=./INSTALL_MOD_PATH modules_install
 fi
 cd ..
 
