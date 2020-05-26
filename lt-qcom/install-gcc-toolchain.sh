@@ -12,8 +12,8 @@ toolchain_url_arm64=http://releases.linaro.org/components/toolchain/binaries/6.3
 toolchain_url=toolchain_url_$ARCH
 toolchain_url=${!toolchain_url}
 
-tcdir=${HOME}/srv/toolchain
-tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
+export tcdir=${HOME}/srv/toolchain
+export tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
 if [ ! -d "${tcbindir}" ]; then
 	wget -q "${toolchain_url}"
 	mkdir -p "${tcdir}"
