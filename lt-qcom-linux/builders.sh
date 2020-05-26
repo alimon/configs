@@ -2,6 +2,7 @@
 
 if [ ! -d "${WORKSPACE}" ]; then
 	WORKSPACE=$(pwd)
+	BUILD_NUMBER=0
 	set -x
 else
 	set -ex
@@ -55,7 +56,9 @@ make KERNELRELEASE=${SRCVERSION}-qcomlt-${ARCH} \
      DEBEMAIL="dragonboard@lists.96boards.org" \
      DEBFULLNAME="Linaro Qualcomm Landing Team" \
      -j$(nproc) ${KERNEL_BUILD_TARGET}
-
+if [ "${INSTALL_MOD}" ]; then
+     make -j$(nproc) INSTALL_MOD_STRIP=1 INSTALL_MOD_PATH=./INSTALL_MOD_PATH modules_install
+fi
 cd ..
 
 cat > params <<EOF
