@@ -1,6 +1,30 @@
 #!/bin/bash
 
-set -ex
+if [ ! -d "${WORKSPACE}" ]; then
+	WORKSPACE=$(pwd)
+	set -x
+else
+	set -ex
+fi
+
+cd ${WORKSPACE}/linux
+
+if [ -z "${ARCH}" ]; then
+	export ARCH=arm64
+	export KERNEL_CONFIGS_arm64="defconfig distro.config"
+fi
+if [ -z "${KERNEL_VERSION}" ]; then
+	KERNEL_VERSION=$(make kernelversion)
+fi
+if [ -z "${KERNEL_DESCRIBE}" ]; then
+	KERNEL_DESCRIBE=$(git describe --always)
+fi
+if [ -z "${KDEB_CHANGELOG_DIST}" ]; then
+	KDEB_CHANGELOG_DIST="unstable"
+fi
+if [ -z "${KERNEL_BUILD_TARGET}" ]; then
+	KERNEL_BUILD_TARGET="all"
+fi
 
 echo "Starting ${JOB_NAME} with the following parameters:"
 echo "KERNEL_DESCRIBE: ${KERNEL_DESCRIBE}"
@@ -19,8 +43,6 @@ export PATH=${tcbindir}:$PATH
 #      linux-4.9.0-qcomlt (4.9.47-530-g244b81e58a54-99)
 SRCVERSION=$(echo ${KERNEL_VERSION} | sed 's/\(.*\)\..*/\1.0/')
 PKGVERSION=$(echo ${KERNEL_VERSION} | sed -e 's/\.0-rc/\.0~rc/')$(echo ${KERNEL_DESCRIBE} | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}')
-
-cd ${WORKSPACE}/linux
 
 KERNEL_CONFIGS=KERNEL_CONFIGS_$ARCH
 make ${!KERNEL_CONFIGS}
