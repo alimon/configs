@@ -67,6 +67,8 @@ notify:
           - ls -l /dev
           - ls -l /sys
           - ls -l /proc
+          - ls -l /lib/modules
+          - lsmod
           - echo "linux_kernel_smoke:" "pass"
     - from: inline
       name: qcomlt-kernel-bootrr
@@ -80,7 +82,7 @@ notify:
           steps:
           - for TEST in $(tr "\0" "\n" < /proc/device-tree/compatible); do
           -     if [ -x "/usr/bin/${TEST}" ]; then
-          -         /usr/bin/${TEST}
+          -         /usr/bin/${TEST} | sed s/RESULT=blocked/RESULT=fail/g
           -     fi
           - done
           - echo ~~~~~~~~~~~~~~~~~~~~~
