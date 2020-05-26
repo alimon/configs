@@ -7,10 +7,7 @@ function build_integration_kernel()
 	export ARCH=$1
 	export KERNEL_CONFIGS=$2
 
-	wget https://git.linaro.org/ci/job/configs.git/plain/lt-qcom/install-gcc-toolchain.sh
 	source install-gcc-toolchain.sh
-
-	# tcbindir from install-gcc-toolchain.sh
 	export CROSS_COMPILE="ccache $(basename $(ls -1 ${tcbindir}/*-gcc) gcc)"
 	export PATH=${tcbindir}:$PATH
 
@@ -42,6 +39,7 @@ if [ ! -z "${GIT_STATUS}" ]; then
 	exit 1
 fi
 
+wget https://git.linaro.org/ci/job/configs.git/plain/lt-qcom/install-gcc-toolchain.sh
 build_integration_kernel "arm" "multi_v7_defconfig"
 build_integration_kernel "arm64" "defconfig"
 
