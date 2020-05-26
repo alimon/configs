@@ -46,9 +46,12 @@ SRCVERSION=$(echo ${KERNEL_VERSION} | sed 's/\(.*\)\..*/\1.0/')
 PKGVERSION=$(echo ${KERNEL_VERSION} | sed -e 's/\.0-rc/\.0~rc/')$(echo ${KERNEL_DESCRIBE} | awk -F- '{printf("-%05d-%s", $(NF-1),$(NF))}')
 
 KERNEL_CONFIGS=KERNEL_CONFIGS_$ARCH
+make distclean
 make ${!KERNEL_CONFIGS}
-make savedefconfig
-cp defconfig arch/${ARCH}/configs
+if [ "${UPDATE_DEFCONFIG}" ]; then
+	make savedefconfig
+	cp defconfig arch/${ARCH}/configs
+fi
 
 make KERNELRELEASE=${SRCVERSION}-qcomlt-${ARCH} \
      KDEB_PKGVERSION=${PKGVERSION}-${BUILD_NUMBER} \
