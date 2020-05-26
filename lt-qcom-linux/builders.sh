@@ -1,30 +1,30 @@
 #!/bin/bash
 
 if [ ! -d "${WORKSPACE}" ]; then
-	WORKSPACE=$(pwd)
-	BUILD_NUMBER=0
-	set -x
+    set -x
+    WORKSPACE=$(pwd)
+    BUILD_NUMBER=0
 else
-	set -ex
+    set -ex
 fi
 
 cd ${WORKSPACE}/linux
 
 if [ -z "${ARCH}" ]; then
-	export ARCH=arm64
-	export KERNEL_CONFIGS_arm64="defconfig distro.config"
+    export ARCH=arm64
+    export KERNEL_CONFIGS_arm64="defconfig distro.config"
 fi
 if [ -z "${KERNEL_VERSION}" ]; then
-	KERNEL_VERSION=$(make kernelversion)
+    KERNEL_VERSION=$(make kernelversion)
 fi
 if [ -z "${KERNEL_DESCRIBE}" ]; then
-	KERNEL_DESCRIBE=$(git describe --always)
+    KERNEL_DESCRIBE=$(git describe --always)
 fi
 if [ -z "${KDEB_CHANGELOG_DIST}" ]; then
-	KDEB_CHANGELOG_DIST="unstable"
+    KDEB_CHANGELOG_DIST="unstable"
 fi
 if [ -z "${KERNEL_BUILD_TARGET}" ]; then
-	KERNEL_BUILD_TARGET="all"
+    KERNEL_BUILD_TARGET="all"
 fi
 
 echo "Starting ${JOB_NAME} with the following parameters:"
