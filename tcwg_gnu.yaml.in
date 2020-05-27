@@ -13,10 +13,10 @@
           gcc_branch: releases/gcc-9
     target:
       - aarch64:
-          node: tcwg-build && tcwg-armv8_64 && tcwg-amp
+          node: tcwg-build && tcwg-armv8_64
           docker_arch: arm64
       - arm:
-          node: tcwg-build && tcwg-armv8_32 && tcwg-amp
+          node: tcwg-build && tcwg-armv8_32
           docker_arch: armhf
     type_of_test:
       - bootstrap_O1:
@@ -109,7 +109,7 @@
           description: "What to do with baseline in this build"
       - default-parameters
     disabled: false
-    node: '{node}'
+    node: '{node} && tcwg-amp'
     concurrent: false
     display-name: 'TCWG Build tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
@@ -266,7 +266,7 @@
           description: "Bad branch or sha1"
       - default-parameters
     disabled: false
-    node: '{node}'
+    node: '{node} && tcwg-d05'
     concurrent: false
     display-name: 'TCWG Bisect tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
