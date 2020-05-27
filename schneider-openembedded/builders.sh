@@ -208,17 +208,32 @@ cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
 # Copy license and manifest information into the deploy dir
 cp -aR ./tmp/deploy/licenses/dip-image-dev-*/*.manifest ${DEPLOY_DIR_IMAGE}
 
-ls -al ${DEPLOY_DIR_IMAGE}/*
+ls -al ${DEPLOY_DIR_IMAGE}
+ls -al ${DEPLOY_DIR_IMAGE}/optee
 
 # now build dip-image-edge if it was in ${IMAGES}
 if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	rm -rf ${DEPLOY_DIR_IMAGE}-pre
+
+	# stash the deployed images for later
 	mv ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}-pre
+
+	# replace layer meta-dip-dev with meta-edge and then build dip-image-edge
 	mkdir -p ${DEPLOY_DIR_IMAGE}
 	sed -i conf/bblayers.conf -e 's#meta-dip-dev#meta-edge#'
 	time bitbake ${bbopt} ${edgeimg}
+
+	# The kernel will exist in both ${DEPLOY_DIR_IMAGE} and ${DEPLOY_DIR_IMAGE}-pre
+	# The files will be binary identical, but have different date stamps
+	# So remove the newer ones
+	rm -f ${DEPLOY_DIR_IMAGE}/zImage-*.bin
+	rm -f ${DEPLOY_DIR_IMAGE}/*.dtb
+	rm -f ${DEPLOY_DIR_IMAGE}/modules-*.tgz
+
+	# Move the saved images back to the deploy dir
 	mv ${DEPLOY_DIR_IMAGE}-pre/* ${DEPLOY_DIR_IMAGE}
-	ls -al ${DEPLOY_DIR_IMAGE}/*
+	ls -al ${DEPLOY_DIR_IMAGE}
+	ls -al ${DEPLOY_DIR_IMAGE}/optee
 fi
 
 # Prepare files to publish
