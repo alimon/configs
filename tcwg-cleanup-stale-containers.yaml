@@ -78,24 +78,32 @@
             #!/bin/bash
 
             set -ex
-            ignore_result=false
+            maybe_ssh=""
             case "$NODE_NAME" in
-              tcwg-bmk-tk1-*|tcwg-bmk-tx1-*|tcwg-x86_64-dev-*-short)
+              tcwg-bmk-bkp-*) ;;
+              tcwg-bmk-*)
+                # Copy jenkins-scripts to benchmarking boards,
+                # and run cleanups remotely.
+                board="tcwg-${NODE_NAME#tcwg-bmk-}.tcwglab"
+                rsync -az --del -rsync-path "mkdir -p $WORKSPACE/; rsync" $WORKSPACE/ $board:$WORKSPACE/
+                maybe_ssh="ssh $board"
+                ;;
+            esac
+            case "$NODE_NAME" in
+              tcwg-bmk-bkp-*) ;;
+              tcwg-bmk-*|tcwg-x86_64-dev-*-short)
                 # Only cleanup ssh-agent processes for secondary nodes
                 # hosted on tcwg-bmk-bkp-01 and tcwg-x86_64-dev-* machines.
-                cleanup_running_hours=0
-                cleanup_stopped_hours=0
-                cleanup_volumes=false
-                cleanup_images=false
-                ignore_result=true
+                ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours 0 --cleanup-stopped-hours 0 --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes false --cleanup-images false --verbose $verbose || true
                 ;;
             esac
 
-            ./tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose &
-            res=0 && wait $! || res=$?
-            if [ x"$res" != "x0" ]; then
-              $ignore_result
-            fi
+            # Nothing else to do for dev-*-short nodes.
+            case "$NODE_NAME" in
+              tcwg-x86_64-dev-*-short) exit 0 ;;
+            esac
+
+            $maybe_ssh $WORKSPACE/tcwg-cleanup-stale-containers.sh --cleanup-running-hours $cleanup_running_hours --cleanup-stopped-hours $cleanup_stopped_hours --cleanup-ssh-agent-hours $cleanup_ssh_agent_hours --cleanup-volumes $cleanup_volumes --cleanup-images $cleanup_images --verbose $verbose
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
