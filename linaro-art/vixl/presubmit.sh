@@ -20,5 +20,5 @@ git config --global user.email "vixl-build-bot@fake-email.invalid"
 
 git clone "${vixl_repo}" vixl
 cd vixl
-git pull "${vixl_repo}" "${GERRIT_REFSPEC}"
+git fetch "${vixl_repo}" "${GERRIT_REFSPEC}" && git checkout FETCH_HEAD
 ./tools/test.py ${VIXL_TEST_ARGS}
