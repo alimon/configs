@@ -85,7 +85,7 @@
                 # Copy jenkins-scripts to benchmarking boards,
                 # and run cleanups remotely.
                 board="tcwg-${NODE_NAME#tcwg-bmk-}.tcwglab"
-                rsync -az --del -rsync-path "mkdir -p $WORKSPACE/; rsync" $WORKSPACE/ $board:$WORKSPACE/
+                rsync -az --del --rsync-path "mkdir -p $WORKSPACE/; rsync" $WORKSPACE/ $board:$WORKSPACE/
                 maybe_ssh="ssh $board"
                 ;;
             esac
