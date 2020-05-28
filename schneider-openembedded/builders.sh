@@ -209,7 +209,7 @@ cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
 cp -aR ./tmp/deploy/licenses/dip-image-dev-*/*.manifest ${DEPLOY_DIR_IMAGE}
 
 ls -al ${DEPLOY_DIR_IMAGE}
-ls -al ${DEPLOY_DIR_IMAGE}/optee
+ls -al ${DEPLOY_DIR_IMAGE}/optee || true
 
 # now build dip-image-edge if it was in ${IMAGES}
 if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
@@ -233,7 +233,7 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	# Move the saved images back to the deploy dir
 	mv ${DEPLOY_DIR_IMAGE}-pre/* ${DEPLOY_DIR_IMAGE}
 	ls -al ${DEPLOY_DIR_IMAGE}
-	ls -al ${DEPLOY_DIR_IMAGE}/optee
+	ls -al ${DEPLOY_DIR_IMAGE}/optee || true
 fi
 
 # Prepare files to publish
