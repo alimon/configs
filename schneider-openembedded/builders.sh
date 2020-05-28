@@ -216,6 +216,7 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	rm -rf ${DEPLOY_DIR_IMAGE}-pre
 
 	# stash the deployed images for later
+	find ${DEPLOY_DIR_IMAGE} -type l -delete
 	mv ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}-pre
 
 	# replace layer meta-dip-dev with meta-edge and then build dip-image-edge
