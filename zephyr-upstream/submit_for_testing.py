@@ -14,6 +14,10 @@ try:
 except ImportError:
     from urlparse import urlsplit
 
+
+# Dump all YAML job definitions as submitted to LAVA
+DEBUG_DUMP_JOBDEFS = False
+
 excluded_tests = [
     # Leads to HARD FAULT.
     'tests/kernel/common/test/zephyr/zephyr.bin',
@@ -365,7 +369,10 @@ def main():
         )
         template = Template(test_template)
         lava_job = template.substitute(replace_dict)
-        print(lava_job)
+
+        if DEBUG_DUMP_JOBDEFS:
+            print(lava_job)
+
         if args.direct_lava:
             try:
                 server = xmlrpclib.ServerProxy("%s://%s:%s@%s" % (urlsplit(lava_server).scheme, lava_user, lava_token, lava_server_base))
@@ -373,12 +380,14 @@ def main():
                 print("%s/scheduler/job/%d" % (lava_server, job_id))
                 tests_submitted += 1
             except xmlrpclib.ProtocolError as err:
+                print(lava_job)
                 print("A protocol error occurred")
                 print("URL: %s" % err.url)
                 print("HTTP/HTTPS headers: %s" % err.headers)
                 print("Error code: %d" % err.errcode)
                 print("Error message: %s" % err.errmsg)
             except xmlrpclib.Fault as err:
+                print(lava_job)
                 print("A fault occurred")
                 print("Fault code: %d" % err.faultCode)
                 print("Fault string: %s" % err.faultString)
@@ -393,6 +402,7 @@ def main():
                     print("%s/testjob/%s" % (qa_server_base, results.text))
                     tests_submitted += 1
                 else:
+                    print(lava_job)
                     print("status code: %s" % results.status_code)
                     print(results.text)
             except requests.exceptions.RequestException as err:  # nopep8
