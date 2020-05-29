@@ -248,14 +248,6 @@
             echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
 
-            branch_opt=""
-            for c in {components}; do
-              eval "u=\$$$${{c}}_url"
-              if [ x"$c" = x"$current_project" ]; then
-                branch_opt="$branch_opt ==rr[${{c}}_url] $u"
-              fi
-            done
-
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
               --ssh_info true \
@@ -264,7 +256,7 @@
               %% artifacts/manifests/bisect.sh \
               --BUILD_URL "$BUILD_URL" \
               --current_project "$current_project" \
-              --baseline_branch "$baseline_branch" \
+              --bad_url "$bad_url" \
               --bad_branch "$bad_branch" \
               --replay_log "$(pwd)/jenkins-scripts/replay_log" \
               --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
@@ -273,7 +265,6 @@
               --bmk_branch "$bmk_branch" \
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
-              $branch_opt \
               $extra_build_params
 
             if [ x"$mail_recipients" != x"default" ]; then
@@ -420,25 +411,13 @@
           default: gnu-release-aarch64-spec2k6-O2
           description: "CI configuration ID: gnu-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
       - string:
-          name: binutils_url
-          default: https://git.linaro.org/toolchain/ci/binutils-gdb.git
-          description: "binutils git URL"
-      - string:
-          name: gcc_url
-          default: https://git.linaro.org/toolchain/ci/gcc.git
-          description: "gcc git URL"
-      - string:
-          name: glibc_url
-          default: https://git.linaro.org/toolchain/ci/glibc.git
-          description: "glibc git URL"
-      - string:
           name: current_project
           default: ""
           description: "Project to bisect"
       - string:
-          name: baseline_branch
-          default: "baseline"
-          description: "Baseline branch or sha1"
+          name: bad_url
+          default: ""
+          description: "Bad git URL"
       - string:
           name: bad_branch
           default: ""
@@ -465,4 +444,4 @@
             ci_project_config: 'tcwg_bmk_{hw}'
     publishers:
         - bisect-publishers
-# checksum: 830c18cf3930f29ba20b66eb0395d74b
+# checksum: 8cc283287e2b138c10c7fd0a92e193fc

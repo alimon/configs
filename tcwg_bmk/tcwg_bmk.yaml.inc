@@ -41,6 +41,7 @@
           name: ci_config
           default: '{ci_config}'
           description: "CI configuration ID: #{TOOLCHAIN}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+#if COMPONENTS_binutils
       - string:
           name: binutils_url
           default: '{binutils_url}'
@@ -49,6 +50,8 @@
           name: binutils_branch
           default: '{default_branch}'
           description: "binutils branch or sha1 to build, or 'baseline'"
+#endif
+#if COMPONENTS_gcc
       - string:
           name: gcc_url
           default: '{gcc_url}'
@@ -57,6 +60,8 @@
           name: gcc_branch
           default: '{default_branch}'
           description: "gcc branch or sha1 to build, or 'baseline'"
+#endif
+#if COMPONENTS_glibc
       - string:
           name: glibc_url
           default: '{glibc_url}'
@@ -65,7 +70,8 @@
           name: glibc_branch
           default: '{default_branch}'
           description: "glibc branch or sha1 to build, or 'baseline'"
-#if TOOLCHAIN_llvm
+#endif
+#if COMPONENTS_llvm
       - string:
           name: llvm_url
           default: '{llvm_url}'
@@ -196,14 +202,6 @@
             echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
 
-            branch_opt=""
-            for c in {components}; do
-              eval "u=\$$$${{c}}_url"
-              if [ x"$c" = x"$current_project" ]; then
-                branch_opt="$branch_opt ==rr[${{c}}_url] $u"
-              fi
-            done
-
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
               --ssh_info true \
@@ -212,7 +210,7 @@
               %% artifacts/manifests/bisect.sh \
               --BUILD_URL "$BUILD_URL" \
               --current_project "$current_project" \
-              --baseline_branch "$baseline_branch" \
+              --bad_url "$bad_url" \
               --bad_branch "$bad_branch" \
               --replay_log "$(pwd)/jenkins-scripts/replay_log" \
               --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
@@ -224,7 +222,6 @@
               --bmk_branch "$bmk_branch" \
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
-              $branch_opt \
               $extra_build_params
 
             if [ x"$mail_recipients" != x"default" ]; then

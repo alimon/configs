@@ -280,9 +280,9 @@
           default: ""
           description: "Project to bisect"
       - string:
-          name: baseline_branch
-          default: "baseline"
-          description: "Baseline branch or sha1"
+          name: bad_url
+          default: ""
+          description: "Bad git URL"
       - string:
           name: bad_branch
           default: ""
@@ -328,15 +328,13 @@
             %% artifacts/manifests/bisect.sh \
             --BUILD_URL "$BUILD_URL" \
             --current_project "$current_project" \
-            --baseline_branch "$baseline_branch" \
+            --bad_url "$bad_url" \
             --bad_branch "$bad_branch" \
             --build_script "./jenkins-scripts/tcwg_kernel-build.sh" \
             --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
             -- \
             ==rr[ci_project] tcwg_kernel \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
-            ==rr[llvm_url] {llvm_url} \
-            ==rr[linux_url] {linux_url}
+            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
 
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
@@ -356,4 +354,4 @@
             success: true
             send-to:
               - recipients
-# checksum: cc99b02c5a30111c707d398f4e2fb470
+# checksum: 1ad4385390b5714df6153dcd4f2e1ace
