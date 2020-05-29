@@ -101,15 +101,6 @@
           llvm_url: '{llvm_url}'
 #endif
           default_branch: default
-      - choice:
-          name: update_baseline
-          choices:
-            - update
-            - reset
-            - init
-            - push
-          description: "What to do with baseline in this build"
-      - bmk-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -163,30 +154,9 @@
             - "tcwg_bmk_ci_.*-bisect-tcwg_bmk_{hw}-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
-      - string:
-          name: ci_project
-          default: 'tcwg_bmk_{hw}'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: '#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
-          description: "CI configuration ID: #{TOOLCHAIN}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
-      - string:
-          name: current_project
-          default: ""
-          description: "Project to bisect"
-      - string:
-          name: bad_url
-          default: ""
-          description: "Bad git URL"
-      - string:
-          name: bad_branch
-          default: ""
-          description: "Bad branch or sha1"
-      - file:
-          name: jenkins-scripts/replay_log
-          description: "Replay part of bisect using provided bisect log"
-      - bmk-parameters
+      - bisect-parameters:
+          ci_project: 'tcwg_bmk_{hw}'
+          ci_config: '#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     disabled: false
     node: '{node}'
     concurrent: false

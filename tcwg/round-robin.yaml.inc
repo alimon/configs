@@ -100,6 +100,10 @@
     name: default-parameters
     parameters:
       - string:
+          name: extra_build_params
+          default: ""
+          description: "Extra parameters to pass to the build script"
+      - string:
           name: mail_recipients
           default: default
           description: "Comma-separated list of email recipients; use 'default' unless testing"
@@ -111,3 +115,9 @@
           name: scripts_branch
           default: master
           description: 'Scripts revision to use'
+#if RR_tcwg_bmk
+      - string:
+          name: bmk_branch
+          default: master
+          description: 'Benchmark scripts revision to use'
+#endif

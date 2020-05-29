@@ -48,15 +48,6 @@
           llvm_url: https://git.linaro.org/toolchain/ci/llvm-project.git
 #endif
           default_branch: baseline
-      - choice:
-          name: update_baseline
-          choices:
-            - update
-            - reset
-            - init
-            - push
-          description: "What to do with baseline in this build"
-      - bmk-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -83,30 +74,9 @@
     properties:
       - bmk-properties
     parameters:
-      - string:
-          name: ci_project
-          default: 'tcwg_bmk-YOUR_ID'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: #{TOOLCHAIN}-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: #{TOOLCHAIN}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
-      - string:
-          name: current_project
-          default: ""
-          description: "Project to bisect"
-      - string:
-          name: bad_url
-          default: ""
-          description: "Bad git URL"
-      - string:
-          name: bad_branch
-          default: ""
-          description: "Bad branch or sha1"
-      - file:
-          name: jenkins-scripts/replay_log
-          description: "Replay part of bisect using provided bisect log"
-      - bmk-parameters
+      - bisect-parameters:
+          ci_project: 'tcwg_bmk-YOUR_ID'
+          ci_config: #{TOOLCHAIN}-release-aarch64-spec2k6-O2
     disabled: false
     node: '{node}'
     concurrent: false

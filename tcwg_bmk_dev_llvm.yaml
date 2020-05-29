@@ -81,6 +81,10 @@
     name: default-parameters
     parameters:
       - string:
+          name: extra_build_params
+          default: ""
+          description: "Extra parameters to pass to the build script"
+      - string:
           name: mail_recipients
           default: default
           description: "Comma-separated list of email recipients; use 'default' unless testing"
@@ -92,6 +96,10 @@
           name: scripts_branch
           default: master
           description: 'Scripts revision to use'
+      - string:
+          name: bmk_branch
+          default: master
+          description: 'Benchmark scripts revision to use'
 #END:   tcwg/round-robin.yaml.inc
 - scm:
     name: bmk-scripts
@@ -165,18 +173,15 @@
           name: llvm_branch
           default: '{default_branch}'
           description: "llvm branch or sha1 to build, or 'baseline'"
-- parameter:
-    name: bmk-parameters
-    parameters:
-      - string:
-          name: extra_build_params
-          default: ""
-          description: "Extra parameters to pass to the build script"
+      - choice:
+          name: update_baseline
+          choices:
+            - update
+            - reset
+            - init
+            - push
+          description: "What to do with baseline in this build"
       - default-parameters
-      - string:
-          name: bmk_branch
-          default: master
-          description: 'Benchmark scripts revision to use'
 
 - wrapper:
     name: default-wrappers
@@ -252,6 +257,34 @@
           if [ -f artifacts/failures ]; then
             exit 1
           fi
+
+- parameter:
+    name: bisect-parameters
+    parameters:
+      - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID"
+      - string:
+          name: current_project
+          default: ""
+          description: "Project to bisect"
+      - string:
+          name: bad_url
+          default: ""
+          description: "Bad git URL"
+      - string:
+          name: bad_branch
+          default: ""
+          description: "Bad branch or sha1"
+      - file:
+          name: jenkins-scripts/replay_log
+          description: "Replay part of bisect using provided bisect log"
+      - default-parameters
 
 - builder:
     name: run-bisect
@@ -391,15 +424,6 @@
           glibc_url: https://git.linaro.org/toolchain/ci/glibc.git
           llvm_url: https://git.linaro.org/toolchain/ci/llvm-project.git
           default_branch: baseline
-      - choice:
-          name: update_baseline
-          choices:
-            - update
-            - reset
-            - init
-            - push
-          description: "What to do with baseline in this build"
-      - bmk-parameters
     disabled: false
     node: '{node}'
     concurrent: false
@@ -426,30 +450,9 @@
     properties:
       - bmk-properties
     parameters:
-      - string:
-          name: ci_project
-          default: 'tcwg_bmk-YOUR_ID'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: llvm-release-aarch64-spec2k6-O2
-          description: "CI configuration ID: llvm-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
-      - string:
-          name: current_project
-          default: ""
-          description: "Project to bisect"
-      - string:
-          name: bad_url
-          default: ""
-          description: "Bad git URL"
-      - string:
-          name: bad_branch
-          default: ""
-          description: "Bad branch or sha1"
-      - file:
-          name: jenkins-scripts/replay_log
-          description: "Replay part of bisect using provided bisect log"
-      - bmk-parameters
+      - bisect-parameters:
+          ci_project: 'tcwg_bmk-YOUR_ID'
+          ci_config: llvm-release-aarch64-spec2k6-O2
     disabled: false
     node: '{node}'
     concurrent: false
@@ -468,4 +471,4 @@
             ci_project_config: 'tcwg_bmk_{hw}'
     publishers:
         - bisect-publishers
-# checksum: 79820067ad5096a900438d8ab7cddafc
+# checksum: ca16fc64bd22a25c9f145417b1f846c1

@@ -81,18 +81,15 @@
           default: '{default_branch}'
           description: "llvm branch or sha1 to build, or 'baseline'"
 #endif
-- parameter:
-    name: bmk-parameters
-    parameters:
-      - string:
-          name: extra_build_params
-          default: ""
-          description: "Extra parameters to pass to the build script"
+      - choice:
+          name: update_baseline
+          choices:
+            - update
+            - reset
+            - init
+            - push
+          description: "What to do with baseline in this build"
       - default-parameters
-      - string:
-          name: bmk_branch
-          default: master
-          description: 'Benchmark scripts revision to use'
 
 - wrapper:
     name: default-wrappers
@@ -180,6 +177,34 @@
           if [ -f artifacts/failures ]; then
             exit 1
           fi
+
+- parameter:
+    name: bisect-parameters
+    parameters:
+      - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID"
+      - string:
+          name: current_project
+          default: ""
+          description: "Project to bisect"
+      - string:
+          name: bad_url
+          default: ""
+          description: "Bad git URL"
+      - string:
+          name: bad_branch
+          default: ""
+          description: "Bad branch or sha1"
+      - file:
+          name: jenkins-scripts/replay_log
+          description: "Replay part of bisect using provided bisect log"
+      - default-parameters
 
 - builder:
     name: run-bisect
