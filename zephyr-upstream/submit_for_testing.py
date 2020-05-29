@@ -326,7 +326,9 @@ def main():
     os.chdir(os.getenv('WORKSPACE'))
     print('CWD: {}'.format(os.getcwd()))
     print(os.listdir('.'))
+
     test_list = generate_test_list(args.board_name, args.device_type)
+    tests_submitted = 0
     for test in test_list:
         re = get_regex(test, get_yaml(test))
         test_name = test.rsplit('/zephyr.bin')[0].replace('/', '-').replace('.', '-')
@@ -369,6 +371,7 @@ def main():
                 server = xmlrpclib.ServerProxy("%s://%s:%s@%s" % (urlsplit(lava_server).scheme, lava_user, lava_token, lava_server_base))
                 job_id = server.scheduler.submit_job(lava_job)
                 print("%s/scheduler/job/%d" % (lava_server, job_id))
+                tests_submitted += 1
             except xmlrpclib.ProtocolError as err:
                 print("A protocol error occurred")
                 print("URL: %s" % err.url)
@@ -388,6 +391,7 @@ def main():
                 results = requests.post(qa_server_api, data=data, headers=headers)
                 if results.status_code < 300:
                     print("%s/testjob/%s" % (qa_server_base, results.text))
+                    tests_submitted += 1
                 else:
                     print("status code: %s" % results.status_code)
                     print(results.text)
@@ -398,6 +402,7 @@ def main():
                 print("Error code: %d" % err.errcode)
                 print("Error message: %s" % err.errmsg)
 
+        print("Total successfully submitted test jobs: %d" % tests_submitted)
 
 if __name__ == "__main__":
     main()
