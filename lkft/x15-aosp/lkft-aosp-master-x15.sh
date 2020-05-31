@@ -180,9 +180,7 @@ function export_parameters(){
     echo "PUB_SRC=${DIR_PUB_SRC}" >> ${WORKSPACE}/publish_parameters
     echo "PUB_EXTRA_INC=^[^/]+\.(xz|dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
 
-    echo "KERNEL_DESCRIBE_X15_4_14=${KERNEL_DESCRIBE_X15_4_14}" >> ${WORKSPACE}/publish_parameters
     echo "KERNEL_DESCRIBE_X15_4_19=${KERNEL_DESCRIBE_X15_4_19}" >> ${WORKSPACE}/publish_parameters
-    echo "KERNEL_VERSION_X15_4_14=${KERNEL_VERSION_X15_4_14}" >> ${WORKSPACE}/publish_parameters
     echo "KERNEL_VERSION_X15_4_19=${KERNEL_VERSION_X15_4_19}" >> ${WORKSPACE}/publish_parameters
 }
 
@@ -194,7 +192,6 @@ function main(){
     wget -c ${TOOLCHAIN_URL} -O ${TOOLCHAIN_NAME}.tar.xz
     tar -xvf ${TOOLCHAIN_NAME}.tar.xz
 
-    build_kernel 4.14
     build_kernel 4.19
     build_uboot
 

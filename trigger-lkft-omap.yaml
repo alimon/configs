@@ -1,0 +1,101 @@
+- job:
+    name: trigger-lkft-omap
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 180
+            num-to-keep: 150
+    disabled: false
+    node: master
+    display-name: 'Trigger for changes on aosp omap kernels'
+    scm:
+        - git:
+            remotes:
+                - omap:
+                    url: https://android.googlesource.com/kernel/omap
+                - linux-stable:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                    refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
+            branches:
+              - omap/android-beagle-x15-4.14
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H H/3 * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}-${GIT_BRANCH#omap/}'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+
+            MAKE_KERNELVERSION=$(make kernelversion)
+            KERNEL_BRANCH=${GIT_BRANCH#omap/}
+            KERNEL_DESCRIBE=$(git describe --always)
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
+
+            params=lkft-${KERNEL_BRANCH}.txt
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
+            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
+            cat $params
+
+            # generate files for the api callback build
+            f_api_callbacks="all-kernels.txt"
+            cp -fv  $params ${f_api_callbacks}
+            QA_BUILD_VERSION=${KERNEL_DESCRIBE}
+            echo "QA_BUILD_VERSION=${QA_BUILD_VERSION}" >> ${f_api_callbacks}
+            echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
+            echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
+
+            # generate the configs for build
+            build_configs_4_14="lkft-x15-aosp-master-4.14"
+            build_configs_4_19="lkft-x15-aosp-master-4.19"
+
+            build_configs=""
+            case "X${KERNEL_BRANCH}" in
+                "Xandroid-beagle-x15-4.14")
+                    build_configs="${build_configs_4_14}"
+                    ;;
+                "Xandroid-beagle-x15-4.19")
+                    build_configs="${build_configs_4_19}"
+                    ;;
+                "X*")
+                    build_configs=""
+                    ;;
+            esac
+
+            rm -fr params_*.txt
+            for build_config in ${build_configs}; do
+                f_params="params_${KERNEL_BRANCH}_${build_config}.txt"
+
+                echo "ANDROID_BUILD_CONFIG=${build_config}" > ${f_params}
+                echo "KERNEL_DESCRIBE=${KERNEL_DESCRIBE}" >> ${f_params}
+                echo "KERNEL_BRANCH=${KERNEL_BRANCH}" >> ${f_params}
+                echo "SRCREV_kernel=${SRCREV_kernel}" >> ${f_params}
+                echo "MAKE_KERNELVERSION=${MAKE_KERNELVERSION}" >> ${f_params}
+
+                cat ${f_params}
+            done
+
+        - trigger-builds:
+            - project: lkft-api-callbacks
+              property-file: all-kernels.txt
+            - project: lkft-generic-omap-build
+              property-file: params_android-beagle-x15-4.14_lkft-x15-aosp-master-4.14.txt
+            - project: lkft-generic-omap-build
+              property-file: params_android-beagle-x15-4.19_lkft-x15-aosp-master-4.19.txt
+
