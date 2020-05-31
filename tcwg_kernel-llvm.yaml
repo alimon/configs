@@ -134,17 +134,19 @@
           set -ex
           for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
             if [ -f $i ]; then
+              echo "ci_project=$ci_project" >> $i
+              echo "ci_config=$ci_config" >> $i
               echo "mail_recipients=$mail_recipients" >> $i
               echo "distro=$distro" >> $i
               echo "scripts_branch=$scripts_branch" >> $i
             fi
           done
       - trigger-builds:
-          - project: tcwg_kernel-llvm-build-{ci_config}
+          - project: '{rr_project}-build-{ci_project_config}'
             parameter-factories:
               - factory: filebuild
                 file-pattern: artifacts/trigger-build-*
-          - project: tcwg_kernel-llvm-bisect-{ci_config}
+          - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
 
 - job-template:
@@ -159,9 +161,25 @@
           queue-scanning: 'ALL'
     parameters:
       - string:
+          name: ci_project
+          default: 'tcwg_kernel'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+          description: "CI configuration ID"
+      - string:
+          name: llvm_url
+          default: '{llvm_url}'
+          description: "llvm git URL"
+      - string:
           name: llvm_branch
           default: default
           description: "llvm branch or sha1 to build"
+      - string:
+          name: linux_url
+          default: '{linux_url}'
+          description: "linux git URL"
       - string:
           name: linux_branch
           default: default
@@ -212,13 +230,14 @@
             # 1 to skip jenkins-scripts
             i=1
             for c in {components}; do
+              eval "u=\$$$${{c}}_url"
               eval "b=\$$$${{c}}_branch"
               if [ x"$b" = x"default" ]; then
                 eval "b=\$GIT_COMMIT_$i"
               fi
               if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
-                branch_opt="$branch_opt ==rr[${{c}}_branch] $b"
+                branch_opt="$branch_opt ==rr[${{c}}_url] $u ==rr[${{c}}_branch] $b"
               fi
               i=$(($i+1))
             done
@@ -229,9 +248,8 @@
             ./jenkins-scripts/tcwg_kernel-build.sh \
             %% artifacts/jenkins/manifest.sh \
             --BUILD_URL "$BUILD_URL" \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config} \
-            ==rr[llvm_url] {llvm_url} \
-            ==rr[linux_url] {linux_url} \
+            ==rr[ci_project] $ci_project \
+            ==rr[ci_config] $ci_config \
             $branch_opt \
             ==rr[mode] "jenkins-full" \
             ==rr[update_baseline] "$update_baseline" &
@@ -252,7 +270,8 @@
             fi
             echo "$build_name" > artifacts/jenkins/build-name
       - trigger-followup-builds:
-          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+          rr_project: 'tcwg_kernel-llvm'
+          ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
       - shell: |
           #!/bin/bash
           if [ -f artifacts/failures ]; then
@@ -279,6 +298,14 @@
             - "tcwg_kernel-.*-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
+      - string:
+          name: ci_project
+          default: 'tcwg_kernel'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+          description: "CI configuration ID"
       - string:
           name: current_project
           default: ""
@@ -337,14 +364,15 @@
             --build_script "./jenkins-scripts/tcwg_kernel-build.sh" \
             --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
             -- \
-            ==rr[ci_project] tcwg_kernel \
-            ==rr[ci_config] {toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+            ==rr[ci_project] $ci_project \
+            ==rr[ci_config] $ci_config
 
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
             fi
         - trigger-followup-builds:
-            ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+            rr_project: 'tcwg_kernel-llvm'
+            ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
         - archive:
             artifacts: 'artifacts/**'
@@ -358,4 +386,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 95c2e2137aa30b81ea4e7bc3f782b4b2
+# checksum: 5ddbd540b0093e74ab37cc1d746f46f9

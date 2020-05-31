@@ -40,7 +40,7 @@
       - string:
           name: ci_config
           default: '{ci_config}'
-          description: "CI configuration ID: #{TOOLCHAIN}-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+          description: "CI configuration ID"
 #if COMPONENTS_binutils
       - string:
           name: binutils_url
@@ -113,6 +113,27 @@
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
             mkdir -p artifacts/jenkins
+
+            dryruncmd=""
+#if RR_tcwg_gnu
+            # Don't run these known-bad configurations.
+            case {target}-{type_of_test} in
+              aarch64-bootstrap_profiled|\
+              aarch64-bootstrap_profiled_lto|\
+              aarch64-bootstrap_profiled_lto_lean|\
+              aarch64-check_bootstrap_lto|\
+              arm-bootstrap_profiled|\
+              arm-bootstrap_profiled_lto*|\
+              arm-check_bootstrap_lto)
+                echo "Known bad configuration, not running."
+                echo "Would have run:"
+                # So we know it wasn't an infrastructure failure
+                touch artifacts/failures
+                dryruncmd="echo"
+                ;;
+            esac
+#endif
+
 #if PURPOSE_ci
             build_name="#$BUILD_NUMBER"
 #elif PURPOSE_dev
@@ -136,17 +157,23 @@
               fi
             done
 
+            $dryruncmd \
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
 #if RR_tcwg_bmk
               --ssh_info true \
+#elif RR_tcwg_gnu
+              --arch {docker_arch} \
+              --node $NODE_NAME \
 #endif
               -- \
               ./jenkins-scripts/#{RR}-build.sh \
               %% artifacts/jenkins/manifest.sh \
               --BUILD_URL "$BUILD_URL" \
               --scripts_branch "$scripts_branch" \
+#if RR_tcwg_bmk
               --bmk_branch "$bmk_branch" \
+#endif
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
               $branch_opt \
@@ -154,6 +181,12 @@
               ==rr[update_baseline] "$update_baseline" \
               $extra_build_params &
             res=0 && wait $! || res=$?
+
+            # If we didn't run the docker command
+            if [ -n "$dryruncmd" ]; then
+              # Mark build unstable aka a skipped config
+              exit 100
+            fi
 
             if [ $res != 0 ]; then
               touch artifacts/failures
@@ -169,14 +202,21 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-      - trigger-followup-builds:
-          rr_project: '{rr_project}'
-          ci_project_config: '{ci_project_config}'
-      - shell: |
-          #!/bin/bash
-          if [ -f artifacts/failures ]; then
-            exit 1
-          fi
+          unstable-return: 100
+      - conditional-step:
+          # Only run if above succeeded
+          # Meaning we did not skip a bad config
+          # (a failed build is indicated by artifacts/failures)
+          condition-kind: current-status
+          steps:
+            - trigger-followup-builds:
+                rr_project: '{rr_project}'
+                ci_project_config: '{ci_project_config}'
+            - shell: |
+                #!/bin/bash
+                if [ -f artifacts/failures ]; then
+                  exit 1
+                fi
 
 - parameter:
     name: bisect-parameters
@@ -224,12 +264,20 @@
 #endif
             echo "$build_name" > artifacts/jenkins/build-name
             # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
+#if RR_tcwg_bmk
             echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
+#elif RR_tcwg_gnu
+            echo "prathamesh.kulkarni@linaro.org,tcwg-gcc@linaro.org" > artifacts/jenkins/mail-recipients.txt
+#elif RR_tcwg_kernel
+            echo "maxim.kuvyrkov@linaro.org" > artifacts/jenkins/mail-recipients.txt
+#endif
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
 
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
+#if RR_tcwg_bmk
               --ssh_info true \
+#endif
               -- \
               ./jenkins-scripts/round-robin-bisect.sh \
               %% artifacts/manifests/bisect.sh \
@@ -244,7 +292,9 @@
 #endif
               -- \
               --scripts_branch "$scripts_branch" \
+#if RR_tcwg_bmk
               --bmk_branch "$bmk_branch" \
+#endif
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
               $extra_build_params
@@ -269,16 +319,12 @@
             if [ -f $i ]; then
               echo "ci_project=$ci_project" >> $i
               echo "ci_config=$ci_config" >> $i
-              echo "binutils_url=$binutils_url" >> $i
-              echo "gcc_url=$gcc_url" >> $i
-              echo "glibc_url=$glibc_url" >> $i
-#if TOOLCHAIN_llvm
-              echo "llvm_url=$llvm_url" >> $i
-#endif
               echo "mail_recipients=$mail_recipients" >> $i
               echo "distro=$distro" >> $i
               echo "scripts_branch=$scripts_branch" >> $i
+#if RR_tcwg_bmk
               echo "bmk_branch=$bmk_branch" >> $i
+#endif
             fi
           done
       - trigger-builds:
@@ -295,6 +341,13 @@
         - archive:
             artifacts: 'artifacts/**'
             latest-only: false
+#if RR_tcwg_gnu
+        - email-ext:
+            recipients: 'tcwg-gcc@linaro.org'
+            aborted: true
+            failure: false
+            success: false
+#endif
 
 - publisher:
     name: bisect-publishers
@@ -307,5 +360,6 @@
               ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
             failure: true
             success: true
+            aborted: true
             send-to:
               - recipients

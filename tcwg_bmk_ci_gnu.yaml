@@ -194,7 +194,7 @@
       - string:
           name: ci_config
           default: '{ci_config}'
-          description: "CI configuration ID: gnu-{{toolchain_ver}}-{{target}}-{{bmk}}-{{cflags}}"
+          description: "CI configuration ID"
       - string:
           name: binutils_url
           default: '{binutils_url}'
@@ -251,6 +251,9 @@
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
             mkdir -p artifacts/jenkins
+
+            dryruncmd=""
+
             build_name="#$BUILD_NUMBER"
             branch_opt=""
             # 1 to skip jenkins-scripts
@@ -268,6 +271,7 @@
               fi
             done
 
+            $dryruncmd \
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
               --ssh_info true \
@@ -285,6 +289,12 @@
               $extra_build_params &
             res=0 && wait $! || res=$?
 
+            # If we didn't run the docker command
+            if [ -n "$dryruncmd" ]; then
+              # Mark build unstable aka a skipped config
+              exit 100
+            fi
+
             if [ $res != 0 ]; then
               touch artifacts/failures
             fi
@@ -299,14 +309,21 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-      - trigger-followup-builds:
-          rr_project: '{rr_project}'
-          ci_project_config: '{ci_project_config}'
-      - shell: |
-          #!/bin/bash
-          if [ -f artifacts/failures ]; then
-            exit 1
-          fi
+          unstable-return: 100
+      - conditional-step:
+          # Only run if above succeeded
+          # Meaning we did not skip a bad config
+          # (a failed build is indicated by artifacts/failures)
+          condition-kind: current-status
+          steps:
+            - trigger-followup-builds:
+                rr_project: '{rr_project}'
+                ci_project_config: '{ci_project_config}'
+            - shell: |
+                #!/bin/bash
+                if [ -f artifacts/failures ]; then
+                  exit 1
+                fi
 
 - parameter:
     name: bisect-parameters
@@ -393,9 +410,6 @@
             if [ -f $i ]; then
               echo "ci_project=$ci_project" >> $i
               echo "ci_config=$ci_config" >> $i
-              echo "binutils_url=$binutils_url" >> $i
-              echo "gcc_url=$gcc_url" >> $i
-              echo "glibc_url=$glibc_url" >> $i
               echo "mail_recipients=$mail_recipients" >> $i
               echo "distro=$distro" >> $i
               echo "scripts_branch=$scripts_branch" >> $i
@@ -428,6 +442,7 @@
               ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
             failure: true
             success: true
+            aborted: true
             send-to:
               - recipients
 #END:   tcwg_bmk/tcwg_bmk.yaml.inc
@@ -524,4 +539,4 @@
           ci_project_config: 'tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
-# checksum: 432178eeac19fd6dffdaf61b6dddd1e5
+# checksum: ee1bc9e9854b6492225c2254248120c0
