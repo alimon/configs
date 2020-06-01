@@ -48,6 +48,8 @@ elif [ "${DEVICE_TYPE}" = "dragonboard-845c" ]; then
     export WLAN_TIME_DELAY="0s"
     export ETH_DEVICE="eth0"
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
+
+    export BOOT_OS_PROMPT=\'root@linaro-gnome:~#\'
 else
     export WLAN_DEVICE="wlan0"
     export WLAN_TIME_DELAY="0s"
