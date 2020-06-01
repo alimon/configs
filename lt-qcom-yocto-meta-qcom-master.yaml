@@ -20,13 +20,16 @@
     parameters:
         - string:
             name: IMAGES
-            default: ''
+            default: 'core-image-base core-image-weston core-image-x11 initramfs-test-image'
         - string:
             name: POKY_URL
             default: 'http://git.yoctoproject.org/git/poky'
         - string:
             name: BRANCH
             default: 'master'
+        - string:
+            name: DISTRO
+            default: 'poky'
     disabled: false
     node: master
     display-name: 'Yocto Projet meta-qcom CI'
@@ -40,10 +43,10 @@
                 - 'dragonboard-845c'
         - axis:
             type: user-defined
-            name: DISTRO
+            name: TCLIBC
             values:
-                - 'poky'
-                - 'poky-tiny'
+                - 'glibc'
+                - 'musl'
         - axis:
             type: slave
             name: label
