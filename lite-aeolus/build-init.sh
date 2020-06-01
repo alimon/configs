@@ -39,6 +39,10 @@ python ${HOME}/depot_tools/git_retry.py _ submodule update --init --recursive --
 
 git clean -fdx
 echo "GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)" > env_var_parameters
+# Build ID to use in external systems, like LAVA/SQUAD. Should include
+# ${BUILD_NUMBER}, to avoid mixing up results of different builds of the
+# same project git revision.
+echo "EXTERNAL_BUILD_ID=$(git rev-parse --short=8 HEAD)-#${BUILD_NUMBER}" >> env_var_parameters
 
 # Toolchains are pre-installed and come from:
 # https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/7-2018q2/gcc-arm-none-eabi-7-2018-q2-update-linux.tar.bz2
