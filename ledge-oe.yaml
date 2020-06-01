@@ -157,9 +157,9 @@
             for DEVICE_TYPE in ${DTYPES}; do
                   export DEVICE_TYPE
                   if [ "${MACHINE}" = "ledge-multi-armv7" ]; then
-                     export SYSTEM_URL=`echo ${SYSTEM_URL} | sed  "s/ledge-qemuarm/${DEVICE_TYPE}/"`
-                  elif [ "${MACHINE}" = "ledge-multi-armv8" ]; then
-                     export SYSTEM_URL=`echo ${SYSTEM_URL} | sed  "s/ledge-qemuarm64/${DEVICE_TYPE}/"`
+                     if [ "${DEVICE_TYPE}" = "x15-bl_uefi"; then
+                         export SYSTEM_URL=`echo ${SYSTEM_URL} | sed  "s/ledge-qemuarm/ledge-ti-am572x/"`
+                     fi
                   fi
                   python configs/openembedded-lkft/submit_for_testing.py \
                      --device-type ${DEVICE_TYPE} \
