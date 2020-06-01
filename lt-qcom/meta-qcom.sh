@@ -35,4 +35,13 @@ EOF
 
 bitbake-layers layerindex-fetch -s -b ${BRANCH} meta-qcom
 
+# default values when IMAGES is not set
+if [ -z "${IMAGES}" ]; then
+    if [ "$DISTRO" = "poky-tiny" ]; then
+	IMAGES="core-image-minimal initramfs-test-image"
+    else
+	IMAGES="core-image-base core-image-weston core-image-x11 initramfs-test-image"
+    fi
+fi
+
 bitbake ${IMAGES}
