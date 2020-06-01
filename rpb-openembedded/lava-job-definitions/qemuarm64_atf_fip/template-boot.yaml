@@ -1,0 +1,88 @@
+device_type: qemu
+job_name: LEDGE RPB OE atf optee uboot boot ${MACHINE} ${MANIFEST_BRANCH} ${BUILD_NUMBER}
+
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 60
+  connection:
+    minutes: 2
+priority: 25
+visibility: public
+
+context:
+  arch: arm64
+  machine: virt,secure=on
+  cpu: cortex-a57
+  guestfs_interface: virtio
+  netdevice: user
+
+actions:
+- deploy:
+    namespace: target
+    timeout:
+      minutes: 15
+    to: tmpfs
+    images:
+      bios:
+        image_arg: '-bios {bios}'
+        url: https://storage.kernelci.org/images/uefi/111bbcf87621/QEMU_EFI.fd-AARCH64-RELEASE-111bbcf87621
+      rootfs:
+        image_arg: -drive id=disk0,file={rootfs},if=none,format=raw -device virtio-blk-device,drive=disk0 -m 4096 -smp 4 -nographic
+        url: ${SYSTEM_URL}
+        compression: gz
+        apply-overlay: true
+        sparse: false
+    os: oe
+
+actions:
+- deploy:
+    namespace: target
+    timeout:
+      minutes: 15
+    to: tmpfs
+    images:
+      0bios: 
+        image_arg: -bios {0bios} -d unimp
+        url: ${FIRMWARE_URL}
+      1rootfs:
+        image_arg: -drive id=disk1,file={1rootfs},if=none,format=raw -device virtio-blk-device,drive=disk1
+          -smp 4 -nographic
+        url: ${SYSTEM_URL} 
+        compression: gz
+        apply-overlay: true
+        sparse: false
+      2certs:
+        image_arg: -drive id=disk0,file={2certs},if=none,format=raw -device virtio-blk-device,drive=disk0
+        url: ${CERTS_URL}
+    os: oe
+
+- boot:
+    namespace: target
+    timeout:
+      minutes: 60
+    method: qemu
+    media: tmpfs
+    docker:
+      image: maximuvarov/ledge_image_ubuntu_18.04_v4
+      binary: run_b.py /usr/bin/qemu-system-aarch64
+    auto_login:
+      login_prompt: 'login:'
+      username: ledge
+      password_prompt: 'Password:'
+      password: ledge
+      login_commands:
+      - sudo -s
+    prompts:
+    - root@(.*):~#
+    - ledge@(.*):~#
+    - '~ #'
+    - 'ledge.*$'
+
+metadata:
+  machine: ${MACHINE}
+  manifest branch: ${MANIFEST_BRANCH}
+  manifest commit: ${MANIFEST_COMMIT}
+  build url: ${BUILD_URL}
+  build location: ${BASE_URL}${PUB_DEST}

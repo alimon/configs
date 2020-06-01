@@ -148,7 +148,7 @@
                     #DEVICE_TYPE="qemuarmuefi stm32mp157c-dk2 x15-bl_uefi"
                     DEVICE_TYPE="qemuarmuefi"
                 elif [ "${MACHINE}" = "ledge-multi-armv8" ]; then
-                    DEVICE_TYPE="qemuarm64uefi  synquacer"
+                    DEVICE_TYPE="qemuarm64uefi  synquacer qemuarm64_atf_fip"
                 fi
             fi
 
@@ -160,6 +160,11 @@
                      if [ "${DEVICE_TYPE}" = "x15-bl_uefi"; then
                          export SYSTEM_URL=`echo ${SYSTEM_URL} | sed  "s/ledge-qemuarm/ledge-ti-am572x/"`
                      fi
+                         export FIRMWARE_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm.*|ledge-qemuarm/firmware.bin|"`
+                         export CERTS_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm.*|ledge-qemuarm/ledge-kernel-uefi-certs.ext4.img|"`
+                  elif  [ "${MACHINE}" = "ledge-multi-armv8" ]; then
+                         export FIRMWARE_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm64.*|ledge-qemuarm64/firmware.bin|"`
+                         export CERTS_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm64.*|ledge-qemuarm64/ledge-kernel-uefi-certs.ext4.img|"`
                   fi
                   python configs/openembedded-lkft/submit_for_testing.py \
                      --device-type ${DEVICE_TYPE} \
