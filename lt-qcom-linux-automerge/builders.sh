@@ -37,7 +37,7 @@ if [ -d "${KERNEL_REPO_BARE_PATH}" ]; then
 		cat gc.log
 		git gc
 		git prune
-		rm gc.log
+		rm -f gc.log
 	fi
 	git fetch --all -v
 	git update-server-info
