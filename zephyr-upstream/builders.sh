@@ -1,5 +1,10 @@
 #!/bin/bash
 
+echo "Going to build:"
+echo "git branch: ${BRANCH}"
+echo "git revision: ${GIT_COMMIT}"
+echo
+
 # Zephyr 2.2+ requires Python3.6. As it's not available in official distro
 # packages for Ubuntu Xenial (16.04) which we use, install it from PPA.
 sudo add-apt-repository -y ppa:deadsnakes/ppa
