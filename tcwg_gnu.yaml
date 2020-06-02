@@ -52,6 +52,24 @@
 #BEGIN: tcwg/round-robin.yaml.inc
 # -*- mode: Yaml -*-
 
+#BEGIN: tcwg/default.yaml.inc
+# -*- mode: Yaml -*-
+
+- property:
+    name: default-properties
+    properties:
+      - authorization:
+          anonymous:
+            - job-read
+            - job-extended-read
+          linaro:
+            - job-build
+            - job-cancel
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 30
+#END:   tcwg/default.yaml.inc
+
 - parameter:
     name: default-parameters
     parameters:
@@ -358,22 +376,6 @@
               - recipients
 #END:   tcwg/round-robin.yaml.inc
 
-#BEGIN: tcwg/default.yaml.inc
-- property:
-    name: default-properties
-    properties:
-      - authorization:
-          anonymous:
-            - job-read
-            - job-extended-read
-          linaro:
-            - job-build
-            - job-cancel
-      - build-discarder:
-          days-to-keep: 30
-          num-to-keep: 30
-#END:   tcwg/default.yaml.inc
-
 - job-template:
     name: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
     project-type: freestyle
@@ -456,4 +458,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     publishers:
       - bisect-publishers
-# checksum: 630c1afc04f56ea56ee82a9cf1f7d347
+# checksum: d15e909381e837272eacf5ed361dd830

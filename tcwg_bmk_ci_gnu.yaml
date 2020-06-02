@@ -67,11 +67,25 @@
     view-type: list
     regex: 'tcwg_bmk_ci_gnu-.*'
 
-#BEGIN: tcwg_bmk/tcwg_bmk.yaml.inc
-# -*- mode: Yaml -*-
-
 #BEGIN: tcwg/round-robin.yaml.inc
 # -*- mode: Yaml -*-
+
+#BEGIN: tcwg/default.yaml.inc
+# -*- mode: Yaml -*-
+
+- property:
+    name: default-properties
+    properties:
+      - authorization:
+          tcwg-benchmark:
+            - job-read
+            - job-extended-read
+            - job-build
+            - job-cancel
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 30
+#END:   tcwg/default.yaml.inc
 
 - parameter:
     name: default-parameters
@@ -434,29 +448,12 @@
               - recipients
 #END:   tcwg/round-robin.yaml.inc
 
-- property:
-    name: bmk-properties
-    properties:
-      - authorization:
-          tcwg-benchmark:
-            - job-read
-            - job-extended-read
-            - job-build
-            - job-cancel
-      - build-discarder:
-          days-to-keep: 30
-          num-to-keep: 30
-
-
-
-#END:   tcwg_bmk/tcwg_bmk.yaml.inc
-
 - job-template:
     name: tcwg_bmk_ci_gnu-build-tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}
     project-type: freestyle
     defaults: global
     properties:
-      - bmk-properties
+      - default-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_bmk_dev_.*-tcwg_bmk_{hw}"
@@ -502,7 +499,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - bmk-properties
+      - default-properties
       - build-blocker:
           # Run at most 1 bisect job for all configurations.
           # Bisect jobs can easily run for 5+ hours, and a few of them
@@ -534,4 +531,4 @@
           ci_project_config: 'tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
-# checksum: 366865a4e38a8268d928f85d50399b36
+# checksum: 79a7751349713dc9ac10e7ab0e7f772e

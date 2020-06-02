@@ -1,9 +1,23 @@
 # Auto generated from tcwg_bmk_dev.yaml.in and tcwg_bmk_dev/tcwg_bmk_dev_gnu.def. Do not edit.
-#BEGIN: tcwg_bmk/tcwg_bmk.yaml.inc
-# -*- mode: Yaml -*-
-
 #BEGIN: tcwg/round-robin.yaml.inc
 # -*- mode: Yaml -*-
+
+#BEGIN: tcwg/default.yaml.inc
+# -*- mode: Yaml -*-
+
+- property:
+    name: default-properties
+    properties:
+      - authorization:
+          tcwg-benchmark:
+            - job-read
+            - job-extended-read
+            - job-build
+            - job-cancel
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 30
+#END:   tcwg/default.yaml.inc
 
 - parameter:
     name: default-parameters
@@ -342,23 +356,6 @@
               - recipients
 #END:   tcwg/round-robin.yaml.inc
 
-- property:
-    name: bmk-properties
-    properties:
-      - authorization:
-          tcwg-benchmark:
-            - job-read
-            - job-extended-read
-            - job-build
-            - job-cancel
-      - build-discarder:
-          days-to-keep: 30
-          num-to-keep: 30
-
-
-
-#END:   tcwg_bmk/tcwg_bmk.yaml.inc
-
 - project:
     name: tcwg_bmk_dev_gnu
     hw:
@@ -387,7 +384,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - bmk-properties
+      - default-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_bmk_dev_.*-bisect-tcwg_bmk_{hw}"
@@ -423,7 +420,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - bmk-properties
+      - default-properties
     parameters:
       - bisect-parameters:
           ci_project: 'tcwg_bmk-YOUR_ID'
@@ -446,4 +443,4 @@
             ci_project_config: 'tcwg_bmk_{hw}'
     publishers:
         - bisect-publishers
-# checksum: 59990b0463d251255c2343f197fde98c
+# checksum: f930db735d90214aaae18226d1a0268e

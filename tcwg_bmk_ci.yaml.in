@@ -77,14 +77,14 @@
     view-type: list
     regex: 'tcwg_bmk_ci_#{TOOLCHAIN}-.*'
 
-#include tcwg_bmk/tcwg_bmk.yaml.inc
+#include tcwg/round-robin.yaml.inc
 
 - job-template:
     name: tcwg_bmk_ci_#{TOOLCHAIN}-build-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}
     project-type: freestyle
     defaults: global
     properties:
-      - bmk-properties
+      - default-properties
       - build-blocker:
           blocking-jobs:
             - "tcwg_bmk_dev_.*-tcwg_bmk_{hw}"
@@ -137,7 +137,7 @@
     project-type: freestyle
     defaults: global
     properties:
-      - bmk-properties
+      - default-properties
       - build-blocker:
           # Run at most 1 bisect job for all configurations.
           # Bisect jobs can easily run for 5+ hours, and a few of them

@@ -1,5 +1,7 @@
 # -*- mode: Yaml -*-
 
+#include tcwg/default.yaml.inc
+
 - parameter:
     name: default-parameters
     parameters:
