@@ -312,7 +312,10 @@ def main():
             print("Must provide QA server team when using a QA server.")
             sys.exit(1)
         qa_server_project = args.qa_server_project
-        qa_server_build = args.git_commit
+        # SQUAD build ID should be unique for each actual build (or results of
+        # different actual builds will be mixed on SQUAD side), so well, include
+        # build # in it.
+        qa_server_build = "{0}-{1}".format(args.git_commit, args.build_number)
         qa_server_env = '{0}-{1}'.format(args.board_name, args.gcc_variant)
         qa_server_api = "%s/api/submitjob/%s/%s/%s/%s" % (
             qa_server_base,
