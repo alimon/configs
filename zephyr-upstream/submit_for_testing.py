@@ -415,7 +415,7 @@ def main():
                 print("Error code: %d" % err.errcode)
                 print("Error message: %s" % err.errmsg)
 
-        print("Total successfully submitted test jobs: %d" % tests_submitted)
+    print("Total successfully submitted test jobs: %d" % tests_submitted)
 
 if __name__ == "__main__":
     main()
