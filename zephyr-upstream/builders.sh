@@ -3,6 +3,7 @@
 echo "Going to build:"
 echo "git branch: ${BRANCH}"
 echo "git revision: ${GIT_COMMIT}"
+echo "Root build cause: ${ROOT_BUILD_CAUSE}"
 echo
 
 # Zephyr 2.2+ requires Python3.6. As it's not available in official distro
