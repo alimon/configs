@@ -166,6 +166,17 @@
           - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
 
+- wrapper:
+    name: build-wrappers
+    wrappers:
+      - timeout:
+          timeout: '{timeout}'
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+
 - parameter:
     name: build-parameters
     parameters:
@@ -289,6 +300,19 @@
                   exit 1
                 fi
 
+- publisher:
+    name: build-publishers
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+
+- wrapper:
+    name: bisect-wrappers
+    wrappers:
+      - build-wrappers:
+          timeout: '{timeout}'
+
 - parameter:
     name: bisect-parameters
     parameters:
@@ -356,6 +380,21 @@
       - trigger-followup-builds:
           rr_project: '{rr_project}'
           ci_project_config: '{ci_project_config}'
+
+- publisher:
+    name: bisect-publishers
+    publishers:
+        - build-publishers
+        - email-ext:
+            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
+            content-type: text
+            body: |
+              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
+            failure: true
+            success: true
+            aborted: true
+            send-to:
+              - recipients
 #END:   tcwg/round-robin.yaml.inc
 
 - job-template:
@@ -396,22 +435,15 @@
       - pollscm:
           cron: 'H H * * *'
     wrappers:
-      - timeout:
+      - build-wrappers:
           timeout: 600
-      - timestamps
-      - ssh-agent-credentials:
-          # tcwg-buildslave user id
-          users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
     builders:
       - run-build:
           components: '{components}'
           rr_project: 'tcwg_kernel-gnu'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
-        - archive:
-            artifacts: 'artifacts/**'
-            latest-only: false
+      - build-publishers
 
 - job-template:
     name: tcwg_kernel-gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
@@ -440,32 +472,12 @@
     scm:
       - jenkins-scripts
     wrappers:
-      - timeout:
+      - bisect-wrappers:
           timeout: 1440
-      - timestamps
-      - ssh-agent-credentials:
-          # tcwg-buildslave user id
-          users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
-      - credentials-binding:
-          - text:
-              credential-id: TCWG_JIRA_PASSWORD
-              variable: TCWG_JIRA_PASSWORD
     builders:
       - run-bisect:
           rr_project: 'tcwg_kernel-gnu'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
-        - archive:
-            artifacts: 'artifacts/**'
-            latest-only: false
-        - email-ext:
-            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
-            content-type: text
-            body: |
-              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
-            failure: true
-            success: true
-            send-to:
-              - recipients
-# checksum: f908cb721ba98fa411b69e792d9d188d
+      - bisect-publishers
+# checksum: be7b43d9984e0009d4f76fecd95db440

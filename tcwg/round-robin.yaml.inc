@@ -152,6 +152,17 @@
           - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
 
+- wrapper:
+    name: build-wrappers
+    wrappers:
+      - timeout:
+          timeout: '{timeout}'
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+
 - parameter:
     name: build-parameters
     parameters:
@@ -339,6 +350,25 @@
                   exit 1
                 fi
 
+- publisher:
+    name: build-publishers
+    publishers:
+        - archive:
+            artifacts: 'artifacts/**'
+            latest-only: false
+
+- wrapper:
+    name: bisect-wrappers
+    wrappers:
+      - build-wrappers:
+          timeout: '{timeout}'
+#if PURPOSE_ci
+      - credentials-binding:
+          - text:
+              credential-id: TCWG_JIRA_PASSWORD
+              variable: TCWG_JIRA_PASSWORD
+#endif
+
 - parameter:
     name: bisect-parameters
     parameters:
@@ -429,3 +459,18 @@
       - trigger-followup-builds:
           rr_project: '{rr_project}'
           ci_project_config: '{ci_project_config}'
+
+- publisher:
+    name: bisect-publishers
+    publishers:
+        - build-publishers
+        - email-ext:
+            recipients: ${{FILE,path="artifacts/jenkins/mail-recipients.txt"}}
+            content-type: text
+            body: |
+              ${{FILE,path="artifacts/jenkins/mail-body.txt"}}
+            failure: true
+            success: true
+            aborted: true
+            send-to:
+              - recipients
