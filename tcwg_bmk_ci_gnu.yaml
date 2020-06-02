@@ -73,64 +73,6 @@
 #BEGIN: tcwg/round-robin.yaml.inc
 # -*- mode: Yaml -*-
 
-- scm:
-    name: binutils-scm
-    scm:
-        - git:
-            url: '{binutils_url}'
-            branches:
-              - 'refs/heads/{binutils_branch}'
-            basedir: binutils
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/binutils-gdb.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- scm:
-    name: gcc-scm
-    scm:
-        - git:
-            url: '{gcc_url}'
-            branches:
-              - 'refs/heads/{gcc_branch}'
-            basedir: gcc
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/gcc.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- scm:
-    name: glibc-scm
-    scm:
-        - git:
-            url: '{glibc_url}'
-            branches:
-              - 'refs/heads/{glibc_branch}'
-            basedir: glibc
-            skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/glibc.git
-            wipe-workspace: false
-            clean:
-              before: true
-            prune: true
-- scm:
-    name: jenkins-scripts
-    scm:
-      - git:
-          url: https://git.linaro.org/toolchain/jenkins-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $scripts_branch
-          basedir: jenkins-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
-
 - parameter:
     name: default-parameters
     parameters:
@@ -163,44 +105,37 @@
           default: master
           description: 'Benchmark scripts revision to use'
 
-- builder:
-    name: trigger-followup-builds
-    builders:
-      - build-name-setter:
-          name: 'artifacts/jenkins/build-name'
-          file: true
-      - shell: |
-          #!/bin/bash
-          set -ex
-          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
-            if [ -f $i ]; then
-              echo "ci_project=$ci_project" >> $i
-              echo "ci_config=$ci_config" >> $i
-              echo "mail_recipients=$mail_recipients" >> $i
-              echo "distro=$distro" >> $i
-              echo "scripts_branch=$scripts_branch" >> $i
-              echo "bmk_branch=$bmk_branch" >> $i
-            fi
-          done
-      - trigger-builds:
-          - project: '{rr_project}-build-{ci_project_config}'
-            parameter-factories:
-              - factory: filebuild
-                file-pattern: artifacts/trigger-build-*
-          - project: '{rr_project}-bisect-{ci_project_config}'
-            property-file: artifacts/trigger-bisect
+- scm:
+    name: jenkins-scripts
+    scm:
+      - git:
+          url: https://git.linaro.org/toolchain/jenkins-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $scripts_branch
+          basedir: jenkins-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
 
-- wrapper:
-    name: build-wrappers
-    wrappers:
-      - timeout:
-          timeout: '{timeout}'
-      - timestamps
-      - ssh-agent-credentials:
-          # tcwg-buildslave user id
-          users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
-
+- scm:
+    name: bmk-scripts
+    scm:
+      - git:
+          url: https://git.linaro.org/toolchain/bmk-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $bmk_branch
+          basedir: bmk-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/bmk-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
 
 - parameter:
     name: component-parameters
@@ -240,6 +175,80 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+
+- scm:
+    name: component-scm
+    scm:
+        - git:
+            url: '{url}'
+            branches:
+              - 'refs/heads/{branch}'
+            basedir: '{component}'
+            skip-tag: true
+            reference-repo: /home/tcwg-buildslave/snapshots-ref/'{reference}'
+            wipe-workspace: false
+            clean:
+              before: true
+            prune: true
+
+- scm:
+    name: build-scms
+    scm:
+      - jenkins-scripts
+      - component-scm:
+          component: binutils
+          url: '{binutils_url}'
+          branch: '{binutils_branch}'
+          reference: binutils-gdb.git
+      - component-scm:
+          component: gcc
+          url: '{gcc_url}'
+          branch: '{gcc_branch}'
+          reference: gcc.git
+      - component-scm:
+          component: glibc
+          url: '{glibc_url}'
+          branch: '{glibc_branch}'
+          reference: glibc.git
+      - bmk-scripts
+
+- wrapper:
+    name: build-wrappers
+    wrappers:
+      - timeout:
+          timeout: '{timeout}'
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+
+- builder:
+    name: trigger-followup-builds
+    builders:
+      - build-name-setter:
+          name: 'artifacts/jenkins/build-name'
+          file: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
+            if [ -f $i ]; then
+              echo "ci_project=$ci_project" >> $i
+              echo "ci_config=$ci_config" >> $i
+              echo "mail_recipients=$mail_recipients" >> $i
+              echo "distro=$distro" >> $i
+              echo "scripts_branch=$scripts_branch" >> $i
+              echo "bmk_branch=$bmk_branch" >> $i
+            fi
+          done
+      - trigger-builds:
+          - project: '{rr_project}-build-{ci_project_config}'
+            parameter-factories:
+              - factory: filebuild
+                file-pattern: artifacts/trigger-build-*
+          - project: '{rr_project}-bisect-{ci_project_config}'
+            property-file: artifacts/trigger-bisect
 
 - builder:
     name: run-build
@@ -333,16 +342,6 @@
             artifacts: 'artifacts/**'
             latest-only: false
 
-- wrapper:
-    name: bisect-wrappers
-    wrappers:
-      - build-wrappers:
-          timeout: '{timeout}'
-      - credentials-binding:
-          - text:
-              credential-id: TCWG_JIRA_PASSWORD
-              variable: TCWG_JIRA_PASSWORD
-
 - parameter:
     name: bisect-parameters
     parameters:
@@ -364,6 +363,16 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+
+- wrapper:
+    name: bisect-wrappers
+    wrappers:
+      - build-wrappers:
+          timeout: '{timeout}'
+      - credentials-binding:
+          - text:
+              credential-id: TCWG_JIRA_PASSWORD
+              variable: TCWG_JIRA_PASSWORD
 
 - builder:
     name: run-bisect
@@ -424,21 +433,6 @@
             send-to:
               - recipients
 #END:   tcwg/round-robin.yaml.inc
-- scm:
-    name: bmk-scripts
-    scm:
-      - git:
-          url: https://git.linaro.org/toolchain/bmk-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $bmk_branch
-          basedir: bmk-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/bmk-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
 
 - property:
     name: bmk-properties
@@ -482,17 +476,13 @@
     display-name: 'TCWG Build tcwg_bmk_{hw}/gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
-      - jenkins-scripts
-      - binutils-scm:
+      - build-scms:
           binutils_url: '{binutils_url}'
           binutils_branch: '{binutils_branch}'
-      - gcc-scm:
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
-      - glibc-scm:
           glibc_url: '{glibc_url}'
           glibc_branch: '{glibc_branch}'
-      - bmk-scripts
     triggers:
       - pollscm:
           cron: '{cron_schedule}'
@@ -538,14 +528,10 @@
     wrappers:
       - bisect-wrappers:
           timeout: 2880
-      - credentials-binding:
-          - text:
-              credential-id: TCWG_JIRA_PASSWORD
-              variable: TCWG_JIRA_PASSWORD
     builders:
       - run-bisect:
           rr_project: 'tcwg_bmk_ci_gnu'
           ci_project_config: 'tcwg_bmk_{hw}-gnu-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
-# checksum: d51354f06d6e3c4ffd33cb139ade1d79
+# checksum: 366865a4e38a8268d928f85d50399b36

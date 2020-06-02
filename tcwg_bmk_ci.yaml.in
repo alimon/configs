@@ -107,22 +107,17 @@
     display-name: 'TCWG Build tcwg_bmk_{hw}/#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     workspace: workspace/tcwg_bmk_$EXECUTOR_NUMBER
     scm:
-      - jenkins-scripts
-      - binutils-scm:
+      - build-scms:
           binutils_url: '{binutils_url}'
           binutils_branch: '{binutils_branch}'
-      - gcc-scm:
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
-      - glibc-scm:
           glibc_url: '{glibc_url}'
           glibc_branch: '{glibc_branch}'
 #if TOOLCHAIN_llvm
-      - clang-scm:
           llvm_url: '{llvm_url}'
           llvm_branch: '{llvm_branch}'
 #endif
-      - bmk-scripts
     triggers:
       - pollscm:
           cron: '{cron_schedule}'
@@ -168,10 +163,6 @@
     wrappers:
       - bisect-wrappers:
           timeout: 2880
-      - credentials-binding:
-          - text:
-              credential-id: TCWG_JIRA_PASSWORD
-              variable: TCWG_JIRA_PASSWORD
     builders:
       - run-bisect:
           rr_project: 'tcwg_bmk_ci_#{TOOLCHAIN}'
