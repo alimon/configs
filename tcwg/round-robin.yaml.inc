@@ -121,3 +121,32 @@
           default: master
           description: 'Benchmark scripts revision to use'
 #endif
+
+- builder:
+    name: trigger-followup-builds
+    builders:
+      - build-name-setter:
+          name: 'artifacts/jenkins/build-name'
+          file: true
+      - shell: |
+          #!/bin/bash
+          set -ex
+          for i in artifacts/trigger-build-* artifacts/trigger-bisect; do
+            if [ -f $i ]; then
+              echo "ci_project=$ci_project" >> $i
+              echo "ci_config=$ci_config" >> $i
+              echo "mail_recipients=$mail_recipients" >> $i
+              echo "distro=$distro" >> $i
+              echo "scripts_branch=$scripts_branch" >> $i
+#if RR_tcwg_bmk
+              echo "bmk_branch=$bmk_branch" >> $i
+#endif
+            fi
+          done
+      - trigger-builds:
+          - project: '{rr_project}-build-{ci_project_config}'
+            parameter-factories:
+              - factory: filebuild
+                file-pattern: artifacts/trigger-build-*
+          - project: '{rr_project}-bisect-{ci_project_config}'
+            property-file: artifacts/trigger-bisect
