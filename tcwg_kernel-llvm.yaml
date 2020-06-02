@@ -122,6 +122,7 @@
           default: master
           description: 'Scripts revision to use'
 
+
 - builder:
     name: trigger-followup-builds
     builders:
@@ -147,26 +148,17 @@
                 file-pattern: artifacts/trigger-build-*
           - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
-#END:   tcwg/round-robin.yaml.inc
 
-- job-template:
-    name: tcwg_kernel-llvm-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
-    project-type: freestyle
-    defaults: global
-    properties:
-      - default-properties
-      - build-blocker:
-          blocking-jobs:
-            - "tcwg_kernel-llvm-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
-          queue-scanning: 'ALL'
+- parameter:
+    name: build-parameters
     parameters:
       - string:
           name: ci_project
-          default: 'tcwg_kernel'
+          default: '{ci_project}'
           description: "CI project ID; used as namespace for git branches"
       - string:
           name: ci_config
-          default: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+          default: '{ci_config}'
           description: "CI configuration ID"
       - string:
           name: llvm_url
@@ -174,8 +166,8 @@
           description: "llvm git URL"
       - string:
           name: llvm_branch
-          default: default
-          description: "llvm branch or sha1 to build"
+          default: '{default_branch}'
+          description: "llvm branch or sha1 to build, or 'baseline'"
       - string:
           name: linux_url
           default: '{linux_url}'
@@ -190,8 +182,56 @@
             - update
             - reset
             - init
+            - push
           description: "What to do with baseline in this build"
       - default-parameters
+
+- parameter:
+    name: bisect-parameters
+    parameters:
+      - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID"
+      - string:
+          name: current_project
+          default: ""
+          description: "Project to bisect"
+      - string:
+          name: bad_url
+          default: ""
+          description: "Bad git URL"
+      - string:
+          name: bad_branch
+          default: ""
+          description: "Bad branch or sha1"
+      - file:
+          name: jenkins-scripts/replay_log
+          description: "Replay part of bisect using provided bisect log"
+      - default-parameters
+#END:   tcwg/round-robin.yaml.inc
+
+- job-template:
+    name: tcwg_kernel-llvm-build-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+      - build-blocker:
+          blocking-jobs:
+            - "tcwg_kernel-llvm-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
+          queue-scanning: 'ALL'
+    parameters:
+      build-parameters:
+        ci_project: 'tcwg_kernel'
+        ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+        llvm_url: '{llvm_url}'
+        linux_url: '{linux_url}'
+        default_branch: 'default'
     disabled: false
     node: tcwg-x86_64-build
     concurrent: false
@@ -298,27 +338,9 @@
             - "tcwg_kernel-.*-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
-      - string:
-          name: ci_project
-          default: 'tcwg_kernel'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-          description: "CI configuration ID"
-      - string:
-          name: current_project
-          default: ""
-          description: "Project to bisect"
-      - string:
-          name: bad_url
-          default: ""
-          description: "Bad git URL"
-      - string:
-          name: bad_branch
-          default: ""
-          description: "Bad branch or sha1"
-      - default-parameters
+      - bisect-parameters:
+          ci_project: 'tcwg_kernel'
+          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     disabled: false
     node: tcwg-x86_64-build
     concurrent: false
@@ -386,4 +408,4 @@
             success: true
             send-to:
               - recipients
-# checksum: 6f07c5b572ba52211b9b70b7f4e54656
+# checksum: 12754bd9c7fd33cba7761ddf6fdf77f2

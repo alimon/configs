@@ -122,6 +122,7 @@
           description: 'Benchmark scripts revision to use'
 #endif
 
+
 - builder:
     name: trigger-followup-builds
     builders:
@@ -150,3 +151,102 @@
                 file-pattern: artifacts/trigger-build-*
           - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
+
+- parameter:
+    name: build-parameters
+    parameters:
+      - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID"
+#if COMPONENTS_binutils
+      - string:
+          name: binutils_url
+          default: '{binutils_url}'
+          description: "binutils git URL"
+      - string:
+          name: binutils_branch
+          default: '{default_branch}'
+          description: "binutils branch or sha1 to build, or 'baseline'"
+#endif
+#if COMPONENTS_gcc
+      - string:
+          name: gcc_url
+          default: '{gcc_url}'
+          description: "gcc git URL"
+      - string:
+          name: gcc_branch
+          default: '{default_branch}'
+          description: "gcc branch or sha1 to build, or 'baseline'"
+#endif
+#if COMPONENTS_glibc
+      - string:
+          name: glibc_url
+          default: '{glibc_url}'
+          description: "glibc git URL"
+      - string:
+          name: glibc_branch
+          default: '{default_branch}'
+          description: "glibc branch or sha1 to build, or 'baseline'"
+#endif
+#if COMPONENTS_llvm
+      - string:
+          name: llvm_url
+          default: '{llvm_url}'
+          description: "llvm git URL"
+      - string:
+          name: llvm_branch
+          default: '{default_branch}'
+          description: "llvm branch or sha1 to build, or 'baseline'"
+#endif
+#if COMPONENTS_linux
+      - string:
+          name: linux_url
+          default: '{linux_url}'
+          description: "linux git URL"
+      - string:
+          name: linux_branch
+          default: default
+          description: "linux branch or sha1 to build"
+#endif
+      - choice:
+          name: update_baseline
+          choices:
+            - update
+            - reset
+            - init
+            - push
+          description: "What to do with baseline in this build"
+      - default-parameters
+
+- parameter:
+    name: bisect-parameters
+    parameters:
+      - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID"
+      - string:
+          name: current_project
+          default: ""
+          description: "Project to bisect"
+      - string:
+          name: bad_url
+          default: ""
+          description: "Bad git URL"
+      - string:
+          name: bad_branch
+          default: ""
+          description: "Bad branch or sha1"
+      - file:
+          name: jenkins-scripts/replay_log
+          description: "Replay part of bisect using provided bisect log"
+      - default-parameters

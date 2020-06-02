@@ -116,6 +116,7 @@
           default: master
           description: 'Scripts revision to use'
 
+
 - builder:
     name: trigger-followup-builds
     builders:
@@ -141,6 +142,71 @@
                 file-pattern: artifacts/trigger-build-*
           - project: '{rr_project}-bisect-{ci_project_config}'
             property-file: artifacts/trigger-bisect
+
+- parameter:
+    name: build-parameters
+    parameters:
+      - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID"
+      - string:
+          name: binutils_url
+          default: '{binutils_url}'
+          description: "binutils git URL"
+      - string:
+          name: binutils_branch
+          default: '{default_branch}'
+          description: "binutils branch or sha1 to build, or 'baseline'"
+      - string:
+          name: gcc_url
+          default: '{gcc_url}'
+          description: "gcc git URL"
+      - string:
+          name: gcc_branch
+          default: '{default_branch}'
+          description: "gcc branch or sha1 to build, or 'baseline'"
+      - choice:
+          name: update_baseline
+          choices:
+            - update
+            - reset
+            - init
+            - push
+          description: "What to do with baseline in this build"
+      - default-parameters
+
+- parameter:
+    name: bisect-parameters
+    parameters:
+      - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID"
+      - string:
+          name: current_project
+          default: ""
+          description: "Project to bisect"
+      - string:
+          name: bad_url
+          default: ""
+          description: "Bad git URL"
+      - string:
+          name: bad_branch
+          default: ""
+          description: "Bad branch or sha1"
+      - file:
+          name: jenkins-scripts/replay_log
+          description: "Replay part of bisect using provided bisect log"
+      - default-parameters
 #END:   tcwg/round-robin.yaml.inc
 
 #BEGIN: tcwg/default.yaml.inc
@@ -170,38 +236,13 @@
             - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}"
           queue-scanning: 'ALL'
     parameters:
-      - string:
-          name: ci_project
-          default: 'tcwg_gnu'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+      - build-parameters:
+          ci_project: 'tcwg_gnu'
+          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
           description: "CI configuration ID"
-      - string:
-          name: binutils_url
-          default: '{binutils_url}'
-          description: "binutils git URL"
-      - string:
-          name: binutils_branch
-          default: default
-          description: "binutils branch or sha1 to build, or 'baseline'"
-      - string:
-          name: gcc_url
-          default: '{gcc_url}'
-          description: "gcc git URL"
-      - string:
-          name: gcc_branch
-          default: default
-          description: "gcc branch or sha1 to build, or 'baseline'"
-      - choice:
-          name: update_baseline
-          choices:
-            - update
-            - reset
-            - init
-          description: "What to do with baseline in this build"
-      - default-parameters
+          binutils_url: '{binutils_url}'
+          gcc_url: '{gcc_url}'
+          default_branch: 'default'
     disabled: false
     node: '{node} && tcwg-amp'
     concurrent: false
@@ -347,27 +388,9 @@
             - "tcwg_gnu-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
-      - string:
-          name: ci_project
-          default: 'tcwg_gnu'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
-          description: "CI configuration ID"
-      - string:
-          name: current_project
-          default: ""
-          description: "Project to bisect"
-      - string:
-          name: bad_url
-          default: ""
-          description: "Bad git URL"
-      - string:
-          name: bad_branch
-          default: ""
-          description: "Bad branch or sha1"
-      - default-parameters
+      - bisect-parameters:
+          ci_project: 'tcwg_gnu'
+          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     disabled: false
     node: '{node} && tcwg-d05'
     concurrent: false
@@ -433,4 +456,4 @@
             aborted: true
             send-to:
               - recipients
-# checksum: c66527e579f61566a435970819eca99a
+# checksum: d91ed3b6aba5568e3066b703ebe19d94
