@@ -220,6 +220,22 @@
             mkdir -p artifacts/jenkins
 
             dryruncmd=""
+            # Don't run these known-bad configurations.
+            case {target}-{type_of_test} in
+              aarch64-bootstrap_profiled|\
+              aarch64-bootstrap_profiled_lto|\
+              aarch64-bootstrap_profiled_lto_lean|\
+              aarch64-check_bootstrap_lto|\
+              arm-bootstrap_profiled|\
+              arm-bootstrap_profiled_lto*|\
+              arm-check_bootstrap_lto)
+                echo "Known bad configuration, not running."
+                echo "Would have run:"
+                # So we know it wasn't an infrastructure failure
+                touch artifacts/failures
+                dryruncmd="echo"
+                ;;
+            esac
 
             branch_opt=""
             # 1 to skip jenkins-scripts
@@ -236,8 +252,10 @@
             $dryruncmd \
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
+              --arch {docker_arch} \
+              --node $NODE_NAME \
               -- \
-              ./jenkins-scripts/tcwg_kernel-build.sh \
+              ./jenkins-scripts/tcwg_gnu-build.sh \
               %% artifacts/jenkins/manifest.sh \
               --BUILD_URL "$BUILD_URL" \
               --scripts_branch "$scripts_branch" \
@@ -333,11 +351,13 @@
             mkdir -p artifacts/jenkins
             echo "$build_name" > artifacts/jenkins/build-name
             # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
-            echo "maxim.kuvyrkov@linaro.org" > artifacts/jenkins/mail-recipients.txt
+            echo "prathamesh.kulkarni@linaro.org,tcwg-gcc@linaro.org" > artifacts/jenkins/mail-recipients.txt
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
 
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
+              --arch {docker_arch} \
+              --node $NODE_NAME \
               -- \
               ./jenkins-scripts/round-robin-bisect.sh \
               %% artifacts/manifests/bisect.sh \
@@ -458,4 +478,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     publishers:
       - bisect-publishers
-# checksum: d15e909381e837272eacf5ed361dd830
+# checksum: 22ccf56f4e4376fc1cab9f3970735215
