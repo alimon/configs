@@ -39,8 +39,15 @@
     node: master
     child-workspace: .
     display-name: 'Zephyr project (master)'
-    triggers:
-        - timed: 'H H/12 * * *'
+# We should avoid starting this job "on its own". That's because default
+# Git revision it builds is master/HEAD, and as this is a matrix job,
+# different sub-builds may get different actual HEAD revision (e.g. if
+# the tree is actively committed to). Instead, it should be triggered
+# externally, with GIT_COMMIT parameter set to a specific SHA1 revision
+# to build. This is achieved using "trigger-zephyr-upstream" trigger
+# job.
+#    triggers:
+#        - timed: 'H H/12 * * *'
     axes:
         - axis:
             type: slave
