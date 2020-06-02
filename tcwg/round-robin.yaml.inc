@@ -100,6 +100,14 @@
     name: default-parameters
     parameters:
       - string:
+          name: ci_project
+          default: '{ci_project}'
+          description: "CI project ID; used as namespace for git branches"
+      - string:
+          name: ci_config
+          default: '{ci_config}'
+          description: "CI configuration ID"
+      - string:
           name: extra_build_params
           default: ""
           description: "Extra parameters to pass to the build script"
@@ -121,7 +129,6 @@
           default: master
           description: 'Benchmark scripts revision to use'
 #endif
-
 
 - builder:
     name: trigger-followup-builds
@@ -163,66 +170,51 @@
           users:
             - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
 
+
+- parameter:
+    name: component-parameters
+    parameters:
+      - string:
+          name: '{component}_url'
+          default: '{url}'
+          description: "{component} git URL"
+      - string:
+          name: '{component}_branch'
+          default: '{branch}'
+          description: "{component} branch or sha1 to build, or 'baseline'"
+
 - parameter:
     name: build-parameters
     parameters:
-      - string:
-          name: ci_project
-          default: '{ci_project}'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: '{ci_config}'
-          description: "CI configuration ID"
 #if COMPONENTS_binutils
-      - string:
-          name: binutils_url
-          default: '{binutils_url}'
-          description: "binutils git URL"
-      - string:
-          name: binutils_branch
-          default: '{default_branch}'
-          description: "binutils branch or sha1 to build, or 'baseline'"
+      - component-parameters:
+          component: binutils
+          url: '{binutils_url}'
+          branch: '{default_branch}'
 #endif
 #if COMPONENTS_gcc
-      - string:
-          name: gcc_url
-          default: '{gcc_url}'
-          description: "gcc git URL"
-      - string:
-          name: gcc_branch
-          default: '{default_branch}'
-          description: "gcc branch or sha1 to build, or 'baseline'"
+      - component-parameters:
+          component: gcc
+          url: '{gcc_url}'
+          branch: '{default_branch}'
 #endif
 #if COMPONENTS_glibc
-      - string:
-          name: glibc_url
-          default: '{glibc_url}'
-          description: "glibc git URL"
-      - string:
-          name: glibc_branch
-          default: '{default_branch}'
-          description: "glibc branch or sha1 to build, or 'baseline'"
+      - component-parameters:
+          component: glibc
+          url: '{glibc_url}'
+          branch: '{default_branch}'
 #endif
 #if COMPONENTS_llvm
-      - string:
-          name: llvm_url
-          default: '{llvm_url}'
-          description: "llvm git URL"
-      - string:
-          name: llvm_branch
-          default: '{default_branch}'
-          description: "llvm branch or sha1 to build, or 'baseline'"
+      - component-parameters:
+          component: llvm
+          url: '{llvm_url}'
+          branch: '{default_branch}'
 #endif
 #if COMPONENTS_linux
-      - string:
-          name: linux_url
-          default: '{linux_url}'
-          description: "linux git URL"
-      - string:
-          name: linux_branch
-          default: default
-          description: "linux branch or sha1 to build"
+      - component-parameters:
+          component: linux
+          url: '{linux_url}'
+          branch: '{default_branch}'
 #endif
       - choice:
           name: update_baseline
@@ -232,7 +224,9 @@
             - init
             - push
           description: "What to do with baseline in this build"
-      - default-parameters
+      - default-parameters:
+          ci_project: '{ci_project}'
+          ci_config: '{ci_config}'
 
 - builder:
     name: run-build
@@ -373,14 +367,6 @@
     name: bisect-parameters
     parameters:
       - string:
-          name: ci_project
-          default: '{ci_project}'
-          description: "CI project ID; used as namespace for git branches"
-      - string:
-          name: ci_config
-          default: '{ci_config}'
-          description: "CI configuration ID"
-      - string:
           name: current_project
           default: ""
           description: "Project to bisect"
@@ -395,7 +381,9 @@
       - file:
           name: jenkins-scripts/replay_log
           description: "Replay part of bisect using provided bisect log"
-      - default-parameters
+      - default-parameters:
+          ci_project: '{ci_project}'
+          ci_config: '{ci_config}'
 
 - builder:
     name: run-bisect
