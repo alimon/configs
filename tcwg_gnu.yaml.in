@@ -1,83 +1,121 @@
 - project:
-    name: tcwg_gnu
-    toolchain_name:
-      - gnu:
-          binutils_url: git://sourceware.org/git/binutils-gdb.git
-          gcc_url: https://github.com/gcc-mirror/gcc.git
+    name: #{RR}
+    toolchain_name: gnu
+#if COMPONENTS_binutils
+    binutils_url: git://sourceware.org/git/binutils-gdb.git
+#endif
+#if COMPONENTS_gcc
+    gcc_url: https://github.com/gcc-mirror/gcc.git
+#endif
+#if COMPONENTS_glibc
+    glibc_url: git://sourceware.org/git/glibc.git
+#endif
+#if COMPONENTS_qemu
+    qemu_url: https://git.qemu.org/git/qemu.git
+#endif
     toolchain_ver:
       - master:
+#if COMPONENTS_binutils
           binutils_branch: master
+#endif
+#if COMPONENTS_gcc
           gcc_branch: master
+#endif
+#if COMPONENTS_glibc
+          glibc_branch: master
+#endif
+#if COMPONENTS_qemu
+          qemu_branch: master
+#endif
       - release:
+#if COMPONENTS_binutils
           binutils_branch: binutils-2_33-branch
+#endif
+#if COMPONENTS_gcc
           gcc_branch: releases/gcc-9
+#endif
+#if COMPONENTS_glibc
+          glibc_branch: release/2.30/master
+#endif
+#if COMPONENTS_qemu
+          qemu_branch: stable-4.1
+#endif
     target:
+#if RR_tcwg_cross
+      - aarch64
+      - arm
+    node: tcwg-build && tcwg-armv8_32
+#else
       - aarch64:
-          node: tcwg-build && tcwg-armv8_64
+          node: tcwg-armv8_64
           docker_arch: arm64
       - arm:
-          node: tcwg-build && tcwg-armv8_32
+          node: tcwg-armv8_32
           docker_arch: armhf
+#endif
     type_of_test:
-      - bootstrap_O1:
-          components: gcc
-      - bootstrap_O3:
-          components: gcc
-      - bootstrap_debug:
-          components: gcc
-      - bootstrap_profiled:
-          components: gcc
-      - bootstrap_profiled_lto:
-          components: gcc
-      - bootstrap_profiled_lto_lean:
-          components: gcc
-      - bootstrap_ubsan:
-          components: gcc
-      - check_binutils:
-          components: binutils
-      - check_bootstrap:
-          components: gcc
-      - check_bootstrap_lto:
-          components: gcc
+#if RR_tcwg_binutils
+      - check_binutils
+#elif RR_tcwg_cross
+      - check_cross
+#elif RR_tcwg_gcc
+      - bootstrap_O1
+      - bootstrap_O3
+      - bootstrap_debug
+      - bootstrap_profiled
+      - bootstrap_profiled_lto
+      - bootstrap_profiled_lto_lean
+      - bootstrap_ubsan
+      - check_bootstrap
+      - check_bootstrap_lto
+#endif
     jobs:
-      - 'tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
-      - 'tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+      - '#{RR}-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+      - '#{RR}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
 
 - view:
-    name: tcwg_gnu
+    name: #{RR}
     view-type: list
-    regex: 'tcwg_gnu-.*'
+    regex: '#{RR}-.*'
 
 #include tcwg/round-robin.yaml.inc
 
 - job-template:
-    name: tcwg_gnu-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
+    name: #{RR}-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
     project-type: freestyle
     defaults: global
     properties:
       - default-properties
       - build-blocker:
           blocking-jobs:
-            - "tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}"
+            - "#{RR}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}"
           queue-scanning: 'ALL'
     parameters:
       - build-parameters:
           ci_project: 'tcwg_gnu'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+#if COMPONENTS_binutils
           binutils_url: '{binutils_url}'
+#endif
+#if COMPONENTS_gcc
           gcc_url: '{gcc_url}'
+#endif
           default_branch: 'default'
     disabled: false
-    node: '{node} && tcwg-amp'
+    node: '{node} && tcwg-build'
     concurrent: false
     display-name: 'TCWG Build tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
     scm:
       - build-scms:
+#if COMPONENTS_binutils
           binutils_url: '{binutils_url}'
           binutils_branch: '{binutils_branch}'
+#endif
+#if COMPONENTS_gcc
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
+#endif
     triggers:
       - pollscm:
           cron: 'H H H/2 * *'
@@ -87,8 +125,8 @@
     builders:
       - run-build:
           build_script: 'tcwg_gnu-build.sh'
-          components: '{components}'
-          rr_project: 'tcwg_gnu'
+          components: '#{COMPONENTS}'
+          rr_project: '#{RR}'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
           docker_arch: '{docker_arch}'
           target: '{target}'
@@ -102,7 +140,7 @@
           success: false
 
 - job-template:
-    name: tcwg_gnu-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
+    name: #{RR}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
     project-type: freestyle
     defaults: global
     properties:
@@ -114,14 +152,14 @@
           # same regression tends to appear in multiple configurations,
           # run bisections for all configurations in-order.
           blocking-jobs:
-            - "tcwg_gnu-bisect-.*"
+            - "#{RR}-bisect-.*"
           queue-scanning: 'BUILDABLE'
     parameters:
       - bisect-parameters:
           ci_project: 'tcwg_gnu'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     disabled: false
-    node: '{node} && tcwg-d05'
+    node: '{node} && tcwg-bisect'
     concurrent: false
     display-name: 'TCWG Bisect tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
@@ -133,7 +171,7 @@
     builders:
       - run-bisect:
           build_script: 'tcwg_gnu-build.sh'
-          rr_project: 'tcwg_gnu'
+          rr_project: '#{RR}'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
           docker_arch: '{docker_arch}'
     publishers:
