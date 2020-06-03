@@ -60,6 +60,7 @@
           timeout: 600
     builders:
       - run-build:
+          build_script: 'tcwg_bmk-build.sh'
           components: '{components}'
           rr_project: 'tcwg_bmk_dev_#{TOOLCHAIN}'
           ci_project_config: 'tcwg_bmk_{hw}'
@@ -88,9 +89,10 @@
       - bisect-wrappers:
           timeout: 2880
     builders:
-        - run-bisect:
-            components: '{components}'
-            rr_project: 'tcwg_bmk_dev_#{TOOLCHAIN}'
-            ci_project_config: 'tcwg_bmk_{hw}'
+      - run-bisect:
+          build_script: 'tcwg_bmk-build.sh'
+          components: '{components}'
+          rr_project: 'tcwg_bmk_dev_#{TOOLCHAIN}'
+          ci_project_config: 'tcwg_bmk_{hw}'
     publishers:
         - bisect-publishers

@@ -217,7 +217,7 @@
               --distro $distro \
               --ssh_info true \
               -- \
-              ./jenkins-scripts/tcwg_bmk-build.sh \
+              ./jenkins-scripts/{build_script} \
               %% artifacts/jenkins/manifest.sh \
               --BUILD_URL "$BUILD_URL" \
               --scripts_branch "$scripts_branch" \
@@ -329,7 +329,7 @@
               --bad_url "$bad_url" \
               --bad_branch "$bad_branch" \
               --replay_log "$(pwd)/jenkins-scripts/replay_log" \
-              --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
+              --build_script "./jenkins-scripts/{build_script}" \
               -- \
               --scripts_branch "$scripts_branch" \
               --bmk_branch "$bmk_branch" \
@@ -414,6 +414,7 @@
           timeout: 600
     builders:
       - run-build:
+          build_script: 'tcwg_bmk-build.sh'
           components: '{components}'
           rr_project: 'tcwg_bmk_dev_llvm'
           ci_project_config: 'tcwg_bmk_{hw}'
@@ -442,10 +443,11 @@
       - bisect-wrappers:
           timeout: 2880
     builders:
-        - run-bisect:
-            components: '{components}'
-            rr_project: 'tcwg_bmk_dev_llvm'
-            ci_project_config: 'tcwg_bmk_{hw}'
+      - run-bisect:
+          build_script: 'tcwg_bmk-build.sh'
+          components: '{components}'
+          rr_project: 'tcwg_bmk_dev_llvm'
+          ci_project_config: 'tcwg_bmk_{hw}'
     publishers:
         - bisect-publishers
-# checksum: a9e15449bcf05d6ced9e791f11bb8bac
+# checksum: b75f3fe71a6dc97d56f92225fdc632d4

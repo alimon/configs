@@ -255,7 +255,7 @@
               --arch {docker_arch} \
               --node $NODE_NAME \
               -- \
-              ./jenkins-scripts/tcwg_gnu-build.sh \
+              ./jenkins-scripts/{build_script} \
               %% artifacts/jenkins/manifest.sh \
               --BUILD_URL "$BUILD_URL" \
               --scripts_branch "$scripts_branch" \
@@ -366,7 +366,7 @@
               --bad_url "$bad_url" \
               --bad_branch "$bad_branch" \
               --replay_log "$(pwd)/jenkins-scripts/replay_log" \
-              --build_script "./jenkins-scripts/tcwg_gnu-build.sh" \
+              --build_script "./jenkins-scripts/{build_script}" \
               -- \
               --scripts_branch "$scripts_branch" \
               ==rr[ci_project] $ci_project \
@@ -432,6 +432,7 @@
           timeout: 1000
     builders:
       - run-build:
+          build_script: 'tcwg_gnu-build.sh'
           components: '{components}'
           rr_project: 'tcwg_gnu'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -477,9 +478,10 @@
           timeout: 6000
     builders:
       - run-bisect:
+          build_script: 'tcwg_gnu-build.sh'
           rr_project: 'tcwg_gnu'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
           docker_arch: '{docker_arch}'
     publishers:
       - bisect-publishers
-# checksum: ad4bda84ca5028b852dc8edf67dedb66
+# checksum: 0c2e9f48bde7205da0e653a0300d4a30

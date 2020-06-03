@@ -227,7 +227,7 @@
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
               -- \
-              ./jenkins-scripts/tcwg_kernel-build.sh \
+              ./jenkins-scripts/{build_script} \
               %% artifacts/jenkins/manifest.sh \
               --BUILD_URL "$BUILD_URL" \
               --scripts_branch "$scripts_branch" \
@@ -336,7 +336,7 @@
               --bad_url "$bad_url" \
               --bad_branch "$bad_branch" \
               --replay_log "$(pwd)/jenkins-scripts/replay_log" \
-              --build_script "./jenkins-scripts/tcwg_kernel-build.sh" \
+              --build_script "./jenkins-scripts/{build_script}" \
               -- \
               --scripts_branch "$scripts_branch" \
               ==rr[ci_project] $ci_project \
@@ -402,6 +402,7 @@
           timeout: 600
     builders:
       - run-build:
+          build_script: 'tcwg_kernel-build.sh'
           components: '{components}'
           rr_project: 'tcwg_kernel-llvm'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
@@ -439,8 +440,9 @@
           timeout: 1440
     builders:
       - run-bisect:
+          build_script: 'tcwg_kernel-build.sh'
           rr_project: 'tcwg_kernel-llvm'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
       - bisect-publishers
-# checksum: 8201c8799d120d09b9f189ba7d1d66fe
+# checksum: bb75560a41fcbdb437957a243c8a5946
