@@ -1,6 +1,58 @@
+# Auto generated from tcwg_gnu.yaml.in and tcwg_gnu/tcwg_cross.def. Do not edit.
+- project:
+    name: tcwg_cross
+    toolchain_name: gnu
+    binutils_url: git://sourceware.org/git/binutils-gdb.git
+    gcc_url: https://github.com/gcc-mirror/gcc.git
+    glibc_url: git://sourceware.org/git/glibc.git
+    qemu_url: https://git.qemu.org/git/qemu.git
+    toolchain_ver:
+      - master:
+          binutils_branch: master
+          gcc_branch: master
+          glibc_branch: master
+          qemu_branch: master
+      - release:
+          binutils_branch: binutils-2_33-branch
+          gcc_branch: releases/gcc-9
+          glibc_branch: release/2.30/master
+          qemu_branch: stable-4.1
+    target:
+      - aarch64
+      - arm
+    node: tcwg-x86_64-build
+    type_of_test:
+      - build_cross
+      - check_cross
+    jobs:
+      - 'tcwg_cross-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+      - 'tcwg_cross-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+
+- view:
+    name: tcwg_cross
+    view-type: list
+    regex: 'tcwg_cross-.*'
+
+#BEGIN: tcwg/round-robin.yaml.inc
 # -*- mode: Yaml -*-
 
-#include tcwg/default.yaml.inc
+#BEGIN: tcwg/default.yaml.inc
+# -*- mode: Yaml -*-
+
+- property:
+    name: default-properties
+    properties:
+      - authorization:
+          anonymous:
+            - job-read
+            - job-extended-read
+          linaro:
+            - job-build
+            - job-cancel
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 30
+#END:   tcwg/default.yaml.inc
 
 - parameter:
     name: default-parameters
@@ -29,12 +81,6 @@
           name: scripts_branch
           default: master
           description: 'Scripts revision to use'
-#if RR_tcwg_bmk
-      - string:
-          name: bmk_branch
-          default: master
-          description: 'Benchmark scripts revision to use'
-#endif
 
 - scm:
     name: jenkins-scripts
@@ -52,23 +98,6 @@
             before: true
           prune: true
 
-#if RR_tcwg_bmk
-- scm:
-    name: bmk-scripts
-    scm:
-      - git:
-          url: https://git.linaro.org/toolchain/bmk-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $bmk_branch
-          basedir: bmk-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/bmk-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
-#endif
 
 - parameter:
     name: component-parameters
@@ -85,36 +114,18 @@
 - parameter:
     name: build-parameters
     parameters:
-#if COMPONENTS_binutils
       - component-parameters:
           component: binutils
           url: '{binutils_url}'
           branch: '{default_branch}'
-#endif
-#if COMPONENTS_gcc
       - component-parameters:
           component: gcc
           url: '{gcc_url}'
           branch: '{default_branch}'
-#endif
-#if COMPONENTS_glibc
       - component-parameters:
           component: glibc
           url: '{glibc_url}'
           branch: '{default_branch}'
-#endif
-#if COMPONENTS_llvm
-      - component-parameters:
-          component: llvm
-          url: '{llvm_url}'
-          branch: '{default_branch}'
-#endif
-#if COMPONENTS_linux
-      - component-parameters:
-          component: linux
-          url: '{linux_url}'
-          branch: '{default_branch}'
-#endif
       - choice:
           name: update_baseline
           choices:
@@ -146,53 +157,26 @@
     name: build-scms
     scm:
       - jenkins-scripts
-#if PURPOSE_ci
-#if COMPONENTS_llvm
-      - component-scm:
-          component: llvm
-          url: '{llvm_url}'
-          branch: '{llvm_branch}'
-          reference: llvm-project.git
-#endif
-#if COMPONENTS_binutils
       - component-scm:
           component: binutils
           url: '{binutils_url}'
           branch: '{binutils_branch}'
           reference: binutils-gdb.git
-#endif
-#if COMPONENTS_gcc
       - component-scm:
           component: gcc
           url: '{gcc_url}'
           branch: '{gcc_branch}'
           reference: gcc.git
-#endif
-#if COMPONENTS_glibc
       - component-scm:
           component: glibc
           url: '{glibc_url}'
           branch: '{glibc_branch}'
           reference: glibc.git
-#endif
-#if COMPONENTS_linux
-      - component-scm:
-          component: linux
-          url: '{linux_url}'
-          branch: '{linux_branch}'
-          reference: linux.git
-#endif
-#if COMPONENTS_qemu
       - component-scm:
           component: qemu
           url: '{qemu_url}'
           branch: '{qemu_branch}'
           reference: qemu.git
-#endif
-#endif /* PURPOSE_ci */
-#if RR_tcwg_bmk
-      - bmk-scripts
-#endif
 
 - wrapper:
     name: build-wrappers
@@ -221,9 +205,6 @@
               echo "mail_recipients=$mail_recipients" >> $i
               echo "distro=$distro" >> $i
               echo "scripts_branch=$scripts_branch" >> $i
-#if RR_tcwg_bmk
-              echo "bmk_branch=$bmk_branch" >> $i
-#endif
             fi
           done
       - trigger-builds:
@@ -247,42 +228,18 @@
             mkdir -p artifacts/jenkins
 
             dryruncmd=""
-#if RR_tcwg_gcc
-            # Don't run these known-bad configurations.
-            case {target}-{type_of_test} in
-              aarch64-bootstrap_profiled|\
-              aarch64-bootstrap_profiled_lto|\
-              aarch64-bootstrap_profiled_lto_lean|\
-              aarch64-check_bootstrap_lto|\
-              arm-bootstrap_profiled|\
-              arm-bootstrap_profiled_lto*|\
-              arm-check_bootstrap_lto)
-                echo "Known bad configuration, not running."
-                echo "Would have run:"
-                # So we know it wasn't an infrastructure failure
-                touch artifacts/failures
-                dryruncmd="echo"
-                ;;
-            esac
-#endif
 
-#if PURPOSE_ci
             build_name="#$BUILD_NUMBER"
-#elif PURPOSE_dev
-            build_name="#$BUILD_NUMBER-$ci_project/$ci_config"
-#endif
             branch_opt=""
             # 1 to skip jenkins-scripts
             i=1
             for c in {components}; do
               eval "u=\$$$${{c}}_url"
               eval "b=\$$$${{c}}_branch"
-#if PURPOSE_ci
               if [ x"$b" = x"default" ]; then
                 eval "b=\$GIT_COMMIT_$i"
               fi
               i=$(($i+1))
-#endif
               if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
                 branch_opt="$branch_opt ==rr[${{c}}_url] $u ==rr[${{c}}_branch] $b"
@@ -292,20 +249,11 @@
             $dryruncmd \
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
-#if RR_tcwg_bmk
-              --ssh_info true \
-#elif RR_tcwg_binutils || RR_tcwg_gcc
-              --arch {docker_arch} \
-              --node $NODE_NAME \
-#endif
               -- \
               ./jenkins-scripts/{build_script} \
               %% artifacts/jenkins/manifest.sh \
               --BUILD_URL "$BUILD_URL" \
               --scripts_branch "$scripts_branch" \
-#if RR_tcwg_bmk
-              --bmk_branch "$bmk_branch" \
-#endif
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
               $branch_opt \
@@ -384,12 +332,10 @@
     wrappers:
       - build-wrappers:
           timeout: '{timeout}'
-#if PURPOSE_ci
       - credentials-binding:
           - text:
               credential-id: TCWG_JIRA_PASSWORD
               variable: TCWG_JIRA_PASSWORD
-#endif
 
 - builder:
     name: run-bisect
@@ -402,30 +348,13 @@
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
             mkdir -p artifacts/jenkins
-#if PURPOSE_ci
             build_name="#$BUILD_NUMBER-$current_project"
-#elif PURPOSE_dev
-            build_name="#$BUILD_NUMBER-$ci_project/$ci_config-$current_project"
-#endif
             echo "$build_name" > artifacts/jenkins/build-name
             # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
-#if RR_tcwg_bmk
-            echo "christophe.lyon@linaro.org" > artifacts/jenkins/mail-recipients.txt
-#elif RR_tcwg_binutils || RR_tcwg_gcc
-            echo "prathamesh.kulkarni@linaro.org,tcwg-gcc@linaro.org" > artifacts/jenkins/mail-recipients.txt
-#elif RR_tcwg_kernel
-            echo "maxim.kuvyrkov@linaro.org" > artifacts/jenkins/mail-recipients.txt
-#endif
             echo "Build $BUILD_URL failed" > artifacts/jenkins/mail-body.txt
 
             ./jenkins-scripts/docker-run.sh \
               --distro $distro \
-#if RR_tcwg_bmk
-              --ssh_info true \
-#elif RR_tcwg_binutils || RR_tcwg_gcc
-              --arch {docker_arch} \
-              --node $NODE_NAME \
-#endif
               -- \
               ./jenkins-scripts/round-robin-bisect.sh \
               %% artifacts/manifests/bisect.sh \
@@ -435,14 +364,9 @@
               --bad_branch "$bad_branch" \
               --replay_log "$(pwd)/jenkins-scripts/replay_log" \
               --build_script "./jenkins-scripts/{build_script}" \
-#if PURPOSE_ci
               --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
-#endif
               -- \
               --scripts_branch "$scripts_branch" \
-#if RR_tcwg_bmk
-              --bmk_branch "$bmk_branch" \
-#endif
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
               $extra_build_params
@@ -468,3 +392,98 @@
             aborted: true
             send-to:
               - recipients
+#END:   tcwg/round-robin.yaml.inc
+
+- job-template:
+    name: tcwg_cross-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+      - build-blocker:
+          blocking-jobs:
+            - "tcwg_cross-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}"
+          queue-scanning: 'ALL'
+    parameters:
+      - build-parameters:
+          ci_project: 'tcwg_gnu'
+          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+          binutils_url: '{binutils_url}'
+          gcc_url: '{gcc_url}'
+          glibc_url: '{glibc_url}'
+          qemu_url: '{qemu_url}'
+          default_branch: 'default'
+    disabled: false
+    node: '{node} && tcwg-build'
+    concurrent: false
+    display-name: 'TCWG Build tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
+    scm:
+      - build-scms:
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
+          gcc_url: '{gcc_url}'
+          gcc_branch: '{gcc_branch}'
+          glibc_url: '{glibc_url}'
+          glibc_branch: '{glibc_branch}'
+          qemu_url: '{qemu_url}'
+          qemu_branch: '{qemu_branch}'
+    triggers:
+      - pollscm:
+          cron: 'H H H/2 * *'
+    wrappers:
+      - build-wrappers:
+          timeout: 1000
+    builders:
+      - run-build:
+          build_script: 'tcwg_gnu-build.sh'
+          components: 'binutils gcc glibc qemu'
+          rr_project: 'tcwg_cross'
+          ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+          target: '{target}'
+          type_of_test: '{type_of_test}'
+    publishers:
+      - build-publishers
+      - email-ext:
+          recipients: 'tcwg-gcc@linaro.org'
+          aborted: true
+          failure: false
+          success: false
+
+- job-template:
+    name: tcwg_cross-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+      - build-blocker:
+          # Run at most 1 bisect job for all configurations.
+          # Bisect jobs can easily run for 5+ hours, and a few of them
+          # can hog the entire TCWG build farm for a long time.  Since
+          # same regression tends to appear in multiple configurations,
+          # run bisections for all configurations in-order.
+          blocking-jobs:
+            - "tcwg_cross-bisect-.*"
+          queue-scanning: 'BUILDABLE'
+    parameters:
+      - bisect-parameters:
+          ci_project: 'tcwg_gnu'
+          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    disabled: false
+    node: '{node} && tcwg-bisect'
+    concurrent: false
+    display-name: 'TCWG Bisect tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
+    scm:
+      - jenkins-scripts
+    wrappers:
+      - bisect-wrappers:
+          timeout: 6000
+    builders:
+      - run-bisect:
+          build_script: 'tcwg_gnu-build.sh'
+          rr_project: 'tcwg_cross'
+          ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    publishers:
+      - bisect-publishers
+# checksum: f0338e55f7703aad3ee8e616fdbaedbd

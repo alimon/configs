@@ -44,7 +44,7 @@
 #if RR_tcwg_cross
       - aarch64
       - arm
-    node: tcwg-build && tcwg-armv8_32
+    node: tcwg-x86_64-build
 #else
       - aarch64:
           node: tcwg-armv8_64
@@ -57,6 +57,7 @@
 #if RR_tcwg_binutils
       - check_binutils
 #elif RR_tcwg_cross
+      - build_cross
       - check_cross
 #elif RR_tcwg_gcc
       - bootstrap_O1
@@ -100,6 +101,12 @@
 #if COMPONENTS_gcc
           gcc_url: '{gcc_url}'
 #endif
+#if COMPONENTS_glibc
+          glibc_url: '{glibc_url}'
+#endif
+#if COMPONENTS_qemu
+          qemu_url: '{qemu_url}'
+#endif
           default_branch: 'default'
     disabled: false
     node: '{node} && tcwg-build'
@@ -116,6 +123,14 @@
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
 #endif
+#if COMPONENTS_glibc
+          glibc_url: '{glibc_url}'
+          glibc_branch: '{glibc_branch}'
+#endif
+#if COMPONENTS_qemu
+          qemu_url: '{qemu_url}'
+          qemu_branch: '{qemu_branch}'
+#endif
     triggers:
       - pollscm:
           cron: 'H H H/2 * *'
@@ -128,7 +143,9 @@
           components: '#{COMPONENTS}'
           rr_project: '#{RR}'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+#if RR_tcwg_binutils || RR_tcwg_gcc
           docker_arch: '{docker_arch}'
+#endif
           target: '{target}'
           type_of_test: '{type_of_test}'
     publishers:
@@ -173,6 +190,8 @@
           build_script: 'tcwg_gnu-build.sh'
           rr_project: '#{RR}'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+#if RR_tcwg_binutils || RR_tcwg_gcc
           docker_arch: '{docker_arch}'
+#endif
     publishers:
       - bisect-publishers
