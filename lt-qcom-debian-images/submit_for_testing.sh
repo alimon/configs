@@ -46,8 +46,8 @@ elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
 elif [ "${DEVICE_TYPE}" = "dragonboard-845c" ]; then
     export WLAN_DEVICE="wlan0"
     export WLAN_TIME_DELAY="0s"
-    export ETH_DEVICE="eth0"
-    export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
+    export ETH_DEVICE="enx000ec6817901"
+    export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
 
     export BOOT_OS_PROMPT=\'root@linaro-gnome:~#\'
     export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${VENDOR}-${OS_FLAVOUR}-gnome-${PLATFORM_NAME}-${BUILD_NUMBER}.img.gz
