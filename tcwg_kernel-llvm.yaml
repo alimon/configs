@@ -159,6 +159,16 @@
     name: build-scms
     scm:
       - jenkins-scripts
+      - component-scm:
+          component: llvm
+          url: '{llvm_url}'
+          branch: '{llvm_branch}'
+          reference: llvm-project.git
+      - component-scm:
+          component: linux
+          url: '{linux_url}'
+          branch: '{linux_branch}'
+          reference: linux.git
 
 - wrapper:
     name: build-wrappers
@@ -211,12 +221,17 @@
 
             dryruncmd=""
 
+            build_name="#$BUILD_NUMBER"
             branch_opt=""
             # 1 to skip jenkins-scripts
             i=1
             for c in {components}; do
               eval "u=\$$$${{c}}_url"
               eval "b=\$$$${{c}}_branch"
+              if [ x"$b" = x"default" ]; then
+                eval "b=\$GIT_COMMIT_$i"
+              fi
+              i=$(($i+1))
               if [ x"$b" != x"baseline" ]; then
                 build_name="$build_name-$c"
                 branch_opt="$branch_opt ==rr[${{c}}_url] $u ==rr[${{c}}_branch] $b"
@@ -309,6 +324,10 @@
     wrappers:
       - build-wrappers:
           timeout: '{timeout}'
+      - credentials-binding:
+          - text:
+              credential-id: TCWG_JIRA_PASSWORD
+              variable: TCWG_JIRA_PASSWORD
 
 - builder:
     name: run-bisect
@@ -321,6 +340,7 @@
             # below docker-run.sh fails to start up a container.
             rm -rf artifacts/
             mkdir -p artifacts/jenkins
+            build_name="#$BUILD_NUMBER-$current_project"
             echo "$build_name" > artifacts/jenkins/build-name
             # artifacts/jenkins/mail-*.txt will be overwritten in successful builds.
             echo "maxim.kuvyrkov@linaro.org" > artifacts/jenkins/mail-recipients.txt
@@ -337,6 +357,7 @@
               --bad_branch "$bad_branch" \
               --replay_log "$(pwd)/jenkins-scripts/replay_log" \
               --build_script "./jenkins-scripts/{build_script}" \
+              --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
               -- \
               --scripts_branch "$scripts_branch" \
               ==rr[ci_project] $ci_project \
@@ -445,4 +466,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
       - bisect-publishers
-# checksum: bb75560a41fcbdb437957a243c8a5946
+# checksum: c8e26e2e07f6170d0d4410b7eb9eb0c6
