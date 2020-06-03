@@ -2,6 +2,7 @@
 - project:
     name: tcwg_gcc
     toolchain_name: gnu
+    ci_project: tcwg_gnu
     gcc_url: https://github.com/gcc-mirror/gcc.git
     toolchain_ver:
       - master:
@@ -146,6 +147,11 @@
               before: true
             prune: true
 
+# SCMs must start with jenkins-scripts and then be ordered alphabetically.
+# Same alphabetical order must be followed in .def files.  The reason behind
+# this is that jenkins sets $GIT_COMMIT to sha1 of jenkins-scripts, and then
+# sets $GIT_COMMIT_1, $GIT_COMMIT_2, etc. to sha1s of component SCM /in the
+# order that they are declared here/.
 - scm:
     name: build-scms
     scm:
@@ -405,7 +411,7 @@
           queue-scanning: 'ALL'
     parameters:
       - build-parameters:
-          ci_project: 'tcwg_gnu'
+          ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
           gcc_url: '{gcc_url}'
           default_branch: 'default'
@@ -458,7 +464,7 @@
           queue-scanning: 'BUILDABLE'
     parameters:
       - bisect-parameters:
-          ci_project: 'tcwg_gnu'
+          ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     disabled: false
     node: '{node} && tcwg-bisect'
@@ -478,4 +484,4 @@
           docker_arch: '{docker_arch}'
     publishers:
       - bisect-publishers
-# checksum: ca389538d0035722b319a0466acfdb4e
+# checksum: b2144039d91f632d72d41bec2851afc0

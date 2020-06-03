@@ -1,6 +1,11 @@
 - project:
     name: #{RR}
     toolchain_name: gnu
+#if RR_tcwg_gcc || RR_tcwg_binutils
+    ci_project: tcwg_gnu
+#elif RR_tcwg_cross
+    ci_project: tcwg_cross
+#endif
 #if COMPONENTS_binutils
     binutils_url: git://sourceware.org/git/binutils-gdb.git
 #endif
@@ -93,7 +98,7 @@
           queue-scanning: 'ALL'
     parameters:
       - build-parameters:
-          ci_project: 'tcwg_gnu'
+          ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
 #if COMPONENTS_binutils
           binutils_url: '{binutils_url}'
@@ -173,7 +178,7 @@
           queue-scanning: 'BUILDABLE'
     parameters:
       - bisect-parameters:
-          ci_project: 'tcwg_gnu'
+          ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     disabled: false
     node: '{node} && tcwg-bisect'

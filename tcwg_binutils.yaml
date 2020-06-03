@@ -2,6 +2,7 @@
 - project:
     name: tcwg_binutils
     toolchain_name: gnu
+    ci_project: tcwg_gnu
     binutils_url: git://sourceware.org/git/binutils-gdb.git
     toolchain_ver:
       - master:
@@ -138,6 +139,11 @@
               before: true
             prune: true
 
+# SCMs must start with jenkins-scripts and then be ordered alphabetically.
+# Same alphabetical order must be followed in .def files.  The reason behind
+# this is that jenkins sets $GIT_COMMIT to sha1 of jenkins-scripts, and then
+# sets $GIT_COMMIT_1, $GIT_COMMIT_2, etc. to sha1s of component SCM /in the
+# order that they are declared here/.
 - scm:
     name: build-scms
     scm:
@@ -381,7 +387,7 @@
           queue-scanning: 'ALL'
     parameters:
       - build-parameters:
-          ci_project: 'tcwg_gnu'
+          ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
           binutils_url: '{binutils_url}'
           default_branch: 'default'
@@ -434,7 +440,7 @@
           queue-scanning: 'BUILDABLE'
     parameters:
       - bisect-parameters:
-          ci_project: 'tcwg_gnu'
+          ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     disabled: false
     node: '{node} && tcwg-bisect'
@@ -454,4 +460,4 @@
           docker_arch: '{docker_arch}'
     publishers:
       - bisect-publishers
-# checksum: abf5e6d56192b1b076e45a48bf858254
+# checksum: acc1c579a6219a2e7de6cadf3c509463
