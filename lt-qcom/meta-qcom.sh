@@ -36,4 +36,12 @@ EOF
 
 bitbake-layers layerindex-fetch -s -b ${BRANCH} meta-qcom
 
+if [ "${ghprbPullId}" ]; then
+    echo "Applying Github pull-request: ${ghprbPullLink}"
+    pushd meta-qcom
+    git fetch origin refs/pull/${ghprbPullId}/head
+    git merge FETCH_HEAD
+    popd
+fi
+
 bitbake ${IMAGES}

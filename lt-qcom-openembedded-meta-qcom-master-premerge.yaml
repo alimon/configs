@@ -1,0 +1,82 @@
+- job:
+    name: lt-qcom-openembedded-meta-qcom-master-premerge
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - github:
+            url: https://github.com/ndechesne/meta-qcom
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'core-image-base core-image-weston core-image-x11 initramfs-test-image'
+        - string:
+            name: POKY_URL
+            default: 'http://git.yoctoproject.org/git/poky'
+        - string:
+            name: DISTRO
+            default: 'poky'
+    disabled: false
+    node: master
+    display-name: 'Premerge CI for meta-qcom Layer with Poky (master)'
+    scm:
+        - git:
+            url: https://github.com/ndechesne/meta-qcom
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
+    triggers:
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            white-list-target-branches:
+                - 'master'
+            auth-id: 'GITHUB_TOKEN'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'dragonboard-410c'
+                - 'dragonboard-845c'
+        - axis:
+            type: user-defined
+            name: TCLIBC
+            values:
+                - 'glibc'
+                - 'musl'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-buster-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timeout:
+            timeout: 300
+    builders:
+        - shell:
+            !include-raw: lt-qcom/meta-qcom.sh
+    publishers:
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org'
+            always: true
+            matrix-trigger: only-parent
