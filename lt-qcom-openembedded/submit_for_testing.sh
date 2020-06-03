@@ -49,7 +49,7 @@ case "${MACHINE}" in
 
       export BOOT_OS_PROMPT=\'root@dragonboard-820c:~#\'
     elif [ ${DEVICE_TYPE} = "dragonboard-845c" ]; then
-      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
+      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
       export WLAN_DEVICE="wlan0"
       export WLAN_TIME_DELAY="15s"
       export ETH_DEVICE="enp1s0u3"
