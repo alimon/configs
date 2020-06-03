@@ -173,17 +173,6 @@ for cert in $(find ${UPLOAD_DIR} -type f -name ledge-kernel-uefi-certs*.wic); do
 	pigz -9 ${cert}
 done
 
-# Convert bl*.bin symlinks to local files and package them to bios.tar.gz
-ATF=`find . -name bl1.bin -type l`
-for a in ${ATF} ; do
-	d=`dirname $a`
-	cd $d
-	find . -type l -name "bl*.bin" -exec cp --remove-destination \$\(readlink {}\) {} \;
-	tar -czf bios.tar.gz bl*.bin
-	rm -rf bl*.bin
-	cd -
-done
-
 # Create MD5SUMS file
 find ${UPLOAD_DIR} -type f | xargs md5sum > MD5SUMS.txt
 sed -i "s|${UPLOAD_DIR}/||" MD5SUMS.txt
@@ -235,7 +224,7 @@ HDD_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.hddimg.xz" -print
 INITRD_URL=""
 OVMF=$(find ${UPLOAD_DIR} -type f -name "ovmf.qcow2" -printf "%f\n")
 CERTS=$(find ${UPLOAD_DIR} -type f -name ledge-kernel-uefi-certs*.wic.gz -printf "%f\n");
-FIRMWARE=$(find ${UPLOAD_DIR} -type f -name bios*.tar.gz -printf "%f\n");
+FIRMWARE=$(find ${UPLOAD_DIR} -type f -name firmware.bin -printf "%f\n");
 
 case "${MACHINE}" in
   ledge-am57xx-evm)
@@ -304,10 +293,11 @@ esac
 
 # Clean up not needed build artifacts
 CLEAN="Image-ledge* modules-*-mainline* \
-	*.env *.conf *.manifest *.json *.wks \
+	*.env *.conf *.json *.wks \
 	dtb \
 	*.txt \
         *.vfat *.ext4 \
+	fip.bin \
 	"
 for c in ${CLEAN}; do
 	find ${UPLOAD_DIR} -name $c -exec rm -rf '{}' '+'
