@@ -45,7 +45,7 @@ elif [ "${DEVICE_TYPE}" = "dragonboard-820c" ]; then
     export ETH_DEVICE="enP2p1s0"
 elif [ "${DEVICE_TYPE}" = "dragonboard-845c" ]; then
     export WLAN_DEVICE="wlan0"
-    export WLAN_TIME_DELAY="0s"
+    export WLAN_TIME_DELAY="15s"
     export ETH_DEVICE="enx000ec6817901"
     export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
 
