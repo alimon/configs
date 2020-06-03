@@ -51,8 +51,8 @@ case "${MACHINE}" in
     elif [ ${DEVICE_TYPE} = "dragonboard-845c" ]; then
       export PM_QA_TESTS="cpufreq cpuidle cpuhotplug thermal cputopology"
       export WLAN_DEVICE="wlan0"
-      export WLAN_TIME_DELAY="0s"
-      export ETH_DEVICE="eth0"
+      export WLAN_TIME_DELAY="15s"
+      export ETH_DEVICE="enp1s0u3"
       export GST_IGNORE_TESTS_FILE="qa/gst-validate/db410c.ignore"
       export PIGLIT_IGNORE_TESTS_FILE="qa/piglit/db410c.ignore"
 
