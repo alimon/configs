@@ -427,7 +427,7 @@
               --bad_url "$bad_url" \
               --bad_branch "$bad_branch" \
               --replay_log "$(pwd)/jenkins-scripts/replay_log" \
-              --build_script "./jenkins-scripts/tcwg_bmk-build.sh" \
+              --build_script "./jenkins-scripts/#{RR}-build.sh" \
 #if PURPOSE_ci
               --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
 #endif
