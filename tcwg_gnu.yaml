@@ -432,9 +432,12 @@
           timeout: 1000
     builders:
       - run-build:
-        components: '{components}'
-        rr_project: 'tcwg_gnu'
-        ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+          components: '{components}'
+          rr_project: 'tcwg_gnu'
+          ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+          docker_arch: '{docker_arch}'
+          target: '{target}'
+          type_of_test: '{type_of_test}'
     publishers:
       - build-publishers
       - email-ext:
@@ -476,6 +479,7 @@
       - run-bisect:
           rr_project: 'tcwg_gnu'
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+          docker_arch: '{docker_arch}'
     publishers:
       - bisect-publishers
-# checksum: 22ccf56f4e4376fc1cab9f3970735215
+# checksum: 88b7ccb2ad6e2377851f55f2c1d2ebfd
