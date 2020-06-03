@@ -12,8 +12,13 @@
     disabled: false
     node: build
     display-name: 'Trigger for Reference Platform - OpenEmbedded (master)'
+    scm:
+        - repo:
+            manifest-url: https://github.com/96boards/oe-rpb-manifest.git
+            manifest-branch: master
     triggers:
-        - timed: '@daily'
+        - pollscm:
+            cron: '@daily'
     wrappers:
         - timestamps
     builders:
