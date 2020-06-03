@@ -137,6 +137,11 @@
               before: true
             prune: true
 
+# SCMs must start with jenkins-scripts and then be ordered alphabetically.
+# Same alphabetical order must be followed in .def files.  The reason behind
+# this is that jenkins sets $GIT_COMMIT to sha1 of jenkins-scripts, and then
+# sets $GIT_COMMIT_1, $GIT_COMMIT_2, etc. to sha1s of component SCM /in the
+# order that they are declared here/.
 - scm:
     name: build-scms
     scm:
@@ -445,4 +450,4 @@
           ci_project_config: 'tcwg_bmk_{hw}'
     publishers:
         - bisect-publishers
-# checksum: 8b8a4335e3cf374ecaed626874aac284
+# checksum: 5a8916f1cbe65ebe92291193b500c3ef

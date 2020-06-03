@@ -142,18 +142,16 @@
               before: true
             prune: true
 
+# SCMs must start with jenkins-scripts and then be ordered alphabetically.
+# Same alphabetical order must be followed in .def files.  The reason behind
+# this is that jenkins sets $GIT_COMMIT to sha1 of jenkins-scripts, and then
+# sets $GIT_COMMIT_1, $GIT_COMMIT_2, etc. to sha1s of component SCM /in the
+# order that they are declared here/.
 - scm:
     name: build-scms
     scm:
       - jenkins-scripts
 #if PURPOSE_ci
-#if COMPONENTS_llvm
-      - component-scm:
-          component: llvm
-          url: '{llvm_url}'
-          branch: '{llvm_branch}'
-          reference: llvm-project.git
-#endif
 #if COMPONENTS_binutils
       - component-scm:
           component: binutils
@@ -181,6 +179,13 @@
           url: '{linux_url}'
           branch: '{linux_branch}'
           reference: linux.git
+#endif
+#if COMPONENTS_llvm
+      - component-scm:
+          component: llvm
+          url: '{llvm_url}'
+          branch: '{llvm_branch}'
+          reference: llvm-project.git
 #endif
 #if COMPONENTS_qemu
       - component-scm:

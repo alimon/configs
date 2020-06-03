@@ -2,7 +2,7 @@
 - project:
     name: tcwg_kernel-llvm
     toolchain_name: llvm
-    components: llvm linux
+    components: linux llvm
     llvm_url: https://github.com/llvm/llvm-project.git
     toolchain_ver:
       - master:
@@ -155,20 +155,25 @@
               before: true
             prune: true
 
+# SCMs must start with jenkins-scripts and then be ordered alphabetically.
+# Same alphabetical order must be followed in .def files.  The reason behind
+# this is that jenkins sets $GIT_COMMIT to sha1 of jenkins-scripts, and then
+# sets $GIT_COMMIT_1, $GIT_COMMIT_2, etc. to sha1s of component SCM /in the
+# order that they are declared here/.
 - scm:
     name: build-scms
     scm:
       - jenkins-scripts
       - component-scm:
-          component: llvm
-          url: '{llvm_url}'
-          branch: '{llvm_branch}'
-          reference: llvm-project.git
-      - component-scm:
           component: linux
           url: '{linux_url}'
           branch: '{linux_branch}'
           reference: linux.git
+      - component-scm:
+          component: llvm
+          url: '{llvm_url}'
+          branch: '{llvm_branch}'
+          reference: llvm-project.git
 
 - wrapper:
     name: build-wrappers
@@ -466,4 +471,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
       - bisect-publishers
-# checksum: c8e26e2e07f6170d0d4410b7eb9eb0c6
+# checksum: 61b218a8dd8e661aac59c7dee3aa89d0
