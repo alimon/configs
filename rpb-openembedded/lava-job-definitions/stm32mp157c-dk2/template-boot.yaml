@@ -39,10 +39,12 @@ actions:
       login_commands:
       - sudo -s
     prompts:
-    - 'ledge@(.*):~#'
     - 'ledge@debian:~#'
     - '/ #'
-    - 'ledge.*$$'
+    - 'ledge-(.*)# '
+    - 'ledge-(.*)~: '
+    - 'ledge-.*:~\$$'
+
     transfer_overlay:
       download_command: udhcpc -i eth0; cd /tmp ; wget
       unpack_command: tar -C / -xzf
