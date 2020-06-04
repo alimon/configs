@@ -16,6 +16,11 @@ fi
 
 set -ex
 
+# When testing a Github PR, use the appropriate target branch
+if [ "${ghprbPullId}" ]; then
+BRANCH=${ghprbTargetBranch}
+fi
+
 git clone --depth=1 ${POKY_URL} -b ${BRANCH}
 
 cd poky
