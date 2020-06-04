@@ -65,6 +65,14 @@ function submit_jobs_for_config(){
     wget ${config_url} -O ${build_config}
     source ${build_config}
 
+    if [ -z "${TEST_METADATA_TOOLCHAIN}" ]; then
+        source out/${build_config}/misc_info.txt
+        if [ -n "${GKI_KERNEL_CLANG_VER}" ]; then
+            TEST_METADATA_TOOLCHAIN=${GKI_KERNEL_CLANG_VER}
+        elif [ -n "${VENDOR_KERNEL_CLANG_VER}" ]; then
+            TEST_METADATA_TOOLCHAIN=${VENDOR_KERNEL_CLANG_VER}
+        fi
+    fi
     check_environments
     export ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     export TEST_VTS_VERSION=$(echo ${TEST_VTS_URL} | awk -F"/" '{print$(NF-1)}')
