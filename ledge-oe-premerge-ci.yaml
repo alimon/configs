@@ -135,48 +135,8 @@
             !include-raw: rpb-openembedded/buildinfo-protected.sh
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
-        - shell: |
-            if [ ${MACHINE} = "am57xx-evm" ]; then
-                   export LAVA_SERVER="validation.linaro.org/RPC2/"
-            fi
-
-            [ -z "${KSELFTEST_PATH}" ] && export KSELFTEST_PATH="/opt/kselftests/mainline/"
-            [ -z "${LAVA_JOB_PRIORITY}" ] && export LAVA_JOB_PRIORITY="25"
-            [ -z "${SANITY_LAVA_JOB_PRIORITY}" ] && export SANITY_LAVA_JOB_PRIORITY="30"
-            [ -z "${SKIP_LAVA}" ] || unset DEVICE_TYPE
-            [ -z "${QA_SERVER_TEAM}" ] && export QA_SERVER_TEAM=rpb
-            [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
-            [ -z "${TDEFINITIONS_REVISION}" ] && export TDEFINITIONS_REVISION="kselftest-5.1"
-            [ -z "${MANIFEST_COMMIT}" ] && export MANIFEST_COMMIT="HEAD"
-            # Used by DB410C's template:
-            export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
-
-            rm -rf configs
-            git clone --depth 1 http://git.linaro.org/ci/job/configs.git
-
-            if [ -z "${DEVICE_TYPE}" ]; then
-                if [ "${MACHINE}" = "ledge-multi-armv7" ]; then
-                    DEVICE_TYPE="qemuarmuefi stm32mp157c-dk2 x15-bl_uefi"
-                elif [ "${MACHINE}" = "ledge-multi-armv8" ]; then
-                    DEVICE_TYPE="qemuarm64uefi  synquacer"
-                fi
-            fi
-
-            DTYPES="${DEVICE_TYPE}"
-
-            for DEVICE_TYPE in ${DTYPES}; do
-                  export DEVICE_TYPE
-                  python configs/openembedded-lkft/submit_for_testing.py \
-                     --device-type ${DEVICE_TYPE} \
-                     --build-number ${BUILD_NUMBER} \
-                     --lava-server ${LAVA_SERVER} \
-                     --qa-server ${QA_SERVER} \
-                     --qa-server-team ${QA_SERVER_TEAM} \
-                     --qa-server-project ${QA_SERVER_PROJECT} \
-                     --git-commit ${MANIFEST_COMMIT} \
-                     --template-path configs/rpb-openembedded/lava-job-definitions \
-                     --template-names template-boot.yaml
-            done
+        - shell:
+            !include-raw: ledge/oe/submit_for_testing.sh
     publishers:
         - groovy-postbuild:
             script:
