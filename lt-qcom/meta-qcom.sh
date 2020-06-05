@@ -33,7 +33,7 @@ ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${BRANCH} sstate-cache
 
 # get build stats to make sure that we use sstate properly
 cat << EOF >> conf/auto.conf
-INHERIT += "buildstats buildstats-summary rm_work"
+INHERIT += "buildstats buildstats-summary"
 MACHINE := "${MACHINE}"
 DISTRO := "${DISTRO}"
 TCLIBC := "${TCLIBC}"
