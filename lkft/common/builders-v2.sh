@@ -75,12 +75,16 @@ for build_config in ${ANDROID_BUILD_CONFIG}; do
 
     # should be only one .config after the above steps
     # which is the case of using build/build.sh
-    f_config=`find out/${build_config}/vendor-kernel -name .config`
-    if [ -f "${f_config}" ]; then
-      mv "${f_config}" out/${build_config}/vendor_defconfig
+    if [ -d out/${build_config}/vendor-kernel ]; then
+      f_config=`find out/${build_config}/vendor-kernel -name .config`
+      if [ -f "${f_config}" ]; then
+        mv "${f_config}" out/${build_config}/vendor_defconfig
+      fi
     fi
-    f_config=`find out/${build_config}/gki-kernel -name .config`
-    if [ -f "${f_config}" ]; then
-      mv "${f_config}" out/${build_config}/gki_defconfig
+    if [ -d out/${build_config}/gki-kernel ]; then
+      f_config=`find out/${build_config}/gki-kernel -name .config`
+      if [ -f "${f_config}" ]; then
+        mv "${f_config}" out/${build_config}/gki_defconfig
+      fi
     fi
 done
