@@ -39,14 +39,15 @@ DISTRO := "${DISTRO}"
 TCLIBC := "${TCLIBC}"
 EOF
 
-bitbake-layers layerindex-fetch -s -b ${BRANCH} meta-qcom
-
+# When testing a PR, use the already checkout meta-qcom, it contains the PR to test
 if [ "${ghprbPullId}" ]; then
-    echo "Applying Github pull-request: ${ghprbPullLink}"
-    pushd ${WORKSPACE}/poky/meta-qcom
-    git fetch origin refs/pull/${ghprbPullId}/head
-    git merge FETCH_HEAD
-    popd
+    cat > conf/bblayers.conf <<EOF
+BBLAYERS += "${WORKSPACE}/meta-qcom"
+EOF
+
+# otherwise get layer information from the layer index
+else
+    bitbake-layers layerindex-fetch -s -b ${BRANCH} meta-qcom
 fi
 
 bitbake ${IMAGES}
