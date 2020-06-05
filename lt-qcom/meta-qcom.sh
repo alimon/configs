@@ -41,7 +41,7 @@ EOF
 
 # When testing a PR, use the already checkout meta-qcom, it contains the PR to test
 if [ "${ghprbPullId}" ]; then
-    cat > conf/bblayers.conf <<EOF
+    cat >> conf/bblayers.conf <<EOF
 BBLAYERS += "${WORKSPACE}/meta-qcom"
 EOF
 
