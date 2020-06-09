@@ -125,6 +125,11 @@ cat << EOF >> conf/auto.conf
 INHERIT += "buildstats buildstats-summary"
 EOF
 
+# Make sure we don't use rm_work in CI slaves since they are non persistent build nodes
+cat << EOF >> conf/auto.conf
+INHERIT_remove = "rm_work"
+EOF
+
 # allow the top level job to append to auto.conf
 if [ -f ${WORKSPACE}/auto.conf ]; then
     cat ${WORKSPACE}/auto.conf >> conf/auto.conf
