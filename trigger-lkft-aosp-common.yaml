@@ -1,0 +1,58 @@
+- job:
+    name: trigger-lkft-aosp-common
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 180
+            num-to-keep: 150
+    disabled: false
+    node: master
+    display-name: 'Trigger for changes on aosp common 4.14/4.19 branches'
+    scm:
+        - git:
+            remotes:
+                - comon:
+                    url: https://android.googlesource.com/kernel/common
+                - linux-stable:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                    refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
+            branches:
+              - common/android-4.14-stable
+              - common/android-4.19
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H H/3 * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}-${GIT_BRANCH#common/}'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+
+            KERNEL_DESCRIBE=$(git describe --always)
+            KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,common/,,)
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
+
+            params=lkft-parameters.txt
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
+            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
+            cat $params
+
+        - trigger-builds:
+            - project: lkft-omap-merge-mirrors
+              property-file: lkft-parameters.txt

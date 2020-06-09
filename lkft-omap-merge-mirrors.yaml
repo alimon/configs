@@ -1,0 +1,117 @@
+- job:
+    name: lkft-omap-merge-mirrors
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 180
+            num-to-keep: 150
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: KERNEL_BRANCH
+        - string:
+            name: KERNEL_DESCRIBE
+        - string:
+            name: SRCREV_kernel
+        - string:
+            name: MAKE_KERNELVERSION
+    disabled: false
+    node: docker-xenial-android-lkft
+    display-name: 'LKFT - merge LTS changes for omap kernel'
+    scm:
+        - git:
+            remotes:
+                - linaro:
+                    url: ssh://ci-bot@android-review.linaro.org:29418/kernel/omap.git
+                    refspec: +refs/heads/android-beagle-x15-4.14-stable-lkft:refs/remotes/linaro/android-beagle-x15-4.14-stbale-lkft +refs/heads/android-beagle-x15-4.19-lkft:refs/remotes/linaro/android-beagle-x15-4.19-lkft
+                    credentials-id: 'CI_BOT_SSH_KEY'
+                - aosp:
+                    url: https://android.googlesource.com/kernel/common
+                    refspec: +refs/heads/android-4.14-stable:refs/remotes/aosp/android-4.14-stable +refs/heads/android-4.19:refs/remotes/aosp/android-4.19
+            branches:
+                - linaro/android-beagle-x15-4.14-lkft
+            git-config-name: 'Linaro CI'
+            git-config-email: 'ci-bot@linaro.org'
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${ENV,var="KERNEL_DESCRIBE"}-${ENV,var="KERNEL_BRANCH"}'
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+            users:
+                - 'CI_BOT_SSH_KEY'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+
+            ssh-keyscan -p 29418 android-review.linaro.org >> ~/.ssh/known_hosts
+
+            git config --global user.name "Linaro CI"
+            git config --global user.email "ci-bot@linaro.org"
+
+            case "X${KERNEL_BRANCH}" in
+                "Xandroid-4.14-stable")
+                    target_branch="android-beagle-x15-4.14-stable-lkft"
+                    ;;
+                "Xandroid-4.19")
+                    target_branch="android-beagle-x15-4.19-lkft"
+                    ;;
+                "Xandroid-4.19-stable")
+                    target_branch="android-beagle-x15-4.19-stable-lkft"
+                    ;;
+                "X*")
+                    target_branch=""
+                    ;;
+            esac
+
+            git checkout -B ${target_branch} linaro/${target_branch}
+            git merge --no-edit aosp/${KERNEL_BRANCH}
+            # push to the remote branch
+            git push linaro HEAD:${target_branch}
+
+            # Apply tag
+            tag=${KERNEL_DESCRIBE}-$(date +"%Y%m%d")-${BUILD_NUMBER}
+            git tag ${tag}
+
+            # Push tag
+            git push linaro ${tag}
+
+    publishers:
+        - logparser:
+            parse-rules: '/var/jenkins_home/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - groovy-postbuild:
+            script:
+                !include-raw: openembedded-lkft/postbuild.groovy
+        - email:
+            recipients: 'yongqin.liu@linaro.org'
+            subject: '[CI] Merge LTS fixes for X15: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
+            body: |
+                Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
+                Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText
+                Parsed warnings/errors: ${PROJECT_URL}${BUILD_NUMBER}/parsed_console
+                Git branch: ${KERNEL_BRANCH}
+                Git URL: ${KERNEL_REPO}
+                Git commit: ${SRCREV_kernel}
+
+                Errors:
+                ${BUILD_LOG_REGEX, regex="^ERROR:.* ", linesBefore=0, linesAfter=0, showTruncatedLines=false}
+            presend-script:
+                !include-raw: openembedded-lkft/presend-script.groovy
