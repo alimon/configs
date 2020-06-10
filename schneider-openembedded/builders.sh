@@ -203,8 +203,7 @@ fi
 # Build all ${IMAGES} apart from dip-image-edge
 edgeimg="dip-image-edge"
 images=$(echo $IMAGES | sed -e 's/'${edgeimg}'//g')
-time bitbake ${bbopt} ${images}
-time bitbake ${bbopt} dip-sdk
+time bitbake ${bbopt} ${images} dip-sdk
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
