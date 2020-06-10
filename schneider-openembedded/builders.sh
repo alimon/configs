@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 # workaround EDK2 is confused by the long path used during the build
