@@ -32,13 +32,9 @@ BEGIN { RS="" ; FS="\n"; OFS="\t" }
 	# Ignore CVEs that are marked as "Patched"
 	if ($4 == "Patched") next;
 
-	# Remove git hash from package version, if present
-	gsub(/\+gitAUTOINC.*$/, "", $2);
-
-	# Indexing is done using PKGNAME-VERSION-CVENUM.
-	# Must use all three components to ensure uniqueness.
+	# Indexing is done using PKGNAME-CVENUM for uniqueness.
 	# Tab as separator since dashes occur in components.
-	KEY = $1 "\t" $2 "\t" $3
+	KEY = $1 "\t" $3
 
 	# Store data from 1st filename into OLD, and 2nd file into NEW
 	if (ARGIND == 1)
@@ -96,7 +92,7 @@ function fmt_chg(prefix, old, new,	x, a, b, o, n, i) {
 	# Compare fields and report ones that differ
 	for (i in o) {
 		if (o[i] == n[i]) continue;
-		x = x sprintf("\t%s: %s -> %s", PFX[i], o[i], n[i])
+		x = x sprintf("\t%s: %s --> %s", PFX[i], o[i], n[i])
 	}
 	return x
 }
