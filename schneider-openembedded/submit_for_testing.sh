@@ -10,9 +10,9 @@ popd
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 
 templates_common_minimal=( dip-image.yaml     )
-templates_common_normal=(  ${templates_common_minimal[@]} dip-image-dev )
+templates_common_normal=(  ${templates_common_minimal[@]} )
 if [[ "${IMAGES}" == *dip-image-edge* ]]; then
-templates_common_normal=(  ${templates_common_normal[@]} dip-image-edge.yaml )
+templates_common_normal=(  ${templates_common_normal[@]} dip-image-dev.yaml )
 fi
 templates_common_full=(    ${templates_common_normal[@]}  ltp-ptest.yaml iperf.yaml )
 
