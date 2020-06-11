@@ -1,0 +1,48 @@
+- job:
+    name: ci-dockerfile-build-test
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 200
+        - build-blocker:
+            use-build-blocker: true
+            blocking-jobs:
+              - "ci-docker*"
+            block-level: 'NODE'
+    disabled: false
+    display-name: 'Build docker image'
+    parameters:
+        - string:
+            name: image
+            description: 'docker image to build'
+        - label:
+            name: nodelabel
+            description: 'build machine'
+        - file:
+            name: uploadimage
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell:
+            !include-raw: ci-dockerfiles-deployment/build-image-test.sh
+    publishers:
+        - email:
+            recipients: linaro-infrastructure-errors@lists.linaro.org
