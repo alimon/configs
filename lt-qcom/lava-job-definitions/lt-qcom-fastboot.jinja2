@@ -128,9 +128,9 @@ protocols:
           -    fsck_code=$(e2fsck -y -f {{LXC_ROOTFS_FILE}}.ext4)
           -    resize2fs {{LXC_ROOTFS_FILE}}.ext4 "$final_size"K
           -    img2simg {{LXC_ROOTFS_FILE}}.ext4 {{LXC_ROOTFS_FILE}}
-          -    lava_test_case "resize_rootfs" --result "pass"
+          -    lava-test-case "resize_rootfs" --result "pass"
           - else
-          -    lava_test_case "resize_rootfs" --result "skip"
+          -    lava-test-case "resize_rootfs" --result "skip"
           - fi
 {% endif %}
 
@@ -156,9 +156,9 @@ protocols:
           -     configs_dir=$(mktemp -d /tmp/configs.XXXX)
           -     git clone --depth 1 http://git.linaro.org/ci/job/configs.git $configs_dir 
           -     $configs_dir/lt-qcom-linux-test/copy_test_overlay.sh /lava-lxc/{{LXC_BOOT_FILE}} $overlay_file
-          -     lava_test_case "apply_test_overlay_bootimg" --result "pass"
+          -     lava-test-case "apply_test_overlay_bootimg" --result "pass"
           - else
-          -     lava_test_case "apply_test_overlay_bootimg" --result "skip"
+          -     lava-test-case "apply_test_overlay_bootimg" --result "skip"
           - fi
 {% endif %}
 
