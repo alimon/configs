@@ -42,13 +42,14 @@
             MAKE_KERNELVERSION=$(make kernelversion)
             KERNEL_BRANCH=${GIT_BRANCH#omap/}
             KERNEL_DESCRIBE=$(git describe --always)
+            SRCREV_kernel=${GIT_COMMIT}
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
 
             params=lkft-${KERNEL_BRANCH}.txt
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
-            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo SRCREV_kernel=${SRCREV_kernel} >> $params
             echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
             cat $params
