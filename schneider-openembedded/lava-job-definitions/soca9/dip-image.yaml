@@ -117,6 +117,18 @@ actions:
         name: cmp-100000-200000-10
         successes:
         - message: "Total of 16 word\\(s\\) were the same"
+    - name: fpga-check-cmds
+      prompts: ["=> ", "/ # "]
+      script:
+      # FPGA checksum and dump start and end of image
+      - command: mw.b ${kernel_addr_r} 0 ${fpgadatasize}
+      - command: run scan_dev_for_fpga
+      - command: crc32 ${kernel_addr_r} 006aebe4
+      - command: '#'
+      - command: md.b ${kernel_addr_r} 100
+      - command: '#'
+      - command: md.b 016aea10 200
+      - command: '#'
     - name: dhcp-cmds
       prompts: ["=> ", "/ # "]
       script:
