@@ -380,6 +380,7 @@ def main():
             try:
                 server = xmlrpclib.ServerProxy("%s://%s:%s@%s" % (urlsplit(lava_server).scheme, lava_user, lava_token, lava_server_base))
                 job_id = server.scheduler.submit_job(lava_job)
+                print(test)
                 print("%s/scheduler/job/%d" % (lava_server, job_id))
                 tests_submitted += 1
             except xmlrpclib.ProtocolError as err:
@@ -402,6 +403,7 @@ def main():
                 }
                 results = requests.post(qa_server_api, data=data, headers=headers)
                 if results.status_code < 300:
+                    print(test)
                     print("%s/testjob/%s" % (qa_server_base, results.text))
                     tests_submitted += 1
                 else:
