@@ -187,9 +187,9 @@ case "${MACHINE}" in
 esac
 
 postfile=$(mktemp /tmp/postfile.XXXXX.conf)
-echo KERNEL_VERSION = \"${KERNEL_VERSION}\" > ${postfile}
-echo PREFERRED_VERSION_linux-rzn1 = \"${KERNEL_VERSION}.%\" >> ${postfile}
-echo PREFERRED_VERSION_linux-socfpga = \"${KERNEL_VERSION}.%\" >> ${postfile}
+echo KERNEL_VERSION_PATCHLEVEL = \"${KERNEL_VERSION_PATCHLEVEL}\" > ${postfile}
+echo PREFERRED_VERSION_linux-rzn1 = \"${KERNEL_VERSION_PATCHLEVEL}.%\" >> ${postfile}
+echo PREFERRED_VERSION_linux-socfpga = \"${KERNEL_VERSION_PATCHLEVEL}.%\" >> ${postfile}
 cat ${postfile}
 bbopt="-R ${postfile}"
 
