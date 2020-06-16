@@ -83,6 +83,7 @@ if proc.returncode != 0:
     raise ValueError("command has failed with code '%s'" % proc.returncode)
 
 filelist = []
+deletelist = []
 files = []
 for line in data.splitlines():
     # Format of the git-diff; we only need OPERATION and FILE1
@@ -96,6 +97,7 @@ for line in data.splitlines():
         # No point trying to test deleted jobs because they don't exist any
         # more.
         if operation == 'D':
+            deletelist.append(filename[:-5])
             continue
         # operation R100 is 100% rename, which means sixth element is the renamed file
         if operation == 'R':
@@ -173,23 +175,31 @@ for conf_filename in filelist:
                 except:
                     continue
 
-                delete_args = list(jjb_delete_args)
-                delete_args.extend([filename])
-                proc = subprocess.Popen(delete_args,
-                                        stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        universal_newlines=False,
-                                        preexec_fn=lambda:
-                                        signal.signal(signal.SIGPIPE, signal.SIG_DFL))
-                data = proc.communicate()[0]
-                if proc.returncode != 0:
-                    raise ValueError("command has failed with code '%s'" % proc.returncode)
-                print data
+                deletelist.append(conf_name)
+
         except (OSError, ValueError) as e:
             raise ValueError("%s" % e)
 
         shutil.rmtree('out/', ignore_errors=True)
         os.remove('template.yaml')
+
+
+for deletejob in deletelist:
+    delete_args = list(jjb_delete_args)
+    delete_args.extend([deletejob])
+    try:
+        proc = subprocess.Popen(delete_args,
+                                stdin=subprocess.PIPE,
+                                stdout=subprocess.PIPE,
+                                universal_newlines=False,
+                                preexec_fn=lambda:
+                                signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+        data = proc.communicate()[0]
+        if proc.returncode != 0:
+            raise ValueError("command has failed with code '%s'" % proc.returncode)
+        print data
+    except (OSError, ValueError) as e:
+        raise ValueError("%s" % e)
 
 if os.path.exists('jenkins_jobs.ini'):
     os.remove('jenkins_jobs.ini')
