@@ -121,11 +121,11 @@ actions:
       prompts: ["=> ", "/ # "]
       script:
       # FPGA checksum and dump start and end of image
-      - command: mw.b ${kernel_addr_r} 0 ${fpgadatasize}
+      - command: mw.b 0x01000000 0 0x700000
       - command: run scan_dev_for_fpga
-      - command: crc32 ${kernel_addr_r} 006aebe4
+      - command: crc32 0x01000000 006aebe4
       - command: '#'
-      - command: md.b ${kernel_addr_r} 100
+      - command: md.b 0x01000000 100
       - command: '#'
       - command: md.b 016aea10 200
       - command: '#'
