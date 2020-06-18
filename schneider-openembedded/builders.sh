@@ -205,6 +205,9 @@ edgeimg="dip-image-edge"
 images=$(echo $IMAGES | sed -e 's/'${edgeimg}'//g')
 time bitbake ${bbopt} ${images} dip-sdk
 
+# Generate pn-buildlist containing names of recipes, for CVE check below
+bitbake ${bbopt} dip-image -g
+
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
 cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
@@ -228,6 +231,12 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	sed -i conf/bblayers.conf -e 's#meta-dip-dev#meta-edge#'
 	time bitbake ${bbopt} ${edgeimg}
 
+	# Overwrite pn-buildlist, for CVE check below
+	bitbake ${bbopt} ${edgeimg} -g
+
+	# restore layer meta-dip-dev
+	sed -i conf/bblayers.conf -e 's#meta-edge#meta-dip-dev#'
+
 	# The kernel will exist in both ${DEPLOY_DIR_IMAGE} and ${DEPLOY_DIR_IMAGE}-pre
 	# The files will be binary identical, but have different date stamps
 	# So remove the newer ones
@@ -247,13 +256,17 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 #DEL mv /srv/oe/{source,pinned}-manifest.xml ${DEPLOY_DIR_IMAGE}
 #DEL cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
-# Generate CVE listing with a fixed filename, so it can be retrieved
-# from snapshots.linaro.org by subsequent builds using a known URL.
-cp ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}-*.rootfs.cve ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}.rootfs.cve
-
 ### Begin CVE check
 
-cp ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}-*.rootfs.cve cve-${MACHINE}.new
+# Combine CVE reports for the recipes used in dip-image task.
+CVE_CHECK_DIR=$(bitbake -e | grep "^CVE_CHECK_DIR="| cut -d'=' -f2 | tr -d '"')
+sort pn-buildlist | while read r ; do
+	cat ${CVE_CHECK_DIR}/${r} 2>/dev/null || true
+done >cve-${MACHINE}.new
+
+# Generate CVE listing with a fixed filename, so it can be retrieved
+# from snapshots.linaro.org by subsequent builds using a known URL.
+cp cve-${MACHINE}.new ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}.rootfs.cve
 
 # Fetch previous CVE report
 LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
