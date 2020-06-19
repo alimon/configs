@@ -136,7 +136,7 @@
               - 'refs/heads/{branch}'
             basedir: '{component}'
             skip-tag: true
-            reference-repo: /home/tcwg-buildslave/snapshots-ref/'{reference}'
+            reference-repo: '/home/tcwg-buildslave/snapshots-ref/{reference}'
             wipe-workspace: false
             clean:
               before: true
