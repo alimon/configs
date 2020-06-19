@@ -103,16 +103,22 @@
           url: '{glibc_url}'
           branch: '{default_branch}'
 #endif
+#if COMPONENTS_linux
+      - component-parameters:
+          component: linux
+          url: '{linux_url}'
+          branch: '{default_branch}'
+#endif
 #if COMPONENTS_llvm
       - component-parameters:
           component: llvm
           url: '{llvm_url}'
           branch: '{default_branch}'
 #endif
-#if COMPONENTS_linux
+#if COMPONENTS_qemu
       - component-parameters:
-          component: linux
-          url: '{linux_url}'
+          component: qemu
+          url: '{qemu_url}'
           branch: '{default_branch}'
 #endif
       - choice:
