@@ -22,7 +22,7 @@ fi
 if [ ! -d embeddedsw ]; then
     git clone https://github.com/Xilinx/embeddedsw
 else
-    (cd embeddedsw; git pull --rebase)
+    (cd embeddedsw; git checkout xilinx-v2019.2)
 fi
 
 (cd open-amp; echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > ../../env_var_parameters)
