@@ -1,0 +1,42 @@
+- job:
+    name: test-definitions-validation
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: QEMU_TESTS
+            default: 'stress'
+        - string:
+            name: QEMU_REFERENCE_IMAGES
+            default: ''
+    disabled: true
+    node: docker-xenial-aosp
+    display-name: 'Sumbits lava jobs with all tests part of test-definitions'
+    concurrent: true
+    triggers:
+        - timed : '@weekly'
+    wrappers:
+        - timestamps
+        - timeout:
+            timeout: 800
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell:
+            !include-raw: test-definitions-validation/builders.sh
+    publishers:
+        - email:
+            recipients: 'vishal.bhoj@linaro.org milosz.wasilewski@linaro.org'
