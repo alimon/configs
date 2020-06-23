@@ -12,5 +12,5 @@ python2 configs/openembedded-lkft/submit_for_testing.py \
         --qa-server-team qa \
         --qa-server-project test-definitions-validation \
 	--git-commit ${BUILD_NUMBER} \
-        --testplan-path configs/test-definitions/ \
+        --testplan-path configs/test-definitions-validation/ \
         --test-plan test-db410c.yaml
