@@ -125,7 +125,7 @@ function submit_jobs_for_config(){
         --qa-server-project ${TEST_QA_SERVER_PROJECT} \
         --git-commit ${QA_BUILD_VERSION} \
         --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common \
-        --test-plan template-boot.yaml template-vts-kernel.yaml template-cts.yaml \
+        --test-plan template-boot.yaml template-vts-kernel.yaml template-cts-lkft.yaml \
         ${OPT_DRY_RUN} \
         --quiet
 
