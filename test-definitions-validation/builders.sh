@@ -1,5 +1,6 @@
 #!/bin/bash
 
+sudo DEBIAN_FRONTEND=noninteractive apt-get install -y pip
 pip install ruamel.yaml jinja2
 git clone git://git.linaro.org/ci/job/configs
 python2 configs/openembedded-lkft/submit_for_testing.py \
