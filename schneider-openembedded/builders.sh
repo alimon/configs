@@ -195,9 +195,7 @@ bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
     bitbake ${bbopt} -c cleansstate ${clean_packages}
-
-    # Force serial build
-    BB_NUMBER_THREADS="1" PARALLEL_MAKE="-j 1" bitbake ${bbopt} ${clean_packages}
+    bitbake ${bbopt} ${clean_packages}
 fi
 
 # Build all ${IMAGES} apart from dip-image-edge
