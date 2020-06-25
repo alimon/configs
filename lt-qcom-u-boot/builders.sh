@@ -28,12 +28,12 @@ make -j$(nproc) \
      ARCH=arm \
      CROSS_COMPILE=aarch64-linux-gnu-
 
-gzip -k u-boot.bin
-touch fake_rd.img
-skales-mkbootimg --kernel=u-boot.bin.gz --output=u-boot.img --dt=u-boot.dtb \
-  --pagesize 2048 --base 0x80000000 --ramdisk=fake_rd.img --cmdline=""
-
 mkdir -p ${OUT_DIR}
-cp u-boot.bin.gz ${OUT_DIR}
-cp u-boot.dtb ${OUT_DIR}
+
+gzip -k uboot/u-boot.bin
+touch fake_rd.img
+skales-mkbootimg --kernel=uboot/u-boot.bin.gz --output=u-boot.img --dt=uboot/u-boot.dtb \
+  --pagesize 2048 --base 0x80000000 --ramdisk=fake_rd.img --cmdline=""
+cp uboot/u-boot.bin.gz ${OUT_DIR}
+cp uboot/u-boot.dtb ${OUT_DIR}
 cp u-boot.img ${OUT_DIR}
