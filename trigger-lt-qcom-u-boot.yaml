@@ -1,0 +1,59 @@
+- job:
+    name: trigger-lt-qcom-u-boot
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: UBOOT_REPO_URL
+            default: 'https://gitlab.denx.de/u-boot/u-boot.git'
+        - string:
+            name: UBOOT_BRANCH
+            default: 'master'
+    disabled: false
+    node: build
+    display-name: 'Trigger for Qualcomm U-Boot build'
+    scm:
+        - git:
+            url: ${UBOOT_REPO_URL}
+            refspec: +refs/heads/${UBOOT_BRANCH}:refs/remotes/origin/${UBOOT_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${UBOOT_BRANCH}
+            shallow-clone: true
+            wipe-workspace: false
+    triggers:
+        - pollscm: '0 0 * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
+    builders:
+        - shell: |
+            #!/bin/bash -e
+
+            echo UBOOT_REPO_URL=${UBOOT_REPO_URL} > qcomlt_parameters
+            echo UBOOT_BRANCH=${UBOOT_BRANCH} >> qcomlt_parameters
+    publishers:
+        - trigger-parameterized-builds:
+            - project:
+                - 'lt-qcom-u-boot'
+              condition: SUCCESS
+              property-file: qcomlt_parameters
+        - email-ext:
+            recipients: 'anibal.limon@linaro.org nicolas.dechesne@linaro.org'
+            failure: true
+            still-failing: true
