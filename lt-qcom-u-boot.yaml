@@ -58,10 +58,6 @@
         - ssh-agent-credentials:
             users:
                 - 'OE_COMMIT_BOT_KEY'
-        - credentials-binding:
-            - text:
-                credential-id: QA_REPORTS_TOKEN
-                variable: QA_REPORTS_TOKEN
     builders:
         - shell:
             !include-raw: lt-qcom/builders-deps.sh
@@ -71,6 +67,7 @@
             properties-file: gcc_toolchain_env
         - shell:
             !include-raw: lt-qcom-u-boot/builders.sh
+        - linaro-publish-token
         - shell:
             !include-raw: lt-qcom/publishers.sh
     publishers:
