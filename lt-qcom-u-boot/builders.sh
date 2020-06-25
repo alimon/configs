@@ -16,6 +16,7 @@ case "${MACHINE}" in
 esac
 
 make distclean
+pwd
 make "$CONFIG"
 make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
 
