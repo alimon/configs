@@ -25,7 +25,11 @@ else
     (cd embeddedsw; git checkout xilinx-v2019.2)
 fi
 
-(cd open-amp; echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > ../../env_var_parameters)
+(
+    cd open-amp
+    echo "GIT_COMMIT=$(git rev-parse --short=8 HEAD)" > ../../env_var_parameters
+    echo "EXTERNAL_BUILD_ID=$(git rev-parse --short=8 HEAD)-${BUILD_NUMBER}" >> ../../env_var_parameters
+)
 
 cd ..
 
