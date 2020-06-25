@@ -20,4 +20,6 @@ if [ ! -d "${tcbindir}" ]; then
 	tar -xf "$(basename ${toolchain_url})" -C "${tcdir}"
 fi
 
+export PATH=$tcbindir:$PATH
+
 echo tcbindir="${tcbindir}" > gcc_toolchain_env
