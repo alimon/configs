@@ -8,7 +8,7 @@ OUT_DIR="out"
 
 CONFIG=""
 case "${MACHINE}" in
-	dragonboard-410c)
+	dragonboard410c)
 	CONFIG="dragonboard410c_defconfig"
 	;;
 	*)
