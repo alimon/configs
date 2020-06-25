@@ -7,7 +7,7 @@ export PATH=${tcbindir}:$PATH
 CONFIG=""
 case "${MACHINE}" in
 	dragonboard-410c)
-	CONFIG=dragonboard410c_defconfig
+	CONFIG="dragonboard410c_defconfig"
 	;;
 	*)
 	echo "Machine "${MACHINE}" not supported."
@@ -16,7 +16,7 @@ case "${MACHINE}" in
 esac
 
 make distclean
-make $CONFIG
+make "$CONFIG"
 make ARCH=arm CROSS_COMPILE=aarch64-linux-gnu- -j$(nproc)
 
 gzip -k u-boot.bin
