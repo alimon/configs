@@ -1,0 +1,82 @@
+- job:
+    name: lt-qcom-u-boot
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro-landing-team-qualcomm-personnel:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: UBOOT_REPO_URL
+            default: 'https://gitlab.denx.de/u-boot/u-boot.git'
+        - string:
+            name: UBOOT_BRANCH
+            default: 'v2020.04'
+        - string:
+            name: PUB_DEST
+            default: 'https://snapshots.linaro.org/96boards/${MACHINE}/linaro/uboot/${BUILD_NUMBER}/'
+    disabled: false
+    node: master
+    display-name: 'Qualcomm U-Boot build'
+    scm:
+        - git:
+            url: ${UBOOT_REPO_URL}
+            refspec: +refs/heads/${UBOOT_BRANCH}:refs/remotes/origin/${UBOOT_BRANCH}
+            name: origin
+            branches:
+                - refs/heads/${UBOOT_BRANCH}
+            basedir: linux
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'dragonboard-410c'
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-buster-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - 'OE_COMMIT_BOT_KEY'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell:
+            !include-raw: lt-qcom/builders-deps.sh
+        - shell:
+            !include-raw: lt-qcom/install-gcc-toolchain.sh
+        - inject:
+            properties-file: gcc_toolchain_env
+        - shell:
+            !include-raw: lt-qcom-u-boot/builders.sh
+        - shell:
+            !include-raw: lt-qcom/publishers.sh
+    publishers:
+        - email-ext:
+            recipients: 'nicolas.dechesne@linaro.org, anibal.limon@linaro.org'
+            failure: true
+            still-failing: true
+            matrix-trigger: only-parent
