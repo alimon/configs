@@ -21,7 +21,7 @@ git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 if [ -z "${DEVICE_TYPE}" ]; then
     if [ "${MACHINE}" = "ledge-multi-armv7" ]; then
         #DEVICE_TYPE="qemuarmuefi stm32mp157c-dk2 x15-bl_uefi"
-        DEVICE_TYPE="qemuarmuefi"
+        DEVICE_TYPE="qemuarmuefi qemuarm_atf_fip"
     elif [ "${MACHINE}" = "ledge-multi-armv8" ]; then
         DEVICE_TYPE="qemuarm64uefi  synquacer qemuarm64_atf_fip"
     fi
