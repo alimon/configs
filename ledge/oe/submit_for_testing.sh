@@ -18,6 +18,10 @@ export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 rm -rf configs
 git clone --depth 1 http://git.linaro.org/ci/job/configs.git
 
+if [ -n "${DEBIAN}" ]; then
+	sed -i 's/job_name:.*RPB OE/job_name: LEDGE RPB Debian ${MACHINE}/' configs/rpb-openembedded/lava-job-definitions/*/template-boot.yaml 
+fi
+
 if [ -z "${DEVICE_TYPE}" ]; then
     if [ "${MACHINE}" = "ledge-multi-armv7" ]; then
         #DEVICE_TYPE="qemuarmuefi stm32mp157c-dk2 x15-bl_uefi"
@@ -27,10 +31,7 @@ if [ -z "${DEVICE_TYPE}" ]; then
     fi
 fi
 
-DTYPES="${DEVICE_TYPE}"
-
-for DEVICE_TYPE in ${DTYPES}; do
-      export DEVICE_TYPE
+function oe_urls {
       if [ "${MACHINE}" = "ledge-multi-armv7" ]; then
          if [ "${DEVICE_TYPE}" = "x15-bl_uefi"; then
              export SYSTEM_URL=`echo ${SYSTEM_URL} | sed  "s/ledge-qemuarm/ledge-ti-am572x/"`
@@ -41,6 +42,16 @@ for DEVICE_TYPE in ${DTYPES}; do
              export FIRMWARE_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm64.*|ledge-qemuarm64/firmware.bin|"`
              export CERTS_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm64.*|ledge-qemuarm64/ledge-kernel-uefi-certs.ext4.img|"`
       fi
+}
+
+DTYPES="${DEVICE_TYPE}"
+
+for DEVICE_TYPE in ${DTYPES}; do
+      export DEVICE_TYPE
+      if [ -z "${DEBIAN}" ]; then
+         oe_urls
+      fi
+
       python configs/openembedded-lkft/submit_for_testing.py \
          --device-type ${DEVICE_TYPE} \
          --build-number ${BUILD_NUMBER} \
