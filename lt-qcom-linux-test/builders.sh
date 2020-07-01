@@ -178,7 +178,6 @@ case "${MACHINE}" in
 		# Use userdata for now.
 		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
 		;;
-	*)
 	qrb5165-rb5)
 		# Use userdata for now.
 		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
