@@ -179,6 +179,11 @@ case "${MACHINE}" in
 		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
 		;;
 	*)
+	qrb5165-rb5)
+		# Use userdata for now.
+		ROOTFS_PARTITION=/dev/disk/by-partlabel/userdata
+		;;
+	*)
 		echo "Currently MACHINE: ${MACHINE} isn't supported"
 		exit 1
 		;;
