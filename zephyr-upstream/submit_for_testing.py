@@ -189,27 +189,34 @@ def parse_yaml_harness_config(yaml_node):
     else:
         return None
 
-def get_regex(test, yaml):
-    # Parse yaml data to extract list of regular expressions to be searched,
-    # if present. Otherwise return None.
+# Get a node with "harness" directive from testcase.yaml, which is either
+# "common" node, or node for a specific test name
+def get_section_with_harness(test_path, yaml):
     for key in yaml:
         if key == "common":
             yaml_node = yaml["common"]
-            ret = parse_yaml_harness_config(yaml_node)
-            if ret is not None:
-                return ret
+            if "harness" in yaml_node:
+                return yaml_node
         elif key == "tests":
-            path = test.split('/')
+            path = test_path.split('/')
             if len(path) < 4:
                 print("Unexpected directory structure encountered. Aborting...")
                 sys.exit(1)
             test_name = path[-3]
             yaml_node = yaml["tests"][test_name]
-            ret = parse_yaml_harness_config(yaml_node)
-            if ret is not None:
-                return ret
-    
+            if "harness" in yaml_node:
+                return yaml_node
+
     return None
+
+def get_regex(test, yaml):
+    # Parse yaml data to extract list of regular expressions to be searched,
+    # if present. Otherwise return None.
+
+    yaml_node = get_section_with_harness(test, yaml)
+    if not yaml_node:
+        return None
+    return parse_yaml_harness_config(yaml_node)
 
 def main():
     parser = argparse.ArgumentParser()
