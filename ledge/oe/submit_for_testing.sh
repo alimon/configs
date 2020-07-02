@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ ${MACHINE} = "ledge-ti-am572x" ]; then
        export MACHINE="x15-bl_uefi"
