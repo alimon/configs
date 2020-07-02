@@ -344,7 +344,18 @@ def main():
     test_list = generate_test_list(args.board_name, args.device_type)
     tests_submitted = 0
     for test in test_list:
-        re = get_regex(test, get_yaml(test))
+        yaml_config = get_yaml(test)
+        harness_section = get_section_with_harness(test, yaml_config)
+
+        # As of now, LAVA lab doesn't have boards with special harnesses,
+        # so skip tests which require something beyond basic "console".
+        if harness_section and harness_section["harness"] != "console":
+            print("Warning: test %s requires harness '%s', skipping" % (
+                test, harness_section["harness"]
+            ))
+            continue
+
+        re = get_regex(test, yaml_config)
         test_name = test.rsplit('/zephyr.bin')[0].replace('/', '-').replace('.', '-')
         if re is None:
             test_action = \
