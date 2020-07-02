@@ -33,6 +33,8 @@ fi
 [ -z "${TOOLCHAIN}" ] && export TOOLCHAIN="unknown"
 [ -z "${TDEFINITIONS_REVISION}" ] && export TDEFINITIONS_REVISION="kselftest-5.1"
 [ -z "${MANIFEST_COMMIT}" ] && export MANIFEST_COMMIT="HEAD"
+[ -z "${MANIFEST_BRANCH}" ] && export MANIFEST_BRANCH="unknown"
+
 # Used by DB410C's template:
 export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 
