@@ -1,5 +1,26 @@
 #!/bin/bash
 
+# Install all deps required for lauch lava jobs
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
+     echo "INFO: apt update error - try again in a moment"
+     sleep 15
+     sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
+fi
+
+pkg_list="chrpath cpio diffstat gawk git expect pkg-config python-pip python-requests python-crypto libpixman-1-dev python python3 python-all-dev python-wheel"
+if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
+     echo "INFO: apt install error - try again in a moment"
+     sleep 15
+     sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
+fi
+
+sudo locale-gen en_US.UTF-8 && sudo update-locale LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+
+# install required python modules
+pip install --user --force-reinstall Jinja2 ruamel.yaml
+
+
 if [ ${MACHINE} = "ledge-ti-am572x" ]; then
        export MACHINE="x15-bl_uefi"
 fi
