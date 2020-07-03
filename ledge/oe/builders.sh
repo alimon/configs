@@ -55,14 +55,16 @@ export MANIFEST_URL=${MANIFEST_URL:-https://github.com/Linaro/ledge-oe-manifest.
 if [ ! -e ".repo/manifest.xml" ]; then
    repo init --no-clone-bundle --depth=1 --no-tags -u ${MANIFEST_URL} -b ${MANIFEST_BRANCH}
 
-   # link to shared downloads on persistent disk
-   # our builds config is expecting downloads and sstate-cache, here.
-   # DL_DIR = "${OEROOT}/sources/downloads"
-   # SSTATE_DIR = "${OEROOT}/build/sstate-cache"
-   mkdir -p ${HOME}/srv/oe/downloads ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH}
-   mkdir -p build
-   ln -s ${HOME}/srv/oe/downloads
-   ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
+   if [ -z "${RELEASE}" ]; then
+     # link to shared downloads on persistent disk
+     # our builds config is expecting downloads and sstate-cache, here.
+     # DL_DIR = "${OEROOT}/sources/downloads"
+     # SSTATE_DIR = "${OEROOT}/build/sstate-cache"
+     mkdir -p ${HOME}/srv/oe/downloads ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH}
+     mkdir -p build
+     ln -s ${HOME}/srv/oe/downloads
+     ln -s ${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH} sstate-cache
+   fi
 fi
 
 if [ "${ghprbGhRepository}" == "Linaro/ledge-oe-manifest" ]; then
