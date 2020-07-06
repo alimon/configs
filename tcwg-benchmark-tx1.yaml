@@ -143,17 +143,20 @@
             type: slave
             name: label
             values:
-                - tcwg-bmk-tx1-01
-                - tcwg-bmk-tx1-02
-                - tcwg-bmk-tx1-03
-                - tcwg-bmk-tx1-04
-                - tcwg-bmk-tx1-05
-                - tcwg-bmk-tx1-06
-                - tcwg-bmk-tx1-07
-                - tcwg-bmk-tx1-08
-                - tcwg-bmk-tx1-09
+              - tcwg-bmk-coordinator
+              - tcwg-bmk-tx1-01
+              - tcwg-bmk-tx1-02
+              - tcwg-bmk-tx1-03
+              - tcwg-bmk-tx1-04
+              - tcwg-bmk-tx1-05
+              - tcwg-bmk-tx1-06
+              - tcwg-bmk-tx1-07
+              - tcwg-bmk-tx1-08
+              - tcwg-bmk-tx1-09
     execution-strategy:
         sequential: false
+        touchstone:
+          expr: 'label == "tcwg-bmk-coordinator"'
     wrappers:
         - timeout:
             timeout: 900
@@ -164,10 +167,26 @@
         - build-name:
             name: '#$BUILD_NUMBER-$displaytag'
     builders:
-        - shell: |
-            #!/bin/bash
+        - shell:
+            command: |
+              #!/bin/bash
 
-            set -ex
-            ssh-add -l
-            exec ./tcwg-benchmark.sh
-# checksum: 346301e31f43aee1dbbd72964f5a5c00
+              set -ex
+              ssh-add -l
+
+              if [ x"$label" != x"tcwg-bmk-coordinator ]; then
+                # Run the benchmark
+                exec ./tcwg-benchmark.sh
+              fi
+
+              # Check that all benchmarking boards are OK,
+              # and power-cycle the ones that appear offline.
+              . ./jenkins-helpers.sh
+              for board in tcwg-tx1-0{1..9}; do
+                if ! ssh "$board.tcwglab" true; then
+                  nvidia-power-cycle.sh "$board"
+                  wait_for_ssh_server "$board.tcwglab" 22 5 || exit 100
+                fi
+              done
+            unstable-return: 100
+# checksum: 333afe5d45201b5b8aca1d8a00023297
