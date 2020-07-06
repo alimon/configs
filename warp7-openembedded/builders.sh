@@ -67,6 +67,10 @@ if [ "${ghprbPullId}" ]; then
     sed -i -e "s|name=\"${ghprbGhRepository}\"|name=\"${ghprbGhRepository}\" revision=\"refs/pull/${ghprbPullId}/head\"|" .repo/manifest.xml
 fi
 
+pushd conf
+git log -1
+popd
+
 repo sync
 cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
@@ -118,6 +122,11 @@ source setup-environment build
 # get build stats to make sure that we use sstate properly
 cat << EOF >> conf/auto.conf
 INHERIT += "buildstats buildstats-summary"
+EOF
+
+# Make sure we don't use rm_work in CI slaves since they are non persistent build nodes
+cat << EOF >> conf/auto.conf
+INHERIT_remove = "rm_work"
 EOF
 
 # allow the top level job to append to auto.conf
@@ -242,4 +251,5 @@ RECOVERY_IMAGE_URL=${BASE_URL}${PUB_DEST}/juno-oe-uboot.zip
 LXC_BOOT_IMG=${BOOT_IMG}
 LXC_ROOTFS_IMG=$(basename ${ROOTFS_IMG} .gz)
 INITRD_URL="${INITRD_URL}"
+KERNEL_ARGS=""
 EOF
