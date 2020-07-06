@@ -184,9 +184,11 @@
               . ./jenkins-helpers.sh
               for board in tcwg-tk1-0{1..9}; do
                 if ! ssh "$board.tcwglab" true; then
+                  (
                   nvidia-power-cycle.sh "$board"
-                  wait_for_ssh_server "$board.tcwglab" 22 5 || exit 100
+                  wait_for_ssh_server "$board.tcwglab" 22 5
+                  ) || exit 100
                 fi
               done
             unstable-return: 100
-# checksum: d4773763c37cd4b044044a2b739a70cb
+# checksum: 496c3b3a9d2bf557213ff08726d0f421
