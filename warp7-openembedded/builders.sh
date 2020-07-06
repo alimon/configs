@@ -67,14 +67,14 @@ if [ "${ghprbPullId}" ]; then
     sed -i -e "s|name=\"${ghprbGhRepository}\"|name=\"${ghprbGhRepository}\" revision=\"refs/pull/${ghprbPullId}/head\"|" .repo/manifest.xml
 fi
 
-pushd conf
-git log -1
-popd
-
 repo sync
 cp .repo/manifest.xml source-manifest.xml
 repo manifest -r -o pinned-manifest.xml
 MANIFEST_COMMIT=$(cd .repo/manifests && git rev-parse --short HEAD)
+
+pushd conf
+git log -1
+popd
 
 # record changes since last build, if available
 if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
