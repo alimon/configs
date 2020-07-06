@@ -1,0 +1,108 @@
+- job:
+    name: armnn32-ci-build
+    project-type: freestyle
+    defaults: global
+    description: |
+        Updates source and builds ArmNN 32 bit for armv7a frequently to ensure builds are successful.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+        - github:
+            url: https://git.mlplatform.org/ml/armnn.git
+
+    triggers:
+        - gerrit:
+            override-votes: true
+            gerrit-build-failed-verified-value: -1
+            trigger-on:
+                - patchset-created-event:
+                    exclude-drafts: true
+                    exclude-trivial-rebase: true
+                    exclude-no-code-change: true
+                - comment-added-contains-event:
+                    comment-contains-value: 'TRIGGER BUILD'
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'ml/armnn'
+                  branches:
+                    - branch-compare-type: 'PLAIN'
+                      branch-pattern: 'master'
+            skip-vote:
+                    successful: true
+                    failed: false
+            server-name: review.mlplatform.org
+
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+        - string:
+            name: GIT_COM_ID
+    disabled: false
+    node: docker-stretch-arm64
+    display-name: 'Arm NN - CI Build'
+
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell:
+            !include-raw: armnn-ci-build/builders-32bit.sh
+        - shell: |
+            #!/bin/bash -e
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+
+            sudo apt-get install -y jq
+
+            if [ -z "$GIT_COM_ID" ]
+            then
+                LAVA_ID=${GERRIT_CHANGE_NUMBER}_${GERRIT_PATCHSET_NUMBER}
+                ARMNN_TAR_LOCATION=https://snapshots.linaro.org/components/armnn-32bit/${BUILD_NUMBER}/armnn-32.tar.xz
+            else
+                LAVA_ID=$GIT_COM_ID
+                ARMNN_TAR_LOCATION=https://snapshots.linaro.org/components/armnn-32bit-master/${BUILD_NUMBER}/armnn-32.tar.xz
+            fi
+
+
+            jq -n --arg 'LAVA_ID' $LAVA_ID \
+            --arg 'ARMNN_TAR_LOCATION' $ARMNN_TAR_LOCATION \
+            --arg 'BUILD_NUMBER' $BUILD_NUMBER \
+            '{LAVA_ID:$LAVA_ID, ARMNN_TAR_LOCATION:$ARMNN_TAR_LOCATION, BUILD_NUMBER:$BUILD_NUMBER}' > out/buildInfo.json
+
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+
+
+            if [ -z "$GIT_COM_ID" ]
+            then
+                wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+                time python3 ${HOME}/bin/linaro-cp.py \
+                --link-latest \
+                out/ components/armnn-32bit/${BUILD_NUMBER}
+            else
+                wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+                time python3 ${HOME}/bin/linaro-cp.py \
+                --link-latest \
+                out/ components/armnn-32bit-master/${BUILD_NUMBER}
+            fi
