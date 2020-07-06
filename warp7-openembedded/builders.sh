@@ -110,6 +110,11 @@ export EULA_dragonboard410c=1
 export EULA_stih410b2260=1
 source setup-environment build
 
+# Accept freescale EULA
+cat << EOF >> conf/local.conf
+ACCEPT_FSL_EULA = "1"
+EOF
+
 #RMH # Add job BUILD_NUMBER to output files names
 #RMH cat << EOF >> conf/auto.conf
 #RMH IMAGE_NAME_append = "-${BUILD_NUMBER}"
@@ -208,13 +213,13 @@ EOF
 fi
 
 # Need different files for each machine
-BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*-${BUILD_NUMBER}*.img" | sort | xargs -r basename)
-ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
-ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
-ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
-ROOTFS_DESKTOP_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-desktop-image-test-${MACHINE}-*-${BUILD_NUMBER}.rootfs.img.gz" | xargs -r basename)
-KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*-${BUILD_NUMBER}.bin" | xargs -r basename)
-DISK_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*-${MACHINE}-*-${BUILD_NUMBER}.rootfs.wic.*z*" | xargs -r basename)
+BOOT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "boot-*-${MACHINE}-*.img" | sort | xargs -r basename)
+ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*.rootfs.ext4.gz" | xargs -r basename)
+ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*.rootfs.tar.xz" | xargs -r basename)
+ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*.rootfs.img.gz" | xargs -r basename)
+ROOTFS_DESKTOP_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-desktop-image-test-${MACHINE}-*.rootfs.img.gz" | xargs -r basename)
+KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*.bin" | xargs -r basename)
+DISK_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*-${MACHINE}-*.rootfs.wic.*z*" | xargs -r basename)
 
 case "${MACHINE}" in
   am57xx-evm)
