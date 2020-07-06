@@ -328,7 +328,7 @@
             # If we didn't run the docker command
             if [ -n "$dryruncmd" ]; then
               # Mark build unstable aka a skipped config
-              exit 100
+              exit 125
             fi
 
             if [ $res != 0 ]; then
@@ -345,7 +345,7 @@
               build_name="$build_name-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
-          unstable-return: 100
+          unstable-return: 125
       - conditional-step:
           # Only run if above succeeded
           # Meaning we did not skip a bad config
