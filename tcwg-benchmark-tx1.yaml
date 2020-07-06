@@ -185,10 +185,11 @@
               for board in tcwg-tx1-0{1..9}; do
                 if ! ssh "$board.tcwglab" true; then
                   (
-                  nvidia-power-cycle.sh "$board"
-                  wait_for_ssh_server "$board.tcwglab" 22 5
-                  ) || exit 100
+                    nvidia-power-cycle.sh "$board"
+                    wait_for_ssh_server "$board.tcwglab" 22 5
+                  ) &
+                  wait $! || exit 100
                 fi
               done
             unstable-return: 100
-# checksum: 8cc6a31e50ebe1206ef64d695749dcec
+# checksum: 6745fd821ff4a00b2ecea649e03677bd
