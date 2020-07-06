@@ -137,7 +137,7 @@ case "${ORIG_MACHINE}" in
 		;;
 esac
 
-time bitbake ${BIMAGES} ${FIRMWARE}
+time BB_NUMBER_THREADS=4 bitbake ${BIMAGES} ${FIRMWARE}
 
 
 TOPDIR=$(bitbake -e | grep "^TOPDIR="| cut -d'=' -f2 | tr -d '"')
