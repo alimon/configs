@@ -137,8 +137,13 @@ case "${ORIG_MACHINE}" in
 		;;
 esac
 
-time BB_NUMBER_THREADS=4 bitbake ${BIMAGES} ${FIRMWARE}
+export BB_NUMBER_THREADS=4
 
+# For armv7 multi some bug compiling images in one command
+# time bitbake ${BIMAGES} ${FIRMWARE}
+for target in ${BIMAGES} ${FIRMWARE}; do
+	time bitbake ${target}
+done
 
 TOPDIR=$(bitbake -e | grep "^TOPDIR="| cut -d'=' -f2 | tr -d '"')
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
