@@ -115,21 +115,28 @@ function submit_jobs_for_config(){
     if [ -z "${TEST_QA_SERVER_TEAM}" ]; then
         TEST_QA_SERVER_TEAM="android-lkft"
     fi
-    python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
-        --device-type ${TEST_DEVICE_TYPE} \
-        --build-number ${BUILD_NUMBER} \
-        --lava-server ${TEST_LAVA_SERVER} \
-        --qa-server ${TEST_QA_SERVER} \
-        --qa-server-team ${TEST_QA_SERVER_TEAM} \
-        ${OPT_ENVIRONMENT} \
-        --qa-server-project ${TEST_QA_SERVER_PROJECT} \
-        --git-commit ${QA_BUILD_VERSION} \
-        --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common \
-        --test-plan template-boot.yaml template-vts-kernel.yaml template-cts-lkft.yaml \
-        ${OPT_DRY_RUN} \
-        --quiet
 
-    curl --header "Auth-Token: ${QA_REPORTS_TOKEN}" --form tests='{"build_process/build": "pass"}'  ${TEST_QA_SERVER}/api/submit/${TEST_QA_SERVER_TEAM}/${TEST_QA_SERVER_PROJECT}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}
+    # Do not submit the default lkft test jobs when TEST_PLANS_NO_DEFAULT_LKFT is set true
+    if [ -z "${TEST_PLANS_NO_DEFAULT_LKFT}" ] || [ "X${TEST_PLANS_NO_DEFAULT_LKFT}" != "xtrue" ]; then
+        python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
+            --device-type ${TEST_DEVICE_TYPE} \
+            --build-number ${BUILD_NUMBER} \
+            --lava-server ${TEST_LAVA_SERVER} \
+            --qa-server ${TEST_QA_SERVER} \
+            --qa-server-team ${TEST_QA_SERVER_TEAM} \
+            ${OPT_ENVIRONMENT} \
+            --qa-server-project ${TEST_QA_SERVER_PROJECT} \
+            --git-commit ${QA_BUILD_VERSION} \
+            --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common \
+            --test-plan template-boot.yaml template-vts-kernel.yaml template-cts-lkft.yaml \
+            ${OPT_DRY_RUN} \
+            --quiet
+    fi
+
+    # so that we could override the test plans in config by settings from ci build dynamically
+    if [ -n "${TEST_OTHER_PLANS_OVERRIDE}" ]; then
+        TEST_OTHER_PLANS="${TEST_OTHER_PLANS_OVERRIDE}"
+    fi
 
     if [ -n "${TEST_OTHER_PLANS}" ]; then
         for plan in ${TEST_OTHER_PLANS}; do
@@ -171,6 +178,8 @@ function submit_jobs_for_config(){
                 --quiet
         done
     fi
+    curl --header "Auth-Token: ${QA_REPORTS_TOKEN}" --form tests='{"build_process/build": "pass"}'  ${TEST_QA_SERVER}/api/submit/${TEST_QA_SERVER_TEAM}/${TEST_QA_SERVER_PROJECT}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}
+
 }
 
 function submit_jobs(){
