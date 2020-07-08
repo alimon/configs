@@ -150,7 +150,6 @@
             type: slave
             name: label
             values:
-              - tcwg-bmk-coordinator
               - tcwg-bmk-#{HW}-01
               - tcwg-bmk-#{HW}-02
               - tcwg-bmk-#{HW}-03
@@ -162,8 +161,6 @@
               - tcwg-bmk-#{HW}-09
     execution-strategy:
         sequential: false
-        touchstone:
-          expr: 'label == "tcwg-bmk-coordinator"'
     wrappers:
         - timeout:
             timeout: 900
@@ -181,21 +178,6 @@
               set -ex
               ssh-add -l
 
-              if [ x"$label" != x"tcwg-bmk-coordinator" ]; then
-                # Run the benchmark
-                exec ./tcwg-benchmark.sh
-              fi
-
-              # Check that all benchmarking boards are OK,
-              # and power-cycle the ones that appear offline.
-              . ./jenkins-helpers.sh
-              for board in tcwg-#{HW}-0{1..9}; do
-                if ! ssh "$board.tcwglab" true; then
-                  (
-                    nvidia-power-cycle.sh "$board"
-                    wait_for_ssh_server "$board.tcwglab" 22 5
-                  ) &
-                  wait $! || exit 125
-                fi
-              done
+              # Run the benchmark
+              exec ./tcwg-benchmark.sh
             unstable-return: 125
