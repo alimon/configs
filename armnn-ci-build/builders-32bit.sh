@@ -75,7 +75,7 @@ make install
 cd $WORKSPACE/tensorflow
 ../armnn/scripts/generate_tensorflow_protobuf.sh ../tensorflow-protobuf ../protobuf-host
 
-cd flatbuffers-1.10.0
+cd $WORKSPACE/flatbuffers-1.10.0
 mkdir build && cd build
 cmake .. \
 -DFLATBUFFERS_BUILD_FLATC=1 \
