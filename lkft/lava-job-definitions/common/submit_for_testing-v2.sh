@@ -117,7 +117,7 @@ function submit_jobs_for_config(){
     fi
 
     # Do not submit the default lkft test jobs when TEST_PLANS_NO_DEFAULT_LKFT is set true
-    if [ -z "${TEST_PLANS_NO_DEFAULT_LKFT}" ] || [ "X${TEST_PLANS_NO_DEFAULT_LKFT}" != "xtrue" ]; then
+    if [ -z "${TEST_PLANS_NO_DEFAULT_LKFT}" ] || [ "X${TEST_PLANS_NO_DEFAULT_LKFT}" != "Xtrue" ]; then
         python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
             --device-type ${TEST_DEVICE_TYPE} \
             --build-number ${BUILD_NUMBER} \
