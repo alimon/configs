@@ -55,16 +55,16 @@
             f_gki_image_gz_url=android/lkft/${JOB_NAME}/${BUILD_NUMBER}/${ANDROID_BUILD_CONFIG}-Image.gz
 
             build_configs_mainline="lkft-db845c-aosp-master-mainline-gki lkft-hikey960-aosp-master-mainline-gki"
-            build_configs_54="lkft-db845c-aosp-master-5.4-gki lkft-hikey960-aosp-master-5.4-gki"
-            build_configs_54_stable="lkft-db845c-aosp-master-5.4-stable-gki lkft-hikey960-aosp-master-5.4-stable-gki"
+            build_configs_12_54="lkft-db845c-aosp-master-5.4-gki lkft-hikey960-aosp-master-5.4-gki"
+            build_configs_11_54="lkft-db845c-aosp-master-5.4-stable-gki lkft-hikey960-aosp-master-5.4-stable-gki"
 
             build_configs=""
             case "X${KERNEL_BRANCH}" in
-                "Xandroid-5.4-stable")
-                    build_configs="${build_configs_54_stable}"
+                "Xandroid11-5.4")
+                    build_configs="${build_configs_11_54}"
                     ;;
-                "Xandroid-5.4")
-                    build_configs="${build_configs_54}"
+                "Xandroid12-5.4")
+                    build_configs="${build_configs_12_54}"
                     ;;
                 "Xandroid-mainline")
                     build_configs="${build_configs_mainline}"
@@ -92,13 +92,13 @@
 
         - trigger-builds:
             - project: lkft-generic-build
-              property-file: params_android-5.4-stable-lkft-db845c-aosp-master-5.4-stable-gki.txt
+              property-file: params_android11-5.4-lkft-db845c-aosp-master-5.4-stable-gki.txt
             - project: lkft-generic-build
-              property-file: params_android-5.4-stable-lkft-hikey960-aosp-master-5.4-stable-gki.txt
+              property-file: params_android11-5.4-lkft-hikey960-aosp-master-5.4-stable-gki.txt
             - project: lkft-generic-build
-              property-file: params_android-5.4-lkft-db845c-aosp-master-5.4-gki.txt
+              property-file: params_android12-5.4-lkft-db845c-aosp-master-5.4-gki.txt
             - project: lkft-generic-build
-              property-file: params_android-5.4-lkft-hikey960-aosp-master-5.4-gki.txt
+              property-file: params_android12-5.4-lkft-hikey960-aosp-master-5.4-gki.txt
             - project: lkft-generic-build
               property-file: params_android-mainline-lkft-db845c-aosp-master-mainline-gki.txt
             - project: lkft-generic-build
