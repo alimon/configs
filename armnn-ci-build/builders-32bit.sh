@@ -81,7 +81,6 @@ cmake .. \
 -DFLATBUFFERS_BUILD_FLATC=1 \
 -DCMAKE_INSTALL_PREFIX:PATH=$WORKSPACE/flatbuffers
 make all install
-AssertZeroExitCode "Building FlatBuffers library failed"
 
 cd $WORKSPACE/flatbuffers-1.10.0
 mkdir build-arm32 && cd build-arm32
