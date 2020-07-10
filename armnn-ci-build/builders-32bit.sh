@@ -47,9 +47,9 @@ scons extra_cxx_flags="-fPIC" Werror=0 debug=0 asserts=0 neon=1 opencl=0 os=linu
 
 
 cd ${WORKSPACE}/boost_1_64_0
+./bootstrap.sh
 rm project-config.jam || true
 wget --no-check-certificate http://people.linaro.org/~theodore.grey/project-config.jam
-./bootstrap.sh
 ./b2  \
   --build-dir=${WORKSPACE}/boost_1_64_0/build toolset=gcc link=static cxxflags=-fPIC \
   --with-filesystem \
