@@ -23,7 +23,6 @@
                     refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
             branches:
               - linaro-hikey/android-hikey-linaro-4.14-stable-lkft
-              - linaro-hikey/android-hikey-linaro-4.19-lkft
               - linaro-hikey/android-hikey-linaro-4.19-stable-lkft
             skip-tag: true
             shallow-clone: false
@@ -64,16 +63,12 @@
             echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
 
             build_configs_4_14_stable="lkft-hikey-aosp-master-4.14-stable-lkft lkft-hikey960-aosp-master-4.14-stable-lkft"
-            build_configs_4_19="lkft-hikey-aosp-master-4.19-lkft lkft-hikey960-aosp-master-4.19-lkft"
             build_configs_4_19_stable="lkft-hikey-aosp-master-4.19-stable-lkft lkft-hikey960-aosp-master-4.19-stable-lkft"
 
             build_configs=""
             case "X${KERNEL_BRANCH}" in
                 "Xandroid-hikey-linaro-4.14-stable-lkft")
                     build_configs="${build_configs_4_14_stable}"
-                    ;;
-                "Xandroid-hikey-linaro-4.19-lkft")
-                    build_configs="${build_configs_4_19}"
                     ;;
                 "Xandroid-hikey-linaro-4.19-stable-lkft")
                     build_configs="${build_configs_4_19_stable}"
@@ -105,10 +100,6 @@
               property-file: params_android-hikey-linaro-4.14-stable-lkft_lkft-hikey-aosp-master-4.14-stable-lkft.txt
             - project: lkft-generic-mirror-build
               property-file: params_android-hikey-linaro-4.14-stable-lkft_lkft-hikey960-aosp-master-4.14-stable-lkft.txt
-            - project: lkft-generic-mirror-build
-              property-file: params_android-hikey-linaro-4.19-lkft_lkft-hikey-aosp-master-4.19-lkft.txt
-            - project: lkft-generic-mirror-build
-              property-file: params_android-hikey-linaro-4.19-lkft_lkft-hikey960-aosp-master-4.19-lkft.txt
             - project: lkft-generic-mirror-build
               property-file: params_android-hikey-linaro-4.19-stable-lkft_lkft-hikey-aosp-master-4.19-stable-lkft.txt
             - project: lkft-generic-mirror-build

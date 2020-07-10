@@ -23,7 +23,7 @@
                     refspec: +refs/heads/linux-4.14.y:refs/remotes/linux-stable/linux-4.14.y +refs/heads/linux-4.19.y:refs/remotes/linux-stable/linux-4.19.y
             branches:
               - linaro-omap/android-beagle-x15-4.14-stable-lkft
-              - linaro-omap/android-beagle-x15-4.19-lkft
+              - linaro-omap/android-beagle-x15-4.19-stable-lkft
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -64,15 +64,15 @@
             echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
 
             build_configs_4_14_stable="lkft-x15-aosp-master-4.14-stable-lkft"
-            build_configs_4_19="lkft-x15-aosp-master-4.19-lkft"
+            build_configs_4_19_stable="lkft-x15-aosp-master-4.19-stable-lkft"
 
             build_configs=""
             case "X${KERNEL_BRANCH}" in
                 "Xandroid-beagle-x15-4.14-stable-lkft")
                     build_configs="${build_configs_4_14_stable}"
                     ;;
-                "Xandroid-beagle-x15-4.19-lkft")
-                    build_configs="${build_configs_4_19}"
+                "Xandroid-beagle-x15-4.19-stable-lkft")
+                    build_configs="${build_configs_4_19_stable}"
                     ;;
                 "X*")
                     build_configs=""
@@ -100,4 +100,4 @@
             - project: lkft-generic-omap-build
               property-file: params_android-beagle-x15-4.14-stable-lkft_lkft-x15-aosp-master-4.14-stable-lkft.txt
             - project: lkft-generic-omap-build
-              property-file: params_android-beagle-x15-4.19-lkft_lkft-x15-aosp-master-4.19-lkft.txt
+              property-file: params_android-beagle-x15-4.19-stable-lkft_lkft-x15-aosp-master-4.19-stable-lkft.txt
