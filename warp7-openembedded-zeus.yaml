@@ -19,9 +19,6 @@
                 - job-cancel
     parameters:
         - string:
-            name: MACHINE
-            default: 'imx7s-warp'
-        - string:
             name: IMAGES
             default: 'warp7-console-image empty-image'
         - string:
@@ -60,6 +57,11 @@
     axes:
         - axis:
             type: user-defined
+            name: MACHINE
+            values:
+                - 'imx7s-warp'
+        - axis:
+            type: user-defined
             name: DISTRO
             values:
                 - rpb
@@ -67,7 +69,7 @@
             type: slave
             name: label
             values:
-                - docker-stretch-amd64
+                - docker-buster-amd64
     execution-strategy:
         sequential: false
     wrappers:
