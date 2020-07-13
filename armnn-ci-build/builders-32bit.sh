@@ -12,7 +12,7 @@ sudo apt-get -q=2  install -y  --no-install-recommends autoconf
 sudo apt-get -q=2  install -y  --no-install-recommends libtool
 sudo apt-get -q=2  install -y  --no-install-recommends cmake
 sudo apt -q=2 install -y --no-install-recommends build-essential cmake libpthread-stubs0-dev
-sudo apt -q=2 install -y --no-install-recommends python-pip virtualenv python-dev python3-dev
+sudo apt -q=2 install -y --no-install-recommends python-pip virtualenv python-dev python3-dev xxd
 
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
