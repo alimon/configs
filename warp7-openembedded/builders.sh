@@ -219,7 +219,7 @@ ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-tes
 ROOTFS_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-${MACHINE}-*.rootfs.img.gz" | xargs -r basename)
 ROOTFS_DESKTOP_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-desktop-image-test-${MACHINE}-*.rootfs.img.gz" | xargs -r basename)
 KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*Image-*-${MACHINE}-*.bin" | xargs -r basename)
-DISK_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*-${MACHINE}-*.rootfs.wic.*z*" | xargs -r basename)
+DISK_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*-${MACHINE}-*.rootfs.wic.*z*" | grep -v empty | xargs -r basename)
 
 case "${MACHINE}" in
   am57xx-evm)
