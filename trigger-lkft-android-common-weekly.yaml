@@ -1,0 +1,86 @@
+- job:
+    name: trigger-lkft-android-common-weekly
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 180
+            num-to-keep: 150
+    disabled: false
+    node: master
+    display-name: 'Trigger for builds on android common kernel weekly'
+    scm:
+        - git:
+            remotes:
+                - android-common:
+                    url: https://android.googlesource.com/kernel/common
+                - linux-stable:
+                    url: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git
+                    refspec: +refs/heads/linux-5.4.y:refs/remotes/linux-stable/linux-5.4.y +refs/heads/master:refs/remotes/master/master
+            branches:
+              - android-common/android12-5.4
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H 0 * * 7'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}-${GIT_BRANCH#android-common/}'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+
+            MAKE_KERNELVERSION=$(make kernelversion)
+            KERNEL_BRANCH=${GIT_BRANCH#android-common/}
+            KERNEL_DESCRIBE=$(git describe --always)
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
+
+            params=lkft-${KERNEL_BRANCH}.txt
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE}-weekly >> $params
+            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
+            cat $params
+
+            # generate files for the api callback build
+            f_api_callbacks="all-kernels.txt"
+            cp -fv  $params ${f_api_callbacks}
+            QA_BUILD_VERSION=${KERNEL_DESCRIBE}
+            echo "QA_BUILD_VERSION=${QA_BUILD_VERSION}" >> ${f_api_callbacks}
+            echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
+            echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
+            echo "ANDROID_BUILD_CONFIG=lkft-gki-${KERNEL_BRANCH}" >>${f_api_callbacks}
+            echo "TEST_OTHER_PLANS_OVERRIDE=\"EXTRAS_VTS EXTRAS_CTS\"" >>${f_api_callbacks}
+
+            case "X${KERNEL_BRANCH}" in
+                "Xandroid12-5.4")
+                    build_configs_to_be_triggered="lkft-db845c-aosp-master-5.4-gki"
+                    ;;
+                "Xandroid-mainline")
+                    build_configs_to_be_triggered="lkft-db845c-aosp-master-mainline-gki lkft-hikey960-aosp-master-mainline-gki"
+                    ;;
+                "X*")
+                    build_configs=""
+                    ;;
+            esac
+            echo "ANDROID_BUILD_CONFIG_TO_BE_TRIGGERED=\"${build_configs_to_be_triggered}\"" >>${f_api_callbacks}
+
+        - trigger-builds:
+            - project: lkft-api-callbacks
+              property-file: all-kernels.txt
+            - project: lkft-gki-kernel
+              property-file: all-kernels.txt
+    publishers:
+        - email:
+            recipients: 'lkft-maintainers@lists.linaro.org'

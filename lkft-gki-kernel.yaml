@@ -21,6 +21,12 @@
         - string:
             name: ANDROID_BUILD_CONFIG
         - string:
+            name: ANDROID_BUILD_CONFIG_TO_BE_TRIGGERED
+            default: ""
+        - string:
+            name: TEST_OTHER_PLANS_OVERRIDE
+            default: ""
+        - string:
             name: KERNEL_DESCRIBE
         - string:
             name: KERNEL_BRANCH
@@ -59,20 +65,24 @@
             build_configs_11_54="lkft-db845c-aosp-master-5.4-stable-gki lkft-hikey960-aosp-master-5.4-stable-gki"
 
             build_configs=""
-            case "X${KERNEL_BRANCH}" in
-                "Xandroid11-5.4")
-                    build_configs="${build_configs_11_54}"
-                    ;;
-                "Xandroid12-5.4")
-                    build_configs="${build_configs_12_54}"
-                    ;;
-                "Xandroid-mainline")
-                    build_configs="${build_configs_mainline}"
-                    ;;
-                "X*")
-                    build_configs=""
-                    ;;
-            esac
+            if [ -z "${ANDROID_BUILD_CONFIG_TO_BE_TRIGGERED}" ]; then
+                case "X${KERNEL_BRANCH}" in
+                    "Xandroid11-5.4")
+                        build_configs="${build_configs_11_54}"
+                        ;;
+                    "Xandroid12-5.4")
+                        build_configs="${build_configs_12_54}"
+                        ;;
+                    "Xandroid-mainline")
+                        build_configs="${build_configs_mainline}"
+                        ;;
+                    "X*")
+                        build_configs=""
+                        ;;
+                esac
+            else
+                build_configs="${ANDROID_BUILD_CONFIG_TO_BE_TRIGGERED}"
+            fi
 
             rm -fr params_*.txt test_*.txt
             for build_config in ${build_configs}; do
@@ -85,6 +95,7 @@
             SRCREV_kernel=${SRCREV_kernel}
             BUILD_REFERENCE_IMAGE_GZ_URL=http://snapshots.linaro.org/${f_gki_image_gz_url}
             MAKE_KERNELVERSION=${MAKE_KERNELVERSION}
+            TEST_OTHER_PLANS_OVERRIDE=${TEST_OTHER_PLANS_OVERRIDE}
             __EOF__
 
                 cat ${f_params}
