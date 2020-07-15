@@ -41,13 +41,13 @@
 
             MAKE_KERNELVERSION=$(make kernelversion)
             KERNEL_BRANCH=${GIT_BRANCH#android-common/}
-            KERNEL_DESCRIBE=$(git describe --always)
+            KERNEL_DESCRIBE=$(git describe --always)-$(date +%Y%m%d%H%M)
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
 
             params=lkft-${KERNEL_BRANCH}.txt
-            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE}-weekly >> $params
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
             echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
@@ -61,7 +61,7 @@
             echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
             echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
             echo "ANDROID_BUILD_CONFIG=lkft-gki-${KERNEL_BRANCH}" >>${f_api_callbacks}
-            echo "TEST_OTHER_PLANS_OVERRIDE=\"EXTRAS_VTS EXTRAS_CTS\"" >>${f_api_callbacks}
+            echo "TEST_OTHER_PLANS_OVERRIDE=EXTRAS_VTS EXTRAS_CTS" >>${f_api_callbacks}
 
             case "X${KERNEL_BRANCH}" in
                 "Xandroid12-5.4")
@@ -74,7 +74,7 @@
                     build_configs=""
                     ;;
             esac
-            echo "ANDROID_BUILD_CONFIG_TO_BE_TRIGGERED=\"${build_configs_to_be_triggered}\"" >>${f_api_callbacks}
+            echo "ANDROID_BUILD_CONFIG_TO_BE_TRIGGERED=${build_configs_to_be_triggered}" >>${f_api_callbacks}
 
         - trigger-builds:
             - project: lkft-api-callbacks
