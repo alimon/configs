@@ -280,30 +280,58 @@ actions:
       parameters:
         SKIP_INSTALL: True
 
-    - name: yepkit-test
-      from: inline
-      path: inline/yepkit-test.yaml
-      repository:
-        metadata:
-          format: Lava-Test Test Definition 1.0
-          name: yepkit-test
-          description: yepkit test
-        run:
-          steps:
-          - git clone https://github.com/Yepkit/ykush
-          - cd ykush
-          - make
-          - bin/ykushcmd
-          - bin/ykushcmd -d a
-          - sleep 3
-          - bin/ykushcmd -u 1
-          - sleep 3
-          - bin/ykushcmd -u 2
-          - sleep 3
-          - bin/ykushcmd -u 3
-          - sleep 3
-          - bin/ykushcmd -d a
-          - sleep 3
+    - name: yepkit-list
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        LIST: true
+
+    - name: yepkit-down-all
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_DOWN: a
+
+    - name: yepkit-get-1
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_GET: 1
+    - name: yepkit-get-2
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_GET: 2
+    - name: yepkit-get-3
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_GET: 3
+
+    - name: yepkit-up-port-1
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_UP: 1
+        PORT_DEVICE: /dev/ttyUSB0
 
     - name: uart-loopback-forward
       from: git
@@ -315,8 +343,6 @@ actions:
         SKIP_INSTALL: 'true'
         UART0: /dev/ttyUSB0
         UART1: /dev/ttyS1
-        YKUSHPORT: 1
-
     - name: uart-loopback-reverse
       from: git
       history: false
@@ -327,7 +353,26 @@ actions:
         SKIP_INSTALL: 'true'
         UART0: /dev/ttyS1
         UART1: /dev/ttyUSB0
-        YKUSHPORT: 1
+
+    - name: yepkit-down-port-1
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_DOWN: 1
+        PORT_DEVICE: /dev/ttyUSB0
+
+    - name: yepkit-up-port-2
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_UP: 2
+        PORT_DEVICE: /dev/sda
 
     - name: block-device-sda
       from: git
@@ -338,7 +383,7 @@ actions:
       parameters:
         SKIP_INSTALL: 'true'
         DEVICE: /dev/sda
-        YKUSHPORT: 2
+        FORMAT_DEVICE: 'true'
 
     - name: zero-sda
       from: inline
@@ -360,7 +405,17 @@ actions:
       path: automated/linux/device-read-perf/device-read-perf.yaml
       parameters:
         SKIP_INSTALL: 'true'
-        DEVICE: "sda mmcblk0"
+        DEVICE: sda mmcblk0
+
+    - name: yepkit-down-port-2
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_DOWN: 2
+        PORT_DEVICE: /dev/sda
 
     - name: spi-eeprom
       from: git
