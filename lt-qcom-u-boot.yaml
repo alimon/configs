@@ -26,7 +26,7 @@
             default: 'master'
         - string:
             name: PUB_DEST
-            default: 'https://snapshots.linaro.org/96boards/${MACHINE}/linaro/uboot/${BUILD_NUMBER}/'
+            default: '96boards/${MACHINE}/linaro/uboot/${BUILD_NUMBER}/'
     disabled: false
     node: master
     display-name: 'Qualcomm U-Boot build'
@@ -55,9 +55,8 @@
         sequential: false
     wrappers:
         - timestamps
-        - ssh-agent-credentials:
-            users:
-                - 'OE_COMMIT_BOT_KEY'
+        - build-name:
+            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell:
             !include-raw: lt-qcom/builders-deps.sh
