@@ -46,7 +46,7 @@ if [ -n "${GIT_COMMIT}" ]; then
   git checkout ${GIT_COMMIT}
 fi
 echo "GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)" > ${WORKSPACE}/env_var_parameters
-echo "EXTERNAL_BUILD_ID=$(git rev-parse --short=8 HEAD)-${BUILD_NUMBER}" >> env_var_parameters
+echo "EXTERNAL_BUILD_ID=$(git rev-parse --short=8 HEAD)-${BUILD_NUMBER}" >> ${WORKSPACE}/env_var_parameters
 
 head -5 Makefile
 
