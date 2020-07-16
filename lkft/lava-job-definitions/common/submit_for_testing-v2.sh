@@ -54,8 +54,19 @@ function get_value_from_config_file(){
     fi
 }
 
+function submit_build_result(){
+    local qareport_url="${1}"
+    if ! grep "#${qareport_url}#" ${f_qareport_urls}; then
+        curl --header "Auth-Token: ${QA_REPORTS_TOKEN}" --form tests='{"build_process/build": "pass"}' ${qareport_url}
+        echo "#${qareport_url}#" >> ${f_qareport_urls}
+    fi
+}
+
 function submit_jobs_for_config(){
     local build_config=$1 && shift
+
+    local f_qareport_urls="qareport_url.txt"
+
     # clean environments
     unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_TEAM TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
@@ -83,6 +94,8 @@ function submit_jobs_for_config(){
     cd  ${DIR_CONFIGS_ROOT}/ && \
         git reset --hard && \
         cd -
+
+    rm -f ${f_qareport_urls} && touch ${f_qareport_urls}
 
     for f in ${PUBLISH_FILES}; do
         # DOWNLOAD_URL is where the generated files stored
@@ -131,6 +144,9 @@ function submit_jobs_for_config(){
             --test-plan template-boot.yaml template-vts-kernel.yaml template-cts-lkft.yaml \
             ${OPT_DRY_RUN} \
             --quiet
+
+        qareport_url="${TEST_QA_SERVER}/api/submit/${TEST_QA_SERVER_TEAM}/${TEST_QA_SERVER_PROJECT}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}"
+        submit_build_result "${qareport_url}"
     fi
 
     # so that we could override the test plans in config by settings from ci build dynamically
@@ -176,10 +192,13 @@ function submit_jobs_for_config(){
                 --test-plan ${templates} \
                 ${OPT_DRY_RUN} \
                 --quiet
+
+            qareport_url="${qa_server}/api/submit/${qa_server_team}/${qa_server_project}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}"
+            submit_build_result ${qareport_url}
         done
     fi
-    curl --header "Auth-Token: ${QA_REPORTS_TOKEN}" --form tests='{"build_process/build": "pass"}'  ${TEST_QA_SERVER}/api/submit/${TEST_QA_SERVER_TEAM}/${TEST_QA_SERVER_PROJECT}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}
 
+    rm -f "${f_qareport_urls}"
 }
 
 function submit_jobs(){
