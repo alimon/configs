@@ -116,12 +116,10 @@
             template: '#${BUILD_NUMBER}-${GIT_COMMIT_ID}'
             macro: true
         - linaro-publish-token
-#        - inject:
-#            properties-file: env_var_parameters
+        - inject:
+            properties-file: env_var_parameters
         - shell: |
             #!/bin/bash
-            cat env_var_parameters
-            echo EXTERNAL_BUILD_ID=${EXTERNAL_BUILD_ID}
 
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
@@ -133,7 +131,6 @@
 
         - shell: |
             #!/bin/bash -ex
-            echo EXTERNAL_BUILD_ID=${EXTERNAL_BUILD_ID}
 
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
