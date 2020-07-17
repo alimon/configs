@@ -133,7 +133,7 @@ cat ${DEPLOY_DIR_IMAGE}/pinned-manifest.xml
 
 # FIXME: Sparse images here, until it gets done by OE
 case "${MACHINE}" in
-  juno|stih410-b2260|orangepi-i96)
+  juno|stih410-b2260|orangepi-i96|imx8mqevk)
     ;;
   *)
     for rootfs in $(find ${DEPLOY_DIR_IMAGE} -type f -name *.rootfs.ext4.gz); do
