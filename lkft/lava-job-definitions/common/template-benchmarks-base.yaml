@@ -1,0 +1,34 @@
+{% extends device_type %}
+
+{% block job_name %}lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-benchmark-{{testname}}{% endblock job_name %}
+
+{% block job_gobal_timeout %}
+timeouts:
+  job:
+    minutes: 90
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+{% endblock job_gobal_timeout %}
+
+{% block test_target %}
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: {% if job_timeout is defined %}{{ job_timeout-5|int|abs }}{% else %}160{% endif %}
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/apk-automation/apk-automation.yaml
+          name: {{testname}}
+          params:
+            SET_GOVERNOR_POLICY: false
+            TEST_NAME: {{testname}}
+{% if loopcount is defined %}
+            LOOPS: {{loopcount}}
+{% else %}
+            LOOPS: 1
+{% endif %}
+
+{% endblock test_target %}
