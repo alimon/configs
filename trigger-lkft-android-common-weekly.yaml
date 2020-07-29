@@ -61,14 +61,11 @@
             echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
             echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
             echo "ANDROID_BUILD_CONFIG=lkft-gki-${KERNEL_BRANCH}" >>${f_api_callbacks}
-            echo "TEST_OTHER_PLANS_OVERRIDE=EXTRAS_VTS EXTRAS_CTS" >>${f_api_callbacks}
+            echo "TEST_OTHER_PLANS_OVERRIDE=VTS CTS BENCHMARKS" >>${f_api_callbacks}
 
             case "X${KERNEL_BRANCH}" in
                 "Xandroid12-5.4")
                     build_configs_to_be_triggered="lkft-db845c-aosp-master-5.4-gki lkft-hikey960-aosp-master-5.4-gki"
-                    ;;
-                "Xandroid-mainline")
-                    build_configs_to_be_triggered="lkft-db845c-aosp-master-mainline-gki lkft-hikey960-aosp-master-mainline-gki"
                     ;;
                 "X*")
                     build_configs=""
