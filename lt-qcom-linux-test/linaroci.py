@@ -56,7 +56,7 @@ def get_linaro_ci_build(url):
                 repo = m.group('var')
             if 'KERNEL_BRANCH' == m.group('name'):
                 branch = m.group('var')
-            if 'KERNEL_VERSION' == m.group('name'):
+            if 'KERNEL_DESCRIBE' == m.group('name'):
                 version = m.group('var')
 
     return (image_url, dt_url, modules_url, version)
