@@ -20,4 +20,8 @@
 #endif
       - build-discarder:
           days-to-keep: 30
+#if RR_tcwg_cross
+          num-to-keep: 10
+#else
           num-to-keep: 30
+#endif
