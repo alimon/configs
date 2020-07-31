@@ -76,17 +76,18 @@ pushd conf
 git log -1
 popd
 
+# XXX: Disable manifest diff because at this moment link latest is not working so not latest pinned-manifest is available
 # record changes since last build, if available
-if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
-    # https://github.com/96boards/oe-rpb-manifest/commit/0be354483a124903982103dc937f9e5c1a094a3a
-    if grep -q ".*linkfile.*\.\./\.\./\.repo/manifests/setup-environment" pinned-manifest-latest.xml ; then
-	echo "detected old style symlink with relative path, skipping diff report"
-    else
-	repo diffmanifests ${PWD}/pinned-manifest-latest.xml ${PWD}/pinned-manifest.xml > manifest-changes.txt
-    fi
-else
+#if wget -q ${BASE_URL}${PUB_DEST/\/${BUILD_NUMBER}\//\/latest\/}/pinned-manifest.xml -O pinned-manifest-latest.xml; then
+#    # https://github.com/96boards/oe-rpb-manifest/commit/0be354483a124903982103dc937f9e5c1a094a3a
+#    if grep -q ".*linkfile.*\.\./\.\./\.repo/manifests/setup-environment" pinned-manifest-latest.xml ; then
+#	echo "detected old style symlink with relative path, skipping diff report"
+#    else
+#	repo diffmanifests ${PWD}/pinned-manifest-latest.xml ${PWD}/pinned-manifest.xml > manifest-changes.txt
+#    fi
+#else
     echo "latest build published does not have pinned-manifest.xml, skipping diff report"
-fi
+#fi
 
 if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
     GERRIT_URL="http://${GERRIT_HOST}/${GERRIT_PROJECT}"
