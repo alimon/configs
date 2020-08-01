@@ -243,7 +243,8 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	rm -f ${DEPLOY_DIR_IMAGE}/modules-*.tgz
 
 	# Move the saved images back to the deploy dir
-	mv ${DEPLOY_DIR_IMAGE}-pre/* ${DEPLOY_DIR_IMAGE}
+	cp -aR ${DEPLOY_DIR_IMAGE}-pre/* ${DEPLOY_DIR_IMAGE}
+	rm-rf ${DEPLOY_DIR_IMAGE}-pre/
 	ls -al ${DEPLOY_DIR_IMAGE}
 	ls -al ${DEPLOY_DIR_IMAGE}/optee || true
 fi
