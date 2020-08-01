@@ -244,7 +244,6 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 
 	# Move the saved images back to the deploy dir
 	cp -aR ${DEPLOY_DIR_IMAGE}-pre/* ${DEPLOY_DIR_IMAGE}
-	rm-rf ${DEPLOY_DIR_IMAGE}-pre/
 	ls -al ${DEPLOY_DIR_IMAGE}
 	ls -al ${DEPLOY_DIR_IMAGE}/optee || true
 fi
