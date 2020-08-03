@@ -24,7 +24,7 @@ failure_exit()
 rm -rf ${WORKSPACE}/*
 
 # install build dependencies for QEMU and EDK2
-sudo apt -y --no-install-recommends build-essential pkg-config python3 libpixman-1-dev libglib2.0-dev
+sudo apt -y --no-install-recommends install build-essential pkg-config python3 libpixman-1-dev libglib2.0-dev
 
 git clone --depth 1 https://github.com/qemu/qemu.git
 git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2.git
