@@ -72,7 +72,7 @@ mkdir 1
 sudo mkfs.vfat /dev/mapper/$device
 sudo mount /dev/mapper/$device 1
 sudo cp Sbsa.efi 1/
-sudo echo "fs0:\Sbsa.efi" >1/startup.nsh
+echo "fs0:\Sbsa.efi" |sudo tee 1/startup.nsh
 sudo mkdir -p 1/efi/boot/
 sudo cp Build/SbsaQemu/RELEASE_GCC5/AARCH64/Shell.efi 1/efi/boot/bootaa64.efi
 sudo umount 1
