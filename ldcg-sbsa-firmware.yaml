@@ -1,0 +1,28 @@
+- job:
+    name: ldcg-sbsa-firmware
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    disabled: false
+    node: docker-buster-arm64-leg
+    display-name: 'SBSA QEMU firmware test'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ldcg-sbsa-firmware/build.sh
+    publishers:
+        - email:
+            recipients: 'tanmay.jagdale@linaro.org marcin.juszkiewicz@linaro.org'
