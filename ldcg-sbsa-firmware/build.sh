@@ -1,6 +1,4 @@
 #!/bin/bash
-# build dependencies on Debian:
-# git build-essential virtualenv python-dev libffi-dev libssl-dev
 
 BRANCH="qemu_sbsa_pseudo_static_v1"
 SBSA_ACS_VER="20.03_REL2.4"
@@ -29,7 +27,7 @@ sudo apt -y --no-install-recommends install build-essential pkg-config python3 l
 
 git clone --depth 1 https://github.com/qemu/qemu.git
 git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2.git
-git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-platforms.git
+git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-platforms.git -b $BRANCH
 git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-non-osi.git
 
 # let build QEMU - just AArch64 target
@@ -82,8 +80,8 @@ sudo kpartx -d sda.raw
 
 timeout 30 ./qemu/aarch64-softmmu/qemu-system-aarch64 \
 -machine sbsa-ref \
--pflash SBSA_FLASH0.fd \
--pflash SBSA_FLASH1.fd \
--hda sda.raw \
+-drive if=pflash,file=SBSA_FLASH0.fd,format=raw \
+-drive if=pflash,file=SBSA_FLASH1.fd,format=raw \
+-drive if=ide,file=sda.raw,format=raw \
 -nographic
 
