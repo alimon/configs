@@ -27,7 +27,7 @@ sudo apt -y --no-install-recommends install build-essential pkg-config python3 l
 
 git clone --depth 1 https://github.com/qemu/qemu.git
 git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2.git
-git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-platforms.git -b $BRANCH
+git clone --depth 1 --recurse-submodules https://git.linaro.org/people/tanmay.jagdale/edk2-platforms.git -b $BRANCH
 git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-non-osi.git
 
 # let build QEMU - just AArch64 target
