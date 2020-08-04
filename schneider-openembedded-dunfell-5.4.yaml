@@ -1,0 +1,159 @@
+- job:
+    name: schneider-openembedded-dunfell-5.4
+    project-type: matrix
+    defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
+        artifactNumToKeep: 1
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            ralph.siemsen@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+            ryan.harkin@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+            schneider-linaro-git@linaro.org:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: IMAGES
+            default: 'dip-image dip-image-dev dip-image-edge'
+        - string:
+            name: SUBMODULES
+            default: 'all'
+        - string:
+            name: IMAGES_RPB
+            default: ''
+        - string:
+            name: IMAGES_RPB_WAYLAND
+            default: ''
+        - string:
+            name: DISTRO_URL_BASE
+            default: 'ssh://git@dev-private-git.linaro.org/schneider'
+        - string:
+            name: DISTRO_DIR
+            default: 'DIP-Yocto-Linux-Distro'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'linaro-dunfell'
+        - string:
+            name: BASE_URL
+            default: 'https://snapshots.linaro.org/'
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+        - string:
+            name: STAGING_LAVA_SERVER
+            default: 'https://staging.validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'schneider'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'dunfell-5.4'
+        - string:
+            name: AUTH_GROUPS
+            default: 'linaro, sse-team, schneider-team, schneider-linaro-git'
+        - string:
+            name: KERNEL_VERSION_PATCHLEVEL
+            default: '5.4'
+        - string:
+            name: TEST_LEVEL
+            default: 'normal'
+    disabled: false
+    node: master
+    display-name: 'Schneider OpenEmbedded (dunfell 5.4)'
+    axes:
+        - axis:
+            type: user-defined
+            name: MACHINE
+            values:
+                - 'rzn1d'
+                - 'soca9'
+        - axis:
+            type: user-defined
+            name: DISTRO
+            values:
+                - dip
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-buster-amd64
+    execution-strategy:
+        sequential: false
+    wrappers:
+        - timestamps
+        - ssh-agent-credentials:
+            users:
+                - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            echo "PUB_DEST=openembedded/schneider/${MANIFEST_BRANCH}-${KERNEL_VERSION_PATCHLEVEL}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}" > pub_dest_parameters
+        - inject:
+            properties-file: pub_dest_parameters
+        - shell:
+            !include-raw: schneider-openembedded/builders.sh
+        - inject:
+            properties-file: post_build_lava_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw: rpb-openembedded/buildinfo-protected.sh
+        - shell:
+            !include-raw: rpb-openembedded/publishers.sh
+        - shell:
+            !include-raw: schneider-openembedded/submit_for_testing.sh
+    publishers:
+        - archive:
+            artifacts: 'cve-*.txt, base-cve-*.txt'
+        - postbuildscript:
+            builders:
+                - role: MASTER
+                  build-on:
+                    - SUCCESS
+                    - UNSTABLE
+                    - FAILURE
+                    - NOT_BUILT
+                    - ABORTED
+                  build-steps:
+                    - shell:
+                        !include-raw: schneider-openembedded/cve-summary.sh
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                  - rpb-openembedded/postbuild.groovy
+                  - openembedded-lkft/postbuild.groovy
+                  - schneider-openembedded/postbuild.groovy
+        - email-ext:
+            recipients: 'fathi.boudra@linaro.org, ralph.siemsen@linaro.org, ryan.harkin@linaro.org'
+            always: true
+            failure: false
+            matrix-trigger: only-parent
+            body: |
+                $DEFAULT_CONTENT
+
+                CVE summary:
+                ${FILE,path="cve.sum"}
+            attachments: "cve.html"
