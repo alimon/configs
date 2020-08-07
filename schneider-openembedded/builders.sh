@@ -196,6 +196,8 @@ bbopt="-R ${postfile}"
 if [ "${clean_packages}" != "" ]; then
     bitbake ${bbopt} -c cleansstate ${clean_packages}
     bitbake ${bbopt} ${clean_packages}
+    bitbake -c do_fit_optee_os optee-os
+    bitbake -c do_fit_rzn1d u-boot-rzn1
 fi
 
 # Build all ${IMAGES} apart from dip-image-edge
