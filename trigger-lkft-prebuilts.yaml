@@ -1,0 +1,74 @@
+- job:
+    name: trigger-lkft-prebuilts
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+        - build-discarder:
+            days-to-keep: 180
+            num-to-keep: 150
+    disabled: false
+    node: master
+    display-name: 'Trigger for android-mainline prebuilt gki kernel'
+    scm:
+        - git:
+            remotes:
+                - android-mainline:
+                    url: https://android.googlesource.com/kernel/prebuilts/mainline/arm64
+            branches:
+              - android-mainline/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
+    triggers:
+        - pollscm:
+            cron: 'H/5 * * * *'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${PROPFILE,file="properties.txt",property="KERNEL_DESCRIBE"}'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            git clean -fdx
+            env
+
+            wget https://android-git.linaro.org/platform/prebuilts/linaro-prebuilts.git/plain/host/bin/extract_kernel.py -O extract_kernel.py
+            chmod +x extract_kernel.
+            KERNEL_BRANCH=${GIT_BRANCH%/master}
+            MAKE_KERNELVERSION=$(python2 ./extract_kernel.py --input kernel-mainline-gz --output-release|sed 's/-g.*$//')
+            build_number=$(grep kernel-build-id prebuilt-info.txt|cut -d: -f2|tr -d ' ')
+            KERNEL_DESCRIBE=${MAKE_KERNELVERSION}#${build_number}
+
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
+
+            params=lkft-${KERNEL_BRANCH}.txt
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
+            echo SRCREV_kernel=${GIT_COMMIT} >> $params
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
+            echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
+            cat $params
+
+            cp lkft-${KERNEL_BRANCH}.txt lkft-db845c-aosp-master-mainline-gki-prebuilts.txt
+            echo "ANDROID_BUILD_CONFIG=lkft-db845c-aosp-master-mainline-gki-prebuilts" >> lkft-db845c-aosp-master-mainline-gki-prebuilts.txt
+
+            # generate files for the api callback build
+            f_api_callbacks="all-kernels.txt"
+            cp -fv  $params ${f_api_callbacks}
+            QA_BUILD_VERSION=${KERNEL_DESCRIBE}
+            echo "QA_BUILD_VERSION=${QA_BUILD_VERSION}" >> ${f_api_callbacks}
+            echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
+            echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
+
+        - trigger-builds:
+            - project: lkft-api-callbacks
+              property-file: all-kernels.txt
+            - project: lkft-generic-build
+              property-file: lkft-db845c-aosp-master-mainline-gki-prebuilts.txt
+    publishers:
+        - email:
+            recipients: 'lkft-maintainers@lists.linaro.org'
