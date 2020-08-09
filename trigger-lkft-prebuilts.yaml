@@ -44,7 +44,7 @@
             KERNEL_BRANCH=${GIT_BRANCH%/master}
             MAKE_KERNELVERSION=$(python2 ./extract_kernel.py --input kernel-mainline-gz --output-release|sed 's/-g.*$//')
             build_number=$(grep kernel-build-id prebuilt-info.txt|cut -d: -f2|tr -d ' ')
-            KERNEL_DESCRIBE=${MAKE_KERNELVERSION}#${build_number}
+            KERNEL_DESCRIBE=${MAKE_KERNELVERSION}-${build_number}
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
