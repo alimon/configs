@@ -75,6 +75,8 @@
             echo "CORE_IMAGE_EXTRA_INSTALL += \"${QCOM_USERSPACE_TOOLS}\"" >> auto.conf
             # add ext4 block size to 4096, boards with UFS storage needs it
             echo "EXTRA_IMAGECMD_ext4 += \" -b 4096 \"" >> auto.conf
+            # to test freedreno using deqp
+            echo "PACKAGECONFIG_append_pn-mesa = \"freedreno xa\"" >> auto.conf
         - inject:
             properties-file: pub_dest_parameters
         - shell:
