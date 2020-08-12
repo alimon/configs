@@ -1,0 +1,124 @@
+- job:
+    name: lite-tf-m
+    project-type: matrix
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+                - job-workspace
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+            paul.sokolovsky@linaro.org:
+                - job-build
+                - job-read
+                - job-extended-read
+                - job-configure
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 30
+            num-to-keep: 30
+            artifact-num-to-keep: 30
+        - throttle:
+            option: category
+            categories: [lite-zephyr]
+            matrix-builds: false
+            matrix-configs: true
+    parameters:
+        - string:
+            name: BRANCH
+            default: 'master'
+        - string:
+            name: GIT_COMMIT
+            default: 'master'
+        - string:
+            name: LAVA_SERVER
+            default: 'validation.linaro.org/RPC2/'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+        - string:
+            name: QA_SERVER_GROUP
+            default: 'lite'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'zephyr-net'
+        - string:
+            name: USE_QA_SERVER
+            default: '1'
+    disabled: false
+    node: master
+    child-workspace: .
+    display-name: "Lite - TF-M"
+    triggers:
+        - timed: 'H 5 * * *'
+    axes:
+        - axis:
+            type: slave
+            name: label
+            values:
+                - docker-xenial-amd64-13
+        - axis:
+            type: user-defined
+            name: ZEPHYR_TOOLCHAIN_VARIANT
+            values:
+                - gnuarmemb
+        - axis:
+            type: user-defined
+            name: PLATFORM
+            values:
+                - AN521
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_USER
+                variable: LAVA_USER
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_TOKEN
+                variable: LAVA_TOKEN
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            rm -rf job-configs
+            git clone --depth 1 https://git.linaro.org/ci/job/configs.git job-configs
+        - shell: |
+            ./job-configs/lite-tfm/install-deps.sh
+        - shell: |
+            ./job-configs/lite-tfm/build.sh
+        - inject:
+            properties-file: env_var_parameters
+#        - build-name-setter:
+#            template: '#${BUILD_NUMBER}-${GIT_COMMIT_ID}'
+#            macro: true
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            # Publish
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python ${HOME}/bin/linaro-cp.py \
+              --api_version 3 \
+              --link-latest \
+              *.hex components/kernel/aeolus-2/tf-m/${BRANCH}/${PLATFORM}/${BUILD_NUMBER}
+
+        - shell: |
+            #!/bin/bash -ex
+
+            rm -rf configs
+            git clone --depth 1 https://git.linaro.org/ci/job/configs.git
+            git clone --depth 1 https://github.com/pfalcon/lite-build-tools
+            ./configs/lite-tfm/submit-test.sh
+
+    publishers:
+        - email:
+            recipients: 'paul.sokolovsky@linaro.org'
