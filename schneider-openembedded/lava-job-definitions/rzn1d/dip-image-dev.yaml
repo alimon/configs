@@ -3,9 +3,9 @@ job_name: SE ${MACHINE} dip-image-dev (nfs,wic) ${MANIFEST_BRANCH}-${KERNEL_VERS
 
 timeouts:
   job:
-    minutes: 100
+    minutes: 180
   action:
-    minutes: 70
+    minutes: 120
   connection:
     minutes: 20
 priority: medium
@@ -92,7 +92,7 @@ actions:
 - test:
     namespace: test-nfs
     timeout:
-      minutes: 20
+      minutes: 40
     interactive:
     - name: basic-cmds-tftp
       prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
@@ -115,7 +115,7 @@ actions:
 - test:
     namespace: test-nfs
     timeout:
-      minutes: 20
+      minutes: 40
     definitions:
 
     - name: smoke-tests-tftp
@@ -205,7 +205,7 @@ actions:
 - test:
     namespace: test-wic
     timeout:
-      minutes: 20
+      minutes: 40
     interactive:
     - name: basic-cmds-wic
       prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
