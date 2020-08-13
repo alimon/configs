@@ -40,8 +40,9 @@
             git clean -fdx
             env
 
-            KERNEL_DESCRIBE=$(git describe --always)
+            MAKE_KERNELVERSION=$(make kernelversion)
             KERNEL_BRANCH=$(echo $GIT_BRANCH|sed s,common/,,)
+            KERNEL_DESCRIBE=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt
@@ -49,7 +50,7 @@
             params=lkft-parameters.txt
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} >> $params
             echo SRCREV_kernel=${GIT_COMMIT} >> $params
-            echo MAKE_KERNELVERSION=$(make kernelversion) >> $params
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> $params
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
             cat $params
 

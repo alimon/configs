@@ -40,7 +40,8 @@
     builders:
         - shell: |
             #!/bin/bash -e
-            echo KERNEL_DESCRIBE=$(git describe --always) > lkft_parameters
+            KERNEL_DESCRIBE=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}
+            echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > lkft_parameters
             echo SRCREV_kernel=${GIT_COMMIT} >> lkft_parameters
             echo MAKE_KERNELVERSION=$(make kernelversion) >> lkft_parameters
             cat lkft_parameters

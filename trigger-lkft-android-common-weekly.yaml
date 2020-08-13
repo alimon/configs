@@ -41,7 +41,7 @@
 
             MAKE_KERNELVERSION=$(make kernelversion)
             KERNEL_BRANCH=${GIT_BRANCH#android-common/}
-            KERNEL_DESCRIBE=$(git describe --always)-$(date +%Y%m%d%H%M)
+            KERNEL_DESCRIBE=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}-$(date +%Y%m%d%H%M)
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> properties.txt

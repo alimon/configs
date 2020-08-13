@@ -42,7 +42,7 @@
 
             MAKE_KERNELVERSION=$(make kernelversion)
             KERNEL_BRANCH=${GIT_BRANCH#linaro-omap/}
-            KERNEL_DESCRIBE=$(git describe --always)
+            KERNEL_DESCRIBE=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}
             SRCREV_kernel=${GIT_COMMIT}
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
