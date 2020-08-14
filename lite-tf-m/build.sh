@@ -1,8 +1,10 @@
 #!/bin/bash
 set -ex
 
+dir=$(dirname $0)
+
 # We don't build anything so far, just downloading pre-built.
-wget https://people.linaro.org/~kevin.townsend/lava/an521_tfm_full.hex -O tfm_full.hex
+#wget https://people.linaro.org/~kevin.townsend/lava/an521_tfm_full.hex -O tfm_full.hex
 
 GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-9-2019-q4-major"
 export PATH=${GNUARMEMB_TOOLCHAIN_PATH}/bin:$PATH
@@ -16,3 +18,10 @@ echo "GIT_COMMIT_ID=$(git rev-parse --short=8 HEAD)" > ${WORKSPACE}/env_var_para
 echo "EXTERNAL_BUILD_ID=$(git rev-parse --short=8 HEAD)-${BUILD_NUMBER}" >> ${WORKSPACE}/env_var_parameters
 
 arm-none-eabi-gcc --version
+
+mkdir BUILD
+cp ${dir}/tfm-build.sh BUILD/
+cd BUILD
+./tfm-build.sh
+
+cp *.hex ${WORKSPACE}/
