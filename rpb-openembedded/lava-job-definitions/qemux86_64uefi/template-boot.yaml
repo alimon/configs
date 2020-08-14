@@ -36,7 +36,7 @@ actions:
     os: oe
 
 - boot:
-    namespace: target
+    namespace: boot0
     timeout:
       minutes: 10
     method: qemu
@@ -64,6 +64,16 @@ actions:
     - 'ledge-(.*)# '
     - 'ledge-(.*)~: '
     - 'ledge-.*:~\$$'
+
+- test:
+    namespace: target
+    timeout:
+      minutes: 45
+    definitions:
+    - repository: https://git.linaro.org/ledge/lava-test-definitions.git
+      from: git
+      path: ledge/fwts-test.yaml
+      name: fwts-testsuite
 
 metadata:
   machine: ${MACHINE}
