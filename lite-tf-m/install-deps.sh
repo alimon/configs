@@ -9,3 +9,6 @@ df -h
 
 # List available toolchains
 ls -l ${HOME}/srv/toolchain/
+
+# Preclude spammy "advices"
+git config --global advice.detachedHead false
