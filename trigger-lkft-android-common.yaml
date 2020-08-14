@@ -68,9 +68,13 @@
             echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
             echo "ANDROID_BUILD_CONFIG=lkft-gki-${KERNEL_BRANCH}" >>${f_api_callbacks}
 
+        - inject:
+            properties-file: all-kernels.txt
+        - shell:
+            !include-raw:
+                - lkft/common/api-callbacks.sh
+
         - trigger-builds:
-            - project: lkft-api-callbacks
-              property-file: all-kernels.txt
             - project: lkft-gki-kernel
               property-file: all-kernels.txt
             - project: lkft-hikey-aosp-master-5.4

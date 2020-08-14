@@ -73,9 +73,13 @@
             esac
             echo "ANDROID_BUILD_CONFIG_TO_BE_TRIGGERED=${build_configs_to_be_triggered}" >>${f_api_callbacks}
 
+        - inject:
+            properties-file: all-kernels.txt
+        - shell:
+            !include-raw:
+                - lkft/common/api-callbacks.sh
+
         - trigger-builds:
-            - project: lkft-api-callbacks
-              property-file: all-kernels.txt
             - project: lkft-gki-kernel
               property-file: all-kernels.txt
     publishers:

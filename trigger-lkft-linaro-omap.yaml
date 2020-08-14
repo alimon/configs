@@ -94,9 +94,13 @@
                 cat ${f_params}
             done
 
+        - inject:
+            properties-file: all-kernels.txt
+        - shell:
+            !include-raw:
+                - lkft/common/api-callbacks.sh
+
         - trigger-builds:
-            - project: lkft-api-callbacks
-              property-file: all-kernels.txt
             - project: lkft-generic-omap-build
               property-file: params_android-beagle-x15-4.14-stable-lkft_lkft-x15-aosp-master-4.14-stable-lkft.txt
             - project: lkft-generic-omap-build
