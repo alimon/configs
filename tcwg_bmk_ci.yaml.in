@@ -2,17 +2,28 @@
     name: tcwg_bmk_ci_#{TOOLCHAIN}
     binutils_url: git://sourceware.org/git/binutils-gdb.git
     gcc_url: https://github.com/gcc-mirror/gcc.git
+#if !TOOLCHAIN_gnu_eabi
     glibc_url: git://sourceware.org/git/glibc.git
+#endif
     hw:
+#if TOOLCHAIN_gnu_eabi
+      - stm32:
+          target: arm-eabi
+          node: tcwg-bmk-stm32
+#else
       - tk1:
           target: arm
           node: tcwg-x86_64-build_bmk_tk1
       - tx1:
           target: aarch64
           node: tcwg-x86_64-build_bmk_tx1
+#endif
     toolchain_name: #{TOOLCHAIN}
 #if TOOLCHAIN_gnu
     components: binutils gcc glibc
+#elif TOOLCHAIN_gnu_eabi
+    components: binutils gcc newlib
+    newlib_url: git://sourceware.org/git/newlib-cygwin.git
 #elif TOOLCHAIN_llvm
     components: binutils gcc glibc llvm
     llvm_url: https://github.com/llvm/llvm-project.git
@@ -21,19 +32,33 @@
       - master:
           binutils_branch: master
           gcc_branch: master
+#if !TOOLCHAIN_gnu_eabi
           glibc_branch: master
+#endif
 #if TOOLCHAIN_llvm
           llvm_branch: master
+#endif
+#if TOOLCHAIN_gnu_eabi
+          newlib_branch: master
 #endif
       - release:
           binutils_branch: binutils-2_33-branch
           gcc_branch: releases/gcc-9
+#if !TOOLCHAIN_gnu_eabi
           glibc_branch: release/2.30/master
+#endif
 #if TOOLCHAIN_llvm
           llvm_branch: release/10.x
 #endif
+#if TOOLCHAIN_gnu_eabi
+          newlib_branch: newlib-3.3.0
+#endif
     bmk:
+#if TOOLCHAIN_gnu_eabi
+      - coremark
+#else
       - spec2k6
+#endif
     cflags:
       - Os:
           cron_schedule: H H H/3 * *
@@ -96,9 +121,14 @@
           ci_config: '#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
           binutils_url: '{binutils_url}'
           gcc_url: '{gcc_url}'
+#if !TOOLCHAIN_gnu_eabi
           glibc_url: '{glibc_url}'
+#endif
 #if TOOLCHAIN_llvm
           llvm_url: '{llvm_url}'
+#endif
+#if TOOLCHAIN_gnu_eabi
+          newlib_url: '{newlib_url}'
 #endif
           default_branch: default
     disabled: false
@@ -112,11 +142,17 @@
           binutils_branch: '{binutils_branch}'
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
+#if !TOOLCHAIN_gnu_eabi
           glibc_url: '{glibc_url}'
           glibc_branch: '{glibc_branch}'
+#endif
 #if TOOLCHAIN_llvm
           llvm_url: '{llvm_url}'
           llvm_branch: '{llvm_branch}'
+#endif
+#if TOOLCHAIN_gnu_eabi
+          newlib_url: '{newlib_url}'
+          newlib_branch: '{newlib_branch}'
 #endif
     triggers:
       - pollscm:
