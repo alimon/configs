@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 
-dir=$(dirname $0)
+dir=$(dirname $(readlink -f $0))
 
 # We don't build anything so far, just downloading pre-built.
 #wget https://people.linaro.org/~kevin.townsend/lava/an521_tfm_full.hex -O tfm_full.hex
