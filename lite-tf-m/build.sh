@@ -9,7 +9,8 @@ dir=$(dirname $0)
 GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-9-2019-q4-major"
 export PATH=${GNUARMEMB_TOOLCHAIN_PATH}/bin:$PATH
 
-git clone https://git.trustedfirmware.org/trusted-firmware-m.git -b ${GIT_COMMIT}
+git clone https://git.trustedfirmware.org/trusted-firmware-m.git -b ${BRANCH}
+(cd trusted-firmware-m; git checkout ${GIT_COMMIT})
 git clone --depth 1 https://github.com/ARMmbed/mbed-crypto.git -b mbedcrypto-3.0.1
 git clone --depth 1 https://github.com/ARM-software/CMSIS_5.git -b 5.5.0
 
