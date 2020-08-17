@@ -3,8 +3,9 @@ set -ex
 
 export DEBIAN_FRONTEND=noninteractive
 sudo apt-get -qq update
-sudo apt-get -qq -y install cmake python3 python3-pip srecord
+sudo apt-get -qq -y install python3 python3-pip srecord
 
+sudo pip3 install cmake
 pip3 install --user cryptography pyasn1 pyyaml jinja2 cbor
 
 # Show filesystem layout and space
