@@ -61,7 +61,7 @@ ${WORKSPACE}/armnn/scripts/generate_tensorflow_protobuf.sh \
 
 #build google flatbuffer libraries
 cd ${WORKSPACE}/flatbuffers
-cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release
+cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"
 make -j$(nproc)
 
 #Build Arm NN
