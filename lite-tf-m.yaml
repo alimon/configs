@@ -103,13 +103,13 @@
         - shell: |
             #!/bin/bash
 
-            # Publish
+            # Publish. Need to publish out of a directory to make files publicly accessible.
             test -d ${HOME}/bin || mkdir ${HOME}/bin
             wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
             time python ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
-              tfm_full.hex components/kernel/aeolus-2/tf-m/${BRANCH}/${PLATFORM}/${BUILD_NUMBER}
+              out/ components/kernel/aeolus-2/tf-m/${BRANCH}/${PLATFORM}/${BUILD_NUMBER}
 
         - shell: |
             #!/bin/bash -ex

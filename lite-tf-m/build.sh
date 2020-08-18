@@ -25,4 +25,5 @@ cp ${dir}/tfm-build.sh BUILD/
 cd BUILD
 ./tfm-build.sh
 
-cp *.hex ${WORKSPACE}/
+mkdir -p ${WORKSPACE}/out/
+cp *.hex ${WORKSPACE}/out/
