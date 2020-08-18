@@ -137,10 +137,12 @@ case "${MACHINE}" in
     ;;
   *)
     for rootfs in ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4.gz; do
-      gunzip -k ${rootfs}
-      sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
-      rm -f ${rootfs%.gz}
-      gzip -9 ${rootfs%.ext4.gz}.img
+      if [ -e ${rootfs} ]; then
+        gunzip -k ${rootfs}
+        sudo ext2simg -v ${rootfs%.gz} ${rootfs%.ext4.gz}.img
+        rm -f ${rootfs%.gz}
+        gzip -9 ${rootfs%.ext4.gz}.img
+      fi
     done
     ;;
 esac
