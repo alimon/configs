@@ -20,7 +20,7 @@ if [ ! -d lite-lava-docker-compose ]; then
     git clone --depth 1 https://github.com/Linaro/lite-lava-docker-compose
 fi
 
-ARTIFACT_URL="http://snapshots.linaro.org/components/kernel/pfalcon-zephyr-net/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}"
+ARTIFACT_URL="http://snapshots.linaro.org/components/kernel/zephyr-net/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}"
 
 BASE="${ARTIFACT_URL}/samples/net/sockets"
 

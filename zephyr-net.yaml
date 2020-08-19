@@ -1,5 +1,5 @@
 - job:
-    name: pfalcon-zephyr-net
+    name: zephyr-net
     project-type: matrix
     defaults: global
     properties:
@@ -56,7 +56,7 @@
     disabled: false
     node: master
     child-workspace: .
-    display-name: "Pfalcon's Zephyr net tests"
+    display-name: "Zephyr networking tests"
     triggers:
         - timed: 'H H/12 * * *'
     axes:
@@ -109,7 +109,7 @@
         - inject:
             properties-file: env_var_parameters
         - shell:
-            !include-raw: pfalcon-zephyr-net/builders.sh
+            !include-raw: zephyr-net/builders.sh
         - inject:
             properties-file: env_var_parameters
         - build-name-setter:
@@ -127,7 +127,7 @@
             time python3 ${HOME}/bin/linaro-cp.py \
               --api_version 3 \
               --link-latest \
-              out/${PLATFORM} components/kernel/pfalcon-zephyr-net/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
+              out/${PLATFORM} components/kernel/zephyr-net/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}
 
         - shell: |
             #!/bin/bash -ex
@@ -135,7 +135,7 @@
             rm -rf configs
             git clone --depth 1 http://git.linaro.org/ci/job/configs.git
             git clone --depth 1 https://github.com/pfalcon/lite-build-tools
-            ./configs/pfalcon-zephyr-net/submit-test.sh
+            ./configs/zephyr-net/submit-test.sh
 
     publishers:
         - email:
