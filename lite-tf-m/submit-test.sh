@@ -20,12 +20,9 @@ if [ ! -d lite-lava-docker-compose ]; then
     git clone --depth 1 https://github.com/Linaro/lite-lava-docker-compose
 fi
 
-#ARTIFACT_URL="http://snapshots.linaro.org/components/kernel/pfalcon-zephyr-net/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}"
+IMAGE_URL="http://snapshots.linaro.org/components/kernel/aeolus-2/tf-m/${BRANCH}/${PLATFORM}/${BUILD_NUMBER}/tfm_full.hex"
+#IMAGE_URL="https://people.linaro.org/~kevin.townsend/lava/an521_tfm_full.hex"
 
-#BASE="${ARTIFACT_URL}/samples/net/sockets"
-
-#IMAGE_URL="${BASE}/dumb_http_server/sample.net.sockets.dumb_http_server/zephyr/zephyr.bin"
-IMAGE_URL="https://people.linaro.org/~kevin.townsend/lava/an521_tfm_full.hex"
 JOB_TEMPLATE="lite-lava-docker-compose/example/tfm-regression-qemu.job"
 yq -y ".actions[0].deploy.images.tfm.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
 python3 $dir/../../lite-build-tools/lava_submit.py lava.job
