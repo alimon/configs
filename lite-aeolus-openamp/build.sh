@@ -42,5 +42,7 @@ docker run --cidfile xilinx-openamp-build.cid \
     pfalcon/xilinx-openamp-build:v3 \
     /bin/bash -c "cd ~/prj; source setupsdk; MACHINE=zcu102-zynqmp bitbake openamp-image-minimal"
 
+rm -rf out
+mkdir out
 cid=$(cat xilinx-openamp-build.cid)
-docker cp -L $cid:/home/build/prj/build/tmp/deploy/images/zcu102-zynqmp/openamp-image-minimal-zcu102-zynqmp.wic.qemu-sd .
+docker cp -L $cid:/home/build/prj/build/tmp/deploy/images/zcu102-zynqmp/openamp-image-minimal-zcu102-zynqmp.wic.qemu-sd out/
