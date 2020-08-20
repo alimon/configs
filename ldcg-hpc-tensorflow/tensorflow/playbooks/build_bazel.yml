@@ -1,0 +1,52 @@
+- name: install bazel build requirements
+  become: yes
+  dnf:
+    name:
+      - cmake
+      - gcc-c++
+      - java-11-openjdk-devel
+      - python3
+      - unzip
+      - zip
+    state: present
+
+- name: fetch bazel source
+  get_url:
+    url: "https://github.com/bazelbuild/bazel/releases/download/{{ bazel_version }}/bazel-{{ bazel_version }}-dist.zip"
+    dest: "{{ build_dir }}"
+    mode: 0400
+
+- name: create directory to build bazel
+  file:
+    path: "{{ build_dir }}/bazel/"
+    state: directory
+
+- name: unpack bazel source
+  unarchive:
+    src: "{{ build_dir }}/bazel-{{ bazel_version }}-dist.zip"
+    dest: "{{ build_dir }}/bazel/"
+    remote_src: yes
+
+- name: create /usr/bin/python symlink
+  become: yes
+  file:
+    src: /usr/bin/python3
+    dest: /usr/bin/python
+    state: link
+
+- name: build bazel
+  shell:
+    cmd: |
+      set -xe
+      EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' ./compile.sh
+    chdir: "{{ build_dir }}/bazel/"
+    creates: "{{ build_dir }}/bazel/output/bazel"
+
+- name: install bazel
+  become: yes
+  copy:
+    src: "{{ build_dir }}/bazel/output/bazel"
+    dest: /usr/local/bin/bazel
+    mode: 0755
+    force: yes
+    remote_src: yes

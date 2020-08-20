@@ -1,0 +1,59 @@
+- name: install tensorflow build requirements
+  become: yes
+  dnf:
+    name:
+      - expect
+      - git
+      - python3-virtualenv
+      - python3-wheel
+
+- name: fetch tensorflow source
+  get_url:
+    url: "https://github.com/tensorflow/tensorflow/archive/v{{ tensorflow_version }}.tar.gz"
+    dest: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}.tar.gz"
+    mode: 0400
+
+- name: unpack tensorflow source
+  unarchive:
+    src: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}.tar.gz"
+    dest: "{{ build_dir }}/"
+    remote_src: yes
+
+- name: copy configure script
+  copy:
+    src: "files/configure_tensorflow"
+    dest: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/configure_tensorflow"
+    mode: 0400
+
+- name: build tensorflow
+  shell:
+    cmd: |
+      set -xe
+      expect configure_tensorflow
+      bazel clean --expunge
+      bazel build --config=noaws --config=nogcp --config=nonccl //tensorflow/tools/pip_package:build_pip_package --verbose_failures
+      mkdir tensorflow-pkg
+      bazel-bin/tensorflow/tools/pip_package/build_pip_package --cpu ./tensorflow-pkg
+
+    chdir: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/"
+    creates: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/tensorflow_cpu-{{ tensorflow_version }}-cp36-cp36m-linux_aarch64.whl"
+
+- name: install tensorflow
+  pip:
+    name: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/tensorflow_cpu-{{ tensorflow_version }}-cp36-cp36m-linux_aarch64.whl"
+    virtualenv: "{{ build_dir }}/virtualenv"
+
+- name: copy tensorflow quick start script
+  copy:
+    src: files/check-tf.py
+    dest: "{{ build_dir }}"
+    mode: 0400
+
+- name: run tensorflow quick start script
+  shell:
+    cmd: |
+      set -xe
+      source "{{ build_dir }}/virtualenv/bin/activate"
+      python check-tf.py
+    chdir: "{{ build_dir }}"
+

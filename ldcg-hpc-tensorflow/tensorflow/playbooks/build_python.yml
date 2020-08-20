@@ -1,0 +1,65 @@
+- name: enable EPEL
+  become: yes
+  dnf:
+    name:
+      - epel-release
+
+- name: install h5py build requirements
+  become: yes
+  dnf:
+    name:
+      - hdf5-devel
+    enablerepo: PowerTools
+    state: present
+
+- name: install numpy build requirements
+  become: yes
+  dnf:
+    name:
+      - gcc-gfortran
+      - openblas-devel
+      - lapack-devel
+      - python3-devel
+    enablerepo: PowerTools
+    state: present
+
+- name: install required Python packages
+  become: yes
+  dnf:
+    name:
+      - python3-pip
+      - python3-virtualenv
+      - python3-wheel
+
+- name: create directory to build wheels
+  file:
+    path: "{{ build_dir }}/wheels/"
+    state: directory
+
+- name: build wheels of binary Python packages
+  shell:
+    cmd: |
+      NPY_NUM_BUILD_JOBS=$(nproc) \
+      pip3 wheel -w '{{ build_dir }}/wheels/' \
+        --no-binary :all: \
+      cython \
+      grpcio \
+      h5py \
+      keras_preprocessing \
+      markdown \
+      mock \
+      numpy \
+      protobuf \
+      zipp>=1
+
+- name: gather list of built wheel files
+  find:
+    path: "{{ build_dir }}/wheels/"
+    patterns: "*.whl"
+    file_type: file
+  register: wheels_list
+
+- name: install Python packages into fresh virtualenv
+  pip:
+    name: "{{ wheels_list.files | map(attribute='path') | list }}"
+    virtualenv: "{{ build_dir }}/virtualenv"

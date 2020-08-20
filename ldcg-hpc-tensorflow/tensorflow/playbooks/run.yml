@@ -1,0 +1,17 @@
+- hosts: all
+  vars_files:
+    ../vars/vars.yml
+  tasks:
+    - name: create build workspace
+      file:
+        path: "{{ build_dir }}"
+        state: directory
+
+    - name: include Bazel tasks
+      include_tasks: build_bazel.yml
+
+    - name: include Python tasks
+      include_tasks: build_python.yml
+
+    - name: include Tensorflow tasks
+      include_tasks: build_tensorflow.yml

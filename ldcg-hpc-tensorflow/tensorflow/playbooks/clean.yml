@@ -1,0 +1,41 @@
+- hosts: all
+  vars_files:
+    ../vars/vars.yml
+  tasks:
+    - name: remove build workspace
+      file:
+        path: "{{ build_dir }}"
+        state: absent
+
+    - name: uninstall build requirements
+      become: yes
+      dnf:
+        name:
+          - binutils
+          - cmake
+          - epel-release
+          - expect
+          - gcc
+          - gcc-c++
+          - gcc-gfortran
+          - git
+          - hdf5-devel
+          - java-11-openjdk-devel
+          - libaec-devel # dependency of hdf5-devel
+          - lapack-devel
+          - openblas-devel
+          - python3
+          - python3-devel
+          - python3-pip
+          - python3-virtualenv
+          - python3-wheel
+          - unzip
+          - zip
+        state:
+          absent
+
+    - name: remove /usr/bin/python symlink
+      become: yes
+      file:
+        path: /usr/bin/python
+        state: absent

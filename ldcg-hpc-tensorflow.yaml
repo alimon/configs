@@ -1,0 +1,28 @@
+- job:
+    name: ldcg-hpc-tensorflow
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    disabled: false
+    node: docker-centos8-arm64-ldcg
+    display-name: 'HPC Tensorflow'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ldcg-hpc-tensorflow/build.sh
+    publishers:
+        - email:
+            recipients: 'paul.isaacs@linaro.org marcin.juszkiewicz@linaro.org'

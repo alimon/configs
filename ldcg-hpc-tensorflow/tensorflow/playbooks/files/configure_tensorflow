@@ -1,0 +1,14 @@
+#!/usr/bin/expect
+spawn "./configure"
+expect {
+  "*Please specify the location of python*" {send "/usr/bin/python3\r";exp_continue}
+  "*Please input the desired Python library path to use*" {send "\r";exp_continue}
+  "*Do you wish to build TensorFlow with XLA JIT support*" {send "n\r";exp_continue}
+  "*Do you wish to build TensorFlow with OpenCL SYCL support*" {send "n\r";exp_continue}
+  "*Do you wish to build TensorFlow with ROCm support*" {send "n\r";exp_continue}
+  "*Do you wish to build TensorFlow with CUDA support*" {send "n\r";exp_continue}
+  "*Do you wish to download a fresh release of clang*" {send "n\r";exp_continue}
+  "*Do you wish to build TensorFlow with MPI support*" {send "n\r";exp_continue}
+  "*Please specify optimization flags to use during compilation when bazel option*" {send "\r";exp_continue}
+  "*Would you like to interactively configure*" {send "n\r";exp_continue}
+}
