@@ -65,5 +65,6 @@
   register: wheels_list
 
 - name: install just built Python packages
+  become: yes
   pip:
     name: "{{ wheels_list.files | map(attribute='path') | list }}"
