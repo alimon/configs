@@ -31,6 +31,12 @@
       - python3-virtualenv
       - python3-wheel
 
+- name: install Cython
+  become: yes
+  pip:
+    name:
+      - Cython
+
 - name: create directory to build wheels
   file:
     path: "{{ build_dir }}/wheels/"
@@ -48,9 +54,8 @@
       keras_preprocessing \
       markdown \
       mock \
-      numpy \
-      protobuf \
-      zipp>=1
+      "numpy<1.19" \
+      protobuf
 
 - name: gather list of built wheel files
   find:
@@ -59,7 +64,6 @@
     file_type: file
   register: wheels_list
 
-- name: install Python packages into fresh virtualenv
+- name: install just built Python packages
   pip:
     name: "{{ wheels_list.files | map(attribute='path') | list }}"
-    virtualenv: "{{ build_dir }}/virtualenv"

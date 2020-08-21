@@ -9,7 +9,4 @@ git clone --depth 1 https://git.linaro.org/ci/job/configs.git
 
 cd configs/ldcg-hpc-tensorflow/tensorflow
 
-echo "[all]" > inventory
-echo "localhost ansible_connection=local" >> inventory
-
 ansible-playbook -i inventory playbooks/run.yml
