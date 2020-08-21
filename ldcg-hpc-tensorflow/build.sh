@@ -3,7 +3,7 @@
 # first let update system
 sudo dnf -y distrosync
 sudo dnf -y install centos-release-ansible-29
-sudo dnf -y install ansible git
+sudo dnf -y install ansible git which
 
 git clone --depth 1 https://git.linaro.org/ci/job/configs.git
 
