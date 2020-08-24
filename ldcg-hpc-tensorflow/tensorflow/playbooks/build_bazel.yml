@@ -7,24 +7,25 @@
       - java-11-openjdk-devel
       - python3
       - unzip
+      - which
       - zip
     state: present
 
-- name: fetch bazel source
+- name: fetch bazel {{ bazel_version }} source
   get_url:
     url: "https://github.com/bazelbuild/bazel/releases/download/{{ bazel_version }}/bazel-{{ bazel_version }}-dist.zip"
     dest: "{{ build_dir }}"
     mode: 0400
 
-- name: create directory to build bazel
+- name: create directory to build bazel {{ bazel_version }}
   file:
-    path: "{{ build_dir }}/bazel/"
+    path: "{{ build_dir }}/bazel-{{ bazel_version }}/"
     state: directory
 
-- name: unpack bazel source
+- name: unpack bazel {{ bazel_version }} source
   unarchive:
     src: "{{ build_dir }}/bazel-{{ bazel_version }}-dist.zip"
-    dest: "{{ build_dir }}/bazel/"
+    dest: "{{ build_dir }}/bazel-{{ bazel_version }}"
     remote_src: yes
 
 - name: create /usr/bin/python symlink
@@ -34,19 +35,24 @@
     dest: /usr/bin/python
     state: link
 
-- name: build bazel
+- name: build bazel {{ bazel_version }}
   shell:
     cmd: |
       set -xe
       EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' ./compile.sh
-    chdir: "{{ build_dir }}/bazel/"
-    creates: "{{ build_dir }}/bazel/output/bazel"
+    chdir: "{{ build_dir }}/bazel-{{ bazel_version }}/"
+    creates: "{{ build_dir }}/bazel-{{ bazel_version }}/output/bazel"
 
-- name: install bazel
+- name: install bazel {{ bazel_version }}
   become: yes
   copy:
-    src: "{{ build_dir }}/bazel/output/bazel"
+    src: "{{ build_dir }}/bazel-{{ bazel_version }}/output/bazel"
     dest: /usr/local/bin/bazel
     mode: 0755
     force: yes
     remote_src: yes
+
+- name: clean bazel cache
+  file:
+    path: ~/.cache/bazel
+    state: absent

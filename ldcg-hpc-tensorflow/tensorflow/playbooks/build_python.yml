@@ -30,41 +30,31 @@
       - python3-pip
       - python3-virtualenv
       - python3-wheel
+      - python3-zipp
 
 - name: install Cython
   become: yes
   pip:
     name:
-      - Cython
+      - "Cython>=0.29"
 
 - name: create directory to build wheels
   file:
     path: "{{ build_dir }}/wheels/"
     state: directory
 
+- name: copy upper constraints
+  copy:
+    src: "files/upper-constraints.txt"
+    dest: "{{ build_dir }}/wheels"
+    mode: 0400
+
 - name: build wheels of binary Python packages
-  shell:
-    cmd: |
-      NPY_NUM_BUILD_JOBS=$(nproc) \
-      pip3 wheel -w '{{ build_dir }}/wheels/' \
-        --no-binary :all: \
-      cython \
-      grpcio \
-      h5py \
-      keras_preprocessing \
-      markdown \
-      mock \
-      "numpy<1.19" \
-      protobuf
-
-- name: gather list of built wheel files
-  find:
-    path: "{{ build_dir }}/wheels/"
-    patterns: "*.whl"
-    file_type: file
-  register: wheels_list
-
-- name: install just built Python packages
-  become: yes
-  pip:
-    name: "{{ wheels_list.files | map(attribute='path') | list }}"
+  include_tasks: build_python_wheel.yml
+  loop:
+    - grpcio
+    - "numpy==1.18.*"
+    - h5py
+    - scipy
+    - Keras_Preprocessing
+    - Keras_Applications

@@ -4,16 +4,17 @@
     name:
       - expect
       - git
+      - patch
       - python3-virtualenv
       - python3-wheel
 
-- name: fetch tensorflow source
+- name: fetch tensorflow {{ tensorflow_version }} source
   get_url:
     url: "https://github.com/tensorflow/tensorflow/archive/v{{ tensorflow_version }}.tar.gz"
     dest: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}.tar.gz"
     mode: 0400
 
-- name: unpack tensorflow source
+- name: unpack tensorflow {{ tensorflow_version }} source
   unarchive:
     src: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}.tar.gz"
     dest: "{{ build_dir }}/"
@@ -25,7 +26,7 @@
     dest: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/configure_tensorflow"
     mode: 0400
 
-- name: build tensorflow
+- name: build tensorflow {{ tensorflow_version }}
   shell:
     cmd: |
       set -xe
@@ -38,7 +39,11 @@
     chdir: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/"
     creates: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/tensorflow_cpu-{{ tensorflow_version }}-cp36-cp36m-linux_aarch64.whl"
 
-- name: install tensorflow
+- name: stop bazel server
+  command:
+    cmd: bazel shutdown
+
+- name: install tensorflow {{ tensorflow_version }}
   pip:
     name: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/tensorflow_cpu-{{ tensorflow_version }}-cp36-cp36m-linux_aarch64.whl"
     virtualenv: "{{ build_dir }}/virtualenv"
