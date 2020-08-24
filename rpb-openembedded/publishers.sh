@@ -22,7 +22,7 @@ time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   ${BUILD_INFO} \
   ${DEPLOY_DIR_IMAGE}/ ${PUB_DEST}
-#time python3 ${HOME}/bin/linaro-cp.py \
-#  --server ${PUBLISH_SERVER} \
-#  --make-link \
-#  $(dirname ${PUB_DEST})
+time python3 ${HOME}/bin/linaro-cp.py \
+  --server ${PUBLISH_SERVER} \
+  --make-link \
+  $(dirname ${PUB_DEST})
