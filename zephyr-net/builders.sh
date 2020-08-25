@@ -94,7 +94,7 @@ ${ZEPHYR_SDK_INSTALL_DIR}/sysroots/x86_64-pokysdk-linux/usr/bin/dtc --version
 export LANG=C.UTF-8
 ZEPHYR_BASE=${WORKSPACE}/zephyr
 PATH=${ZEPHYR_BASE}/scripts:${PATH}
-OUTDIR=${HOME}/srv/zephyr/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}
+OUTDIR=${WORKSPACE}/zephyr-build/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}
 export LANG ZEPHYR_BASE PATH
 CCACHE_DIR="${HOME}/srv/ccache-zephyr/${BRANCH}"
 CCACHE_UNIFY=1
