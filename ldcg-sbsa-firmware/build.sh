@@ -1,6 +1,5 @@
 #!/bin/bash
 
-BRANCH="qemu_sbsa_pseudo_static_v1"
 SBSA_ACS_VER="20.03_REL2.4"
 
 set -ex
@@ -27,7 +26,7 @@ sudo apt -y --no-install-recommends install build-essential pkg-config python3 l
 
 git clone --depth 1 https://github.com/qemu/qemu.git
 git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2.git
-git clone --depth 1 --recurse-submodules https://git.linaro.org/people/tanmay.jagdale/edk2-platforms.git -b $BRANCH
+git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-platforms.git
 git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-non-osi.git
 
 # let build QEMU - just AArch64 target
