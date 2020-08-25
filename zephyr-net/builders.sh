@@ -14,6 +14,8 @@ sudo apt-get -q=2 -y install git ninja-build g++ g++-multilib gperf python3-ply 
 
 set -ex
 
+df -h
+
 # pip as shipped by distro may be not up to date enough to support some
 # quirky PyPI packages, specifically cmake was caught like that.
 sudo pip3 install --upgrade pip
