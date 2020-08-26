@@ -18,7 +18,7 @@ sudo apt -q=2 install -y --no-install-recommends python-pip virtualenv python-de
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 
-git clone --depth 1 https://github.com/Arm-software/ComputeLibrary.git
+git clone --depth 1 -b v20.05 https://github.com/Arm-software/ComputeLibrary.git
 git clone https://github.com/Arm-software/armnn
 wget https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_1_64_0.tar.bz2
 git clone --depth 1 -b v3.5.0 https://github.com/google/protobuf.git
