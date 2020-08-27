@@ -85,7 +85,7 @@ sudo kpartx -d sda.raw
 
 # run SBSA ACS in QEMU - 30s timeout should be enough
 
-timeout 30 ./qemu/aarch64-softmmu/qemu-system-aarch64 \
+timeout 30 ./qemu/build/qemu-system-aarch64 \
 -machine sbsa-ref \
 -drive if=pflash,file=SBSA_FLASH0.fd,format=raw \
 -drive if=pflash,file=SBSA_FLASH1.fd,format=raw \
