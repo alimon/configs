@@ -1,0 +1,20 @@
+- name: build wheels of binary Python package {{ item }}
+  shell:
+    cmd: |
+      NPY_NUM_BUILD_JOBS=$(nproc) \
+      GRPC_PYTHON_BUILD_EXT_COMPILER_JOBS=$(nproc) \
+      pip3 wheel -w '{{ build_dir }}/wheels/' \
+        -c "{{ build_dir }}/wheels/upper-constraints.txt" \
+        --no-binary :all: "{{ item }}"
+
+- name: get name of built wheel file
+  find:
+    path: "{{ build_dir }}/wheels/"
+    patterns: "{{ item | regex_replace('=.*', '') }}*.whl"
+    file_type: file
+  register: wheel_file
+
+- name: install {{ item }} Python package
+  become: yes
+  pip:
+    name: "{{ wheel_file.files | map(attribute='path') | list }}"
