@@ -10,6 +10,9 @@
             anonymous:
                 - job-read
                 - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
     parameters:
         - string:
             name: KERNEL_BRANCH
@@ -40,10 +43,11 @@
     builders:
         - shell: |
             #!/bin/bash -e
+            MAKE_KERNELVERSION=$(make kernelversion)
             KERNEL_DESCRIBE=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > lkft_parameters
             echo SRCREV_kernel=${GIT_COMMIT} >> lkft_parameters
-            echo MAKE_KERNELVERSION=$(make kernelversion) >> lkft_parameters
+            echo MAKE_KERNELVERSION=${MAKE_KERNELVERSION} >> lkft_parameters
             cat lkft_parameters
     publishers:
         - trigger-parameterized-builds:
