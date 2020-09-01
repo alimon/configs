@@ -38,9 +38,10 @@
                   branches:
                     - branch-compare-type: 'PLAIN'
                       branch-pattern: 'master'
-            skip-vote:
-                    successful: true
-                    failed: false
+            silent: true          
+                      #            skip-vote:
+                      #                    successful: true
+                      #                    failed: false
             server-name: review.mlplatform.org
 
     parameters:
@@ -149,7 +150,8 @@
             virtualenv -p python3 venv
             source ./venv/bin/activate
 
-            
+            # fix for setuptools v50
+            export SETUPTOOLS_USE_DISTUTILS="stdlib" 
             cd lava-test-plans
             pip3 install -r requirements.txt
             ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
