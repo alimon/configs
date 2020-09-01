@@ -49,7 +49,7 @@ def main(url='https://snapshots.linaro.org/member-builds/qcomlt/testimages/arm64
     with open(output, 'w') as f:
         f.write("RAMDISK_URL=" + ramdisk_url + '\n')
         f.write("ROOTFS_URL=" + rootfs_url + '\n')
-        f.write("ROOTFS_DESKTOP_URL=" + rootfs_url + '\n')
+        f.write("ROOTFS_DESKTOP_URL=" + rootfs_desktop_url + '\n')
 
 if __name__ == "__main__":
     main(*sys.argv[1:])
