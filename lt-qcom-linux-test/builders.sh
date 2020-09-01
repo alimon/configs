@@ -69,7 +69,7 @@ function remove_unused_firmware() {
 		rm -rf lib/firmware/ar* lib/firmware/htc* lib/firmware/wil*
 		rm -rf lib/firmware/ath3* lib/firmware/ath6* lib/firmware/ath9* lib/firmware/ath10k/QCA*
 		rm -rf lib/firmware/qcom/a300* lib/firmware/qcom/a530*
-		rm -rf lib/firmware/qcom/venus-1.8 lib/firmware/qcom/venus-4.2
+		rm -rf lib/firmware/qcom/venus-1.8 lib/firmware/qcom/venus-4.2 lib/firmware/qcom/venus-5.4
 
 		find . | cpio -R 0:0 -ov -H newc > ../../$target_file
 		cd ../../
