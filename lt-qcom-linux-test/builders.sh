@@ -198,6 +198,7 @@ fi
 python configs/lt-qcom-linux-test/get_latest_testimage.py
 RAMDISK_URL=$(cat output.log  | grep RAMDISK_URL | cut -d= -f2)
 ROOTFS_URL=$(cat output.log  | grep ROOTFS_URL | cut -d= -f2)
+ROOTFS_DESKTOP_URL=$(cat output.log  | grep ROOTFS_DESKTOP_URL | cut -d= -f2)
 
 # Build information
 mkdir -p out
@@ -215,7 +216,7 @@ Build description:
 * Firmware URL: $FIRMWARE_URL
 EOF
 
-# Ramdisk/RootFS image, modules populate
+# Ramdisk/RootFS image, firmware and modules populate, download step
 wget_error ${RAMDISK_URL}
 ramdisk_file=out/$(basename ${RAMDISK_URL})
 ramdisk_file_type=$(file $ramdisk_file)
@@ -223,6 +224,9 @@ ramdisk_file_type=$(file $ramdisk_file)
 wget_error ${ROOTFS_URL}
 rootfs_file=out/$(basename ${ROOTFS_URL})
 rootfs_file_type=$(file $rootfs_file)
+wget_error ${ROOTFS_DESKTOP_URL}
+rootfs_desktop_file=out/$(basename ${ROOTFS_DESKTOP_URL})
+rootfs_desktop_file_type=$(file $rootfs_desktop_file)
 
 if [[ ! -z "${KERNEL_MODULES_URL}" ]]; then
 	wget_error ${KERNEL_MODULES_URL}
@@ -251,6 +255,14 @@ if [[ ! -z "${FIRMWARE_URL}" ]]; then
 	done
 fi
 
+# Uncompress images to be able populate with firmware and modules
+rootfs_desktop_comp=''
+if [[ $rootfs_desktop_file_type = *"gzip compressed data"* ]]; then
+	${GZ} -d $rootfs_desktop_file
+	rootfs_desktop_file=out/$(basename ${ROOTFS_DESKTOP_URL} .gz)
+	rootfs_desktop_file_type=$(file $rootfs_desktop_file)
+	rootfs_desktop_comp='gz'
+fi
 rootfs_comp=''
 if [[ $rootfs_file_type = *"gzip compressed data"* ]]; then
 	${GZ} -d $rootfs_file
@@ -265,32 +277,53 @@ if [[ $ramdisk_file_type = *"gzip compressed data"* ]]; then
 	ramdisk_comp='gz'
 fi
 
+
+# If rootfs is Android sparse image convert to ext4 to populate with firmware and modules
+if [[ $rootfs_desktop_file_type = *"Android sparse image"* ]]; then
+	rootfs_desktop_file_ext4=out/$(basename ${rootfs_desktop_file} .img).ext4
+	simg2img $rootfs_desktop_file $rootfs_desktop_file_ext4
+	rootfs_desktop_file=$rootfs_desktop_file_ext4
+elif [[ $rootfs_desktop_file_type = *"ext4 filesystem data"* ]]; then
+	true
+else
+	echo "ERROR: ROOTFS_IMAGE type isn't supported: $rootfs_file_type"
+	exit 1
+fi
 if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
 	rootfs_file_ext4=out/$(basename ${rootfs_file} .img).ext4
 	simg2img $rootfs_file $rootfs_file_ext4
 	rootfs_file=$rootfs_file_ext4
 elif [[ $rootfs_file_type = *"ext4 filesystem data"* ]]; then
-	rootfs_file=$rootfs_file
+	true
 else
 	echo "ERROR: ROOTFS_IMAGE type isn't supported: $rootfs_file_type"
 	exit 1
 fi
 
+# Populate firmware and modules
 if [[ ! -z "$modules_file" ]]; then
 	modules_file_type=$(file $modules_file)
 	copy_archive_to_rootfs "$modules_file" "$modules_file_type" "$ramdisk_file" "$ramdisk_file_type"
 	copy_archive_to_rootfs "$modules_file" "$modules_file_type" "$rootfs_file" "$rootfs_file_type"
+	copy_archive_to_rootfs "$modules_file" "$modules_file_type" "$rootfs_desktop_file" "$rootfs_desktop_file_type"
 fi
-
 if [[ ! -z "${firmware_file}" ]]; then
 	for f in ${firmware_file}; do
 		ffile_type=$(file $f)
 		copy_archive_to_rootfs "$f" "$ffile_type" "$ramdisk_file" "$ramdisk_file_type"
 		remove_unused_firmware "$ramdisk_file" "$ramdisk_file_type"
 		copy_archive_to_rootfs "$f" "$ffile_type" "$rootfs_file" "$rootfs_file_type"
+		copy_archive_to_rootfs "$f" "$ffile_type" "$rootfs_desktop_file" "$rootfs_desktop_file_type"
 	done
 fi
 
+# If rootfs was Android sparse image trasform from ext4
+if [[ $rootfs_desktop_file_type = *"Android sparse image"* ]]; then
+	rootfs_desktop_file_img=out/$(basename $rootfs_desktop_file .ext4).img
+	img2simg $rootfs_desktop_file $rootfs_desktop_file_img
+	rm $rootfs_desktop_file
+	rootfs_desktop_file=$rootfs_desktop_file_img
+fi
 if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
 	rootfs_file_img=out/$(basename $rootfs_file .ext4).img
 	img2simg $rootfs_file $rootfs_file_img
@@ -299,6 +332,7 @@ if [[ $rootfs_file_type = *"Android sparse image"* ]]; then
 fi
 
 
+# Compress ramdisk/rootfs images
 if [[ $ramdisk_comp = "gz" ]]; then
 	${GZ} $ramdisk_file
 	ramdisk_file="$ramdisk_file".gz
@@ -310,6 +344,12 @@ if [[ $rootfs_comp = "gz" ]]; then
 	rootfs_file="$rootfs_file".gz
 	rootfs_file_type=$(file $rootfs_file)
 	rootfs_comp=""
+fi
+if [[ $rootfs_desktop_comp = "gz" ]]; then
+	${GZ} $rootfs_desktop_file
+	rootfs_desktop_file="$rootfs_desktop_file".gz
+	rootfs_desktop_file_type=$(file $rootfs_desktop_file)
+	rootfs_desktop_comp=""
 fi
 
 # Compress kernel image if isn't
@@ -368,6 +408,7 @@ skales-mkbootimg \
 echo BOOT_FILE=$boot_file >> builders_out_parameters
 echo BOOT_ROOTFS_FILE=$boot_rootfs_file >> builders_out_parameters
 echo ROOTFS_FILE="$(basename $rootfs_file)" >> builders_out_parameters
+echo ROOTFS_DESKTOP_FILE="$(basename $rootfs_desktop_file)" >> builders_out_parameters
 
 # Kernel CI parameters in LAVA jobs
 echo KERNEL_IMAGE="$(basename $KERNEL_IMAGE_URL)" >> builders_out_parameters
