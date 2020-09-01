@@ -14,59 +14,45 @@ else
 fi
 
 SEND_TESTJOB=false
-
 case "${MACHINE}" in
   apq8016-sbc|apq8096-db820c|sdm845-mtp|sdm845-db845c|qcs404-evb-4000)
     SEND_TESTJOB=true
 
+    export SMOKE_TESTS="pwd, uname -a, ip a, vmstat, lsblk, lscpu"
+    export WLAN_DEVICE="wlan0"
+    export ETH_DEVICE="eth0"
+
     if [ ${MACHINE} = "apq8016-sbc" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-410c"
-
-      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
-      export WLAN_DEVICE="wlan0"
-      export WLAN_TIME_DELAY="0s"
-      export ETH_DEVICE="eth0"
-
     elif [ ${MACHINE} = "apq8096-db820c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-820c"
 
-      export PM_QA_TESTS="cpufreq cputopology"
       export WLAN_DEVICE="wlp1s0"
-      export WLAN_TIME_DELAY="15s"
       export ETH_DEVICE="enP2p1s0"
-
-    elif [ ${MACHINE} = "sdm845-mtp" ]; then
-      export LAVA_DEVICE_TYPE="sdm845-mtp"
-
-      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
-      export WLAN_DEVICE="wlan0"
-      export WLAN_TIME_DELAY="0s"
-      export ETH_DEVICE="eth0"
     elif [ ${MACHINE} = "sdm845-db845c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-845c"
-
-      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
-      export WLAN_DEVICE="wlan0"
-      export WLAN_TIME_DELAY="0s"
-      export ETH_DEVICE="eth0"
+    elif [ ${MACHINE} = "sdm845-mtp" ]; then
+      export LAVA_DEVICE_TYPE="sdm845-mtp"
     elif [ ${MACHINE} = "qcs404-evb-4000" ]; then
       export LAVA_DEVICE_TYPE="qcs404-evb-4k"
-
-      export PM_QA_TESTS="cpufreq cpuidle cpuhotplug cputopology"
-      export WLAN_DEVICE="wlan0"
-      export WLAN_TIME_DELAY="0s"
-      export ETH_DEVICE="eth0"
-
-      if [ ${QA_SERVER_PROJECT} = "linux-master" ]; then
-        SEND_TESTJOB=false
-      fi
     fi
-    export SMOKE_TESTS="pwd, uname -a, ip a, vmstat, lsblk"
     ;;
   *)
     echo "Skip LAVA_DEVICE_TYPE for ${MACHINE}"
     ;;
 esac
+
+# Select which testplans will be send to LAVA
+# - bootrr on integration, mainline and release.
+# - smoke on integration and release and Dragonboard machines.
+case "${MACHINE}" in
+  apq8016-sbc|apq8096-db820c|sdm845-db845c)
+    if [[ ${QA_SERVER_PROJECT} == *"linux-release"* ]] || [[ ${QA_SERVER_PROJECT} == *"linux-integration"* ]]; then
+      SMOKE_TEST_PLAN=true
+    fi
+  ;;
+esac
+
 
 if [ $SEND_TESTJOB = true ]; then
   # Get KernelCI information for repo, branch and commit, enable ex to don't exit if fails and to hide the token.
@@ -110,25 +96,25 @@ if [ $SEND_TESTJOB = true ]; then
       ${DRY_RUN} \
       --test-plan testplan/kernel-bootrr.yaml
 
-#  if [[ ${QA_SERVER_PROJECT} == *"linux-release"* ]]; then
-#    export LAVA_JOB_PRIORITY="medium"
-#    export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_ROOTFS_FILE}
-#    export BOOT_URL_COMP=
-#    export LXC_BOOT_FILE=$(basename ${BOOT_URL})
-#    export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
-#    export ROOTFS_URL_COMP="gz"
-#    export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
-#    python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
-#        --device-type ${LAVA_DEVICE_TYPE} \
-#        --build-number ${BUILD_NUMBER} \
-#        --lava-server ${LAVA_SERVER} \
-#        --qa-server ${QA_SERVER} \
-#        --qa-server-team qcomlt \
-#        --qa-server-project ${QA_SERVER_PROJECT} \
-#        --git-commit ${BUILD_NUMBER} \
-#        --template-path "${LAVA_TEMPLATE_PATH}" \
-#        --testplan-path "${LAVA_TEMPLATE_PATH}" \
-#        ${DRY_RUN} \
-#        --test-plan testplan/kernel-functional.yaml
-#  fi
+  if [ $SMOKE_TEST_PLAN = true ]; then
+    export LAVA_JOB_PRIORITY="medium"
+    export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_ROOTFS_FILE}
+    export BOOT_URL_COMP=
+    export LXC_BOOT_FILE=$(basename ${BOOT_URL})
+    export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
+    export ROOTFS_URL_COMP="gz"
+    export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
+    python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
+        --device-type ${LAVA_DEVICE_TYPE} \
+        --build-number ${BUILD_NUMBER} \
+        --lava-server ${LAVA_SERVER} \
+        --qa-server ${QA_SERVER} \
+        --qa-server-team qcomlt \
+        --qa-server-project ${QA_SERVER_PROJECT} \
+        --git-commit ${BUILD_NUMBER} \
+        --template-path "${LAVA_TEMPLATE_PATH}" \
+        --testplan-path "${LAVA_TEMPLATE_PATH}" \
+        ${DRY_RUN} \
+        --test-plan testplan/kernel-smoke.yaml
+  fi
 fi
