@@ -5,12 +5,12 @@ set -ex
 sudo apt -q=2 update
 sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git autoconf curl libtool libpthread-stubs0-dev
 sudo apt -q=2 install -y --no-install-recommends vim-common
-sudo apt -q=2 install -y --no-install-recommends python-pip virtualenv python-dev python3-dev
+sudo apt -q=2 install -y --no-install-recommends python-pip python3-pip virtualenv python-dev python3-dev
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 
-git clone --depth 1 https://github.com/Arm-software/ComputeLibrary.git
+git clone --depth 1 "http://review.mlplatform.org/ml/ComputeLibrary"
 git clone https://github.com/Arm-software/armnn
 git clone --depth 1 -b v3.5.0 https://github.com/google/protobuf.git
 git clone --depth 1 https://github.com/tensorflow/tensorflow.git --branch r2.0 --single-branch

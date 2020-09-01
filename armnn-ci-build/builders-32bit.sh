@@ -12,13 +12,13 @@ sudo apt-get -q=2  install -y  --no-install-recommends autoconf
 sudo apt-get -q=2  install -y  --no-install-recommends libtool
 sudo apt-get -q=2  install -y  --no-install-recommends cmake
 sudo apt -q=2 install -y --no-install-recommends build-essential cmake libpthread-stubs0-dev
-sudo apt -q=2 install -y --no-install-recommends python-pip virtualenv python-dev python3-dev xxd
+sudo apt -q=2 install -y --no-install-recommends python-pip python3-pip virtualenv python-dev python3-dev xxd
 
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 
-git clone --depth 1 -b v20.05 https://github.com/Arm-software/ComputeLibrary.git
+git clone --depth 1 "http://review.mlplatform.org/ml/ComputeLibrary"
 git clone https://github.com/Arm-software/armnn
 wget https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_1_64_0.tar.bz2
 git clone --depth 1 -b v3.5.0 https://github.com/google/protobuf.git
