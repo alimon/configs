@@ -20,17 +20,13 @@
             name: KERNEL_REPO_URL
             default: 'https://git.linaro.org/landing-teams/working/qualcomm/kernel.git'
         - string:
+            name: KERNEL_BRANCH
+        - string:
             name: KERNEL_CONFIGS_arm64
             default: 'defconfig distro.config'
         - string:
             name: KERNEL_BUILD_TARGET
             default: 'all'
-        - string:
-            name: KERNEL_VERSION
-        - string:
-            name: KERNEL_DESCRIBE
-        - string:
-            name: KERNEL_BRANCH
         - string:
             name: KDEB_CHANGELOG_DIST
             default: 'sid'
@@ -74,6 +70,15 @@
             set -ex
             sudo apt-get update
             sudo apt-get install -y ccache bc kmod cpio libssl-dev
+
+            # get kernel version, bring in stable and mainline tags
+            cd ${WORKSPACE}/linux
+            git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
+            git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable.git
+            echo KERNEL_VERSION=$(make kernelversion) > kernel_parameters
+            echo KERNEL_DESCRIBE=$(git describe --always) >> kernel_parameters
+        - inject:
+            properties-file: kernel_parameters
         - shell:
             !include-raw: lt-qcom/install-gcc-toolchain.sh
         - inject:
