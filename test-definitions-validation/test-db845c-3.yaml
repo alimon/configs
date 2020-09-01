@@ -1,6 +1,6 @@
 timeouts:
   job:
-    minutes: 240
+    minutes: 140
   connection:
     minutes: 2
   actions:
@@ -8,9 +8,7 @@ timeouts:
       seconds: 60
 context:
   test_character_delay: 10
-device_type: dragonboard-410c
-tags:
-- new-firmware
+device_type: dragonboard-845c
 job_name: linaro-test-definitions-validation
 priority: medium
 visibility: public
@@ -65,10 +63,12 @@ actions:
     namespace: target
     images:
       boot:
-        url: https://snapshots.linaro.org/96boards/dragonboard410c/linaro/debian/881/boot-linaro-sid-dragonboard-410c-881.img.gz
+        url: https://snapshots.linaro.org/96boards/dragonboard845c/linaro/debian/389/boot-linaro-sid-dragonboard-845c-389.img.gz
         compression: gz
+      partition:0:
+        url: https://images.validation.linaro.org/snapshots.linaro.org/96boards/dragonboard845c/linaro/rescue/28/dragonboard-845c-bootloader-ufs-linux-28/gpt_both0.bin
       rootfs:
-        url: https://snapshots.linaro.org/96boards/dragonboard410c/linaro/debian/881/linaro-sid-alip-dragonboard-410c-881.img.gz
+        url: https://snapshots.linaro.org/96boards/dragonboard845c/linaro/debian/389/linaro-sid-gnome-dragonboard-845c-389.img.gz
         compression: gz
     os: debian
 - test:
@@ -90,24 +90,24 @@ actions:
           - overlay_file=/lava-lxc/overlays/target/overlay.tar.gz
           - overlay_size=$(gzip -l $overlay_file | tail -1 | awk '{print $2}')
           - overlay_size=$(( $overlay_size / 1024 ))
-          - simg2img linaro-sid-alip-dragonboard-410c-881.img linaro-sid-alip-dragonboard-410c-881.img.ext4
-          - free_blocks=$(dumpe2fs -h linaro-sid-alip-dragonboard-410c-881.img.ext4
+          - simg2img linaro-sid-gnome-dragonboard-845c-389.img linaro-sid-gnome-dragonboard-845c-389.img.ext4
+          - free_blocks=$(dumpe2fs -h linaro-sid-gnome-dragonboard-845c-389.img.ext4
             | grep "Free blocks" | awk '{print $3}')
-          - block_size=$(dumpe2fs -h linaro-sid-alip-dragonboard-410c-881.img.ext4
+          - block_size=$(dumpe2fs -h linaro-sid-gnome-dragonboard-845c-389.img.ext4
             | grep "Block size" | awk '{print $3}')
           - free_size=$(( $block_size * $free_blocks / 1024 ))
           - if [ "$free_size" -lt "$overlay_size" ]; then
-          - block_count=$(dumpe2fs -h linaro-sid-alip-dragonboard-410c-881.img.ext4
+          - block_count=$(dumpe2fs -h linaro-sid-gnome-dragonboard-845c-389.img.ext4
             | grep "Block count" | awk '{print $3}')
           - current_size=$(( $block_size * $block_count / 1024 ))
           - extra_size=32768
           - final_size=$(( $current_size + $overlay_size + $extra_size ))
-          - fsck_code=$(e2fsck -y -f linaro-sid-alip-dragonboard-410c-881.img.ext4)
-          - resize2fs linaro-sid-alip-dragonboard-410c-881.img.ext4 "$final_size"K
-          - img2simg linaro-sid-alip-dragonboard-410c-881.img.ext4 linaro-sid-alip-dragonboard-410c-881.img
-          - echo "resize_rootfs:" "pass"
+          - fsck_code=$(e2fsck -y -f linaro-sid-gnome-dragonboard-845c-389.img.ext4)
+          - resize2fs linaro-sid-gnome-dragonboard-845c-389.img.ext4 "$final_size"K
+          - img2simg linaro-sid-gnome-dragonboard-845c-389.img.ext4 linaro-sid-gnome-dragonboard-845c-389.img
+          - lava-test-case "resize_rootfs" --result "pass"
           - else
-          - echo "resize_rootfs:" "skip"
+          - lava-test-case "resize_rootfs" --result "skip"
           - fi
 - deploy:
     timeout:
@@ -116,9 +116,11 @@ actions:
     namespace: target
     images:
       boot:
-        url: lxc:///boot-linaro-sid-dragonboard-410c-881.img
+        url: lxc:///boot-linaro-sid-dragonboard-845c-389.img
+      partition:0:
+        url: lxc:///gpt_both0.bin
       rootfs:
-        url: lxc:///linaro-sid-alip-dragonboard-410c-881.img
+        url: lxc:///linaro-sid-gnome-dragonboard-845c-389.img
         apply-overlay: true
     os: debian
     protocols:
@@ -134,10 +136,13 @@ actions:
       username: root
     prompts:
     - root@(.*):[/~]#
-    - root@linaro-alip:~#
+    - root@linaro-gnome:~#
     timeout:
       minutes: 15
     method: fastboot
+    commands:
+    - oem select-display-panel none
+    - reboot
     protocols:
       lava-lxc:
       - action: auto-login-action
@@ -171,5 +176,5 @@ actions:
       name: lemp
     - repository: https://git.linaro.org/qa/test-definitions.git
       from: git
-      path: automated/linux/lemp/lamp.yaml
+      path: automated/linux/lamp/lamp.yaml
       name: lamp
