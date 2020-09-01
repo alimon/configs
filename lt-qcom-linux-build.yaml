@@ -72,11 +72,16 @@
             sudo apt-get install -y ccache bc kmod cpio libssl-dev
 
             # get kernel version, bring in stable and mainline tags
+            pushd $(pwd)
             cd ${WORKSPACE}/linux
             git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux.git
             git fetch --tags https://kernel.googlesource.com/pub/scm/linux/kernel/git/stable/linux-stable.git
-            echo KERNEL_VERSION=$(make kernelversion) > kernel_parameters
-            echo KERNEL_DESCRIBE=$(git describe --always) >> kernel_parameters
+            KERNEL_VERSION=$(make kernelversion)
+            KERNEL_DESCRIBE=$(git describe --always)
+            popd
+
+            echo KERNEL_VERSION="$(KERNEL_VERSION)" > kernel_parameters
+            echo KERNEL_DESCRIBE="$(KERNEL_VERSION)-$(KERNEL_DESCRIBE)" >> kernel_parameters
         - inject:
             properties-file: kernel_parameters
         - shell:
