@@ -31,14 +31,6 @@ if [ ! -z "${kolla_ldc}" ]; then
         kolla_tag=ldc-${branch}-${BUILD_NUMBER}-p${patches_count}
     fi
 
-    override_file= "../Linaro-overlay/linaro-override.j2"
-
-    if [ -e "../Linaro-overlay/linaro-override-${branch}.j2" ]; then
-	override_file= "../Linaro-overlay/linaro-override-${branch}.j2"
-    fi
-
-    kolla_options="--template-override ${override_file}  --profile devcloud "
-
 else
     kolla_tag=${branch}-${BUILD_NUMBER}
 fi
@@ -68,6 +60,14 @@ git clone --depth 1 --branch ${kolla_branch} https://opendev.org/openstack/kolla
 
 if [ -n ${kolla_ldc} ]; then
     git clone --depth 1 https://git.linaro.org/leg/sdi/kolla/ldc-overlay.git Linaro-overlay
+
+    override_file="${WORKSPACE}/Linaro-overlay/linaro-override.j2"
+
+    if [ -e "${WORKSPACE}/Linaro-overlay/linaro-override-${branch}.j2" ]; then
+	override_file="${WORKSPACE}/Linaro-overlay/linaro-override-${branch}.j2"
+    fi
+
+    kolla_options="--template-override ${override_file} --profile devcloud "
 fi
 
 # Apply extra patches to the kolla source code that haven't
