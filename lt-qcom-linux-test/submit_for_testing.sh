@@ -45,12 +45,10 @@ esac
 
 # Select which testplans will be send to LAVA
 # - bootrr on integration, mainline and release.
-# - smoke on integration and release and Dragonboard machines.
+# - smoke on integration, mainline and release with Dragonboard machines.
 case "${MACHINE}" in
   apq8016-sbc|apq8096-db820c|sdm845-db845c)
-    if [[ ${QA_SERVER_PROJECT} == *"linux-release"* ]] || [[ ${QA_SERVER_PROJECT} == *"linux-integration"* ]]; then
       SMOKE_TEST_PLAN=true
-    fi
   ;;
 esac
 
