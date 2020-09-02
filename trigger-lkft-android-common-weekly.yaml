@@ -39,8 +39,9 @@
             git clean -fdx
             env
 
+            KERNEL_BRANCH_REAL=${GIT_BRANCH#android-common/}
             MAKE_KERNELVERSION=$(make kernelversion)
-            KERNEL_BRANCH=${GIT_BRANCH#android-common/}-weekly
+            KERNEL_BRANCH=${KERNEL_BRANCH_REAL}-weekly
             KERNEL_DESCRIBE=${MAKE_KERNELVERSION}-${GIT_COMMIT:0:12}-$(date +%Y%m%d%H%M)
 
             echo KERNEL_DESCRIBE=${KERNEL_DESCRIBE} > properties.txt
@@ -60,10 +61,10 @@
             echo "QA_BUILD_VERSION=${QA_BUILD_VERSION}" >> ${f_api_callbacks}
             echo "CALLER_JOB_NAME=${JOB_NAME}" >> ${f_api_callbacks}
             echo "CALLER_BUILD_NUMBER=${BUILD_NUMBER}" >>${f_api_callbacks}
-            echo "ANDROID_BUILD_CONFIG=lkft-gki-${KERNEL_BRANCH}" >>${f_api_callbacks}
+            echo "ANDROID_BUILD_CONFIG=lkft-gki-${KERNEL_BRANCH_REAL}" >>${f_api_callbacks}
             echo "TEST_OTHER_PLANS_OVERRIDE=VTS CTS BENCHMARKS" >>${f_api_callbacks}
 
-            case "X${KERNEL_BRANCH}" in
+            case "X${KERNEL_BRANCH_REAL}" in
                 "Xandroid12-5.4")
                     build_configs_to_be_triggered="lkft-db845c-aosp-master-5.4-gki lkft-hikey960-aosp-master-5.4-gki"
                     ;;
