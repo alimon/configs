@@ -28,6 +28,7 @@ case "${MACHINE}" in
       export LAVA_DEVICE_TYPE="dragonboard-820c"
 
       export WLAN_DEVICE="wlp1s0"
+      export ETH_DEVICE="enP2p1s0"
     elif [ ${MACHINE} = "sdm845-db845c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-845c"
       export ETH_DEVICE="enp1s0u3"
