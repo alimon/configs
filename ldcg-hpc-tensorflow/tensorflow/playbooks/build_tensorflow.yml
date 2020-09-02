@@ -42,24 +42,9 @@
 - name: stop bazel server
   command:
     cmd: bazel shutdown
+    chdir: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/"
 
 - name: install tensorflow {{ tensorflow_version }}
   pip:
     name: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/tensorflow_cpu-{{ tensorflow_version }}-cp36-cp36m-linux_aarch64.whl"
     virtualenv: "{{ build_dir }}/virtualenv"
-
-- name: copy tensorflow quick start script
-  copy:
-    src: files/check-tf.py
-    dest: "{{ build_dir }}"
-    mode: 0400
-
-- name: run tensorflow quick start script
-  shell:
-    cmd: |
-      set -xe
-      source "{{ build_dir }}/virtualenv/bin/activate"
-      python check-tf.py
-    chdir: "{{ build_dir }}"
-    ignore_errors: yes
-

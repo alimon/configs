@@ -23,6 +23,11 @@
     builders:
         - shell:
             !include-raw: ldcg-hpc-tensorflow/build.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: ldcg-hpc-tensorflow/publishers.sh
     publishers:
+        - archive:
+            artifacts: 'out/'
         - email:
             recipients: 'paul.isaacs@linaro.org marcin.juszkiewicz@linaro.org'

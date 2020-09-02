@@ -29,3 +29,15 @@
       include_tasks: build_tensorflow.yml
       vars:
         tensorflow_version: "2.3.0"
+
+    - name: prepare wheels for publishing
+      shell:
+        cmd: |
+          set -xe
+          for pkg in *.whl "{{ build_dir }}/tensorflow-*/tensorflow-pkg/*.whl"
+          do
+            pkgdir=$(echo `basename $pkg`|cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
+            mkdir -p "{{ build_dir }}/out/$pkgdir"
+            cp $pkg  "{{ build_dir }}/out/$pkgdir"
+          done
+        chdir: "{{ build_dir }}/wheels/"
