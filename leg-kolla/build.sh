@@ -71,7 +71,7 @@ if [ -n ${kolla_ldc} ]; then
 fi
 
 # Apply extra patches to the kolla source code that haven't
-# been merged into the stable/queens branch.
+# been merged into the branch.
 if [[ ! -z ${kolla_ldc} && ! -z ${kolla_ldc_extras} ]]; then
     echo ${kolla_ldc_extras} | sed -n 1'p' | tr ',' '\n' | while read patch; do
         curl "https://review.opendev.org/gitweb?p=openstack/kolla.git;a=patch;h=${patch}" | git apply -v --directory=kolla/
@@ -86,9 +86,6 @@ cd kolla
 pip install -r requirements.txt
 
 mkdir -p ${WORKSPACE}/kolla/logs/debian-source
-
-# if job fails then remove-images job will be triggered to do cleanup
-echo "kolla_tag=${kolla_tag}" >${WORKSPACE}/remove.parameters
 
 kolla_namespace=linaro
 ./tools/build.py --base debian \
@@ -110,6 +107,3 @@ cat list-of-images
 wc -l list-of-images
 
 echo "kolla_tag=${kolla_tag}" >${WORKSPACE}/push.parameters
-
-# job succedded so do not remove images yet (push will do it)
-rm ${WORKSPACE}/remove.parameters
