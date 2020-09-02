@@ -10,13 +10,9 @@ kolla_python=/usr/bin/python3
 ceph_version=${CEPH_VERSION}
 
 if [ -z "${kolla_branch}" -o "${kolla_branch}" == "master" ]; then
-    branch="ussuri"
+    branch="victoria"
 elif [[ ${kolla_branch} = "stable"* ]]; then
     branch=$(echo ${kolla_branch} | sed -e 's+stable/++g')
-
-    if [[ ${kolla_branch} = "rocky" ]]; then
-        kolla_python=/usr/bin/python2
-    fi
 else
     echo "Choose something"
     exit 1
@@ -66,48 +62,6 @@ git clone --depth 1 --branch ${kolla_branch} https://opendev.org/openstack/kolla
 
 if [ -n ${kolla_ldc} ]; then
     git clone --depth 1 https://git.linaro.org/leg/sdi/kolla/ldc-overlay.git Linaro-overlay
-
-    if [ 'rocky' != '${branch}' ]; then
-
-	if [ 'luminous_buster_crc' = $ceph_version ]; then
-		kolla_tag="${kolla_tag}-lumcrc"
-		cat <<EOF >> kolla/docker/base/apt_preferences.debian
-
-# We want Ceph/luminous 12.2.11 with CRC fix
-Package: ceph* libceph* librados* librbd* librgw* python*-ceph* python*-rados python*-rbd python*-rgw radosgw
-Pin: release o=obs://private/home:marcin.juszkiewicz/debian-buster
-Pin-Priority: 1000
-EOF
-	fi
-
-	if [ 'nautilus' = $ceph_version ]; then
-		kolla_tag="${kolla_tag}-nautilus"
-		cat <<EOF >> kolla/docker/base/sources.list.debian
-
-# Enable backports
-deb http://deb.debian.org/debian buster-backports main
-EOF
-		cat <<EOF >> kolla/docker/base/apt_preferences.debian
-
-# We want Ceph/nautilus
-Package: ceph* libceph* librados* librbd* librgw* python3-ceph* python3-rados python3-rbd python3-rgw radosgw
-Pin: version 14.*
-Pin-Priority: 1000
-
-# ceph-osd requires smartmontools from backports
-Package: smartmontools
-Pin: version 7.*
-Pin-Priority: 1000
-EOF
-		# 'ceph-common' from Nautilus depends on Py3 packages while for Stein we want Py2
-		if [ 'stein' = $branch ]; then
-                sed -e "s+ceph-common+ceph-common', 'python-cephfs', 'python-rbd', 'python-rados+g" \
-                    -i  kolla/docker/nova/nova-compute/Dockerfile.j2 \
-                        kolla/docker/nova/nova-libvirt/Dockerfile.j2 \
-                        kolla/docker/cinder/cinder-base/Dockerfile.j2
-		fi
-	fi
-    fi
 fi
 
 # Apply extra patches to the kolla source code that haven't
