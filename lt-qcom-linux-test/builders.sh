@@ -68,13 +68,13 @@ function remove_unused_firmware() {
 			cpio -idv -H newc < ../../$target_file
 
 			if [ "${MACHINE}" = "apq8016-sbc" ]; then
-				rm -rf lib/firmware/ar* lib/firmware/htc* lib/firmware/wil*
+				rm -rf lib/firmware/ar* lib/firmware/htc* lib/firmware/wil* lib/firmware/qca*
 				rm -rf lib/firmware/ath* lib/firmware/LICENSE.QualcommAtheros_ath10k
 				rm -rf lib/firmware/qcom/a530* lib/firmware/qcom/a630*
 				rm -rf lib/firmware/qcom/msm8996 lib/firmware/qcom/sdm845 lib/firmware/K2026090.mem
 				rm -rf lib/firmware/qcom/venus-4.2 lib/firmware/qcom/venus-5.2 lib/firmware/qcom/venus-5.4
 			elif [ "${MACHINE}" = "apq8096-db820c" ]; then
-				rm -rf lib/firmware/ar* lib/firmware/htc* lib/firmware/wil*
+				rm -rf lib/firmware/ar* lib/firmware/htc* lib/firmware/wil* lib/firmware/qca*
 				rm -rf lib/firmware/ath3* lib/firmware/ath6* lib/firmware/ath9* 
 				rm -rf lib/firmware/ath10k/QCA4* lib/firmware/ath10k/QCA9* lib/firmware/ath10k/WCN*
 				rm -rf lib/firmware/a300* lib/firmware/qcom/a300* lib/firmware/qcom/a630*
