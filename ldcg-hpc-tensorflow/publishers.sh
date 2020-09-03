@@ -2,6 +2,8 @@
 
 set -ex
 
+dnf install -y python3-requests
+
 # Publish wheel files
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
