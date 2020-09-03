@@ -2,7 +2,7 @@
 
 set -ex
 
-dnf install -y python3-requests
+sudo dnf install -y python3-requests
 
 # Publish wheel files
 test -d ${HOME}/bin || mkdir ${HOME}/bin
