@@ -402,7 +402,7 @@ skales-mkbootimg \
 	--pagesize "${BOOTIMG_PAGESIZE}" \
 	--base "${BOOTIMG_BASE}" \
 	--ramdisk_base "${RAMDISK_BASE}" \
-	--cmdline "root=/dev/ram0 init=/sbin/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8 ${KERNEL_CMDLINE_APPEND}"
+	--cmdline "root=/dev/ram0 init=/sbin/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8 net.ifnames=0 ${KERNEL_CMDLINE_APPEND}"
 
 # Create boot image (functional), sdm845-mtp requires an initramfs to mount the rootfs and then
 # exec switch_rootfs, use the same method in other boards too
@@ -421,7 +421,7 @@ skales-mkbootimg \
 	--pagesize "${BOOTIMG_PAGESIZE}" \
 	--base "${BOOTIMG_BASE}" \
 	--ramdisk_base "${RAMDISK_BASE}" \
-	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8 ${KERNEL_CMDLINE_APPEND}"
+	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8 net.ifnames=0 ${KERNEL_CMDLINE_APPEND}"
 
 echo BOOT_FILE=$boot_file >> builders_out_parameters
 echo BOOT_ROOTFS_FILE=$boot_rootfs_file >> builders_out_parameters
