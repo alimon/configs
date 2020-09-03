@@ -408,7 +408,7 @@ skales-mkbootimg \
 # exec switch_rootfs, use the same method in other boards too
 boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
 init_file=init
-sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" < configs/lt-qcom-linux-test/initscripts/init-functional.sh > ./$init_file
+sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" < configs/lt-qcom-linux-test/initscripts/init-rootfs.sh > ./$init_file
 chmod +x ./$init_file
 overlayed_ramdisk_file="out/$(overlay_ramdisk_from_file "$init_file" "init_rootfs")"
 rm -f $init_file
