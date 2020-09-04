@@ -4,13 +4,15 @@ set -ex
 
 sudo dnf install -y python3-requests
 
+ls -alR /var/tmp/workspace/out
+
 # Publish wheel files
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
 time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
-  ${WORKSPACE}/out \
+  /var/tmp/workspace/out \
   hpc/python/tensorflow/${BUILD_NUMBER}
 
 set +x
