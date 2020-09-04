@@ -76,11 +76,11 @@
 
             # add machine dependent qcom services to initramfs and rpb images
             echo "CORE_IMAGE_EXTRA_INSTALL += \"${QCOM_USERSPACE_TOOLS}\"" >> auto.conf
-            echo "PACKAGE_INSTALL_append = \" \$\{CORE_IMAGE_EXTRA_INSTALL\}\"" >> auto.conf
+            echo "PACKAGE_INSTALL_append = \" \${CORE_IMAGE_EXTRA_INSTALL}\"" >> auto.conf
 
             # enable mesa-dev to test freedreno using deqp
             echo "PACKAGECONFIG_append_pn-mesa = \"freedreno xa\"" >> auto.conf
-            echo "SRCREV_pn-mesa = \"\$\{AUTOREV\}\"" >> auto.conf
+            echo "SRCREV_pn-mesa = \"\${AUTOREV}\"" >> auto.conf
             echo "ERROR_QA_remove_pn-mesa = \"version-going-backwards\"" >> auto.conf
             echo "DEFAULT_PREFERENCE_pn-mesa = \"1\"" >> auto.conf
         - inject:
