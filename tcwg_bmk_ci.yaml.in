@@ -2,8 +2,13 @@
     name: tcwg_bmk_ci_#{TOOLCHAIN}
     binutils_url: git://sourceware.org/git/binutils-gdb.git
     gcc_url: https://github.com/gcc-mirror/gcc.git
-#if !TOOLCHAIN_gnu_eabi
+#if TOOLCHAIN_gnu_eabi
+    newlib_url: git://sourceware.org/git/newlib-cygwin.git
+#else
     glibc_url: git://sourceware.org/git/glibc.git
+#endif
+#if TOOLCHAIN_llvm
+    llvm_url: https://github.com/llvm/llvm-project.git
 #endif
     hw:
 #if TOOLCHAIN_gnu_eabi
@@ -19,15 +24,7 @@
           node: tcwg-x86_64-build_bmk_tx1
 #endif
     toolchain_name: #{TOOLCHAIN}
-#if TOOLCHAIN_gnu
-    components: binutils gcc glibc
-#elif TOOLCHAIN_gnu_eabi
-    components: binutils gcc newlib
-    newlib_url: git://sourceware.org/git/newlib-cygwin.git
-#elif TOOLCHAIN_llvm
-    components: binutils gcc glibc llvm
-    llvm_url: https://github.com/llvm/llvm-project.git
-#endif
+    components: #{COMPONENTS}
     toolchain_ver:
       - master:
           binutils_branch: master
