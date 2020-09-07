@@ -63,17 +63,17 @@
             - "tcwg_kernel-#{TOOLCHAIN}-bisect-{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}"
           queue-scanning: 'ALL'
     parameters:
-      build-parameters:
-        ci_project: 'tcwg_kernel'
-        ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+      - build-parameters:
+          ci_project: 'tcwg_kernel'
+          ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
 #if TOOLCHAIN_gnu
-        binutils_url: '{binutils_url}'
-        gcc_url: '{gcc_url}'
+          binutils_url: '{binutils_url}'
+          gcc_url: '{gcc_url}'
 #elif TOOLCHAIN_llvm
-        llvm_url: '{llvm_url}'
+          llvm_url: '{llvm_url}'
 #endif
-        linux_url: '{linux_url}'
-        default_branch: 'default'
+          linux_url: '{linux_url}'
+          default_branch: 'default'
     disabled: false
     node: tcwg-x86_64-build
     concurrent: false
