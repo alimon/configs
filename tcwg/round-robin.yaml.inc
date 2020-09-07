@@ -342,7 +342,7 @@
               build_name="$build_name-$update_baseline"
             fi
             if [ -f artifacts/trigger-bisect ]; then
-              build_name="$build_name-bisect"
+              build_name="$build_name-trigger-bisect"
             fi
             echo "$build_name" > artifacts/jenkins/build-name
           unstable-return: 125
