@@ -77,6 +77,8 @@ cmake .. \
   -DPROTOBUF_ROOT=${WORKSPACE}/protobuf-host \
   -DBUILD_TF_LITE_PARSER=1 \
   -DARMNNREF=1 \
+  -DBUILD_PYTHON_SRC=1 \
+  -DBUILD_PYTHON_WHL=1 \
   -DBUILD_TESTS=1 -DBUILD_UNIT_TESTS=1 \
   -DTF_LITE_GENERATED_PATH=${WORKSPACE}/tensorflow/tensorflow/lite/schema \
   -DFLATBUFFERS_ROOT=${WORKSPACE}/flatbuffers \
