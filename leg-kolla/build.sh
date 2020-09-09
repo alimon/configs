@@ -68,6 +68,27 @@ if [ -n ${kolla_ldc} ]; then
     fi
 
     kolla_options="--template-override ${override_file} --profile devcloud "
+
+    # applied unmerged patches for ussuri
+    if [[ $branch = "ussuri" ]]; then
+        cat <<EOF >> ${WORKSPACE}/linaro.conf
+
+[cinder-base]
+type = git
+location = https://github.com/xin3liang/cinder.git
+reference = ${kolla_branch}-ldc
+
+[ironic-base]
+type = git
+location = https://github.com/xin3liang/ironic.git
+reference = ${kolla_branch}-ldc
+
+[nova-base]
+type = git
+location = https://github.com/xin3liang/nova.git
+reference = ${kolla_branch}-ldc
+EOF
+    fi
 fi
 
 # Apply extra patches to the kolla source code that haven't
