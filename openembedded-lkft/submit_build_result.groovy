@@ -29,7 +29,7 @@
       - Paste the following (for example) into the 'Properties Content':
           DEVICE_TYPE=x15
           QA_SERVER=https://staging-qa-reports.linaro.org
-          QA_SERVER_PROJECT=linux-mainline-oe
+          QA_SERVER_PROJECT=linux-mainline-master
           KERNEL_DESCRIBE=v5.1
           QA_SERVER_TEAM=lkft
           KERNEL_REPO=https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git

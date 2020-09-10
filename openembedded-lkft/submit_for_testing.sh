@@ -158,70 +158,70 @@ done
 #   QA_PROJECT::LAVA_DEVICE
 # one per line, in the following array:
 MIGRATED=(
-  linux-mainline-oe::dragonboard-410c
-  linux-next-oe::dragonboard-410c
-  linux-stable-rc-4.9-oe::dragonboard-410c
-  linux-stable-rc-4.14-oe::dragonboard-410c
-  linux-stable-rc-4.19-oe::dragonboard-410c
-  linux-stable-rc-5.4-oe::dragonboard-410c
+  linux-mainline-master::dragonboard-410c
+  linux-next-master::dragonboard-410c
+  linux-stable-rc-linux-4.9.y::dragonboard-410c
+  linux-stable-rc-linux-4.14.y::dragonboard-410c
+  linux-stable-rc-linux-4.19.y::dragonboard-410c
+  linux-stable-rc-linux-5.4.y::dragonboard-410c
   linux-stable-rc-5.5-oe::dragonboard-410c
   linux-stable-rc-5.6-oe::dragonboard-410c
   linux-stable-rc-5.7-oe::dragonboard-410c
-  linux-stable-rc-5.8-oe::dragonboard-410c
-  linux-mainline-oe::hi6220-hikey
-  linux-next-oe::hi6220-hikey
-  linux-stable-rc-4.9-oe::hi6220-hikey
-  linux-stable-rc-4.14-oe::hi6220-hikey
-  linux-stable-rc-4.19-oe::hi6220-hikey
-  linux-stable-rc-5.4-oe::hi6220-hikey
+  linux-stable-rc-linux-5.8.y::dragonboard-410c
+  linux-mainline-master::hi6220-hikey
+  linux-next-master::hi6220-hikey
+  linux-stable-rc-linux-4.9.y::hi6220-hikey
+  linux-stable-rc-linux-4.14.y::hi6220-hikey
+  linux-stable-rc-linux-4.19.y::hi6220-hikey
+  linux-stable-rc-linux-5.4.y::hi6220-hikey
   linux-stable-rc-5.5-oe::hi6220-hikey
   linux-stable-rc-5.6-oe::hi6220-hikey
   linux-stable-rc-5.7-oe::hi6220-hikey
-  linux-stable-rc-5.8-oe::hi6220-hikey
-  linux-mainline-oe::juno-r2
-  linux-next-oe::juno-r2
-  linux-stable-rc-4.4-oe::juno-r2
-  linux-stable-rc-4.9-oe::juno-r2
-  linux-stable-rc-4.14-oe::juno-r2
-  linux-stable-rc-4.19-oe::juno-r2
-  linux-stable-rc-5.4-oe::juno-r2
+  linux-stable-rc-linux-5.8.y::hi6220-hikey
+  linux-mainline-master::juno-r2
+  linux-next-master::juno-r2
+  linux-stable-rc-linux-4.4.y::juno-r2
+  linux-stable-rc-linux-4.9.y::juno-r2
+  linux-stable-rc-linux-4.14.y::juno-r2
+  linux-stable-rc-linux-4.19.y::juno-r2
+  linux-stable-rc-linux-5.4.y::juno-r2
   linux-stable-rc-5.5-oe::juno-r2
   linux-stable-rc-5.6-oe::juno-r2
   linux-stable-rc-5.7-oe::juno-r2
-  linux-stable-rc-5.8-oe::juno-r2
-  linux-mainline-oe::i386
-  linux-next-oe::i386
-  linux-stable-rc-4.4-oe::i386
-  linux-stable-rc-4.9-oe::i386
-  linux-stable-rc-4.14-oe::i386
-  linux-stable-rc-4.19-oe::i386
-  linux-stable-rc-5.4-oe::i386
+  linux-stable-rc-linux-5.8.y::juno-r2
+  linux-mainline-master::i386
+  linux-next-master::i386
+  linux-stable-rc-linux-4.4.y::i386
+  linux-stable-rc-linux-4.9.y::i386
+  linux-stable-rc-linux-4.14.y::i386
+  linux-stable-rc-linux-4.19.y::i386
+  linux-stable-rc-linux-5.4.y::i386
   linux-stable-rc-5.5-oe::i386
   linux-stable-rc-5.6-oe::i386
   linux-stable-rc-5.7-oe::i386
-  linux-stable-rc-5.8-oe::i386
-  linux-mainline-oe::x15
-  linux-next-oe::x15
-  linux-stable-rc-4.4-oe::x15
-  linux-stable-rc-4.9-oe::x15
-  linux-stable-rc-4.14-oe::x15
-  linux-stable-rc-4.19-oe::x15
-  linux-stable-rc-5.4-oe::x15
+  linux-stable-rc-linux-5.8.y::i386
+  linux-mainline-master::x15
+  linux-next-master::x15
+  linux-stable-rc-linux-4.4.y::x15
+  linux-stable-rc-linux-4.9.y::x15
+  linux-stable-rc-linux-4.14.y::x15
+  linux-stable-rc-linux-4.19.y::x15
+  linux-stable-rc-linux-5.4.y::x15
   linux-stable-rc-5.5-oe::x15
   linux-stable-rc-5.6-oe::x15
   linux-stable-rc-5.7-oe::x15
-  linux-stable-rc-5.8-oe::x15
-  linux-mainline-oe::x86
-  linux-next-oe::x86
-  linux-stable-rc-4.4-oe::x86
-  linux-stable-rc-4.9-oe::x86
-  linux-stable-rc-4.14-oe::x86
-  linux-stable-rc-4.19-oe::x86
-  linux-stable-rc-5.4-oe::x86
+  linux-stable-rc-linux-5.8.y::x15
+  linux-mainline-master::x86
+  linux-next-master::x86
+  linux-stable-rc-linux-4.4.y::x86
+  linux-stable-rc-linux-4.9.y::x86
+  linux-stable-rc-linux-4.14.y::x86
+  linux-stable-rc-linux-4.19.y::x86
+  linux-stable-rc-linux-5.4.y::x86
   linux-stable-rc-5.5-oe::x86
   linux-stable-rc-5.6-oe::x86
   linux-stable-rc-5.7-oe::x86
-  linux-stable-rc-5.8-oe::x86
+  linux-stable-rc-linux-5.8.y::x86
 )
 
 this_combo="${QA_SERVER_PROJECT}::${DEVICE_TYPE}"
