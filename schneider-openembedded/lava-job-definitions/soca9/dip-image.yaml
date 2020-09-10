@@ -192,9 +192,9 @@ actions:
       - env print
       - setenv serverip {SERVER_IP}
       - tftp {KERNEL_ADDR} {KERNEL}
-      - tftp {DTB_ADDR} {DTB}
+      - tftp 0x1000 {DTB}
       - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
-      - '{BOOTX}'
+      - bootz 0x01000000 - 0x00001000
     auto_login:
       login_prompt: "login:"
       username: root
