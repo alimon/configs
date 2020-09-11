@@ -57,7 +57,7 @@ function build_android(){
     rm -fr android-build-configs
     git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git android-build-configs
     if [ -n "${TARGET_PRODUCT}" ]; then
-        locla manfest_branch="master"
+        local manfest_branch="master"
         [ -n "${MANIFEST_BRANCH}" ] && manfest_branch=${MANIFEST_BRANCH}
         ./android-build-configs/linaro-build.sh -tp "${TARGET_PRODUCT}" -m "${manfest_branch}"
     fi
