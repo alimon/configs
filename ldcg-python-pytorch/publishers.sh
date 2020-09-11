@@ -2,7 +2,7 @@
 
 set -ex
 
-sudo dnf install -y python3-requests
+sudo dnf install -y python3-requests wget
 
 ls -alR /var/tmp/workspace/out
 
