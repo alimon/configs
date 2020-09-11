@@ -17,7 +17,7 @@
           - patch
           - python3
           - python3-devel
-          - python3-pyyaml
+          - python3-virtualenv
         state: present
 
     - name: fetch pytorch source
@@ -28,22 +28,19 @@
         recursive: yes
         force: yes
 
-    - name: remove changes to source
-      command:
-        cmd: "git clean -dfx"
-        chdir: "{{ build_dir }}/pytorch"
-
-    - name: install dataclasses and wheel
+    - name: install required Python packages
       pip:
         name:
           - dataclasses
+          - pyyaml
           - wheel
+        virtualenv: "{{ build_dir }}/virtualenv"
 
     - name: fetch patch to build pytorch under CentOS 8
       get_url:
         url: "https://github.com/hrw/pytorch/commit/c79701d0696faabdad8dfe12a7ce1d588bbf8469.patch"
         dest: "{{ build_dir }}/c79701d0696faabdad8dfe12a7ce1d588bbf8469.patch"
-        mode: 0400
+        mode: 0600
 
     - name: patch to build under CentOS 8
       patch:
@@ -55,13 +52,11 @@
       shell:
         cmd: |
           set -xe
+          source "{{ build_dir }}/virtualenv/bin/activate"
           USE_CUDA=0 BUILD_CAFFE2_OPS=0 USE_DISTRIBUTED=0 USE_QNNPACK=0 USE_XNNPACK=0 python3 setup.py install
+          pip wheel .
         chdir: "{{ build_dir }}/pytorch/"
-
-    - name: create wheel of pytorch
-      command:
-        cmd: "pip3 wheel ."
-        chdir: "{{ build_dir }}/pytorch/"
+        creates: "{{ build_dir }}/out/build/"
 
     - name: prepare wheels for publishing
       shell:
@@ -74,3 +69,4 @@
             cp $pkg  "{{ build_dir }}/out/$pkgdir"
           done
         chdir: "{{ build_dir }}/pytorch/"
+        creates: "{{ build_dir }}/out/torch/"
