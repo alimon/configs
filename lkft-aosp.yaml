@@ -1,0 +1,75 @@
+- job:
+    name: lkft-aosp
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 60
+        numToKeep: 60
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
+    parameters:
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'android11-dev'
+        - string:
+            name: TARGET_PRODUCT
+            default: "db845c"
+    disabled: false
+    node: docker-xenial-aosp
+    display-name: 'Jobs for pure aosp builds'
+    concurrent: true
+    triggers:
+        - timed : 'H 0 * * 6'
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${MANIFEST_BRANCH}-${TARGET_PRODUCT}'
+        - timeout:
+            timeout: 900
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+            sudo apt-get update
+            sudo apt-get install -y --allow-change-held-packages make gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz libssl-dev
+
+            wget --no-check-certificate https://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u162-b12-1_amd64.deb \
+                    https://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u162-b12-1_amd64.deb \
+                    https://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u162-b12-1_amd64.deb
+
+            sudo dpkg -i --force-all *.deb
+            java -version
+
+            mkdir -p ${HOME}/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            chmod a+x ${HOME}/bin/*
+
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+
+        - shell:
+            !include-raw:
+                - lkft/common/build-aosp.sh
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
+    publishers:
+        - archive:
+            artifacts: '*.xml,*.json'
+            latest-only: true
+        - logparser:
+            parse-rules: '/var/jenkins_home/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'yongqin.liu@linaro.org'
