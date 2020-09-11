@@ -3,8 +3,8 @@
     toolchain_name: gnu
 #if RR_tcwg_gcc || RR_tcwg_binutils
     ci_project: tcwg_gnu
-#elif RR_tcwg_cross
-    ci_project: tcwg_cross
+#else
+    ci_project: #{RR}
 #endif
 #if COMPONENTS_binutils
     binutils_url: git://sourceware.org/git/binutils-gdb.git
@@ -116,7 +116,7 @@
     disabled: false
     node: '{node} && tcwg-build'
     concurrent: false
-    display-name: 'TCWG Build tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    display-name: 'TCWG Build {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
     scm:
       - build-scms:
@@ -183,7 +183,7 @@
     disabled: false
     node: '{node} && tcwg-bisect'
     concurrent: false
-    display-name: 'TCWG Bisect tcwg_gnu/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+    display-name: 'TCWG Bisect {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     workspace: workspace/tcwg_gnu_$EXECUTOR_NUMBER
     scm:
       - jenkins-scripts
