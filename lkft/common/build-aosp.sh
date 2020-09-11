@@ -59,7 +59,7 @@ function build_android(){
     if [ -n "${TARGET_PRODUCT}" ]; then
         local manfest_branch="master"
         [ -n "${MANIFEST_BRANCH}" ] && manfest_branch=${MANIFEST_BRANCH}
-        ./android-build-configs/linaro-build.sh -tp "${TARGET_PRODUCT}" -m "${manfest_branch}"
+        ./android-build-configs/linaro-build.sh -tp "${TARGET_PRODUCT}" -b "${manfest_branch}"
     fi
 
     mkdir -p ${DIR_PUB_SRC}
