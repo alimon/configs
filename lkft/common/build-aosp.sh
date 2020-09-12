@@ -73,7 +73,7 @@ function build_android(){
 
         mv -vf ${DIR_PUB_SRC_PRODUCT}/${f} ${DIR_PUB_SRC}/${f}
 
-        if [ "X${ramdisk.img}" = "X${f}" ] || [ "X${ramdisk-debug.img}" = "X${f}" ]; then
+        if [ "Xramdisk.img" = "X${f}" ] || [ "Xramdisk-debug.img" = "X${f}" ]; then
             continue
         fi
         xz -T 0 ${DIR_PUB_SRC}/${f}
