@@ -18,7 +18,7 @@ CLEAN_UP=${CLEAN_UP:-true}
 ANDROID_ROOT="${DIR_SRV_AOSP_MASTER}/build"
 DIR_PUB_SRC="${ANDROID_ROOT}/out/dist"
 DIR_PUB_SRC_PRODUCT="${ANDROID_ROOT}/out/target/product/${TARGET_PRODUCT}"
-ANDROID_IMAGE_FILES="boot.img dtb.img dtbo.img super.img vendor.img product.img system_ext.img vbmeta.img userdata.img ramdisk.img ramdisk-debug.img recovery.img"
+ANDROID_IMAGE_FILES="boot.img dtb.img dtbo.img super.img vendor.img product.img system.img system_ext.img vbmeta.img userdata.img ramdisk.img ramdisk-debug.img recovery.img"
 
 # functions for clean the environemnt before repo sync and build
 function prepare_environment(){
