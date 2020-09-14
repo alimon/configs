@@ -102,7 +102,7 @@ if [ $SEND_TESTJOB = true ]; then
     export LXC_BOOT_FILE=$(basename ${BOOT_URL})
     export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_FILE}
     export ROOTFS_URL_COMP="gz"
-    export LXC_ROOTFS_FILE=$(basename ${ROOTFS_URL} .gz)
+    export LXC_ROOTFS_FILE=$(basename ${ROOTFS_FILE} .gz)
     python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
         --device-type ${LAVA_DEVICE_TYPE} \
         --build-number ${BUILD_NUMBER} \
@@ -124,7 +124,7 @@ if [ $SEND_TESTJOB = true ]; then
     export LXC_BOOT_FILE=$(basename ${BOOT_URL})
     export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_DESKTOP_FILE}
     export ROOTFS_URL_COMP="gz"
-    export LXC_ROOTFS_FILE=$(basename ${ROOTFS_DESKTOP_URL} .gz)
+    export LXC_ROOTFS_FILE=$(basename ${ROOTFS_DESKTOP_FILE} .gz)
     python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
         --device-type ${LAVA_DEVICE_TYPE} \
         --build-number ${BUILD_NUMBER} \
