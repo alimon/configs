@@ -24,10 +24,13 @@ case "${MACHINE}" in
 
     if [ ${MACHINE} = "apq8016-sbc" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-410c"
+      export DEQP_FAIL_LIST="deqp-freedreno-a307-fails.txt"
     elif [ ${MACHINE} = "apq8096-db820c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-820c"
+      export DEQP_FAIL_LIST="deqp-freedreno-a530-fails.txt"
     elif [ ${MACHINE} = "sdm845-db845c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-845c"
+      export DEQP_FAIL_LIST="deqp-freedreno-a630-fails.txt"
     elif [ ${MACHINE} = "sdm845-mtp" ]; then
       export LAVA_DEVICE_TYPE="sdm845-mtp"
     elif [ ${MACHINE} = "qcs404-evb-4000" ]; then
@@ -45,6 +48,7 @@ esac
 case "${MACHINE}" in
   apq8016-sbc|apq8096-db820c|sdm845-db845c)
       SMOKE_TEST_PLAN=true
+      DESKTOP_TEST_PLAN=true
   ;;
 esac
 
@@ -111,5 +115,27 @@ if [ $SEND_TESTJOB = true ]; then
         --testplan-path "${LAVA_TEMPLATE_PATH}" \
         ${DRY_RUN} \
         --test-plan testplan/kernel-smoke.yaml
+  fi
+
+  if [ $DESKTOP_TEST_PLAN = true ]; then
+    export LAVA_JOB_PRIORITY="medium"
+    export BOOT_URL=${PUBLISH_SERVER}${PUB_DEST}/${BOOT_ROOTFS_FILE}
+    export BOOT_URL_COMP=
+    export LXC_BOOT_FILE=$(basename ${BOOT_URL})
+    export ROOTFS_URL=${PUBLISH_SERVER}${PUB_DEST}/${ROOTFS_DESKTOP_FILE}
+    export ROOTFS_URL_COMP="gz"
+    export LXC_ROOTFS_FILE=$(basename ${ROOTFS_DESKTOP_URL} .gz)
+    python ${CONFIG_PATH}/openembedded-lkft/submit_for_testing.py \
+        --device-type ${LAVA_DEVICE_TYPE} \
+        --build-number ${BUILD_NUMBER} \
+        --lava-server ${LAVA_SERVER} \
+        --qa-server ${QA_SERVER} \
+        --qa-server-team qcomlt \
+        --qa-server-project ${QA_SERVER_PROJECT} \
+        --git-commit ${BUILD_NUMBER} \
+        --template-path "${LAVA_TEMPLATE_PATH}" \
+        --testplan-path "${LAVA_TEMPLATE_PATH}" \
+        ${DRY_RUN} \
+        --test-plan testplan/kernel-desktop.yaml
   fi
 fi
