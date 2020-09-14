@@ -51,7 +51,7 @@ function copy_archive_to_rootfs() {
 			sudo tar -xvf $archive_file -C out/rootfs_mount
 		fi
 		sudo umount out/rootfs_mount
-		rm -rf out/rootfs_mount
+		sudo rm -rf out/rootfs_mount
 	fi
 }
 
