@@ -28,6 +28,7 @@ function copy_archive_to_rootfs() {
 		cd ../../
 		rm -rf out/archive
 	else
+		set -e
 		if [[ $archive_file_type = *"Debian binary package"* ]]; then
 			required_size=$(dpkg -f $archive_file Installed-Size)
 		else
@@ -52,6 +53,7 @@ function copy_archive_to_rootfs() {
 		fi
 		sudo umount out/rootfs_mount
 		sudo rm -rf out/rootfs_mount
+		set +e
 	fi
 }
 
