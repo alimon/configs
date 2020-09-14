@@ -1,0 +1,98 @@
+
+timeouts:
+  job:
+    minutes: 130
+  connection:
+    minutes: 2
+  actions:
+    finalize:
+      seconds: 60
+context:
+  test_character_delay: 10
+reboot_to_fastboot: false
+device_type: dragonboard-410c
+job_name: linaro-test-definitions-validation
+priority: 1
+visibility: public
+tags:
+- production
+- chamelium
+metadata:
+  git branch: linux-4.9.y
+  git repo: https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable-rc.git
+  git commit: 90bf2565b75363faf5fff41f0b2108ec2a288be8
+  git describe: v4.9.235
+  make_kernelversion: 4.9.235
+  kernel-config: https://builds.tuxbuild.com/FcuPbvIbcTOPCWmt6L3_-g/kernel.config
+  build-url: https://gitlab.com/Linaro/lkft/kernel-runs/-/pipelines/187989819
+  artifact-location: ''
+  toolchain: unknown
+  email-notification: ''
+  igt-gpu-tools__url: https://gitlab.freedesktop.org/drm/igt-gpu-tools
+actions:
+- deploy:
+    timeout:
+      minutes: 40
+    to: downloads
+    images:
+      boot:
+        url: https://storage.lkft.org/rootfs/oe-sumo/20200723/dragonboard-410c/boot--5.7+git0+780e72b005-r0-dragonboard-410c-20200723155806-41-41.img
+      kernel:
+        url: https://builds.tuxbuild.com/FcuPbvIbcTOPCWmt6L3_-g/Image
+      dtb:
+        url: https://builds.tuxbuild.com/FcuPbvIbcTOPCWmt6L3_-g/dtbs/qcom/apq8016-sbc.dtb
+      modules:
+        url: https://builds.tuxbuild.com/FcuPbvIbcTOPCWmt6L3_-g/modules.tar.xz
+        compression: xz
+      rootfs:
+        url: https://storage.lkft.org/rootfs/oe-sumo/20200723/dragonboard-410c/rpb-console-image-lkft-dragonboard-410c-20200723155806-41.rootfs.ext4.gz
+        compression: gz
+        apply-overlay: true
+    os: oe
+    postprocess:
+      docker:
+        image: roxell/kir
+        steps:
+        - /kir/lava/board_setup.sh dragonboard-410c
+- deploy:
+    timeout:
+      minutes: 40
+    to: fastboot
+    docker:
+      image: roxell/kir
+    images:
+      boot:
+        url: downloads://boot.img
+      rootfs:
+        url: downloads://rpb-console-image-lkft.rootfs.img
+        apply-overlay: true
+    os: oe
+- command:
+    name: pre_os_command
+- command:
+    name: pre_power_command
+- boot:
+    docker:
+      image: roxell/kir
+    auto_login:
+      login_prompt: 'login:'
+      username: root
+      password_prompt: ''
+      password: ''
+    prompts:
+    - 'dragonboard-410c:'
+    - root@(.*):[/~]#
+    timeout:
+      minutes: 15
+    method: fastboot
+- test:
+    timeout:
+      minutes: 45
+    definitions:
+    - repository: https://github.com/Linaro/test-definitions.git
+      from: git
+      path: automated/linux/igt/igt-test.yaml
+      name: igt-gpu-tools
+      parameters:
+        IGT_DIR: /usr/share/igt-gpu-tools
+        TEST_LIST: CHAMELIUM
