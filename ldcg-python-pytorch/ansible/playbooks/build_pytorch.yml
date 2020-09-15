@@ -32,21 +32,10 @@
       pip:
         name:
           - dataclasses
+          - numpy
           - pyyaml
           - wheel
         virtualenv: "{{ build_dir }}/virtualenv"
-
-    - name: fetch patch to build pytorch under CentOS 8
-      get_url:
-        url: "https://github.com/hrw/pytorch/commit/c79701d0696faabdad8dfe12a7ce1d588bbf8469.patch"
-        dest: "{{ build_dir }}/c79701d0696faabdad8dfe12a7ce1d588bbf8469.patch"
-        mode: 0600
-
-    - name: patch to build under CentOS 8
-      patch:
-        src: "{{ build_dir }}/c79701d0696faabdad8dfe12a7ce1d588bbf8469.patch"
-        basedir: "{{ build_dir }}/pytorch"
-        strip: 1
 
     - name: build pytorch
       shell:
