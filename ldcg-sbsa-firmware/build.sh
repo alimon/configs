@@ -64,7 +64,7 @@ build_edk2
 
 # run SBSA Enterprise ACS in QEMU - in 10 minutes timeouts as there is a test which shutdowns
 
-TIMEOUT=10m
+TIMEOUT=${JOB_TIMEOUT}
 
 for try in {1..18}
 do
