@@ -24,6 +24,7 @@
             branches:
               - android-common/android-mainline
               - android-common/android12-5.4
+              - android-common/android11-5.4
             skip-tag: true
             shallow-clone: false
             wipe-workspace: false
@@ -60,6 +61,9 @@
             elif [ "X${KERNEL_BRANCH}" = "Xandroid-mainline" ]; then
                 cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-x15.txt
                 echo "ANDROID_BUILD_CONFIG=lkft-x15-aosp-master-mainline" >> lkft-${KERNEL_BRANCH}-x15.txt
+            elif [ "X${KERNEL_BRANCH}" = "Xandroid11-5.4" ]; then
+                cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-hikey960.txt
+                echo "ANDROID_BUILD_CONFIG=lkft-hikey960-android11-android11-5.4-gki " >> lkft-${KERNEL_BRANCH}-hikey960.txt
             fi
 
             # generate files for the api callback build
@@ -86,8 +90,8 @@
               property-file: lkft-android12-5.4-x15.txt
             - project: lkft-generic-omap-build
               property-file: lkft-android-mainline-x15.txt
-            - project: lkft-x15-aosp-master-mainline
-              property-file: lkft-android-mainline.txt
+            - project: lkft-generic-build
+              property-file: lkft-android11-5.4-hikey960.txt
     publishers:
         - email:
             recipients: 'lkft-maintainers@lists.linaro.org'
