@@ -17,7 +17,6 @@ CLEAN_UP=${CLEAN_UP:-true}
 
 ANDROID_ROOT="${DIR_SRV_AOSP_MASTER}/build"
 DIR_PUB_SRC="${ANDROID_ROOT}/out/dist"
-DIR_PUB_SRC_PRODUCT="${ANDROID_ROOT}/out/target/product/${TARGET_PRODUCT}"
 ANDROID_IMAGE_FILES="boot.img dtb.img dtbo.img super.img vendor.img product.img system.img system_ext.img vbmeta.img userdata.img ramdisk.img ramdisk-debug.img recovery.img"
 
 # functions for clean the environemnt before repo sync and build
@@ -56,11 +55,17 @@ function build_android(){
 
     rm -fr android-build-configs
     git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git android-build-configs
-    if [ -n "${TARGET_PRODUCT}" ]; then
+    if [ -n "${ANDROID_BUILD_CONFIG}" ]; then
+        source android-build-configs/${ANDROID_BUILD_CONFIG}
+        export TARGET_PRODUCT
+        ./android-build-configs/linaro-build.sh -c "${ANDROID_BUILD_CONFIG}"
+    elif [ -n "${TARGET_PRODUCT}" ]; then
         local manfest_branch="master"
         [ -n "${MANIFEST_BRANCH}" ] && manfest_branch=${MANIFEST_BRANCH}
         ./android-build-configs/linaro-build.sh -tp "${TARGET_PRODUCT}" -b "${manfest_branch}"
     fi
+
+    export DIR_PUB_SRC_PRODUCT="${ANDROID_ROOT}/out/target/product/${TARGET_PRODUCT}"
 
     mkdir -p ${DIR_PUB_SRC}
     cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${DIR_PUB_SRC}
