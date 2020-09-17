@@ -66,6 +66,8 @@ build_edk2
 
 TIMEOUT=${JOB_TIMEOUT}
 
+set +e # do not exit on error
+
 for try in {1..18}
 do
     echo "Starting qemu for ${try} time"
