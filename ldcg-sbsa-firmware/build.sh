@@ -64,14 +64,12 @@ build_edk2
 
 # run SBSA Enterprise ACS in QEMU - in 10 minutes timeouts as there is a test which shutdowns
 
-TIMEOUT=${JOB_TIMEOUT}
-
 set +e # do not exit on error
 
-for try in {1..18}
+for try in `seq 1 ${QEMU_RETRIES}`
 do
     echo "Starting qemu for ${try} time"
-    timeout --foreground  ${TIMEOUT} \
+    timeout --foreground ${QEMU_TIMEOUT} \
         ./qemu/build/aarch64-softmmu/qemu-system-aarch64 \
             -machine sbsa-ref \
             -drive if=pflash,file=SBSA_FLASH0.fd,format=raw \
