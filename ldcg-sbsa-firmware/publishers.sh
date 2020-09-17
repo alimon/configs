@@ -2,7 +2,7 @@
 
 set -ex
 
-ls -alR /var/tmp/workspace/logs
+ls -alR ${WORKSPACE}/logs
 
 PUBLISH_PATH=ldcg/sbsa-acs
 
@@ -12,7 +12,7 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
-  /var/tmp/workspace/out \
+  ${WORKSPACE}/logs \
   ${PUBLISH_PATH}/${BUILD_NUMBER}
 
 set +x
