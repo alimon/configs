@@ -29,6 +29,8 @@ function copy_archive_to_rootfs() {
 		rm -rf out/archive
 	else
 		set -e
+		archive_tmpd="out/archive"
+
 		if [[ $archive_file_type = *"Debian binary package"* ]]; then
 			required_size=$(dpkg -f $archive_file Installed-Size)
 		else
@@ -44,15 +46,25 @@ function copy_archive_to_rootfs() {
 		final_size=$(( $current_size + $required_size + 32768 ))
 		sudo resize2fs -p $target_file "$final_size"K
 
-		mkdir -p out/rootfs_mount
-		sudo mount -o loop $target_file out/rootfs_mount
+		sudo mkdir -p $archive_tmpd
 		if [[ $archive_file_type = *"Debian binary package"* ]]; then
-			sudo dpkg-deb -x $archive_file out/rootfs_mount
+			sudo dpkg-deb -x $archive_file $archive_tmpd
 		else
-			sudo tar -xvf $archive_file -C out/rootfs_mount
+			sudo tar -xvf $archive_file -C $archive_tmpd
 		fi
-		sudo umount out/rootfs_mount
-		sudo rm -rf out/rootfs_mount
+		pushd $(pwd)
+		cd $archive_tmpd
+		for f in $(find . -type f)
+		do
+			e2cp -a -p -v $f $target_file:/
+		done
+		for l in $(find . -type l)
+		do
+			e2cp -a -p -v $l $target_file:/
+		done
+		popd
+		sudo rm -rf $archive_tmpd
+
 		set +e
 	fi
 }
