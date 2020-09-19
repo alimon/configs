@@ -342,12 +342,12 @@ if [[ ! -z "$modules_file" ]]; then
 	copy_archive_to_rootfs "$modules_file" "$modules_file_type" "$rootfs_desktop_file" "$rootfs_desktop_file_type"
 fi
 if [[ ! -z "${firmware_file}" ]]; then
-	for f in ${firmware_file}; do
-		ffile_type=$(file $f)
-		copy_archive_to_rootfs "$f" "$ffile_type" "$ramdisk_file" "$ramdisk_file_type"
+	for firmware in ${firmware_file}; do
+		ffile_type=$(file $firmware)
+		copy_archive_to_rootfs "$firmware" "$ffile_type" "$ramdisk_file" "$ramdisk_file_type"
 		remove_unused_firmware "$ramdisk_file" "$ramdisk_file_type"
-		copy_archive_to_rootfs "$f" "$ffile_type" "$rootfs_file" "$rootfs_file_type"
-		copy_archive_to_rootfs "$f" "$ffile_type" "$rootfs_desktop_file" "$rootfs_desktop_file_type"
+		copy_archive_to_rootfs "$firmware" "$ffile_type" "$rootfs_file" "$rootfs_file_type"
+		copy_archive_to_rootfs "$firmware" "$ffile_type" "$rootfs_desktop_file" "$rootfs_desktop_file_type"
 	done
 fi
 
