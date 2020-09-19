@@ -52,15 +52,17 @@ function copy_archive_to_rootfs() {
 		else
 			sudo tar -xvf $archive_file -C $archive_tmpd
 		fi
-		pushd $(pwd)
+
+		cdir=$(pwd)
+		pushd $cdir
 		cd $archive_tmpd
 		for f in $(find . -type f)
 		do
-			e2cp -a -p -v $f $target_file:/
+			e2cp -a -p -v $f $cdir/$target_file:/
 		done
 		for l in $(find . -type l)
 		do
-			e2cp -a -p -v $l $target_file:/
+			e2cp -a -p -v $l $cdir/$target_file:/
 		done
 		popd
 		sudo rm -rf $archive_tmpd
