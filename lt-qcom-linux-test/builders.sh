@@ -58,11 +58,11 @@ function copy_archive_to_rootfs() {
 		cd $archive_tmpd
 		for f in $(find . -type f)
 		do
-			e2cp -a -p -v $f $cdir/$target_file:/
+			e2cp -a -p -G 0 -O 0 -v $f $cdir/$target_file:/
 		done
 		for l in $(find . -type l)
 		do
-			e2cp -a -p -v $l $cdir/$target_file:/
+			e2cp -a -p -G 0 -O 0 -v $l $cdir/$target_file:/
 		done
 		popd
 		sudo rm -rf $archive_tmpd
