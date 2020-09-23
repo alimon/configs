@@ -53,16 +53,17 @@ function build_android(){
     rm -fr ${DIR_PUB_SRC} && mkdir -p ${DIR_PUB_SRC}
     rm -fr ${ANDROID_ROOT}/out/pinned-manifest
 
-    rm -fr android-build-configs
-    git clone --depth 1 http://android-git.linaro.org/git/android-build-configs.git android-build-configs
+    rm -fr android-build-configs linaro-build.sh
+    wget -c https://android-git.linaro.org/android-build-configs.git/plain/linaro-build.sh -O linaro-build.sh
+    chmod +x linaro-build.sh
     if [ -n "${ANDROID_BUILD_CONFIG}" ]; then
         source android-build-configs/${ANDROID_BUILD_CONFIG}
         export TARGET_PRODUCT
-        ./android-build-configs/linaro-build.sh -c "${ANDROID_BUILD_CONFIG}"
+        bash -x ./linaro-build.sh -c "${ANDROID_BUILD_CONFIG}"
     elif [ -n "${TARGET_PRODUCT}" ]; then
         local manfest_branch="master"
         [ -n "${MANIFEST_BRANCH}" ] && manfest_branch=${MANIFEST_BRANCH}
-        ./android-build-configs/linaro-build.sh -tp "${TARGET_PRODUCT}" -b "${manfest_branch}"
+        bash -x ./linaro-build.sh -tp "${TARGET_PRODUCT}" -b "${manfest_branch}"
     fi
 
     export DIR_PUB_SRC_PRODUCT="${ANDROID_ROOT}/out/target/product/${TARGET_PRODUCT}"
