@@ -30,7 +30,7 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}-${ANDROID_BUILD_CONFIG:-${MANIFEST_BRANCH}-${TARGET_PRODUCT}}'
+            name: '#${BUILD_NUMBER}${ANDROID_BUILD_CONFIG:+-${ANDROID_BUILD_CONFIG}}${MANIFEST_BRANCH:+-${MANIFEST_BRANCH}}${TARGET_PRODUCT:+-${TARGET_PRODUCT}}'
         - timeout:
             timeout: 900
     builders:
