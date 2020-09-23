@@ -57,9 +57,10 @@ function build_android(){
     wget -c https://android-git.linaro.org/android-build-configs.git/plain/linaro-build.sh -O linaro-build.sh
     chmod +x linaro-build.sh
     if [ -n "${ANDROID_BUILD_CONFIG}" ]; then
+        bash -x ./linaro-build.sh -c "${ANDROID_BUILD_CONFIG}"
+        # ${ANDROID_BUILD_CONFIG} will be repo synced after build
         source android-build-configs/${ANDROID_BUILD_CONFIG}
         export TARGET_PRODUCT
-        bash -x ./linaro-build.sh -c "${ANDROID_BUILD_CONFIG}"
     elif [ -n "${TARGET_PRODUCT}" ]; then
         local manfest_branch="master"
         [ -n "${MANIFEST_BRANCH}" ] && manfest_branch=${MANIFEST_BRANCH}
