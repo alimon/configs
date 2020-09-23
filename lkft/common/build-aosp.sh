@@ -60,6 +60,9 @@ function build_android(){
         bash -x ./linaro-build.sh -c "${ANDROID_BUILD_CONFIG}"
         # ${ANDROID_BUILD_CONFIG} will be repo synced after build
         source android-build-configs/${ANDROID_BUILD_CONFIG}
+        if [ "X${TARGET_PRODUCT}" = "Xbeagle_x15" ]; then
+            TARGET_PRODUCT=x15
+        fi
         export TARGET_PRODUCT
     elif [ -n "${TARGET_PRODUCT}" ]; then
         local manfest_branch="master"
