@@ -30,7 +30,7 @@
     wrappers:
         - timestamps
         - build-name:
-            name: '#${BUILD_NUMBER}${ANDROID_BUILD_CONFIG:+-${ANDROID_BUILD_CONFIG}}${MANIFEST_BRANCH:+-${MANIFEST_BRANCH}}${TARGET_PRODUCT:+-${TARGET_PRODUCT}}'
+            name: '#${BUILD_NUMBER}${PROPFILE,file="wrappers_parameters",property="WRAPPER_BUILD_NAME"}'
         - timeout:
             timeout: 900
     builders:
@@ -52,6 +52,14 @@
 
             git config --global user.email "ci_notify@linaro.org"
             git config --global user.name "Linaro CI"
+
+            # set value for the build name
+            if [ -n "${ANDROID_BUILD_CONFIG}" ]; then
+                WRAPPER_BUILD_NAME="-${ANDROID_BUILD_CONFIG}"
+            elif [ -n "${MANIFEST_BRANCH}" ] && [ -n "${TARGET_PRODUCT}" ]; then
+                WRAPPER_BUILD_NAME="-${MANIFEST_BRANCH}-${TARGET_PRODUCT}"
+            fi
+            echo "${WRAPPER_BUILD_NAME}" > wrappers_parameters
 
         - shell:
             !include-raw:
