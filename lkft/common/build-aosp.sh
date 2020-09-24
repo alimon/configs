@@ -60,17 +60,13 @@ function build_android(){
         bash -x ./linaro-build.sh -c "${ANDROID_BUILD_CONFIG}"
         # ${ANDROID_BUILD_CONFIG} will be repo synced after build
         source android-build-configs/${ANDROID_BUILD_CONFIG}
-        if [ "X${TARGET_PRODUCT}" = "Xbeagle_x15" ]; then
-            TARGET_PRODUCT=x15
-        fi
         export TARGET_PRODUCT
     elif [ -n "${TARGET_PRODUCT}" ]; then
         local manfest_branch="master"
         [ -n "${MANIFEST_BRANCH}" ] && manfest_branch=${MANIFEST_BRANCH}
         bash -x ./linaro-build.sh -tp "${TARGET_PRODUCT}" -b "${manfest_branch}"
     fi
-
-    export DIR_PUB_SRC_PRODUCT="${ANDROID_ROOT}/out/target/product/${TARGET_PRODUCT}"
+    DIR_PUB_SRC_PRODUCT="${ANDROID_ROOT}/out/target/product/${TARGET_PRODUCT}"
 
     mkdir -p ${DIR_PUB_SRC}
     cp -a ${ANDROID_ROOT}/out/pinned-manifest/*-pinned-manifest.xml ${DIR_PUB_SRC}
@@ -102,9 +98,17 @@ function clean_workspace(){
 
 # export parameters for publish/job submission steps
 function export_parameters(){
+
+    # beagle_x15 could not used as part of the url for snapshot site
+    if [ "X${TARGET_PRODUCT}" = "Xbeagle_x15" ]; then
+        PUB_DEST_TARGET=x15
+    else
+        PUB_DEST_TARGET=${TARGET_PRODUCT}
+    fi
+
     # Publish parameters
     cp -a ${DIR_PUB_SRC}/*-pinned-manifest.xml ${WORKSPACE}/ || true
-    echo "PUB_DEST=android/lkft/${TARGET_PRODUCT}/${BUILD_NUMBER}" > ${WORKSPACE}/publish_parameters
+    echo "PUB_DEST=android/lkft/${PUB_DEST_TARGET}/${BUILD_NUMBER}" > ${WORKSPACE}/publish_parameters
     echo "PUB_SRC=${DIR_PUB_SRC}" >> ${WORKSPACE}/publish_parameters
     echo "PUB_EXTRA_INC=^[^/]+\.(xz|dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
 }
