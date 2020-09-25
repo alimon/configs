@@ -1,0 +1,31 @@
+- job:
+    name: ldcg-python-pytorch-debian
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    disabled: false
+    node: docker-buster-arm64-leg
+    display-name: 'Pytorch Python package for Debian'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ldcg-python-pytorch/build.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: ldcg-python-pytorch/publishers.sh
+    publishers:
+        - email:
+            recipients: 'paul.isaacs@linaro.org marcin.juszkiewicz@linaro.org tom.gall@linaro.org'
