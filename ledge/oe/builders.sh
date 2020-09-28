@@ -160,6 +160,28 @@ case "${ORIG_MACHINE}" in
 		;;
 esac
 
+build_ledgerp_docs() {
+	# Install deps
+	pkg_list="python-sphinx texlive texlive-latex-extra libalgorithm-diff-perl \
+                  texlive-humanities texlive-generic-recommended texlive-generic-extra \
+                  latexmk"
+	if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
+	  echo "INFO: apt install error - try again in a moment"
+	  sleep 15
+	  sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
+	fi
+	apt-get install python-pip
+	pip install --user --upgrade Sphinx
+	export SPHINXBUILD=~/.local/bin/sphinx-build
+	# Build docs
+	cd ../layers/ledge-doc
+	make latexpdf
+	cp ./build/latex/ledge.pdf ${UPLOAD_DIR}/ledgerp-user-guide-${BUILD_NUMBER}.pdf
+	popd
+}
+
+build_ledgerp_docs
+
 # Prepare files to publish
 mv /srv/oe/{source,pinned}-manifest.xml ${UPLOAD_DIR}
 cat ${UPLOAD_DIR}/pinned-manifest.xml
