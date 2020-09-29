@@ -1,4 +1,4 @@
-- name: install bazel build requirements
+- name: install bazel build requirements (CentOS)
   become: yes
   dnf:
     name:
@@ -10,12 +10,26 @@
       - which
       - zip
     state: present
+  when: ansible_os_family == 'Red Hat'
+
+- name: install bazel build requirements (Debian)
+  become: yes
+  apt:
+    name:
+      - cmake
+      - g++
+      - openjdk-11-jdk-headless
+      - python3
+      - unzip
+      - zip
+    state: present
+  when: ansible_os_family == 'Debian'
 
 - name: fetch bazel {{ bazel_version }} source
   get_url:
     url: "https://github.com/bazelbuild/bazel/releases/download/{{ bazel_version }}/bazel-{{ bazel_version }}-dist.zip"
     dest: "{{ build_dir }}"
-    mode: 0400
+    mode: 0600
 
 - name: create directory to build bazel {{ bazel_version }}
   file:
@@ -27,6 +41,7 @@
     src: "{{ build_dir }}/bazel-{{ bazel_version }}-dist.zip"
     dest: "{{ build_dir }}/bazel-{{ bazel_version }}"
     remote_src: yes
+    creates: "{{ build_dir }}/bazel-{{ bazel_version }}/compile.sh"
 
 - name: create /usr/bin/python symlink
   become: yes
@@ -42,6 +57,7 @@
       EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' ./compile.sh
     chdir: "{{ build_dir }}/bazel-{{ bazel_version }}/"
     creates: "{{ build_dir }}/bazel-{{ bazel_version }}/output/bazel"
+    executable: /bin/bash
 
 - name: install bazel {{ bazel_version }}
   become: yes

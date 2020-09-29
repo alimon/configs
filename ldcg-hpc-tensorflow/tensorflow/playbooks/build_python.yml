@@ -1,36 +1,69 @@
-- name: enable EPEL
-  become: yes
-  dnf:
-    name:
-      - epel-release
+- block:
+  - name: enable EPEL
+    become: yes
+    dnf:
+      name:
+        - epel-release
 
-- name: install h5py build requirements
-  become: yes
-  dnf:
-    name:
-      - hdf5-devel
-    enablerepo: PowerTools
-    state: present
+  - name: install h5py build requirements
+    become: yes
+    dnf:
+      name:
+        - hdf5-devel
+      enablerepo: PowerTools
+      state: present
 
-- name: install numpy build requirements
-  become: yes
-  dnf:
-    name:
-      - gcc-gfortran
-      - openblas-devel
-      - lapack-devel
-      - python3-devel
-    enablerepo: PowerTools
-    state: present
+  - name: install numpy build requirements
+    become: yes
+    dnf:
+      name:
+        - gcc-gfortran
+        - openblas-devel
+        - lapack-devel
+        - python3-devel
+      enablerepo: PowerTools
+      state: present
 
-- name: install required Python packages
-  become: yes
-  dnf:
-    name:
-      - python3-pip
-      - python3-virtualenv
-      - python3-wheel
-      - python3-zipp
+  - name: install required Python packages
+    become: yes
+    dnf:
+      name:
+        - python3-pip
+        - python3-setuptools
+        - python3-virtualenv
+        - python3-wheel
+        - python3-zipp
+  when: ansible_os_family == 'Red Hat'
+
+- block:
+  - name: install h5py build requirements
+    become: yes
+    apt:
+      name:
+        - libhdf5-dev
+        - pkg-config
+      state: present
+
+  - name: install numpy build requirements
+    become: yes
+    apt:
+      name:
+        - gfortran
+        - libblas-dev
+        - liblapack-dev
+        - python3-dev
+      state: present
+
+  - name: install required Python packages
+    become: yes
+    apt:
+      name:
+        - python3-pip
+        - python3-setuptools
+        - python3-venv
+        - python3-wheel
+        - python3-zipp
+  when: ansible_os_family == 'Debian'
 
 - name: install Cython
   become: yes

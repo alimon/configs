@@ -1,4 +1,4 @@
-- name: install tensorflow build requirements
+- name: install tensorflow build requirements (CentOS)
   become: yes
   dnf:
     name:
@@ -7,12 +7,24 @@
       - patch
       - python3-virtualenv
       - python3-wheel
+  when: ansible_os_family == 'Red Hat'
+
+- name: install tensorflow build requirements (Debian)
+  become: yes
+  apt:
+    name:
+      - expect
+      - git
+      - patch
+      - python3-virtualenv
+      - python3-wheel
+  when: ansible_os_family == 'Debian'
 
 - name: fetch tensorflow {{ tensorflow_version }} source
   get_url:
     url: "https://github.com/tensorflow/tensorflow/archive/v{{ tensorflow_version }}.tar.gz"
     dest: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}.tar.gz"
-    mode: 0400
+    mode: 0600
 
 - name: unpack tensorflow {{ tensorflow_version }} source
   unarchive:
@@ -37,14 +49,24 @@
       bazel-bin/tensorflow/tools/pip_package/build_pip_package --cpu ./tensorflow-pkg
 
     chdir: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/"
-    creates: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/tensorflow_cpu-{{ tensorflow_version }}-cp36-cp36m-linux_aarch64.whl"
+    creates: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/"
+    executable: /bin/bash
 
 - name: stop bazel server
   command:
     cmd: bazel shutdown
     chdir: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/"
 
+- name: get name of built wheel file
+  find:
+    path: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/"
+    patterns: "tensorflow_*.whl"
+    file_type: file
+  register: wheel_file
+
 - name: install tensorflow {{ tensorflow_version }}
+  become: yes
   pip:
-    name: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/tensorflow_cpu-{{ tensorflow_version }}-cp36-cp36m-linux_aarch64.whl"
-    virtualenv: "{{ build_dir }}/virtualenv"
+    name: "{{ wheel_file.files | map(attribute='path') | list }}"
+#   virtualenv: "{{ build_dir }}/virtualenv"
+#   virtualenv_command: "/usr/bin/python3 -m venv"
