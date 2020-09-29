@@ -170,7 +170,6 @@ build_ledgerp_docs() {
 	  sleep 15
 	  sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
 	fi
-	apt-get install python-pip
 	pip install --user --upgrade Sphinx
 	export SPHINXBUILD=~/.local/bin/sphinx-build
 	# Build docs
