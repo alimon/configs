@@ -2,7 +2,11 @@
 
 set -ex
 
-sudo dnf install -y python3-requests
+if [ -e /etc/debian_version ]; then
+  BUILD_NUMBER="${BUILD_NUMBER}-debian"
+else
+   sudo dnf install -y python3-requests wget
+fi
 
 ls -alR /var/tmp/workspace/out
 
