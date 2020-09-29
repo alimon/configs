@@ -175,7 +175,7 @@ build_ledgerp_docs() {
 	# Build docs
 	cd ../layers/ledge-doc
 	make latexpdf
-	cp ./build/latex/ledge.pdf ${UPLOAD_DIR}/ledgerp-user-guide-${BUILD_NUMBER}.pdf
+	make installpdf DESTDIR=${UPLOAD_DIR}/
 	popd
 }
 
