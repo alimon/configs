@@ -5,6 +5,7 @@ if [ -e /etc/debian_version ]; then
     sudo apt update
     sudo apt upgrade -y
     sudo apt install -y ansible/buster-backports
+    sudo apt purge -y python python2*
 else
     sudo dnf -y distrosync
     sudo dnf -y install centos-release-ansible-29
