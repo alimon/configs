@@ -1,7 +1,14 @@
 - job:
-    name: ldcg-python-pytorch-debian
-    project-type: freestyle
+    name: ldcg-python-pytorch-vision
+    project-type: matrix
     defaults: global
+    axes:
+        - axis:
+            type: slave
+            name: nodes
+            values:
+                - docker-centos8-arm-ldcg
+                - docker-buster-arm64-leg
     properties:
         - authorization:
             anonymous:
@@ -16,16 +23,15 @@
             days-to-keep: 7
             num-to-keep: 7
     disabled: false
-    node: docker-buster-arm64-leg
-    display-name: 'Pytorch Python package for Debian'
+    display-name: 'Pytorch Python package'
     wrappers:
         - timestamps
     builders:
         - shell:
-            !include-raw: ldcg-python-pytorch/build.sh
+            !include-raw: ldcg-python-pytorch-vision/build.sh
         - linaro-publish-token
         - shell:
-            !include-raw: ldcg-python-pytorch/publishers.sh
+            !include-raw: ldcg-python-pytorch-vision/publishers.sh
     publishers:
         - email:
             recipients: 'paul.isaacs@linaro.org marcin.juszkiewicz@linaro.org tom.gall@linaro.org'
