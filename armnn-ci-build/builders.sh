@@ -37,7 +37,7 @@ fi
 #build swig4.0 for PyArmNN
 tar -xf swig-4.0.2.tar.gz && rm -rf swig-4.0.2.tar.gz
 cd ${WORKSPACE}/swig-4.0.2
-./configure --prefix=/usr --without-maximum-compile-warnings --without-pcre &&
+./configure --prefix=${WORKSPACE}/swig-host --without-maximum-compile-warnings --without-pcre &&
 make
 make install
 
@@ -87,6 +87,7 @@ cmake .. \
   -DPROTOBUF_ROOT=${WORKSPACE}/protobuf-host \
   -DBUILD_TF_LITE_PARSER=1 \
   -DARMNNREF=1 \
+  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host \
   -DBUILD_PYTHON_SRC=1 \
   -DBUILD_PYTHON_WHL=1 \
   -DBUILD_TESTS=1 -DBUILD_UNIT_TESTS=1 \
