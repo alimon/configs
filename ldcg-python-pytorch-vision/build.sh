@@ -14,6 +14,6 @@ fi
 
 git clone --depth 1 https://git.linaro.org/ci/job/configs.git
 
-cd configs/ldcg-python-pytorch/ansible/
+cd configs/ldcg-python-pytorch-vision/ansible/
 
 ansible-playbook -i inventory playbooks/build_pytorch.yml
