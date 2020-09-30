@@ -176,7 +176,7 @@ build_ledgerp_docs() {
 	cd ../layers/ledge-doc
 	make latexpdf
 	make installpdf DESTDIR=${UPLOAD_DIR}/
-	popd
+	cd -
 }
 
 build_ledgerp_docs
