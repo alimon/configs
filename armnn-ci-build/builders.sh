@@ -4,7 +4,7 @@ set -ex
 
 sudo apt -q=2 update
 sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git autoconf curl libtool libpthread-stubs0-dev
-sudo apt -q=2 install -y --no-install-recommends vim-common swig
+#sudo apt -q=2 install -y --no-install-recommends vim-common swig
 sudo apt -q=2 install -y --no-install-recommends python-pip python3-pip virtualenv python-dev python3-dev
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
@@ -17,7 +17,7 @@ git clone --depth 1 https://github.com/tensorflow/tensorflow.git --branch r2.0 -
 git clone --depth 1 https://github.com/google/flatbuffers.git --branch v1.11.0 --single-branch
 wget -q https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_*.tar.bz2
 #swig 4.0
-wget -q http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz
+#wget -q http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz
 
 if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
     cd armnn
@@ -35,11 +35,11 @@ fi
 
 
 #build swig4.0 for PyArmNN
-tar -xf swig-4.0.2.tar.gz && rm -rf swig-4.0.2.tar.gz
-cd ${WORKSPACE}/swig-4.0.2
-./configure --prefix=${WORKSPACE}/swig-host --without-maximum-compile-warnings --without-pcre &&
-make
-make install
+#tar -xf swig-4.0.2.tar.gz && rm -rf swig-4.0.2.tar.gz
+#cd ${WORKSPACE}/swig-4.0.2
+#./configure --prefix=${WORKSPACE}/swig-host --without-maximum-compile-warnings --without-pcre &&
+#make
+#make install
 
 cd ${WORKSPACE}/ComputeLibrary
 #need to add if loops for opencl=1 embed_kernels=1 and neon=1
@@ -87,9 +87,9 @@ cmake .. \
   -DPROTOBUF_ROOT=${WORKSPACE}/protobuf-host \
   -DBUILD_TF_LITE_PARSER=1 \
   -DARMNNREF=1 \
-  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host/bin/swig \
-  -DBUILD_PYTHON_SRC=1 \
-  -DBUILD_PYTHON_WHL=1 \
+#  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host/bin/swig \
+#  -DBUILD_PYTHON_SRC=1 \
+#  -DBUILD_PYTHON_WHL=1 \
   -DBUILD_TESTS=1 -DBUILD_UNIT_TESTS=1 \
   -DTF_LITE_GENERATED_PATH=${WORKSPACE}/tensorflow/tensorflow/lite/schema \
   -DFLATBUFFERS_ROOT=${WORKSPACE}/flatbuffers \
