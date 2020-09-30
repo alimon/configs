@@ -4,7 +4,11 @@
 {% block tags %}
 {% endblock %}
 
+{% if "{{QA_SERVER_PROJECT}}" == "linux-master" %}
 {% set fastboot_commands = ['oem select-display-panel none', 'reboot'] %}
+{% else %}
+{% set fastboot_commands = ['oem select-display-panel hdmi', 'reboot'] %}
+{% endif %}
 
 {% set partition = true %}
 {% set PARTITION_URL = "https://images.validation.linaro.org/snapshots.linaro.org/96boards/dragonboard845c/linaro/rescue/28/dragonboard-845c-bootloader-ufs-linux-28/gpt_both0.bin" %}
