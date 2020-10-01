@@ -197,6 +197,18 @@
               --test_container_tag "$test_container_tag" \
               --binaries "$binaries" \
               --dryrun "$dryrun"
+      
+              # There seems to be a bug in glibc tests, leading a huge
+              #  cert.out file in crypt/. Remove it to avoid disk full
+              #  issues.
+              ./jenkins-scripts/docker-run.sh \
+              --label $label \
+              --node $NODE_NAME \
+              --distro $build_container_tag \
+              $(case "$target" in qemu-*) echo "--qemu $target" ;; esac) \
+              --dryrun "$dryrun" \
+              -- find $WORKSPACE/_build/builds -name cert.out -ls -delete
+
     publishers:
         - archive:
             artifacts: 'artifacts/*'
