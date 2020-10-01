@@ -4,7 +4,7 @@
 {% block tags %}
 {% endblock %}
 
-{% if QA_SERVER_PROJECT == "linux-master" %}
+{% if QA_SERVER_PROJECT is defined and QA_SERVER_PROJECT == "linux-master" %}
 {% set fastboot_commands = ['oem select-display-panel none', 'reboot'] %}
 {% else %}
 {% set fastboot_commands = ['oem select-display-panel hdmi', 'reboot'] %}

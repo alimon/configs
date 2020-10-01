@@ -6,7 +6,7 @@ tags:
   - new-firmware
 {% endblock %}
 
-{% if QA_SERVER_PROJECT == "linux-master" %}
+{% if QA_SERVER_PROJECT is defined and QA_SERVER_PROJECT == "linux-master" %}
 {% set video_devices = ({"/dev/video0": "venus-encoder", "/dev/video1": "venus-decoder"}) %}
 {% else %}
 {% set video_devices = ({"/dev/video0": "camss-0", "/dev/video1": "camss-1", "/dev/video2": "camss-2", "/dev/video3": "camss-3", "/dev/video4": "venus-encoder", "/dev/video5": "venus-decoder"}) %}
