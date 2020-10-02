@@ -365,6 +365,9 @@ EOF
   mv /srv/oe/manifest-changes.txt ${DEPLOY_DIR_IMAGE}
 fi
 
+# Identify snapshots as public
+touch ${DEPLOY_DIR_IMAGE}/OPEN-EULA.txt
+
 # Need different files for each machine
 ROOTFS_EXT4_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-*rzn1*-*-${BUILD_NUMBER}.rootfs.ext4.gz" | xargs -r basename)
 ROOTFS_TARXZ_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rpb-console-image-test-*rzn1*-*-${BUILD_NUMBER}.rootfs.tar.xz" | xargs -r basename)
