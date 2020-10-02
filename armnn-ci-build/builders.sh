@@ -87,14 +87,17 @@ cmake .. \
   -DPROTOBUF_ROOT=${WORKSPACE}/protobuf-host \
   -DBUILD_TF_LITE_PARSER=1 \
   -DARMNNREF=1 \
-#  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host/bin/swig \
-#  -DBUILD_PYTHON_SRC=1 \
-#  -DBUILD_PYTHON_WHL=1 \
   -DBUILD_TESTS=1 -DBUILD_UNIT_TESTS=1 \
   -DTF_LITE_GENERATED_PATH=${WORKSPACE}/tensorflow/tensorflow/lite/schema \
   -DFLATBUFFERS_ROOT=${WORKSPACE}/flatbuffers \
   -DFLATBUFFERS_LIBRARY=${WORKSPACE}/flatbuffers/libflatbuffers.a
 make -j$(nproc)
+
+#Additional cmake flags for building PyArmNN
+#  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host/bin/swig \
+#  -DBUILD_PYTHON_SRC=1 \
+#  -DBUILD_PYTHON_WHL=1 \
+
 
 cd ${WORKSPACE}
 rm -rf boost_*.tar.bz2 boost_* protobuf tensorflow
