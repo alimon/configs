@@ -57,8 +57,8 @@ head -5 Makefile
 
 # Note that Zephyr SDK is needed even when building with the gnuarmemb
 # toolchain, ZEPHYR_SDK_INSTALL_DIR is needed to find things like conf
-ZEPHYR_SDK_URL="https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.11.3/zephyr-sdk-0.11.3-setup.run"
-export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.11.3"
+ZEPHYR_SDK_URL="https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v0.11.4/zephyr-sdk-0.11.4-setup.run"
+export ZEPHYR_SDK_INSTALL_DIR="${HOME}/srv/toolchain/zephyr-sdk-0.11.4"
 
 # GNU ARM Embedded is downloaded once (per release) and cached in a persistent
 # docker volume under ${HOME}/srv/toolchain/.
