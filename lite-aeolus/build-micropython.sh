@@ -17,7 +17,7 @@ cd ports/zephyr
 
 if [ ${PLATFORM} = "qemu_x86" ]; then
     # Build and run binary with embedded testsuite
-    ./run-builtin-testsuite.sh
+    timeout 10m ./run-builtin-testsuite.sh
     make clean
 fi
 
