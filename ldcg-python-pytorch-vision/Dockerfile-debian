@@ -1,0 +1,14 @@
+FROM linaro/jenkins-arm64-debian:buster
+
+RUN echo "deb http://deb.debian.org/debian/ buster-backports main" | sudo tee /etc/apt/sources.list.d/backports.list; \
+    apt update; \
+    apt purge python python2* -y; \
+    apt upgrade -y; \
+    apt install -y ansible/buster-backports git
+
+COPY ansible/ /home/buildslave/ansible
+
+RUN cd /home/buildslave/ansible/; \
+    sudo -u buildslave ansible-playbook -i inventory playbooks/run.yml
+
+CMD ["bash"]

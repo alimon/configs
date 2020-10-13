@@ -1,0 +1,28 @@
+- job:
+    name: ldcg-container-pytorch
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    disabled: false
+    node: leg-aarch64
+    concurrent: false
+    display-name: 'LDCG Pytorch containers'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ldcg-python-pytorch-vision/build-containers.sh
+    publishers:
+        - email:
+            recipients: 'paul.isaacs@linaro.org marcin.juszkiewicz@linaro.org'
