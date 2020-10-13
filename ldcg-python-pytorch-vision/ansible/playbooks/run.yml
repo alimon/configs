@@ -1,0 +1,37 @@
+- hosts: all
+  vars_files:
+    ../vars/vars.yml
+  tasks:
+    - name: create build workspace
+      tempfile:
+        state: directory
+      register: build_dir
+
+    - name: handle Pytorch
+      include_tasks: build_pytorch.yml
+
+    - name: handle Pytorch Vision
+      include_tasks: build_pytorch_vision.yml
+
+    - name: handle Pytorch Glow
+      include_tasks: build_pytorch_glow.yml
+
+    - name: prepare wheels for publishing
+      shell:
+        cmd: |
+          set -xe
+          for pkg in {{ wheels_dir }}/*.whl vision/dist/*.whl
+          do
+            pkgdir=$(echo `basename $pkg`|cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
+            mkdir -p "{{ wheels_dir }}/$pkgdir/"
+            cp $pkg  "{{ wheels_dir }}/$pkgdir/"
+          done
+        chdir: "{{ build_dir.path }}/"
+        creates: "{{ wheels_dir }}/torch/"
+        executable: /bin/bash
+
+    - name: remove build workspace
+      file:
+        path: "{{ build_dir.path }}"
+        state: absent
+      when: build_dir.path is defined

@@ -1,0 +1,134 @@
+- name: enable external repos to gather packages (CentOS)
+  become: yes
+  dnf:
+    name:
+      - centos-release-openstack-ussuri
+      - centos-release-ceph-octopus
+      - epel-release
+    state: present
+  when: ansible_os_family == 'RedHat'
+
+- name: install pytorch glow build requirements (CentOS)
+  become: yes
+  dnf:
+    name:
+      - clang
+      - cmake
+      - llvm
+      - llvm-devel
+      - llvm-static
+      - libaio-devel
+      - libffi-devel
+      - boost-devel
+      - bzip2-devel
+      - ncurses-devel
+      - double-conversion-devel
+      - libdwarf-devel
+      - libevent-devel
+      - fmt-devel
+      - glog-devel
+      #      - libiberty-devel
+      - jemalloc-devel
+      - lz4-devel
+      - xz-devel
+      - libpng-devel
+      - snappy-devel
+      - libsodium-devel
+      - openssl-devel
+      - libunwind-devel
+      - zlib-devel
+      - libzstd-devel
+      - make
+      - pkgconf-pkg-config
+      - protobuf-compiler
+      - protobuf-devel
+    state: present
+    enablerepo: PowerTools
+  when: ansible_os_family == 'RedHat'
+
+- name: install pytorch glow build requirements (Debian)
+  become: yes
+  apt:
+    name:
+      - clang
+      - cmake
+      - libaio-dev
+      - libboost-context-dev
+      - libboost-dev
+      - libboost-filesystem-dev
+      - libboost-program-options-dev
+      - libboost-regex-dev
+      - libboost-system-dev
+      - libboost-thread-dev
+      - libbz2-dev
+      - libdouble-conversion-dev
+      - libdwarf-dev
+      - libevent-dev
+      - libfmt-dev
+      - libgoogle-glog-dev
+      - libiberty-dev
+      - libjemalloc-dev
+      - liblz4-dev
+      - liblzma-dev
+      - libpng-dev
+      - libsnappy-dev
+      - libsodium-dev
+      - libssl-dev
+      - libunwind-dev
+      - libz-dev
+      - libzstd-dev
+      - make
+      - pkg-config
+      - protobuf-compiler
+    state: present
+  when: ansible_os_family == 'Debian'
+
+- name: fetch pytorch glow source
+  git:
+    repo: "https://github.com/pytorch/glow.git" # noqa 401
+    dest: "{{ build_dir.path }}/glow/"
+    depth: 1
+    recursive: yes
+    force: yes
+
+- name: create build directory
+  file:
+    path: "{{ build_dir.path }}/glow/build/"
+    state: directory
+
+- name: check name of site-packages directory
+  find:
+    path: "{{ virtualenv_dir }}/lib/"
+    patterns: "python3.*"
+    file_type: directory
+  register: virtualenv_python_dir
+
+- name: configure glow
+  command:
+    cmd:
+      "cmake \
+        -DGLOW_BUILD_PYTORCH_INTEGRATION=ON \
+        -DPYTORCH_DIR={{ virtualenv_python_dir.files[0].path }}/site-packages/torch \
+        .."
+    chdir: "{{ build_dir.path }}/glow/build"
+    creates: "{{ build_dir.path }}/glow/build/CMakeCache.txt"
+
+- name: create /usr/bin/python symlink
+  become: yes
+  file:
+    src: /usr/bin/python3
+    dest: /usr/bin/python
+    state: link
+
+- name: build glow
+  command:
+    cmd: "make -j{{ ansible_processor_vcpus }}"
+    chdir: "{{ build_dir.path }}/glow/build"
+    creates: "{{ build_dir.path }}/glow/build/bin/NodeGen"
+
+- name: install glow
+  become: yes
+  command:
+    cmd: "make install DESTDIR=/usr/local/"
+    chdir: "{{ build_dir.path }}/glow/build"
+    creates: "/usr/local/bin/NodeGen"

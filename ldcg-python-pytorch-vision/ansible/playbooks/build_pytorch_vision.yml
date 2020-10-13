@@ -1,0 +1,30 @@
+- name: fetch pytorch vision source
+  git:
+    repo: "https://github.com/pytorch/vision.git" # noqa 401
+    dest: "{{ build_dir.path }}/vision/"
+    depth: 1
+    recursive: yes
+    force: yes
+
+- name: build pytorch vision
+  shell:
+    cmd: |
+      set -xe
+      source "{{ virtualenv_dir }}/bin/activate"
+      python setup.py bdist_wheel
+      cp dist/torchvision-*.whl "{{ wheels_dir }}/"
+    chdir: "{{ build_dir.path }}/vision/"
+    creates: "{{ build_dir.path }}/vision/build/"
+    executable: /bin/bash
+
+- name: get name of built wheel file
+  find:
+    path: "{{ wheels_dir }}"
+    patterns: "torchvision-*.whl"
+    file_type: file
+  register: wheel_file
+
+- name: install pytorch Python package
+  pip:
+    name: "{{ wheel_file.files[0].path }}"
+    virtualenv: "{{ virtualenv_dir }}"
