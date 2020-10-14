@@ -2,7 +2,18 @@
 
 set -xe
 
+trap cleanup_exit EXIT INT TERM ERR
+
+cleanup_exit()
+{
+    rm -rf ${HOME}/.docker
+}
+
 rm -rf ${WORKSPACE}
+
+mkdir -p ${HOME}/.docker
+sed -e "s|\${DOCKER_AUTH}|${DOCKER_AUTH}|" < ${WORKSPACE}/config.json > ${HOME}/.docker/config.json
+chmod 0600 ${HOME}/.docker/config.json
 
 git clone --depth 1 https://git.linaro.org/ci/job/configs.git
 
