@@ -2,6 +2,8 @@
 
 set -xe
 
+rm -rf ${WORKSPACE}
+
 git clone --depth 1 https://git.linaro.org/ci/job/configs.git
 
 cd configs/ldcg-python-pytorch-vision/
