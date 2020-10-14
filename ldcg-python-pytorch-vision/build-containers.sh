@@ -7,9 +7,8 @@ trap cleanup_exit EXIT INT TERM ERR
 cleanup_exit()
 {
     rm -rf ${HOME}/.docker
+    rm -rf ${WORKSPACE}
 }
-
-rm -rf ${WORKSPACE}
 
 mkdir -p ${HOME}/.docker
 sed -e "s|\${DOCKER_AUTH}|${DOCKER_AUTH}|" < ${WORKSPACE}/config.json > ${HOME}/.docker/config.json
