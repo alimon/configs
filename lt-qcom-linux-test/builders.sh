@@ -60,7 +60,7 @@ function copy_archive_to_rootfs() {
 		do
 			e2cp -a -p -G 0 -O 0 -v $f $cdir/$target_file:/
 		done
-		for l in $(find . -type l)
+		for l in $(find . -type l -xtype f)
 		do
 			f=$(realpath $l)
 			e2cp -p -G 0 -O 0 -v $f $cdir/$target_file:/$l
