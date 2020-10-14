@@ -13,9 +13,9 @@ visibility: public
 
 actions:
 
-##################
-# Deploy WIC image
-##################
+###################
+# dip-image-dev.wic
+###################
 - deploy:
     timeout:
       minutes: 20
@@ -27,123 +27,7 @@ actions:
       layout:
         url: ${WIC_DEV_BMAP_URL}
 
-###############
-# TFTP/NFS
-###############
-- deploy:
-    timeout:
-      minutes: 15
-    to: tftp
-    os: oe
-    kernel:
-      url: ${KERNEL_ZIMAGE_URL}
-      type: zimage
-    dtb:
-      url: ${DTB_URL}
-    nfsrootfs:
-      url: ${NFSROOTFS_DEV_URL}
-      compression: bz2
 
-- boot:
-    timeout:
-      minutes: 20
-    method: u-boot
-    commands:
-      - run FPGA_INIT
-      - setenv autoload no
-      - dhcp
-      - dhcp
-      - env print
-      - setenv serverip {SERVER_IP}
-      - tftp {KERNEL_ADDR} {KERNEL}
-      - tftp 0x1000 {DTB}
-      - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
-      - bootz 0x01000000 - 0x00001000
-    auto_login:
-      login_prompt: "login:"
-      username: root
-    prompts:
-    - "root@snarc-soca9:"
-    - "root@rzn1-snarc:"
-
-- test:
-    timeout:
-      minutes: 40
-    interactive:
-    - name: basic-cmds-tftp
-      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
-      script:
-      - command: uname -a
-      - command: cat /proc/device-tree/model ; echo ""
-      - command: ps aux --sort -rss
-      - command: cat /proc/meminfo
-      - command: cat /proc/cpuinfo
-      - command: free -h
-      - command: sysctl -a | grep vm.min_free_kbytes
-      - command: memstat
-      - command: mount
-      - command: systemctl --no-pager status systemd-resolved
-      - command: systemctl --no-pager restart systemd-resolved
-      - command: systemctl --no-pager status systemd-resolved
-      - command: ifconfig -a
-      - command: ping -c 3 github.com
-      - command: which docker
-
-- test:
-    timeout:
-      minutes: 40
-    definitions:
-
-    - name: smoke-tests-tftp
-      from: git
-      history: false
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: linaro
-      path: automated/linux/smoke/smoke.yaml
-      parameters:
-        SKIP_INSTALL: True
-        TESTS: "pwd, uname -a, cat /etc/os-release, ip a, lscpu, vmstat, lsblk, ps aux --sort -rss, free -h, mount"
-
-    - name: ethernet-tftp
-      from: git
-      history: false
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: linaro
-      path: automated/linux/ethernet/ethernet.yaml
-      parameters:
-        INTERFACE: eth1
-
-    - name: meminfo-tftp
-      from: git
-      history: false
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: linaro
-      path: automated/linux/meminfo/meminfo.yaml
-
-    - name: badblocks-tftp
-      from: git
-      history: false
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: linaro
-      path: automated/linux/badblocks/badblocks.yaml
-      parameters:
-        SKIP_INSTALL: True
-
-    - name: memtester-tftp
-      from: git
-      history: false
-      repository: https://github.com/omnium21/test-definitions.git
-      branch: linaro
-      path: automated/linux/memtester/memtester.yaml
-      parameters:
-        SKIP_INSTALL: True
-
-
-
-###################
-# dip-image-dev.wic
-###################
-# We already flashed the SDcard WIC image in the deploy step at the begging of this test run
 - boot:
     timeout:
       minutes: 10
@@ -159,6 +43,19 @@ actions:
     transfer_overlay:
       download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
       unpack_command: tar --touch -C / -xzf
+
+- test:
+    timeout:
+      minutes: 40
+    definitions:
+    - name: yepkit-disable-all-devices
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/yepkit/yepkit.yaml
+      parameters:
+        PORT_DOWN: a
 
 - test:
     timeout:
@@ -384,6 +281,117 @@ actions:
         SKIP_INSTALL: 'true'
         EEPROM: '/sys/bus/spi/devices/spi0.0/eeprom'
 
+
+###############
+# TFTP/NFS
+###############
+- deploy:
+    timeout:
+      minutes: 15
+    to: tftp
+    os: oe
+    kernel:
+      url: ${KERNEL_ZIMAGE_URL}
+      type: zimage
+    dtb:
+      url: ${DTB_URL}
+    nfsrootfs:
+      url: ${NFSROOTFS_DEV_URL}
+      compression: bz2
+
+- boot:
+    timeout:
+      minutes: 20
+    method: u-boot
+    commands:
+      - run FPGA_INIT
+      - setenv autoload no
+      - dhcp
+      - dhcp
+      - env print
+      - setenv serverip {SERVER_IP}
+      - tftp {KERNEL_ADDR} {KERNEL}
+      - tftp 0x1000 {DTB}
+      - "setenv bootargs 'console=ttyS0,115200n8 root=/dev/nfs rw nfsroot={NFS_SERVER_IP}:{NFSROOTFS},tcp,hard,intr,vers=3 rootwait coherent_pool=2M ip=dhcp'"
+      - bootz 0x01000000 - 0x00001000
+    auto_login:
+      login_prompt: "login:"
+      username: root
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+
+- test:
+    timeout:
+      minutes: 40
+    interactive:
+    - name: basic-cmds-tftp
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: uname -a
+      - command: cat /proc/device-tree/model ; echo ""
+      - command: ps aux --sort -rss
+      - command: cat /proc/meminfo
+      - command: cat /proc/cpuinfo
+      - command: free -h
+      - command: sysctl -a | grep vm.min_free_kbytes
+      - command: memstat
+      - command: mount
+      - command: systemctl --no-pager status systemd-resolved
+      - command: systemctl --no-pager restart systemd-resolved
+      - command: systemctl --no-pager status systemd-resolved
+      - command: ifconfig -a
+      - command: ping -c 3 github.com
+      - command: which docker
+
+- test:
+    timeout:
+      minutes: 40
+    definitions:
+
+    - name: smoke-tests-tftp
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/smoke/smoke.yaml
+      parameters:
+        SKIP_INSTALL: True
+        TESTS: "pwd, uname -a, cat /etc/os-release, ip a, lscpu, vmstat, lsblk, ps aux --sort -rss, free -h, mount"
+
+    - name: ethernet-tftp
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/ethernet/ethernet.yaml
+      parameters:
+        INTERFACE: eth1
+
+    - name: meminfo-tftp
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/meminfo/meminfo.yaml
+
+    - name: badblocks-tftp
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/badblocks/badblocks.yaml
+      parameters:
+        SKIP_INSTALL: True
+
+    - name: memtester-tftp
+      from: git
+      history: false
+      repository: https://github.com/omnium21/test-definitions.git
+      branch: linaro
+      path: automated/linux/memtester/memtester.yaml
+      parameters:
+        SKIP_INSTALL: True
 
 metadata:
   machine: ${MACHINE}
