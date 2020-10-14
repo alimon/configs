@@ -62,7 +62,8 @@ function copy_archive_to_rootfs() {
 		done
 		for l in $(find . -type l)
 		do
-			e2cp -a -p -G 0 -O 0 -v $l $cdir/$target_file:/
+			f=$(realpath $l)
+			e2cp -p -G 0 -O 0 -v $f $cdir/$target_file:/$l
 		done
 		popd
 		sudo rm -rf $archive_tmpd
