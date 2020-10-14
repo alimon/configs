@@ -62,7 +62,7 @@ function copy_archive_to_rootfs() {
 		done
 		for l in $(find . -type l)
 		do
-			f=$(readlink -f $l)
+			f=$(readlink -f $l) || continue
 			if [ -f "$f" ]; then
 				e2cp -p -G 0 -O 0 -v $f $cdir/$target_file:/$l
 			fi
