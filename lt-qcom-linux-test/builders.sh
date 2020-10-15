@@ -345,13 +345,24 @@ if [[ ! -z "$modules_file" ]]; then
 	copy_archive_to_rootfs "$modules_file" "$modules_file_type" "$rootfs_desktop_file" "$rootfs_desktop_file_type"
 fi
 if [[ ! -z "${firmware_file}" ]]; then
+	firmware_tmp_dir="firmware_tmp"
+	firmware_tmp_file="firmware_tmp.tar.gz"
+
+	mkdir -p $firmware_tmp_dir
 	for firmware in ${firmware_file}; do
-		ffile_type=$(file $firmware)
-		copy_archive_to_rootfs "$firmware" "$ffile_type" "$ramdisk_file" "$ramdisk_file_type"
-		remove_unused_firmware "$ramdisk_file" "$ramdisk_file_type"
-		copy_archive_to_rootfs "$firmware" "$ffile_type" "$rootfs_file" "$rootfs_file_type"
-		copy_archive_to_rootfs "$firmware" "$ffile_type" "$rootfs_desktop_file" "$rootfs_desktop_file_type"
+		dpkg-deb -x $firmware $firmware_tmp_dir
 	done
+	cd $firmware_tmp_dir
+	tar -czpf ../$firmware_tmp_file *
+	cd ../
+
+	ffile_type=$(file $firmware_tmp_file)
+	copy_archive_to_rootfs "$firmware_tmp_file" "$ffile_type" "$ramdisk_file" "$ramdisk_file_type"
+	remove_unused_firmware "$ramdisk_file" "$ramdisk_file_type"
+	copy_archive_to_rootfs "$firmware_tmp_file" "$ffile_type" "$rootfs_file" "$rootfs_file_type"
+	copy_archive_to_rootfs "$firmware_tmp_file" "$ffile_type" "$rootfs_desktop_file" "$rootfs_desktop_file_type"
+
+	rm -rf $firmware_tmp_dir $firmware_tmp_file 
 fi
 
 # If rootfs was Android sparse image trasform from ext4
