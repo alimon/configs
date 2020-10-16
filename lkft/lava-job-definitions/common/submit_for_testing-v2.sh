@@ -71,6 +71,7 @@ function submit_jobs_for_config(){
     unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_TEAM TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     unset PUBLISH_FILES TEST_OTHER_PLANS
+    unset IMAGE_SUPPORTED_CACHE
 
     config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${build_config}?h=lkft"
     wget ${config_url} -O ${build_config}
@@ -88,6 +89,16 @@ function submit_jobs_for_config(){
     export ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     export TEST_VTS_VERSION=$(echo ${TEST_VTS_URL} | awk -F"/" '{print$(NF-1)}')
     export TEST_CTS_VERSION=$(echo ${TEST_CTS_URL} | awk -F"/" '{print$(NF-1)}')
+
+    # works when cache partition part is guarded with IMAGE_SUPPORTED_CACHE
+    # default is to support cache partition with cache.img
+    if [ -n "${IMAGE_SUPPORTED_CACHE}" ] && echo "X${IMAGE_SUPPORTED_CACHE}" | grep -i "Xfalse"; then
+        # unset IMAGE_SUPPORTED_CACHE only when IMAGE_SUPPORTED_CACHE is specified as false explicitly
+        unset IMAGE_SUPPORTED_CACHE
+    else
+        # cache paritition will be flashed with the cache.img
+        export IMAGE_SUPPORTED_CACHE=true
+    fi
 
     ## clean up the old changes for last build
     ## so that the url could be updated as expected
