@@ -1,0 +1,36 @@
+- job:
+    name: ldcg-container-tensorflow
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    disabled: false
+    node: leg-aarch64
+    concurrent: false
+    display-name: 'LDCG tensorflow containers'
+    wrappers:
+        - timestamps
+        - copy-to-slave:
+            includes:
+                - config.json
+            relative-to: 'somewhereElse'
+        - credentials-binding:
+            - text:
+                credential-id: DOCKER_AUTH
+                variable: DOCKER_AUTH
+    builders:
+        - shell:
+            !include-raw: ldcg-hpc-tensorflow/build-containers.sh
+    publishers:
+        - email:
+            recipients: 'paul.isaacs@linaro.org marcin.juszkiewicz@linaro.org'

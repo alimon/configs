@@ -10,7 +10,7 @@
       - which
       - zip
     state: present
-  when: ansible_os_family == 'Red Hat'
+  when: ansible_os_family == 'RedHat'
 
 - name: install bazel build requirements (Debian)
   become: yes
@@ -28,20 +28,20 @@
 - name: fetch bazel {{ bazel_version }} source
   get_url:
     url: "https://github.com/bazelbuild/bazel/releases/download/{{ bazel_version }}/bazel-{{ bazel_version }}-dist.zip"
-    dest: "{{ build_dir }}"
+    dest: "{{ build_dir.path }}"
     mode: 0600
 
 - name: create directory to build bazel {{ bazel_version }}
   file:
-    path: "{{ build_dir }}/bazel-{{ bazel_version }}/"
+    path: "{{ build_dir.path }}/bazel-{{ bazel_version }}/"
     state: directory
 
 - name: unpack bazel {{ bazel_version }} source
   unarchive:
-    src: "{{ build_dir }}/bazel-{{ bazel_version }}-dist.zip"
-    dest: "{{ build_dir }}/bazel-{{ bazel_version }}"
+    src: "{{ build_dir.path }}/bazel-{{ bazel_version }}-dist.zip"
+    dest: "{{ build_dir.path }}/bazel-{{ bazel_version }}"
     remote_src: yes
-    creates: "{{ build_dir }}/bazel-{{ bazel_version }}/compile.sh"
+    creates: "{{ build_dir.path }}/bazel-{{ bazel_version }}/compile.sh"
 
 - name: create /usr/bin/python symlink
   become: yes
@@ -55,14 +55,14 @@
     cmd: |
       set -xe
       EXTRA_BAZEL_ARGS='--host_javabase=@local_jdk//:jdk' ./compile.sh
-    chdir: "{{ build_dir }}/bazel-{{ bazel_version }}/"
-    creates: "{{ build_dir }}/bazel-{{ bazel_version }}/output/bazel"
+    chdir: "{{ build_dir.path }}/bazel-{{ bazel_version }}/"
+    creates: "{{ build_dir.path }}/bazel-{{ bazel_version }}/output/bazel"
     executable: /bin/bash
 
 - name: install bazel {{ bazel_version }}
   become: yes
   copy:
-    src: "{{ build_dir }}/bazel-{{ bazel_version }}/output/bazel"
+    src: "{{ build_dir.path }}/bazel-{{ bazel_version }}/output/bazel"
     dest: /usr/local/bin/bazel
     mode: 0755
     force: yes

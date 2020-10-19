@@ -7,7 +7,7 @@
       - patch
       - python3-virtualenv
       - python3-wheel
-  when: ansible_os_family == 'Red Hat'
+  when: ansible_os_family == 'RedHat'
 
 - name: install tensorflow build requirements (Debian)
   become: yes
@@ -23,19 +23,19 @@
 - name: fetch tensorflow {{ tensorflow_version }} source
   get_url:
     url: "https://github.com/tensorflow/tensorflow/archive/v{{ tensorflow_version }}.tar.gz"
-    dest: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}.tar.gz"
+    dest: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}.tar.gz"
     mode: 0600
 
 - name: unpack tensorflow {{ tensorflow_version }} source
   unarchive:
-    src: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}.tar.gz"
-    dest: "{{ build_dir }}/"
+    src: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}.tar.gz"
+    dest: "{{ build_dir.path }}/"
     remote_src: yes
 
 - name: copy configure script
   copy:
     src: "files/configure_tensorflow"
-    dest: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/configure_tensorflow"
+    dest: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}/configure_tensorflow"
     mode: 0400
 
 - name: build tensorflow {{ tensorflow_version }}
@@ -48,18 +48,18 @@
       mkdir tensorflow-pkg
       bazel-bin/tensorflow/tools/pip_package/build_pip_package --cpu ./tensorflow-pkg
 
-    chdir: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/"
-    creates: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/"
+    chdir: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}/"
+    creates: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/"
     executable: /bin/bash
 
-- name: stop bazel server
+- name: stop bazel server # noqa 301
   command:
     cmd: bazel shutdown
-    chdir: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/"
+    chdir: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}/"
 
 - name: get name of built wheel file
   find:
-    path: "{{ build_dir }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/"
+    path: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}/tensorflow-pkg/"
     patterns: "tensorflow_*.whl"
     file_type: file
   register: wheel_file
@@ -68,5 +68,5 @@
   become: yes
   pip:
     name: "{{ wheel_file.files | map(attribute='path') | list }}"
-#   virtualenv: "{{ build_dir }}/virtualenv"
+#   virtualenv: "{{ build_dir.path }}/virtualenv"
 #   virtualenv_command: "/usr/bin/python3 -m venv"

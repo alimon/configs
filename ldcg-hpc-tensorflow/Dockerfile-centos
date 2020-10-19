@@ -1,0 +1,12 @@
+FROM linaro/jenkins-arm64-centos:8
+
+RUN sudo dnf -y distrosync; \
+    sudo dnf -y install centos-release-ansible-29; \
+    sudo dnf -y install ansible git
+
+COPY tensorflow/ /home/buildslave/ansible
+
+RUN cd /home/buildslave/ansible/; \
+    sudo -u buildslave ansible-playbook -i inventory playbooks/run.yml
+
+CMD ["bash"]

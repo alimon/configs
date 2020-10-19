@@ -33,7 +33,7 @@
         - python3-virtualenv
         - python3-wheel
         - python3-zipp
-  when: ansible_os_family == 'Red Hat'
+  when: ansible_os_family == 'RedHat'
 
 - block:
   - name: install h5py build requirements
@@ -73,13 +73,13 @@
 
 - name: create directory to build wheels
   file:
-    path: "{{ build_dir }}/wheels/"
+    path: "{{ wheels_dir }}"
     state: directory
 
 - name: copy upper constraints
   copy:
     src: "files/upper-constraints.txt"
-    dest: "{{ build_dir }}/wheels"
+    dest: "{{ wheels_dir }}"
     mode: 0400
 
 - name: build wheels of binary Python packages

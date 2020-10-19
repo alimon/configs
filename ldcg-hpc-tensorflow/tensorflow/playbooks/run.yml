@@ -3,9 +3,9 @@
     ../vars/vars.yml
   tasks:
     - name: create build workspace
-      file:
-        path: "{{ build_dir }}"
+      tempfile:
         state: directory
+      register: build_dir
 
     - name: include Bazel tasks
       include_tasks: build_bazel.yml
@@ -30,14 +30,27 @@
       vars:
         tensorflow_version: "2.3.0"
 
-    - name: prepare wheels for publishing
+    - name: prepare wheels for publishing # noqa 301
       shell:
         cmd: |
           set -xe
-          for pkg in *.whl "{{ build_dir }}/tensorflow-*/tensorflow-pkg/*.whl"
+          for pkg in *.whl "{{ build_dir.path }}/tensorflow-*/tensorflow-pkg/*.whl"
           do
             pkgdir=$(echo `basename $pkg`|cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
-            mkdir -p "{{ build_dir }}/out/$pkgdir"
-            cp $pkg  "{{ build_dir }}/out/$pkgdir"
+            mkdir -p "{{ wheels_dir }}/$pkgdir"
+            cp $pkg  "{{ wheels_dir }}/$pkgdir"
           done
-        chdir: "{{ build_dir }}/wheels/"
+        chdir: "{{ wheels_dir }}"
+        creates: "{{ wheels_dir }}/numpy/"
+        executable: "/bin/bash"
+
+    - name: remove build workspace
+      file:
+        path: "{{ build_dir.path }}"
+        state: absent
+      when: build_dir.path is defined
+
+    - name: remove bazel cache
+      file:
+        path: "{{ ansible_env.HOME }}/.cache"
+        state: absent
