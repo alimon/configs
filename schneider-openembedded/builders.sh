@@ -274,7 +274,26 @@ cp cve-${MACHINE}.new ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}.rootfs.cve
 
 # Fetch previous CVE report
 LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
+rm -f cve-${MACHINE}.old
 wget -nv -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve || true
+
+# Download may fail (404 error), or might not contain the report (auth error)
+if ! grep -q "PACKAGE NAME" cve-${MACHINE}.old 2>/dev/null; then
+	# Use current CVE list, to avoid diff-against-nothing
+	cp cve-${MACHINE}.new cve-${MACHINE}.old
+	# Append a fake entry that will appear in the diff
+	cat <<-EOF >>cve-${MACHINE}.old
+	PACKAGE NAME: failed-to-download-previous-CVEs
+	PACKAGE VERSION: 0.0
+	CVE: CVE-xxxx-yyyy
+	CVE STATUS: Unpatched
+	CVE SUMMARY: Unable to download CVE results for previous build. Comparison disabled.
+	CVSS v2 BASE SCORE: 0.0
+	CVSS v3 BASE SCORE: 0.0
+	VECTOR: LOCAL
+	MORE INFORMATION: none
+	EOF
+fi
 
 if [ -e cve-${MACHINE}.old ]; then
 	# Do diffs between old and current CVE report.
