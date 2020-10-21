@@ -284,10 +284,10 @@ if [ -e cve-${MACHINE}.old ]; then
 	# Same thing, but against arbitrary (but fixed) baseline
 	case "${MACHINE}" in
 	    *rzn1*)
-		wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.3/rzn1d-4.19/dip-image-rzn1-snarc.rootfs.cve
+		wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2020.09-dunfell/rzn1d-5.4/dip-image-rzn1-snarc.rootfs.cve
 		;;
 	    *soca9*)
-		wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2019.09-warrior.3/soca9-4.19/dip-image-snarc-soca9.rootfs.cve
+		wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2020.09-dunfell/soca9-5.4/dip-image-snarc-soca9.rootfs.cve
 		;;
 	esac
 	gawk -f diff-cve cve-${MACHINE}.base cve-${MACHINE}.new > ${WORKSPACE}/base-cve-${MACHINE}.txt
