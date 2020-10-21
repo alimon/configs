@@ -1,5 +1,9 @@
 #!/bin/bash
 
+set -xe
+
+rm -rf ${WORKSPACE}/*
+
 if [ -e /etc/debian_version ]; then
     echo "deb http://deb.debian.org/debian/ buster-backports main" | sudo tee /etc/apt/sources.list.d/backports.list
     sudo apt update
