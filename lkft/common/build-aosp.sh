@@ -84,6 +84,9 @@ function build_android(){
         fi
         xz -T 0 ${DIR_PUB_SRC}/${f}
     done
+    if [ -n "${ANDROID_BUILD_CONFIG}" ]; then
+        cp -vf android-build-configs/${ANDROID_BUILD_CONFIG} ${DIR_PUB_SRC}/${ANDROID_BUILD_CONFIG}.txt
+    fi
 }
 
 # clean workspace to save space
@@ -110,7 +113,7 @@ function export_parameters(){
     cp -a ${DIR_PUB_SRC}/*-pinned-manifest.xml ${WORKSPACE}/ || true
     echo "PUB_DEST=android/lkft/${PUB_DEST_TARGET}/${BUILD_NUMBER}" > ${WORKSPACE}/publish_parameters
     echo "PUB_SRC=${DIR_PUB_SRC}" >> ${WORKSPACE}/publish_parameters
-    echo "PUB_EXTRA_INC=^[^/]+\.(xz|dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
+    echo "PUB_EXTRA_INC=^[^/]+\.(txt|img|xz|dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
 }
 
 function main(){
