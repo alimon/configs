@@ -1,0 +1,97 @@
+- project:
+    name: tcwg_monitoring_disk_users
+    slave_name:
+      - tcwg-d05-01
+      - tcwg-sq-01
+      - tcwg-sq-02
+      - tcwg-tk1-10
+      - dev-01
+      - dev-02
+    jobs:
+      - 'tcwg_monitoring_disk_users_{slave_name}'
+
+- view:
+    name: tcwg_monitoring
+    view-type: list
+    regex: 'tcwg_monitoring_.*'
+
+- property:
+    name: default-properties
+    properties:
+      - authorization:
+          linaro:
+            - job-build
+            - job-cancel
+            - job-read
+            - job-extended-read
+      - build-discarder:
+          days-to-keep: 30
+          num-to-keep: 300
+
+- parameter:
+    name: default-parameters
+    parameters:
+      - string:
+          name: scripts_branch
+          default: master
+          description: 'Scripts revision to use'
+
+- scm:
+    name: jenkins
+    scm:
+      - git:
+          url: https://git.linaro.org/people/christophe.lyon/jenkins.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $scripts_branch
+          skip-tag: true
+          wipe-workspace: true
+
+- job-template:
+    name: tcwg_monitoring_disk_users_{slave_name}
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+    parameters:
+      - default-parameters
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: true
+    display-name: 'TCWG Monitoring top disk users {slave_name}'
+    scm:
+      - jenkins
+    triggers:
+        # Every 30 minutes
+        - timed: '@daily'
+    wrappers:
+      - timeout:
+          timeout: 600
+      - timestamps
+      - ssh-agent-credentials:
+          # tcwg-buildslave user id
+          users:
+            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
+      - build-name:
+          name: '#$BUILD_NUMBER-{slave_name}'
+    builders:
+        - shell: |
+            #!/bin/bash
+            set -ex
+            # Add .tcwglab suffix when needed, to use the right
+            # .ssh/config settings (mainly the connexion port)
+            case {slave_name} in
+                # Use port 22
+                apm-*|dev-*|tcwg-d05-01|tcwg-amp-*|tcwg-m1-*)
+                    slave_name={slave_name}
+                    ;;
+                *)
+                    # Use port 2222
+                    slave_name={slave_name}.tcwglab
+                    ;;
+            esac
+            ./top-disk-one-slave.sh $slave_name
+    publishers:
+        - email-ext:
+            recipients: 'christophe.lyon@linaro.org'
+            aborted: true
