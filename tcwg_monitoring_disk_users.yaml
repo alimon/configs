@@ -78,18 +78,6 @@
         - shell: |
             #!/bin/bash
             set -ex
-            # Add .tcwglab suffix when needed, to use the right
-            # .ssh/config settings (mainly the connexion port)
-            case {slave_name} in
-                # Use port 22
-                tcwg-d05-01|tcwg-amp-*)
-                    slave_name={slave_name}
-                    ;;
-                *)
-                    # Use port 2222
-                    slave_name={slave_name}.tcwglab
-                    ;;
-            esac
             ./top-disk-one-slave.sh $slave_name
     publishers:
         - email-ext:
