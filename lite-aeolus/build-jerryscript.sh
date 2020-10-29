@@ -4,7 +4,7 @@ west update
 (cd zephyr; git clean -fdx)
 . zephyr/zephyr-env.sh
 
-make -f ./targets/zephyr/Makefile.zephyr BOARD=${PLATFORM}
+timeout 15m make -f ./targets/zephyr/Makefile.zephyr BOARD=${PLATFORM}
 
 cd ${WORKSPACE}
 mkdir -p out/${PLATFORM}
