@@ -110,54 +110,30 @@
             shallow-clone: true
             wipe-workspace: false
 - scm:
-    name: DIP-linux-soca9
+    name: DIP-linux
     scm:
         - git:
             url: ssh://git@dev-private-git.linaro.org/schneider/DIP-linux.git
-            refspec: +refs/heads/soca9-4.19-lts:refs/remotes/origin/soca9-4.19-lts
+            refspec: +refs/heads/soca9-4.19-lts:refs/remotes/origin/soca9-4.19-lts +refs/heads/lces2-4.19-lts:refs/remotes/origin/lces2-4.19-lts
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             name: origin
             branches:
                 - refs/heads/soca9-4.19-lts
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-- scm:
-    name: DIP-linux-lces2
-    scm:
-        - git:
-            url: ssh://git@dev-private-git.linaro.org/schneider/DIP-linux.git
-            refspec: +refs/heads/lces2-4.19-lts:refs/remotes/origin/lces2-4.19-lts
-            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
-            name: origin
-            branches:
                 - refs/heads/lces2-4.19-lts
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
 - scm:
-    name: DIP-uboot-lces2
+    name: DIP-uboot
     scm:
         - git:
             url: ssh://git@dev-private-git.linaro.org/schneider/DIP-uboot.git
-            refspec: +refs/heads/lces2-2020.07:refs/remotes/origin/lces2-2020.07
-            credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
-            name: origin
-            branches:
-                - refs/heads/lces2-2020.07
-            skip-tag: true
-            shallow-clone: true
-            wipe-workspace: false
-- scm:
-    name: DIP-uboot-soca9
-    scm:
-        - git:
-            url: ssh://git@dev-private-git.linaro.org/schneider/DIP-uboot.git
-            refspec: +refs/heads/soca9-2020.07:refs/remotes/origin/soca9-2020.07
+            refspec: +refs/heads/soca9-2020.07:refs/remotes/origin/soca9-2020.07 +refs/heads/lces2-2020.07:refs/remotes/origin/lces2-2020.07
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             name: origin
             branches:
                 - refs/heads/soca9-2020.07
+                - refs/heads/lces2-2020.07
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -213,10 +189,8 @@
         - meta-backports
         - meta-dip-base
         - DIP-Yocto-Linux-Distro
-        - DIP-linux-soca9
-        - DIP-linux-lces2
-        - DIP-uboot-soca9
-        - DIP-uboot-lces2
+        - DIP-linux
+        - DIP-uboot
         - DIP-secureboot
     triggers:
         - pollscm: 'H 12,6 * * *'
