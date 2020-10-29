@@ -1,0 +1,138 @@
+- scm:
+    name: tf-a-ci-scripts
+    scm:
+        - git:
+            url: https://git.linaro.org/people/milosz.wasilewski/TF-A/tf-a-ci-scipts.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            basedir: tf-a-ci-scripts
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: trusted-firmware-a
+    scm:
+        - git:
+            url: https://review.linaro.org/${GERRIT_PROJECT}
+            refspec: ${GERRIT_REFSPEC}
+            name: origin
+            branches:
+                - ${GERRIT_BRANCH}
+            basedir: trusted-firmware-a
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- scm:
+    name: tf-a-tests
+    scm:
+        - git:
+            url: https://git.linaro.org/people/milosz.wasilewski/TF-A/tf-a-tests.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            basedir: tf-a-tests
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: false
+- job:
+    name: milosz-tf-a-builder
+    project-type: freestyle
+    defaults: global
+    properties:
+        - build-discarder:
+            days-to-keep: 180
+            num-to-keep: 180
+        - authorization:
+            anonymous:
+              - job-read
+              - job-extended-read
+            mwasilew:
+              - job-read
+              - job-extended-read
+              - job-build
+              - job-cancel
+              - run-update
+
+    parameters:
+        - string:
+            name: import_cc
+            default: '1'
+        - string:
+            name: test_groups
+            default: 'tf-l1-build-juno/juno-default:nil'
+        - string:
+            name: GERRIT_PROJECT
+            default: 'people/milosz.wasilewski/TF-A/trusted-firmware-a'
+        - string:
+            name: GERRIT_BRANCH
+            default: 'master'
+        - string:
+            name: GERRIT_REFSPEC
+            default: 'refs/heads/master'
+        - string:
+            name: LAVA_SERVER
+            default: 'tf.validation.linaro.org'
+        - string:
+            name: QA_SERVER_TEAM
+            default: 'tf'
+        - string:
+            name: QA_SERVER_PROJECT
+            default: 'tf-a'
+        - string:
+            name: QA_SERVER
+            default: 'https://qa-reports.linaro.org'
+    disabled: false
+    node: docker-amd64-bionic
+    display-name: 'Trusted Firmware A (TF-A) builder'
+    scm:
+        - tf-a-ci-scripts
+        - trusted-firmware-a
+        - tf-a-tests
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell:
+            !include-raw: milosz-tf-a-builder/builders.sh
+        - shell:  |
+            #!/bin/bash
+
+            set -e
+
+            rm -rf configs
+            git clone --depth 1 https://github.com/Linaro/lava-test-plans.git configs
+
+            cat << EOF > ${WORKSPACE}/lava_parameters
+            PROJECT_NAME="tf-a"
+            BUILD_NUMBER=$BUILD_NUMBER
+            LAVA_JOB_PRIORITY=50
+            ROOTFS_URL=http://releases.linaro.org/openembedded/aarch64/17.01/linaro-image-minimal-genericarmv8-20170127-888.rootfs.tar.gz
+            AUTO_LOGIN_PROMPT=""
+            AUTO_LOGIN_USERNAME="root"
+            PROJECT="projects/tf-a/"
+            GERRIT_PROJECT="${GERRIT_PROJECT}"
+            GERRIT_BRANCH="${GERRIT_BRANCH}"
+            GERRIT_REFSPEC=${GERRIT_REFSPEC}
+            TEST_GROUP="${test-group}"
+            RECOVERY_IMAGE="${BUILD_URL}/artifact/artefacts/debug/juno_recovery.zip"
+            LAVA_SERVER=tf.validation.linaro.org
+            EOF
+            ./submit_for_testing.py \
+                --variables ${WORKSPACE}/lava_parameters \
+                --device-type juno \
+                --test-plan tf-a \
+                --testplan-device-path projects/tf-a/devices \
+                --lava-server ${LAVA_SERVER} \
+                --qa-server-team ${QA_SERVER_TEAM} \
+                --qa-server-project ${QA_SERVER_PROJECT} \
+                --qa-server ${QA_SERVER}
+    publishers:
+        - archive:
+            artifacts: 'artefacts/**'
+            latest-only: false

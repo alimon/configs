@@ -1,0 +1,58 @@
+- job:
+    name: trigger-milosz-tf-a-builder
+    project-type: freestyle
+    defaults: global
+    properties:
+        - build-discarder:
+            days-to-keep: 180
+            num-to-keep: 180
+        - authorization:
+            anonymous:
+              - job-read
+              - job-extended-read
+            lsandov1:
+              - job-read
+              - job-extended-read
+              - job-build
+              - job-cancel
+              - run-update
+
+    disabled: false
+    node: master
+    display-name: 'Trigger for TF-A gerrit events'
+    triggers:
+        - gerrit:
+            server-name: 'review.linaro.org'
+            trigger-on:
+                - patchset-created-event
+            projects:
+                - project-compare-type: 'PLAIN'
+                  project-pattern: 'people/milosz.wasilewski/TF-A/trusted-firmware-a'
+                  branches:
+                    - branch-pattern: 'master'
+            silent: false
+            silent-start: true
+    wrappers:
+        - timestamps
+    builders:
+        - shell: |
+            #!/bin/bash
+
+            set -e
+
+            echo ""
+            echo "########################################################################"
+            echo "    Gerrit Environment"
+            env |grep '^GERRIT'
+            echo "########################################################################"
+
+            cat << EOF > tf_a_builder_parameters
+            GERRIT_PROJECT=${GERRIT_PROJECT}
+            GERRIT_BRANCH=${GERRIT_BRANCH}
+            GERRIT_REFSPEC=${GERRIT_REFSPEC}
+            test_groups=tf-l1-boot-tests-juno/juno-default:juno-linux.uboot
+            EOF
+        - trigger-builds:
+            - project: milosz-tf-a-builder
+              property-file: tf_a_builder_parameters
+              block: true
