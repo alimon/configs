@@ -32,12 +32,14 @@ if [ -z "${DRY_RUN}" ]; then
         export KSELFTESTS_URL=${LINUX_GENERIC_MAINLINE_URL}
         export KSELFTESTS_VERSION=${LINUX_GENERIC_MAINLINE_VERSION}
         export KSELFTESTS_REVISION=${KERNEL_COMMIT}
+        export TDEFINITIONS_REVISION="kselftest"
         ;;
       linux-next-*)
         source ${METADATA}
         export KSELFTESTS_URL=${LINUX_GENERIC_NEXT_URL}
         export KSELFTESTS_VERSION=${LINUX_GENERIC_NEXT_VERSION}
         export KSELFTESTS_REVISION=${KERNEL_COMMIT}
+        export TDEFINITIONS_REVISION="kselftest"
         ;;
       *)
         export KSELFTESTS_URL=${KSELFTESTS_MAINLINE_URL}
