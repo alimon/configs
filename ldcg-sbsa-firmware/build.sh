@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SBSA_ENTERPRISE_ACS_VER="v20.08_REL2.5"
+SBSA_ENTERPRISE_ACS_VER="v20.10_REL3.0"
 
 set -ex
 
