@@ -120,6 +120,12 @@
         - linaro-publish-token
         - shell:
             !include-raw: rpb-openembedded/buildinfo-protected.sh
+        - shell: |
+            if [[ ${MACHINE} = "ledge-multi-armv7" || ${MACHINE} = "ledge-multi-armv8" ]]; then
+                   # qemu builds have to be public
+                   rm ${WORKSPACE}/BUILD-INFO.txt
+            fi
+
         - shell:
             !include-raw: rpb-openembedded/publishers.sh
         - shell:
