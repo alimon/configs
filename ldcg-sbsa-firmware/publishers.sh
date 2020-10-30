@@ -4,7 +4,13 @@ set -ex
 
 ls -alR ${WORKSPACE}/logs
 
-PUBLISH_PATH=ldcg/sbsa-acs
+if [ -e ${WORKSPACE}/logs/sbsa-acs-level3.log ]; then
+  # ldcg-sbsa-acs job
+  PUBLISH_PATH=ldcg/sbsa-acs
+else
+  # ldcg-sbsa-firmware job
+  PUBLISH_PATH=ldcg/sbsa-enterprise-acs
+fi
 
 # Publish log files
 test -d ${HOME}/bin || mkdir ${HOME}/bin

@@ -1,0 +1,31 @@
+- job:
+    name: ldcg-sbsa-acs
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    disabled: false
+    node: docker-buster-arm64-leg
+    display-name: 'SBSA QEMU firmware test - just SBSA ACS'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ldcg-sbsa-firmware/build-sbsa-acs.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: ldcg-sbsa-firmware/publishers.sh
+    publishers:
+        - email:
+            recipients: 'shashi.mallela@linaro.org tanmay.jagdale@linaro.org marcin.juszkiewicz@linaro.org asa-dev@op-lists.linaro.org'

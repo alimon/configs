@@ -4,39 +4,7 @@ SBSA_ENTERPRISE_ACS_VER="v20.10_REL3.0"
 
 set -ex
 
-build_qemu()
-{
-    # Build QEMU - only AArch64 target
-
-    cd qemu
-    ./configure --target-list=aarch64-softmmu
-    make -j$(nproc)
-    cd -
-}
-
-build_edk2()
-{
-    # Build EDK2 and truncate results to expected 256M
-
-    export PACKAGES_PATH=$WORKSPACE/edk2:$WORKSPACE/edk2-platforms:$WORKSPACE/edk2-non-osi
-    make -C edk2/BaseTools
-
-    source edk2/edksetup.sh
-    build -b RELEASE -a AARCH64 -t GCC5 -p edk2-platforms/Platform/Qemu/SbsaQemu/SbsaQemu.dsc -n 0
-
-    # copy resulting firmware and resize to 256MB images
-
-    cp Build/SbsaQemu/RELEASE_GCC5/FV/SBSA_FLASH[01].fd .
-    truncate -s 256M SBSA_FLASH[01].fd
-}
-
-fetch_code()
-{
-    git clone --depth 1 https://github.com/qemu/qemu.git
-    git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2.git
-    git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-platforms.git
-    git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-non-osi.git
-}
+source common-code.sh
 
 fetch_enterprise_acs()
 {
@@ -53,7 +21,7 @@ rm -rf ${WORKSPACE}/*
 # install build dependencies for QEMU and EDK2
 sudo apt update
 sudo apt -y --no-install-recommends install build-essential pkg-config python3 \
-         libpixman-1-dev libglib2.0-dev dosfstools git-lfs mtools
+         libpixman-1-dev libglib2.0-dev dosfstools git-lfs mtools ninja-build
 
 
 fetch_code
