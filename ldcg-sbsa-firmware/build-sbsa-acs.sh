@@ -69,29 +69,27 @@ echo ',,U;' |/sbin/sfdisk sda.raw
 
 # Create disk and populate it with needed software
 
-device=$(sudo kpartx -avs sda.raw | cut -d' ' -f3)
-mkdir 1
-sudo mkfs.vfat /dev/mapper/$device
-sudo mount /dev/mapper/$device 1
-sudo cp Sbsa.efi 1/
-sudo mkdir -p 1/efi/boot/
-sudo cp Build/SbsaQemu/RELEASE_GCC5/AARCH64/Shell.efi 1/efi/boot/bootaa64.efi
-sudo umount 1
-sudo kpartx -d sda.raw
+mkdir -p efi/boot
+cp Build/SbsaQemu/RELEASE_GCC5/AARCH64/Shell.efi efi/boot/bootaa64.efi
+
+echo "drive c:" >~/.mtoolsrc
+echo "     file=\"${WORKSPACE}/sda.raw\" offset=1048576" >>~/.mtoolsrc
+
+mformat c:
+mcopy -s efi Sbsa.efi c:
 
 for sbsa_level in 3 4 5 6
 do
     echo "fs0:\Sbsa.efi -l ${sbsa_level}" > startup.nsh
 
-    device=$(sudo kpartx -avs sda.raw | cut -d' ' -f3)
-    sudo mount /dev/mapper/$device 1
-    sudo cp startup.nsh 1/
-    sudo umount 1
-    sudo kpartx -d sda.raw
+    if [ "$sbsa_level" != "3" ]; then
+        mdel c:startup.nsh
+    fi
+    mcopy startup.nsh c:
 
 # run SBSA ACS in QEMU - 30s timeout should be enough
 
-    timeout 30 ./qemu/build/qemu-system-aarch64 \
+    timeout --foreground 30 ./qemu/build/qemu-system-aarch64 \
     -machine sbsa-ref \
     -drive if=pflash,file=SBSA_FLASH0.fd,format=raw \
     -drive if=pflash,file=SBSA_FLASH1.fd,format=raw \
