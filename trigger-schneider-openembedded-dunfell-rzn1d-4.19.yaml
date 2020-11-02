@@ -114,12 +114,11 @@
     scm:
         - git:
             url: ssh://git@dev-private-git.linaro.org/schneider/DIP-linux.git
-            refspec: +refs/heads/soca9-5.4-lts:refs/remotes/origin/soca9-5.4-lts +refs/heads/lces2-5.4-lts:refs/remotes/origin/lces2-5.4-lts
+            refspec: +refs/heads/lces2-4.19-lts:refs/remotes/origin/lces2-4.19-lts
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             name: origin
             branches:
-                - refs/heads/soca9-5.4-lts
-                - refs/heads/lces2-5.4-lts
+                - refs/heads/lces2-4.19-lts
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
@@ -128,11 +127,10 @@
     scm:
         - git:
             url: ssh://git@dev-private-git.linaro.org/schneider/DIP-uboot.git
-            refspec: +refs/heads/soca9-2020.07:refs/remotes/origin/soca9-2020.07 +refs/heads/lces2-2020.07:refs/remotes/origin/lces2-2020.07
+            refspec: +refs/heads/lces2-2020.07:refs/remotes/origin/lces2-2020.07
             credentials-id: '768c1ba1-6052-4b97-a531-7e4fabda6979'
             name: origin
             branches:
-                - refs/heads/soca9-2020.07
                 - refs/heads/lces2-2020.07
             skip-tag: true
             shallow-clone: true
@@ -151,7 +149,7 @@
             shallow-clone: true
             wipe-workspace: false
 - job:
-    name: trigger-schneider-openembedded-dunfell-5.4
+    name: trigger-schneider-openembedded-dunfell-rzn1d-4.19
     project-type: freestyle
     defaults: global
     properties:
@@ -178,7 +176,7 @@
             num-to-keep: 30
     disabled: false
     node: build
-    display-name: 'Trigger for Schneider Openembedded project (linaro-dunfell 5.4)'
+    display-name: 'Trigger for Schneider Openembedded project (linaro-dunfell rzn1d 4.19)'
     scm:
         - poky
         - meta-linaro
@@ -203,7 +201,7 @@
                 - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
         - trigger-builds:
-            - project: 'schneider-openembedded-dunfell-5.4'
+            - project: 'schneider-openembedded-dunfell-4.19'
               predefined-parameters: GIT_COMMIT=${GIT_COMMIT}
     publishers:
         - email:
