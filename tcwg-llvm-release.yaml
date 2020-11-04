@@ -36,7 +36,7 @@
             description: 'Override the default system compiler. Only used if "toolchain" is empty.'
         - string:
             name: target_list
-            default: 'tcwg-x86_64-cam tcwg-tk1_32-build tcwg-d05_64-build'
+            default: 'tcwg-x86_64-cam tcwg-tk1_32-build tcwg-amp'
             description: 'List of targets should be a subset of slave axis'
         - string:
             name: scripts_branch
@@ -76,6 +76,7 @@
                 - tcwg-tk1_32-build
                 - tcwg-apm_64-build
                 - tcwg-d05_64-build
+                - tcwg-amp
         - axis:
             type: dynamic
             name: target
@@ -125,6 +126,10 @@
                 tcwg-d05_64-build)
                     builder_arch=arm64
                     buildjobs=64 # D05 has lots of cores
+                    ;;
+                tcwg-amp)
+                    builder_arch=arm64
+                    buildjobs=32 # Amperes have 32 cores
                     ;;
                 *) echo "ERROR: Unsupported label: $label"; exit 1 ;;
             esac
