@@ -33,6 +33,7 @@ fi
 
 
 #build swig4.0 for PyArmNN
+cd ${WORKSPACE}
 tar -xf swig-4.0.2.tar.gz && rm -rf swig-4.0.2.tar.gz
 cd ${WORKSPACE}/swig-4.0.2
 ./configure --prefix=${WORKSPACE}/swig-host --without-maximum-compile-warnings --without-pcre &&
