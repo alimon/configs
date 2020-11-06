@@ -79,8 +79,11 @@
             #!/bin/bash
             set -ex
             slave_name={slave_name}
-            ./top-disk-one-slave.sh $slave_name
+            ./top-disk-one-slave.sh $slave_name | tee mail-body.txt
     publishers:
         - email-ext:
             recipients: tcwg-validation@linaro.org
+            content-type: text
+            body: |
+              ${{FILE,path="mail-body.txt"}}
             aborted: true
