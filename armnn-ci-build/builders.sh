@@ -11,12 +11,12 @@ git config --global user.name "Linaro CI"
 
 git clone --depth 1 "http://review.mlplatform.org/ml/ComputeLibrary"
 git clone https://github.com/Arm-software/armnn
-git clone --depth 1 -b v4.0.0-rc1 https://github.com/google/protobuf.git
+git clone --depth 1 https://github.com/protocolbuffers/protobuf.git --branch v3.5.2 --single-branch
 git clone --depth 1 https://github.com/tensorflow/tensorflow.git --branch r2.0 --single-branch
-git clone --depth 1 https://github.com/google/flatbuffers.git --branch v1.11.0 --single-branch
+git clone --depth 1 https://github.com/google/flatbuffers.git --branch v1.12.0 --single-branch
 wget -q https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_*.tar.bz2
 #swig 4.0
-#wget -q http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz
+wget -q http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz
 
 if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
     cd armnn
@@ -34,12 +34,12 @@ fi
 
 
 #build swig4.0 for PyArmNN
-#cd ${WORKSPACE}
-#tar -xf swig-4.0.2.tar.gz && rm -rf swig-4.0.2.tar.gz
-#cd ${WORKSPACE}/swig-4.0.2
-#./configure --prefix=${WORKSPACE}/swig-host --without-maximum-compile-warnings --without-pcre &&
-#make
-#make install
+cd ${WORKSPACE}
+tar -xf swig-4.0.2.tar.gz && rm -rf swig-4.0.2.tar.gz
+cd ${WORKSPACE}/swig-4.0.2
+./configure --prefix=${WORKSPACE}/swig-host --without-maximum-compile-warnings --without-pcre &&
+make
+make install
 
 cd ${WORKSPACE}/ComputeLibrary
 #need to add if loops for opencl=1 embed_kernels=1 and neon=1
@@ -85,6 +85,9 @@ cmake .. \
   -DTF_GENERATED_SOURCES=${WORKSPACE}/tensorflow-protobuf \
   -DBUILD_TF_PARSER=1 \
   -DPROTOBUF_ROOT=${WORKSPACE}/protobuf-host \
+  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host/bin/swig \
+  -DBUILD_PYTHON_SRC=1 \
+  -DBUILD_PYTHON_WHL=1 \
   -DBUILD_TF_LITE_PARSER=1 \
   -DARMNNREF=1 \
   -DBUILD_TESTS=1 -DBUILD_UNIT_TESTS=1 \
@@ -92,14 +95,6 @@ cmake .. \
   -DFLATBUFFERS_ROOT=${WORKSPACE}/flatbuffers \
   -DFLATBUFFERS_LIBRARY=${WORKSPACE}/flatbuffers/libflatbuffers.a
 make -j$(nproc)
-
-
-#PyArmNN stuff
-#  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host/bin/swig \
-#  -DBUILD_PYTHON_SRC=1 \
-#  -DBUILD_PYTHON_WHL=1 \
-
-
 
 cd ${WORKSPACE}
 rm -rf boost_*.tar.bz2 boost_* protobuf tensorflow
