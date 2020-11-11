@@ -11,7 +11,7 @@ git config --global user.name "Linaro CI"
 
 git clone --depth 1 "http://review.mlplatform.org/ml/ComputeLibrary"
 git clone https://github.com/Arm-software/armnn
-git clone --depth 1 https://github.com/protocolbuffers/protobuf.git --branch v3.5.2 --single-branch
+git clone --depth 1 https://github.com/protocolbuffers/protobuf.git --branch v3.9.2 --single-branch
 git clone --depth 1 https://github.com/tensorflow/tensorflow.git --branch r2.0 --single-branch
 git clone --depth 1 https://github.com/google/flatbuffers.git --branch v1.12.0 --single-branch
 wget -q https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_*.tar.bz2
@@ -94,9 +94,6 @@ cmake .. \
   -DTF_GENERATED_SOURCES=${WORKSPACE}/tensorflow-protobuf \
   -DBUILD_TF_PARSER=1 \
   -DPROTOBUF_ROOT=${WORKSPACE}/protobuf-host \
-  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host/bin/swig \
-  -DBUILD_PYTHON_SRC=1 \
-  -DBUILD_PYTHON_WHL=1 \
   -DBUILD_TF_LITE_PARSER=1 \
   -DBUILD_ONNX_PARSER=1 \
   -DONNX_GENERATED_SOURCES=${WORKSPACE}/onnx \
@@ -104,7 +101,10 @@ cmake .. \
   -DBUILD_TESTS=1 -DBUILD_UNIT_TESTS=1 \
   -DTF_LITE_GENERATED_PATH=${WORKSPACE}/tensorflow/tensorflow/lite/schema \
   -DFLATBUFFERS_ROOT=${WORKSPACE}/flatbuffers \
-  -DFLATBUFFERS_LIBRARY=${WORKSPACE}/flatbuffers/libflatbuffers.a
+  -DFLATBUFFERS_LIBRARY=${WORKSPACE}/flatbuffers/libflatbuffers.a \
+  -DSWIG_EXECUTABLE=${WORKSPACE}/swig-host/bin/swig \
+  -DBUILD_PYTHON_SRC=1 \
+  -DBUILD_PYTHON_WHL=1
 make -j$(nproc)
 
 cd ${WORKSPACE}
