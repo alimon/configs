@@ -18,7 +18,7 @@ wget -q https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.b
 #swig 4.0
 wget -q http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz
 export ONNX_ML=1
-git clone --depth 1 https://github.com/onnx/onnx.git
+git clone https://github.com/onnx/onnx.git
 unset ONNX_ML
 
 if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
