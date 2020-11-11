@@ -81,7 +81,7 @@ make -j$(nproc)
 cd ${WORKSPACE}/onnx
 git checkout f612532843bd8e24efeab2815e45b436479cc9ab
 export LD_LIBRARY_PATH=${WORKSPACE}/protobuf-host/lib:$LD_LIBRARY_PATH
-${WORKSPACE}/protobuf-host/bin/protoc onnx/onnx.proto --proto_path=. --proto_path=${WORKSPACE}/protobuf-host/include --cpp_out ${WORKPSACE}/onnx
+${WORKSPACE}/protobuf-host/bin/protoc onnx/onnx.proto --proto_path=. --proto_path=${WORKSPACE}/protobuf-host/include --cpp_out ${WORKSPACE}/onnx
 
 #Build Arm NN
 cd ${WORKSPACE}/armnn
