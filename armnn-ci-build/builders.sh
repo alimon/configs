@@ -9,8 +9,8 @@ sudo apt -q=2 install -y --no-install-recommends python-pip python3-pip virtuale
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 
-git clone --depth 1 "http://review.mlplatform.org/ml/ComputeLibrary"
-git clone https://github.com/Arm-software/armnn
+git clone --depth 1 "https://review.mlplatform.org/ml/ComputeLibrary"
+git clone "https://review.mlplatform.org/ml/armnn"
 git clone --depth 1 https://github.com/protocolbuffers/protobuf.git --branch v3.9.2 --single-branch
 git clone --depth 1 https://github.com/tensorflow/tensorflow.git --branch r2.0 --single-branch
 git clone --depth 1 https://github.com/google/flatbuffers.git --branch v1.12.0 --single-branch
@@ -35,6 +35,8 @@ if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; the
     fi
 fi
 
+cd ${WORKSPACE}/armnn
+git checkout master
 
 #build swig4.0 for PyArmNN
 cd ${WORKSPACE}
