@@ -59,6 +59,7 @@ actions:
     - unzip
     - git
     - trace-cmd
+    - usbutils
     os: ubuntu
 
 - boot:
@@ -103,8 +104,10 @@ actions:
           description: "android-boot"
         run:
           steps:
+            - lava-test-case "android-boot-sleep-3mins" --shell sleep 180
+            - lava-test-case "android-boot-lsusb-v" --shell lsusb -v
             - lava-test-case "android-boot-wait-for-device" --shell adb wait-for-device
-            - lava-test-case "android-boot-sleep-2mins" --shell adb shell sleep 120
+            - lava-test-case "android-boot-sleep-1mins" --shell adb shell sleep 60
             - lava-test-case "android-boot" --shell adb shell getprop sys.boot_completed
             - lava-test-case "android-boot-screencap" --shell adb shell screencap -p /data/local/tmp/screencap.png
 
