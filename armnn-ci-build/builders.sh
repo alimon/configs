@@ -17,9 +17,9 @@ git clone --depth 1 https://github.com/google/flatbuffers.git --branch v1.12.0 -
 wget -q https://dl.bintray.com/boostorg/release/1.64.0/source/boost_1_64_0.tar.bz2 && tar xf boost_*.tar.bz2
 #swig 4.0
 wget -q http://prdownloads.sourceforge.net/swig/swig-4.0.2.tar.gz
-export ONNX_ML=1
-git clone https://github.com/onnx/onnx.git
-unset ONNX_ML
+#export ONNX_ML=1
+#git clone https://github.com/onnx/onnx.git
+#unset ONNX_ML
 
 if [ -n "$GERRIT_PROJECT" ] && [ $GERRIT_EVENT_TYPE == "patchset-created" ]; then
     cd armnn
@@ -80,10 +80,10 @@ cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fPIC"
 make -j$(nproc)
 
 #Build Onnx
-cd ${WORKSPACE}/onnx
-git checkout f612532843bd8e24efeab2815e45b436479cc9ab
-export LD_LIBRARY_PATH=${WORKSPACE}/protobuf-host/lib:$LD_LIBRARY_PATH
-${WORKSPACE}/protobuf-host/bin/protoc onnx/onnx.proto --proto_path=. --proto_path=${WORKSPACE}/protobuf-host/include --cpp_out ${WORKSPACE}/onnx
+#cd ${WORKSPACE}/onnx
+#git checkout f612532843bd8e24efeab2815e45b436479cc9ab
+#export LD_LIBRARY_PATH=${WORKSPACE}/protobuf-host/lib:$LD_LIBRARY_PATH
+#${WORKSPACE}/protobuf-host/bin/protoc onnx/onnx.proto --proto_path=. --proto_path=${WORKSPACE}/protobuf-host/include --cpp_out ${WORKSPACE}/onnx
 
 #Build Arm NN
 cd ${WORKSPACE}/armnn
@@ -97,8 +97,6 @@ cmake .. \
   -DBUILD_TF_PARSER=1 \
   -DPROTOBUF_ROOT=${WORKSPACE}/protobuf-host \
   -DBUILD_TF_LITE_PARSER=1 \
-  -DBUILD_ONNX_PARSER=1 \
-  -DONNX_GENERATED_SOURCES=${WORKSPACE}/onnx \
   -DARMNNREF=1 \
   -DBUILD_TESTS=1 -DBUILD_UNIT_TESTS=1 \
   -DTF_LITE_GENERATED_PATH=${WORKSPACE}/tensorflow/tensorflow/lite/schema \
