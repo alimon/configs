@@ -52,7 +52,7 @@
         - string:
             name: GIT_COM_ID
     disabled: false
-    node: docker-stretch-arm64
+    node: docker-bionic-arm64
 
     wrappers:
         - timestamps
@@ -91,7 +91,7 @@
             --arg 'BUILD_NUMBER' $BUILD_NUMBER \
             '{LAVA_ID:$LAVA_ID, ARMNN_TAR_LOCATION:$ARMNN_TAR_LOCATION, BUILD_NUMBER:$BUILD_NUMBER}' > out/buildInfo.json
 
-           
+
             # Publish
             test -d ${HOME}/bin || mkdir ${HOME}/bin
 
@@ -152,7 +152,7 @@
             source ./venv/bin/activate
 
             # fix for setuptools v50
-            export SETUPTOOLS_USE_DISTUTILS="stdlib" 
+            export SETUPTOOLS_USE_DISTUTILS="stdlib"
             cd lava-test-plans
             pip3 install -r requirements.txt
             ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
