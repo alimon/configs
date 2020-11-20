@@ -79,8 +79,11 @@
     builders:
         - shell: |
             #!/bin/bash
-
             set -ex
+            cat << EOF > mail-body.txt
+            Cleaning stale containers on $NODE_NAME.
+            Please check console output at $BUILD_URL to view the results
+            EOF
             maybe_ssh=""
             case "$NODE_NAME" in
               tcwg-bmk-bkp-*) ;;
@@ -112,3 +115,6 @@
         - email-ext:
             recipients: tcwg-validation@linaro.org
             aborted: true
+            content-type: text
+            body: |
+              ${{FILE,path="mail-body.txt"}}
