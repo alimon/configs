@@ -5,6 +5,7 @@ set -ex
 sudo apt -q=2 update
 sudo apt -q=2 install -y --no-install-recommends build-essential scons cmake git autoconf automake curl libtool libpthread-stubs0-dev
 sudo apt -q=2 install -y --no-install-recommends python3-pip virtualenv python3-dev python3-setuptools
+pip3 install wheel
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
