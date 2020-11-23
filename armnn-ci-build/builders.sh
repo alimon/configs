@@ -116,7 +116,7 @@ find ${WORKSPACE} -type f -name *.o -delete
 tar -cJf /tmp/armnn-full.tar.xz ${WORKSPACE}
 
 mv armnn/build .
-mv protobuf-host/lib/libprotobuf.so.23.0 build
+mv protobuf-host/lib/libprotobuf.so.20.0.2 build
 rm -rf boost armnn ComputeLibrary flatbuffers protobuf-host tensorflow-protobuf builders.sh
 tar -cJf /tmp/armnn.tar.xz ${WORKSPACE}
 
