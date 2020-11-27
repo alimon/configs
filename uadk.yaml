@@ -37,16 +37,14 @@
             auth-id: 'GITHUB_TOKEN'
     wrappers:
         - timestamps
-        - build-name:
-            name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
         - shell: |
-            #!/bin/bash
+            #!/bin/bash -e
+
+            echo "#${BUILD_NUMBER}-${ghprbActualCommit:0:8}" > ${WORKSPACE}/version.txt
 
             sudo apt update -q=2
             sudo apt install -q=2 --yes --no-install-recommends zlib1g-dev libnuma-dev
-
-            set -e
 
             cd ${WORKSPACE}/uadk && ./autogen.sh
 
@@ -59,11 +57,9 @@
             make install DESTDIR=${WORKSPACE}/uadk-shared-v2 && make clean
 
             # FIXME: https://github.com/Linaro/uadk/issues/90
-            set +e
             # static build for v1
             ./conf.sh --with-uadk_v1 --static && make
             make install DESTDIR=${WORKSPACE}/uadk-static-v2 && make clean
-            set -e
 
             # static build for v2
             ./conf.sh --static && make
@@ -71,6 +67,9 @@
 
             cd ${WORKSPACE}
             tar -cJf uadk.tar.xz uadk-*-v*/
+        - build-name-setter:
+            name: 'version.txt'
+            file: true
     publishers:
         - archive:
             artifacts: 'uadk.tar.xz'
