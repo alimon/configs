@@ -11,20 +11,30 @@
             days-to-keep: 30
             num-to-keep: 30
             artifact-num-to-keep: 10
+        - github:
+            url: https://github.com/Linaro/uadk
     disabled: false
     node: docker-buster-arm64
     display-name: 'UADK - User Space Accelerator Development Kit'
+    concurrent: false
     scm:
         - git:
             url: https://github.com/Linaro/uadk.git
-            refspec: +refs/heads/master:refs/remotes/origin/master
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
             name: origin
             branches:
-                - refs/heads/master
+                - ${sha1}
             basedir: uadk
             skip-tag: true
             shallow-clone: true
             wipe-workspace: false
+    triggers:
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            white-list-target-branches:
+                - 'master'
+            auth-id: 'GITHUB_TOKEN'
     wrappers:
         - timestamps
         - build-name:
