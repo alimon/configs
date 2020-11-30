@@ -1,0 +1,131 @@
+- job:
+    name: ml-benchmarks
+    project-type: freestyle
+    defaults: global
+    description: |
+        Benchmarks for ML applications, including TVM, Tensorflow, ONNX, and ARMNN
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+        - github:
+            url: https://github.com/tom-gall/tvm-bench
+
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+    disabled: false
+    node: docker-bionic-arm64
+    display-name: 'ML-Bench Benchmarks'
+
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            #!/bin/bash -e
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash -ex
+
+            export DEVICE_TYPE=hi960-hikey
+
+           
+            cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
+            LAVA_JOB_PRIORITY=50
+            PROJECT_NAME=ml-bench
+            PROJECT=projects/ml-bench/
+            BOOT_URL=http://snapshots.linaro.org/96boards/hikey/linaro/debian/30/boot-linaro-stretch-developer-hikey-20190420-30.img.gz
+            BOOT_URL_COMP=gz
+            ROOTFS_URL=http://snapshots.linaro.org/96boards/hikey/linaro/debian/30/rootfs-linaro-stretch-developer-hikey-20190420-30.img.gz
+            ROOTFS_URL_COMP=gz
+            DEPLOY_OS=debian
+            OS_INFO=debian
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            EOF
+
+            git clone --depth 1 https://github.com/Linaro/lava-test-plans.git
+
+            # submit tests to LAVA
+            rm -rf venv | true
+            virtualenv -p python3 venv
+            source ./venv/bin/activate
+
+            # fix for setuptools v50
+            export SETUPTOOLS_USE_DISTUTILS="stdlib"
+            cd lava-test-plans
+            pip3 install -r requirements.txt
+            ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
+              --device-type ${DEVICE_TYPE} \
+              --test-plan ml-bench \
+              --qa-server-team armnn \
+              --qa-server-project ml-bench \
+              --lava-server ${LAVA_SERVER} \
+              --build-id ${LAVA_ID}
+
+            export DEVICE_TYPE=synquacer
+            cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
+            LAVA_JOB_PRIORITY=50
+            PROJECT_NAME=ml-bench
+            PROJECT=projects/ml-bench/
+            AUTO_LOGIN_PASSWORD_PROMPT='Password:'
+            AUTO_LOGIN_PASSWORD='Linaro123'
+            KERNEL_URL=http://images.validation.linaro.org/synquacer/hc/vmlinuz
+            RAMDISK_URL=http://images.validation.linaro.org/synquacer/hc/initrd.img
+            RAMDISK_URL_COMP=gz
+            ROOTFS_URL=http://images.validation.linaro.org/synquacer/hc/rootfs.tar.xz
+            ROOTFS_URL_COMP=xz
+            DEPLOY_OS=debian
+            OS_INFO=debian
+            DEVICE_TYPE=${DEVICE_TYPE}
+            EOF
+
+            ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
+              --device-type ${DEVICE_TYPE} \
+              --test-plan ml-bench \
+              --qa-server-team armnn \
+              --qa-server-project ml-bench \
+              --lava-server ${LAVA_SERVER} \
+              --build-id ${LAVA_ID}
+
+            export DEVICE_TYPE=dragonboard-845c
+
+            cat << EOF > ${WORKSPACE}/submit_for_testing_parameters
+            LAVA_JOB_PRIORITY=50
+            PROJECT_NAME=ml-bench
+            PROJECT=projects/ml-bench/
+            PTABLE_URL=https://images.validation.linaro.org/snapshots.linaro.org/96boards/dragonboard845c/linaro/rescue/28/dragonboard-845c-bootloader-ufs-linux-28/gpt_both0.bin
+            BOOT_URL=http://images.validation.linaro.org/releases.linaro.org/96boards/dragonboard845c/linaro/debian/19.09/boot-linaro-buster-dragonboard-845c-58.img.gz
+            BOOT_URL_COMP=gz
+            ROOTFS_URL=http://images.validation.linaro.org/releases.linaro.org/96boards/dragonboard845c/linaro/debian/19.09/linaro-buster-alip-dragonboard-845c-58.img.gz
+            ROOTFS_URL_COMP=gz
+            DEPLOY_OS=debian
+            OS_INFO=debian
+            DEVICE_TYPE=${DEVICE_TYPE}
+            BUILD_NUMBER=${BUILD_NUMBER}
+            EOF
+
+            ./submit_for_testing.py --variables ${WORKSPACE}/submit_for_testing_parameters \
+              --device-type ${DEVICE_TYPE} \
+              --test-plan ml-bench \
+              --qa-server-team armnn \
+              --qa-server-project ml-bench \
+              --lava-server ${LAVA_SERVER} \
+              --build-id ${LAVA_ID}
