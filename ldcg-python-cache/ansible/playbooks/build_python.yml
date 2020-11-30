@@ -1,0 +1,86 @@
+- block:
+  - name: enable EPEL
+    become: yes
+    dnf:
+      name:
+        - epel-release
+
+  - name: install h5py build requirements
+    become: yes
+    dnf:
+      name:
+        - hdf5-devel
+      enablerepo: PowerTools
+      state: present
+
+  - name: install numpy build requirements
+    become: yes
+    dnf:
+      name:
+        - gcc-gfortran
+        - openblas-devel
+        - lapack-devel
+        - python3-devel
+      enablerepo: PowerTools
+      state: present
+
+  - name: install required Python packages
+    become: yes
+    dnf:
+      name:
+        - python3-pip
+        - python3-setuptools
+        - python3-virtualenv
+        - python3-wheel
+        - python3-zipp
+  when: ansible_os_family == 'RedHat'
+
+- block:
+  - name: install h5py build requirements
+    become: yes
+    apt:
+      name:
+        - libhdf5-dev
+        - pkg-config
+      state: present
+
+  - name: install numpy build requirements
+    become: yes
+    apt:
+      name:
+        - gfortran
+        - libblas-dev
+        - liblapack-dev
+        - python3-dev
+      state: present
+
+  - name: install required Python packages
+    become: yes
+    apt:
+      name:
+        - python3-pip
+        - python3-setuptools
+        - python3-venv
+        - python3-wheel
+        - python3-zipp
+  when: ansible_os_family == 'Debian'
+
+- name: install Cython
+  become: yes
+  pip:
+    name:
+      - "Cython>=0.29"
+
+- name: create directory to build wheels
+  file:
+    path: "{{ wheels_dir }}"
+    state: directory
+    mode: 0700
+
+- name: make a list of packages to build
+  set_fact:
+    wheel_names: "{{ python_packages.split(' ') }}"
+
+- name: build wheels of binary Python packages
+  include_tasks: build_python_wheel.yml
+  loop: "{{ wheel_names }}"

@@ -1,0 +1,39 @@
+- hosts: all
+  vars_files:
+    ../vars/vars.yml
+  tasks:
+    - name: create build workspace
+      tempfile:
+        state: directory
+      register: build_dir
+
+    - name: include Python tasks
+      include_tasks: build_python.yml
+
+    - name: prepare wheels for publishing # noqa 301
+      shell:
+        cmd: |
+          set -xe
+          mkdir /home/buildslave/out/
+
+          for pkg in *.whl
+          do
+            pkgdir=$(echo `basename $pkg`|cut -d'-' -f1 | tr '[:upper:]_' '[:lower:]-')
+            mkdir -p "{{ wheels_dir }}/$pkgdir"
+            mv $pkg  "{{ wheels_dir }}/$pkgdir"
+
+            # # do we have this package in cache already?
+            # status=$(curl --head --silent ${index_url}/${pkgdir}/${pkg} | head -n 1)
+            # if $(echo $status | grep -q 200); then
+            #   rm -rf "{{ wheels_dir }}/$pkgdir"
+            # fi
+          done
+
+        chdir: "{{ wheels_dir }}"
+        executable: "/bin/bash"
+
+    - name: remove build workspace
+      file:
+        path: "{{ build_dir.path }}"
+        state: absent
+      when: build_dir.path is defined

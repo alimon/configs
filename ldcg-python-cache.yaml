@@ -1,0 +1,42 @@
+- job:
+    name: ldcg-python-cache
+    project-type: matrix
+    defaults: global
+    axes:
+        - axis:
+            type: slave
+            name: nodes
+            values:
+                - docker-centos8-arm64-ldcg
+                - docker-buster-arm64-leg
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    parameters:
+        - string:
+            name: PYTHON_PACKAGES
+            default: 'grpcio numpy==1.18.* h5py'
+            description: 'space separates names of Python wheels to build'
+    disabled: false
+    display-name: 'Build some Python package wheels'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ldcg-python-cache/build.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: ldcg-python-cache/publishers.sh
+    publishers:
+        - email:
+            recipients: 'marcin.juszkiewicz@linaro.org'
