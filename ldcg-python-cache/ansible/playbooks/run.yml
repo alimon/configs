@@ -25,7 +25,9 @@
 
             # do we have this package in cache already?
             status=$(curl --head --silent ${index_url}/${pkgdir}/${pkg} | head -n 1)
-            if $(echo $status | grep -q 200); then
+            if $(echo $status | grep -q 404); then
+              echo "uploading $pkgdir/$pkg"
+            else
               rm -rf "{{ wheels_dir }}/$pkgdir/$pkg"
             fi
           done
