@@ -23,11 +23,11 @@
             mkdir -p "{{ wheels_dir }}/$pkgdir"
             mv $pkg  "{{ wheels_dir }}/$pkgdir"
 
-            # # do we have this package in cache already?
-            # status=$(curl --head --silent ${index_url}/${pkgdir}/${pkg} | head -n 1)
-            # if $(echo $status | grep -q 200); then
-            #   rm -rf "{{ wheels_dir }}/$pkgdir"
-            # fi
+            # do we have this package in cache already?
+            status=$(curl --head --silent ${index_url}/${pkgdir}/${pkg} | head -n 1)
+            if $(echo $status | grep -q 200); then
+              rm -rf "{{ wheels_dir }}/$pkgdir/$pkg"
+            fi
           done
 
         chdir: "{{ wheels_dir }}"
