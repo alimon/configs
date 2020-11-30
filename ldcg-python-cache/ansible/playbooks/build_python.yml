@@ -13,6 +13,13 @@
       enablerepo: PowerTools
       state: present
 
+  - name: provide xlocale.h for h5py (symlink to locale.h)
+    become: yes
+    file:
+      src: /usr/include/locale.h
+      dest: /usr/include/xlocale.h
+      state: link
+
   - name: install numpy build requirements
     become: yes
     dnf:
