@@ -19,7 +19,6 @@ git clone --depth 1 https://git.linaro.org/ci/job/configs.git
 
 cd configs/ldcg-python-cache/ansible
 
-echo "pip_extra_index_url: ${PIP_EXTRA_INDEX_URL}" >> vars/vars.yml
 echo "python_packages: ${PYTHON_PACKAGES}" >> vars/vars.yml
 
 ansible-playbook -i inventory playbooks/run.yml
