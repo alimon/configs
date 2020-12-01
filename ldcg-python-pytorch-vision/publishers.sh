@@ -18,8 +18,8 @@ time python3 ${HOME}/bin/linaro-cp.py \
     --server ${PUBLISH_SERVER} \
     --link-latest \
     /home/buildslave/wheels
-    hpc/python/pytorch/${BUILD_NUMBER}
+    ldcg/python/pytorch/${BUILD_NUMBER}
 
 set +x
 
-echo "Python wheels: https://snapshots.linaro.org/hpc/python/pytorch/${BUILD_NUMBER}/"
+echo "Python wheels: https://snapshots.linaro.org/ldcg/python/pytorch/${BUILD_NUMBER}/"
