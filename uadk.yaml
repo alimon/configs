@@ -19,7 +19,7 @@
         - github:
             url: https://github.com/Linaro/uadk
     disabled: false
-    node: docker-buster-arm64
+    node: d06-uadk
     display-name: 'UADK - User Space Accelerator Development Kit'
     concurrent: false
     scm:
@@ -32,7 +32,7 @@
             basedir: uadk
             skip-tag: true
             shallow-clone: true
-            wipe-workspace: false
+            wipe-workspace: true
     triggers:
         - github-pull-request:
             github-hooks: true
@@ -48,8 +48,9 @@
 
             echo "#${BUILD_NUMBER}-${ghprbActualCommit:0:8}" > ${WORKSPACE}/version.txt
 
-            sudo apt update -q=2
-            sudo apt install -q=2 --yes --no-install-recommends zlib1g-dev libnuma-dev
+            # Build dependencies already pre-installed on the node
+            #sudo apt update -q=2
+            #sudo apt install -q=2 --yes --no-install-recommends zlib1g-dev libnuma-dev
 
             cd ${WORKSPACE}/uadk && ./autogen.sh
 
