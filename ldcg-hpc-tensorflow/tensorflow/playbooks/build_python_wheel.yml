@@ -4,8 +4,9 @@
       NPY_NUM_BUILD_JOBS=$(nproc) \
       GRPC_PYTHON_BUILD_EXT_COMPILER_JOBS=$(nproc) \
       pip3 wheel -w '{{ wheels_dir }}' \
+        --extra-index-url {{ pip_extra_index_url }} \
         -c "{{ wheels_dir }}/upper-constraints.txt" \
-        --no-binary :all: "{{ item }}"
+        "{{ item }}"
     executable: /bin/bash
 
 - name: get name of built wheel file
