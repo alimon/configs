@@ -20,17 +20,28 @@
       - python3-wheel
   when: ansible_os_family == 'Debian'
 
-- name: fetch tensorflow {{ tensorflow_version }} source
-  get_url:
-    url: "https://github.com/tensorflow/tensorflow/archive/v{{ tensorflow_version }}.tar.gz"
-    dest: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}.tar.gz"
-    mode: 0600
+- block:
+  - name: fetch tensorflow {{ tensorflow_version }} source
+    get_url:
+      url: "https://github.com/tensorflow/tensorflow/archive/v{{ tensorflow_version }}.tar.gz"
+      dest: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}.tar.gz"
+      mode: 0600
 
-- name: unpack tensorflow {{ tensorflow_version }} source
-  unarchive:
-    src: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}.tar.gz"
-    dest: "{{ build_dir.path }}/"
-    remote_src: yes
+  - name: unpack tensorflow {{ tensorflow_version }} source
+    unarchive:
+      src: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}.tar.gz"
+      dest: "{{ build_dir.path }}/"
+      remote_src: yes
+  when: tensorflow_version != 'git'
+
+- name: fetch tensorflow from git
+  git:
+    repo: "https://github.com/tensorflow/tensorflow.git" # noqa 401
+    dest: "{{ build_dir.path }}/tensorflow-{{ tensorflow_version }}/"
+    depth: 1
+    recursive: yes
+    force: yes
+  when: tensorflow_version == 'git'
 
 - name: copy configure script
   copy:
