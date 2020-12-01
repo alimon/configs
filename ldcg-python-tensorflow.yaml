@@ -1,0 +1,37 @@
+- job:
+    name: ldcg-python-tensorflow
+    project-type: matrix
+    defaults: global
+    axes:
+        - axis:
+            type: slave
+            name: nodes
+            values:
+                - docker-centos8-arm64-ldcg
+                - docker-buster-arm64-leg
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 7
+            num-to-keep: 7
+    disabled: false
+    display-name: 'Tensorflow Python package'
+    wrappers:
+        - timestamps
+    builders:
+        - shell:
+            !include-raw: ldcg-python-tensorflow/build.sh
+        - linaro-publish-token
+        - shell:
+            !include-raw: ldcg-python-tensorflow/publishers.sh
+    publishers:
+        - email:
+            recipients: 'paul.isaacs@linaro.org marcin.juszkiewicz@linaro.org'

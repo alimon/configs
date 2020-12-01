@@ -17,8 +17,8 @@ time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
   /var/tmp/workspace/out \
-  hpc/python/tensorflow/${BUILD_NUMBER}
+  ldcg/python/tensorflow/${BUILD_NUMBER}
 
 set +x
 
-echo "Python wheels: https://snapshots.linaro.org/hpc/python/tensorflow/${BUILD_NUMBER}/"
+echo "Python wheels: https://snapshots.linaro.org/ldcg/python/tensorflow/${BUILD_NUMBER}/"

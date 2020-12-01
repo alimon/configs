@@ -17,6 +17,6 @@ fi
 
 git clone --depth 1 https://git.linaro.org/ci/job/configs.git
 
-cd configs/ldcg-hpc-tensorflow/tensorflow
+cd configs/ldcg-python-tensorflow/tensorflow
 
 ansible-playbook -i inventory playbooks/run.yml
