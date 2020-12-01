@@ -70,6 +70,7 @@
     virtualenv: "{{ virtualenv_dir }}"
     virtualenv_command: "/usr/bin/python3 -m venv"
     virtualenv_site_packages: yes
+    extra_args: "--extra-index-url {{ pip_extra_index_url }}"
   environment:
     NPY_NUM_BUILD_JOBS: "{{ ansible_processor_vcpus }}"
 
@@ -78,7 +79,10 @@
     cmd: |
       set -xe
       source "{{ virtualenv_dir }}/bin/activate"
-      USE_CUDA=0 BUILD_CAFFE2_OPS=0 USE_DISTRIBUTED=0 USE_QNNPACK=0 USE_XNNPACK=0 pip wheel -w "{{ wheels_dir }}" .
+      USE_CUDA=0 BUILD_CAFFE2_OPS=0 USE_DISTRIBUTED=0 USE_QNNPACK=0 USE_XNNPACK=0 \
+        pip wheel -w "{{ wheels_dir }}" \
+          --extra-index-url {{ pip_extra_index_url }} \
+        .
       find . -name "*.whl" -ls
     chdir: "{{ build_dir.path }}/pytorch/"
     creates: "{{ build_dir.path }}/pytorch/build/"
