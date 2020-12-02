@@ -19,10 +19,6 @@
             default: true
             description: 'Generate ABE snapshots'
         - bool:
-            name: generate_llvm
-            default: true
-            description: 'Generate LLVM repos'
-        - bool:
             name: generate_misc
             default: true
             description: 'Generate misc file'
@@ -30,10 +26,6 @@
             name: update_abe_git
             default: true
             description: 'Update ABE Git repos'
-        - bool:
-            name: update_llvm_git
-            default: true
-            description: 'Update LLVM Git repos'
         - bool:
             name: verbose
             default: true
@@ -80,18 +72,15 @@
             #!/bin/bash
             ./tcwg-generate-source-cache.sh \
             --dir-abe $HOME/snapshots-ref-new \
-            --dir-llvm $HOME/llvm-reference-new \
             --generate-abe $generate_abe \
-            --generate-llvm $generate_llvm \
             --generate-misc $generate_misc \
             --update-abe-git $update_abe_git \
-            --update-llvm-git $update_llvm_git \
             --verbose $verbose \
             --abe-branch $abe_branch
         - trigger-builds:
             - project: tcwg-buildslave-command
               predefined-parameters: |
-                command=set -ex; for snapshots_dir in $HOME/snapshots-ref $HOME/llvm-reference; do rsync -az --delete $NODE_NAME.tcwglab:$snapshots_dir-new/ $snapshots_dir-new/; flock -x $snapshots_dir.lock -c "rsync -a --del ${snapshots_dir}-new/ $snapshots_dir/"; done
+                command=set -ex; for snapshots_dir in $HOME/snapshots-ref; do rsync -az --delete $NODE_NAME.tcwglab:$snapshots_dir-new/ $snapshots_dir-new/; flock -x $snapshots_dir.lock -c "rsync -a --del ${snapshots_dir}-new/ $snapshots_dir/"; done
                 displayname=snapshot-refs
               parameter-factories:
                 - factory: allnodesforlabel
