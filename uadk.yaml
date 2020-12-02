@@ -57,19 +57,34 @@
             # shared build for v1
             ./conf.sh --with-uadk_v1 && make
             make install DESTDIR=${WORKSPACE}/uadk-shared-v1 && make clean
+            sudo \
+              LD_LIBRARY_PATH=${WORKSPACE}/uadk-shared-v1/usr/local/lib/ \
+              PATH=${WORKSPACE}/uadk-shared-v1/usr/local/bin:${PATH}  \
+              ${WORKSPACE}/uadk/test/sanity_test.sh
 
             # shared build for v2
             ./conf.sh && make
             make install DESTDIR=${WORKSPACE}/uadk-shared-v2 && make clean
+            sudo \
+              LD_LIBRARY_PATH=${WORKSPACE}/uadk-shared-v2/usr/local/lib/ \
+              PATH=${WORKSPACE}/uadk-shared-v2/usr/local/bin:${PATH}  \
+              ${WORKSPACE}/uadk/test/sanity_test.sh
 
-            # FIXME: https://github.com/Linaro/uadk/issues/90
             # static build for v1
             ./conf.sh --with-uadk_v1 --static && make
-            make install DESTDIR=${WORKSPACE}/uadk-static-v2 && make clean
+            make install DESTDIR=${WORKSPACE}/uadk-static-v1 && make clean
+            sudo \
+              LD_LIBRARY_PATH=${WORKSPACE}/uadk-static-v1/usr/local/lib/ \
+              PATH=${WORKSPACE}/uadk-static-v1/usr/local/bin:${PATH}  \
+              ${WORKSPACE}/uadk/test/sanity_test.sh
 
             # static build for v2
             ./conf.sh --static && make
             make install DESTDIR=${WORKSPACE}/uadk-static-v2 && make clean
+            sudo \
+              LD_LIBRARY_PATH=${WORKSPACE}/uadk-static-v2/usr/local/lib/ \
+              PATH=${WORKSPACE}/uadk-static-v2/usr/local/bin:${PATH}  \
+              ${WORKSPACE}/uadk/test/sanity_test.sh
 
             cd ${WORKSPACE}
             tar -cJf uadk.tar.xz uadk-*-v*/
