@@ -17,7 +17,7 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python3 ${HOME}/bin/linaro-cp.py \
     --server ${PUBLISH_SERVER} \
     --link-latest \
-    /home/buildslave/wheels
+    /home/buildslave/wheels \
     ldcg/python/pytorch/${BUILD_NUMBER}
 
 set +x
