@@ -24,7 +24,7 @@
           do
             pkgdir=$(echo `basename $pkg`|cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
             mkdir -p "{{ wheels_dir }}/$pkgdir/"
-            cp $pkg  "{{ wheels_dir }}/$pkgdir/"
+            mv $pkg  "{{ wheels_dir }}/$pkgdir/"
           done
         chdir: "{{ build_dir.path }}/"
         creates: "{{ wheels_dir }}/torch/"

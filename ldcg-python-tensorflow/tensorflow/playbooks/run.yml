@@ -38,7 +38,7 @@
           do
             pkgdir=$(echo `basename $pkg`|cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
             mkdir -p "{{ wheels_dir }}/$pkgdir"
-            cp $pkg  "{{ wheels_dir }}/$pkgdir"
+            mv $pkg  "{{ wheels_dir }}/$pkgdir"
           done
         chdir: "{{ wheels_dir }}"
         creates: "{{ wheels_dir }}/numpy/"
