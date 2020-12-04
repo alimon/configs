@@ -19,7 +19,9 @@ git clone --depth 1 https://git.linaro.org/ci/job/configs.git
 
 cd configs/ldcg-python-tensorflow/tensorflow
 
-if [ $JOB_NAME == 'ldcg-python-tensorflow-nightly' ]; then
+# 00:01:34.515 + '[' ldcg-python-tensorflow-nightly/nodes=docker-buster-arm64-leg == ldcg-python-tensorflow-nightly ']'
+
+if [ `echo $JOB_NAME | cut -d'/' -f1` == 'ldcg-python-tensorflow-nightly' ]; then
     ansible-playbook -i inventory playbooks/run-git.yml
 else
     ansible-playbook -i inventory playbooks/run.yml
