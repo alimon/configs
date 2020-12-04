@@ -13,9 +13,6 @@ fi
 
 ls -alR $COPY_FROM
 
-# create empty dirs so pip do not complain
-mkdir -p $COPY_FROM/{wheel,setuptools,pybind11}
-
 # Publish wheel files
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
