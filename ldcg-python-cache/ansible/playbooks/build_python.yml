@@ -72,6 +72,13 @@
         - python3-zipp
   when: ansible_os_family == 'Debian'
 
+- name: upgrade pip
+  become: yes
+  pip:
+    name:
+      - pip
+    state: latest
+
 - name: install Cython
   become: yes
   pip:
