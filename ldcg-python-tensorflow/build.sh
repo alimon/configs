@@ -12,7 +12,7 @@ if [ -e /etc/debian_version ]; then
 else
     sudo dnf -y distrosync
     sudo dnf -y install centos-release-ansible-29
-    sudo dnf -y install ansible git
+    sudo dnf -y install ansible git python36
 fi
 
 git clone --depth 1 https://git.linaro.org/ci/job/configs.git
