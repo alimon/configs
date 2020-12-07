@@ -16,6 +16,7 @@
       - arm:
           node: tcwg-armv8_32
           docker_arch: armhf
+    disabled: false
     type_of_test:
       - check_binutils
     jobs:
@@ -391,7 +392,7 @@
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
           binutils_url: '{binutils_url}'
           default_branch: 'default'
-    disabled: false
+    disabled: '{disabled}'
     node: '{node} && tcwg-build'
     concurrent: false
     display-name: 'TCWG Build {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -442,7 +443,7 @@
       - bisect-parameters:
           ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
-    disabled: false
+    disabled: '{disabled}'
     node: '{node} && tcwg-bisect'
     concurrent: false
     display-name: 'TCWG Bisect {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -460,4 +461,4 @@
           docker_arch: '{docker_arch}'
     publishers:
       - bisect-publishers
-# checksum: 980c7f9b9cec3ca52719c6d459d2c8e2
+# checksum: c6ba1a8cf5829c227acd5a6d0faeb56e

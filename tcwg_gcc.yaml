@@ -16,6 +16,7 @@
       - arm:
           node: tcwg-armv8_32
           docker_arch: armhf
+    disabled: false
     type_of_test:
       - bootstrap_O1
       - bootstrap_O3
@@ -24,8 +25,10 @@
       - bootstrap_profiled_lto
       - bootstrap_profiled_lto_lean
       - bootstrap_ubsan
-      - check_bootstrap
-      - check_bootstrap_lto
+      - check_bootstrap:
+          disabled: true
+      - check_bootstrap_lto:
+          disabled: true
     jobs:
       - 'tcwg_gcc-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
       - 'tcwg_gcc-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -415,7 +418,7 @@
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
           gcc_url: '{gcc_url}'
           default_branch: 'default'
-    disabled: false
+    disabled: '{disabled}'
     node: '{node} && tcwg-build'
     concurrent: false
     display-name: 'TCWG Build {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -466,7 +469,7 @@
       - bisect-parameters:
           ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
-    disabled: false
+    disabled: '{disabled}'
     node: '{node} && tcwg-bisect'
     concurrent: false
     display-name: 'TCWG Bisect {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -484,4 +487,4 @@
           docker_arch: '{docker_arch}'
     publishers:
       - bisect-publishers
-# checksum: 54ff0191712f0f1cb95a9649f42807af
+# checksum: 741c5ccb529e5ced97c0a0ad5535254e

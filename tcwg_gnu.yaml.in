@@ -58,12 +58,14 @@
           node: tcwg-armv8_32
           docker_arch: armhf
 #endif
+    disabled: false
     type_of_test:
 #if RR_tcwg_binutils
       - check_binutils
 #elif RR_tcwg_cross
       - build_cross
-      - check_cross
+      - check_cross:
+          disabled: true
 #elif RR_tcwg_gcc
       - bootstrap_O1
       - bootstrap_O3
@@ -72,8 +74,10 @@
       - bootstrap_profiled_lto
       - bootstrap_profiled_lto_lean
       - bootstrap_ubsan
-      - check_bootstrap
-      - check_bootstrap_lto
+      - check_bootstrap:
+          disabled: true
+      - check_bootstrap_lto:
+          disabled: true
 #endif
     jobs:
       - '#{RR}-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -113,7 +117,7 @@
           qemu_url: '{qemu_url}'
 #endif
           default_branch: 'default'
-    disabled: false
+    disabled: '{disabled}'
     node: '{node} && tcwg-build'
     concurrent: false
     display-name: 'TCWG Build {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -180,7 +184,7 @@
       - bisect-parameters:
           ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
-    disabled: false
+    disabled: '{disabled}'
     node: '{node} && tcwg-bisect'
     concurrent: false
     display-name: 'TCWG Bisect {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'

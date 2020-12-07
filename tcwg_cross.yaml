@@ -22,9 +22,11 @@
       - aarch64
       - arm
     node: tcwg-x86_64-build
+    disabled: false
     type_of_test:
       - build_cross
-      - check_cross
+      - check_cross:
+          disabled: true
     jobs:
       - 'tcwg_cross-build-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
       - 'tcwg_cross-bisect-{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -423,7 +425,7 @@
           glibc_url: '{glibc_url}'
           qemu_url: '{qemu_url}'
           default_branch: 'default'
-    disabled: false
+    disabled: '{disabled}'
     node: '{node} && tcwg-build'
     concurrent: false
     display-name: 'TCWG Build {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -479,7 +481,7 @@
       - bisect-parameters:
           ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
-    disabled: false
+    disabled: '{disabled}'
     node: '{node} && tcwg-bisect'
     concurrent: false
     display-name: 'TCWG Bisect {ci_project}/{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
@@ -496,4 +498,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     publishers:
       - bisect-publishers
-# checksum: 624ce59810037fb49ae7f3d5cc964a4c
+# checksum: 9ba837c5f99061782ceb17245c03e26e
