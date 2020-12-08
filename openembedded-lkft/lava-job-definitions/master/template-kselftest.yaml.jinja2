@@ -24,7 +24,7 @@
   kselftest__revision: "{{KSELFTESTS_REVISION | default('unknown')}}"
 {% endblock metadata %}
 
-{% block job_name %}lkft-kselftests{{vsyscall_suffix}}-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
+{% block job_name %}lkft-kselftests-{{testnames|join('-')}}-{{vsyscall_suffix}}-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
 
 {% block test_target %}
   {{ super() }}
@@ -39,15 +39,18 @@
           - systemctl stop systemd-timesyncd || true
       name: timesync-off
       path: inline/timesync-off.yaml
+{% for testname in testnames %}
     - repository: https://github.com/Linaro/test-definitions.git
       from: git
       revision: '{{ TDEFINITIONS_REVISION }}'
       path: automated/linux/kselftest/kselftest.yaml
-      name: kselftest{{vsyscall_suffix}}
+      name: kselftest-{{vsyscall_suffix}}-{{testname}}
       parameters:
         KSELFTEST_PATH: {{KSELFTEST_PATH}}
         SKIPFILE: skipfile-lkft.yaml
         BOARD: '{{ DEVICE_TYPE }}'
         BRANCH: '{{ KERNEL_VERSION_OVERRIDE|default(KERNEL_VERSION) }}'
         ENVIRONMENT: '{{ ENVIRONMENT|default("production") }}'
+        TST_CMDFILES: '{{testname}}'
+{% endfor %}
 {% endblock test_target %}
