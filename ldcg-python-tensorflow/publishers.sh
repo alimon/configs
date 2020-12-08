@@ -14,8 +14,6 @@ else
    sudo dnf install -y python3-requests wget
 fi
 
-ls -alR /var/tmp/workspace/out
-
 # Publish wheel files
 test -d ${HOME}/bin || mkdir ${HOME}/bin
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
