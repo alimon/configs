@@ -22,7 +22,7 @@ wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.
 time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
-  /var/tmp/workspace/out \
+  /home/buildslave/wheels \
   $OUTPUT_PATH
 
 set +x
