@@ -22,6 +22,11 @@ fi
 git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 
+#change to use python3 by default
+if ! python --version|grep 3; then
+  sudo rm -fv /usr/bin/python && sudo ln -s /usr/bin/python3 /usr/bin/python
+fi
+
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   echo "INFO: apt update error - try again in a moment"
   sleep 15
