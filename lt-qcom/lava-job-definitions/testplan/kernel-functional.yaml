@@ -32,16 +32,6 @@
   job.initrd_url: "{{RAMDISK_URL}}"
   job.nfsrootfs_url: ''
   job.dtb_url: "{{KERNEL_DT_URL}}"
-
-notify:
-  criteria:
-    status: finished
-  callback:
-    url: https://api.kernelci.org/callback/lava/test?lab_name=lab-qcom&status={STATUS}&status_string={STATUS_STRING}
-    method: POST
-    dataset: all
-    token: kernelci-lab-qcom-callback
-    content-type: json
 {% endblock metadata %}
 
 {% block job_name %}lt-qcom-{{QA_SERVER_PROJECT}}-functional-{{BUILD_NUMBER}}{% endblock job_name %}
