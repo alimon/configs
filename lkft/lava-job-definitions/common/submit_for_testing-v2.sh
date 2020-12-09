@@ -142,6 +142,10 @@ function submit_jobs_for_config(){
 
     # Do not submit the default lkft test jobs when TEST_PLANS_NO_DEFAULT_LKFT is set true
     if [ -z "${TEST_PLANS_NO_DEFAULT_LKFT}" ] || [ "X${TEST_PLANS_NO_DEFAULT_LKFT}" != "Xtrue" ]; then
+        local default_plans="template-boot.yaml template-vts-kernel-arm64-v8a.yaml template-vts-kernel-armeabi-v7a.yaml template-cts-lkft.yaml"
+        if [ "X${TEST_DEVICE_TYPE}" = "Xx15" ]; then
+            default_plans="template-boot.yaml template-vts-kernel-armeabi-v7a.yaml template-cts-lkft.yaml"
+        fi
         python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
             --device-type ${TEST_DEVICE_TYPE} \
             --build-number ${BUILD_NUMBER} \
@@ -152,7 +156,7 @@ function submit_jobs_for_config(){
             --qa-server-project ${TEST_QA_SERVER_PROJECT} \
             --git-commit ${QA_BUILD_VERSION} \
             --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common \
-            --test-plan template-boot.yaml template-vts-kernel.yaml template-cts-lkft.yaml \
+            --test-plan ${default_plans} \
             ${OPT_DRY_RUN} \
             --quiet
 
