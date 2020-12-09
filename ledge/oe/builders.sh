@@ -46,7 +46,8 @@ if [ -z "${WORKSPACE}" ]; then
 fi
 
 mkdir -p ${HOME}/bin
-curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+git clone -b v1.3 https://gerrit.googlesource.com/git-repo
+cp git-repo/repo > ${HOME}/bin/repo
 chmod a+x ${HOME}/bin/repo
 export PATH=${HOME}/bin:${PATH}
 
