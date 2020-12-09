@@ -24,10 +24,6 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
 
-#Repo tool requires python3
-sudo apt install python3
-sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-
 pkg_list="bc ccache chrpath cpio diffstat gawk git expect pkg-config python-pip python-requests python-crypto texinfo wget zlib1g-dev libglib2.0-dev libpixman-1-dev python python3 sudo libelf-dev xz-utils pigz coreutils curl libcurl4-openssl-dev libc6-dev-i386 g++-multilib"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
