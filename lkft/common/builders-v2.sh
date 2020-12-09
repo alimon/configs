@@ -23,16 +23,15 @@ git config --global user.email "ci_notify@linaro.org"
 git config --global user.name "Linaro CI"
 
 #change to use python3 by default
-if ! python --version|grep 3; then
-  sudo rm -fv /usr/bin/python && sudo ln -s /usr/bin/python3 /usr/bin/python
-fi
+# force to use python2 as a workaround with the master branch of repo repository
+sudo rm -fv /usr/bin/python && sudo ln -s /usr/bin/python2 /usr/bin/python
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   echo "INFO: apt update error - try again in a moment"
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="python3-pip openssl libssl-dev coreutils"
+pkg_list="python-pip openssl libssl-dev coreutils"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
@@ -40,7 +39,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; th
 fi
 
 # Install ruamel.yaml
-pip3 install --user --force-reinstall ruamel.yaml
+pip install --user --force-reinstall ruamel.yaml
 
 sudo apt-get update
 sudo apt-get install -y selinux-utils cpio
