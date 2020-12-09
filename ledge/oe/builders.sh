@@ -45,10 +45,10 @@ if [ -z "${WORKSPACE}" ]; then
   export WORKSPACE=${PWD}
 fi
 
-mkdir -p ${HOME}/bin
-curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
-chmod a+x ${HOME}/bin/repo
-export PATH=${HOME}/bin:${PATH}
+#mkdir -p ${HOME}/bin
+#curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+#chmod a+x ${HOME}/bin/repo
+#export PATH=${HOME}/bin:${PATH}
 
 # initialize repo if not done already
 export MANIFEST_URL=${MANIFEST_URL:-https://github.com/Linaro/ledge-oe-manifest.git}
