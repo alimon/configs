@@ -6,7 +6,10 @@ dir=$(dirname $(readlink -f $0))
 # We don't build anything so far, just downloading pre-built.
 #wget https://people.linaro.org/~kevin.townsend/lava/an521_tfm_full.hex -O tfm_full.hex
 
-GNUARMEMB_TOOLCHAIN_PATH="${HOME}/srv/toolchain/gcc-arm-none-eabi-9-2019-q4-major"
+#TOOLCHAINS=${HOME}/srv/toolchain
+TOOLCHAINS=${WORKSPACE}/srv/toolchain
+
+GNUARMEMB_TOOLCHAIN_PATH="${TOOLCHAINS}/gcc-arm-none-eabi-9-2019-q4-major"
 export PATH=${GNUARMEMB_TOOLCHAIN_PATH}/bin:$PATH
 
 git clone https://git.trustedfirmware.org/trusted-firmware-m.git -b ${BRANCH}

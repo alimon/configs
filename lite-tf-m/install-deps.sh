@@ -12,16 +12,20 @@ sudo dpkg -i git-lfs_2.11.0_amd64.deb
 sudo pip3 install cmake
 pip3 install --user cryptography pyasn1 pyyaml jinja2 cbor
 
-if [ ! -d ${HOME}/srv/toolchain/gcc-arm-none-eabi-9-2019-q4-major ]; then
+#TOOLCHAINS=${HOME}/srv/toolchain
+TOOLCHAINS=${WORKSPACE}/srv/toolchain
+
+if [ ! -d ${TOOLCHAINS}/gcc-arm-none-eabi-9-2019-q4-major ]; then
+    mkdir -p ${TOOLCHAINS}
     wget -q https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
-    tar -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2 -C ${HOME}/srv/toolchain/
+    tar -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2 -C ${TOOLCHAINS}
 fi
 
 # Show filesystem layout and space
 df -h
 
 # List available toolchains
-ls -l ${HOME}/srv/toolchain/
+ls -l ${TOOLCHAINS}
 
 git lfs install
 
