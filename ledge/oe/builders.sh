@@ -252,7 +252,7 @@ HDD_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.hddimg.xz" -print
 INITRD_URL=""
 OVMF=$(find ${UPLOAD_DIR} -type f -name "ovmf.qcow2" -printf "%f\n")
 CERTS=$(find ${UPLOAD_DIR} -type f -name ledge-kernel-uefi-certs*.wic.gz -printf "%f\n");
-FIRMWARE=$(find ${UPLOAD_DIR} -type f -name firmware.bin -printf "%f\n");
+FIRMWARE=$(find ${UPLOAD_DIR} -type f -name firmware.uefi.uboot.bin -printf "%f\n");
 
 case "${MACHINE}" in
   ledge-am57xx-evm)
