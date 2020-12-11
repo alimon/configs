@@ -3,9 +3,9 @@
 set -ex
 
 if [ $JOB_NAME == 'ldcg-python-tensorflow-nightly' ]; then
-  OUTPUT_PATH="ldcg/python/tensorflow-nightly/${BUILD_NUMBER}/"
+  OUTPUT_PATH="ldcg/python/tensorflow-nightly/$(date -u +%Y%m%d)/"
 else
-  OUTPUT_PATH="ldcg/python/tensorflow/$(date -u +%Y%m%d)/"
+  OUTPUT_PATH="ldcg/python/tensorflow/${BUILD_NUMBER}/"
 fi
 
 if [ -e /etc/debian_version ]; then
