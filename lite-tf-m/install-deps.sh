@@ -12,6 +12,11 @@ sudo dpkg -i git-lfs_2.11.0_amd64.deb
 sudo pip3 install cmake
 pip3 install --user cryptography pyasn1 pyyaml jinja2 cbor
 
+if [! -d ${HOME}/srv/toolchain/gcc-arm-none-eabi-9-2019-q4-major ]; then
+    wget -q https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu-rm/9-2019q4/RC2.1/gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2
+    tar -xaf gcc-arm-none-eabi-9-2019-q4-major-x86_64-linux.tar.bz2 -C ${HOME}/srv/toolchain/
+fi
+
 # Show filesystem layout and space
 df -h
 
