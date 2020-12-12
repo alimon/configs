@@ -5,21 +5,27 @@
 #if TOOLCHAIN_gnu
     binutils_url: git://sourceware.org/git/binutils-gdb.git
     gcc_url: https://github.com/gcc-mirror/gcc.git
+#elif TOOLCHAIN_llvm
+    llvm_url: https://github.com/llvm/llvm-project.git
+#endif
+    qemu_url: git://git.qemu.org/qemu.git
     toolchain_ver:
       - master:
+#if TOOLCHAIN_gnu
           binutils_branch: master
           gcc_branch: master
+#elif TOOLCHAIN_llvm
+          llvm_branch: master
+#endif
+          qemu_branch: master
       - release:
+#if TOOLCHAIN_gnu
           binutils_branch: binutils-2_33-branch
           gcc_branch: releases/gcc-9
 #elif TOOLCHAIN_llvm
-    llvm_url: https://github.com/llvm/llvm-project.git
-    toolchain_ver:
-      - master:
-          llvm_branch: master
-      - release:
           llvm_branch: release/10.x
 #endif
+          qemu_branch: stable-5.0
     target:
       - aarch64
       - arm
@@ -72,6 +78,7 @@
 #elif TOOLCHAIN_llvm
           llvm_url: '{llvm_url}'
 #endif
+          qemu_url: '{qemu_url}'
           linux_url: '{linux_url}'
           default_branch: 'default'
     disabled: false
@@ -90,6 +97,8 @@
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
 #endif
+          qemu_url: '{qemu_url}'
+          qemu_branch: '{qemu_branch}'
           linux_url: '{linux_url}'
           linux_branch: '{linux_branch}'
     triggers:

@@ -2,16 +2,19 @@
 - project:
     name: tcwg_kernel-gnu
     toolchain_name: gnu
-    components: binutils gcc linux
+    components: binutils gcc linux qemu
     binutils_url: git://sourceware.org/git/binutils-gdb.git
     gcc_url: https://github.com/gcc-mirror/gcc.git
+    qemu_url: git://git.qemu.org/qemu.git
     toolchain_ver:
       - master:
           binutils_branch: master
           gcc_branch: master
+          qemu_branch: master
       - release:
           binutils_branch: binutils-2_33-branch
           gcc_branch: releases/gcc-9
+          qemu_branch: stable-5.0
     target:
       - aarch64
       - arm
@@ -135,6 +138,10 @@
           component: linux
           url: '{linux_url}'
           branch: '{default_branch}'
+      - component-parameters:
+          component: qemu
+          url: '{qemu_url}'
+          branch: '{default_branch}'
       - choice:
           name: update_baseline
           choices:
@@ -186,6 +193,11 @@
           url: '{linux_url}'
           branch: '{linux_branch}'
           reference: linux.git
+      - component-scm:
+          component: qemu
+          url: '{qemu_url}'
+          branch: '{qemu_branch}'
+          reference: qemu.git
 
 - wrapper:
     name: build-wrappers
@@ -420,6 +432,7 @@
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
           binutils_url: '{binutils_url}'
           gcc_url: '{gcc_url}'
+          qemu_url: '{qemu_url}'
           linux_url: '{linux_url}'
           default_branch: 'default'
     disabled: false
@@ -433,6 +446,8 @@
           binutils_branch: '{binutils_branch}'
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
+          qemu_url: '{qemu_url}'
+          qemu_branch: '{qemu_branch}'
           linux_url: '{linux_url}'
           linux_branch: '{linux_branch}'
     triggers:
@@ -486,4 +501,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
       - bisect-publishers
-# checksum: aaeffc1a6a41e98c3ab8ce298eaa711e
+# checksum: ccd42b32f3622429dafec60403529518

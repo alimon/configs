@@ -2,13 +2,16 @@
 - project:
     name: tcwg_kernel-llvm
     toolchain_name: llvm
-    components: linux llvm
+    components: linux llvm qemu
     llvm_url: https://github.com/llvm/llvm-project.git
+    qemu_url: git://git.qemu.org/qemu.git
     toolchain_ver:
       - master:
           llvm_branch: master
+          qemu_branch: master
       - release:
           llvm_branch: release/10.x
+          qemu_branch: stable-5.0
     target:
       - aarch64
       - arm
@@ -128,6 +131,10 @@
           component: llvm
           url: '{llvm_url}'
           branch: '{default_branch}'
+      - component-parameters:
+          component: qemu
+          url: '{qemu_url}'
+          branch: '{default_branch}'
       - choice:
           name: update_baseline
           choices:
@@ -174,6 +181,11 @@
           url: '{llvm_url}'
           branch: '{llvm_branch}'
           reference: llvm-project.git
+      - component-scm:
+          component: qemu
+          url: '{qemu_url}'
+          branch: '{qemu_branch}'
+          reference: qemu.git
 
 - wrapper:
     name: build-wrappers
@@ -407,6 +419,7 @@
           ci_project: 'tcwg_kernel'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
           llvm_url: '{llvm_url}'
+          qemu_url: '{qemu_url}'
           linux_url: '{linux_url}'
           default_branch: 'default'
     disabled: false
@@ -418,6 +431,8 @@
       - build-scms:
           llvm_url: '{llvm_url}'
           llvm_branch: '{llvm_branch}'
+          qemu_url: '{qemu_url}'
+          qemu_branch: '{qemu_branch}'
           linux_url: '{linux_url}'
           linux_branch: '{linux_branch}'
     triggers:
@@ -471,4 +486,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
       - bisect-publishers
-# checksum: 2d8489d893e4d72c0f2cbeb1d34098e3
+# checksum: 710f34927f8f15f6814e36d2c2a8f9bc
