@@ -80,10 +80,11 @@
             --update-abe-git $update_abe_git \
             --verbose $verbose \
             --abe-branch $abe_branch
+            rsync -a --del ${snapshots_dir}-new/ $snapshots_dir/
         - trigger-builds:
             - project: tcwg-buildslave-command
               predefined-parameters: |
-                command=set -ex; snapshots_dir=$HOME/snapshots-ref; rsync -a --del $snapshots_dir/ ${snapshots_dir}-new/; rsync -az --del $NODE_NAME.tcwglab:${snapshots_dir}-new/ ${snapshots_dir}-new/; flock -x ${snapshots_dir}.lock -c "rsync -a --del ${snapshots_dir}-new/ $snapshots_dir/"; rm -rf ${snapshots_dir}-new/
+                command=set -ex; snapshots_dir=$HOME/snapshots-ref; rsync -a --del $snapshots_dir/ ${snapshots_dir}-new/; rsync -az --del $NODE_NAME.tcwglab:${snapshots_dir}/ ${snapshots_dir}-new/; flock -x ${snapshots_dir}.lock -c "rsync -a --del ${snapshots_dir}-new/ $snapshots_dir/"; rm -rf ${snapshots_dir}-new/
                 displayname=snapshot-refs
               parameter-factories:
                 - factory: allnodesforlabel
