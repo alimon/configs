@@ -80,7 +80,7 @@
         - trigger-builds:
             - project: tcwg-buildslave-command
               predefined-parameters: |
-                command=set -ex; for snapshots_dir in $HOME/snapshots-ref; do rsync -az --delete $NODE_NAME.tcwglab:$snapshots_dir-new/ $snapshots_dir-new/; flock -x $snapshots_dir.lock -c "rsync -a --del ${snapshots_dir}-new/ $snapshots_dir/"; done
+                command=set -ex; snapshots_dir=$HOME/snapshots-ref; rsync -a --del $snapshots_dir/ ${snapshots_dir}-new/; rsync -az --del $NODE_NAME.tcwglab:${snapshots_dir}-new/ ${snapshots_dir}-new/; flock -x ${snapshots_dir}.lock -c "rsync -a --del ${snapshots_dir}-new/ $snapshots_dir/"; rm -rf ${snapshots_dir}-new/
                 displayname=snapshot-refs
               parameter-factories:
                 - factory: allnodesforlabel
