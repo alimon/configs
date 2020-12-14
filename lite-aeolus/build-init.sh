@@ -30,6 +30,7 @@ python3 --version
 git clone --depth 1 https://chromium.googlesource.com/chromium/tools/depot_tools ${HOME}/depot_tools
 PATH=${HOME}/depot_tools:${PATH}
 git clone --depth 1 ${GIT_URL} -b ${BRANCH} ${WORKSPACE}
+(cd ${WORKSPACE}; git describe --always)
 
 # We used to call git-retry shell wrapper, until it started to choose
 # a wrong Python interpreter. "_" below is a param ignored when executing
