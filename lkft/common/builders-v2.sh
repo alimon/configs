@@ -32,7 +32,7 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   sleep 15
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update || true
 fi
-pkg_list="python3-pip openssl libssl-dev coreutils"
+pkg_list="python3-pip python-pip openssl libssl-dev coreutils"
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; then
   echo "INFO: apt install error - try again in a moment"
   sleep 15
@@ -41,6 +41,9 @@ fi
 
 # Install ruamel.yaml
 pip3 install --user --force-reinstall ruamel.yaml
+# required by openembedded-lkft/submit_for_testing.py
+# which still needs to be run in python2
+pip2 install --user --force-reinstall ruamel.yaml
 
 sudo apt-get update
 sudo apt-get install -y selinux-utils cpio
