@@ -3,7 +3,10 @@ import os
 import re
 import requests
 import sys
-import StringIO
+try:
+    from StringIO import StringIO ## for Python 2
+except ImportError:
+    from io import StringIO ## for Python 3
 from copy import deepcopy
 from string import Template
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -34,7 +37,7 @@ def parse_template(yaml_string):
     yaml = YAML()
     # ruamel does not provide a mechanism to dump to string, so use StringIO
     # to catch it
-    output = StringIO.StringIO()
+    output = StringIO()
     yaml.dump(yaml.load(yaml_string), output)
     # strip empty lines from output
     return re.sub(r'^\s*$\n', '', output.getvalue(), flags=re.MULTILINE)
