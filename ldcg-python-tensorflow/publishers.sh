@@ -12,6 +12,11 @@ if [ -e /etc/debian_version ]; then
   BUILD_NUMBER="${BUILD_NUMBER}-debian"
 else
    sudo dnf install -y python3-requests wget
+
+   # NOTE(hrw): check do we got broken urllib3 here
+   ls -l /usr/lib/python3.6/site-packages/urllib3/packages
+   sudo dnf reinstall -y python3-six python3-urllib3
+   ls -l /usr/lib/python3.6/site-packages/urllib3/packages
 fi
 
 # Publish wheel files
