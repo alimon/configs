@@ -32,7 +32,7 @@ export AP_SSID=AP_SSID
 export BOOTARGS='androidboot.serialno=${serial#} console=ttyS2,115200 androidboot.console=ttyS2 androidboot.hardware=am57xevmboard'
 
 
-python2 ${parent_dir}/../..//openembedded-lkft/submit_for_testing.py \
+python ${parent_dir}/../..//openembedded-lkft/submit_for_testing.py \
     --device-type x15 \
     --build-number 1107 \
     --lava-server https://lkft.validation.linaro.org/RPC2/ \

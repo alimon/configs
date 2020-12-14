@@ -146,7 +146,7 @@ function submit_jobs_for_config(){
         if [ "X${TEST_DEVICE_TYPE}" = "Xx15" ]; then
             default_plans="template-boot.yaml template-vts-kernel-armeabi-v7a.yaml template-cts-lkft.yaml"
         fi
-        python2 ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
+        python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
             --device-type ${TEST_DEVICE_TYPE} \
             --build-number ${BUILD_NUMBER} \
             --lava-server ${TEST_LAVA_SERVER} \
@@ -194,7 +194,7 @@ function submit_jobs_for_config(){
                 qa_server_project="${TEST_QA_SERVER_PROJECT}"
             fi
 
-            python2 ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
+            python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
                 --device-type ${TEST_DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
                 --lava-server ${lava_server} \

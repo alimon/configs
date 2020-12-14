@@ -62,7 +62,7 @@ else
     sed -i '/USERDATA_IMG_SHA256SUM/d' configs/lkft/lava-job-definitions/${DEVICE_TYPE}/*.yaml
 fi
 
-python2 configs/openembedded-lkft/submit_for_testing.py \
+python configs/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
     --build-number ${BUILD_NUMBER} \
     --lava-server ${LAVA_SERVER} \
@@ -74,7 +74,7 @@ python2 configs/openembedded-lkft/submit_for_testing.py \
     --template-names template-boot.yaml template-vts-kernel.yaml template-cts.yaml \
     --quiet
 
-python2 configs/openembedded-lkft/submit_for_testing.py \
+python configs/openembedded-lkft/submit_for_testing.py \
     --device-type ${DEVICE_TYPE} \
     --build-number ${BUILD_NUMBER} \
     --lava-server ${LAVA_SERVER} \
