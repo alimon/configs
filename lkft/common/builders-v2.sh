@@ -39,8 +39,9 @@ if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}; th
   sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 install -y ${pkg_list}
 fi
 
-# Install ruamel.yaml
-pip3 install --user --force-reinstall ruamel.yaml
+# Install ruamel.yaml and Jinja2 for submit_for_testing.py
+# to submit jobs
+pip3 install --user --force-reinstall ruamel.yaml Jinja2
 
 sudo apt-get update
 sudo apt-get install -y selinux-utils cpio
