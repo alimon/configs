@@ -33,7 +33,7 @@ curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
 chmod a+x ${HOME}/bin/*
 export PATH=${HOME}/bin:${PATH}
 
-repo init -u https://android.googlesource.com/platform/manifest 
+repo init -u https://android.googlesource.com/platform/manifest -b master --repo-branch=master --no-repo-verify
 repo sync -j$(nproc) -c -f
 rm -rf build-info
 source build/envsetup.sh
