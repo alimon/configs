@@ -3,7 +3,8 @@ export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
 # change to the build directory to repo sync and build
 cd build
-repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH}
+repo init -u ${ANDROID_MANIFEST_URL} -b ${MANIFEST_BRANCH} \
+        --repo-branch=main --no-repo-verify
 repo sync -j"$(nproc)" -c
 rm -rf out/
 
