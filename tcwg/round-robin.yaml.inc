@@ -287,7 +287,7 @@
 #elif PURPOSE_dev
             build_name="#$BUILD_NUMBER-$ci_project/$ci_config"
 #endif
-            branch_opt="==rr[components] $(printf "%q" "{components}")"
+            branch_opt=""
             # 1 to skip jenkins-scripts
             i=1
             for c in {components}; do
