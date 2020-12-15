@@ -251,7 +251,7 @@
             dryruncmd=""
 
             build_name="#$BUILD_NUMBER"
-            branch_opt="==rr[components] {components}"
+            branch_opt="==rr[components] $(printf "%q" "{components}")"
             # 1 to skip jenkins-scripts
             i=1
             for c in {components}; do
@@ -501,4 +501,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
       - bisect-publishers
-# checksum: a4242bd65a5fdb8de328c243c63b7271
+# checksum: 5df129c840540a2599c52253e99c667d
