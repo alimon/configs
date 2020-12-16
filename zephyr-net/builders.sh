@@ -107,24 +107,24 @@ rm -rf ${OUTDIR}
 
 echo ""
 echo "########################################################################"
-echo "    sanitycheck"
+echo "    build (twister)"
 echo "########################################################################"
 
-time ${ZEPHYR_BASE}/scripts/sanitycheck \
+time ${ZEPHYR_BASE}/scripts/twister \
   --platform ${PLATFORM} \
   --inline-logs \
   --build-only \
   --outdir ${OUTDIR} \
   --enable-slow \
   -x=USE_CCACHE=${USE_CCACHE} \
-  ${SANITYCHECK_EXTRA}
+  ${TWISTER_EXTRA}
 
-# Put sanitycheck report where rsync below will pick it up.
-cp ${OUTDIR}/sanitycheck.csv ${OUTDIR}/${PLATFORM}/
+# Put report where rsync below will pick it up.
+cp ${OUTDIR}/twister.csv ${OUTDIR}/${PLATFORM}/
 
 cd ${ZEPHYR_BASE}
 # OUTDIR is already per-platform, but it may get contaminated with unrelated
-# builds e.g. due to bugs in sanitycheck script. It however stores builds in
+# builds e.g. due to bugs in twister script. It however stores builds in
 # per-platform named subdirs under its --outdir (${OUTDIR} in our case), so
 # we use ${OUTDIR}/${PLATFORM} paths below.
 find ${OUTDIR}/${PLATFORM} -type f -name '.config' -exec rename 's/.config/zephyr.config/' {} +
@@ -132,7 +132,7 @@ rsync -avm \
   --include=zephyr.bin \
   --include=zephyr.config \
   --include=zephyr.elf \
-  --include=sanitycheck.csv \
+  --include='twister.*' \
   --include='*/' \
   --exclude='*' \
   ${OUTDIR}/${PLATFORM} ${WORKSPACE}/out/
