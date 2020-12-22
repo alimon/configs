@@ -205,22 +205,40 @@ if [ "${clean_packages}" != "" ]; then
 fi
 
 # Build all ${IMAGES} apart from dip-image-edge
+dipimg="dip-image"
+devimg="dip-image-dev"
 edgeimg="dip-image-edge"
-images=$(echo $IMAGES | sed -e 's/'${edgeimg}'//g')
-time bitbake ${bbopt} ${images} dip-sdk
-
-# Generate pn-buildlist containing names of recipes, for CVE check below
-bitbake ${bbopt} dip-image -g
+hasdipimg=$(echo ${IMAGES} | sed -e 's/'${devimg}'//g' -e 's/'${edgeimg}'//g')
+localconf="conf/local.conf"
+dmverityvar="DM_VERITY_IMAGE_NAME"
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
-DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
-cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
 
-# Copy license and manifest information into the deploy dir
-cp -aR ./tmp/deploy/licenses/dip-image-dev-*/*.manifest ${DEPLOY_DIR_IMAGE}
+if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
+	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= "'${dipimg}'"/' ${localconf}
+	cat ${localconf}
+	time bitbake ${bbopt} dip-image dip-sdk
 
-ls -al ${DEPLOY_DIR_IMAGE}
-ls -al ${DEPLOY_DIR_IMAGE}/optee || true
+	# Generate pn-buildlist containing names of recipes, for CVE check below
+	bitbake ${bbopt} dip-image -g
+
+	DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
+	cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
+
+	ls -al ${DEPLOY_DIR_IMAGE} || true
+	ls -al ${DEPLOY_DIR_IMAGE}/optee || true
+fi
+
+if [[ "${IMAGES}" == *"${devimg}"* ]]; then
+	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= "'${devimg}'"/' ${localconf}
+	time bitbake ${bbopt} ${devimg}
+
+	ls -al ${DEPLOY_DIR_IMAGE} || true
+	ls -al ${DEPLOY_DIR_IMAGE}/optee || true
+
+	# Copy license and manifest information into the deploy dir
+	cp -aR ./tmp/deploy/licenses/dip-image-dev-*/*.manifest ${DEPLOY_DIR_IMAGE}
+fi
 
 # now build dip-image-edge if it was in ${IMAGES}
 if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
@@ -229,6 +247,8 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	# stash the deployed images for later
 	find ${DEPLOY_DIR_IMAGE} -type l -delete
 	mv ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}-pre
+
+	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= "'${edgeimg}'"/' ${localconf}
 
 	# replace layer meta-dip-dev with meta-edge and then build dip-image-edge
 	mkdir -p ${DEPLOY_DIR_IMAGE}
@@ -264,56 +284,58 @@ find ${DEPLOY_DIR_IMAGE} -type l -delete
 
 # Combine CVE reports for the recipes used in dip-image task.
 CVE_CHECK_DIR=$(bitbake -e | grep "^CVE_CHECK_DIR="| cut -d'=' -f2 | tr -d '"')
-sort pn-buildlist | while read r ; do
-	cat ${CVE_CHECK_DIR}/${r} 2>/dev/null || true
-done >cve-${MACHINE}.new
+if [ -e pn-buildlist ] && [ -e "${CVE_CHECK_DIR}" ]; then
+	sort pn-buildlist | while read r ; do
+		cat ${CVE_CHECK_DIR}/${r} 2>/dev/null || true
+	done >cve-${MACHINE}.new
 
-# Generate CVE listing with a fixed filename, so it can be retrieved
-# from snapshots.linaro.org by subsequent builds using a known URL.
-cp cve-${MACHINE}.new ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}.rootfs.cve
+	# Generate CVE listing with a fixed filename, so it can be retrieved
+	# from snapshots.linaro.org by subsequent builds using a known URL.
+	cp cve-${MACHINE}.new ${DEPLOY_DIR_IMAGE}/dip-image-${MACHINE}.rootfs.cve
 
-# Fetch previous CVE report
-LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
-rm -f cve-${MACHINE}.old
-wget -nv -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve || true
+	# Fetch previous CVE report
+	LATEST_DEST=$(echo $PUB_DEST | sed -e "s#/$BUILD_NUMBER/#/latest/#")
+	rm -f cve-${MACHINE}.old
+	wget -nv -O cve-${MACHINE}.old ${BASE_URL}/${LATEST_DEST}/dip-image-${MACHINE}.rootfs.cve || true
 
-# Download may fail (404 error), or might not contain the report (auth error)
-if ! grep -q "PACKAGE NAME" cve-${MACHINE}.old 2>/dev/null; then
-	# Use current CVE list, to avoid diff-against-nothing
-	cp cve-${MACHINE}.new cve-${MACHINE}.old
-	# Append a fake entry that will appear in the diff
-	cat <<-EOF >>cve-${MACHINE}.old
-	PACKAGE NAME: failed-to-download-previous-CVEs
-	PACKAGE VERSION: 0.0
-	CVE: CVE-xxxx-yyyy
-	CVE STATUS: Unpatched
-	CVE SUMMARY: Unable to download CVE results for previous build. Comparison disabled.
-	CVSS v2 BASE SCORE: 0.0
-	CVSS v3 BASE SCORE: 0.0
-	VECTOR: LOCAL
-	MORE INFORMATION: none
-	EOF
+	# Download may fail (404 error), or might not contain the report (auth error)
+	if ! grep -q "PACKAGE NAME" cve-${MACHINE}.old 2>/dev/null; then
+		# Use current CVE list, to avoid diff-against-nothing
+		cp cve-${MACHINE}.new cve-${MACHINE}.old
+		# Append a fake entry that will appear in the diff
+		cat <<-EOF >>cve-${MACHINE}.old
+		PACKAGE NAME: failed-to-download-previous-CVEs
+		PACKAGE VERSION: 0.0
+		CVE: CVE-xxxx-yyyy
+		CVE STATUS: Unpatched
+		CVE SUMMARY: Unable to download CVE results for previous build. Comparison disabled.
+		CVSS v2 BASE SCORE: 0.0
+		CVSS v3 BASE SCORE: 0.0
+		VECTOR: LOCAL
+		MORE INFORMATION: none
+		EOF
+	fi
+
+	if [ -e cve-${MACHINE}.old ]; then
+		# Do diffs between old and current CVE report.
+		wget -nv -O diff-cve https://git.linaro.org/ci/job/configs.git/plain/schneider-openembedded/diff-cve
+		gawk -f diff-cve cve-${MACHINE}.old cve-${MACHINE}.new | tee ${WORKSPACE}/cve-${MACHINE}.txt
+
+		# Same thing, but against arbitrary (but fixed) baseline
+		case "${MACHINE}" in
+			*rzn1*)
+			wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2020.09-dunfell/rzn1d-5.4/dip-image-rzn1-snarc.rootfs.cve
+			;;
+			*soca9*)
+			wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2020.09-dunfell/soca9-5.4/dip-image-snarc-soca9.rootfs.cve
+			;;
+		esac
+		gawk -f diff-cve cve-${MACHINE}.base cve-${MACHINE}.new > ${WORKSPACE}/base-cve-${MACHINE}.txt
+	else
+		echo "CVE check skipped because no previous build was found"
+	fi
+	### End CVE check
 fi
-
-if [ -e cve-${MACHINE}.old ]; then
-	# Do diffs between old and current CVE report.
-	wget -nv -O diff-cve https://git.linaro.org/ci/job/configs.git/plain/schneider-openembedded/diff-cve
-	gawk -f diff-cve cve-${MACHINE}.old cve-${MACHINE}.new | tee ${WORKSPACE}/cve-${MACHINE}.txt
-
-	# Same thing, but against arbitrary (but fixed) baseline
-	case "${MACHINE}" in
-	    *rzn1*)
-		wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2020.09-dunfell/rzn1d-5.4/dip-image-rzn1-snarc.rootfs.cve
-		;;
-	    *soca9*)
-		wget -nv -O cve-${MACHINE}.base https://releases.linaro.org/members/schneider/openembedded/2020.09-dunfell/soca9-5.4/dip-image-snarc-soca9.rootfs.cve
-		;;
-	esac
-	gawk -f diff-cve cve-${MACHINE}.base cve-${MACHINE}.new > ${WORKSPACE}/base-cve-${MACHINE}.txt
-else
-	echo "CVE check skipped because no previous build was found"
-fi
-### End CVE check
 
 # FIXME: IMAGE_FSTYPES_remove doesn't work
 rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
