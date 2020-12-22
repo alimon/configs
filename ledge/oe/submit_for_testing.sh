@@ -59,10 +59,10 @@ function oe_urls {
          if [ "${DEVICE_TYPE}" = "x15-bl_uefi"; then
              export SYSTEM_URL=`echo ${SYSTEM_URL} | sed  "s/ledge-qemuarm/ledge-ti-am572x/"`
          fi
-             export FIRMWARE_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm.*|ledge-qemuarm/firmware.bin|"`
+             export FIRMWARE_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm.*|ledge-qemuarm/firmware.uefi.uboot.bin|"`
              export CERTS_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm.*|ledge-qemuarm/ledge-kernel-uefi-certs.ext4.img|"`
       elif  [ "${MACHINE}" = "ledge-multi-armv8" ]; then
-             export FIRMWARE_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm64.*|ledge-qemuarm64/firmware.bin|"`
+             export FIRMWARE_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm64.*|ledge-qemuarm64/firmware.uefi.uboot.bin|"`
              export CERTS_URL=`echo ${SYSTEM_URL} | sed -e "s|ledge-qemuarm64.*|ledge-qemuarm64/ledge-kernel-uefi-certs.ext4.img|"`
       fi
 }
