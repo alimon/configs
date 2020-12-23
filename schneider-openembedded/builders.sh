@@ -185,7 +185,7 @@ case "${MACHINE}" in
         u-boot-socfpga \
         linux-socfpga \
         "
-	build_packages="${clean_pacakges}"
+	build_packages="${clean_packages}"
     IMAGES="$(echo $IMAGES | sed -e 's/dip-image-edge//')"
     ;;
 esac
