@@ -175,8 +175,9 @@ case "${MACHINE}" in
         mbedtls \
         "
 	# Remove linux-rzn1 from the rebuild packages due to dependency problems
-	build_packages="${clean_packages//linux-rzn1/}"
-	build_packages="${clean_packages//fsbl/}"
+	build_packages="${clean_packages}"
+	build_packages="${build_packages//linux-rzn1/}"
+	build_packages="${build_packages//fsbl/}"
     set -e
     ;;
   *soca9*)
