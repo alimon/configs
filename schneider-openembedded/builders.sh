@@ -174,6 +174,8 @@ case "${MACHINE}" in
         linux-rzn1 \
         mbedtls \
         "
+	# Remove linux-rzn1 from the rebuild packages due to dependency problems
+	build_packages="${clean_packages//linux-rzn1/}"
     set -e
     ;;
   *soca9*)
@@ -182,6 +184,7 @@ case "${MACHINE}" in
         u-boot-socfpga \
         linux-socfpga \
         "
+	build_packages="${clean_pacakges}"
     IMAGES="$(echo $IMAGES | sed -e 's/dip-image-edge//')"
     ;;
 esac
@@ -194,8 +197,8 @@ cat ${postfile}
 bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
-    bitbake ${bbopt} -c cleansstate ${clean_packages}
-    bitbake ${bbopt} ${clean_packages}
+    bitbake ${bbopt} -c cleanall ${clean_packages}
+    bitbake ${bbopt} ${build_packages}
     case "${MACHINE}" in
       *rzn1*)
         bitbake -c do_fit_optee_os optee-os
