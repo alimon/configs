@@ -9,6 +9,6 @@ if [ -n "${KERNEL_BRANCH}" ] && \
     [ -n "${CALLER_JOB_NAME}" ] && \
     [ -n "${CALLER_BUILD_NUMBER}" ]; then
     curl -L https://android.linaro.org/lkft/newchanges/${KERNEL_BRANCH}/${QA_BUILD_VERSION}/${CALLER_JOB_NAME}/${CALLER_BUILD_NUMBER} || true
-    curl -L http://213.146.155.43/lkft/newchanges/${KERNEL_BRANCH}/${QA_BUILD_VERSION}/${CALLER_JOB_NAME}/${CALLER_BUILD_NUMBER} || true
+    curl -L https://android.ctt.linaro.org/lkft/newchanges/${KERNEL_BRANCH}/${QA_BUILD_VERSION}/${CALLER_JOB_NAME}/${CALLER_BUILD_NUMBER} || true
 fi
 
