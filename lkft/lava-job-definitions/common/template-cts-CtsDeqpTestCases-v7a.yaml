@@ -1,6 +1,6 @@
 {% extends device_type %}
 
-{% block job_name %}lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-cts-presubmit-CtsWindowManagerDeviceTestCases{% endblock job_name %}
+{% block job_name %}lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-cts-CtsDeqpTestCases-v7a{% endblock job_name %}
 
 {% block job_gobal_timeout %}
 timeouts:
@@ -16,7 +16,7 @@ timeouts:
   cts-url: "{{TEST_CTS_URL}}/android-cts.zip"
   cts-manifest: "{{TEST_CTS_URL}}/pinned-manifest.xml"
   cts-version: "{{TEST_CTS_VERSION}}"
-  cts-plan: "cts-presubmit CtsWindowManagerDeviceTestCases"
+  cts-plan: "cts-presubmit CtsDeqpTestCases-v7a"
 {% endblock job_specific_metadata %}
 
 {% block test_target %}
@@ -29,7 +29,7 @@ timeouts:
       from: git
       path: automated/android/noninteractive-tradefed/tradefed.yaml
       params:
-        TEST_PARAMS: "cts-presubmit -m CtsWindowManagerDeviceTestCases --disable-reboot"
+        TEST_PARAMS: "cts --abi armeabi-v7a -m CtsDeqpTestCases --disable-reboot"
         TEST_URL: "{{TEST_CTS_URL}}/android-cts.zip"
         TEST_PATH: "android-cts"
         RESULTS_FORMAT: "aggregated"
