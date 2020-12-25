@@ -17,7 +17,7 @@
             name: BUILD_CONFIG_FILENAME
             default: 'hikey960-aosp-master'
     disabled: false
-    node: docker-xenial-aosp
+    node: docker-bionic-aosp
     display-name: '96boards - AOSP Master - HiKey960'
     concurrent: true
     triggers:
@@ -35,6 +35,10 @@
             export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
 
             java -version
+            #change to use python3 by default
+            if ! python --version|grep 3; then
+                sudo rm -fv /usr/bin/python && sudo ln -s /usr/bin/python3 /usr/bin/python
+            fi
 
             sudo apt-get update
             sudo apt-get install -y gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools pxz
