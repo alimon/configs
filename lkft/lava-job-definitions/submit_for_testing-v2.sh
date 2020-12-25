@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 echo "For Test purpose check 1: LKFT_WORK_DIR=${LKFT_WORK_DIR}"
-export LKFT_WORK_DIR=/home/buildslave/srv/${BUILD_DIR}/workspace
+export LKFT_WORK_DIR=${LKFT_WORK_DIR:-"/home/buildslave/srv/${BUILD_DIR}/workspace"}
 echo "For Test purpose check 2: LKFT_WORK_DIR=${LKFT_WORK_DIR}"
 cd ${LKFT_WORK_DIR}
 
@@ -62,6 +62,34 @@ function submit_build_result(){
     fi
 }
 
+function update_device_template(){
+    local f_device_template="${1}" && shift
+    local f_img_name="${1}" && shift
+    local build_config="${1}" && shift
+    local referece_build_url="${1}" && shift
+
+    # DOWNLOAD_URL is where the generated files stored
+    # replace REFERENCE_BUILD_URL with DOWNLOAD_URL
+    sed -i "s|{{REFERENCE_BUILD_URL}}/${f_img_name}|{{DOWNLOAD_URL}}/${f_img_name}|" "${f_device_template}"
+    # replace file name in job template with new file name generated
+    sed -i "s|{{DOWNLOAD_URL}}/${f_img_name}|{{DOWNLOAD_URL}}/${build_config}-${f_img_name}|" "${f_device_template}"
+    # replace the file name in the deploy action that use "downloads://" url
+    local f_no_xz=$(echo ${f_img_name}|sed "s|.xz$||")
+    sed -i "s|downloads://${f_no_xz}|downloads://${build_config}-${f_no_xz}|" "${f_device_template}"
+
+    # special case for android 8.1 version, which does not support vendor partition yet
+    if ! echo "${f_img_name}" | grep vendor; then
+        # only need to check for the case that when no vendor.img generated
+        # and not vendor.img with the REFERENCE_BUILD
+        if curl --output /dev/null --silent --head --fail "${referece_build_url}/vendor.img.xz"; then
+            echo "This reference build comes with a vendor partition"
+        else
+            echo "No vendor partition for the reference build, so flashing cache partition from the job instead"
+            sed -i "s|vendor.img.xz|cache.img.xz|g" "${f_device_template}"
+        fi
+    fi
+}
+
 function submit_jobs_for_config(){
     local build_config=$1 && shift
 
@@ -70,7 +98,7 @@ function submit_jobs_for_config(){
     # clean environments
     unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_TEAM TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
-    unset PUBLISH_FILES TEST_OTHER_PLANS
+    unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE
     unset IMAGE_SUPPORTED_CACHE
 
     config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${build_config}?h=lkft"
@@ -108,26 +136,6 @@ function submit_jobs_for_config(){
 
     rm -f ${f_qareport_urls} && touch ${f_qareport_urls}
 
-    for f in ${PUBLISH_FILES}; do
-        # DOWNLOAD_URL is where the generated files stored
-        # replace REFERENCE_BUILD_URL with DOWNLOAD_URL
-        sed -i "s|{{REFERENCE_BUILD_URL}}/${f}|{{DOWNLOAD_URL}}/$f|" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
-        # replace file name in job template with new file name generated
-        sed -i "s|{{DOWNLOAD_URL}}/${f}|{{DOWNLOAD_URL}}/${build_config}-$f|" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
-    done
-
-    # special case for android 8.1 version, which does not support vendor partition yet
-    if ! echo "${PUBLISH_FILES}" | grep vendor; then
-        # only need to check for the case that when no vendor.img generated
-        # and not vendor.img with the REFERENCE_BUILD
-        if curl --output /dev/null --silent --head --fail "${REFERENCE_BUILD_URL}/vendor.img.xz"; then
-            echo "This reference build comes with a vendor partition"
-        else
-            echo "No vendor partition for the reference build, so flashing cache partition from the job instead"
-            sed -i "s|vendor.img.xz|cache.img.xz|g" ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common/devices/${TEST_DEVICE_TYPE}
-        fi
-    fi
-
     # set OPT_ENVIRONMENT to empty by default, to make openembedded-lkft/submit_for_testing.py
     # use the device type as the qa-report server environment
     # and use the value of TEST_QA_SERVER_ENVIRONMENT as the qa-report server environment
@@ -146,6 +154,13 @@ function submit_jobs_for_config(){
         if [ "X${TEST_DEVICE_TYPE}" = "Xx15" ]; then
             default_plans="template-boot.yaml template-vts-kernel-armeabi-v7a.yaml template-cts-lkft.yaml"
         fi
+
+        local default_templates_type="${TEST_TEMPLATES_TYPE:-common}"
+        local f_device_template="${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/${default_templates_type}/devices/${TEST_DEVICE_TYPE}"
+        for f in ${PUBLISH_FILES}; do
+            update_device_template "${f_device_template}" "${f}" "${build_config}" "${REFERENCE_BUILD_URL}"
+        done
+
         python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
             --device-type ${TEST_DEVICE_TYPE} \
             --build-number ${BUILD_NUMBER} \
@@ -155,13 +170,15 @@ function submit_jobs_for_config(){
             ${OPT_ENVIRONMENT} \
             --qa-server-project ${TEST_QA_SERVER_PROJECT} \
             --git-commit ${QA_BUILD_VERSION} \
-            --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common \
+            --testplan-path "${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/${default_templates_type}"
             --test-plan ${default_plans} \
             ${OPT_DRY_RUN} \
             --quiet
 
-        qareport_url="${TEST_QA_SERVER}/api/submit/${TEST_QA_SERVER_TEAM}/${TEST_QA_SERVER_PROJECT}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}"
-        submit_build_result "${qareport_url}"
+        if [ -z "${ENV_DRY_RUN}" ]; then
+            qareport_url="${TEST_QA_SERVER}/api/submit/${TEST_QA_SERVER_TEAM}/${TEST_QA_SERVER_PROJECT}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}"
+            submit_build_result "${qareport_url}"
+        fi
     fi
 
     # so that we could override the test plans in config by settings from ci build dynamically
@@ -176,7 +193,10 @@ function submit_jobs_for_config(){
                 echo "No templates specified for plan ${plan} with variable of TEST_TEMPLATES_${plan}"
                 continue
             fi
-
+            templates_type=$(get_value_from_config_file "TEST_TEMPLATES_TYPE_${plan}" "${build_config}")
+            if [ -z "${templates_type}" ]; then
+                templates_type="common"
+            fi
             lava_server=$(get_value_from_config_file "TEST_LAVA_SERVER_${plan}" "${build_config}")
             if [ -z "${lava_server}" ]; then
                 lava_server="${TEST_LAVA_SERVER}"
@@ -194,6 +214,11 @@ function submit_jobs_for_config(){
                 qa_server_project="${TEST_QA_SERVER_PROJECT}"
             fi
 
+            f_device_template="${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/${templates_type}/devices/${TEST_DEVICE_TYPE}"
+            for f in ${PUBLISH_FILES}; do
+                update_device_template "${f_device_template}" "${f}" "${build_config}" "${REFERENCE_BUILD_URL}"
+            done
+
             python ${DIR_CONFIGS_ROOT}/openembedded-lkft/submit_for_testing.py \
                 --device-type ${TEST_DEVICE_TYPE} \
                 --build-number ${BUILD_NUMBER} \
@@ -203,13 +228,15 @@ function submit_jobs_for_config(){
                 ${OPT_ENVIRONMENT} \
                 --qa-server-project ${qa_server_project} \
                 --git-commit ${QA_BUILD_VERSION} \
-                --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/common \
+                --testplan-path ${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/${templates_type} \
                 --test-plan ${templates} \
                 ${OPT_DRY_RUN} \
                 --quiet
 
-            qareport_url="${qa_server}/api/submit/${qa_server_team}/${qa_server_project}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}"
-            submit_build_result ${qareport_url}
+            if [ -z "${ENV_DRY_RUN}" ]; then
+                qareport_url="${qa_server}/api/submit/${qa_server_team}/${qa_server_project}/${QA_BUILD_VERSION}/${TEST_DEVICE_TYPE}"
+                submit_build_result ${qareport_url}
+            fi
         done
     fi
 

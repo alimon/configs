@@ -1,0 +1,206 @@
+{% extends device_type %}
+
+{% block job_name %}lkft-android-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}-boottime{% endblock job_name %}
+
+{% block job_gobal_timeout %}
+timeouts:
+  job:
+    minutes: 60
+  action:
+    minutes: 15
+  connection:
+    minutes: 2
+{% endblock job_gobal_timeout %}
+
+{% block test_target %}
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: first-boot
+          params:
+            ANDROID_VERSION: master
+            OPERATION: COLLECT
+            COLLECT_NO: "0"
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-first-analyze
+          params:
+            ANDROID_VERSION: master
+            OPERATION: ANALYZE
+            COLLECT_NO: "0"
+
+- boot:
+    namespace: target
+    prompts:
+    - root@(.*):/#
+    - console:/
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-1
+          params:
+            ANDROID_VERSION: master
+            OPERATION: COLLECT
+            COLLECT_NO: 1
+
+- boot:
+    namespace: target
+    prompts:
+    - root@(.*):/#
+    - console:/
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-2
+          params:
+            ANDROID_VERSION: master
+            OPERATION: COLLECT
+            COLLECT_NO: 2
+
+- boot:
+    namespace: target
+    prompts:
+    - root@(.*):/#
+    - console:/
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-3
+          params:
+            ANDROID_VERSION: master
+            OPERATION: COLLECT
+            COLLECT_NO: 3
+
+- boot:
+    namespace: target
+    prompts:
+    - root@(.*):/#
+    - console:/
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-4
+          params:
+            ANDROID_VERSION: master
+            OPERATION: COLLECT
+            COLLECT_NO: 4
+
+- boot:
+    namespace: target
+    prompts:
+    - root@(.*):/#
+    - console:/
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-5
+          params:
+            ANDROID_VERSION: master
+            OPERATION: COLLECT
+            COLLECT_NO: 5
+
+- boot:
+    namespace: target
+    prompts:
+    - root@(.*):/#
+    - console:/
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-6
+          params:
+            ANDROID_VERSION: master
+            OPERATION: COLLECT
+            COLLECT_NO: 6
+
+- boot:
+    namespace: target
+    prompts:
+    - root@(.*):/#
+    - console:/
+    timeout:
+      minutes: 15
+    method: fastboot
+
+- test:
+      namespace: tlxc
+      timeout:
+        minutes: 30
+      definitions:
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-7
+          params:
+            ANDROID_VERSION: master
+            OPERATION: COLLECT
+            COLLECT_NO: 7
+        - repository: https://git.linaro.org/qa/test-definitions.git
+          from: git
+          path: automated/android/boottime/boottime.yaml
+          name: boottime-second-analyze
+          params:
+            ANDROID_VERSION: master
+            OPERATION: ANALYZE
+            COLLECT_NO: 7
+{% endblock test_target %}

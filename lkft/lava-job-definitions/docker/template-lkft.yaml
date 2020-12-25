@@ -1,0 +1,75 @@
+{% block global_settings %}
+{% endblock global_settings %}
+
+device_type: {% block device_type %}{% endblock device_type %}
+job_name: {% block job_name %}{% endblock job_name %}
+
+{% block priority %}
+priority: medium
+{% endblock priority%}
+
+{% block visibility %}
+visibility:
+  group:
+    - lkft
+{% endblock visibility %}
+
+{% block job_gobal_timeout %}
+{% endblock job_gobal_timeout %}
+
+metadata:
+  android.build: "{{BUILD_NUMBER}}"
+  android.name: "{{JOB_NAME}}"
+  android.url: "{{REFERENCE_BUILD_URL}}"
+  android.version: "{{ANDROID_VERSION}}"
+  git branch: "{{KERNEL_BRANCH}}"
+  git repo: "{{KERNEL_REPO}}"
+  git commit: "{{KERNEL_COMMIT}}"
+  git describe: "{{KERNEL_DESCRIBE}}"
+  build-url: "{{BUILD_URL}}"
+  toolchain: "{{TEST_METADATA_TOOLCHAIN}}"
+  series: lkft
+{% block job_specific_metadata %}
+{% endblock job_specific_metadata %}
+
+{% block secrets %}
+secrets:
+  ARTIFACTORIAL_TOKEN: "{{ARTIFACTORIAL_TOKEN}}"
+{% endblock %}
+
+actions:
+{% block actions %}
+
+{% block deploy_target %}
+{% endblock deploy_target %}
+
+{% block boot_target %}
+{% endblock boot_target %}
+
+- test:
+    docker:
+      image: yongqinliu/linaro-android-docker:0.1
+    timeout:
+      minutes: 20
+    definitions:
+    - from: inline
+      path: android-boot.yaml
+      name: android-boot
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: android-boot
+          description: "android-boot"
+        run:
+          steps:
+            - lava-test-case "android-boot-sleep-3mins" --shell sleep 180
+            - lava-test-case "android-boot-lsusb-v" --shell lsusb -v
+            - lava-test-case "android-boot-wait-for-device" --shell adb wait-for-device
+            - lava-test-case "android-boot-sleep-1mins" --shell adb shell sleep 60
+            - lava-test-case "android-boot" --shell adb shell getprop sys.boot_completed
+            - lava-test-case "android-boot-screencap" --shell adb shell screencap -p /data/local/tmp/screencap.png
+
+{% block test_target %}
+{% endblock test_target %}
+
+{% endblock actions %}

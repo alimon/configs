@@ -1,0 +1,66 @@
+{% extends "template-lkft.yaml" %}
+
+{% block device_type %}hi6220-hikey-r2{% endblock %}
+
+{% block secrets %}
+  {{ super() }}
+  AP_SSID: "{{AP_SSID}}"
+  AP_KEY: "{{AP_KEY}}"
+{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    to: downloads
+    images:
+      ptable:
+        url: http://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/69/hikey/release/ptable-aosp-8g.img
+      boot:
+        url: {{DOWNLOAD_URL}}/boot.img.xz
+        compression: xz
+      userdata:
+        url: {{REFERENCE_BUILD_URL}}/userdata.img.xz
+        compression: xz
+      system:
+        url: {{REFERENCE_BUILD_URL}}/system.img.xz
+        compression: xz
+      vendor:
+        url: {{REFERENCE_BUILD_URL}}/vendor.img.xz
+        compression: xz
+
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    docker:
+        image: yongqinliu/linaro-android-docker:0.1
+    images:
+      ptable:
+        url: downloads://ptable-aosp-8g.img
+        reboot: hard-reset
+      boot:
+        reboot: hard-reset
+        url: downloads://boot.img
+      userdata:
+        url: downloads://userdata.img
+      system:
+        url: downloads://system.img
+      vendor:
+        url: downloads://vendor.img
+
+{% endblock deploy_target %}
+
+{% block boot_target %}
+- boot:
+    docker:
+        image: yongqinliu/linaro-android-docker:0.1
+    prompts:
+    - 'root@(.*):/#'
+    - 'hikey:/'
+    - 'console:/'
+    timeout:
+      minutes: 15
+    method: fastboot
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}

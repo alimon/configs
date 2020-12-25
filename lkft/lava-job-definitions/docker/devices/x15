@@ -1,0 +1,68 @@
+{% extends "template-lkft.yaml" %}
+
+{% block device_type %}x15{% endblock %}
+
+
+{% block deploy_target %}
+- deploy:
+    to: downloads
+    images:
+      boot_a:
+        url: {{DOWNLOAD_URL}}/boot.img.xz
+        compression: xz
+      boot_b:
+        url: {{DOWNLOAD_URL}}/boot.img.xz
+        compression: xz
+      vbmeta_a:
+        url: {{DOWNLOAD_URL}}/vbmeta.img.xz
+        compression: xz
+      vbmeta_b:
+        url: {{DOWNLOAD_URL}}/vbmeta.img.xz
+        compression: xz
+      userdata:
+        url: {{DOWNLOAD_URL}}/userdata.img.xz
+        compression: xz
+      super:
+        url: {{DOWNLOAD_URL}}/super.img.xz
+        compression: xz
+      recovery:
+        url: {{DOWNLOAD_URL}}/recovery.img.xz
+        compression: xz
+
+- deploy:
+    timeout:
+      minutes: 25
+    to: fastboot
+    docker:
+        image: yongqinliu/linaro-android-docker:0.1
+    images:
+      boot_a:
+        url: downloads://boot.img
+      boot_b:
+        url: downloads://boot.img
+      vbmeta_a:
+        url: downloads://vbmeta.img
+      vbmeta_b:
+        url: downloads://vbmeta.img
+      userdata:
+        url: downloads://userdata.img
+      super:
+        url: downloads://super.img
+      recovery:
+        url: downloads://recovery.img
+{% endblock deploy_target %}
+
+{% block boot_target %}
+- boot:
+    docker:
+        image: yongqinliu/linaro-android-docker:0.1
+    method: fastboot
+    prompts:
+    - 'root@(.*):/#'
+    - 'console:/'
+    timeout:
+      minutes: 15
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}

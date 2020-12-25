@@ -1,0 +1,84 @@
+{% extends "template-lkft.yaml" %}
+
+{% block device_type %}dragonboard-845c{% endblock %}
+
+{% block deploy_target %}
+- deploy:
+    to: downloads
+    images:
+      "partition:0":
+        url: "https://images.validation.linaro.org/snapshots.linaro.org/96boards/dragonboard845c/linaro/rescue/28/dragonboard-845c-bootloader-ufs-aosp-28/gpt_both0.bin"
+      boot:
+        url: {{DOWNLOAD_URL}}/boot.img.xz
+        compression: xz
+      userdata:
+        url: {{REFERENCE_BUILD_URL}}/userdata.img.xz
+        compression: xz
+      super:
+        url: {{REFERENCE_BUILD_URL}}/super.img.xz
+        compression: xz
+{% if IMAGE_SUPPORTED_CACHE is defined %}
+      cache:
+        url: {{REFERENCE_BUILD_URL}}/cache.img.xz
+        compression: xz
+{% endif %}
+
+- deploy:
+    timeout:
+      minutes: 15
+    to: fastboot
+    docker:
+        image: yongqinliu/linaro-android-docker:0.1
+    images:
+      "partition:0":
+        url: downloads://gpt_both0.bin
+      boot:
+        url: downloads://boot.img
+      userdata:
+        url: downloads://userdata.img
+      super:
+        url: downloads://super.img
+{% if IMAGE_SUPPORTED_CACHE is defined %}
+      cache:
+        url: downloads://cache.img
+{% endif %}
+
+{% endblock deploy_target %}
+
+{% block boot_target %}
+- test:
+    docker:
+        image: yongqinliu/linaro-android-docker:0.1
+    timeout:
+      minutes: 20
+    definitions:
+    - from: inline
+      path: select-display-panel.yaml
+      name: select-display-panel
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: select-display-panel
+          description: select-display-panel
+        run:
+          steps:
+          - lava-test-case "select-display-panel-1" --shell fastboot oem select-display-panel hdmi
+          - lava-test-case "reboot-bootloader-1" --shell fastboot reboot bootloader
+          - lava-test-case "select-display-panel-2" --shell fastboot oem select-display-panel hdmi
+          - lava-test-case "reboot-bootloader-2" --shell fastboot reboot bootloader
+          - lava-test-case "select-display-panel-3" --shell fastboot oem select-display-panel hdmi
+          - lava-test-case "reboot" --shell fastboot reboot
+
+- boot:
+    docker:
+        image: yongqinliu/linaro-android-docker:0.1
+    prompts:
+    - 'root@(.*):/#'
+    - 'console:/'
+    timeout:
+      minutes: 15
+    method: fastboot
+{% endblock boot_target %}
+
+{% block test_target %}
+{% endblock test_target %}
