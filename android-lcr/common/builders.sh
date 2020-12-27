@@ -12,9 +12,14 @@ wget -q \
 sudo dpkg -i --force-all *.deb
 rm -f *.deb
 
+#change to use python3 by default
+if ! python --version|grep 3; then
+    sudo rm -fv /usr/bin/python && sudo ln -s /usr/bin/python3 /usr/bin/python
+fi
+
 # Install jinja2-cli and ruamel.yaml
 pip install --user --force-reinstall jinja2-cli ruamel.yaml pycryptodome pycryptodomex
-pip3 install --user --force-reinstall pycryptodome pycryptodomex
+pip3 install --user --force-reinstall pycryptodome pycryptodomex ruamel.yaml Jinja2
 
 # Set local configuration
 git config --global user.email "ci_notify@linaro.org"
