@@ -24,7 +24,7 @@
             name: TARGET_PRODUCT
             default: ""
     disabled: false
-    node: docker-xenial-aosp
+    node: docker-bionic-aosp
     display-name: 'Jobs for pure aosp builds'
     concurrent: true
     wrappers:
@@ -36,8 +36,13 @@
     builders:
         - shell: |
             #!/bin/bash -ex
+
+            #change to use python3 by default
+            if ! python --version|grep 3; then
+                sudo rm -fv /usr/bin/python && sudo ln -s /usr/bin/python3 /usr/bin/python
+            fi
             sudo apt-get update
-            sudo apt-get install -y --allow-change-held-packages make gcc-4.9-multilib bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python-pip pxz libssl-dev
+            sudo apt-get install -y --allow-change-held-packages make bison git gperf libxml2-utils python-mako zip time python-requests genisoimage patch mtools python3-pip libssl-dev
 
             wget --no-check-certificate https://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u162-b12-1_amd64.deb \
                     https://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u162-b12-1_amd64.deb \
