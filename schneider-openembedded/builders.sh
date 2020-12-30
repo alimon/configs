@@ -174,7 +174,7 @@ case "${MACHINE}" in
         linux-rzn1 \
         mbedtls \
         "
-	# Remove linux-rzn1 from the rebuild packages due to dependency problems
+	# Remove linux-rzn1 and fsbl from the rebuild packages due to dependency problems
 	build_packages="${clean_packages}"
 	build_packages="${build_packages//linux-rzn1/}"
 	build_packages="${build_packages//fsbl/}"
@@ -201,12 +201,6 @@ bbopt="-R ${postfile}"
 if [ "${clean_packages}" != "" ]; then
     bitbake ${bbopt} -c cleanall ${clean_packages}
     bitbake ${bbopt} ${build_packages}
-    case "${MACHINE}" in
-      *rzn1*)
-        bitbake -c do_fit_optee_os optee-os
-        bitbake -c do_fit_rzn1d u-boot-rzn1
-        ;;
-    esac
 fi
 
 # Build all ${IMAGES} apart from dip-image-edge
