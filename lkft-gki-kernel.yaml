@@ -57,6 +57,11 @@
             #!/bin/bash -ex
             env
 
+            ###########################STEPS TO ADD NEW BRANCH######################
+            ### 1. add variant of build_configs_${ANDROIDVERSION}_${KERVERMAJ}${KERVERMIN}
+            ### 2. set build_configs in the case linesBefore
+            ### 3. add enties for the trigger-builds
+            ########################################################################
             # https://snapshots.linaro.org/android/lkft/lkft-gki-android-mainline/67/lkft-gki-android-5.4-Image.gz
             f_gki_image_gz_url=android/lkft/${JOB_NAME}/${BUILD_NUMBER}/${ANDROID_BUILD_CONFIG}-Image.gz
 
@@ -130,6 +135,10 @@
               property-file: params_android12-5.4-weekly-lkft-db845c-aosp-master-5.4-gki.txt
             - project: lkft-generic-build
               property-file: params_android12-5.4-weekly-lkft-hikey960-aosp-master-5.4-gki.txt
+            - project: lkft-generic-build
+              property-file: params_android12-5.10-lkft-db845c-aosp-master-android12-5.10-gki.txt
+            - project: lkft-generic-build
+              property-file: params_android12-5.10-lkft-hikey960-aosp-master-android12-5.10-gki.txt
             - project: lkft-generic-build
               property-file: params_android-mainline-lkft-db845c-aosp-master-mainline-gki.txt
             - project: lkft-generic-build
