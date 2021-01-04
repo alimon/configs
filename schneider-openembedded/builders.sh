@@ -199,7 +199,7 @@ cat ${postfile}
 bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
-    bitbake ${bbopt} -c cleanall ${clean_packages}
+    bitbake ${bbopt} -c cleansstate ${clean_packages}
     bitbake ${bbopt} ${build_packages}
 fi
 
