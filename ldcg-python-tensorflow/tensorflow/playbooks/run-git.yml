@@ -20,6 +20,10 @@
       vars:
         tensorflow_version: "git"
 
+    - name: set snapshots.linaro.org url
+      set_fact:
+        snapshots_linaro_url: "https://snapshots.linaro.org/ldcg/python/tensorflow-nightly/{{ lookup('pipe', 'date +\"%Y%m%d\"') }}/"
+
     - name: prepare wheels for publishing # noqa 301
       shell:
         cmd: |
@@ -29,6 +33,14 @@
             pkgdir=$(echo `basename $pkg`|cut -d'-' -f1 | tr '[:upper:]' '[:lower:]')
             mkdir -p "{{ wheels_dir }}/$pkgdir"
             mv $pkg  "{{ wheels_dir }}/$pkgdir"
+
+            # do we have this package on server already?
+            status=$(curl --head --silent {{ snapshots_linaro_url }}/${pkgdir}/${pkg} | head -n 1)
+            if $(echo $status | grep -q 404); then
+              echo "uploading $pkgdir/$pkg"
+            else
+              rm -rf "{{ wheels_dir }}/$pkgdir/$pkg"
+            fi
           done
         chdir: "{{ wheels_dir }}"
         creates: "{{ wheels_dir }}/numpy/"
