@@ -178,6 +178,8 @@ case "${MACHINE}" in
 	build_packages="${clean_packages}"
 	build_packages="${build_packages//linux-rzn1/}"
 	build_packages="${build_packages//fsbl/}"
+	build_packages="${build_packages//u-boot-rzn1-spkg/}"
+	build_packages="${build_packages//u-boot-rzn1/}"
     set -e
     ;;
   *soca9*)
