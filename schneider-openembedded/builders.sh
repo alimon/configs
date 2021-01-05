@@ -162,25 +162,6 @@ case "${MACHINE}" in
      IMAGES="rpb-console-image"
      ;;
   *rzn1*)
-    # Temporary sstate cleanup to force binaries to be re-generated each time
-    set +e
-    clean_packages="\
-        base-files \
-        fsbl \
-        optee-os \
-        optee-test \
-        u-boot-rzn1 \
-        u-boot-rzn1-spkg \
-        linux-rzn1 \
-        mbedtls \
-        "
-	# Remove linux-rzn1 and fsbl from the rebuild packages due to dependency problems
-	build_packages="${clean_packages}"
-	build_packages="${build_packages//linux-rzn1/}"
-	build_packages="${build_packages//fsbl/}"
-	build_packages="${build_packages//u-boot-rzn1-spkg/}"
-	build_packages="${build_packages//u-boot-rzn1/}"
-    set -e
     ;;
   *soca9*)
     clean_packages="\
