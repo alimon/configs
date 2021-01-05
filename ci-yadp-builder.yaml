@@ -10,7 +10,7 @@
         - build-discarder:
             days-to-keep: 30
             num-to-keep: 30
-    node: master
+    node: docker-bionic-arm64
     display-name: 'CI YADP config builder'
     triggers:
         - gerrit:
@@ -51,6 +51,9 @@
             echo "########################################################################"
 
             rm -rf ${WORKSPACE}/*
+            sudo apt-get update -q
+            sudo apt-get install -y -q python-pip
+            pip install python-jenkins
 
             git clone -b ${GERRIT_BRANCH} --depth 2 https://review.linaro.org/${GERRIT_PROJECT}
             cd *
