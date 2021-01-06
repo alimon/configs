@@ -199,7 +199,11 @@ DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d
 if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= "'${dipimg}'"/' ${localconf}
 	cat ${localconf}
-	time BB_NUMBER_THREADS="1" PARALLEL_MAKE="-j 1" bitbake ${bbopt} dip-image dip-sdk
+
+	grep -c ^processor /proc/cpuinfo
+	grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}'
+
+	time BB_NUMBER_THREADS="4" PARALLEL_MAKE="-j 4" bitbake ${bbopt} dip-image dip-sdk
 
 	# Generate pn-buildlist containing names of recipes, for CVE check below
 	bitbake ${bbopt} dip-image -g
