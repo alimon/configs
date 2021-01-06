@@ -53,7 +53,7 @@ function build_android(){
         local opt_maniefst_url="https://android.googlesource.com/platform/manifest"
         [ -n "${MANIFEST_BRANCH}" ] && opt_manfest_branch="-b ${MANIFEST_BRANCH}"
         [ -n "${MANIFEST_URL}" ] && opt_maniefst_url="-m ${MANIFEST_URL}"
-        bash -x ./linaro-build.sh -tp "${TARGET_PRODUCT}" "${opt_maniefst_url}" "${opt_manfest_branch}"
+        bash -x ./linaro-build.sh -tp "${TARGET_PRODUCT}" ${opt_maniefst_url} ${opt_manfest_branch}
     fi
     DIR_PUB_SRC_PRODUCT="${ANDROID_ROOT}/out/target/product/${TARGET_PRODUCT}"
 
