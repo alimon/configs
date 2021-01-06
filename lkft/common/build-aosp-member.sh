@@ -36,7 +36,7 @@ function prepare_environment(){
 # All operations following should be done under ${ANDROID_ROOT}
 ###############################################################
 function build_android(){
-    cd ${ANDROID_ROOT}
+    mkdir -p ${ANDROID_ROOT} && cd ${ANDROID_ROOT}
     rm -fr ${DIR_PUB_SRC} && mkdir -p ${DIR_PUB_SRC}
     rm -fr ${ANDROID_ROOT}/out/pinned-manifest
 
