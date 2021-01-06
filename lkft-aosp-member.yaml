@@ -1,0 +1,85 @@
+- job:
+    name: lkft-aosp-member
+    project-type: freestyle
+    defaults: global
+    logrotate:
+        daysToKeep: 180
+        numToKeep: 300
+    properties:
+        - authorization:
+            android-internal:
+                - job-build
+                - job-cancel
+                - job-extended-read
+                - job-cancel
+    parameters:
+        - string:
+            name: MANIFEST_URL
+            default: 'https://android.googlesource.com/platform/manifest'
+        - string:
+            name: MANIFEST_BRANCH
+            default: 'master'
+        - string:
+            name: TARGET_PRODUCT
+            default: 'hikey960'
+    disabled: false
+    node: docker-bionic-aosp
+    display-name: 'Jobs for pure private aosp builds'
+    concurrent: true
+    wrappers:
+        - timestamps
+        - build-name:
+            name: '#${BUILD_NUMBER}-${TARGET_PRODUCT}'
+        - timeout:
+            timeout: 500
+        - ssh-agent-credentials:
+            users:
+               - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+
+            #change to use python3 by default
+            if ! python --version|grep 3; then
+                sudo rm -fv /usr/bin/python && sudo ln -s /usr/bin/python3 /usr/bin/python
+            fi
+            sudo apt-get update
+            sudo apt-get install -y --allow-change-held-packages make git gperf python-mako time python-requests genisoimage patch mtools python3-pip libssl-dev
+            # https://source.android.com/setup/build/downloading
+            sudo apt-get install -y --allow-change-held-packages git-core gnupg flex bison build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev libgl1-mesa-dev libxml2-utils xsltproc unzip fontconfig
+
+            wget --no-check-certificate https://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre-headless_8u162-b12-1_amd64.deb \
+                    https://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jre_8u162-b12-1_amd64.deb \
+                    https://mirrors.kernel.org/ubuntu/pool/universe/o/openjdk-8/openjdk-8-jdk_8u162-b12-1_amd64.deb
+
+            sudo dpkg -i --force-all *.deb
+            java -version
+
+            mkdir -p ${HOME}/bin
+            curl https://storage.googleapis.com/git-repo-downloads/repo > ${HOME}/bin/repo
+            chmod a+x ${HOME}/bin/*
+
+            git config --global user.email "ci_notify@linaro.org"
+            git config --global user.name "Linaro CI"
+
+        - shell:
+            !include-raw:
+                - lkft/common/build-aosp-member.sh
+        - inject:
+            properties-file: publish_parameters
+        - linaro-publish-token
+        - shell:
+            !include-raw:
+                - android/linaro-publisher.sh
+    publishers:
+        - archive:
+            artifacts: '*.xml,*.json'
+            latest-only: true
+        - logparser:
+            parse-rules: '/var/jenkins_home/userContent/android.parse'
+            unstable-on-warning: false
+            fail-on-error: false
+        - fingerprint:
+            files: 'build/fingerprints/*'
+        - email:
+            recipients: 'yongqin.liu@linaro.org'
