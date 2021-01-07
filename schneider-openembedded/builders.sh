@@ -45,6 +45,9 @@ if [ ! -e ".repo/manifest.xml" ]; then
    # DL_DIR = "${OEROOT}/sources/downloads"
    # SSTATE_DIR = "${OEROOT}/build/sstate-cache"
    sstatecache=${HOME}/srv/oe/sstate-cache-${DISTRO}-${MANIFEST_BRANCH}
+   if [[ "${IMAGES}" == *clean* ]]; then
+     rm -rf ${sstatecache}
+   fi
    mkdir -p ${HOME}/srv/oe/downloads ${sstatecache}
    #DEL mkdir -p build
    #DEL ln -s ${HOME}/srv/oe/downloads
