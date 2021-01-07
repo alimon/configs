@@ -231,7 +231,7 @@ fi
 
 # now build dip-image-edge if it was in ${IMAGES}
 if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
-	rm -rf ${DEPLOY_DIR_IMAGE}-pre
+	rm -rf ${DEPLOY_DIR_IMAGE}-pre || true
 
 	# stash the deployed images for later
 	find ${DEPLOY_DIR_IMAGE} -type l -delete
