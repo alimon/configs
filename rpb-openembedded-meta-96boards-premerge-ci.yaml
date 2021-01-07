@@ -1,5 +1,13 @@
-- job:
-    name: rpb-openembedded-master-meta-96boards-premerge-ci
+- project:
+    name: rpb-openembedded-meta-96boards-premerge-ci'
+    jobs:
+        - 'rpb-openembedded-meta-96boards-premerge-ci-{branch}':
+            branch: master
+        - 'rpb-openembedded-meta-96boards-premerge-ci-{branch}':
+            branch: dunfell
+
+- job-template:
+    name: 'rpb-openembedded-meta-96boards-premerge-ci-{branch}'
     project-type: matrix
     defaults: global
     logrotate:
@@ -20,7 +28,7 @@
         - github:
             url: https://github.com/96boards/meta-96boards
     parameters:
-        !include: rpb-openembedded-master-params.yaml.inc
+        !include: rpb-openembedded-{branch}-params.yaml.inc
     disabled: false
     node: master
     display-name: 'Premerge CI for meta-96boards Layer in Reference Platform - OpenEmbedded (master)'
@@ -30,7 +38,7 @@
             refspec: +refs/pull/*:refs/remotes/origin/pr/*
             name: origin
             branches:
-                - ${sha1}
+                - ${{sha1}}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
@@ -75,15 +83,15 @@
     builders:
         - shell: |
             #!/bin/bash
-            PUB_DEST="reference-platform/embedded/premerge-ci/${MANIFEST_BRANCH}/${MACHINE}/${JOB_NAME}/${BUILD_NUMBER}/${DISTRO}"
-            echo "PUB_DEST=${PUB_DEST}" > pub_dest_parameters
+            PUB_DEST="reference-platform/embedded/premerge-ci/${{MANIFEST_BRANCH}}/${{MACHINE}}/${{JOB_NAME}}/${{BUILD_NUMBER}}/${{DISTRO}}"
+            echo "PUB_DEST=${{PUB_DEST}}" > pub_dest_parameters
         - inject:
             properties-file: pub_dest_parameters
         - shell: |
             #!/bin/bash
 
             # Mapping for MACHINE -> DEVICE_TYPE
-            case "${MACHINE}" in
+            case "${{MACHINE}}" in
               am57xx-evm)
                 DEVICE_TYPE=x15
                 ;;
@@ -100,30 +108,30 @@
                 DEVICE_TYPE=b2260
                 ;;
               *)
-                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                echo "Skip DEVICE_TYPE for ${{MACHINE}}"
                 ;;
             esac
 
-            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+            echo "DEVICE_TYPE=${{DEVICE_TYPE}}" > device_type_parameters
         - inject:
             properties-file: device_type_parameters
         - shell:
-            !include-raw: rpb-openembedded/builders.sh
+            !include-raw-escape: rpb-openembedded/builders.sh
         - inject:
             properties-file: post_build_lava_parameters
         - linaro-publish-token
         - shell:
-            !include-raw: rpb-openembedded/publishers.sh
+            !include-raw-escape: rpb-openembedded/publishers.sh
         - shell:
-            !include-raw: rpb-openembedded/submit_for_testing.sh
+            !include-raw-escape: rpb-openembedded/submit_for_testing.sh
     publishers:
         - groovy-postbuild:
             script:
-                !include-raw:
+                !include-raw-escape:
                   - openembedded-lkft/postbuild.groovy
 # We can only archive files that are located in the workspace
 #        - archive:
-#            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
+#            artifacts: 'build/tmp-*glibc/deploy/images/${{MACHINE}}/*'
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, nicolas.dechesne@linaro.org, anibal.limon@linaro.org'
             always: true
