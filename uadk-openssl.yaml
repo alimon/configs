@@ -1,5 +1,5 @@
 - job:
-    name: uadk
+    name: uadk-openssl
     project-type: freestyle
     defaults: global
     properties:
@@ -17,14 +17,14 @@
             num-to-keep: 30
             artifact-num-to-keep: 10
         - github:
-            url: https://github.com/Linaro/uadk
+            url: https://github.com/Linaro/openssl-uadk
     disabled: false
     node: d06-uadk
-    display-name: 'UADK - User Space Accelerator Development Kit'
+    display-name: 'UADK - User Space Accelerator Development Kit (engine for OpenSSL)'
     concurrent: false
     scm:
         - git:
-            url: https://github.com/Linaro/uadk.git
+            url: https://github.com/Linaro/openssl-uadk.git
             refspec: +refs/pull/*:refs/remotes/origin/pr/*
             name: origin
             branches:
@@ -39,18 +39,17 @@
             permit-all: true
             white-list-target-branches:
                 - 'master'
-                - 'dev'
             auth-id: 'GITHUB_TOKEN'
     wrappers:
         - timestamps
     builders:
         - shell:
-            !include-raw: uadk/builders.sh
+            !include-raw: uadk/builders-openssl.sh
         - build-name-setter:
             name: 'version.txt'
             file: true
     publishers:
         - archive:
-            artifacts: 'uadk.tar.xz'
+            artifacts: 'uadk-openssl.tar.xz'
         - email:
             recipients: 'haojian.zhuang@linaro.org'
