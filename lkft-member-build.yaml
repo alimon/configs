@@ -74,14 +74,6 @@
                build-steps:
                  - shell:
                      !include-raw: lkft/common/postbuildscript-v2.sh
-        - postbuildscript:
-           builders:
-             - role: SLAVE
-               build-on:
-                 - FAILURE
-               build-steps:
-                 - shell:
-                     !include-raw: lkft/common/postbuildscript-v2.sh
         - logparser:
             parse-rules: '/var/jenkins_home/userContent/android.parse'
             unstable-on-warning: false
