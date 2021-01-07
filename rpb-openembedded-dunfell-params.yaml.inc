@@ -9,7 +9,7 @@
     default: 'https://github.com/96boards/oe-rpb-manifest.git'
 - string:
     name: MANIFEST_BRANCH
-    default: 'master'
+    default: 'dunfell'
 - string:
     name: BASE_URL
     default: 'http://snapshots.linaro.org/'

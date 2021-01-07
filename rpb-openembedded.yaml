@@ -1,5 +1,38 @@
-- job:
-    name: rpb-openembedded-master
+- project:
+    name: rpb-openembedded-template
+    jobs:
+        - 'rpb-openembedded-{branch}':
+            branch: 'master'
+            machines: !!python/tuple
+                - 'dragonboard-410c'
+                - 'dragonboard-845c'
+                - 'intel-core2-32'
+                - 'intel-corei7-64'
+                - 'imx8mqevk'
+            slave-label: 'docker-buster-amd64'
+        - 'rpb-openembedded-{branch}':
+            branch: 'dunfell'
+            machines: !!python/tuple
+                - 'dragonboard-410c'
+                - 'dragonboard-845c'
+                - 'imx8mqevk'
+            slave-label: 'docker-buster-amd64'
+        - 'rpb-openembedded-{branch}':
+            branch: 'zeus'
+            machines: !!python/tuple
+                - 'dragonboard-410c'
+                - 'dragonboard-845c'
+                - 'imx8mqevk'
+            slave-label: 'docker-stretch-amd64'
+        - 'rpb-openembedded-{branch}':
+            branch: 'warrior'
+            machines: !!python/tuple
+                - 'dragonboard-410c'
+                - 'dragonboard-845c'
+            slave-label: 'docker-stretch-amd64'
+
+- job-template:
+    name: 'rpb-openembedded-{branch}'
     project-type: matrix
     defaults: global
     logrotate:
@@ -18,20 +51,15 @@
                 - job-build
                 - job-cancel
     parameters:
-        !include: rpb-openembedded-master-params.yaml.inc
+        !include: 'rpb-openembedded-{branch}-params.yaml.inc'
     disabled: false
     node: master
-    display-name: 'Reference Platform - OpenEmbedded (master)'
+    display-name: 'Reference Platform - OpenEmbedded ({branch})'
     axes:
         - axis:
             type: user-defined
             name: MACHINE
-            values:
-                - 'dragonboard-410c'
-                - 'dragonboard-845c'
-                - 'intel-core2-32'
-                - 'intel-corei7-64'
-                - 'imx8mqevk'
+            values: '{machines}'
         - axis:
             type: user-defined
             name: DISTRO
@@ -42,7 +70,7 @@
             type: slave
             name: label
             values:
-                - docker-buster-amd64
+                - '{slave-label}'
     execution-strategy:
         combination-filter: |
             !(DISTRO=="rpb" && MACHINE=="imx8mqevk")
@@ -61,15 +89,15 @@
     builders:
         - shell: |
             #!/bin/bash
-            PUB_DEST="reference-platform/embedded/${MANIFEST_BRANCH}/${MACHINE}/${BUILD_NUMBER}/${DISTRO}"
-            echo "PUB_DEST=${PUB_DEST}" > pub_dest_parameters
+            PUB_DEST="reference-platform/embedded/${{MANIFEST_BRANCH}}/${{MACHINE}}/${{BUILD_NUMBER}}/${{DISTRO}}"
+            echo "PUB_DEST=${{PUB_DEST}}" > pub_dest_parameters
         - inject:
             properties-file: pub_dest_parameters
         - shell: |
             #!/bin/bash
 
             # Mapping for MACHINE -> DEVICE_TYPE
-            case "${MACHINE}" in
+            case "${{MACHINE}}" in
               am57xx-evm)
                 DEVICE_TYPE=x15
                 ;;
@@ -92,30 +120,27 @@
                 DEVICE_TYPE=b2260
                 ;;
               *)
-                echo "Skip DEVICE_TYPE for ${MACHINE}"
+                echo "Skip DEVICE_TYPE for ${{MACHINE}}"
                 ;;
             esac
 
-            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+            echo "DEVICE_TYPE=${{DEVICE_TYPE}}" > device_type_parameters
         - inject:
             properties-file: device_type_parameters
         - shell:
-            !include-raw: rpb-openembedded/builders.sh
+            !include-raw-escape: rpb-openembedded/builders.sh
         - inject:
             properties-file: post_build_lava_parameters
         - linaro-publish-token
         - shell:
-            !include-raw: rpb-openembedded/publishers.sh
+            !include-raw-escape: rpb-openembedded/publishers.sh
         - shell:
-            !include-raw: rpb-openembedded/submit_for_testing.sh
+            !include-raw-escape: rpb-openembedded/submit_for_testing.sh
     publishers:
         - groovy-postbuild:
             script:
-                !include-raw:
+                !include-raw-escape:
                   - openembedded-lkft/postbuild.groovy
-# We can only archive files that are located in the workspace
-#        - archive:
-#            artifacts: 'build/tmp-*glibc/deploy/images/${MACHINE}/*'
         - email-ext:
             recipients: 'fathi.boudra@linaro.org, nicolas.dechesne@linaro.org, anibal.limon@linaro.org, peter.griffin@linaro.org'
             failure: true
