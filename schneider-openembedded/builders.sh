@@ -222,7 +222,8 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 fi
 
 if [[ "${IMAGES}" == *"${devimg}"* ]]; then
-	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= "'${devimg}'"/' ${localconf}
+	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= ""/' ${localconf}
+	grep ${dmverityvar} ${localconf}
 	time bitbake ${bbopt} ${devimg}
 
 	ls -al ${DEPLOY_DIR_IMAGE} || true
@@ -241,6 +242,7 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	mv ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}-pre
 
 	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= "'${edgeimg}'"/' ${localconf}
+	grep ${dmverityvar} ${localconf}
 
 	# replace layer meta-dip-dev with meta-edge and then build dip-image-edge
 	mkdir -p ${DEPLOY_DIR_IMAGE}
