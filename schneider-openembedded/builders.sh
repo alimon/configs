@@ -206,7 +206,10 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 	grep -c ^processor /proc/cpuinfo
 	grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}'
 
+	mkdir -p tmp/deploy/images/rzn1-snarc
+	touch tmp/deploy/images/rzn1-snarc/dip-image.squashfs-lzo.verity.env
 	time BB_NUMBER_THREADS="4" PARALLEL_MAKE="-j 4" bitbake ${bbopt} dip-image dip-sdk
+	cat tmp/deploy/images/rzn1-snarc/dip-image.squashfs-lzo.verity.env
 
 	# Generate pn-buildlist containing names of recipes, for CVE check below
 	bitbake ${bbopt} dip-image -g
