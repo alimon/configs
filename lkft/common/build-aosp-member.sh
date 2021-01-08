@@ -16,7 +16,7 @@ CLEAN_UP=${CLEAN_UP:-true}
 
 ANDROID_ROOT="${BUILD_ROOT}/build/aosp"
 KERNEL_ROOT="${BUILD_ROOT}/build/kernel"
-DIR_PUB_SRC="${ANDROID_ROOT}/out/dist"
+DIR_PUB_SRC="${BUILD_ROOT}/dist"
 ANDROID_IMAGE_FILES="boot.img dtb.img dtbo.img super.img vendor.img product.img system.img system_ext.img vbmeta.img userdata.img ramdisk.img ramdisk-debug.img recovery.img cache.img"
 
 # functions for clean the environemnt before repo sync and build
@@ -101,7 +101,7 @@ function export_parameters(){
 
     # Publish parameters
     cp -a ${DIR_PUB_SRC}/*-pinned-manifest.xml ${WORKSPACE}/ || true
-    echo "PUB_DEST=android/lkft/protected/aosp/${BUILD_NUMBER}" > ${WORKSPACE}/publish_parameters
+    echo "PUB_DEST=android/lkft/protected/aosp/${TARGET_PRODUCT}/${BUILD_NUMBER}" > ${WORKSPACE}/publish_parameters
     echo "PUB_SRC=${DIR_PUB_SRC}" >> ${WORKSPACE}/publish_parameters
     echo "PUB_EXTRA_INC=^[^/]+\.(txt|img|xz|dtb|dtbo|zip)$|MLO|vmlinux|System.map" >> ${WORKSPACE}/publish_parameters
 }
