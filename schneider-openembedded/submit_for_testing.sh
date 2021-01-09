@@ -74,7 +74,7 @@ case $TEST_LEVEL in
 		templates=( ${templates_normal[@]} )
 		;;
 	"network" | "3")
-		templates=( ${templates_normal[@]} )
+		templates=( ${templates_network[@]} )
 		;;
 	*)
 		templates=( ${templates_full[@]} )
