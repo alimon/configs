@@ -17,6 +17,15 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
+            name: ANDROID_BUILD_CONFIG_REPO_URL
+            default: https://dev-private-git.linaro.org/android-internal/android-build-configs.git
+        - string:
+            name: SNAPSHOT_SITE_BUILD_INFO_URL
+            default: "https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lkft/common/build-info/member.txt"
+        - string:
+            name: SNAPAHOT_SITE_ROOT
+            default: "android/lkft/protected"
+        - string:
             name: BUILD_DIR
             default: lkft
         - string:
@@ -62,7 +71,7 @@
             !include-raw: lkft/common/builders-v2.sh
         - linaro-publish-token
         - shell:
-            !include-raw: lkft/common/publisher-for-member.sh
+            !include-raw: lkft/common/publisher-v2.sh
         - shell:
             !include-raw: lkft/lava-job-definitions/submit_for_testing-v2.sh
     publishers:

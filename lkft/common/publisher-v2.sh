@@ -8,11 +8,15 @@ cd ${LKFT_WORK_DIR}
 JOB_OUT_PUBLISH=out/publish
 rm -fr ${JOB_OUT_PUBLISH} && mkdir -p ${JOB_OUT_PUBLISH}
 url_build_info="https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/android-lcr/hikey/build-info/aosp-master-template.txt"
+if [ -n "${SNAPSHOT_SITE_BUILD_INFO_URL}" ]; then
+    url_build_info=${SNAPSHOT_SITE_BUILD_INFO_URL}
+fi
 wget ${url_build_info} -O ${JOB_OUT_PUBLISH}/BUILD-INFO.txt
 
 PUBLISH_COMMON_FILES="pinned-manifest.xml defconfig gki_defconfig upstream_gki_defconfig SHA256SUMS.txt"
 for build_config in ${ANDROID_BUILD_CONFIG}; do
-    config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${build_config}?h=lkft"
+    ANDROID_BUILD_CONFIG_REPO_URL=${ANDROID_BUILD_CONFIG_REPO_URL:-https://android-git.linaro.org/android-build-configs.git}
+    config_url="${ANDROID_BUILD_CONFIG_REPO_URL}/plain/lkft/${build_config}?h=lkft"
     wget ${config_url} -O ${build_config}
     source ${build_config}
 
@@ -24,7 +28,10 @@ for build_config in ${ANDROID_BUILD_CONFIG}; do
 done
 
 # Publish
-PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}
+PUB_DEST="android/lkft/${JOB_NAME}/${BUILD_NUMBER}"
+if [ -n "${SNAPAHOT_SITE_ROOT}" ]; then
+    PUB_DEST="${SNAPAHOT_SITE_ROOT}/${JOB_NAME}/${BUILD_NUMBER}"
+fi
 HOST_BIN=out/host/bin
 mkdir -p ${HOST_BIN}
 wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOST_BIN}/linaro-cp.py

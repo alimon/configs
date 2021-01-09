@@ -101,7 +101,8 @@ function submit_jobs_for_config(){
     unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE
     unset IMAGE_SUPPORTED_CACHE LAVA_JOB_GROUP
 
-    config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${build_config}?h=lkft"
+    ANDROID_BUILD_CONFIG_REPO_URL=${ANDROID_BUILD_CONFIG_REPO_URL:-https://android-git.linaro.org/android-build-configs.git}
+    config_url="${ANDROID_BUILD_CONFIG_REPO_URL}/plain/lkft/${build_config}?h=lkft"
     wget ${config_url} -O ${build_config}
     source ${build_config}
 
