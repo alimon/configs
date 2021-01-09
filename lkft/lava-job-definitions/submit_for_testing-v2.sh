@@ -99,7 +99,7 @@ function submit_jobs_for_config(){
     unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_TEAM TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE
-    unset IMAGE_SUPPORTED_CACHE
+    unset IMAGE_SUPPORTED_CACHE LAVA_JOB_GROUP
 
     config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${build_config}?h=lkft"
     wget ${config_url} -O ${build_config}
@@ -114,6 +114,8 @@ function submit_jobs_for_config(){
         fi
     fi
     check_environments
+    [ -z "${LAVA_JOB_GROUP}" ] && LAVA_JOB_GROUP=lkft
+    export LAVA_JOB_GROUP
     export ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     export TEST_VTS_VERSION=$(echo ${TEST_VTS_URL} | awk -F"/" '{print$(NF-1)}')
     export TEST_CTS_VERSION=$(echo ${TEST_CTS_URL} | awk -F"/" '{print$(NF-1)}')
