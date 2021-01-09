@@ -1,0 +1,438 @@
+job_name: SE soca9 network-test link-settings eth1/J21 MTU 1536
+timeouts:
+  job:
+    minutes: 1800
+  action:
+    minutes: 120
+  connection:
+    minutes: 20
+priority: medium
+visibility: public
+
+
+protocols:
+  lava-multinode:
+    roles:
+      dut:
+        device_type: soca9
+        count: 1
+        timeout:
+          minutes: 30
+      daemon:
+        device_type: soca9
+        count: 1
+        timeout:
+          minutes: 30
+
+
+
+actions:
+##################
+# Deploy WIC image
+##################
+- deploy:
+    timeout:
+      minutes: 20
+    to: flasher
+    images:
+      image:
+        url: ${WIC_DEV_IMAGE_URL}
+        compression: bz2
+      layout:
+        url: ${WIC_DEV_BMAP_URL}
+
+
+##################
+# all ports off - except J21
+##################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j17_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j21_on
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j22_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j23_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j24_off
+
+
+###################
+# dip-image-dev.wic
+###################
+# We already flashed the SDcard WIC image in the deploy step at the begging of this test run
+- boot:
+    role:
+    - daemon
+    - dut
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - run linux_sd
+    auto_login:
+      login_prompt: "login:"
+      username: root
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+    transfer_overlay:
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
+      unpack_command: tar --touch -C / -xzf
+
+
+#################################
+# Turn off all Yepkit USB devices
+#################################
+- test:
+    role:
+    - daemon
+    - dut
+    timeout:
+      minutes: 60
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: yepkit-down-all
+          description: yepkit test
+        run:
+          steps:
+          - git clone https://github.com/Yepkit/ykush
+          - cd ykush
+          - make
+          - bin/ykushcmd -d a
+          - sleep 3
+      name: yepkit-down-all
+      path: inline/yepkit-test.yaml
+
+
+#############################
+# We're finished with J21 now
+#############################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j21_off
+
+
+#################################
+# All nodes use J21
+#################################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j21_on
+
+- test:
+    role:
+    - daemon
+    - dut
+    timeout:
+      minutes: 30
+    definitions:
+
+    #################################
+    #  configure-interface
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: configure-interface-j21-mtu1536
+      parameters:
+        CMD: configure-interface
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+
+
+#################################
+# Daemon
+#################################
+
+- test:
+    role:
+    - daemon
+    timeout:
+      minutes: 300
+    definitions:
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: daemon-j21-mtu1536
+      parameters:
+        CMD: daemon
+        ETH: eth1
+
+
+#################################
+# DUT
+#################################
+
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 30
+    definitions:
+
+
+
+
+    #################################
+    #  PING - before we mess with link-settings
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-default-ping-j21-mtu1536
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    #  link-settings on/?/?/1536
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-j21-mtu1536
+      parameters:
+        CMD: link-settings
+        ETH: eth1
+        AUTONEG: "on"
+        MTU: 1536
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-ping-j21-mtu1536
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # Switch port J21 (eth1) off
+    #################################
+- command:
+    role:
+    - dut
+    name: j21_off
+
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 10
+    interactive:
+    - name: sleep-j21-mtu1536
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: sleep 5
+
+
+    #################################
+    # Check that ping fails
+    #################################
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-off-ping-j21-mtu1536
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: fail
+
+
+
+    #################################
+    # Switch port J21 (eth1) back on again
+    #################################
+- command:
+    role:
+    - dut
+    name: j21_on
+
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 10
+    interactive:
+    - name: sleep-j21-mtu1536
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: sleep 5
+
+
+    #################################
+    # Check that ping succeeds
+    #################################
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-on-ping-j21-mtu1536
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+
+
+
+
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    #################################
+    # SCP from Target to Host
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-target-to-host-j21-mtu1536
+      parameters:
+        CMD: scp-target-to-host
+        ETH: eth1
+
+
+
+
+    #################################
+    # SCP from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-host-to-target-j21-mtu1536
+      parameters:
+        CMD: scp-host-to-target
+        ETH: eth1
+
+
+
+
+
+
+    #################################
+    # SSH from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: ssh-host-to-target-j21-mtu1536
+      parameters:
+        CMD: ssh-host-to-target
+        ETH: eth1
+
+
+
+
+
+
+
+
+    #################################
+    #  Finished
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: finished-j21-mtu1536
+      parameters:
+        ETH: eth1
+        CMD: finished
+
+
+    #################################
+    # Reset the port status
+    #################################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j17_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j21_on
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j22_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j23_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j24_off

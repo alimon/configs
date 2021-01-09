@@ -1,0 +1,477 @@
+job_name: SE rzn1d network-test link-settings eth1/J17
+timeouts:
+  job:
+    minutes: 1800
+  action:
+    minutes: 120
+  connection:
+    minutes: 20
+priority: medium
+visibility: public
+
+
+protocols:
+  lava-multinode:
+    roles:
+      dut:
+        device_type: rzn1d
+        count: 1
+        timeout:
+          minutes: 30
+      daemon:
+        device_type: rzn1d
+        count: 1
+        timeout:
+          minutes: 30
+
+
+
+actions:
+####################
+# Deploy QSPI images
+####################
+- deploy:
+    namespace: dfu-firmware
+    to: tmpfs
+    images:
+      sf_fsbl:
+        image_arg: --alt sf_fsbl --download {sf_fsbl}
+        url: ${FSBL_URL}
+      sf_trustedfw:
+        image_arg: --alt sf_trustedfw --download {sf_trustedfw}
+        url: ${OPTEE_ITB_URL}
+      sf_uboot0:
+        image_arg: --alt sf_uboot0 --download {sf_uboot0}
+        url: ${UBOOT_ITB_URL}
+      sf_uboot1:
+        image_arg: --alt sf_uboot1 --download {sf_uboot1}
+        url: ${UBOOT_ITB_URL}
+
+- command:
+    namespace: dfu-firmware
+    role:
+    - daemon
+    - dut
+    name: set_boot_to_nand
+- boot:
+    namespace: dfu-firmware
+    role:
+    - daemon
+    - dut
+    method: dfu
+    timeout:
+      minutes: 10
+- command:
+    namespace: test
+    role:
+    - daemon
+    - dut
+    name: set_boot_to_qspi
+
+##################
+# all ports off - except J21
+##################
+- command:
+    namespace: test
+    role:
+    - daemon
+    - dut
+    name: j17_off
+
+- command:
+    namespace: test
+    role:
+    - daemon
+    - dut
+    name: j21_on
+
+- command:
+    namespace: test
+    role:
+    - daemon
+    - dut
+    name: j22_off
+
+- command:
+    namespace: test
+    role:
+    - daemon
+    - dut
+    name: j23_off
+
+- command:
+    namespace: test
+    role:
+    - daemon
+    - dut
+    name: j24_off
+
+
+###################
+# dip-image-dev.wic
+###################
+- deploy:
+    namespace: test-wic
+    timeout:
+      minutes: 100
+    to: flasher
+    images:
+      image:
+        url: ${WIC_DEV_IMAGE_URL}
+        compression: bz2
+      layout:
+        url: ${WIC_DEV_BMAP_URL}
+
+
+- boot:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    connection-namespace: dfu-firmware
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - mmc rescan
+    - fatload mmc 0:1 80008000 zimage-rzn1-snarc.bin
+    - if test -e mmc 0:1 zImage-rzn1d400-snarc-bestla.dtb; then fatload mmc 0:1 80f00000 zImage-rzn1d400-snarc-bestla.dtb; else fatload mmc 0:1 80f00000 rzn1d400-snarc-bestla.dtb; fi;
+    - setenv bootargs console=ttyS0,115200 root=/dev/mmcblk0p2 rw rootwait coherent_pool=2M
+    - bootz 80008000 - 80f00000
+    auto_login:
+      login_prompt: "login:"
+      username: root
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+    transfer_overlay:
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
+      unpack_command: tar --touch -C / -xzf
+
+
+#################################
+# Turn off all Yepkit USB devices
+#################################
+- test:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    timeout:
+      minutes: 60
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: yepkit-down-all
+          description: yepkit test
+        run:
+          steps:
+          - git clone https://github.com/Yepkit/ykush
+          - cd ykush
+          - make
+          - bin/ykushcmd -d a
+          - sleep 3
+      name: yepkit-down-all
+      path: inline/yepkit-test.yaml
+
+
+#############################
+# We're finished with J21 now
+#############################
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j21_off
+
+
+#################################
+# All nodes use J17
+#################################
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j17_on
+
+- test:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    timeout:
+      minutes: 30
+    definitions:
+
+    #################################
+    #  configure-interface
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: configure-interface-j17
+      parameters:
+        CMD: configure-interface
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+
+
+#################################
+# Daemon
+#################################
+
+- test:
+    namespace: test-wic
+    role:
+    - daemon
+    timeout:
+      minutes: 300
+    definitions:
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: daemon-j17
+      parameters:
+        CMD: daemon
+        ETH: eth1
+
+
+#################################
+# DUT
+#################################
+
+- test:
+    namespace: test-wic
+    role:
+    - dut
+    timeout:
+      minutes: 30
+    definitions:
+
+
+
+
+    #################################
+    #  PING - before we mess with link-settings
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-default-ping-j17
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # Switch port J17 (eth1) off
+    #################################
+- command:
+    namespace: test-wic
+    role:
+    - dut
+    name: j17_off
+
+- test:
+    namespace: test-wic
+    role:
+    - dut
+    timeout:
+      minutes: 10
+    interactive:
+    - name: sleep-j17
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: sleep 5
+
+
+    #################################
+    # Check that ping fails
+    #################################
+- test:
+    namespace: test-wic
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-off-ping-j17
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: fail
+
+
+
+    #################################
+    # Switch port J17 (eth1) back on again
+    #################################
+- command:
+    namespace: test-wic
+    role:
+    - dut
+    name: j17_on
+
+- test:
+    namespace: test-wic
+    role:
+    - dut
+    timeout:
+      minutes: 10
+    interactive:
+    - name: sleep-j17
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: sleep 5
+
+
+    #################################
+    # Check that ping succeeds
+    #################################
+- test:
+    namespace: test-wic
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-on-ping-j17
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+
+
+
+
+- test:
+    namespace: test-wic
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    #################################
+    # SCP from Target to Host
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-target-to-host-j17
+      parameters:
+        CMD: scp-target-to-host
+        ETH: eth1
+
+
+
+
+    #################################
+    # SCP from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-host-to-target-j17
+      parameters:
+        CMD: scp-host-to-target
+        ETH: eth1
+
+
+
+
+
+
+    #################################
+    # SSH from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: ssh-host-to-target-j17
+      parameters:
+        CMD: ssh-host-to-target
+        ETH: eth1
+
+
+
+
+
+
+
+
+    #################################
+    #  Finished
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: finished-j17
+      parameters:
+        ETH: eth1
+        CMD: finished
+
+
+    #################################
+    # Reset the port status
+    #################################
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j17_off
+
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j21_on
+
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j22_off
+
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j23_off
+
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j24_off

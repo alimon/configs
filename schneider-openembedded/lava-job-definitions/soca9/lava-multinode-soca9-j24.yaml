@@ -1,0 +1,528 @@
+job_name: SE soca9 network-test link-settings lan2/J24
+timeouts:
+  job:
+    minutes: 1800
+  action:
+    minutes: 120
+  connection:
+    minutes: 20
+priority: medium
+visibility: public
+
+
+protocols:
+  lava-multinode:
+    roles:
+      dut:
+        device_type: soca9
+        count: 1
+        timeout:
+          minutes: 30
+      daemon:
+        device_type: soca9
+        count: 1
+        timeout:
+          minutes: 30
+
+
+
+actions:
+##################
+# Deploy WIC image
+##################
+- deploy:
+    timeout:
+      minutes: 20
+    to: flasher
+    images:
+      image:
+        url: ${WIC_DEV_IMAGE_URL}
+        compression: bz2
+      layout:
+        url: ${WIC_DEV_BMAP_URL}
+
+
+##################
+# all ports off - except J21
+##################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j17_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j21_on
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j22_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j23_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j24_off
+
+
+###################
+# dip-image-dev.wic
+###################
+# We already flashed the SDcard WIC image in the deploy step at the begging of this test run
+- boot:
+    role:
+    - daemon
+    - dut
+    timeout:
+      minutes: 10
+    method: u-boot
+    commands:
+    - run linux_sd
+    auto_login:
+      login_prompt: "login:"
+      username: root
+    prompts:
+    - "root@snarc-soca9:"
+    - "root@rzn1-snarc:"
+    transfer_overlay:
+      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
+      unpack_command: tar --touch -C / -xzf
+
+
+#################################
+# Turn off all Yepkit USB devices
+#################################
+- test:
+    role:
+    - daemon
+    - dut
+    timeout:
+      minutes: 60
+    definitions:
+    - from: inline
+      repository:
+        metadata:
+          format: Lava-Test Test Definition 1.0
+          name: yepkit-down-all
+          description: yepkit test
+        run:
+          steps:
+          - git clone https://github.com/Yepkit/ykush
+          - cd ykush
+          - make
+          - bin/ykushcmd -d a
+          - sleep 3
+      name: yepkit-down-all
+      path: inline/yepkit-test.yaml
+
+
+#############################
+# We're finished with J21 now
+#############################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j21_off
+
+
+#################################
+# All nodes use J24
+#################################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j24_on
+
+- test:
+    role:
+    - daemon
+    - dut
+    timeout:
+      minutes: 30
+    definitions:
+
+    #################################
+    #  configure-interface
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: configure-interface-j24
+      parameters:
+        CMD: configure-interface
+        ETH: lan2
+        SWITCH_IF: eth0
+        EXPECTED_RESULT: pass
+
+
+
+#################################
+# Daemon
+#################################
+
+- test:
+    role:
+    - daemon
+    timeout:
+      minutes: 300
+    definitions:
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: daemon-j24
+      parameters:
+        CMD: daemon
+        ETH: lan2
+        SWITCH_IF: eth0
+
+
+#################################
+# DUT
+#################################
+
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 30
+    definitions:
+
+
+
+
+    #################################
+    #  PING - before we mess with link-settings
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-default-ping-j24
+      parameters:
+        CMD: ping-request
+        ETH: lan2
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    #  link-settings off/100/full/1500
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-j24
+      parameters:
+        CMD: link-settings
+        ETH: lan2
+        AUTONEG: "off"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-ping-j24
+      parameters:
+        CMD: ping-request
+        ETH: lan2
+        EXPECTED_RESULT: pass
+
+
+
+    #################################
+    #  link-settings off/100/half/1500
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-half-j24
+      parameters:
+        CMD: link-settings
+        ETH: lan2
+        AUTONEG: "off"
+        LINKSPEED: 100
+        DUPLEX: half
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-half-ping-j24
+      parameters:
+        CMD: ping-request
+        ETH: lan2
+        EXPECTED_RESULT: pass
+
+
+
+    #################################
+    #  link-settings off/100/full/1500
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-2-j24
+      parameters:
+        CMD: link-settings
+        ETH: lan2
+        AUTONEG: "off"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-2-ping-j24
+      parameters:
+        CMD: ping-request
+        ETH: lan2
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    #  link-settings on/?/?/1500
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-j24
+      parameters:
+        CMD: link-settings
+        ETH: lan2
+        AUTONEG: "on"
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-ping-j24
+      parameters:
+        CMD: ping-request
+        ETH: lan2
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # Switch port J24 (lan2) off
+    #################################
+- command:
+    role:
+    - dut
+    name: j24_off
+
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 10
+    interactive:
+    - name: sleep-j24
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: sleep 5
+
+
+    #################################
+    # Check that ping fails
+    #################################
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-off-ping-j24
+      parameters:
+        CMD: ping-request
+        ETH: lan2
+        EXPECTED_RESULT: fail
+
+
+
+    #################################
+    # Switch port J24 (lan2) back on again
+    #################################
+- command:
+    role:
+    - dut
+    name: j24_on
+
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 10
+    interactive:
+    - name: sleep-j24
+      prompts: ["root@snarc-soca9", "root@rzn1-snarc"]
+      script:
+      - command: sleep 5
+
+
+    #################################
+    # Check that ping succeeds
+    #################################
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: link-on-ping-j24
+      parameters:
+        CMD: ping-request
+        ETH: lan2
+        EXPECTED_RESULT: pass
+
+
+
+
+
+- test:
+    role:
+    - dut
+    timeout:
+      minutes: 300
+    definitions:
+
+    #################################
+    # SCP from Target to Host
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-target-to-host-j24
+      parameters:
+        CMD: scp-target-to-host
+        ETH: lan2
+
+
+
+
+    #################################
+    # SCP from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-host-to-target-j24
+      parameters:
+        CMD: scp-host-to-target
+        ETH: lan2
+
+
+
+
+
+
+    #################################
+    # SSH from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: ssh-host-to-target-j24
+      parameters:
+        CMD: ssh-host-to-target
+        ETH: lan2
+
+
+
+
+
+
+
+
+    #################################
+    #  Finished
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: finished-j24
+      parameters:
+        ETH: lan2
+        CMD: finished
+
+
+    #################################
+    # Reset the port status
+    #################################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j17_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j21_on
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j22_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j23_off
+
+- command:
+    role:
+    - daemon
+    - dut
+    name: j24_off
