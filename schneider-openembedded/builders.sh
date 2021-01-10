@@ -211,6 +211,14 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 	time BB_NUMBER_THREADS="4" PARALLEL_MAKE="-j 4" bitbake ${bbopt} dip-image dip-sdk
 	cat tmp/deploy/images/rzn1-snarc/dip-image.squashfs-lzo.verity.env
 
+	case "${MACHINE}" in
+		*rzn1*)
+			bitbake -c do_install       fsbl
+			bitbake -c do_fit_optee_os  optee-os
+			bitbake -c do_fit_rzn1d     u-boot-rzn1
+			;;
+	esac
+
 	# Generate pn-buildlist containing names of recipes, for CVE check below
 	bitbake ${bbopt} dip-image -g
 
