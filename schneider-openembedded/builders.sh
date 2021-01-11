@@ -168,6 +168,7 @@ case "${MACHINE}" in
     clean_packages="\
         openssl-native \
     "
+    build_packages="${clean_packages}"
     ;;
   *soca9*)
     clean_packages="\
