@@ -11,7 +11,7 @@
             days-to-keep: 30
             num-to-keep: 30
     disabled: false
-    node: master
+    node: docker-bionic
     display-name: 'CI job configs sanity check'
     scm:
         - git:
@@ -59,6 +59,15 @@
 
             # FIXME run-jjb.py was meant to be used for deployment only
             # use JJB 'test' command instead of 'update' command
+            sudo apt-get update -q
+            sudo apt install -q -y python-pip
+            sudo pip install jenkins-job-builder==2.10.0
+            git clone --depth 1 https://git.linaro.org/infrastructure/jjb-linaro-plugin.git
+            cd jjb-linaro-plugin
+            sudo python setup.py install
+            cd ..
+            sudo rm -rf jjb-linaro-plugin
+
             sed -i "s|update|test|" run-jjb.py
 
             export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
