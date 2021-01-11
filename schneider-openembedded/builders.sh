@@ -165,6 +165,9 @@ case "${MACHINE}" in
      IMAGES="rpb-console-image"
      ;;
   *rzn1*)
+    clean_packages="\
+        openssl-native \
+    "
     ;;
   *soca9*)
     clean_packages="\
@@ -172,7 +175,7 @@ case "${MACHINE}" in
         u-boot-socfpga \
         linux-socfpga \
         "
-	build_packages="${clean_packages}"
+    build_packages="${clean_packages}"
     IMAGES="$(echo $IMAGES | sed -e 's/dip-image-edge//')"
     ;;
 esac
@@ -213,7 +216,7 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 
 	case "${MACHINE}" in
 		*rzn1*)
-			bitbake ${bbopt} fsbl optee-os u-boot-rzn1 openssl
+			bitbake ${bbopt} fsbl optee-os u-boot-rzn1
 			bitbake ${bbopt} -c do_install       fsbl
 			bitbake ${bbopt} -c do_fit_optee_os  optee-os
 			bitbake ${bbopt} -c do_fit_rzn1d     u-boot-rzn1
