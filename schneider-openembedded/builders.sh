@@ -213,7 +213,7 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 
 	case "${MACHINE}" in
 		*rzn1*)
-			bitbake ${bbopt} fsbl optee-os u-boot-rzn1
+			bitbake ${bbopt} fsbl optee-os u-boot-rzn1 openssl
 			bitbake ${bbopt} -c do_install       fsbl
 			bitbake ${bbopt} -c do_fit_optee_os  optee-os
 			bitbake ${bbopt} -c do_fit_rzn1d     u-boot-rzn1
