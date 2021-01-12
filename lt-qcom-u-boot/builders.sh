@@ -21,12 +21,12 @@ make -C ${UBOOT_DIR} distclean
 make -j$(nproc) \
      -C ${UBOOT_DIR} \
      ARCH=arm \
-     CROSS_COMPILE=aarch64-linux-gnu- \
+     CROSS_COMPILE=aarch64-none-linux-gnu- \
      ${CONFIG}
 make -j$(nproc) \
      -C ${UBOOT_DIR} \
      ARCH=arm \
-     CROSS_COMPILE=aarch64-linux-gnu-
+     CROSS_COMPILE=aarch64-none-linux-gnu-
 
 mkdir -p ${OUT_DIR}
 
