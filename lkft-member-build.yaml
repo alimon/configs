@@ -18,7 +18,7 @@
     parameters:
         - string:
             name: ANDROID_BUILD_CONFIG_REPO_URL
-            default: https://dev-private-git.linaro.org/android-internal/android-build-configs.git
+            default: ssh://git@dev-private-git.linaro.org/android-internal/android-build-configs.git
         - string:
             name: SNAPSHOT_SITE_BUILD_INFO_URL
             default: "https://git.linaro.org/ci/job/configs.git/blob_plain/HEAD:/lkft/common/build-info/member.txt"
@@ -66,6 +66,9 @@
             - text:
                 credential-id: AP_KEY
                 variable: AP_KEY
+        - ssh-agent-credentials:
+            users:
+               - '768c1ba1-6052-4b97-a531-7e4fabda6979'
     builders:
         - shell:
             !include-raw: lkft/common/builders-v2.sh
@@ -93,8 +96,8 @@
             script:
                 !include-raw: openembedded-lkft/postbuild.groovy
         - email:
-            recipients: 'lkft-maintainers@lists.linaro.org'
-            subject: '[CI] HiKey960 mainline gki + aosp master + QGSI: ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
+            recipients: 'yongqin.liu@linaro.org'
+            subject: 'LKFT Member builds ${KERNEL_BRANCH} ${SRCREV_kernel} ${BUILD_STATUS}'
             body: |
                 Build URL: ${PROJECT_URL}${BUILD_NUMBER}/
                 Full log: ${PROJECT_URL}${BUILD_NUMBER}/consoleText

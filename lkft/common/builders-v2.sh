@@ -72,11 +72,23 @@ cd ${LKFT_WORK_DIR}
 # will be reverted after one build finished successfully
 rm -fr .repo
 
+PRIVATE_CONFIG_PATH=""
+if [ -n "${ANDROID_BUILD_CONFIG_REPO_URL}" ]; then
+    PRIVATE_CONFIG_PATH="${LKFT_WORK_DIR}/android-build-configs-private"
+    rm -fr ${PRIVATE_CONFIG_PATH}
+    git clone -b lkft ${ANDROID_BUILD_CONFIG_REPO_URL} ${PRIVATE_CONFIG_PATH}
+fi
+
 wget https://android-git.linaro.org/android-build-configs.git/plain/lkft/linaro-lkft.sh?h=lkft -O linaro-lkft.sh
 chmod +x linaro-lkft.sh
 for build_config in ${ANDROID_BUILD_CONFIG}; do
     rm -fr out/${build_config}
-    ./linaro-lkft.sh -c "${build_config}"
+
+    if [ -n "${PRIVATE_CONFIG_PATH}" ]; then
+        ./linaro-lkft.sh -c "${build_config}" -cu "${PRIVATE_CONFIG_PATH}/lkft/${build_config}"
+    else
+        ./linaro-lkft.sh -c "${build_config}"
+    fi
     mv out/${build_config}/pinned-manifest/*-pinned.xml out/${build_config}/pinned-manifest.xml
 
     # should be only one .config after the above steps

@@ -17,6 +17,9 @@
             artifact-num-to-keep: 1
     parameters:
         - string:
+            name: ANDROID_BUILD_CONFIG_REPO_URL
+            default: ssh://git@dev-private-git.linaro.org/android-internal/android-build-configs.git
+        - string:
             name: BUILD_DIR
             default: lkft
         - string:
@@ -50,14 +53,10 @@
             #!/bin/bash -ex
 
             ## find the build configs for the branch
-            #rm -fr android-build-configs
-            #git clone -b lkft ssh://git@dev-private-git.linaro.org/android-internal/android-build-configs
+            rm -fr android-build-configs-private
+            git clone -b lkft ${ANDROID_BUILD_CONFIG_REPO_URL} android-build-configs-private
+            build_configs=$(grep "${KERNEL_BRANCH}" android-build-configs-private/lkft/lkft-member-builds|cut -d= -f2|tr -d \")
 
-            # content format in lkft-member-builds:
-            # android12-5.10="lkft-android12-5.10-gki lkft-android12-5.10-generic"
-            #source android-build-configs/lkft/lkft-member-builds
-
-            build_configs="lkft-gki-android12-5.10"
             rm -fr params_*.txt test_*.txt
             for build_config in ${build_configs}; do
                 md5sum_val="$(echo ${build_config}|md5sum|awk '{print $1}')"
