@@ -15,10 +15,9 @@ wget ${url_build_info} -O ${JOB_OUT_PUBLISH}/BUILD-INFO.txt
 
 PUBLISH_COMMON_FILES="pinned-manifest.xml defconfig gki_defconfig upstream_gki_defconfig SHA256SUMS.txt"
 for build_config in ${ANDROID_BUILD_CONFIG}; do
-    ANDROID_BUILD_CONFIG_REPO_URL=${ANDROID_BUILD_CONFIG_REPO_URL:-https://android-git.linaro.org/android-build-configs.git}
-    config_url="${ANDROID_BUILD_CONFIG_REPO_URL}/plain/lkft/${build_config}?h=lkft"
-    wget ${config_url} -O ${build_config}
-    source ${build_config}
+    # the config file should be in the directory of android-build-configs/lkft
+    # or copied to there by the linaro-lkft.sh build
+    source ${LKFT_WORK_DIR}/android-build-configs/lkft/${build_config}
 
     for f in ${PUBLISH_COMMON_FILES} ${PUBLISH_FILES}; do
         if [ -f out/${build_config}/${f} ]; then

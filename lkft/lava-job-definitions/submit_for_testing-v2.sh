@@ -42,7 +42,7 @@ function get_value_from_config_file(){
     local key=$1 && shift
     local f_config=$1 && shift
 
-    local key_line=$(grep "${key}=" "${f_config}"|tail -n1|tr -d '"')
+    local key_line=$(grep "${key}=" "${LKFT_WORK_DIR}/android-build-configs/lkft/${f_config}"|tail -n1|tr -d '"')
     if [ -z "key_line" ]; then
         return
     fi
@@ -101,13 +101,12 @@ function submit_jobs_for_config(){
     unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE
     unset IMAGE_SUPPORTED_CACHE LAVA_JOB_GROUP
 
-    ANDROID_BUILD_CONFIG_REPO_URL=${ANDROID_BUILD_CONFIG_REPO_URL:-https://android-git.linaro.org/android-build-configs.git}
-    config_url="${ANDROID_BUILD_CONFIG_REPO_URL}/plain/lkft/${build_config}?h=lkft"
-    wget ${config_url} -O ${build_config}
-    source ${build_config}
+    # the config file should be in the directory of android-build-configs/lkft
+    # or copied to there by the linaro-lkft.sh build
+    source ${LKFT_WORK_DIR}/android-build-configs/lkft/${build_config}
 
     if [ -z "${TEST_METADATA_TOOLCHAIN}" ]; then
-        source out/${build_config}/misc_info.txt
+        source ${LKFT_WORK_DIR}/out/${build_config}/misc_info.txt
         if [ -n "${GKI_KERNEL_CLANG_VER}" ]; then
             TEST_METADATA_TOOLCHAIN=${GKI_KERNEL_CLANG_VER}
         elif [ -n "${VENDOR_KERNEL_CLANG_VER}" ]; then

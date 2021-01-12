@@ -1,8 +1,11 @@
 #!/bin/bash -e
+export LKFT_WORK_DIR=${LKFT_WORK_DIR:-"/home/buildslave/srv/${BUILD_DIR}/workspace"}
+
 for build_config in ${ANDROID_BUILD_CONFIG}; do
-    config_url="https://android-git.linaro.org/android-build-configs.git/plain/lkft/${build_config}?h=lkft"
-    wget ${config_url} -O ${build_config}
-    source ${build_config}
+    # the config file should be in the directory of android-build-configs/lkft
+    # or copied to there by the linaro-lkft.sh build
+    source ${LKFT_WORK_DIR}/android-build-configs/lkft/${build_config}
+
     KERNEL_COMMIT=${SRCREV_kernel}
     if [ -n "${MAKE_KERNELVERSION}" ] && echo "X${USE_KERNELVERSION_FOR_QA_BUILD_VERSION}" | grep -i "Xtrue"; then
         QA_BUILD_VERSION=${MAKE_KERNELVERSION}-${KERNEL_COMMIT:0:12}
