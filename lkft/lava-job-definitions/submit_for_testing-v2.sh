@@ -99,7 +99,7 @@ function submit_jobs_for_config(){
     unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_TEAM TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE
-    unset IMAGE_SUPPORTED_CACHE LAVA_JOB_GROUP
+    unset IMAGE_SUPPORTED_CACHE TEST_LAVA_JOB_GROUP
 
     # the config file should be in the directory of android-build-configs/lkft
     # or copied to there by the linaro-lkft.sh build
@@ -114,8 +114,8 @@ function submit_jobs_for_config(){
         fi
     fi
     check_environments
-    [ -z "${LAVA_JOB_GROUP}" ] && LAVA_JOB_GROUP=lkft
-    export LAVA_JOB_GROUP
+    [ -z "${TEST_LAVA_JOB_GROUP}" ] && TEST_LAVA_JOB_GROUP=lkft
+    export TEST_LAVA_JOB_GROUP
     export ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     export TEST_VTS_VERSION=$(echo ${TEST_VTS_URL} | awk -F"/" '{print$(NF-1)}')
     export TEST_CTS_VERSION=$(echo ${TEST_CTS_URL} | awk -F"/" '{print$(NF-1)}')
@@ -172,7 +172,7 @@ function submit_jobs_for_config(){
             ${OPT_ENVIRONMENT} \
             --qa-server-project ${TEST_QA_SERVER_PROJECT} \
             --git-commit ${QA_BUILD_VERSION} \
-            --testplan-path "${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/${default_templates_type}"
+            --testplan-path "${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/${default_templates_type}" \
             --test-plan ${default_plans} \
             ${OPT_DRY_RUN} \
             --quiet
@@ -267,8 +267,10 @@ function submit_jobs(){
 
     #environments exported by jenkins
     #export BUILD_NUMBER JOB_NAME BUILD_URL
-
-    PUB_DEST=android/lkft/${JOB_NAME}/${BUILD_NUMBER}/
+    PUB_DEST="android/lkft/${JOB_NAME}/${BUILD_NUMBER}"
+    if [ -n "${SNAPAHOT_SITE_ROOT}" ]; then
+        PUB_DEST="${SNAPAHOT_SITE_ROOT}/${JOB_NAME}/${BUILD_NUMBER}"
+    fi
     export DOWNLOAD_URL=http://snapshots.linaro.org/${PUB_DEST}
 
     # environments set by the upstream trigger job
