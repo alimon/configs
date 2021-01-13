@@ -68,8 +68,6 @@
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
-        - copyartifact:
-            projects: post-build-reports
     parameters:
         - string:
             name: ADB_VERSION
@@ -118,6 +116,3 @@
             script:
               !include-raw:
                 - linaro-art/global.groovy
-        - trigger-parameterized-builds:
-            - project: 'post-build-reports'
-              property-file: post_build_reports_parameters
