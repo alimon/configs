@@ -167,6 +167,7 @@ case "${MACHINE}" in
   *rzn1*)
     clean_packages="\
         openssl-native \
+        optee-os \
     "
     build_packages="${clean_packages}"
     ;;
@@ -189,8 +190,12 @@ cat ${postfile}
 bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
+    find . -type f -name openssl       # debug
+    find . -type f -name openssl.real  # debug
     bitbake ${bbopt} -c cleansstate ${clean_packages}
     bitbake ${bbopt} ${build_packages}
+    find . -type f -name openssl       # debug
+    find . -type f -name openssl.real  # debug
 fi
 
 # Build all ${IMAGES} apart from dip-image-edge
@@ -217,10 +222,13 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 
 	case "${MACHINE}" in
 		*rzn1*)
+			find . -type f -name openssl       # debug
+			find . -type f -name openssl.real  # debug
+
 			bitbake ${bbopt} fsbl optee-os u-boot-rzn1
-			bitbake ${bbopt} -c do_install       fsbl
-			bitbake ${bbopt} -c do_fit_optee_os  optee-os
-			bitbake ${bbopt} -c do_fit_rzn1d     u-boot-rzn1
+			bitbake ${bbopt} -c do_install       fsbl        || true
+			bitbake ${bbopt} -c do_fit_optee_os  optee-os    || true
+			bitbake ${bbopt} -c do_fit_rzn1d     u-boot-rzn1 || true
 			;;
 	esac
 
