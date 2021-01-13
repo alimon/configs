@@ -32,6 +32,8 @@ JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-ping-frdm_k64f.job"
 #yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
 $LAVAJOBTPL $JOB_TEMPLATE \
     .actions[0].deploy.images.zephyr.url=$IMAGE_URL \
+    metadata.test-binary-url=$IMAGE_URL \
+    metadata.git-commit=$GIT_COMMIT_ID \
     >lava.job
 python3 $dir/../../lite-build-tools/lava_submit.py lava.job
 echo
@@ -40,7 +42,10 @@ IMAGE_URL="${BASE}/dumb_http_server/sample.net.sockets.dumb_http_server/zephyr/z
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-http-ab-frdm_k64f.job"
 #yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
 $LAVAJOBTPL $JOB_TEMPLATE \
+    job_name=zephyr-net-http-ab \
     .actions[0].deploy.images.zephyr.url=$IMAGE_URL \
+    metadata.test-binary-url=$IMAGE_URL \
+    metadata.git-commit=$GIT_COMMIT_ID \
     >lava.job
 python3 $dir/../../lite-build-tools/lava_submit.py lava.job
 echo
@@ -49,7 +54,10 @@ IMAGE_URL="${BASE}/dumb_http_server_mt/sample.net.sockets.dumb_http_server_mt/ze
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-http-ab-frdm_k64f.job"
 #yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
 $LAVAJOBTPL $JOB_TEMPLATE \
+    job_name=zephyr-net-http-mt-ab \
     .actions[0].deploy.images.zephyr.url=$IMAGE_URL \
+    metadata.test-binary-url=$IMAGE_URL \
+    metadata.git-commit=$GIT_COMMIT_ID \
     >lava.job
 python3 $dir/../../lite-build-tools/lava_submit.py lava.job
 echo
