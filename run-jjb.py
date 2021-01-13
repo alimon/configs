@@ -102,6 +102,8 @@ for line in data.splitlines():
         # operation R100 is 100% rename, which means sixth element is the renamed file
         if operation == 'R':
             filename = elems[6]
+            # delete old job name
+            deletelist.append(elems[5][:-5])
         filelist.append(filename)
     else:
         files = findparentfiles(filename)
@@ -160,6 +162,11 @@ for conf_filename in filelist:
                 raise ValueError("command has failed with code '%s'" % proc.returncode)
 
             for filename in data.splitlines():
+                # old job conf might have been removed because the job is now generated through the template
+                # do not delete the job in this case
+                if filename in deletelist:
+                    deletelist.remove(filename)
+
                 conf_name=os.path.splitext(conf_filename)[0]
                 conf_name=conf_name[:len(filename)]
                 if not filename.startswith(conf_name):
