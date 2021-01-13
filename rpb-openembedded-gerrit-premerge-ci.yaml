@@ -83,32 +83,8 @@
             echo "PUB_DEST=${{PUB_DEST}}" > pub_dest_parameters
         - inject:
             properties-file: pub_dest_parameters
-        - shell: |
-            #!/bin/bash
-
-            # Mapping for MACHINE -> DEVICE_TYPE
-            case "${{MACHINE}}" in
-              am57xx-evm)
-                DEVICE_TYPE=x15
-                ;;
-              dragonboard-410c)
-                DEVICE_TYPE=dragonboard-410c
-                ;;
-              hikey)
-                DEVICE_TYPE=hi6220-hikey-r2
-                ;;
-              juno)
-                DEVICE_TYPE=juno
-                ;;
-              stih410-b2260)
-                DEVICE_TYPE=b2260
-                ;;
-              *)
-                echo "Skip DEVICE_TYPE for ${{MACHINE}}"
-                ;;
-            esac
-
-            echo "DEVICE_TYPE=${{DEVICE_TYPE}}" > device_type_parameters
+        - shell:
+            !include-raw-escape: rpb-openembedded/device_type.sh
         - inject:
             properties-file: device_type_parameters
         - shell:
