@@ -108,4 +108,14 @@ do
     -drive if=ide,file=sda.raw,format=raw \
     -serial mon:stdio \
     -nographic | tee logs/sbsa-acs-level${sbsa_level}.log
+
+    timeout --foreground 20 ./qemu/build/qemu-system-aarch64 \
+    -machine sbsa-ref \
+    -cpu cortex-a72 \
+    -watchdog-action none \
+    -drive if=pflash,file=SBSA_FLASH0.fd,format=raw \
+    -drive if=pflash,file=SBSA_FLASH1.fd,format=raw \
+    -drive if=ide,file=sda.raw,format=raw \
+    -serial mon:stdio \
+    -nographic | tee logs/sbsa-acs-level${sbsa_level}-no-watchdog-reset.log
 done
