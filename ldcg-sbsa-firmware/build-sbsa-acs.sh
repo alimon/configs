@@ -18,7 +18,7 @@ build_edk2()
 {
     # Build EDK2 and truncate results to expected 256M
 
-    export PACKAGES_PATH=$WORKSPACE/edk2:$WORKSPACE/edk2-platforms:$WORKSPACE/edk2-non-osi
+    export PACKAGES_PATH=$WORKSPACE/edk2:$WORKSPACE/edk2-platforms:$WORKSPACE/edk2-non-osi:$WORKSPACE/edk2-libc
     make -C edk2/BaseTools
 
     export GCC5_AARCH64_PREFIX=aarch64-linux-gnu-
@@ -36,8 +36,24 @@ fetch_code()
 {
     git clone --depth 1 https://github.com/qemu/qemu.git
     git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2.git
-    git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-platforms.git
-    git clone --depth 1 --recurse-submodules https://github.com/tianocore/edk2-non-osi.git
+    git clone --depth 1 https://github.com/tianocore/edk2-platforms.git
+    git clone --depth 1 https://github.com/tianocore/edk2-non-osi.git
+    git clone --depth 1 https://github.com/tianocore/edk2-libc.git
+    git clone --depth 1 https://git.linaro.org/ci/job/configs.git
+}
+
+build_sbsa_acs()
+{
+
+    cd edk2
+    patch -p0 < ../configs/ldcg-sbsa-firmware/enable-sbsa-acs.patch
+
+    cd ShellPkg/Application
+    git clone --depth 1 https://github.com/ARM-software/sbsa-acs.git
+
+    cd $WORKSPACE
+    export GCC49_AARCH64_PREFIX=$GCC5_AARCH64_PREFIX
+    source edk2/ShellPkg/Application/sbsa-acs/tools/scripts/avsbuild.sh
 }
 
 rm -rf ${WORKSPACE}/*
@@ -52,14 +68,9 @@ fetch_code
 
 build_qemu
 build_edk2
+build_sbsa_acs
 
-mkdir ${WORKSPACE}/logs/
-
-# Fetch SBSA Architecture Compliance Suite
-
-wget https://github.com/ARM-software/sbsa-acs/archive/v${SBSA_ACS_VER}.tar.gz
-tar xf v${SBSA_ACS_VER}.tar.gz
-cp sbsa-acs-${SBSA_ACS_VER}/prebuilt_images/v${SBSA_ACS_VER}/Sbsa.efi .
+mkdir -p ${WORKSPACE}/logs/
 
 # Create 16MB hdd with one ESP partition
 
@@ -76,7 +87,7 @@ echo "drive c:" >~/.mtoolsrc
 echo "     file=\"${WORKSPACE}/sda.raw\" offset=1048576" >>~/.mtoolsrc
 
 mformat c:
-mcopy -s efi Sbsa.efi c:
+mcopy -s efi ./Build/Shell/DEBUG_GCC49/AARCH64/Sbsa.efi c:
 
 for sbsa_level in 3 4 5 6
 do
@@ -89,7 +100,7 @@ do
 
 # run SBSA ACS in QEMU
 
-    timeout --foreground 90 ./qemu/build/qemu-system-aarch64 \
+    timeout --foreground 20 ./qemu/build/qemu-system-aarch64 \
     -machine sbsa-ref \
     -cpu cortex-a72 \
     -drive if=pflash,file=SBSA_FLASH0.fd,format=raw \

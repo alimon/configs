@@ -1,0 +1,22 @@
+diff --git ShellPkg/ShellPkg.dsc ShellPkg/ShellPkg.dsc
+index c42bc9464a..43deb92324 100644
+--- ShellPkg/ShellPkg.dsc
++++ ShellPkg/ShellPkg.dsc
+@@ -24,6 +24,8 @@
+   UefiDriverEntryPoint|MdePkg/Library/UefiDriverEntryPoint/UefiDriverEntryPoint.inf
+   UefiBootServicesTableLib|MdePkg/Library/UefiBootServicesTableLib/UefiBootServicesTableLib.inf
+   DevicePathLib|MdePkg/Library/UefiDevicePathLib/UefiDevicePathLibOptionalDevicePathProtocol.inf
++  SbsaValLib|ShellPkg/Application/sbsa-acs/val/SbsaValLib.inf
++  SbsaPalLib|ShellPkg/Application/sbsa-acs/platform/pal_uefi/SbsaPalLib.inf
+ !if $(TARGET) == RELEASE
+   DebugLib|MdePkg/Library/BaseDebugLibNull/BaseDebugLibNull.inf
+ !else
+@@ -98,6 +100,8 @@
+   ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
+   ShellPkg/Library/UefiShellNetwork2CommandsLib/UefiShellNetwork2CommandsLib.inf
+ 
++  ShellPkg/Application/sbsa-acs/uefi_app/SbsaAvs.inf
++
+   ShellPkg/Application/Shell/Shell.inf {
+     <PcdsFixedAtBuild>
+       gEfiShellPkgTokenSpaceGuid.PcdShellLibAutoInitialize|FALSE
