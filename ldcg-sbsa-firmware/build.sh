@@ -75,6 +75,7 @@ do
     timeout --foreground ${QEMU_TIMEOUT} \
         ./qemu/build/aarch64-softmmu/qemu-system-aarch64 \
             -machine sbsa-ref \
+            -cpu cortex-a72 \
             -drive if=pflash,file=SBSA_FLASH0.fd,format=raw \
             -drive if=pflash,file=SBSA_FLASH1.fd,format=raw \
             -drive if=ide,format=raw,file=arm-enterprise-acs/prebuilt_images/${SBSA_ENTERPRISE_ACS_VER}/luv-live-image-gpt.img \
