@@ -16,8 +16,8 @@ export tcdir=${HOME}/srv/toolchain
 export tcbindir="${tcdir}/$(basename $toolchain_url .tar.xz)/bin"
 if [ ! -d "${tcbindir}" ]; then
 	wget -q "${toolchain_url}"
-	mkdir -p "${tcdir}"
-	tar -xf "$(basename ${toolchain_url})" -C "${tcdir}"
+	sudo mkdir -p "${tcdir}"
+	sudo tar -xf "$(basename ${toolchain_url})" -C "${tcdir}"
 fi
 
 export PATH=$tcbindir:$PATH
