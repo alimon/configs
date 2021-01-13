@@ -20,24 +20,36 @@ if [ ! -d lite-lava-docker-compose ]; then
     git clone --depth 1 https://github.com/Linaro/lite-lava-docker-compose
 fi
 
+# Tool to template LAVA jobs.
+LAVAJOBTPL="python3 $dir/../../lite-build-tools/lava_job_tpl.py"
+
 ARTIFACT_URL="http://snapshots.linaro.org/components/kernel/zephyr-net/${BRANCH}/${ZEPHYR_TOOLCHAIN_VARIANT}/${PLATFORM}/${BUILD_NUMBER}"
 
 BASE="${ARTIFACT_URL}/samples/net/sockets"
 
 IMAGE_URL="${BASE}/dumb_http_server/sample.net.sockets.dumb_http_server/zephyr/zephyr.bin"
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-ping-frdm_k64f.job"
-yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
+#yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
+$LAVAJOBTPL $JOB_TEMPLATE \
+    .actions[0].deploy.images.zephyr.url=$IMAGE_URL \
+    >lava.job
 python3 $dir/../../lite-build-tools/lava_submit.py lava.job
 echo
 
 IMAGE_URL="${BASE}/dumb_http_server/sample.net.sockets.dumb_http_server/zephyr/zephyr.bin"
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-http-ab-frdm_k64f.job"
-yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
+#yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
+$LAVAJOBTPL $JOB_TEMPLATE \
+    .actions[0].deploy.images.zephyr.url=$IMAGE_URL \
+    >lava.job
 python3 $dir/../../lite-build-tools/lava_submit.py lava.job
 echo
 
 IMAGE_URL="${BASE}/dumb_http_server_mt/sample.net.sockets.dumb_http_server_mt/zephyr/zephyr.bin"
 JOB_TEMPLATE="lite-lava-docker-compose/example/zephyr-net-http-ab-frdm_k64f.job"
-yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
+#yq -y ".actions[0].deploy.images.zephyr.url=\"$IMAGE_URL\"" $JOB_TEMPLATE > lava.job
+$LAVAJOBTPL $JOB_TEMPLATE \
+    .actions[0].deploy.images.zephyr.url=$IMAGE_URL \
+    >lava.job
 python3 $dir/../../lite-build-tools/lava_submit.py lava.job
 echo
