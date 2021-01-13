@@ -217,7 +217,7 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 
 	mkdir -p tmp/deploy/images/rzn1-snarc
 	touch tmp/deploy/images/rzn1-snarc/dip-image.squashfs-lzo.verity.env
-	time BB_NUMBER_THREADS="4" PARALLEL_MAKE="-j 4" bitbake ${bbopt} dip-image dip-sdk
+	time bitbake ${bbopt} dip-image dip-sdk
 	cat tmp/deploy/images/rzn1-snarc/dip-image.squashfs-lzo.verity.env
 
 	case "${MACHINE}" in
@@ -225,15 +225,15 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 			find . -type f -name openssl       # debug
 			find . -type f -name openssl.real  # debug
 
-			bitbake ${bbopt} fsbl optee-os u-boot-rzn1
-			bitbake ${bbopt} -c do_install       fsbl        || true
-			bitbake ${bbopt} -c do_fit_optee_os  optee-os    || true
-			bitbake ${bbopt} -c do_fit_rzn1d     u-boot-rzn1 || true
+			time bitbake ${bbopt} fsbl optee-os u-boot-rzn1
+			time bitbake ${bbopt} -c do_install       fsbl        || true
+			time bitbake ${bbopt} -c do_fit_optee_os  optee-os    || true
+			time bitbake ${bbopt} -c do_fit_rzn1d     u-boot-rzn1 || true
 			;;
 	esac
 
 	# Generate pn-buildlist containing names of recipes, for CVE check below
-	bitbake ${bbopt} dip-image -g
+	time bitbake ${bbopt} dip-image -g
 
 	DEPLOY_DIR_SDK=$(bitbake -e | grep "^DEPLOY_DIR="| cut -d'=' -f2 | tr -d '"')/sdk
 	cp -aR ${DEPLOY_DIR_SDK} ${DEPLOY_DIR_IMAGE}
@@ -271,7 +271,7 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	time bitbake ${bbopt} ${edgeimg}
 
 	# Overwrite pn-buildlist, for CVE check below
-	bitbake ${bbopt} ${edgeimg} -g
+	time bitbake ${bbopt} ${edgeimg} -g
 
 	# restore layer meta-dip-dev
 	sed -i conf/bblayers.conf -e 's#meta-edge#meta-dip-dev#'
