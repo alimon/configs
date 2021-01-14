@@ -14,6 +14,26 @@ cleanup_exit()
     echo "Running cleanup_exit..."
 }
 
+replace_dmverity_var()
+{
+	local variable
+	local localconf
+	local newvalue
+
+	variable="DM_VERITY_IMAGE_NAME"
+	localconf="conf/local.conf"
+
+	if [ "${KERNEL_VERSION_PATCHLEVEL}" = "4.19" ]; then
+		# 4.19 doesn't support dm-verity
+		newvalue=""
+	else
+		newvalue="${1}"
+	fi
+
+	sed -i 's/'${variable}' ?=.*/'${variable}' ?= "'${newvalue}'"/' ${localconf}
+	grep ${variable} ${localconf}
+}
+
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
   echo "INFO: apt update error - try again in a moment"
   sleep 15
@@ -203,14 +223,11 @@ dipimg="dip-image"
 devimg="dip-image-dev"
 edgeimg="dip-image-edge"
 hasdipimg=$(echo ${IMAGES} | sed -e 's/'${devimg}'//g' -e 's/'${edgeimg}'//g')
-localconf="conf/local.conf"
-dmverityvar="DM_VERITY_IMAGE_NAME"
 
 DEPLOY_DIR_IMAGE=$(bitbake -e | grep "^DEPLOY_DIR_IMAGE="| cut -d'=' -f2 | tr -d '"')
 
 if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
-	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= "'${dipimg}'"/' ${localconf}
-	cat ${localconf}
+	replace_dmverity_var "${dipimg}"
 
 	grep -c ^processor /proc/cpuinfo
 	grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}'
@@ -243,8 +260,7 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 fi
 
 if [[ "${IMAGES}" == *"${devimg}"* ]]; then
-	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= ""/' ${localconf}
-	grep ${dmverityvar} ${localconf}
+	replace_dmverity_var ""
 	time bitbake ${bbopt} ${devimg}
 
 	ls -al ${DEPLOY_DIR_IMAGE} || true
@@ -262,8 +278,7 @@ if [[ "${IMAGES}" == *"${edgeimg}"* ]]; then
 	find ${DEPLOY_DIR_IMAGE} -type l -delete
 	mv ${DEPLOY_DIR_IMAGE} ${DEPLOY_DIR_IMAGE}-pre
 
-	sed -i 's/'${dmverityvar}' ?=.*/'${dmverityvar}' ?= "'${edgeimg}'"/' ${localconf}
-	grep ${dmverityvar} ${localconf}
+	replace_dmverity_var "${edgeimg}"
 
 	# replace layer meta-dip-dev with meta-edge and then build dip-image-edge
 	mkdir -p ${DEPLOY_DIR_IMAGE}
