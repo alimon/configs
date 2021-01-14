@@ -22,13 +22,7 @@ replace_dmverity_var()
 
 	variable="DM_VERITY_IMAGE_NAME"
 	localconf="conf/local.conf"
-
-	if [ "${KERNEL_VERSION_PATCHLEVEL}" = "4.19" ]; then
-		# 4.19 doesn't support dm-verity
-		newvalue=""
-	else
-		newvalue="${1}"
-	fi
+	newvalue="${1}"
 
 	sed -i 's/'${variable}' ?=.*/'${variable}' ?= "'${newvalue}'"/' ${localconf}
 	grep ${variable} ${localconf}
