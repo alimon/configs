@@ -3,14 +3,12 @@
 set -ex
 
 if [ `echo $JOB_NAME | cut -d'/' -f1` == 'ldcg-python-tensorflow-nightly' ]; then
-  OUTPUT_PATH="ldcg/python/tensorflow-nightly/$(date -u +%Y%m%d)/"
+  OUTPUT_PATH="ldcg/python/tensorflow-nightly/$(date -u +%Y%m%d)-${BUILD_NUMBER}/"
 else
   OUTPUT_PATH="ldcg/python/tensorflow/${BUILD_NUMBER}/"
 fi
 
-if [ -e /etc/debian_version ]; then
-  BUILD_NUMBER="${BUILD_NUMBER}-debian"
-else
+if [ -e /etc/centos-release ]; then
    sudo dnf install -y python3-requests wget
    # NOTE(hrw): just in case as we had urllib3 issue with six
    sudo dnf reinstall -y python3-six python3-urllib3
