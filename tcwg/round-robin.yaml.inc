@@ -219,14 +219,9 @@
           timeout: '{timeout}'
       - timestamps
       - ssh-agent-credentials:
-#if RR_tcwg_bmk && TOOLCHAIN_gnu_eabi
-          users:
-            - 'tcwg-benchmark'
-#else
           # tcwg-buildslave user id
           users:
             - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
-#endif
 
 - builder:
     name: trigger-followup-builds
