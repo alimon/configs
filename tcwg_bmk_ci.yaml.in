@@ -13,7 +13,7 @@
     hw:
 #if TOOLCHAIN_gnu_eabi
       - stm32:
-          target: arm-eabi
+          target: arm_eabi
           node: tcwg-bmk-stm32
 #else
       - tk1:
@@ -208,3 +208,16 @@
           ci_project_config: 'tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
+#if TOOLCHAIN_gnu_eabi
+- job-template:
+    name: tcwg_bmk_ci_#{TOOLCHAIN}-build-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags}
+    project-type: freestyle
+    disabled: true
+    display-name: 'DELETE ME'
+
+- job-template:
+    name: tcwg_bmk_ci_#{TOOLCHAIN}-bisect-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags}
+    project-type: freestyle
+    disabled: true
+    display-name: 'DELETE ME'
+#endif
