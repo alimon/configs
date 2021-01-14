@@ -57,30 +57,6 @@
       - spec2k6
 #endif
     cflags:
-#if TOOLCHAIN_gnu_eabi
-      - Os:
-          cron_schedule: H * * * *
-      - Os_LTO:
-          cron_schedule: H * * * *
-      - Oz:
-          cron_schedule: H * * * *
-      - Oz_LTO:
-          cron_schedule: H * * * *
-      - O2:
-          cron_schedule: H * * * *
-      - O2_LTO:
-          cron_schedule: H * * * *
-      - O3:
-          cron_schedule: H * * * *
-      - O3_LTO:
-          cron_schedule: H * * * *
-      - Os-vs-Os_LTO:
-          cron_schedule: H * * * *
-      - O2-vs-O2_LTO:
-          cron_schedule: H * * * *
-      - O3-vs-O3_LTO:
-          cron_schedule: H * * * *
-#else
       - Os:
           cron_schedule: H H H/7 * *
       - Os_LTO:
@@ -103,7 +79,6 @@
           cron_schedule: H H H * *
       - O3-vs-O3_LTO:
           cron_schedule: H H H * *
-#endif
     jobs:
       - 'tcwg_bmk_ci_#{TOOLCHAIN}-build-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk_ci_#{TOOLCHAIN}-bisect-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'

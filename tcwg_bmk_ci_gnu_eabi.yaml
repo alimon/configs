@@ -23,27 +23,27 @@
       - coremark
     cflags:
       - Os:
-          cron_schedule: H * * * *
+          cron_schedule: H H H/7 * *
       - Os_LTO:
-          cron_schedule: H * * * *
+          cron_schedule: H H H/7 * *
       - Oz:
-          cron_schedule: H * * * *
+          cron_schedule: H H H/7 * *
       - Oz_LTO:
-          cron_schedule: H * * * *
+          cron_schedule: H H H/7 * *
       - O2:
-          cron_schedule: H * * * *
+          cron_schedule: H H H/14 * *
       - O2_LTO:
-          cron_schedule: H * * * *
+          cron_schedule: H H H/14 * *
       - O3:
-          cron_schedule: H * * * *
+          cron_schedule: H H H/14 * *
       - O3_LTO:
-          cron_schedule: H * * * *
+          cron_schedule: H H H/14 * *
       - Os-vs-Os_LTO:
-          cron_schedule: H * * * *
+          cron_schedule: H H H * *
       - O2-vs-O2_LTO:
-          cron_schedule: H * * * *
+          cron_schedule: H H H * *
       - O3-vs-O3_LTO:
-          cron_schedule: H * * * *
+          cron_schedule: H H H * *
     jobs:
       - 'tcwg_bmk_ci_gnu_eabi-build-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk_ci_gnu_eabi-bisect-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-{target}-{bmk}-{cflags}'
@@ -182,9 +182,9 @@
       - choice:
           name: update_baseline
           choices:
-            - init
             - update
             - reset
+            - init
             - push
           description: "What to do with baseline in this build"
       - default-parameters:
@@ -539,4 +539,4 @@
           ci_project_config: 'tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
-# checksum: d6755b77f6353057f4f8e9b38b5c65de
+# checksum: bc1c3d2e7f630399a560d9b3da09b714
