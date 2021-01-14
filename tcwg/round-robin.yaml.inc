@@ -124,10 +124,17 @@
       - choice:
           name: update_baseline
           choices:
+#if TOOLCHAIN_gnu_eabi
+            - init
+            - update
+            - reset
+            - push
+#else
             - update
             - reset
             - init
             - push
+#endif
           description: "What to do with baseline in this build"
       - default-parameters:
           ci_project: '{ci_project}'
