@@ -175,6 +175,10 @@
           component: gcc
           url: '{gcc_url}'
           branch: '{default_branch}'
+      - component-parameters:
+          component: newlib
+          url: '{newlib_url}'
+          branch: '{default_branch}'
       - choice:
           name: update_baseline
           choices:
@@ -221,6 +225,11 @@
           url: '{gcc_url}'
           branch: '{gcc_branch}'
           reference: gcc.git
+      - component-scm:
+          component: newlib
+          url: '{newlib_url}'
+          branch: '{newlib_branch}'
+          reference: newlib.git
       - bmk-scripts
 
 - wrapper:
@@ -530,4 +539,4 @@
           ci_project_config: 'tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
-# checksum: e26b39fdc8f34660ad2eef89b09ce858
+# checksum: d6755b77f6353057f4f8e9b38b5c65de

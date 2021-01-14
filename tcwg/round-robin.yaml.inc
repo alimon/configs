@@ -103,6 +103,12 @@
           url: '{glibc_url}'
           branch: '{default_branch}'
 #endif
+#if COMPONENTS_newlib
+      - component-parameters:
+          component: newlib
+          url: '{newlib_url}'
+          branch: '{default_branch}'
+#endif
 #if COMPONENTS_linux
       - component-parameters:
           component: linux
@@ -185,6 +191,13 @@
           url: '{glibc_url}'
           branch: '{glibc_branch}'
           reference: glibc.git
+#endif
+#if COMPONENTS_newlib
+      - component-scm:
+          component: newlib
+          url: '{newlib_url}'
+          branch: '{newlib_branch}'
+          reference: newlib.git
 #endif
 #if COMPONENTS_linux
       - component-scm:
