@@ -79,12 +79,17 @@
           cron_schedule: H H H * *
       - O3-vs-O3_LTO:
           cron_schedule: H H H * *
+#if TOOLCHAIN_gnu_eabi
+    cflags_del:
+      - Oz
+      - Oz_LTO
+#endif
     jobs:
       - 'tcwg_bmk_ci_#{TOOLCHAIN}-build-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk_ci_#{TOOLCHAIN}-bisect-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
 #if TOOLCHAIN_gnu_eabi
-      - 'tcwg_bmk_ci_#{TOOLCHAIN}-build-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags}'
-      - 'tcwg_bmk_ci_#{TOOLCHAIN}-bisect-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags}'
+      - 'tcwg_bmk_ci_#{TOOLCHAIN}-build-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags_del}'
+      - 'tcwg_bmk_ci_#{TOOLCHAIN}-bisect-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags_del}'
 #endif
     exclude:
       - toolchain_name: gnu
@@ -214,13 +219,13 @@
         - bisect-publishers
 #if TOOLCHAIN_gnu_eabi
 - job-template:
-    name: tcwg_bmk_ci_#{TOOLCHAIN}-build-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags}
+    name: tcwg_bmk_ci_#{TOOLCHAIN}-build-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags_del}
     project-type: freestyle
     disabled: true
     display-name: 'DELETE ME'
 
 - job-template:
-    name: tcwg_bmk_ci_#{TOOLCHAIN}-bisect-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags}
+    name: tcwg_bmk_ci_#{TOOLCHAIN}-bisect-tcwg_bmk_{hw}-#{TOOLCHAIN}-{toolchain_ver}-arm-eabi-{bmk}-{cflags_del}
     project-type: freestyle
     disabled: true
     display-name: 'DELETE ME'

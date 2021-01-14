@@ -44,11 +44,14 @@
           cron_schedule: H H H * *
       - O3-vs-O3_LTO:
           cron_schedule: H H H * *
+    cflags_del:
+      - Oz
+      - Oz_LTO
     jobs:
       - 'tcwg_bmk_ci_gnu_eabi-build-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-{target}-{bmk}-{cflags}'
       - 'tcwg_bmk_ci_gnu_eabi-bisect-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-{target}-{bmk}-{cflags}'
-      - 'tcwg_bmk_ci_gnu_eabi-build-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-arm-eabi-{bmk}-{cflags}'
-      - 'tcwg_bmk_ci_gnu_eabi-bisect-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-arm-eabi-{bmk}-{cflags}'
+      - 'tcwg_bmk_ci_gnu_eabi-build-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-arm-eabi-{bmk}-{cflags_del}'
+      - 'tcwg_bmk_ci_gnu_eabi-bisect-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-arm-eabi-{bmk}-{cflags_del}'
     exclude:
       - toolchain_name: gnu
         cflags: Oz
@@ -532,14 +535,14 @@
     publishers:
         - bisect-publishers
 - job-template:
-    name: tcwg_bmk_ci_gnu_eabi-build-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-arm-eabi-{bmk}-{cflags}
+    name: tcwg_bmk_ci_gnu_eabi-build-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-arm-eabi-{bmk}-{cflags_del}
     project-type: freestyle
     disabled: true
     display-name: 'DELETE ME'
 
 - job-template:
-    name: tcwg_bmk_ci_gnu_eabi-bisect-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-arm-eabi-{bmk}-{cflags}
+    name: tcwg_bmk_ci_gnu_eabi-bisect-tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-arm-eabi-{bmk}-{cflags_del}
     project-type: freestyle
     disabled: true
     display-name: 'DELETE ME'
-# checksum: 47ba0fabbc623087ff053d875ca98ed5
+# checksum: 2a69b0dda7e44371c603f33a8264ec3b
