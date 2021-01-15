@@ -14,7 +14,7 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-xenial-amd64
+    node: docker-bionic-amd64
     display-name: 'Infrastructure - Unit Test CI for the patchwork-tools repository'
     concurrent: true
     triggers:
@@ -50,8 +50,6 @@
             git log -n1
             git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
             git checkout -q FETCH_HEAD
-
-            curl -L https://git.linaro.org/infrastructure/linaro-git-tools.git/blob_plain/HEAD:/linaro_ldap.py
 
             ./unit-test.sh
         - build-name-setter:
