@@ -47,11 +47,11 @@
               - gcc5
               - gcc4_9
             description: 'Toolchain version; should match a supported ABE config'
-        - node:
-            name: HOST_NAME
-            default-slaves:
-              - tcwg-x86_64-dev-01
-            description: 'Jenkins host to build on; determines host of the toolchain'
+        - label:
+            name: builder
+            default:
+              - tcwg-x86_64-build
+            description: 'Jenkins label to build on; determines host of the toolchain'
         - file:
             name: manifest.txt
             description: 'Use provided manifest file (which may override above settings)'
@@ -68,7 +68,6 @@
             default:
             description: 'Extra options to pass to docker-run'
     disabled: false
-    node: tcwg-x86_64-build
     concurrent: true
     display-name: 'TCWG AAA Dev Build'
     scm:
