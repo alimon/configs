@@ -7,6 +7,9 @@
             anonymous:
                 - job-read
                 - job-extended-read
+            linaro:
+                - job-build
+                - job-cancel
         - build-discarder:
             days-to-keep: 180
             num-to-keep: 150
@@ -60,7 +63,7 @@
             if [ "X${KERNEL_BRANCH}" = "Xandroid11-5.4" ]; then
                 cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-premerge.txt
                 echo "ANDROID_BUILD_CONFIG=lkft-gki-android11-5.4-premerge" >> lkft-${KERNEL_BRANCH}-premerge.txt
-                echo "KERNEL_DESCRIBE=${KERNEL_DESCRIBE}-premerge >> lkft-${KERNEL_BRANCH}-premerge.txt
+                echo "KERNEL_DESCRIBE=${KERNEL_DESCRIBE}-premerge" >> lkft-${KERNEL_BRANCH}-premerge.txt
             elif [ "X${KERNEL_BRANCH}" = "Xandroid12-5.4" ]; then
                 cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-x15.txt
                 echo "ANDROID_BUILD_CONFIG=lkft-x15-aosp-master-5.4" >> lkft-${KERNEL_BRANCH}-x15.txt
