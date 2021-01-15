@@ -22,7 +22,7 @@
 
     - name: set snapshots.linaro.org url
       set_fact:
-        snapshots_linaro_url: "https://snapshots.linaro.org/ldcg/python/tensorflow-nightly/{{ lookup('pipe', 'date +\"%Y%m%d\"') }}/"
+        snapshots_linaro_url: "https://snapshots.linaro.org/ldcg/python/tensorflow-nightly/{{ lookup('pipe', 'date +\"%Y%m%d\"') }}-{{ lookup('env', 'BUILD_NUMBER') }}/"
 
     - name: prepare wheels for publishing # noqa 301
       shell:
