@@ -56,11 +56,12 @@
       - shell: |
           #!/bin/bash
           set -euf -o pipefail
-          echo Hello
+          env
       - multijob:
           name: Build
           projects:
             - name: tcwg-dev-build
+              alias: host_x86_64-target_aarch64
               enable-condition: "$host_x86_64 && $target_aarch64"
               git-revision: true
               node-label-name: "builder"
@@ -70,6 +71,7 @@
                 version=$version
                 target=aarch64-linux-gnu
             - name: tcwg-dev-build
+              alias: host_x86_64-target_armhf
               enable-condition: "$host_x86_64 && $target_armhf"
               git-revision: true
               node-label-name: "builder"
@@ -79,6 +81,7 @@
                 version=$version
                 target=arm-linux-gnueabihf
             - name: tcwg-dev-build
+              alias: host_aarch64-target_aarch64
               enable-condition: "$host_aarch64 && $target_aarch64"
               git-revision: true
               node-label-name: "builder"
@@ -88,6 +91,7 @@
                 version=$version
                 target=native
             - name: tcwg-dev-build
+              alias: host_aarch64-target_armhf
               enable-condition: "$host_aarch64 && $target_armhf"
               git-revision: true
               node-label-name: "builder"
@@ -96,3 +100,7 @@
                 release_name=$release_name
                 version=$version
                 target=arm-linux-gnueabihf
+      - shell: |
+          #!/bin/bash
+          set -euf -o pipefail
+          env
