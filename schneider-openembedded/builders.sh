@@ -367,7 +367,6 @@ rm -f ${DEPLOY_DIR_IMAGE}/*.rootfs.ext4 \
       ${DEPLOY_DIR_IMAGE}/*.iso \
       ${DEPLOY_DIR_IMAGE}/*.jffs* \
       ${DEPLOY_DIR_IMAGE}/*.cpio.gz \
-      ${DEPLOY_DIR_IMAGE}/*.squashfs-lzo \
       ${DEPLOY_DIR_IMAGE}/*.stimg
 
 # FIXME: Sparse images here, until it gets done by OE
