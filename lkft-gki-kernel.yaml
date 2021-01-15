@@ -69,13 +69,18 @@
             build_configs_12_510="lkft-db845c-aosp-master-android12-5.10-gki lkft-hikey960-aosp-master-android12-5.10-gki lkft-member-wrapper"
             build_configs_12_54="lkft-db845c-aosp-master-5.4-gki lkft-hikey960-aosp-master-5.4-gki lkft-member-wrapper"
             build_configs_11_54="lkft-db845c-android11-android11-5.4-gki lkft-hikey960-android11-android11-5.4-gki"
+            build_configs_11_54_premerge="lkft-db845c-android11-android11-5.4-gki-premerge lkft-hikey960-android11-android11-5.4-gki-premerge"
             build_configs_11_54_lts="lkft-db845c-android11-android11-5.4-lts-gki lkft-hikey960-android11-android11-5.4-lts-gki"
 
             build_configs=""
             if [ -z "${ANDROID_BUILD_CONFIG_TO_BE_TRIGGERED}" ]; then
                 case "X${KERNEL_BRANCH}" in
                     "Xandroid11-5.4")
-                        build_configs="${build_configs_11_54}"
+                        if [ "X${ANDROID_BUILD_CONFIG}" = "Xlkft-gki-android11-5.4-premerge" ]; then
+                          build_configs="${build_configs_11_54_premerge}"
+                        else
+                          build_configs="${build_configs_11_54}"
+                        fi
                         ;;
                     "Xandroid11-5.4-lts")
                         build_configs="${build_configs_11_54_lts}"
