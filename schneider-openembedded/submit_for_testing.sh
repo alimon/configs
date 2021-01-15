@@ -11,7 +11,7 @@ export RESIZE_ROOTFS=${RESIZE_ROOTFS:-}
 
 templates_common_minimal=( dip-image.yaml     )
 templates_common_normal=(  ${templates_common_minimal[@]} )
-if [[ "${IMAGES}" == *dip-image-edge* ]]; then
+if [[ "${IMAGES}" == *dip-image-dev* ]]; then
 templates_common_normal=(  ${templates_common_normal[@]} dip-image-dev.yaml )
 fi
 templates_common_network=( ${templates_common_normal[@]}  )
@@ -43,7 +43,7 @@ templates_rzn1d_normal=( \
 	lava-multinode-rzn1d-j24.yaml
 )
 if [[ "${IMAGES}" == *dip-image-edge* ]]; then
-	templates_rzn1d_normal=( ${templates_rzn1d_normal[@]} dip-image-edge.yaml )
+	templates_rzn1d_normal=( dip-image-edge.yaml ${templates_rzn1d_normal[@]} )
 fi
 templates_rzn1d_network=( \
 	${templates_rzn1d_normal[@]}
