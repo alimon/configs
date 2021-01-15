@@ -55,6 +55,22 @@
       - build-discarder:
           days-to-keep: 30
           num-to-keep: 10
+
+- scm:
+    name: jenkins-scripts
+    scm:
+      - git:
+          url: https://git.linaro.org/toolchain/jenkins-scripts.git
+          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
+          branches:
+            - $scripts_branch
+          basedir: jenkins-scripts
+          skip-tag: true
+          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
+          wipe-workspace: false
+          clean:
+            before: true
+          prune: true
 #END:   tcwg/default.yaml.inc
 
 - parameter:
@@ -84,22 +100,6 @@
           name: scripts_branch
           default: master
           description: 'Scripts revision to use'
-
-- scm:
-    name: jenkins-scripts
-    scm:
-      - git:
-          url: https://git.linaro.org/toolchain/jenkins-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $scripts_branch
-          basedir: jenkins-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
 
 
 - parameter:
@@ -498,4 +498,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     publishers:
       - bisect-publishers
-# checksum: 6f8057c7e7f89ed55f798c09beb61bfd
+# checksum: 055468ab340b1ac2c0d826ad54ff5d1b

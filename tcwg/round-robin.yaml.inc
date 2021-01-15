@@ -36,22 +36,6 @@
           description: 'Benchmark scripts revision to use'
 #endif
 
-- scm:
-    name: jenkins-scripts
-    scm:
-      - git:
-          url: https://git.linaro.org/toolchain/jenkins-scripts.git
-          refspec: +refs/heads/*:refs/remotes/origin/* +refs/changes/*:refs/changes/*
-          branches:
-            - $scripts_branch
-          basedir: jenkins-scripts
-          skip-tag: true
-          reference-repo: /home/tcwg-buildslave/snapshots-ref/jenkins-scripts.git
-          wipe-workspace: false
-          clean:
-            before: true
-          prune: true
-
 #if RR_tcwg_bmk
 - scm:
     name: bmk-scripts
