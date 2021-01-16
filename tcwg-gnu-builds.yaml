@@ -47,8 +47,8 @@
       - choice:
           name: version
           choices:
-            - latest-rel
             - master
+            - latest-rel
           description: 'Toolchain version; should match a supported ABE config'
       - bool:
           name: host_x86_64_target_aarch64
@@ -62,6 +62,12 @@
       - bool:
           name: host_aarch64_target_armhf
           default: true
+      - choice:
+          name: distro
+          choices:
+            - focal
+            - bionic
+          description: 'Ubuntu distro to use for build environment'
       - bool:
           name: publish
           default: false
@@ -99,6 +105,7 @@
           cat > build-params.txt <<EOF
           release_name=$release_name
           version=$version
+          distro=$distro
           EOF
       - multijob:
           name: Build
@@ -239,8 +246,12 @@
       - trigger-builds:
           - project: tcwg-gnu-builds
             property-file: build-params.txt
-            predefined-parameters: "version=latest-rel"
+            predefined-parameters: |
+              version=latest-rel
+              distro=bionic
           - project: tcwg-gnu-builds
             property-file: build-params.txt
-            predefined-parameters: "version=master"
-# checksum: 334da3d053c462147f068c5aae0ff755
+            predefined-parameters: |
+              version=master
+              distro=focal
+# checksum: 6ae0967e6d97f15990a58ab31d0ab5ef
