@@ -42,8 +42,8 @@
     parameters:
       - string:
           name: release_name
-          default: default
-          description: 'Release name; default is YYYY.MM-1'
+          default: test
+          description: 'Release name'
       - choice:
           name: version
           choices:
@@ -51,90 +51,186 @@
             - master
           description: 'Toolchain version; should match a supported ABE config'
       - bool:
-          name: host_x86_64
+          name: host_x86_64-target_aarch64
           default: true
       - bool:
-          name: host_aarch64
+          name: host_x86_64-target_armhf
           default: true
       - bool:
-          name: target_aarch64
+          name: host_aarch64-target_aarch64
           default: true
       - bool:
-          name: target_armhf
+          name: host_aarch64-target_armhf
           default: true
+      - bool:
+          name: publish
+          default: false
+          description: 'Whether to publish to snapshots.linaro.org'
       - bool:
           name: verbose
           default: true
           description: 'Whether to be verbose'
-      - string:
-          name: scripts_branch
-          default: tested
-          description: 'Scripts revision to use'
     disabled: false
+    node: tcwg-coordinator
     concurrent: true
     display-name: 'TCWG AAA GNU Builds'
-    scm:
-      - jenkins-scripts
+    triggers:
+      - timed: "H H H/7 * *"
     wrappers:
+      - build-name:
+          name: '#$BUILD_NUMBER-$release_name'
       - timeout:
           timeout: 300
       - timestamps
-      - ssh-agent-credentials:
-          # tcwg-buildslave user id
-          users:
-            - 'e0958a95-204f-4c14-a66c-5e2be6c5d50a'
-      - build-name:
-          name: '#${BUILD_NUMBER}-${release_name}'
+      - workspace-cleanup
     builders:
       - shell: |
           #!/bin/bash
           set -euf -o pipefail
-          env
+          if $verbose; then
+            set -x
+          fi
+
+          if [ x"$(ls)" != x"" ]; then
+            echo "ERROR: Dirty workspace"
+            exit 1
+          fi
+          
+          cat > build-params.txt <<EOF
+          release_name=$release_name
+          version=$version
+          EOF
       - multijob:
           name: Build
           projects:
             - name: tcwg-dev-build
               alias: host_x86_64-target_aarch64
-              enable-condition: "$host_x86_64 && $target_aarch64"
-              git-revision: true
+              enable-condition: "$host_x86_64-target_aarch64"
               node-label-name: "builder"
               node-label: "tcwg-build && tcwg-x86_64-build"
-              predefined-parameters: |
-                release_name=$release_name
-                version=$version
-                target=aarch64-linux-gnu
+              property-file: build-params.txt
+              predefined-parameters: "target=aarch64-linux-gnu"
             - name: tcwg-dev-build
               alias: host_x86_64-target_armhf
-              enable-condition: "$host_x86_64 && $target_armhf"
-              git-revision: true
+              enable-condition: "$host_x86_64-$target_armhf"
               node-label-name: "builder"
               node-label: "tcwg-build && tcwg-x86_64-build"
-              predefined-parameters: |
-                release_name=$release_name
-                version=$version
-                target=arm-linux-gnueabihf
+              property-file: build-params.txt
+              predefined-parameters: "target=arm-linux-gnueabihf"
             - name: tcwg-dev-build
               alias: host_aarch64-target_aarch64
-              enable-condition: "$host_aarch64 && $target_aarch64"
-              git-revision: true
+              enable-condition: "$host_aarch64-target_aarch64"
               node-label-name: "builder"
               node-label: "tcwg-build && tcwg-armv8_64"
-              predefined-parameters: |
-                release_name=$release_name
-                version=$version
-                target=native
+              property-file: build-params.txt
+              predefined-parameters: "target=native"
             - name: tcwg-dev-build
               alias: host_aarch64-target_armhf
-              enable-condition: "$host_aarch64 && $target_armhf"
-              git-revision: true
+              enable-condition: "$host_aarch64-target_armhf"
               node-label-name: "builder"
               node-label: "tcwg-build && tcwg-armv8_64"
-              predefined-parameters: |
-                release_name=$release_name
-                version=$version
-                target=arm-linux-gnueabihf
+              property-file: build-params.txt
+              predefined-parameters: "target=arm-linux-gnueabihf"
       - shell: |
           #!/bin/bash
           set -euf -o pipefail
           env
-# checksum: 20d7bf5104bf15548c7cda49f9ebbaec
+      - conditional-step:
+          condition-kind: num-comp
+          lhs: $TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD
+          comparator: greater-than-equal
+          rhs: 1
+          steps:
+            - copyartifact:
+                project: tcwg-dev-build
+                which-build: specific-build
+                build-number: $TCWG_DEV_BUILD_1_BUILD_NUMBER
+                target: tcwg-dev-build-1
+      - conditional-step:
+          condition-kind: num-comp
+          lhs: $TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD
+          comparator: greater-than-equal
+          rhs: 2
+          steps:
+            - copyartifact:
+                project: tcwg-dev-build
+                which-build: specific-build
+                build-number: $TCWG_DEV_BUILD_2_BUILD_NUMBER
+                target: tcwg-dev-build-2
+      - conditional-step:
+          condition-kind: num-comp
+          lhs: $TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD
+          comparator: greater-than-equal
+          rhs: 3
+          steps:
+            - copyartifact:
+                project: tcwg-dev-build
+                which-build: specific-build
+                build-number: $TCWG_DEV_BUILD_3_BUILD_NUMBER
+                target: tcwg-dev-build-3
+      - conditional-step:
+          condition-kind: num-comp
+          lhs: $TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD
+          comparator: greater-than-equal
+          rhs: 4
+          steps:
+            - copyartifact:
+                project: tcwg-dev-build
+                which-build: specific-build
+                build-number: $TCWG_DEV_BUILD_4_BUILD_NUMBER
+                target: tcwg-dev-build-4
+      - linaro-publish-token
+      - shell: |
+          release_name=$(cat release-name.txt)
+          mkdir "$release_name"
+          i="$TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD"
+          while [ $i -gt 0 ]; do
+            rsync -a mv tcwg-dev-build-$i/binaries/ out/
+            i=$(($i-1))
+          done
+
+          wget https://git.linaro.org/ci/publishing-api.git/plain/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+          linaro_cp_opts=""
+          if true || ! $publish; then
+            linaro_cp_opts="--dry-run"
+          fi
+          time python3 ${HOME}/bin/linaro-cp.py \
+            --api_version 3 \
+            $linaro_cp_opts \
+            "$release_name" "components/toolchain/binaries"
+
+- job:
+    name: tcwg-gnu-builds-monthly
+    project-type: freestyle
+    defaults: global
+    properties:
+      - default-properties
+    disabled: false
+    node: tcwg-coordinator
+    concurrent: false
+    display-name: 'TCWG AAA GNU Builds Monthly Trigger'
+    triggers:
+      - timed: "H H 1 * *"
+    wrappers:
+      - timeout:
+          timeout: 300
+      - timestamps
+    buiders:
+      - shell: |
+          #!/bin/bash
+          set -euf -o pipefail
+          set -x
+
+          # Year.Month-Week_of_month
+          cat > build-params.txt <<EOF
+          release_name="$(date +%Y.%m)-1"
+          publish=true
+          EOF
+      - trigger-builds:
+          - project: tcwg-gnu-builds
+            property-file: build-params.txt
+            predefined-parameters: "version=latest-rel"
+          - project: tcwg-gnu-builds
+            property-file: build-params.txt
+            predefined-parameters: "version=master"
+# checksum: 37feb9fa642e68b58fafdf1ef7a94940
