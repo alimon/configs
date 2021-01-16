@@ -198,23 +198,48 @@
             set -x
           fi
 
-          release_name=$(cat release-name.txt)
-          mkdir "$release_name"
+          mkdir out
+
           i="$TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD"
           while [ $i -gt 0 ]; do
-            rsync -a mv tcwg-dev-build-$i/binaries/ out/
+            rsync -a tcwg-dev-build-$i/binaries/ out/
             i=$(($i-1))
           done
 
-          wget https://git.linaro.org/ci/publishing-api.git/plain/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+          cat > HEADER-latest-rel.textile <<EOF
+          h4. Linaro Toolchain Upstream Integration Builds - Stable $release_name
+          
+          These builds are made from latest release branches of GNU toolchain
+          components.  See included manifests for details.
+
+          These builds are not for production environments.
+          We will do our best to investigate problems reported via
+          "Linaro Bugzilla":https://bugs.linaro.org/ and upstream project issue trackers.
+          EOF
+
+          cat > HEADER-master.textile <<EOF
+          h4. Linaro Toolchain Upstream Integration Builds - *UNSTABLE* $release_name
+          
+          These builds are made from whatever happened to be in master branches
+          of GNU toolchain components at the moment.  See included manifests for details.
+
+          These builds are for experimental environemnts only.  They *will* break
+          your stuff and drink all your beer.  You have been warned.
+          We will do our best to investigate problems reported via
+          "Linaro Bugzilla":https://bugs.linaro.org/ and upstream project issue trackers.
+          EOF
+
+          cp HEADER-$version.textile out/*-$release_name-*/HEADER.textile
+
+          wget https://git.linaro.org/ci/publishing-api.git/plain/linaro-cp.py -O ./linaro-cp.py
           linaro_cp_opts=""
           if true || ! $publish; then
             linaro_cp_opts="--dry-run"
           fi
-          time python3 ${HOME}/bin/linaro-cp.py \
+          time python3 ./linaro-cp.py \
             --api_version 3 \
             $linaro_cp_opts \
-            "$release_name" "components/toolchain/binaries"
+            out/ components/toolchain/binaries
 
 - job:
     name: tcwg-gnu-builds-monthly
@@ -254,4 +279,4 @@
             predefined-parameters: |
               version=master
               distro=focal
-# checksum: d9826e8292bced2ce4fa4141f288b156
+# checksum: 751a8b5ad80a229c6a726204a152cb69
