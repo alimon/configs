@@ -115,7 +115,7 @@
             set -x
           fi
           
-          env
+          env | grep "TCWG_DEV_BUILD"
       - conditional-step:
           condition-kind: num-comp
           lhs: $TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD
@@ -180,23 +180,27 @@
           h4. Linaro Toolchain Upstream Integration Builds - Stable $release_name-$buildnumber
           
           These builds are made from latest release branches of GNU toolchain
-          components.  See included manifests for details.
+          components.
+          See included manifests for details.
 
           These builds are not for production environments.
           We will do our best to investigate problems reported via
-          "Linaro Bugzilla":https://bugs.linaro.org/ and upstream project issue trackers.
+          "Linaro Bugzilla":https://bugs.linaro.org/ and issue trackers of
+          upstream projects.
           EOF
 
           cat > HEADER-master.textile <<EOF
           h4. Linaro Toolchain Upstream Integration Builds - *UNSTABLE* $release_name-$buildnumber
           
           These builds are made from whatever happened to be in master branches
-          of GNU toolchain components at the moment.  See included manifests for details.
+          of GNU toolchain components at the moment.
+          See included manifests for details.
 
-          These builds are for experimental environments only.  They *will* break
-          your stuff and drink all your beer.  You have been warned.
+          These builds are for experimental environments only.  They *will*
+          break your stuff and drink all your beer.  You have been warned.
           We will do our best to investigate problems reported via
-          "Linaro Bugzilla":https://bugs.linaro.org/ and upstream project issue trackers.
+          "Linaro Bugzilla":https://bugs.linaro.org/ and issue trackers of
+          upstream projects.
           EOF
 
           cp HEADER-$version.textile HEADER.textile
@@ -206,12 +210,10 @@
 
           wget https://git.linaro.org/ci/publishing-api.git/plain/linaro-cp.py -O ./linaro-cp.py
           linaro_cp_opts=""
-          if true || ! $publish; then
+          if ! $publish; then
             linaro_cp_opts="--dry-run"
           fi
-          time python3 ./linaro-cp.py \
-            --api_version 3 \
-            $linaro_cp_opts \
+          time python3 ./linaro-cp.py --api_version 3 $linaro_cp_opts \
             out/ components/toolchain/binaries
 
 - job:
