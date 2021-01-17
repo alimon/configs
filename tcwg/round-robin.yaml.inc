@@ -309,17 +309,17 @@
               -- \
               ./jenkins-scripts/{build_script} \
               %% artifacts/jenkins/manifest.sh \
-              --BUILD_URL "$BUILD_URL" \
-              --scripts_branch "$scripts_branch" \
+              ==rr[ci_project] $ci_project \
+              ==rr[ci_config] $ci_config \
+              $extra_build_params \
 #if RR_tcwg_bmk
               --bmk_branch "$bmk_branch" \
 #endif
-              ==rr[ci_project] $ci_project \
-              ==rr[ci_config] $ci_config \
+              --scripts_branch "$scripts_branch" \
               $branch_opt \
               ==rr[mode] "jenkins-full" \
               ==rr[update_baseline] "$update_baseline" \
-              $extra_build_params &
+              --BUILD_URL "$BUILD_URL" &
             res=0 && wait $! || res=$?
 
             # If we didn't run the docker command
@@ -447,13 +447,13 @@
               --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
 #endif
               -- \
-              --scripts_branch "$scripts_branch" \
+              ==rr[ci_project] $ci_project \
+              ==rr[ci_config] $ci_config \
+              $extra_build_params \
 #if RR_tcwg_bmk
               --bmk_branch "$bmk_branch" \
 #endif
-              ==rr[ci_project] $ci_project \
-              ==rr[ci_config] $ci_config \
-              $extra_build_params
+              --scripts_branch "$scripts_branch"
 
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt

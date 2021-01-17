@@ -323,15 +323,15 @@
               -- \
               ./jenkins-scripts/{build_script} \
               %% artifacts/jenkins/manifest.sh \
-              --BUILD_URL "$BUILD_URL" \
-              --scripts_branch "$scripts_branch" \
-              --bmk_branch "$bmk_branch" \
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
+              $extra_build_params \
+              --bmk_branch "$bmk_branch" \
+              --scripts_branch "$scripts_branch" \
               $branch_opt \
               ==rr[mode] "jenkins-full" \
               ==rr[update_baseline] "$update_baseline" \
-              $extra_build_params &
+              --BUILD_URL "$BUILD_URL" &
             res=0 && wait $! || res=$?
 
             # If we didn't run the docker command
@@ -440,11 +440,11 @@
               --build_script "./jenkins-scripts/{build_script}" \
               --JIRA_PASSWORD "$TCWG_JIRA_PASSWORD" \
               -- \
-              --scripts_branch "$scripts_branch" \
-              --bmk_branch "$bmk_branch" \
               ==rr[ci_project] $ci_project \
               ==rr[ci_config] $ci_config \
-              $extra_build_params
+              $extra_build_params \
+              --bmk_branch "$bmk_branch" \
+              --scripts_branch "$scripts_branch"
 
             if [ x"$mail_recipients" != x"default" ]; then
               echo "$mail_recipients" > artifacts/jenkins/mail-recipients.txt
@@ -557,4 +557,4 @@
           ci_project_config: 'tcwg_bmk_{hw}-llvm-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
-# checksum: a0e3d3e792f84b9494dc46eafa9bca0a
+# checksum: 7509ae32d15810b6b411098c17306010
