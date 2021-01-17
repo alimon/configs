@@ -61,10 +61,13 @@
           name: host_x86_64_target_armhf
           default: true
       - bool:
-          name: host_aarch64_target_aarch64
+          name: host_aarch64_target_native
           default: true
       - bool:
           name: host_aarch64_target_armhf
+          default: true
+      - bool:
+          name: host_armhf_target_native
           default: true
       - choice:
           name: distro
@@ -129,7 +132,7 @@
               predefined-parameters: "target=arm-linux-gnueabihf"
             - name: tcwg-dev-build
               alias: "host_aarch64_target_aarch64"
-              enable-condition: "$host_aarch64_target_aarch64"
+              enable-condition: "$host_aarch64_target_native"
               node-label-name: "builder"
               node-label: "tcwg-build && tcwg-armv8_64"
               property-file: build-params.txt
@@ -141,6 +144,13 @@
               node-label: "tcwg-build && tcwg-armv8_64"
               property-file: build-params.txt
               predefined-parameters: "target=arm-linux-gnueabihf"
+            - name: tcwg-dev-build
+              alias: "host_armhf_target_native"
+              enable-condition: "$host_armhf_target_native"
+              node-label-name: "builder"
+              node-label: "tcwg-build && tcwg-armv7"
+              property-file: build-params.txt
+              predefined-parameters: "target=native"
       - shell: |
           #!/bin/bash
           set -euf -o pipefail
@@ -193,6 +203,17 @@
                 which-build: specific-build
                 build-number: $TCWG_DEV_BUILD_4_BUILD_NUMBER
                 target: tcwg-dev-build-4
+      - conditional-step:
+          condition-kind: num-comp
+          lhs: $TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD
+          comparator: greater-than-equal
+          rhs: 5
+          steps:
+            - copyartifact:
+                project: tcwg-dev-build
+                which-build: specific-build
+                build-number: $TCWG_DEV_BUILD_5_BUILD_NUMBER
+                target: tcwg-dev-build-5
       - linaro-publish-token
       - shell: |
           #!/bin/bash
@@ -293,4 +314,4 @@
             predefined-parameters: |
               version=master
               distro=focal
-# checksum: ea260de23c1369e14e652a92dd5e388c
+# checksum: 7144960f8f8d6242afe27ccff64af676
