@@ -43,7 +43,11 @@
       - string:
           name: release_name
           default: test
-          description: 'Release name'
+          description: 'Name of release series'
+      - string:
+          name: buildnumber
+          default: 0
+          description: 'Build number in release series'
       - choice:
           name: version
           choices:
@@ -84,7 +88,7 @@
       - timed: "H H H/7 * *"
     wrappers:
       - build-name:
-          name: '#$BUILD_NUMBER-$release_name'
+          name: '#$BUILD_NUMBER-$release_name-$buildnumber'
       - timeout:
           timeout: 300
       - timestamps
@@ -104,6 +108,7 @@
           
           cat > build-params.txt <<EOF
           release_name=$release_name
+          buildnumber=$buildnumber
           version=$version
           distro=$distro
           EOF
@@ -202,12 +207,12 @@
 
           i="$TRIGGERED_BUILD_RUN_COUNT_TCWG_DEV_BUILD"
           while [ $i -gt 0 ]; do
-            rsync -a tcwg-dev-build-$i/binaries/ out/
+            rsync -a tcwg-dev-build-$i/artifacts/binaries/ out/
             i=$(($i-1))
           done
 
           cat > HEADER-latest-rel.textile <<EOF
-          h4. Linaro Toolchain Upstream Integration Builds - Stable $release_name
+          h4. Linaro Toolchain Upstream Integration Builds - Stable $release_name-$buildnumber
           
           These builds are made from latest release branches of GNU toolchain
           components.  See included manifests for details.
@@ -218,7 +223,7 @@
           EOF
 
           cat > HEADER-master.textile <<EOF
-          h4. Linaro Toolchain Upstream Integration Builds - *UNSTABLE* $release_name
+          h4. Linaro Toolchain Upstream Integration Builds - *UNSTABLE* $release_name-$buildnumber
           
           These builds are made from whatever happened to be in master branches
           of GNU toolchain components at the moment.  See included manifests for details.
@@ -229,7 +234,7 @@
           "Linaro Bugzilla":https://bugs.linaro.org/ and upstream project issue trackers.
           EOF
 
-          cp HEADER-$version.textile out/*-$release_name-*/HEADER.textile
+          cp HEADER-$version.textile out/*-$release_name-$buildnumber/HEADER.textile
 
           wget https://git.linaro.org/ci/publishing-api.git/plain/linaro-cp.py -O ./linaro-cp.py
           linaro_cp_opts=""
@@ -265,7 +270,8 @@
 
           # Release name is Year.Month-Week_of_month
           cat > build-params.txt <<EOF
-          release_name=$(date +%Y.%m)-1
+          release_name=$(date +%Y.%m)
+          buildnumber=1
           publish=true
           EOF
       - trigger-builds:
@@ -279,4 +285,4 @@
             predefined-parameters: |
               version=master
               distro=focal
-# checksum: d6a070e86ee72fda25595a37de9ff258
+# checksum: a269cf574c94c5223ff70ac78d5aa8b7
