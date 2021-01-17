@@ -55,7 +55,7 @@
       - timed: "H H H/7 * *"
     wrappers:
       - build-name:
-          name: '#$BUILD_NUMBER-$release_name-$buildnumber'
+          name: '#$BUILD_NUMBER-$version-$release_name-$buildnumber'
       - timeout:
           timeout: 300
       - timestamps
@@ -226,7 +226,7 @@
     concurrent: false
     display-name: 'TCWG AAA GNU Builds Monthly Trigger'
     triggers:
-      - timed: "H H 1 * *"
+      - timed: "H H 1/7 * *"
     wrappers:
       - timeout:
           timeout: 300
@@ -238,10 +238,15 @@
           set -x
 
           # Release name is Year.Month-Week_of_month
+          buildnumber=$((1+($(date +%d)-1)/7))
+          publish=false
+          if [ x"$buildnumber" = x"1" ]; then
+            publish=true
+          fi
           cat > build-params.txt <<EOF
           release_name=$(date +%Y.%m)
-          buildnumber=1
-          publish=true
+          buildnumber=$buildnumber
+          publish=$publish
           EOF
       - trigger-builds:
           - project: tcwg-gnu-builds
