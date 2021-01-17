@@ -51,8 +51,8 @@
       - choice:
           name: version
           choices:
-            - master
             - latest-rel
+            - master
           description: 'Toolchain version; should match a supported ABE config'
       - bool:
           name: host_x86_64_target_aarch64
@@ -69,8 +69,8 @@
       - choice:
           name: distro
           choices:
-            - focal
             - bionic
+            - focal
           description: 'Ubuntu distro to use for build environment'
       - bool:
           name: publish
@@ -84,8 +84,6 @@
     node: tcwg-coordinator
     concurrent: true
     display-name: 'TCWG AAA GNU Builds'
-    triggers:
-      - timed: "H H H/7 * *"
     wrappers:
       - build-name:
           name: '#$BUILD_NUMBER-$version-$release_name-$buildnumber'
@@ -292,4 +290,4 @@
             predefined-parameters: |
               version=master
               distro=focal
-# checksum: 0e188284bb8447061cfa7d7bd3d521da
+# checksum: ffe10f2fe580bd8b7ceb8e851487441c
