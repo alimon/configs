@@ -1,7 +1,5 @@
 #!/bin/bash
 
-SBSA_ACS_VER="20.10_REL3.0"
-
 set -ex
 
 build_qemu()
@@ -100,7 +98,7 @@ do
 
 # run SBSA ACS in QEMU
 
-    timeout --foreground 20 ./qemu/build/qemu-system-aarch64 \
+    timeout --foreground 60 ./qemu/build/qemu-system-aarch64 \
     -machine sbsa-ref \
     -cpu cortex-a72 \
     -drive if=pflash,file=SBSA_FLASH0.fd,format=raw \
@@ -109,7 +107,7 @@ do
     -serial mon:stdio \
     -nographic | tee logs/sbsa-acs-level${sbsa_level}.log
 
-    timeout --foreground 20 ./qemu/build/qemu-system-aarch64 \
+    timeout --foreground 60 ./qemu/build/qemu-system-aarch64 \
     -machine sbsa-ref \
     -cpu cortex-a72 \
     -watchdog-action none \
