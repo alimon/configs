@@ -140,7 +140,14 @@
             - copyartifact:
                 project: tcwg-dev-build
                 which-build: specific-build
-                build-number: $TCWG_DEV_BUILD_1_BUILD_NUMBER
+                # Note that $TCWG_DEV_BUILD_BUILD_NUMBER points to the last
+                # build (i.e., it's the same as $TCWG_DEV_BUILD_5_BUILD_NUMBER
+                # in a full 5-configuration build).  At the same time,
+                # $TCWG_DEV_BUILD_nnn_BUILD_NUMBER variables are defined only
+                # when multiple builds were triggered.
+                # We need to use $TCWG_DEV_BUILD_BUILD_NUMBER here to correctly
+                # handle single-toolchain builds.
+                build-number: $TCWG_DEV_BUILD_BUILD_NUMBER
                 target: tcwg-dev-build-1
       - conditional-step:
           condition-kind: num-comp
@@ -151,7 +158,7 @@
             - copyartifact:
                 project: tcwg-dev-build
                 which-build: specific-build
-                build-number: $TCWG_DEV_BUILD_2_BUILD_NUMBER
+                build-number: $TCWG_DEV_BUILD_1_BUILD_NUMBER
                 target: tcwg-dev-build-2
       - conditional-step:
           condition-kind: num-comp
@@ -162,7 +169,7 @@
             - copyartifact:
                 project: tcwg-dev-build
                 which-build: specific-build
-                build-number: $TCWG_DEV_BUILD_3_BUILD_NUMBER
+                build-number: $TCWG_DEV_BUILD_2_BUILD_NUMBER
                 target: tcwg-dev-build-3
       - conditional-step:
           condition-kind: num-comp
@@ -173,7 +180,7 @@
             - copyartifact:
                 project: tcwg-dev-build
                 which-build: specific-build
-                build-number: $TCWG_DEV_BUILD_4_BUILD_NUMBER
+                build-number: $TCWG_DEV_BUILD_3_BUILD_NUMBER
                 target: tcwg-dev-build-4
       - conditional-step:
           condition-kind: num-comp
@@ -184,7 +191,7 @@
             - copyartifact:
                 project: tcwg-dev-build
                 which-build: specific-build
-                build-number: $TCWG_DEV_BUILD_5_BUILD_NUMBER
+                build-number: $TCWG_DEV_BUILD_4_BUILD_NUMBER
                 target: tcwg-dev-build-5
       - linaro-publish-token
       - shell: |
