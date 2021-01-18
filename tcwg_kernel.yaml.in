@@ -2,8 +2,8 @@
     name: tcwg_kernel-#{TOOLCHAIN}
     toolchain_name: #{TOOLCHAIN}
     components: #{COMPONENTS}
-#if TOOLCHAIN_gnu
     binutils_url: git://sourceware.org/git/binutils-gdb.git
+#if TOOLCHAIN_gnu
     gcc_url: https://github.com/gcc-mirror/gcc.git
 #elif TOOLCHAIN_llvm
     llvm_url: https://github.com/llvm/llvm-project.git
@@ -11,16 +11,16 @@
     qemu_url: git://git.qemu.org/qemu.git
     toolchain_ver:
       - master:
-#if TOOLCHAIN_gnu
           binutils_branch: master
+#if TOOLCHAIN_gnu
           gcc_branch: master
 #elif TOOLCHAIN_llvm
           llvm_branch: master
 #endif
           qemu_branch: master
       - release:
-#if TOOLCHAIN_gnu
           binutils_branch: binutils-2_35-branch
+#if TOOLCHAIN_gnu
           gcc_branch: releases/gcc-10
 #elif TOOLCHAIN_llvm
           llvm_branch: release/11.x
@@ -72,8 +72,8 @@
       - build-parameters:
           ci_project: 'tcwg_kernel'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
-#if TOOLCHAIN_gnu
           binutils_url: '{binutils_url}'
+#if TOOLCHAIN_gnu
           gcc_url: '{gcc_url}'
 #elif TOOLCHAIN_llvm
           llvm_url: '{llvm_url}'
@@ -88,14 +88,14 @@
     workspace: workspace/tcwg_kernel_$EXECUTOR_NUMBER
     scm:
       - build-scms:
-#if TOOLCHAIN_llvm
-          llvm_url: '{llvm_url}'
-          llvm_branch: '{llvm_branch}'
-#elif TOOLCHAIN_gnu
           binutils_url: '{binutils_url}'
           binutils_branch: '{binutils_branch}'
+#if TOOLCHAIN_gnu
           gcc_url: '{gcc_url}'
           gcc_branch: '{gcc_branch}'
+#elif TOOLCHAIN_llvm
+          llvm_url: '{llvm_url}'
+          llvm_branch: '{llvm_branch}'
 #endif
           qemu_url: '{qemu_url}'
           qemu_branch: '{qemu_branch}'

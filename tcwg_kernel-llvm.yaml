@@ -2,14 +2,17 @@
 - project:
     name: tcwg_kernel-llvm
     toolchain_name: llvm
-    components: linux llvm qemu
+    components: binutils linux llvm qemu
+    binutils_url: git://sourceware.org/git/binutils-gdb.git
     llvm_url: https://github.com/llvm/llvm-project.git
     qemu_url: git://git.qemu.org/qemu.git
     toolchain_ver:
       - master:
+          binutils_branch: master
           llvm_branch: master
           qemu_branch: master
       - release:
+          binutils_branch: binutils-2_35-branch
           llvm_branch: release/11.x
           qemu_branch: stable-5.0
     target:
@@ -124,6 +127,10 @@
     name: build-parameters
     parameters:
       - component-parameters:
+          component: binutils
+          url: '{binutils_url}'
+          branch: '{default_branch}'
+      - component-parameters:
           component: linux
           url: '{linux_url}'
           branch: '{default_branch}'
@@ -171,6 +178,11 @@
     name: build-scms
     scm:
       - jenkins-scripts
+      - component-scm:
+          component: binutils
+          url: '{binutils_url}'
+          branch: '{binutils_branch}'
+          reference: binutils-gdb.git
       - component-scm:
           component: linux
           url: '{linux_url}'
@@ -418,6 +430,7 @@
       - build-parameters:
           ci_project: 'tcwg_kernel'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
+          binutils_url: '{binutils_url}'
           llvm_url: '{llvm_url}'
           qemu_url: '{qemu_url}'
           linux_url: '{linux_url}'
@@ -429,6 +442,8 @@
     workspace: workspace/tcwg_kernel_$EXECUTOR_NUMBER
     scm:
       - build-scms:
+          binutils_url: '{binutils_url}'
+          binutils_branch: '{binutils_branch}'
           llvm_url: '{llvm_url}'
           llvm_branch: '{llvm_branch}'
           qemu_url: '{qemu_url}'
@@ -486,4 +501,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{linux}-{linux_config}'
     publishers:
       - bisect-publishers
-# checksum: 853a347f9b228795dcfd51eaa2c02093
+# checksum: db80d9696f33da86bdc129cf9516c907
