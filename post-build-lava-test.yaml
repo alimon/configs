@@ -1,0 +1,21 @@
+- job:
+    name: post-build-lava-test
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+    node: master
+    display-name: 'Submit job to lava'
+    builders:
+        - shell:
+            !include-raw: post-build-lava/post-build-lava.py
+    publishers:
+        - groovy-postbuild:
+            script:
+                !include-raw:
+                    - post-build-lava/postbuild.groovy
+        - email:
+            recipients: 'linaro-infrastructure-errors@lists.linaro.org'
