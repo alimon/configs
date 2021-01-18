@@ -84,16 +84,6 @@
             echo "    Gerrit Environment"
             env |grep '^GERRIT'
             echo "########################################################################"
-            sudo apt-get update -q
-            sudo apt install -q -y python-pip
-            sudo pip install jenkins-job-builder==2.10.0
-            git clone --depth 1 https://git.linaro.org/infrastructure/jjb-linaro-plugin.git
-            cd jjb-linaro-plugin
-            sudo python setup.py install
-            cd ..
-            sudo rm -rf jjb-linaro-plugin
-
-
             cd configs/
 
             export GIT_PREVIOUS_COMMIT=$(git rev-parse HEAD~1)
