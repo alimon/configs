@@ -251,6 +251,40 @@ actions:
 
 
     #################################
+    #  iperf
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-server-j17
+      parameters:
+        CMD: iperf3-server
+        ETH: eth2
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-j17
+      parameters:
+        CMD: iperf3-client
+        ETH: eth2
+        TIME: 60
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-reverse-j17
+      parameters:
+        CMD: iperf3-client
+        ETH: eth2
+        TIME: 60
+        REVERSE: "-R"
+
+
+    #################################
     # Switch port J17 (eth2) off
     #################################
 - command:

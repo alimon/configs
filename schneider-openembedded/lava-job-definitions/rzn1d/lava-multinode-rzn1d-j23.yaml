@@ -399,6 +399,40 @@ actions:
 
 
     #################################
+    #  iperf
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-server-j23
+      parameters:
+        CMD: iperf3-server
+        ETH: lan1
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-j23
+      parameters:
+        CMD: iperf3-client
+        ETH: lan1
+        TIME: 60
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-reverse-j23
+      parameters:
+        CMD: iperf3-client
+        ETH: lan1
+        TIME: 60
+        REVERSE: "-R"
+
+
+    #################################
     # Switch port J23 (lan1) off
     #################################
 - command:

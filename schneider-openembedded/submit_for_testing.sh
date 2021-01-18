@@ -15,7 +15,7 @@ if [[ "${IMAGES}" == *dip-image-dev* ]]; then
 templates_common_normal=(  ${templates_common_normal[@]} dip-image-dev.yaml )
 fi
 templates_common_network=( ${templates_common_normal[@]}  )
-templates_common_full=(    ${templates_common_network[@]}  ltp-ptest.yaml iperf.yaml )
+templates_common_full=(    ${templates_common_network[@]}  ltp-ptest.yaml )
 
 templates_soca9_minimal=
 templates_soca9_normal=( \

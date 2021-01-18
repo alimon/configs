@@ -309,6 +309,40 @@ actions:
 
 
     #################################
+    #  iperf
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-server-j21
+      parameters:
+        CMD: iperf3-server
+        ETH: eth1
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-j21
+      parameters:
+        CMD: iperf3-client
+        ETH: eth1
+        TIME: 60
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      path: automated/linux/network-test/network-test.yaml
+      name: iperf-reverse-j21
+      parameters:
+        CMD: iperf3-client
+        ETH: eth1
+        TIME: 60
+        REVERSE: "-R"
+
+
+    #################################
     # Switch port J21 (eth1) off
     #################################
 - command:
