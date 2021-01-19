@@ -1,0 +1,69 @@
+- job:
+    name: lkft-aosp-member-wrapper
+    project-type: freestyle
+    defaults: global
+    properties:
+        - authorization:
+            anonymous:
+                - job-discover
+            android-internal:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 180
+            num-to-keep: 450
+            artifact-num-to-keep: 1
+    parameters:
+        - string:
+            name: ANDROID_BUILD_CONFIG_REPO_URL
+            default: ssh://git@dev-private-git.linaro.org/android-internal/android-build-configs.git
+    disabled: false
+    node: docker-bionic-android-lkft
+    display-name: 'Wrapper for the lkft-aosp-member build'
+    wrappers:
+        - timestamps'
+        - ssh-agent-credentials:
+            users:
+               - '768c1ba1-6052-4b97-a531-7e4fabda6979'
+    builders:
+        - shell: |
+            #!/bin/bash -ex
+
+            ## find the build configs for the branch
+            rm -fr android-build-configs-private
+            rm -fr params_*.txt test_*.txt
+            if git clone -b lkft ${ANDROID_BUILD_CONFIG_REPO_URL} android-build-configs-private; then
+                if [ -f android-build-configs-private/lkft-member-builds ]; then
+                    while read line; do
+                        android_version=(echo $line|cut -d= -f1)
+                        build_configs=(echo $line|cut -d= -f2|tr -d \")
+                        for build_config in ${build_configs}; do
+                            md5sum_val="$(echo ${android_version}-${build_config}|md5sum|awk '{print $1}')"
+                            f_params="params_${md5sum_val}.txt"
+
+                            cp -vf android-build-configs-private/${build_config} ${f_params}
+                        done
+                    done < android-build-configs-private/lkft-member-builds
+                fi
+            fi
+
+            rm -fr params_lkft-master-x15
+            echo "ANDROID_BUILD_CONFIG=lkft-master-x15" >>params_lkft-master-x15
+
+            rm -fr params_lkft-android11-hikey960
+            echo "ANDROID_BUILD_CONFIG=lkft-android11-hikey960" >>params_lkft-android11-hikey960
+
+        - trigger-builds:
+            - project: lkft-aosp-member
+              property-file: params_8378ee2e111ec39d2fba41fa64353908.txt
+            - project: lkft-aosp-member
+              property-file: params_8a16a1d4305f1311ebbd528cdfab460e.txt
+            - project: lkft-aosp
+              property-file: params_lkft-master-x15
+            - project: lkft-aosp
+              property-file: params_lkft-android11-hikey960
+    publishers:
+        - email:
+            recipients: 'yongqin.liu@linaro.org'
