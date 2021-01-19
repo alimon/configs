@@ -228,10 +228,11 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 
 	mkdir -p tmp/deploy/images/rzn1-snarc
 	time bitbake ${bbopt} dip-image dip-sdk
-	cat tmp/deploy/images/rzn1-snarc/dip-image.squashfs-lzo.verity.env
 
 	case "${MACHINE}" in
 		*rzn1*)
+			cat tmp/deploy/images/rzn1-snarc/dip-image.squashfs-lzo.verity.env || true
+
 			find . -type f -name openssl       # debug
 			find . -type f -name openssl.real  # debug
 
