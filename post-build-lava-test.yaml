@@ -7,8 +7,24 @@
             anonymous:
                 - job-read
                 - job-extended-read
+        - throttle:
+            option: project
+            max-total: 1
+    parameters:
+        - file:
+            name: post_build_lava_parameters
     node: master
     display-name: 'Submit job to lava'
+    wrappers:
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_USER
+                variable: LAVA_USER
+        - credentials-binding:
+            - text:
+                credential-id: LAVA_TOKEN
+                variable: LAVA_TOKEN
+
     builders:
         - shell:
             !include-raw: post-build-lava/post-build-lava.py
