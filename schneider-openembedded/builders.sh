@@ -226,7 +226,6 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 	grep -c ^processor /proc/cpuinfo
 	grep ^cpu\\scores /proc/cpuinfo | uniq |  awk '{print $4}'
 
-	mkdir -p tmp/deploy/images/rzn1-snarc
 	time bitbake ${bbopt} dip-image dip-sdk
 
 	case "${MACHINE}" in
