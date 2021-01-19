@@ -21,7 +21,7 @@ time python3 ${HOME}/bin/linaro-cp.py \
   --server ${PUBLISH_SERVER} \
   --link-latest \
   /home/buildslave/wheels \
-  $OUTPUT_PATH
+  $OUTPUT_PATH || true
 
 set +x
 
