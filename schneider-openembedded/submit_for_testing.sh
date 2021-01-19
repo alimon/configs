@@ -71,6 +71,9 @@ else
 fi
 
 case $TEST_LEVEL in
+	"none" | "0")
+		templates=()
+		;;
 	"minimal" | "minimum" | "min" | "1")
 		templates=( ${templates_minimal[@]} )
 		;;
