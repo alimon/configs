@@ -204,12 +204,8 @@ cat ${postfile}
 bbopt="-R ${postfile}"
 
 if [ "${clean_packages}" != "" ]; then
-    find . -type f -name openssl       # debug
-    find . -type f -name openssl.real  # debug
     bitbake ${bbopt} -c cleansstate ${clean_packages}
     bitbake ${bbopt} ${build_packages}
-    find . -type f -name openssl       # debug
-    find . -type f -name openssl.real  # debug
 fi
 
 # Build all ${IMAGES} apart from dip-image-edge
@@ -231,10 +227,6 @@ if [[ "${hasdipimg}" == *"${dipimg}"* ]]; then
 	case "${MACHINE}" in
 		*rzn1*)
 			cat tmp/deploy/images/rzn1-snarc/dip-image.squashfs-lzo.verity.env || true
-
-			find . -type f -name openssl       # debug
-			find . -type f -name openssl.real  # debug
-
 			time bitbake ${bbopt} fsbl optee-os u-boot-rzn1
 			time bitbake ${bbopt} -c do_install       fsbl        || true
 			time bitbake ${bbopt} -c do_fit_optee_os  optee-os    || true
