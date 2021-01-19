@@ -25,7 +25,7 @@ replace_dmverity_var()
 	newvalue="${1}"
 
 	sed -i 's/'${variable}' ?=.*/'${variable}' ?= "'${newvalue}'"/' ${localconf}
-	grep ${variable} ${localconf}
+	grep ${variable} ${localconf} || true
 }
 
 if ! sudo DEBIAN_FRONTEND=noninteractive apt-get -q=2 update; then
