@@ -23,7 +23,7 @@
           description: "Comma-separated list of email recipients; use 'default' unless testing"
       - string:
           name: distro
-          default: bionic
+          default: lts_1
           description: 'Distro image to use'
       - string:
           name: scripts_branch

@@ -72,8 +72,8 @@
       - choice:
           name: distro
           choices:
-            - bionic
-            - focal
+            - lts_1
+            - lts
           description: 'Ubuntu distro to use for build environment'
       - bool:
           name: publish
@@ -117,7 +117,7 @@
           # There's still no arm32v7/ubuntu:focal docker image, so
           # force using bionic for armhf for now.
           cp build-params.txt build-params-armv7.txt
-          sed -i -e "s/^distro=focal\$/distro=bionic/" build-params-armv7.txt
+          sed -i -e "s/^distro=lts\$/distro=lts_1/" build-params-armv7.txt
       - multijob:
           name: Build
           projects:
@@ -320,10 +320,10 @@
             property-file: build-params.txt
             predefined-parameters: |
               version=latest-rel
-              distro=bionic
+              distro=lts_1
           - project: tcwg-gnu-builds
             property-file: build-params.txt
             predefined-parameters: |
               version=master
-              distro=focal
-# checksum: 8c8a82a61abb232d08ef79ea961811cd
+              distro=lts
+# checksum: 6e5e88d8cc3b4a13ae9b7bcbaf7c844e
