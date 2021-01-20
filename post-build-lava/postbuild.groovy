@@ -8,11 +8,7 @@ if (matcher?.matches()) {
         lavaSubJobs = matcher.group(0).substring(14).split("]")[0].replaceAll("'", "").split(",")
         lavaJobId = lavaSubJobs[0]
     }
-    def lavaServer = "validation.linaro.org"
-    def serverMatcher = manager.getLogMatcher(".*\"server\":.*")
-    if (serverMatcher.matches()) {
-        lavaServer = serverMatcher.group(0).split("://")[1].split("/")[0]
-    }
+    def lavaServer = matcher.group(0).tokenize("/")[1]
     def lavaJobUrl = "https://${lavaServer}/scheduler/job/${lavaJobId}"
     def lavaDescription = "&nbsp;LAVA Job Id: <a href='${lavaJobUrl}'>${lavaJobId}</a>"
 
