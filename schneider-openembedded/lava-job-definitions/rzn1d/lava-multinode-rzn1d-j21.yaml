@@ -155,9 +155,9 @@ actions:
       unpack_command: tar --touch -C / -xzf
 
 
-#################################
-# Turn off all Yepkit USB devices
-#################################
+########################################################
+# Turn off all Yepkit USB devices and network interfaces
+########################################################
 - test:
     namespace: test-wic
     role:
@@ -179,6 +179,12 @@ actions:
           - make
           - bin/ykushcmd -d a
           - sleep 3
+          - ifconfig eth0 down || true
+          - ifconfig eth1 down || true
+          - ifconfig eth2 down || true
+          - ifconfig lan0 down || true
+          - ifconfig lan1 down || true
+          - ifconfig lan2 down || true
       name: yepkit-down-all
       path: inline/yepkit-test.yaml
 
@@ -276,6 +282,8 @@ actions:
         CMD: ping-request
         ETH: eth1
         EXPECTED_RESULT: pass
+
+
 
 
     #################################
