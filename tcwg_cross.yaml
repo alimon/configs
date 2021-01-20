@@ -13,11 +13,13 @@
           gcc_branch: master
           glibc_branch: master
           qemu_branch: master
+          distro: lts
       - release:
           binutils_branch: binutils-2_35-branch
           gcc_branch: releases/gcc-10
           glibc_branch: release/2.32/master
           qemu_branch: stable-5.0
+          distro: lts_1
     target:
       - aarch64
       - arm
@@ -94,7 +96,7 @@
           description: "Comma-separated list of email recipients; use 'default' unless testing"
       - string:
           name: distro
-          default: lts_1
+          default: '{distro}'
           description: 'Distro image to use'
       - string:
           name: scripts_branch
@@ -144,6 +146,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - scm:
     name: component-scm
@@ -338,6 +341,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - wrapper:
     name: bisect-wrappers
@@ -425,6 +429,7 @@
           glibc_url: '{glibc_url}'
           qemu_url: '{qemu_url}'
           default_branch: 'default'
+          distro: '{distro}'
     disabled: '{disabled}'
     node: '{node} && tcwg-build'
     concurrent: false
@@ -481,6 +486,7 @@
       - bisect-parameters:
           ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+          distro: '{distro}'
     disabled: '{disabled}'
     node: '{node} && tcwg-bisect'
     concurrent: false
@@ -498,4 +504,4 @@
           ci_project_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
     publishers:
       - bisect-publishers
-# checksum: 38c4823353c0fc4cbf6b036b20bda57d
+# checksum: cc9462648c31a5e3c5de379a486d26a6

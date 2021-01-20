@@ -15,10 +15,12 @@
           binutils_branch: master
           gcc_branch: master
           newlib_branch: master
+          distro: lts
       - release:
           binutils_branch: binutils-2_33-branch
           gcc_branch: releases/gcc-9
           newlib_branch: newlib-3.3.0
+          distro: lts_1
     bmk:
       - coremark
     cflags:
@@ -125,7 +127,7 @@
           description: "Comma-separated list of email recipients; use 'default' unless testing"
       - string:
           name: distro
-          default: lts_1
+          default: '{distro}'
           description: 'Distro image to use'
       - string:
           name: scripts_branch
@@ -190,6 +192,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - scm:
     name: component-scm
@@ -383,6 +386,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - wrapper:
     name: bisect-wrappers
@@ -473,6 +477,7 @@
           gcc_url: '{gcc_url}'
           newlib_url: '{newlib_url}'
           default_branch: default
+          distro: '{distro}'
     disabled: false
     node: '{node}'
     concurrent: false
@@ -521,6 +526,7 @@
       - bisect-parameters:
           ci_project: 'tcwg_bmk_{hw}'
           ci_config: 'gnu_eabi-{toolchain_ver}-{target}-{bmk}-{cflags}'
+          distro: '{distro}'
     disabled: false
     node: '{node}'
     concurrent: false
@@ -539,4 +545,4 @@
           ci_project_config: 'tcwg_bmk_{hw}-gnu_eabi-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
-# checksum: fab21c4a3d627994ab1dff81cb675ae8
+# checksum: 1f19bba7f7bd763808fadcfe9c0dcfd0

@@ -23,7 +23,7 @@
           description: "Comma-separated list of email recipients; use 'default' unless testing"
       - string:
           name: distro
-          default: lts_1
+          default: '{distro}'
           description: 'Distro image to use'
       - string:
           name: scripts_branch
@@ -122,6 +122,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - scm:
     name: component-scm
@@ -386,6 +387,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - wrapper:
     name: bisect-wrappers

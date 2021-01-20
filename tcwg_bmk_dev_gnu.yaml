@@ -56,7 +56,7 @@
           description: "Comma-separated list of email recipients; use 'default' unless testing"
       - string:
           name: distro
-          default: lts_1
+          default: '{distro}'
           description: 'Distro image to use'
       - string:
           name: scripts_branch
@@ -121,6 +121,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - scm:
     name: component-scm
@@ -295,6 +296,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - wrapper:
     name: bisect-wrappers
@@ -402,6 +404,7 @@
           gcc_url: https://git.linaro.org/toolchain/ci/gcc.git
           glibc_url: https://git.linaro.org/toolchain/ci/glibc.git
           default_branch: baseline
+          distro: lts_1
     disabled: false
     node: '{node}'
     concurrent: false
@@ -431,6 +434,7 @@
       - bisect-parameters:
           ci_project: 'tcwg_bmk-YOUR_ID'
           ci_config: gnu-release-aarch64-spec2k6-O2
+          distro: lts_1
     disabled: false
     node: '{node}'
     concurrent: false
@@ -450,4 +454,4 @@
           ci_project_config: 'tcwg_bmk_{hw}'
     publishers:
         - bisect-publishers
-# checksum: 507031ef63f53d18f8e841d61f6c2b41
+# checksum: 4f92c1df2b07c34ffa739a8e88b858a0

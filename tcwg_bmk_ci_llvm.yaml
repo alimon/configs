@@ -20,11 +20,13 @@
           gcc_branch: master
           glibc_branch: master
           llvm_branch: master
+          distro: lts
       - release:
           binutils_branch: binutils-2_33-branch
           gcc_branch: releases/gcc-9
           glibc_branch: release/2.30/master
           llvm_branch: release/10.x
+          distro: lts_1
     bmk:
       - spec2k6
     cflags:
@@ -131,7 +133,7 @@
           description: "Comma-separated list of email recipients; use 'default' unless testing"
       - string:
           name: distro
-          default: lts_1
+          default: '{distro}'
           description: 'Distro image to use'
       - string:
           name: scripts_branch
@@ -200,6 +202,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - scm:
     name: component-scm
@@ -398,6 +401,7 @@
       - default-parameters:
           ci_project: '{ci_project}'
           ci_config: '{ci_config}'
+          distro: '{distro}'
 
 - wrapper:
     name: bisect-wrappers
@@ -489,6 +493,7 @@
           glibc_url: '{glibc_url}'
           llvm_url: '{llvm_url}'
           default_branch: default
+          distro: '{distro}'
     disabled: false
     node: '{node}'
     concurrent: false
@@ -539,6 +544,7 @@
       - bisect-parameters:
           ci_project: 'tcwg_bmk_{hw}'
           ci_config: 'llvm-{toolchain_ver}-{target}-{bmk}-{cflags}'
+          distro: '{distro}'
     disabled: false
     node: '{node}'
     concurrent: false
@@ -557,4 +563,4 @@
           ci_project_config: 'tcwg_bmk_{hw}-llvm-{toolchain_ver}-{target}-{bmk}-{cflags}'
     publishers:
         - bisect-publishers
-# checksum: 3ab5b7c8a98a57cfcd8adb80c14257c4
+# checksum: 8a54e684c572ce7a69302aa2e7f939cb

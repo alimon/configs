@@ -32,6 +32,7 @@
 #if COMPONENTS_qemu
           qemu_branch: master
 #endif
+          distro: lts
       - release:
 #if COMPONENTS_binutils
           binutils_branch: binutils-2_35-branch
@@ -45,6 +46,7 @@
 #if COMPONENTS_qemu
           qemu_branch: stable-5.0
 #endif
+          distro: lts_1
     target:
 #if RR_tcwg_cross
       - aarch64
@@ -117,6 +119,7 @@
           qemu_url: '{qemu_url}'
 #endif
           default_branch: 'default'
+          distro: '{distro}'
     disabled: '{disabled}'
     node: '{node} && tcwg-build'
     concurrent: false
@@ -184,6 +187,7 @@
       - bisect-parameters:
           ci_project: '{ci_project}'
           ci_config: '{toolchain_name}-{toolchain_ver}-{target}-{type_of_test}'
+          distro: '{distro}'
     disabled: '{disabled}'
     node: '{node} && tcwg-bisect'
     concurrent: false

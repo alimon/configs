@@ -38,6 +38,7 @@
 #if TOOLCHAIN_gnu_eabi
           newlib_branch: master
 #endif
+          distro: lts
       - release:
           binutils_branch: binutils-2_33-branch
           gcc_branch: releases/gcc-9
@@ -50,6 +51,7 @@
 #if TOOLCHAIN_gnu_eabi
           newlib_branch: newlib-3.3.0
 #endif
+          distro: lts_1
     bmk:
 #if TOOLCHAIN_gnu_eabi
       - coremark
@@ -132,6 +134,7 @@
           newlib_url: '{newlib_url}'
 #endif
           default_branch: default
+          distro: '{distro}'
     disabled: false
     node: '{node}'
     concurrent: false
@@ -190,6 +193,7 @@
       - bisect-parameters:
           ci_project: 'tcwg_bmk_{hw}'
           ci_config: '#{TOOLCHAIN}-{toolchain_ver}-{target}-{bmk}-{cflags}'
+          distro: '{distro}'
     disabled: false
     node: '{node}'
     concurrent: false
