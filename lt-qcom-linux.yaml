@@ -76,11 +76,8 @@
         - build-name:
             name: '#${BUILD_NUMBER}-${GIT_REVISION,length=8}'
     builders:
-        - shell: |
-            #!/bin/bash
-            set -ex
-            sudo apt-get update
-            sudo apt-get install -y ccache bc kmod cpio libssl-dev
+        - shell:
+            !include-raw: lt-qcom-linux/builders-deps.sh
         - shell:
             !include-raw: lt-qcom/install-gcc-toolchain.sh
         - inject:
