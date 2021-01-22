@@ -206,7 +206,7 @@ actions:
     role:
     - dut
     timeout:
-      minutes: 30
+      minutes: 300
     definitions:
 
 
@@ -218,6 +218,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-settings-default-ping-j17-mtu1536
       parameters:
@@ -229,29 +230,65 @@ actions:
 
 
     #################################
-    #  link-settings on/?/?/1536
+    # Request server IP address
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: link-settings-autoneg-j17-mtu1536
+      name: request-server-address-j17-mtu1536
       parameters:
-        CMD: link-settings
+        CMD: request-server-address
         ETH: eth2
-        AUTONEG: "auto"
-        MTU: 1536
 
 
+
+
+    #################################
+    # SCP from Target to Host
+    #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: link-settings-autoneg-ping-j17-mtu1536
+      name: scp-target-to-host-j17-mtu1536
       parameters:
-        CMD: ping-request
+        CMD: scp-target-to-host
         ETH: eth2
-        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # SCP from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-host-to-target-j17-mtu1536
+      parameters:
+        CMD: scp-host-to-target
+        ETH: eth2
+
+
+
+
+    #################################
+    # SSH from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: ssh-host-to-target-j17-mtu1536
+      parameters:
+        CMD: ssh-host-to-target
+        ETH: eth2
 
 
 
@@ -262,8 +299,9 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: iperf-server-j17
+      name: iperf-server-j17-mtu1536
       parameters:
         CMD: iperf3-server
         ETH: eth2
@@ -271,8 +309,9 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: iperf-j17
+      name: iperf-j17-mtu1536
       parameters:
         CMD: iperf3-client
         ETH: eth2
@@ -281,13 +320,16 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: iperf-reverse-j17
+      name: iperf-reverse-j17-mtu1536
       parameters:
         CMD: iperf3-client
         ETH: eth2
         TIME: 60
         REVERSE: "-R"
+
+
 
 
     #################################
@@ -323,6 +365,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-off-ping-j17-mtu1536
       parameters:
@@ -365,6 +408,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-on-ping-j17-mtu1536
       parameters:
@@ -375,57 +419,128 @@ actions:
 
 
 
-
-- test:
-    role:
-    - dut
-    timeout:
-      minutes: 300
-    definitions:
-
     #################################
-    # SCP from Target to Host
+    # link-settings off/100/full/1536
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: scp-target-to-host-j17-mtu1536
+      name: link-settings-100-full-j17-mtu1536
       parameters:
-        CMD: scp-target-to-host
+        CMD: link-settings
         ETH: eth2
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1536
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-ping-j17-mtu1536
+      parameters:
+        CMD: ping-request
+        ETH: eth2
+        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    # SCP from Host to Target
+    # link-settings off/100/half/1536
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: scp-host-to-target-j17-mtu1536
+      name: link-settings-100-half-j17-mtu1536
       parameters:
-        CMD: scp-host-to-target
+        CMD: link-settings
         ETH: eth2
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: half
+        MTU: 1536
 
 
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-half-ping-j17-mtu1536
+      parameters:
+        CMD: ping-request
+        ETH: eth2
+        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    # SSH from Host to Target
+    # link-settings off/100/full/1536
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: ssh-host-to-target-j17-mtu1536
+      name: link-settings-100-full-2-j17-mtu1536
       parameters:
-        CMD: ssh-host-to-target
+        CMD: link-settings
         ETH: eth2
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1536
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-2-ping-j17-mtu1536
+      parameters:
+        CMD: ping-request
+        ETH: eth2
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # link-settings on/?/?/1536
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-j17-mtu1536
+      parameters:
+        CMD: link-settings
+        ETH: eth2
+        AUTONEG: "auto"
+        MTU: 1536
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-ping-j17-mtu1536
+      parameters:
+        CMD: ping-request
+        ETH: eth2
+        EXPECTED_RESULT: pass
 
 
 
@@ -440,6 +555,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: finished-j17-mtu1536
       parameters:

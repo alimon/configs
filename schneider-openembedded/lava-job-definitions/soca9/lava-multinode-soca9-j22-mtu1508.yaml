@@ -169,6 +169,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: configure-interface-j22-mtu1508
       parameters:
@@ -192,6 +193,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: daemon-j22-mtu1508
       parameters:
@@ -208,7 +210,7 @@ actions:
     role:
     - dut
     timeout:
-      minutes: 30
+      minutes: 300
     definitions:
 
 
@@ -220,6 +222,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-settings-default-ping-j22-mtu1508
       parameters:
@@ -231,117 +234,65 @@ actions:
 
 
     #################################
-    #  link-settings off/100/full/1508
+    # Request server IP address
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-full-j22-mtu1508
+      name: request-server-address-j17-mtu1536
       parameters:
-        CMD: link-settings
+        CMD: request-server-address
         ETH: lan0
-        AUTONEG: "manual"
-        LINKSPEED: 100
-        DUPLEX: full
-        MTU: 1508
-
-
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-full-ping-j22-mtu1508
-      parameters:
-        CMD: ping-request
-        ETH: lan0
-        EXPECTED_RESULT: pass
-
-
-
-    #################################
-    #  link-settings off/100/half/1508
-    #################################
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-half-j22-mtu1508
-      parameters:
-        CMD: link-settings
-        ETH: lan0
-        AUTONEG: "manual"
-        LINKSPEED: 100
-        DUPLEX: half
-        MTU: 1508
-
-
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-half-ping-j22-mtu1508
-      parameters:
-        CMD: ping-request
-        ETH: lan0
-        EXPECTED_RESULT: pass
-
-
-
-    #################################
-    #  link-settings off/100/full/1508
-    #################################
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-full-2-j22-mtu1508
-      parameters:
-        CMD: link-settings
-        ETH: lan0
-        AUTONEG: "manual"
-        LINKSPEED: 100
-        DUPLEX: full
-        MTU: 1508
-
-
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-full-2-ping-j22-mtu1508
-      parameters:
-        CMD: ping-request
-        ETH: lan0
-        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    #  link-settings on/?/?/1508
+    # SCP from Target to Host
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: link-settings-autoneg-j22-mtu1508
+      name: scp-target-to-host-j22-mtu1508
       parameters:
-        CMD: link-settings
+        CMD: scp-target-to-host
         ETH: lan0
-        AUTONEG: "auto"
-        MTU: 1508
 
 
+
+
+    #################################
+    # SCP from Host to Target
+    #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: link-settings-autoneg-ping-j22-mtu1508
+      name: scp-host-to-target-j22-mtu1508
       parameters:
-        CMD: ping-request
+        CMD: scp-host-to-target
         ETH: lan0
-        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # SSH from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: ssh-host-to-target-j22-mtu1508
+      parameters:
+        CMD: ssh-host-to-target
+        ETH: lan0
 
 
 
@@ -352,8 +303,9 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: iperf-server-j22
+      name: iperf-server-j22-mtu1508
       parameters:
         CMD: iperf3-server
         ETH: lan0
@@ -361,8 +313,9 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: iperf-j22
+      name: iperf-j22-mtu1508
       parameters:
         CMD: iperf3-client
         ETH: lan0
@@ -371,13 +324,16 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: iperf-reverse-j22
+      name: iperf-reverse-j22-mtu1508
       parameters:
         CMD: iperf3-client
         ETH: lan0
         TIME: 60
         REVERSE: "-R"
+
+
 
 
     #################################
@@ -413,6 +369,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-off-ping-j22-mtu1508
       parameters:
@@ -455,6 +412,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-on-ping-j22-mtu1508
       parameters:
@@ -465,57 +423,128 @@ actions:
 
 
 
-
-- test:
-    role:
-    - dut
-    timeout:
-      minutes: 300
-    definitions:
-
     #################################
-    # SCP from Target to Host
+    # link-settings off/100/full/1508
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: scp-target-to-host-j22-mtu1508
+      name: link-settings-100-full-j22-mtu1508
       parameters:
-        CMD: scp-target-to-host
+        CMD: link-settings
         ETH: lan0
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1508
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-ping-j22-mtu1508
+      parameters:
+        CMD: ping-request
+        ETH: lan0
+        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    # SCP from Host to Target
+    # link-settings off/100/half/1508
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: scp-host-to-target-j22-mtu1508
+      name: link-settings-100-half-j22-mtu1508
       parameters:
-        CMD: scp-host-to-target
+        CMD: link-settings
         ETH: lan0
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: half
+        MTU: 1508
 
 
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-half-ping-j22-mtu1508
+      parameters:
+        CMD: ping-request
+        ETH: lan0
+        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    # SSH from Host to Target
+    # link-settings off/100/full/1508
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: ssh-host-to-target-j22-mtu1508
+      name: link-settings-100-full-2-j22-mtu1508
       parameters:
-        CMD: ssh-host-to-target
+        CMD: link-settings
         ETH: lan0
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1508
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-2-ping-j22-mtu1508
+      parameters:
+        CMD: ping-request
+        ETH: lan0
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # link-settings on/?/?/1508
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-j22-mtu1508
+      parameters:
+        CMD: link-settings
+        ETH: lan0
+        AUTONEG: "auto"
+        MTU: 1508
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-ping-j22-mtu1508
+      parameters:
+        CMD: ping-request
+        ETH: lan0
+        EXPECTED_RESULT: pass
 
 
 
@@ -530,6 +559,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: finished-j22-mtu1508
       parameters:

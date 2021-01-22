@@ -169,6 +169,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: configure-interface-j21
       parameters:
@@ -191,6 +192,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: daemon-j21
       parameters:
@@ -206,7 +208,7 @@ actions:
     role:
     - dut
     timeout:
-      minutes: 30
+      minutes: 300
     definitions:
 
 
@@ -218,6 +220,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-settings-default-ping-j21
       parameters:
@@ -229,11 +232,76 @@ actions:
 
 
     #################################
+    # Request server IP address
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: request-server-address-j21
+      parameters:
+        CMD: request-server-address
+        ETH: eth1
+
+
+
+
+    #################################
+    # SCP from Target to Host
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-target-to-host-j21
+      parameters:
+        CMD: scp-target-to-host
+        ETH: eth1
+
+
+
+
+    #################################
+    # SCP from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: scp-host-to-target-j21
+      parameters:
+        CMD: scp-host-to-target
+        ETH: eth1
+
+
+
+
+    #################################
+    # SSH from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: ssh-host-to-target-j21
+      parameters:
+        CMD: ssh-host-to-target
+        ETH: eth1
+
+
+
+
+    #################################
     #  iperf
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: iperf-server-j21
       parameters:
@@ -243,6 +311,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: iperf-j21
       parameters:
@@ -253,6 +322,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: iperf-reverse-j21
       parameters:
@@ -260,6 +330,8 @@ actions:
         ETH: eth1
         TIME: 60
         REVERSE: "-R"
+
+
 
 
     #################################
@@ -295,6 +367,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-off-ping-j21
       parameters:
@@ -337,6 +410,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-on-ping-j21
       parameters:
@@ -347,57 +421,128 @@ actions:
 
 
 
-
-- test:
-    role:
-    - dut
-    timeout:
-      minutes: 300
-    definitions:
-
     #################################
-    # SCP from Target to Host
+    # link-settings off/100/full/1500
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: scp-target-to-host-j21
+      name: link-settings-100-full-j21
       parameters:
-        CMD: scp-target-to-host
+        CMD: link-settings
         ETH: eth1
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-ping-j21
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    # SCP from Host to Target
+    # link-settings off/100/half/1500
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: scp-host-to-target-j21
+      name: link-settings-100-half-j21
       parameters:
-        CMD: scp-host-to-target
+        CMD: link-settings
         ETH: eth1
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: half
+        MTU: 1500
 
 
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-half-ping-j21
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    # SSH from Host to Target
+    # link-settings off/100/full/1500
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: ssh-host-to-target-j21
+      name: link-settings-100-full-2-j21
       parameters:
-        CMD: ssh-host-to-target
+        CMD: link-settings
         ETH: eth1
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-2-ping-j21
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # link-settings on/?/?/1500
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-j21
+      parameters:
+        CMD: link-settings
+        ETH: eth1
+        AUTONEG: "auto"
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-ping-j21
+      parameters:
+        CMD: ping-request
+        ETH: eth1
+        EXPECTED_RESULT: pass
 
 
 
@@ -412,6 +557,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: finished-j21
       parameters:

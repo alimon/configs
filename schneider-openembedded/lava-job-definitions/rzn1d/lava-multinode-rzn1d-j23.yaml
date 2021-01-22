@@ -225,6 +225,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: configure-interface-j23
       parameters:
@@ -249,6 +250,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: daemon-j23
       parameters:
@@ -266,7 +268,7 @@ actions:
     role:
     - dut
     timeout:
-      minutes: 30
+      minutes: 300
     definitions:
 
 
@@ -278,6 +280,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-settings-default-ping-j23
       parameters:
@@ -289,117 +292,65 @@ actions:
 
 
     #################################
-    #  link-settings off/100/full/1500
+    # Request server IP address
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-full-j23
+      name: request-server-address-j17-mtu1536
       parameters:
-        CMD: link-settings
+        CMD: request-server-address
         ETH: lan1
-        AUTONEG: "manual"
-        LINKSPEED: 100
-        DUPLEX: full
-        MTU: 1500
-
-
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-full-ping-j23
-      parameters:
-        CMD: ping-request
-        ETH: lan1
-        EXPECTED_RESULT: pass
-
-
-
-    #################################
-    #  link-settings off/100/half/1500
-    #################################
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-half-j23
-      parameters:
-        CMD: link-settings
-        ETH: lan1
-        AUTONEG: "manual"
-        LINKSPEED: 100
-        DUPLEX: half
-        MTU: 1500
-
-
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-half-ping-j23
-      parameters:
-        CMD: ping-request
-        ETH: lan1
-        EXPECTED_RESULT: pass
-
-
-
-    #################################
-    #  link-settings off/100/full/1500
-    #################################
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-full-2-j23
-      parameters:
-        CMD: link-settings
-        ETH: lan1
-        AUTONEG: "manual"
-        LINKSPEED: 100
-        DUPLEX: full
-        MTU: 1500
-
-
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      path: automated/linux/network-test/network-test.yaml
-      name: link-settings-100-full-2-ping-j23
-      parameters:
-        CMD: ping-request
-        ETH: lan1
-        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    #  link-settings on/?/?/1500
+    # SCP from Target to Host
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: link-settings-autoneg-j23
+      name: scp-target-to-host-j23
       parameters:
-        CMD: link-settings
+        CMD: scp-target-to-host
         ETH: lan1
-        AUTONEG: "auto"
-        MTU: 1500
 
 
+
+
+    #################################
+    # SCP from Host to Target
+    #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: link-settings-autoneg-ping-j23
+      name: scp-host-to-target-j23
       parameters:
-        CMD: ping-request
+        CMD: scp-host-to-target
         ETH: lan1
-        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # SSH from Host to Target
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: ssh-host-to-target-j23
+      parameters:
+        CMD: ssh-host-to-target
+        ETH: lan1
 
 
 
@@ -410,6 +361,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: iperf-server-j23
       parameters:
@@ -419,6 +371,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: iperf-j23
       parameters:
@@ -429,6 +382,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: iperf-reverse-j23
       parameters:
@@ -436,6 +390,8 @@ actions:
         ETH: lan1
         TIME: 60
         REVERSE: "-R"
+
+
 
 
     #################################
@@ -474,6 +430,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-off-ping-j23
       parameters:
@@ -519,6 +476,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: link-on-ping-j23
       parameters:
@@ -529,58 +487,128 @@ actions:
 
 
 
-
-- test:
-    namespace: test-wic
-    role:
-    - dut
-    timeout:
-      minutes: 300
-    definitions:
-
     #################################
-    # SCP from Target to Host
+    # link-settings off/100/full/1500
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: scp-target-to-host-j23
+      name: link-settings-100-full-j23
       parameters:
-        CMD: scp-target-to-host
+        CMD: link-settings
         ETH: lan1
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-ping-j23
+      parameters:
+        CMD: ping-request
+        ETH: lan1
+        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    # SCP from Host to Target
+    # link-settings off/100/half/1500
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: scp-host-to-target-j23
+      name: link-settings-100-half-j23
       parameters:
-        CMD: scp-host-to-target
+        CMD: link-settings
         ETH: lan1
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: half
+        MTU: 1500
 
 
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-half-ping-j23
+      parameters:
+        CMD: ping-request
+        ETH: lan1
+        EXPECTED_RESULT: pass
 
 
 
 
     #################################
-    # SSH from Host to Target
+    # link-settings off/100/full/1500
     #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
-      name: ssh-host-to-target-j23
+      name: link-settings-100-full-2-j23
       parameters:
-        CMD: ssh-host-to-target
+        CMD: link-settings
         ETH: lan1
+        AUTONEG: "manual"
+        LINKSPEED: 100
+        DUPLEX: full
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-100-full-2-ping-j23
+      parameters:
+        CMD: ping-request
+        ETH: lan1
+        EXPECTED_RESULT: pass
+
+
+
+
+    #################################
+    # link-settings on/?/?/1500
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-j23
+      parameters:
+        CMD: link-settings
+        ETH: lan1
+        AUTONEG: "auto"
+        MTU: 1500
+
+
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: link-settings-autoneg-ping-j23
+      parameters:
+        CMD: ping-request
+        ETH: lan1
+        EXPECTED_RESULT: pass
 
 
 
@@ -595,6 +623,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: finished-j23
       parameters:
