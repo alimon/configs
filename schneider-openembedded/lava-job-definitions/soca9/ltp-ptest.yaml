@@ -31,8 +31,8 @@ actions:
 ##########################
 # Configure ethernet ports
 ##########################
-#- command:
-#    name: j17_off
+- command:
+    name: j17_off
 - command:
     name: j21_on
 - command:
@@ -56,6 +56,7 @@ actions:
     - "root@rzn1-snarc:"
     transfer_overlay:
       download_command: wget
+      download_command: udhcpc -i eth1 -n; wget
       unpack_command: tar --touch -C / -xzf
 
 - test:
