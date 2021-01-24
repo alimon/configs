@@ -28,8 +28,6 @@ templates_soca9_network=( \
 	lava-multinode-soca9-j17.yaml
 	lava-multinode-soca9-j22.yaml
 	lava-multinode-soca9-j23.yaml
-	lava-multinode-soca9-j17-mtu1536.yaml
-	lava-multinode-soca9-j21-mtu1536.yaml
 	lava-multinode-soca9-j22-mtu1508.yaml
 	lava-multinode-soca9-j23-mtu1508.yaml
 	lava-multinode-soca9-j24-mtu1508.yaml
@@ -50,8 +48,6 @@ templates_rzn1d_network=( \
 	lava-multinode-rzn1d-j17.yaml
 	lava-multinode-rzn1d-j22.yaml
 	lava-multinode-rzn1d-j23.yaml
-	lava-multinode-rzn1d-j17-mtu1536.yaml
-	lava-multinode-rzn1d-j21-mtu1536.yaml
 	lava-multinode-rzn1d-j22-mtu1508.yaml
 	lava-multinode-rzn1d-j23-mtu1508.yaml
 	lava-multinode-rzn1d-j24-mtu1508.yaml
