@@ -151,7 +151,7 @@ actions:
     - "root@snarc-soca9:"
     - "root@rzn1-snarc:"
     transfer_overlay:
-      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
+      download_command: wget
       unpack_command: tar --touch -C / -xzf
 
 
@@ -188,27 +188,6 @@ actions:
       name: yepkit-down-all
       path: inline/yepkit-test.yaml
 
-
-#############################
-# We're finished with J21 now
-#############################
-- command:
-    namespace: test-wic
-    role:
-    - daemon
-    - dut
-    name: j21_off
-
-
-#################################
-# All nodes use J21
-#################################
-- command:
-    namespace: test-wic
-    role:
-    - daemon
-    - dut
-    name: j21_on
 
 - test:
     namespace: test-wic

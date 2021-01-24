@@ -46,19 +46,19 @@ actions:
 
 
 ##################
-# all ports off - except J21
+# all ports off - except J17
 ##################
 - command:
     role:
     - daemon
     - dut
-    name: j17_off
+    name: j17_on
 
 - command:
     role:
     - daemon
     - dut
-    name: j21_on
+    name: j21_off
 
 - command:
     role:
@@ -99,7 +99,7 @@ actions:
     - "root@snarc-soca9:"
     - "root@rzn1-snarc:"
     transfer_overlay:
-      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
+      download_command: wget
       unpack_command: tar --touch -C / -xzf
 
 
@@ -136,25 +136,6 @@ actions:
       path: inline/yepkit-test.yaml
 
 
-#############################
-# We're finished with J21 now
-#############################
-- command:
-    role:
-    - daemon
-    - dut
-    name: j21_off
-
-
-#################################
-# All nodes use J17
-#################################
-- command:
-    role:
-    - daemon
-    - dut
-    name: j17_on
-
 - test:
     role:
     - daemon
@@ -169,6 +150,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: configure-interface-j17
       parameters:
@@ -192,6 +174,7 @@ actions:
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
+      history: false
       path: automated/linux/network-test/network-test.yaml
       name: daemon-j17
       parameters:

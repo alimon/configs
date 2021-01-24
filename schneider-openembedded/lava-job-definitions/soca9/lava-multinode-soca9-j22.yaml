@@ -46,7 +46,7 @@ actions:
 
 
 ##################
-# all ports off - except J21
+# all ports off - except J22
 ##################
 - command:
     role:
@@ -58,13 +58,13 @@ actions:
     role:
     - daemon
     - dut
-    name: j21_on
+    name: j21_off
 
 - command:
     role:
     - daemon
     - dut
-    name: j22_off
+    name: j22_on
 
 - command:
     role:
@@ -99,7 +99,7 @@ actions:
     - "root@snarc-soca9:"
     - "root@rzn1-snarc:"
     transfer_overlay:
-      download_command: udhcpc -i eth1 -n || udhcpc -i eth0 -n; wget
+      download_command: wget
       unpack_command: tar --touch -C / -xzf
 
 
@@ -135,25 +135,6 @@ actions:
       name: yepkit-down-all
       path: inline/yepkit-test.yaml
 
-
-#############################
-# We're finished with J21 now
-#############################
-- command:
-    role:
-    - daemon
-    - dut
-    name: j21_off
-
-
-#################################
-# All nodes use J22
-#################################
-- command:
-    role:
-    - daemon
-    - dut
-    name: j22_on
 
 - test:
     role:
