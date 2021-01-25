@@ -19,7 +19,18 @@
     disabled: false
     node: triggers
     display-name: 'Trigger for Qualcomm Debian Sid based images'
+    scm:
+        - git:
+            url: https://git.linaro.org/git/ci/fai.git
+            refspec: +refs/heads/master:refs/remotes/origin/master
+            name: origin
+            branches:
+                - refs/heads/master
+            skip-tag: true
+            shallow-clone: false
+            wipe-workspace: false
     triggers:
+        - pollscm: 'H/5 * * * *'
         - pollurl:
             cron: '@hourly'
             polling-node: build
