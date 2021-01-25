@@ -46,19 +46,19 @@ actions:
 
 
 ##################
-# all ports off - except J17
+# all ports off - except J21
 ##################
 - command:
     role:
     - daemon
     - dut
-    name: j17_on
+    name: j17_off
 
 - command:
     role:
     - daemon
     - dut
-    name: j21_off
+    name: j21_on
 
 - command:
     role:
@@ -135,6 +135,25 @@ actions:
       name: yepkit-down-all
       path: inline/yepkit-test.yaml
 
+
+#############################
+# We're finished with J21 now
+#############################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j21_off
+
+
+#################################
+# All nodes use J17
+#################################
+- command:
+    role:
+    - daemon
+    - dut
+    name: j17_on
 
 - test:
     role:

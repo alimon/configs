@@ -72,7 +72,7 @@ actions:
     name: set_boot_to_qspi
 
 ##################
-# all ports off - except J22
+# all ports off - except J21
 ##################
 - command:
     namespace: test
@@ -86,14 +86,14 @@ actions:
     role:
     - daemon
     - dut
-    name: j21_off
+    name: j21_on
 
 - command:
     namespace: test
     role:
     - daemon
     - dut
-    name: j22_on
+    name: j22_off
 
 - command:
     namespace: test
@@ -184,6 +184,27 @@ actions:
       name: yepkit-down-all
       path: inline/yepkit-test.yaml
 
+
+#############################
+# We're finished with J21 now
+#############################
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j21_off
+
+
+#################################
+# All nodes use J22
+#################################
+- command:
+    namespace: test-wic
+    role:
+    - daemon
+    - dut
+    name: j22_on
 
 - test:
     namespace: test-wic
