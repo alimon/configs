@@ -185,30 +185,6 @@ actions:
       path: inline/yepkit-test.yaml
 
 
-- test:
-    namespace: test-wic
-    role:
-    - daemon
-    - dut
-    timeout:
-      minutes: 30
-    definitions:
-
-    #################################
-    #  configure-interface
-    #################################
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      history: false
-      path: automated/linux/network-test/network-test.yaml
-      name: configure-interface-j21
-      parameters:
-        CMD: configure-interface
-        ETH: eth1
-        EXPECTED_RESULT: pass
-        MTU: 1500
-
 
 
 #################################
@@ -222,6 +198,23 @@ actions:
     timeout:
       minutes: 300
     definitions:
+    #################################
+    #  configure-interface
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: configure-interface-j21
+      parameters:
+        CMD: configure-interface
+        ETH: eth1
+        EXPECTED_RESULT: pass
+
+    #################################
+    #  Start daemon
+    #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
@@ -244,6 +237,24 @@ actions:
     timeout:
       minutes: 300
     definitions:
+
+
+
+
+    #################################
+    #  configure-interface
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: configure-interface-j21
+      parameters:
+        CMD: configure-interface
+        ETH: eth1
+        EXPECTED_RESULT: pass
+        MTU: 1500
 
 
 

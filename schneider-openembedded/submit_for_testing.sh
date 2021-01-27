@@ -21,16 +21,16 @@ templates_soca9_minimal=
 templates_soca9_normal=( \
 	${templates_soca9_minimal[@]}
 	lava-multinode-soca9-j21.yaml
-	lava-multinode-soca9-j24.yaml
+	lava-multinode-soca9-j24-mtu1508.yaml
 )
 templates_soca9_network=( \
 	${templates_soca9_normal[@]}
 	lava-multinode-soca9-j17.yaml
 	lava-multinode-soca9-j22.yaml
 	lava-multinode-soca9-j23.yaml
+	lava-multinode-soca9-j24.yaml
 	lava-multinode-soca9-j22-mtu1508.yaml
 	lava-multinode-soca9-j23-mtu1508.yaml
-	lava-multinode-soca9-j24-mtu1508.yaml
 )
 templates_soca9_full=(   ${templates_soca9_network[@]} )
 
@@ -38,7 +38,7 @@ templates_rzn1d_minimal=
 templates_rzn1d_normal=( \
 	${templates_rzn1d_minimal[@]}
 	lava-multinode-rzn1d-j21.yaml
-	lava-multinode-rzn1d-j24.yaml
+	lava-multinode-rzn1d-j24-mtu1508.yaml
 )
 if [[ "${IMAGES}" == *dip-image-edge* ]]; then
 	templates_rzn1d_normal=( dip-image-edge.yaml ${templates_rzn1d_normal[@]} )
@@ -48,9 +48,9 @@ templates_rzn1d_network=( \
 	lava-multinode-rzn1d-j17.yaml
 	lava-multinode-rzn1d-j22.yaml
 	lava-multinode-rzn1d-j23.yaml
+	lava-multinode-rzn1d-j24.yaml
 	lava-multinode-rzn1d-j22-mtu1508.yaml
 	lava-multinode-rzn1d-j23-mtu1508.yaml
-	lava-multinode-rzn1d-j24-mtu1508.yaml
 )
 templates_rzn1d_full=(   ${templates_rzn1d_network[@]} )
 

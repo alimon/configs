@@ -206,30 +206,7 @@ actions:
     - dut
     name: j24_on
 
-- test:
-    namespace: test-wic
-    role:
-    - daemon
-    - dut
-    timeout:
-      minutes: 30
-    definitions:
 
-    #################################
-    #  configure-interface
-    #################################
-    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
-      branch: linaro
-      from: git
-      history: false
-      path: automated/linux/network-test/network-test.yaml
-      name: configure-interface-j24-mtu1508
-      parameters:
-        CMD: configure-interface
-        ETH: lan2
-        SWITCH_IF: eth0
-        EXPECTED_RESULT: pass
-        MTU: 1508
 
 
 
@@ -244,6 +221,24 @@ actions:
     timeout:
       minutes: 300
     definitions:
+    #################################
+    #  configure-interface
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: configure-interface-j24-mtu1508
+      parameters:
+        CMD: configure-interface
+        ETH: lan2
+        SWITCH_IF: eth0
+        EXPECTED_RESULT: pass
+
+    #################################
+    #  Start daemon
+    #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
@@ -267,6 +262,25 @@ actions:
     timeout:
       minutes: 300
     definitions:
+
+
+
+
+    #################################
+    #  configure-interface
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: configure-interface-j24-mtu1508
+      parameters:
+        CMD: configure-interface
+        ETH: lan2
+        SWITCH_IF: eth0
+        EXPECTED_RESULT: pass
+        MTU: 1508
 
 
 

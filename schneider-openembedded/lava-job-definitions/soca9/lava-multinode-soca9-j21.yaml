@@ -136,14 +136,18 @@ actions:
       path: inline/yepkit-test.yaml
 
 
+
+
+#################################
+# Daemon
+#################################
+
 - test:
     role:
     - daemon
-    - dut
     timeout:
-      minutes: 30
+      minutes: 300
     definitions:
-
     #################################
     #  configure-interface
     #################################
@@ -157,20 +161,10 @@ actions:
         CMD: configure-interface
         ETH: eth1
         EXPECTED_RESULT: pass
-        MTU: 1500
 
-
-
-#################################
-# Daemon
-#################################
-
-- test:
-    role:
-    - daemon
-    timeout:
-      minutes: 300
-    definitions:
+    #################################
+    #  Start daemon
+    #################################
     - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
       branch: linaro
       from: git
@@ -192,6 +186,24 @@ actions:
     timeout:
       minutes: 300
     definitions:
+
+
+
+
+    #################################
+    #  configure-interface
+    #################################
+    - repository: https://git.linaro.org/landing-teams/working/schneider/test-definitions.git
+      branch: linaro
+      from: git
+      history: false
+      path: automated/linux/network-test/network-test.yaml
+      name: configure-interface-j21
+      parameters:
+        CMD: configure-interface
+        ETH: eth1
+        EXPECTED_RESULT: pass
+        MTU: 1500
 
 
 
