@@ -4,7 +4,7 @@ job_name: 'zephyr-upstream $test_name'
 
 timeouts:
   job:
-    minutes: 30
+    minutes: 5
   action:
     minutes: 3
   actions:
@@ -28,12 +28,13 @@ actions:
 
 - boot:
     method: pyocd
+    failure_retry: 3
     timeout:
-      minutes: 10
+      minutes: 3
 
 - test:
     timeout:
-      minutes: 10
+      minutes: 3
 $test_action
 
 metadata:
