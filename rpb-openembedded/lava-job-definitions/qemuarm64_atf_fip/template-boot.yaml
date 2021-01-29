@@ -60,6 +60,17 @@ actions:
     - 'ledge-(.*)# '
     - 'ledge-(.*)~: '
     - 'ledge-.*:~\$$'
+
+- test:
+    namespace: target
+    timeout:
+      minutes: 15
+    definitions:
+    - repository: https://github.com/Linaro/test-definitions.git
+      from: git
+      path: automated/linux/fwts/fwts.yaml
+      name: fwts-unit-tests
+
 metadata:
   machine: ${MACHINE}
   manifest branch: ${MANIFEST_BRANCH}
