@@ -245,7 +245,8 @@ find ${UPLOAD_DIR}
 
 BOOT_IMG=$(find ${UPLOAD_DIR} -type f -name "boot*${MACHINE}.img" -printf "%f\n"| sort)
 KERNEL_IMG=$(find ${UPLOAD_DIR} -type f -name "*Image-*${MACHINE}*.bin" -printf "%f\n")
-ROOTFS_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.rootfs.wic.gz" -printf "%f\n" )
+ROOTFS_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-iot-lava-*${MACHINE}*.rootfs.wic.gz" -printf "%f\n" )
+ROOTFS_GW=$(find ${UPLOAD_DIR} -type f -name "ledge-iot-lava-*${MACHINE}*.rootfs.wic.gz" -printf "%f\n" )
 ROOTFS_EXT4=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.rootfs.ext4.gz" -printf "%f\n")
 ROOTFS_TARXZ_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.rootfs.tar.xz" -printf "%f\n")
 HDD_IMG=$(find ${UPLOAD_DIR} -type f -name "ledge-*${MACHINE}*.hddimg.xz" -printf "%f\n")
@@ -373,6 +374,7 @@ BASE_URL=${BASE_URL}
 BOOT_URL=${BASE_URL}/${PUB_DEST}/${BOOT_IMG}
 ROOTFS_SPARSE_BUILD_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
 SYSTEM_URL=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG}
+SYSTEM_URL_GW=${BASE_URL}/${PUB_DEST}/${ROOTFS_IMG_GW}
 KERNEL_URL=${BASE_URL}/${PUB_DEST}/${KERNEL_IMG}
 DTB_URL=${BASE_URL}/${PUB_DEST}/${DTB_IMG}
 RECOVERY_IMAGE_URL=${BASE_URL}/${PUB_DEST}/${RIMAGE}
