@@ -20,12 +20,18 @@
       userdata:
         url: {{REFERENCE_BUILD_URL}}/userdata.img.xz
         compression: xz
+{% if HIKEY960_SUPPORT_SUPER is defined %}
+      super:
+        url: {{REFERENCE_BUILD_URL}}/super.img.xz
+        compression: xz
+{% else %}
       system:
         url: {{REFERENCE_BUILD_URL}}/system.img.xz
         compression: xz
       vendor:
         url: {{REFERENCE_BUILD_URL}}/vendor.img.xz
         compression: xz
+{% endif %}
 
 - deploy:
     timeout:
@@ -42,10 +48,15 @@
         url: downloads://boot.img
       userdata:
         url: downloads://userdata.img
+{% if HIKEY960_SUPPORT_SUPER is defined %}
+      super:
+        url: downloads://super.img
+{% else %}
       system:
         url: downloads://system.img
       vendor:
         url: downloads://vendor.img
+{% endif %}
 
 {% endblock deploy_target %}
 

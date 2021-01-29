@@ -26,12 +26,18 @@
       userdata:
         url: {{REFERENCE_BUILD_URL}}/userdata.img.xz
         compression: xz
+{% if HIKEY960_SUPPORT_SUPER is defined %}
+      super:
+        url: {{REFERENCE_BUILD_URL}}/super.img.xz
+        compression: xz
+{% else %}
       system:
         url: {{REFERENCE_BUILD_URL}}/system.img.xz
         compression: xz
       vendor:
         url: {{REFERENCE_BUILD_URL}}/vendor.img.xz
         compression: xz
+{% endif %}
     protocols:
       lava-lxc:
       - action: fastboot-deploy

@@ -68,6 +68,12 @@ function update_device_template(){
     local build_config="${1}" && shift
     local referece_build_url="${1}" && shift
 
+    if [ "X${f_img_name}X" = "Xprm_ptable.imgX" ]; then
+        ## special case for hikey960 prm_ptable.img,
+        ## as for the aosp master, we need to use new prm_ptable to support the super image
+        local default_hikey960_prm_table_url="https://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/85/hikey960/release/prm_ptable.img"
+        sed -i "s|${default_hikey960_prm_table_url}|{{DOWNLOAD_URL}}/${f_img_name}|" "${f_device_template}"
+    fi
     # DOWNLOAD_URL is where the generated files stored
     # replace REFERENCE_BUILD_URL with DOWNLOAD_URL
     sed -i "s|{{REFERENCE_BUILD_URL}}/${f_img_name}|{{DOWNLOAD_URL}}/${f_img_name}|" "${f_device_template}"
@@ -100,6 +106,7 @@ function submit_jobs_for_config(){
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE
     unset IMAGE_SUPPORTED_CACHE TEST_LAVA_JOB_GROUP
+    unset HIKEY960_SUPPORT_SUPER
 
     # the config file should be in the directory of android-build-configs/lkft
     # or copied to there by the linaro-lkft.sh build
@@ -119,6 +126,7 @@ function submit_jobs_for_config(){
     export ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     export TEST_VTS_VERSION=$(echo ${TEST_VTS_URL} | awk -F"/" '{print$(NF-1)}')
     export TEST_CTS_VERSION=$(echo ${TEST_CTS_URL} | awk -F"/" '{print$(NF-1)}')
+    [ -n "${HIKEY960_SUPPORT_SUPER}" ] && export HIKEY960_SUPPORT_SUPER
 
     # works when cache partition part is guarded with IMAGE_SUPPORTED_CACHE
     # default is to support cache partition with cache.img
