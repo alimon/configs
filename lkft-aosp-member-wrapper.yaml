@@ -2,28 +2,32 @@
     name: lkft-aosp-member-wrapper
     project-type: freestyle
     defaults: global
+    logrotate:
+        daysToKeep: 30
+        numToKeep: 30
     properties:
         - authorization:
             anonymous:
                 - job-discover
             android-internal:
                 - job-read
-                - job-extended-read
                 - job-build
                 - job-cancel
+                - job-extended-read
         - build-discarder:
-            days-to-keep: 180
-            num-to-keep: 450
+            days-to-keep: 30
+            num-to-keep: 30
             artifact-num-to-keep: 1
     parameters:
         - string:
             name: ANDROID_BUILD_CONFIG_REPO_URL
             default: ssh://git@dev-private-git.linaro.org/android-internal/android-build-configs.git
     disabled: false
-    node: docker-bionic-android-lkft
+    node: docker-bionic-aosp
     display-name: 'Wrapper for the lkft-aosp-member build'
+    concurrent: true
     wrappers:
-        - timestamps'
+        - timestamps
         - ssh-agent-credentials:
             users:
                - '768c1ba1-6052-4b97-a531-7e4fabda6979'
