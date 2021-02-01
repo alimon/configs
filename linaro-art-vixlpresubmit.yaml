@@ -4,9 +4,9 @@
     defaults: global
     description: >
       Runs the
-      <a href="https://git.linaro.org/arm/vixl.git/tree/tools/test.py">Vixl Presubmit Tests</a>
+      <a href="https://github.com/Linaro/vixl/blob/master/tools/test.py">Vixl Presubmit Tests</a>
       using the
-      <a href="https://git.linaro.org/arm/vixl.git/about">Linaro VIXL tree.</a>
+      <a href="https://github.com/Linaro/vixl/">Linaro VIXL tree.</a>
     properties:
         - authorization:
             anonymous:
@@ -29,37 +29,37 @@
         - build-discarder:
             days-to-keep: 60
             num-to-keep: 60
+        - github:
+            url: https://github.com/Linaro/vixl
     disabled: false
     node: docker-bionic-art
     display-name: 'VIXL: Presubmit Test'
     concurrent: true
+    scm:
+        - git:
+            url: https://github.com/Linaro/vixl.git
+            refspec: +refs/pull/*:refs/remotes/origin/pr/*
+            name: origin
+            branches:
+                - ${sha1}
+            basedir: vixl
+            skip-tag: true
+            shallow-clone: true
+            wipe-workspace: true
     parameters:
-      - string:
-          name: GERRIT_REFSPEC
-          default: "refs/heads/master"
       - string:
           name: VIXL_TEST_ARGS
           default: "--fail-early --compiler=g++"
     triggers:
-        - gerrit:
-            server-name: review.linaro.org
-            override-votes: true
-            gerrit-build-successful-verified-value: 1
-            gerrit-build-failed-verified-value: -1
-            trigger-on:
-                - patchset-created-event
-            projects:
-                - project-compare-type: 'PLAIN'
-                  project-pattern: 'arm/vixl'
-                  branches:
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'master'
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'sve'
-                      - branch-compare-type: 'PLAIN'
-                        branch-pattern: 'sve2'
-            silent: false
-            silent-start: true
+        - github-pull-request:
+            github-hooks: true
+            permit-all: true
+            white-list-target-branches:
+                - 'master'
+                - 'main'
+                - 'sve'
+                - 'sve2'
+            auth-id: 'GITHUB_TOKEN'
     wrappers:
         - timestamps
         - timeout:
@@ -67,8 +67,6 @@
     builders:
         - shell: !include-raw: linaro-art/vixl/presubmit.sh
     publishers:
-        - email:
-            recipients: 'vishal.bhoj@linaro.org daniel.diaz@linaro.org julien.duraj@linaro.org'
         - groovy-postbuild:
             script:
               !include-raw:

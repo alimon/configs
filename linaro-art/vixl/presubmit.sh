@@ -1,6 +1,6 @@
 #!/bin/bash -xe
 
-vixl_repo="https://git.linaro.org/arm/vixl.git"
+vixl_repo="https://github.com/Linaro/vixl.git"
 
 mkdir -p "${HOME}/bin"
 export PATH="${HOME}/bin:${PATH}"
@@ -18,7 +18,5 @@ chmod +x "${HOME}/bin/cpplint.py"
 git config --global user.name "vixl-build-bot"
 git config --global user.email "vixl-build-bot@fake-email.invalid"
 
-git clone "${vixl_repo}" vixl
-cd vixl
-git fetch "${vixl_repo}" "${GERRIT_REFSPEC}" && git checkout FETCH_HEAD
+cd vixl/
 ./tools/test.py ${VIXL_TEST_ARGS}
