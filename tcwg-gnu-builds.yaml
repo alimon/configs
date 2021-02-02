@@ -113,11 +113,6 @@
           version=$version
           distro=$distro
           EOF
-
-          # There's still no arm32v7/ubuntu:focal docker image, so
-          # force using bionic for armhf for now.
-          cp build-params.txt build-params-armv7.txt
-          sed -i -e "s/^distro=lts\$/distro=lts_1/" build-params-armv7.txt
       - multijob:
           name: Build
           projects:
@@ -154,7 +149,7 @@
               enable-condition: "$host_armhf_target_native"
               node-label-name: "builder"
               node-label: "tcwg-build && tcwg-armv7"
-              property-file: build-params-armv7.txt
+              property-file: build-params.txt
               predefined-parameters: "target=native"
       - shell: |
           #!/bin/bash
@@ -326,4 +321,4 @@
             predefined-parameters: |
               version=master
               distro=lts
-# checksum: 5ad6816b54d326556a08e68cc351c3fa
+# checksum: c37d615e3f680edf51163acf7ce388b1
