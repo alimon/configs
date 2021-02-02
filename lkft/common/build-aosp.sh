@@ -84,6 +84,11 @@ function build_android(){
         fi
         xz -T 0 ${DIR_PUB_SRC}/${f}
     done
+
+    if [ -f ${DIR_PUB_SRC_PRODUCT}/build_fingerprint.txt ]; then
+        cp -vf ${DIR_PUB_SRC_PRODUCT}/build_fingerprint.txt ${DIR_PUB_SRC}/
+    fi
+
     if [ -n "${ANDROID_BUILD_CONFIG}" ]; then
         cp -vf android-build-configs/${ANDROID_BUILD_CONFIG} ${DIR_PUB_SRC}/${ANDROID_BUILD_CONFIG}.txt
     fi
