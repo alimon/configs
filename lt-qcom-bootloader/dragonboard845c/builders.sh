@@ -1,7 +1,7 @@
 #!/bin/bash
 
 sudo apt-get update
-sudo apt-get install -y zip gdisk
+sudo apt-get install -y zip gdisk libncurses5
 
 set -ex
 
