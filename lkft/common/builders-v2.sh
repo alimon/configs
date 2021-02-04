@@ -16,7 +16,6 @@ if [ -n "${KERNEL_BRANCH}" ] && [ -n "${KERNEL_DESCRIBE}" ] && [ -n "${JOB_NAME}
     fi
 
     curl -L https://android.linaro.org/lkft/newbuild/${KERNEL_BRANCH}/${QA_BUILD_VERSION}/${JOB_NAME}/${BUILD_NUMBER} || true
-    curl -L https://android.ctt.linaro.org/lkft/newbuild/${KERNEL_BRANCH}/${QA_BUILD_VERSION}/${JOB_NAME}/${BUILD_NUMBER} || true
 fi
 
 git config --global user.email "ci_notify@linaro.org"
