@@ -41,8 +41,8 @@
             if git clone -b lkft ${ANDROID_BUILD_CONFIG_REPO_URL} android-build-configs-private; then
                 if [ -f android-build-configs-private/lkft-member-builds ]; then
                     while read line; do
-                        android_version=(echo $line|cut -d= -f1)
-                        build_configs=(echo $line|cut -d= -f2|tr -d \")
+                        android_version=$(echo $line|cut -d= -f1)
+                        build_configs=$(echo $line|cut -d= -f2|tr -d \")
                         for build_config in ${build_configs}; do
                             md5sum_val=$(echo "${android_version}-${build_config}"|md5sum|awk '{print $1}')
                             f_params="params_${md5sum_val}.txt"
