@@ -95,7 +95,7 @@ fi
 # been merged into the branch.
 if [[ ! -z ${kolla_ldc} && ! -z ${kolla_ldc_extras} ]]; then
     echo ${kolla_ldc_extras} | sed -n 1'p' | tr ',' '\n' | while read patch; do
-        curl "https://review.opendev.org/gitweb?p=openstack/kolla.git;a=patch;h=${patch}" | git apply -v --directory=kolla/
+        curl "https://review.opendev.org/changes/openstack%2Fkolla~${patch}/revisions/current/patch" | base64 -d | git apply -v --directory=kolla/
     done
 fi
 
