@@ -9,6 +9,11 @@ sudo apt-get -qq -y install python3 python3-pip python3-setuptools srecord libff
 wget https://packagecloud.io/github/git-lfs/packages/ubuntu/xenial/git-lfs_2.11.0_amd64.deb/download.deb -O git-lfs_2.11.0_amd64.deb
 sudo dpkg -i git-lfs_2.11.0_amd64.deb
 
+# As a first step, upgrade pip itself. The one shipping with Ubuntu 18.04
+# is rather old by now, and may have issues installing modern .whl packages.
+sudo pip3 install -U pip
+pip3 --version
+
 sudo pip3 install cmake
 pip3 install --user cryptography pyasn1 pyyaml jinja2 cbor
 
