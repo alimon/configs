@@ -57,20 +57,22 @@ for macro in $(unifdef -s -k -t "$tmp_in"); do
 done
 
 declare -Ag vars_values
-for var in "${vars[@]}"; do
-    name=$(echo "$var" | cut -d= -f 1)
-    value=$(echo "$var" | cut -s -d= -f 2)
+if [ ${#vars[@]} -gt 0 ]; then
+    for var in "${vars[@]}"; do
+	name=$(echo "$var" | cut -d= -f 1)
+	value=$(echo "$var" | cut -s -d= -f 2)
 
-    # Define requested macros to "1".
-    cpp_opts+=("-D${name}_${value}=1")
+	# Define requested macros to "1".
+	cpp_opts+=("-D${name}_${value}=1")
 
-    # Gather all values for $name in $vars_values[$name]
-    if [ x"${vars_values[$name]+set}" = x"set" ]; then
-        vars_values[$name]="${vars_values[$name]} $value"
-    else
-        vars_values[$name]="$value"
-    fi
-done
+	# Gather all values for $name in $vars_values[$name]
+	if [ x"${vars_values[$name]+set}" = x"set" ]; then
+            vars_values[$name]="${vars_values[$name]} $value"
+	else
+            vars_values[$name]="$value"
+	fi
+    done
+fi
 
 sed_opts=()
 for name in "${!vars_values[@]}"; do
