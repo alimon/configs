@@ -24,7 +24,7 @@
   kselftest__revision: "{{KSELFTESTS_REVISION | default('unknown')}}"
 {% endblock metadata %}
 
-{% block job_name %}lkft-kselftests-{{testnames|join('-')}}-{{vsyscall_suffix}}-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
+{% block job_name %}lkft-kselftests-{{testnames|join('-')}}{{vsyscall_suffix}}-{{KERNEL_BRANCH}}-{{BUILD_NUMBER}}{% endblock job_name %}
 
 {% block test_target %}
   {{ super() }}
@@ -44,7 +44,7 @@
       from: git
       revision: '{{ TDEFINITIONS_REVISION }}'
       path: automated/linux/kselftest/kselftest.yaml
-      name: kselftest-{{vsyscall_suffix}}-{{testname}}
+      name: kselftest{{vsyscall_suffix}}-{{testname}}
       parameters:
         KSELFTEST_PATH: {{KSELFTEST_PATH}}
         SKIPFILE: skipfile-lkft.yaml
