@@ -100,12 +100,13 @@ function submit_jobs_for_config(){
     local build_config=$1 && shift
 
     local f_qareport_urls="qareport_url.txt"
+    DEFAULT_TEST_LAVA_JOB_PRIORITY="medium"
 
     # clean environments
     unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_TEAM TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE
-    unset IMAGE_SUPPORTED_CACHE TEST_LAVA_JOB_GROUP
+    unset IMAGE_SUPPORTED_CACHE TEST_LAVA_JOB_GROUP TEST_LAVA_JOB_PRIORITY
     unset HIKEY960_SUPPORT_SUPER
 
     # the config file should be in the directory of android-build-configs/lkft
@@ -122,7 +123,9 @@ function submit_jobs_for_config(){
     fi
     check_environments
     [ -z "${TEST_LAVA_JOB_GROUP}" ] && TEST_LAVA_JOB_GROUP=lkft
-    export TEST_LAVA_JOB_GROUP
+    [ -n "${TEST_LAVA_JOB_PRIORITY}" ] && DEFAULT_TEST_LAVA_JOB_PRIORITY="${TEST_LAVA_JOB_PRIORITY}"
+    [ -z "${TEST_LAVA_JOB_PRIORITY}" ] && TEST_LAVA_JOB_PRIORITY="${DEFAULT_TEST_LAVA_JOB_PRIORITY}"
+    export TEST_LAVA_JOB_GROUP TEST_LAVA_JOB_PRIORITY
     export ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
     export TEST_VTS_VERSION=$(echo ${TEST_VTS_URL} | awk -F"/" '{print$(NF-1)}')
     export TEST_CTS_VERSION=$(echo ${TEST_CTS_URL} | awk -F"/" '{print$(NF-1)}')
@@ -223,6 +226,14 @@ function submit_jobs_for_config(){
             if [ -z "${qa_server_project}" ]; then
                 qa_server_project="${TEST_QA_SERVER_PROJECT}"
             fi
+
+            lava_job_priority=$(get_value_from_config_file "TEST_LAVA_JOB_PRIORITY_${plan}" "${build_config}")
+            if [ -n "${lava_job_priority}" ]; then
+                TEST_LAVA_JOB_PRIORITY="${lava_job_priority}"
+            else
+                TEST_LAVA_JOB_PRIORITY="${DEFAULT_TEST_LAVA_JOB_PRIORITY}"
+            fi
+            export TEST_LAVA_JOB_PRIORITY
 
             f_device_template="${DIR_CONFIGS_ROOT}/lkft/lava-job-definitions/${templates_type}/devices/${TEST_DEVICE_TYPE}"
             for f in ${PUBLISH_FILES}; do
