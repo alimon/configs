@@ -51,16 +51,12 @@
             echo "########################################################################"
 
             rm -rf ${WORKSPACE}/*
-            sudo apt-get update -q
-            sudo apt-get install -y -q python-pip
-            pip install pyyaml==5.1 jinja2==2.10.1 python-jenkins==1.4.0
-
             git clone -b ${GERRIT_BRANCH} --depth 2 https://review.linaro.org/${GERRIT_PROJECT}
             cd *
             git fetch https://review.linaro.org/${GERRIT_PROJECT} ${GERRIT_REFSPEC}
             git checkout -q FETCH_HEAD
 
-            python yadp_builder_v2.py --server https://ci.linaro.org
+            python3 yadp_builder.py --dryrun --server https://ci.linaro.org
     publishers:
         - email:
             recipients: 'linaro-infrastructure-errors@lists.linaro.org'
