@@ -14,7 +14,7 @@
                 - job-build
                 - job-cancel
     disabled: false
-    node: docker-bionic-short
+    node: triggers
     display-name: 'Infrastructure - Unit Test for the ansible-playbook repository'
     concurrent: true
     triggers:
@@ -40,8 +40,6 @@
             #!/bin/bash
             set -e
 
-            sudo apt-get -q=2 update
-            sudo apt-get -y -q=2 --no-install-recommends install python3-dev python3-pip python3-setuptools python3-cryptography python3-pretty-yaml libssl-dev libffi-dev parallel
             sudo pip3 install ansible==2.9.13 ansible-lint==4.2.0
 
             git clone https://git.linaro.org/$GERRIT_PROJECT -b $GERRIT_BRANCH
