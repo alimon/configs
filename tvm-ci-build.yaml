@@ -1,0 +1,73 @@
+- job:
+    name: tvm-ci-build
+    display-name: 'TVM - CI Build'
+    concurrent: true
+    project-type: freestyle
+    defaults: global
+    description: |
+        Updates source and build tvm frequently to ensure builds are succesful.
+    properties:
+        - authorization:
+            anonymous:
+                - job-read
+                - job-extended-read
+            linaro:
+                - job-read
+                - job-extended-read
+                - job-build
+                - job-cancel
+        - build-discarder:
+            days-to-keep: 90
+            num-to-keep: 90
+        - github:
+            url: https://github.com/apache/tvm.git
+    triggers:
+        - github-pull-request:
+            trigger-phrase: 'TRIGGER BUILD'
+            white-list-target-branches:
+                - 'main'
+            success-comment: 'build successful'
+            failure-comment: 'build failed'
+    parameters:
+        - string:
+            name: LAVA_SERVER
+            default: 'https://validation.linaro.org/RPC2/'
+        - string:
+            name: GIT_COM_ID
+    disabled: false
+    node: docker-bionic-arm64-armnn
+    wrappers:
+        - timestamps
+        - credentials-binding:
+            - text:
+                credential-id: QA_REPORTS_TOKEN
+                variable: QA_REPORTS_TOKEN
+    builders:
+        - shell: |
+            git clone https://github.com/K1504296/armnn-ci.git
+            cd armnn-ci && bash -ex tvm-builders.sh
+        - shell: |
+            #!/bin/bash -e
+            echo "DEVICE_TYPE=${DEVICE_TYPE}" > device_type_parameters
+        - inject:
+            properties-file: device_type_parameters
+        - linaro-publish-token
+        - shell: |
+            #!/bin/bash
+
+            set -ex
+            sudo apt-get install -y jq
+
+            LAVA_ID=$GIT_COM_ID
+            TVM_TAR_LOCATION=https://snapshots.linaro.org/components/tvm/${BUILD_NUMBER}/tvm.tar.xz
+            jq -n --arg 'LAVA_ID' $LAVA_ID \
+            --arg 'TVM_TAR_LOCATION' $TVM_TAR_LOCATION \
+            --arg 'BUILD_NUMBER' $BUILD_NUMBER \
+            '{LAVA_ID:$LAVA_ID, TVM_TAR_LOCATION:$TVM_TAR_LOCATION, BUILD_NUMBER:$BUILD_NUMBER}' > our/buildInfo
+            #PUBLISH
+            test -d ${HOME}/bin || mkdir ${HOME}/bin
+
+            wget -q https://git.linaro.org/ci/publishing-api.git/blob_plain/HEAD:/linaro-cp.py -O ${HOME}/bin/linaro-cp.py
+            time python3 ${HOME}/bin/linaro-cp.py \
+            --link-latest \
+            out/ components/tvm/${BUILD_NUMBER}
