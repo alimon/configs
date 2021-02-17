@@ -1,5 +1,23 @@
-- job:
-    name: lt-qcom-openembedded-meta-qcom-master-premerge
+- project:
+    name: lt-qcom-openembedded-meta-qcom-premerge
+    jobs:
+      - lt-qcom-openembedded-meta-qcom-premerge-{branch}:
+            branch: 'master'
+            machines: !!python/tuple
+                - 'dragonboard-410c'
+                - 'dragonboard-845c'
+                - 'qrb5165-rb5'
+                - 'qcom-armv8a'
+                - 'sdx55-mtp'
+      - lt-qcom-openembedded-meta-qcom-premerge-{branch}:
+            branch: 'dunfell'
+            machines: !!python/tuple
+                - 'dragonboard-410c'
+                - 'dragonboard-845c'
+                - 'qrb5165-rb5'
+
+- job-template:
+    name: lt-qcom-openembedded-meta-qcom-premerge-{branch}
     project-type: matrix
     defaults: global
     logrotate:
@@ -31,7 +49,7 @@
             default: 'poky'
     disabled: false
     node: master
-    display-name: 'Premerge CI for meta-qcom Layer with Poky (master)'
+    display-name: 'Premerge CI for meta-qcom Layer with Poky ({branch})'
     scm:
         - git:
             url: https://github.com/ndechesne/meta-qcom
@@ -39,7 +57,7 @@
             name: origin
             basedir: meta-qcom
             branches:
-                - ${sha1}
+                - ${{sha1}}
             skip-tag: true
             shallow-clone: true
             wipe-workspace: true
@@ -50,19 +68,13 @@
             trigger-phrase: '.*(re)?run tests.*'
             cancel-builds-on-update: true
             white-list-target-branches:
-                - 'master'
-                - 'dunfell'
+                - '{branch}'
             auth-id: 'GITHUB_TOKEN'
     axes:
         - axis:
             type: user-defined
             name: MACHINE
-            values:
-                - 'dragonboard-410c'
-                - 'dragonboard-845c'
-                - 'qrb5165-rb5'
-                - 'qcom-armv8a'
-                - 'sdx55-mtp'
+            values: '{machines}'
         - axis:
             type: user-defined
             name: TCLIBC
@@ -82,7 +94,7 @@
             timeout: 300
     builders:
         - shell:
-            !include-raw: lt-qcom/meta-qcom.sh
+            !include-raw-escape: lt-qcom/meta-qcom.sh
     publishers:
         - email-ext:
             recipients: 'nicolas.dechesne@linaro.org'
