@@ -470,7 +470,7 @@ case "${MACHINE}" in
     UBI_IMG=$(basename ${UBI})
     UBI_EDGE=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi")
     UBI_EDGE_IMG=$(basename ${UBI_EDGE})
-    WIC_DEV=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_DEV=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2")
     WIC_DEV_IMG=$(basename ${WIC_DEV})
     WIC_DEV_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     ;;
@@ -482,13 +482,13 @@ case "${MACHINE}" in
     # The following images will have their size reported to SQUAD
     UBOOT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "u-boot-with-spl-*.sfp")
     UBOOT_IMG=$(basename ${UBOOT})
-    DTB=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*soca9*_qspi_micronN25Q_bestla_512m.dtb" | xargs -r basename)
+    DTB=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*soca9*_qspi_micronN25Q_bestla_512m.dtb")
     DTB_IMG=$(basename ${DTB})
-    KERNEL=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*soca9*.bin" | xargs -r basename)
+    KERNEL=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*soca9*.bin")
     KERNEL_IMG=$(basename ${KERNEL})
-    WIC=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2")
     WIC_IMG=$(basename ${WIC})
-    WIC_DEV=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_DEV=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2")
     WIC_DEV_IMG=$(basename ${WIC_DEV})
     WIC_DEV_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     ;;
@@ -523,17 +523,17 @@ send_image_size_to_squad()
 # note: we specifically want to report a zero image size if the image doesn't exist
 #       this works around a SQUAD bug and allows metrics graphs showing multiple
 #       boards to look sane when one of those boards has no values for the metric
-send_image_size_to_squad "UBOOT_IMG_SIZE" "${UBOOT}"
-send_image_size_to_squad "UBOOT_FIT_IMG_SIZE" "${UBOOT_FIT}"
-send_image_size_to_squad "DTB_IMG_SIZE" "${DTB}"
-send_image_size_to_squad "KERNEL_IMG_SIZE" "${KERNEL}"
-send_image_size_to_squad "KERNEL_FIT_IMG_SIZE" "${KERNEL_FIT}"
-send_image_size_to_squad "FSBL_IMG_SIZE" "${FSBL}"
-send_image_size_to_squad "OPTEE_FIT_IMG_SIZE" "${OPTEE_FIT}"
-send_image_size_to_squad "UBI_IMG_SIZE" "${UBI}"
-send_image_size_to_squad "UBI_EDGE_IMG_SIZE" "${UBI_EDGE}"
-send_image_size_to_squad "WIC_IMG_SIZE" "${WIC_IMG}"
-send_image_size_to_squad "WIC_DEV_IMG_SIZE" "${WIC_DEV_IMG}"
+send_image_size_to_squad "IMG_SIZE_UBOOT"      "${UBOOT}"
+send_image_size_to_squad "IMG_SIZE_UBOOT_FIT"  "${UBOOT_FIT}"
+send_image_size_to_squad "IMG_SIZE_DTB"        "${DTB}"
+send_image_size_to_squad "IMG_SIZE_KERNEL"     "${KERNEL}"
+send_image_size_to_squad "IMG_SIZE_KERNEL_FIT" "${KERNEL_FIT}"
+send_image_size_to_squad "IMG_SIZE_FSBL"       "${FSBL}"
+send_image_size_to_squad "IMG_SIZE_OPTEE_FIT"  "${OPTEE_FIT}"
+send_image_size_to_squad "IMG_SIZE_UBI"        "${UBI}"
+send_image_size_to_squad "IMG_SIZE_UBI_EDGE"   "${UBI_EDGE}"
+send_image_size_to_squad "IMG_SIZE_WIC"        "${WIC_IMG}"
+send_image_size_to_squad "IMG_SIZE_WIC_DEV"    "${WIC_DEV_IMG}"
 
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
