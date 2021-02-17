@@ -437,11 +437,11 @@ skales-mkbootimg \
 # Create boot image (functional), sdm845-mtp requires an initramfs to mount the rootfs and then
 # exec switch_rootfs, use the same method in other boards too
 boot_rootfs_file=boot-rootfs-${KERNEL_FLAVOR}-${KERNEL_VERSION}-${BUILD_NUMBER}-${MACHINE}.img
-init_file=init
-sed -e "s|__ROOTFS_PARTITION__|${ROOTFS_PARTITION}|g" < configs/lt-qcom-linux-test/initscripts/init-rootfs.sh > ./$init_file
-chmod +x ./$init_file
-overlayed_ramdisk_file="out/$(overlay_ramdisk_from_file "$init_file" "init_rootfs")"
-rm -f $init_file
+
+mkdir -p etc
+initrd_release_file=etc/initrd-release
+touch $initrd_release_file
+overlayed_ramdisk_file="out/$(overlay_ramdisk_from_file "$initrd_release_file" "init_rootfs")"
 
 skales-mkbootimg \
 	--kernel $kernel_file \
@@ -451,7 +451,7 @@ skales-mkbootimg \
 	--pagesize "${BOOTIMG_PAGESIZE}" \
 	--base "${BOOTIMG_BASE}" \
 	--ramdisk_base "${RAMDISK_BASE}" \
-	--cmdline "root=/dev/ram0 init=/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8 earlycon debug net.ifnames=0 ${KERNEL_CMDLINE_APPEND}"
+	--cmdline "root=${ROOTFS_PARTITION} init=/sbin/init rw console=tty0 console=${SERIAL_CONSOLE},115200n8 earlycon debug net.ifnames=0 ${KERNEL_CMDLINE_APPEND}"
 
 echo BOOT_FILE=$boot_file >> builders_out_parameters
 echo BOOT_ROOTFS_FILE=$boot_rootfs_file >> builders_out_parameters
