@@ -448,29 +448,49 @@ case "${MACHINE}" in
     ROOTFS_EDGE_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
     WIC_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
-    WIC_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
-    WIC_DEV_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     WIC_EDGE_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
     WIC_EDGE_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
-    UBI_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
-    UBI_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
-    UBI_EDGE_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi" | xargs -r basename)
-    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*rzn1*bestla*.dtb" | xargs -r basename)
-    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*rzn1*.bin" | xargs -r basename)
-    KERNEL_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "fitImage*.itb" | xargs -r basename)
-    UBOOT_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ubootfitImage*.itb" | xargs -r basename)
-    OPTEE_FIT_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "optee-os*.itb" | xargs -r basename)
-    FSBL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rzn1d-snarc-fsbl-fip*.spkg" | xargs -r basename)
+
+    # The following images will have their size reported to SQUAD
+    UBOOT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "u-boot-rzn1d-snarc-*.bin.spkg")
+    UBOOT_IMG=$(basename ${UBOOT})
+    UBOOT_FIT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "ubootfitImage*.itb")
+    UBOOT_FIT_IMG=$(basename ${UBOOT_FIT})
+    DTB=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*rzn1*bestla*.dtb")
+    DTB_IMG=$(basename ${DTB})
+    KERNEL=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*rzn1*.bin")
+    KERNEL_IMG=$(basename ${KERNEL})
+    KERNEL_FIT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "fitImage*.itb")
+    KERNEL_FIT_IMG=$(basename ${KERNEL_FIT})
+    FSBL=$(find ${DEPLOY_DIR_IMAGE} -type f -name "rzn1d-snarc-fsbl-fip*.spkg")
+    FSBL_IMG=$(basename ${FSBL})
+    OPTEE_FIT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "optee-os*.itb")
+    OPTEE_FIT_IMG=$(basename ${OPTEE_FIT})
+    UBI=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi")
+    UBI_IMG=$(basename ${UBI})
+    UBI_EDGE=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-edge-rzn1-snarc-*-${BUILD_NUMBER}.rootfs.ubi")
+    UBI_EDGE_IMG=$(basename ${UBI_EDGE})
+    WIC_DEV=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_DEV_IMG=$(basename ${WIC_DEV})
+    WIC_DEV_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-rzn1*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
     ;;
   *soca9*)
     ROOTFS_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
     ROOTFS_DEV_TAR_BZ2=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9*-${BUILD_NUMBER}.rootfs.tar.bz2" | xargs -r basename)
-    WIC_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
     WIC_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
-    WIC_DEV_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+
+    # The following images will have their size reported to SQUAD
+    UBOOT=$(find ${DEPLOY_DIR_IMAGE} -type f -name "u-boot-with-spl-*.sfp")
+    UBOOT_IMG=$(basename ${UBOOT})
+    DTB=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*soca9*_qspi_micronN25Q_bestla_512m.dtb" | xargs -r basename)
+    DTB_IMG=$(basename ${DTB})
+    KERNEL=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*soca9*.bin" | xargs -r basename)
+    KERNEL_IMG=$(basename ${KERNEL})
+    WIC=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_IMG=$(basename ${WIC})
+    WIC_DEV=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bz2" | xargs -r basename)
+    WIC_DEV_IMG=$(basename ${WIC_DEV})
     WIC_DEV_BMAP=$(find ${DEPLOY_DIR_IMAGE} -type f -name "dip-image-dev-snarc-soca9-*-${BUILD_NUMBER}.rootfs.wic.bmap" | xargs -r basename)
-    DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*soca9*_qspi_micronN25Q_bestla_512m.dtb" | xargs -r basename)
-    KERNEL_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "zImage--*soca9*.bin" | xargs -r basename)
     ;;
   *)
     DTB_IMG=$(find ${DEPLOY_DIR_IMAGE} -type f -name "*-${MACHINE}-*-${BUILD_NUMBER}.dtb" | xargs -r basename)
@@ -479,6 +499,41 @@ esac
 
 # Set MACHINE back to the origin value
 MACHINE=${machine_orig}
+
+send_image_size_to_squad()
+{
+    local metric=$1
+    local filename=$2
+    local image_size=0
+
+    # get file size
+    if [ ! -z "{filename}" ] && [ -e "${filename}" ]; then
+        image_size=$(stat --printf="%s" ${filename})
+    fi
+
+    echo metric=$metric
+    echo filename=$(basename $filename)
+    echo image_size=$image_size
+
+    # send the metric to SQUAD
+    curl --header "Auth-Token: ${QA_REPORTS_TOKEN}" --form metrics='{"'${metric}'": "'${image_size}'"}' ${QA_SERVER}/api/submit/${QA_SERVER_TEAM}/${QA_SERVER_PROJECT}/${BUILD_NUMBER}/${MACHINE}
+}
+
+# Send image sizes to SQUAD
+# note: we specifically want to report a zero image size if the image doesn't exist
+#       this works around a SQUAD bug and allows metrics graphs showing multiple
+#       boards to look sane when one of those boards has no values for the metric
+send_image_size_to_squad "UBOOT_IMG_SIZE" "${UBOOT}"
+send_image_size_to_squad "UBOOT_FIT_IMG_SIZE" "${UBOOT_FIT}"
+send_image_size_to_squad "DTB_IMG_SIZE" "${DTB}"
+send_image_size_to_squad "KERNEL_IMG_SIZE" "${KERNEL}"
+send_image_size_to_squad "KERNEL_FIT_IMG_SIZE" "${KERNEL_FIT}"
+send_image_size_to_squad "FSBL_IMG_SIZE" "${FSBL}"
+send_image_size_to_squad "OPTEE_FIT_IMG_SIZE" "${OPTEE_FIT}"
+send_image_size_to_squad "UBI_IMG_SIZE" "${UBI}"
+send_image_size_to_squad "UBI_EDGE_IMG_SIZE" "${UBI_EDGE}"
+send_image_size_to_squad "WIC_IMG_SIZE" "${WIC_IMG}"
+send_image_size_to_squad "WIC_DEV_IMG_SIZE" "${WIC_DEV_IMG}"
 
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
@@ -501,7 +556,6 @@ WIC_DEV_BMAP_URL=${BASE_URL}${PUB_DEST}/${WIC_DEV_BMAP}
 WIC_EDGE_IMAGE_URL=${BASE_URL}${PUB_DEST}/${WIC_EDGE_IMG}
 WIC_EDGE_BMAP_URL=${BASE_URL}${PUB_DEST}/${WIC_EDGE_BMAP}
 UBI_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_IMG}
-UBI_DEV_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_DEV_IMG}
 UBI_EDGE_IMAGE_URL=${BASE_URL}${PUB_DEST}/${UBI_EDGE_IMG}
 DTB_URL=${BASE_URL}${PUB_DEST}/${DTB_IMG}
 NFSROOTFS_URL=${BASE_URL}${PUB_DEST}/${ROOTFS_TAR_BZ2}
