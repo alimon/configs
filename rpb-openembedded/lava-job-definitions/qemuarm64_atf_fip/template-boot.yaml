@@ -25,9 +25,6 @@ actions:
       minutes: 15
     to: tmpfs
     images:
-      0bios: 
-        image_arg: -bios {0bios} -d unimp
-        url: ${FIRMWARE_URL}
       1rootfs:
         image_arg: -drive id=disk1,file={1rootfs},if=none,format=raw -device virtio-blk-device,drive=disk1
           -smp 4 -nographic
@@ -38,6 +35,9 @@ actions:
       2certs:
         image_arg: -drive id=disk0,file={2certs},if=none,format=raw -device virtio-blk-device,drive=disk0
         url: ${CERTS_URL}
+      3bios:
+        image_arg: -drive if=pflash,unit=0,readonly=off,file={3bios},format=raw
+        url: ${FIRMWARE_URL}
     os: oe
 
 - boot:
@@ -47,8 +47,8 @@ actions:
     method: qemu
     media: tmpfs
     docker:
-      image: maximuvarov/ledge_image_ubuntu_18.04_v4
-      binary: run_b.py /usr/bin/qemu-system-aarch64
+      image:  maximuvarov/ledge_image_ubuntu_20.04_qemu5.2_v2
+      binary: /usr/bin/qemu-system-aarch64
     auto_login:
       login_prompt: 'login:'
       username: ledge
@@ -57,9 +57,9 @@ actions:
       login_commands:
       - sudo -s
     prompts:
-    - 'ledge-(.*)# '
     - 'ledge-(.*)~: '
-    - 'ledge-.*:~\$$'
+    - ledge-.*:~\$
+    - 'ledge-qemuarm64:/(.*)#'
 
 - test:
     namespace: target
