@@ -532,8 +532,8 @@ send_image_size_to_squad "IMG_SIZE_FSBL"       "${FSBL}"
 send_image_size_to_squad "IMG_SIZE_OPTEE_FIT"  "${OPTEE_FIT}"
 send_image_size_to_squad "IMG_SIZE_UBI"        "${UBI}"
 send_image_size_to_squad "IMG_SIZE_UBI_EDGE"   "${UBI_EDGE}"
-send_image_size_to_squad "IMG_SIZE_WIC"        "${WIC_IMG}"
-send_image_size_to_squad "IMG_SIZE_WIC_DEV"    "${WIC_DEV_IMG}"
+send_image_size_to_squad "IMG_SIZE_WIC"        "${WIC}"
+send_image_size_to_squad "IMG_SIZE_WIC_DEV"    "${WIC_DEV}"
 
 # Note: the main job script allows to override the default value for
 #       BASE_URL and PUB_DEST, typically used for OE RPB builds
