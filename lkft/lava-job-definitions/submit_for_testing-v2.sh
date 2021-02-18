@@ -42,7 +42,7 @@ function get_value_from_config_file(){
     local key=$1 && shift
     local f_config=$1 && shift
 
-    local key_line=$(grep "${key}=" "${LKFT_WORK_DIR}/android-build-configs/lkft/${f_config}"|tail -n1|tr -d '"')
+    local key_line=$(grep "^${key}=" "${LKFT_WORK_DIR}/android-build-configs/lkft/${f_config}"|tail -n1|tr -d '"')
     if [ -z "key_line" ]; then
         return
     fi
@@ -74,6 +74,14 @@ function update_device_template(){
         local default_hikey960_prm_table_url="https://images.validation.linaro.org/snapshots.linaro.org/96boards/reference-platform/components/uefi-staging/85/hikey960/release/prm_ptable.img"
         sed -i "s|${default_hikey960_prm_table_url}|{{DOWNLOAD_URL}}/${f_img_name}|" "${f_device_template}"
     fi
+
+    if [ "X${f_img_name}X" = "Xgpt_both0.binX" ]; then
+        ## special case for db845c gpt_both0.bin
+        ## as for the aosp master, we need to use the proper gpt_both0.bin for the correct partitions
+        local default_db845c_aosp_gpu_url="https://images.validation.linaro.org/snapshots.linaro.org/96boards/dragonboard845c/linaro/rescue/28/dragonboard-845c-bootloader-ufs-aosp-28/gpt_both0.bin"
+        sed -i "s|${default_db845c_aosp_gpu_url}|{{DOWNLOAD_URL}}/${f_img_name}|" "${f_device_template}"
+    fi
+
     # DOWNLOAD_URL is where the generated files stored
     # replace REFERENCE_BUILD_URL with DOWNLOAD_URL
     sed -i "s|{{REFERENCE_BUILD_URL}}/${f_img_name}|{{DOWNLOAD_URL}}/${f_img_name}|" "${f_device_template}"
