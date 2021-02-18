@@ -60,21 +60,23 @@
             echo KERNEL_BRANCH=${KERNEL_BRANCH} >> $params
             cat $params
 
-            if [ "X${KERNEL_BRANCH}" = "Xandroid11-5.4" ]; then
-                cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-premerge.txt
-                echo "ANDROID_BUILD_CONFIG=lkft-gki-android11-5.4-premerge" >> lkft-${KERNEL_BRANCH}-premerge.txt
-                echo "KERNEL_DESCRIBE=${KERNEL_DESCRIBE}-premerge" >> lkft-${KERNEL_BRANCH}-premerge.txt
-            elif [ "X${KERNEL_BRANCH}" = "Xandroid12-5.4" ]; then
-                cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-x15.txt
-                echo "ANDROID_BUILD_CONFIG=lkft-x15-aosp-master-5.4" >> lkft-${KERNEL_BRANCH}-x15.txt
-            elif [ "X${KERNEL_BRANCH}" = "Xandroid-mainline" ]; then
-                cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-x15.txt
-                cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-hikey.txt
-                echo "ANDROID_BUILD_CONFIG=lkft-x15-aosp-master-mainline" >> lkft-${KERNEL_BRANCH}-x15.txt
-                echo "ANDROID_BUILD_CONFIG=lkft-hikey-aosp-master-mainline-gki" >> lkft-${KERNEL_BRANCH}-hikey.txt
-            fi
+            case "X${KERNEL_BRANCH}" in
+                "Xandroid12-5.4")
+                    cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-x15.txt
+                    echo "ANDROID_BUILD_CONFIG=lkft-x15-aosp-master-5.4" >> lkft-${KERNEL_BRANCH}-x15.txt
+                    ;;
+                "Xandroid-mainline")
+                    cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-x15.txt
+                    cp lkft-${KERNEL_BRANCH}.txt lkft-${KERNEL_BRANCH}-hikey.txt
+                    echo "ANDROID_BUILD_CONFIG=lkft-x15-aosp-master-mainline" >> lkft-${KERNEL_BRANCH}-x15.txt
+                    echo "ANDROID_BUILD_CONFIG=lkft-hikey-aosp-master-mainline-gki" >> lkft-${KERNEL_BRANCH}-hikey.txt
+                    ;;
+                "X*")
+                    echo "No particular build for this branch: ${KERNEL_BRANCH}"
+                    ;;
+            esac
 
-            # generate files for the api callback build
+            # generate files for the api callback build and gki build
             f_api_callbacks="all-kernels.txt"
             cp -fv  $params ${f_api_callbacks}
             QA_BUILD_VERSION=${KERNEL_DESCRIBE}
@@ -92,8 +94,6 @@
         - trigger-builds:
             - project: lkft-gki-kernel
               property-file: all-kernels.txt
-            - project: lkft-gki-kernel
-              property-file: lkft-android11-5.4-premerge.txt
             - project: lkft-generic-omap-build
               property-file: lkft-android12-5.4-x15.txt
             - project: lkft-generic-omap-build
