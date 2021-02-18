@@ -105,8 +105,8 @@ function submit_jobs_for_config(){
     # clean environments
     unset TEST_DEVICE_TYPE TEST_LAVA_SERVER TEST_QA_SERVER TEST_QA_SERVER_TEAM TEST_QA_SERVER_PROJECT TEST_QA_SERVER_ENVIRONMENT
     unset ANDROID_VERSION KERNEL_BRANCH KERNEL_REPO TEST_METADATA_TOOLCHAIN TEST_VTS_URL TEST_CTS_URL REFERENCE_BUILD_URL
-    unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE
-    unset IMAGE_SUPPORTED_CACHE TEST_LAVA_JOB_GROUP TEST_LAVA_JOB_PRIORITY
+    unset PUBLISH_FILES TEST_OTHER_PLANS TEST_TEMPLATES_TYPE TEST_LAVA_JOB_GROUP TEST_LAVA_JOB_PRIORITY
+    unset IMAGE_SUPPORTED_CACHE IMAGE_SUPPORTED_VENDOR_BOOT
     unset HIKEY960_SUPPORT_SUPER
 
     # the config file should be in the directory of android-build-configs/lkft
@@ -139,6 +139,14 @@ function submit_jobs_for_config(){
     else
         # cache paritition will be flashed with the cache.img
         export IMAGE_SUPPORTED_CACHE=true
+    fi
+
+    if [ -n "${IMAGE_SUPPORTED_VENDOR_BOOT}" ] && echo "X${IMAGE_SUPPORTED_VENDOR_BOOT}" | grep -i "Xtrue"; then
+        # vendor_boot paritition will be flashed with the vendor_boot.img only when IMAGE_SUPPORTED_VENDOR_BOOT as true
+        export IMAGE_SUPPORTED_VENDOR_BOOT=true
+    else
+        # unset IMAGE_SUPPORTED_VENDOR_BOOT when IMAGE_SUPPORTED_VENDOR_BOOT is not specified or specified as false explicitly
+        unset IMAGE_SUPPORTED_VENDOR_BOOT
     fi
 
     ## clean up the old changes for last build
