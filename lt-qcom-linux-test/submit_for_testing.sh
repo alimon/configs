@@ -31,10 +31,6 @@ case "${MACHINE}" in
     elif [ ${MACHINE} = "sdm845-db845c" ]; then
       export LAVA_DEVICE_TYPE="dragonboard-845c"
       export DEQP_FAIL_LIST="deqp-freedreno-a630-fails.txt"
-    elif [ ${MACHINE} = "sdm845-mtp" ]; then
-      export LAVA_DEVICE_TYPE="sdm845-mtp"
-    elif [ ${MACHINE} = "qcs404-evb-4000" ]; then
-      export LAVA_DEVICE_TYPE="qcs404-evb-4k"
     fi
     ;;
   *)
